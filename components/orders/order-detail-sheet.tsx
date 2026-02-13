@@ -147,7 +147,7 @@ export function OrderDetailSheet({ orderId, tenantId, open, onOpenChange, onRefr
                       variant={status === 'cancelled' ? 'destructive' : 'outline'}
                       onClick={() => handleStatusChange(status)}
                       disabled={!!actionLoading}
-                      className={status !== 'cancelled' ? 'border-[#2ECC71] text-[#2ECC71] hover:bg-[#2ECC71] hover:text-white' : ''}
+                      className={status !== 'cancelled' ? 'border-[#00D4AA] text-[#00D4AA] hover:bg-[#00D4AA] hover:text-white' : ''}
                     >
                       {actionLoading === status && <Loader2 className="h-3 w-3 mr-1 animate-spin" />}
                       {status === 'confirmed' && <CheckCircle2 className="h-3.5 w-3.5 mr-1" />}

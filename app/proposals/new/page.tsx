@@ -527,7 +527,7 @@ export default function NewProposalPage() {
             Save as Draft
           </Button>
           <Button
-            className="bg-[#0D1B2A] hover:bg-[#1a2d42] text-white"
+            className="bg-[#0A2540] hover:bg-[#1e3a5f] text-white"
             onClick={() => handleSubmit('sent')}
             disabled={loading}
           >

@@ -166,7 +166,7 @@ export function EditBranchDialog({ open, onOpenChange, tenantId, branch, onSucce
 
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>{isTR ? 'Iptal' : 'Cancel'}</Button>
-            <Button onClick={handleSubmit} disabled={saving} className="bg-[#0D1B2A] hover:bg-[#1B3A5C]">
+            <Button onClick={handleSubmit} disabled={saving} className="bg-[#0A2540] hover:bg-[#1e3a5f]">
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {isTR ? 'Kaydet' : 'Save Changes'}
             </Button>

@@ -141,7 +141,7 @@ export default function ProposalsPage() {
             </p>
           </div>
           <Link href="/proposals/new">
-            <Button className="bg-[#0D1B2A] hover:bg-[#1a2d42] text-white">
+            <Button className="bg-[#0A2540] hover:bg-[#1e3a5f] text-white">
               <Plus className="h-4 w-4 mr-2" />
               New Proposal
             </Button>

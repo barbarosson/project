@@ -93,7 +93,7 @@ export function WarehouseStockTable({ tenantId, warehouses, isTR }: WarehouseSto
           </CardTitle>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {isTR ? 'Toplam Deger:' : 'Total Value:'}{' '}
-            <span className="font-bold text-[#0D1B2A]">
+            <span className="font-bold text-[#0A2540]">
               {totalValue.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} TRY
             </span>
           </div>

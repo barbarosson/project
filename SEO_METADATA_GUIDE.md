@@ -86,7 +86,7 @@ The root layout (`app/layout.tsx`) provides comprehensive default metadata and P
    - Available as Tailwind class: `font-montserrat`
 
 2. **Theme Color**
-   - Modulus corporate blue: `#0D1B2A`
+   - Modulus corporate blue: `#0A2540`
    - Applied to PWA status bar
 
 3. **SEO Defaults**
@@ -222,7 +222,7 @@ export const viewport: Viewport = {
   minimumScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: '#0D1B2A',
+  themeColor: '#0A2540',
 }
 ```
 

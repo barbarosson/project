@@ -19,7 +19,7 @@ export function MetricCard({
   change,
   changeType = 'neutral',
   icon: Icon,
-  iconColor = 'bg-[#2ECC71]',
+  iconColor = 'bg-[#00D4AA]',
   onClick,
   clickable = false
 }: MetricCardProps) {
@@ -27,7 +27,7 @@ export function MetricCard({
     <Card
       className={cn(
         "hover:shadow-lg transition-all",
-        clickable && "cursor-pointer hover:scale-[1.02] hover:border-[#2ECC71]"
+        clickable && "cursor-pointer hover:scale-[1.02] hover:border-[#00D4AA]"
       )}
       onClick={onClick}
     >
@@ -40,7 +40,7 @@ export function MetricCard({
               <p
                 className={cn(
                   'text-sm mt-2 font-medium',
-                  changeType === 'positive' && 'text-[#2ECC71]',
+                  changeType === 'positive' && 'text-[#00D4AA]',
                   changeType === 'negative' && 'text-red-600',
                   changeType === 'neutral' && 'text-gray-500',
                   changeType === 'warning' && 'text-orange-600'

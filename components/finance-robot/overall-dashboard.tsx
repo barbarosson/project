@@ -44,7 +44,7 @@ export function OverallDashboard({ report, formatCurrency }: OverallDashboardPro
   return (
     <div className="space-y-6">
       <Card className="overflow-hidden border-0 shadow-lg">
-        <div className="bg-gradient-to-br from-[#0D1B2A] via-[#132d46] to-[#1a3a5c] p-6 lg:p-8">
+        <div className="bg-gradient-to-br from-[#0A2540] via-[#132d46] to-[#1e3a5f] p-6 lg:p-8">
           <div className="flex flex-col lg:flex-row items-center gap-6 lg:gap-10">
             <div className="flex items-center gap-4">
               <div className="p-3 rounded-2xl bg-white/10 backdrop-blur ring-1 ring-white/20">
@@ -108,7 +108,7 @@ export function OverallDashboard({ report, formatCurrency }: OverallDashboardPro
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <Activity size={18} className="text-[#0D1B2A]" />
+                <Activity size={18} className="text-[#0A2540]" />
                 <CardTitle className="text-base">Key Findings</CardTitle>
               </div>
             </CardHeader>
@@ -132,7 +132,7 @@ export function OverallDashboard({ report, formatCurrency }: OverallDashboardPro
               <div className="space-y-2.5">
                 {overall.recommendations.map((rec, i) => (
                   <div key={i} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-6 h-6 shrink-0 rounded-full bg-[#0D1B2A] text-white flex items-center justify-center text-xs font-bold">
+                    <div className="w-6 h-6 shrink-0 rounded-full bg-[#0A2540] text-white flex items-center justify-center text-xs font-bold">
                       {i + 1}
                     </div>
                     <p className="text-sm text-gray-700 leading-relaxed">{rec}</p>

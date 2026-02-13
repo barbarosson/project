@@ -66,11 +66,11 @@ export function BranchComparisonCards({ branches, performance, onEdit, onDelete,
         return (
           <Card key={branch.id} className={`relative overflow-hidden transition-all hover:shadow-lg ${!branch.is_active ? 'opacity-60' : ''}`}>
             {isBest && (
-              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#2ECC71] to-[#27AE60]" />
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#00D4AA] to-[#00B894]" />
             )}
 
             {branch.is_headquarters && (
-              <div className="absolute top-3 right-12 bg-[#0D1B2A] text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
+              <div className="absolute top-3 right-12 bg-[#0A2540] text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
                 {isTR ? 'MERKEZ' : 'HQ'}
               </div>
             )}
@@ -82,11 +82,11 @@ export function BranchComparisonCards({ branches, performance, onEdit, onDelete,
                     {isBest ? (
                       <Award className="h-5 w-5 text-emerald-600" />
                     ) : (
-                      <Building2 className="h-5 w-5 text-[#0D1B2A]" />
+                      <Building2 className="h-5 w-5 text-[#0A2540]" />
                     )}
                   </div>
                   <div>
-                    <h3 className="font-bold text-[#0D1B2A] text-lg">{branch.name}</h3>
+                    <h3 className="font-bold text-[#0A2540] text-lg">{branch.name}</h3>
                     <div className="flex items-center gap-2">
                       {branch.code && <span className="text-xs font-mono text-muted-foreground">{branch.code}</span>}
                       {branch.city && (

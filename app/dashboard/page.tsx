@@ -376,7 +376,7 @@ export default function Dashboard() {
           </div>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="gap-2">
+              <Button variant="outline" className="gap-2 !text-gray-900 !bg-white border-gray-300 hover:!bg-gray-50">
                 <Calendar className="h-4 w-4" />
                 {format(dateRange.from, 'MMM dd')} - {format(dateRange.to, 'MMM dd, yyyy')}
               </Button>
@@ -454,7 +454,7 @@ export default function Dashboard() {
             }
             changeType="positive"
             icon={TrendingUp}
-            iconColor="bg-[#2ECC71]"
+            iconColor="bg-[#00D4AA]"
             clickable
             onClick={() => router.push('/invoices')}
           />

@@ -106,7 +106,7 @@ export function HeroSection({ isAuthenticated = false }: HeroSectionProps) {
                 <>
                   <Button
                     size="lg"
-                    className="gap-2 bg-gradient-to-r from-[#2ECC71] to-[#27AE60] hover:from-[#27AE60] hover:to-[#229954] text-white shadow-lg"
+                    className="gap-2 bg-gradient-to-r from-[#00D4AA] to-[#00B894] hover:from-[#00B894] hover:to-[#00997a] text-white shadow-lg"
                     onClick={() => router.push('/dashboard')}
                   >
                     <LayoutDashboard className="h-5 w-5" />

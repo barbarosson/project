@@ -8,14 +8,15 @@ import { supabase } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { Globe, Mail, Lock, User, ArrowRight, Sparkles, CheckCircle2, MailCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { LoadingSpinner } from '@/components/loading-spinner'
-import { ModulusLogoSvgOnly } from '@/components/modulus-logo'
 import { MfaVerify } from '@/components/mfa-verify'
+import { MarketingHeader } from '@/components/marketing/marketing-header'
+import { ParasutFooter } from '@/components/marketing/parasut-footer'
 
 const t = {
   tr: {
@@ -391,128 +392,176 @@ function LoginContent() {
     }
   }
 
+  const LandingShell = ({ children }: { children: React.ReactNode }) => (
+    <div className="min-h-screen bg-white">
+      <MarketingHeader />
+      <main>
+        <section className="stripe-hero-gradient relative min-h-[calc(100vh-80px)] flex items-center justify-center" style={{ paddingTop: '120px', paddingBottom: '120px' }}>
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black select-none"
+              style={{
+                fontSize: 'clamp(140px, 22vw, 320px)',
+                color: 'rgba(255,255,255,0.06)',
+                letterSpacing: '-0.04em',
+                lineHeight: 0.9,
+                fontFamily: 'var(--font-inter), system-ui, sans-serif',
+              }}
+            >
+              MODULUS
+            </div>
+            <div className="absolute top-20 right-[10%] w-[500px] h-[500px] rounded-full opacity-20"
+              style={{ background: 'radial-gradient(circle, rgba(0,212,170,0.3) 0%, transparent 70%)' }} />
+            <div className="absolute bottom-10 left-[5%] w-[400px] h-[400px] rounded-full opacity-15"
+              style={{ background: 'radial-gradient(circle, rgba(0,115,230,0.3) 0%, transparent 70%)' }} />
+          </div>
+          <div className="relative z-10 w-full max-w-md mx-auto px-4">
+            {children}
+          </div>
+        </section>
+      </main>
+      <ParasutFooter />
+    </div>
+  )
+
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <LoadingSpinner size="lg" text={l.loading} />
-      </div>
+      <LandingShell>
+        <div className="flex items-center justify-center py-24">
+          <LoadingSpinner size="lg" text={l.loading} />
+        </div>
+      </LandingShell>
     )
   }
 
   if (showMfaVerify) {
     return (
-      <MfaVerify
-        language={language}
-        onVerified={() => {
-          toast.success(l.loginSuccess)
-          router.push('/dashboard')
-        }}
-        onCancel={async () => {
-          await supabase.auth.signOut()
-          setShowMfaVerify(false)
-        }}
-      />
+      <LandingShell>
+        <div
+          className="rounded-2xl p-8 shadow-2xl overflow-hidden"
+          style={{
+            backgroundColor: 'rgba(255,255,255,0.98)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          }}
+        >
+          <MfaVerify
+            embedded
+            language={language}
+            onVerified={() => {
+              toast.success(l.loginSuccess)
+              router.push('/dashboard')
+            }}
+            onCancel={async () => {
+              await supabase.auth.signOut()
+              setShowMfaVerify(false)
+            }}
+          />
+        </div>
+      </LandingShell>
     )
   }
 
   if (showConfirmation) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <Card className="border-2" style={{ borderColor: '#00D4AA' }}>
-            <CardContent className="pt-8 pb-8 text-center space-y-6">
-              <div className="mx-auto w-20 h-20 rounded-full flex items-center justify-center" style={{ backgroundColor: '#00D4AA20' }}>
-                <MailCheck className="h-10 w-10" style={{ color: '#00D4AA' }} />
-              </div>
-
-              <div className="space-y-2">
-                <h2 className="text-2xl font-bold" style={{ color: '#0A2540' }}>{l.checkEmail}</h2>
-                <p style={{ color: '#425466' }}>
-                  <span className="font-semibold" style={{ color: '#00D4AA' }}>{registeredEmail}</span>
-                  {' '}
-                  {language === 'tr'
-                    ? 'adresine bir dogrulama linki gonderdik. Lutfen gelen kutunuzu kontrol edin ve linke tiklayarak hesabinizi aktif hale getirin.'
-                    : 'We sent a verification link. Please check your inbox and click the link to activate your account.'}
-                </p>
-              </div>
-
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <p className="text-sm text-amber-800">{l.checkSpam}</p>
-              </div>
-
-              <div className="space-y-3">
-                <Button
-                  variant="outline"
-                  className="w-full"
-                  onClick={handleResendConfirmation}
-                  disabled={loading || resendCooldown > 0}
-                >
-                  <Mail className="h-4 w-4 mr-2" />
-                  {loading
-                    ? l.resending
-                    : resendCooldown > 0
-                      ? `${l.resendEmail} (${resendCooldown}s)`
-                      : l.resendEmail}
-                </Button>
-
-                <Button
-                  variant="ghost"
-                  className="w-full"
-                  onClick={() => {
-                    setShowConfirmation(false)
-                    setActiveTab('signin')
-                  }}
-                >
-                  {l.backToLogin}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+      <LandingShell>
+        <div
+          className="rounded-2xl p-8 shadow-2xl overflow-hidden"
+          style={{
+            backgroundColor: 'rgba(255,255,255,0.98)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          }}
+        >
+          <div className="text-center space-y-6">
+            <div className="mx-auto w-20 h-20 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)' }}>
+              <MailCheck className="h-10 w-10 text-[#7DD3FC]" stroke="#7DD3FC" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold" style={{ color: '#0A2540' }}>{l.checkEmail}</h2>
+              <p style={{ color: '#425466' }}>
+                <span className="font-semibold" style={{ color: '#0A2540' }}>{registeredEmail}</span>
+                {' '}
+                {language === 'tr'
+                  ? 'adresine bir dogrulama linki gonderdik. Lutfen gelen kutunuzu kontrol edin ve linke tiklayarak hesabinizi aktif hale getirin.'
+                  : 'We sent a verification link. Please check your inbox and click the link to activate your account.'}
+              </p>
+            </div>
+            <div className="rounded-xl p-3" style={{ backgroundColor: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.3)' }}>
+              <p className="text-sm" style={{ color: '#92400e' }}>{l.checkSpam}</p>
+            </div>
+            <div className="space-y-3">
+              <Button
+                variant="outline"
+                className="w-full rounded-full"
+                onClick={handleResendConfirmation}
+                disabled={loading || resendCooldown > 0}
+                style={{ borderColor: '#E6EBF1', color: '#0A2540' }}
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                {loading ? l.resending : resendCooldown > 0 ? `${l.resendEmail} (${resendCooldown}s)` : l.resendEmail}
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full"
+                onClick={() => { setShowConfirmation(false); setActiveTab('signin') }}
+                style={{ color: '#425466' }}
+              >
+                {l.backToLogin}
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
+      </LandingShell>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
-        <div className="text-center space-y-2">
-          <div className="mb-6 flex justify-center">
-            <ModulusLogoSvgOnly size={96} />
-          </div>
-          <h2 className="text-3xl font-bold" style={{ color: '#0A2540' }}>{l.welcome}</h2>
-          <p style={{ color: '#425466' }}>{l.subtitle}</p>
+    <LandingShell>
+      <div
+        className="rounded-2xl p-8 shadow-2xl overflow-hidden animate-fade-in"
+        style={{
+          backgroundColor: 'rgba(255,255,255,0.98)',
+          border: '1px solid rgba(255,255,255,0.2)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+        }}
+      >
+        <div className="text-center space-y-2 mb-6">
+          <h2 className="text-2xl font-bold" style={{ color: '#0A2540' }}>{l.welcome}</h2>
+          <p className="text-sm" style={{ color: '#425466' }}>{l.subtitle}</p>
         </div>
 
-        <div className="flex justify-center">
+        <div className="flex justify-center mb-6">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setLanguage(language === 'tr' ? 'en' : 'tr')}
-            className="gap-2"
+            className="gap-2 rounded-full"
+            style={{ borderColor: '#E6EBF1', color: '#0A2540' }}
           >
             <Globe className="h-4 w-4" />
             {language === 'tr' ? 'English' : 'Turkce'}
           </Button>
         </div>
 
-        <Card className="border-2">
-          <CardHeader className="pb-4">
+        <Card className="border-0 shadow-none bg-transparent">
+          <CardHeader className="pb-4 px-0 pt-0 border-0">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'signin' | 'signup')}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="signin">{l.signIn}</TabsTrigger>
-                <TabsTrigger value="signup">{l.signUp}</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-2 rounded-xl" style={{ backgroundColor: '#F6F9FC' }}>
+                <TabsTrigger value="signin" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm" style={{ color: '#0A2540' }}>{l.signIn}</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm" style={{ color: '#0A2540' }}>{l.signUp}</TabsTrigger>
               </TabsList>
             </Tabs>
           </CardHeader>
 
-          <CardContent className="space-y-5">
+          <CardContent className="space-y-5 px-0 pb-0">
             <div className="space-y-3">
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full rounded-xl"
                 onClick={() => handleSocialAuth('google')}
                 disabled={loading}
+                style={{ borderColor: '#E6EBF1', color: '#0A2540' }}
               >
                 <svg className="h-5 w-5 mr-2" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -529,17 +578,17 @@ function LoginContent() {
                 <Separator />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-gray-500">{l.or}</span>
+                <span className="px-2" style={{ backgroundColor: 'rgba(255,255,255,0.98)', color: '#425466' }}>{l.or}</span>
               </div>
             </div>
 
             {activeTab === 'signin' ? (
               <Tabs value={authMethod} onValueChange={(v) => setAuthMethod(v as 'email' | 'magic')}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="email" className="data-[state=inactive]:text-[#0A192F]">
+                <TabsList className="grid w-full grid-cols-2 rounded-xl" style={{ backgroundColor: '#F6F9FC' }}>
+                  <TabsTrigger value="email" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm" style={{ color: '#0A2540' }}>
                     {l.email}
                   </TabsTrigger>
-                  <TabsTrigger value="magic" className="data-[state=inactive]:text-[#0A192F]">
+                  <TabsTrigger value="magic" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm" style={{ color: '#0A2540' }}>
                     {l.magicLink}
                   </TabsTrigger>
                 </TabsList>
@@ -555,7 +604,8 @@ function LoginContent() {
                         placeholder="ornek@email.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10"
+                        className="pl-10 rounded-xl"
+                        style={{ borderColor: '#E6EBF1' }}
                         disabled={loading}
                         onKeyDown={(e) => e.key === 'Enter' && handleEmailSignIn()}
                       />
@@ -571,15 +621,16 @@ function LoginContent() {
                         placeholder="********"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="pl-10"
+                        className="pl-10 rounded-xl"
+                        style={{ borderColor: '#E6EBF1' }}
                         disabled={loading}
                         onKeyDown={(e) => e.key === 'Enter' && handleEmailSignIn()}
                       />
                     </div>
                   </div>
                   <Button
-                    className="w-full text-white"
-                    style={{ background: 'linear-gradient(135deg, #0A2540 0%, #0D3158 100%)' }}
+                    className="w-full rounded-full h-12 font-semibold gap-2"
+                    style={{ backgroundColor: '#0A2540', color: '#ffffff' }}
                     onClick={handleEmailSignIn}
                     disabled={loading}
                   >
@@ -598,12 +649,12 @@ function LoginContent() {
                 </TabsContent>
 
                 <TabsContent value="magic" className="space-y-4 mt-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-2">
-                    <div className="flex items-center gap-2 text-blue-700">
-                      <Sparkles className="h-5 w-5" />
+                  <div className="rounded-xl p-4 space-y-2" style={{ backgroundColor: 'rgba(0,212,170,0.08)', border: '1px solid rgba(0,212,170,0.2)' }}>
+                    <div className="flex items-center gap-2" style={{ color: '#0A2540' }}>
+                      <Sparkles className="h-5 w-5" style={{ color: '#00D4AA' }} />
                       <span className="font-medium">{l.magicLink}</span>
                     </div>
-                    <p className="text-sm text-blue-600">{l.magicLinkDesc}</p>
+                    <p className="text-sm" style={{ color: '#425466' }}>{l.magicLinkDesc}</p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="magic-email">{l.email}</Label>
@@ -615,15 +666,16 @@ function LoginContent() {
                         placeholder="ornek@email.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10"
+                        className="pl-10 rounded-xl"
+                        style={{ borderColor: '#E6EBF1' }}
                         disabled={loading}
                         onKeyDown={(e) => e.key === 'Enter' && handleMagicLink()}
                       />
                     </div>
                   </div>
                   <Button
-                    className="w-full text-white"
-                    style={{ background: 'linear-gradient(135deg, #0A2540 0%, #0D3158 100%)' }}
+                    className="w-full rounded-full h-12 font-semibold gap-2"
+                    style={{ backgroundColor: '#0A2540', color: '#ffffff' }}
                     onClick={handleMagicLink}
                     disabled={loading}
                   >
@@ -644,7 +696,8 @@ function LoginContent() {
                       placeholder={language === 'tr' ? 'Adiniz Soyadiniz' : 'Your Full Name'}
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 rounded-xl"
+                      style={{ borderColor: '#E6EBF1' }}
                       disabled={loading}
                     />
                   </div>
@@ -659,7 +712,8 @@ function LoginContent() {
                       placeholder="ornek@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 rounded-xl"
+                      style={{ borderColor: '#E6EBF1' }}
                       disabled={loading}
                     />
                   </div>
@@ -674,7 +728,8 @@ function LoginContent() {
                       placeholder="********"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 rounded-xl"
+                      style={{ borderColor: '#E6EBF1' }}
                       disabled={loading}
                     />
                   </div>
@@ -689,17 +744,18 @@ function LoginContent() {
                       placeholder="********"
                       value={confirmPw}
                       onChange={(e) => setConfirmPw(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 rounded-xl"
+                      style={{ borderColor: '#E6EBF1' }}
                       disabled={loading}
                       onKeyDown={(e) => e.key === 'Enter' && handleSignUp()}
                     />
                   </div>
                 </div>
 
-                <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+                <div className="rounded-xl p-3" style={{ backgroundColor: 'rgba(0,212,170,0.08)', border: '1px solid rgba(0,212,170,0.2)' }}>
                   <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <p className="text-xs text-emerald-700">
+                    <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: '#00D4AA' }} />
+                    <p className="text-xs" style={{ color: '#0A2540' }}>
                       {language === 'tr'
                         ? 'Kayit olduktan sonra e-posta adresinize bir dogrulama linki gonderilecektir. Hesabiniz bu link ile aktif olacaktir.'
                         : 'After registration, a verification link will be sent to your email. Your account will be activated through this link.'}
@@ -708,8 +764,8 @@ function LoginContent() {
                 </div>
 
                 <Button
-                  className="w-full text-white"
-                  style={{ background: 'linear-gradient(135deg, #0A2540 0%, #0D3158 100%)' }}
+                  className="w-full rounded-full h-12 font-semibold gap-2"
+                  style={{ backgroundColor: '#0A2540', color: '#ffffff' }}
                   onClick={handleSignUp}
                   disabled={loading}
                 >
@@ -730,41 +786,41 @@ function LoginContent() {
           </CardContent>
         </Card>
 
-        <div className="text-center space-y-2">
-          <div className="rounded-lg p-4 mb-4" style={{ background: 'linear-gradient(135deg, #F6F9FC 0%, #E6EBF1 100%)' }}>
+        <div className="mt-6 pt-6 space-y-4" style={{ borderTop: '1px solid #E6EBF1' }}>
+          <div className="rounded-xl p-4" style={{ backgroundColor: '#F6F9FC' }}>
             <p className="text-sm mb-3" style={{ color: '#425466' }}>{l.demoRequestInfo}</p>
             <Button
-              className="w-full text-white"
-              style={{ background: 'linear-gradient(135deg, #0A2540 0%, #0D3158 100%)' }}
+              className="w-full rounded-full font-semibold"
+              style={{ backgroundColor: '#0A2540', color: '#ffffff' }}
               onClick={() => router.push('/landing#demo-request')}
             >
               <Sparkles className="mr-2 h-4 w-4" />
               {l.demoRequestBtn}
             </Button>
           </div>
-
           <div className="flex flex-col gap-2">
             <Button
               variant="outline"
               onClick={handleDemoLogin}
               disabled={loading}
-              className="w-full"
-              style={{ borderColor: '#0A2540', color: '#0A2540' }}
+              className="w-full rounded-full"
+              style={{ borderColor: '#E6EBF1', color: '#0A2540' }}
             >
               <Sparkles className="mr-2 h-4 w-4" />
               {l.tryDemo}
             </Button>
             <Button
-              variant="link"
+              variant="ghost"
               onClick={() => router.push('/landing')}
-              className="text-gray-600"
+              className="w-full"
+              style={{ color: '#425466' }}
             >
-              {language === 'tr' ? `← ${l.backHome}` : `← ${l.backHome}`}
+              ← {l.backHome}
             </Button>
           </div>
         </div>
       </div>
-    </div>
+    </LandingShell>
   )
 }
 

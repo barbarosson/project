@@ -188,7 +188,7 @@ export function CreateTicketDialog({ open, onOpenChange, onSuccess }: CreateTick
             <Button
               type="submit"
               disabled={submitting}
-              className="bg-[#2ECC71] hover:bg-[#27AE60]"
+              className="bg-[#00D4AA] hover:bg-[#00B894]"
             >
               {submitting ? t.common.loading : t.support.createTicket}
             </Button>

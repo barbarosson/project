@@ -64,9 +64,9 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
               <Line
                 type="monotone"
                 dataKey="income"
-                stroke="#2ECC71"
+                stroke="#00D4AA"
                 strokeWidth={3}
-                dot={{ fill: '#2ECC71', r: 4 }}
+                dot={{ fill: '#00D4AA', r: 4 }}
                 activeDot={{ r: 6 }}
                 name="Income"
               />

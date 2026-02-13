@@ -207,7 +207,7 @@ export function ObligationsPanel({ obligations, obligationTypes, tenantId, userI
           <CardTitle className="text-lg font-semibold text-[#0A192F]">
             {isTR ? 'Yasal Yükümlülükler' : 'Legal Obligations'}
           </CardTitle>
-          <Button onClick={openCreate} size="sm" className="bg-[#2ECC71] hover:bg-[#27AE60] text-white">
+          <Button onClick={openCreate} size="sm" className="bg-[#00D4AA] hover:bg-[#00B894] text-white">
             <Plus className="h-4 w-4 mr-1" />
             {isTR ? 'Yeni Yükümlülük' : 'New Obligation'}
           </Button>
@@ -432,7 +432,7 @@ export function ObligationsPanel({ obligations, obligationTypes, tenantId, userI
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               {isTR ? 'İptal' : 'Cancel'}
             </Button>
-            <Button onClick={handleSave} disabled={saving || !form.title || !form.due_date} className="bg-[#2ECC71] hover:bg-[#27AE60] text-white">
+            <Button onClick={handleSave} disabled={saving || !form.title || !form.due_date} className="bg-[#00D4AA] hover:bg-[#00B894] text-white">
               {saving ? (isTR ? 'Kaydediliyor...' : 'Saving...') : (isTR ? 'Kaydet' : 'Save')}
             </Button>
           </DialogFooter>

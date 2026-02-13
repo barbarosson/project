@@ -40,7 +40,7 @@ export function ModulePanel({ title, icon: Icon, health, insights, metrics, expa
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-[#0D1B2A] text-white">
+            <div className="p-2.5 rounded-xl bg-[#0A2540] text-white">
               <Icon size={20} />
             </div>
             <div>

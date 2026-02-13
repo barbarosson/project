@@ -26,7 +26,7 @@ export function ProductionStatsCards({ stats, isTR }: ProductionStatsProps) {
       title: isTR ? 'Toplam Uretim Emri' : 'Total Orders',
       value: String(stats.total),
       icon: Factory,
-      color: 'text-[#0D1B2A]',
+      color: 'text-[#0A2540]',
       bg: 'bg-slate-50',
     },
     {

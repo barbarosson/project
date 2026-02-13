@@ -238,7 +238,7 @@ export function StockReservationPanel({ projectId, tenantId, isTR }: StockReserv
               min={1}
               className="w-24"
             />
-            <Button size="sm" onClick={addReservation} disabled={saving} className="bg-[#0D1B2A]">
+            <Button size="sm" onClick={addReservation} disabled={saving} className="bg-[#0A2540]">
               {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5" />}
             </Button>
           </div>

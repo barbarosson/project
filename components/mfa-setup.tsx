@@ -234,7 +234,7 @@ export function MfaSetup({ language }: MfaSetupProps) {
               </div>
               <Button
                 onClick={handleStartEnroll}
-                className="bg-[#2ECC71] hover:bg-[#27AE60]"
+                className="bg-[#00D4AA] hover:bg-[#00B894]"
               >
                 <ShieldCheck className="mr-2 h-4 w-4" />
                 {l.enable2fa}
@@ -304,7 +304,7 @@ export function MfaSetup({ language }: MfaSetupProps) {
                   {l.cancel}
                 </Button>
                 <Button
-                  className="flex-1 bg-[#2ECC71] hover:bg-[#27AE60]"
+                  className="flex-1 bg-[#00D4AA] hover:bg-[#00B894]"
                   onClick={handleVerifyEnroll}
                   disabled={loading || code.length !== 6}
                 >

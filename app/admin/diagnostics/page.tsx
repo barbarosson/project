@@ -1,14 +1,17 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle2, XCircle, Loader2, Play, AlertTriangle, Wrench, RefreshCw } from 'lucide-react'
+import { CheckCircle2, XCircle, Loader2, Play, AlertTriangle, RefreshCw, Bug, Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { runFullDiagnostics } from '@/lib/auth-debug'
 import { toast } from 'sonner'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useRouteGuard } from '@/hooks/use-route-guard'
+import { useLanguage } from '@/contexts/language-context'
+import { useAdmin } from '@/contexts/admin-context'
 
 interface TestResult {
   name: string
@@ -24,8 +27,17 @@ interface TestCategory {
   tests: TestResult[]
 }
 
+const diagT = {
+  tr: { runAuthDiag: 'Tanılamayı Çalıştır', clearCache: 'Önbelleği Temizle', cacheCleared: 'Tüm önbellek temizlendi. Tekrar giriş yapabilirsiniz.' },
+  en: { runAuthDiag: 'Run Diagnostics', clearCache: 'Clear Cache', cacheCleared: 'All cached data cleared. You can now login again.' },
+}
+
 export default function DiagnosticsPage() {
   const { loading } = useRouteGuard('admin')
+  const router = useRouter()
+  const { language } = useLanguage()
+  const { signOut } = useAdmin()
+  const t = diagT[language as keyof typeof diagT] || diagT.en
   const [running, setRunning] = useState(false)
   const [testResults, setTestResults] = useState<TestCategory[]>([])
   const [consoleLog, setConsoleLog] = useState<string[]>([])
@@ -33,7 +45,7 @@ export default function DiagnosticsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-[#2ECC71]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#00D4AA]" />
       </div>
     )
   }
@@ -636,156 +648,20 @@ export default function DiagnosticsPage() {
     }
   }
 
-  const fixAutomatically = async () => {
-    setRunning(true)
-    logToConsole('=== Starting Auto-Fix ===')
-    logToConsole('')
+  const handleRunAuthDiagnostics = () => {
+    runFullDiagnostics(supabase)
+    logToConsole('Auth diagnostics run - check browser console for output')
+    toast.info('Auth diagnostics printed to browser console (F12)')
+  }
 
-    try {
-      const failedTests = testResults.flatMap(c => c.tests).filter(t => t.status === 'fail' && t.fixable)
-
-      if (failedTests.length === 0) {
-        logToConsole('No fixable issues found')
-        toast.info('No fixable issues found')
-        setRunning(false)
-        return
-      }
-
-      logToConsole(`Found ${failedTests.length} fixable issue(s)`)
-      logToConsole('')
-
-      let fixedCount = 0
-
-      for (const test of failedTests) {
-        logToConsole(`Attempting to fix: ${test.name}`)
-
-        if (test.name === 'Products table columns check') {
-          logToConsole('Checking for missing columns in products table...')
-
-          try {
-            const { data: tableInfo } = await supabase
-              .from('products')
-              .select('*')
-              .limit(1)
-
-            if (tableInfo && tableInfo.length > 0) {
-              const columns = Object.keys(tableInfo[0])
-
-              const missingColumns: string[] = []
-              if (!columns.includes('purchase_price')) missingColumns.push('purchase_price')
-              if (!columns.includes('sale_price')) missingColumns.push('sale_price')
-
-              if (missingColumns.length > 0) {
-                logToConsole(`⚠ Missing columns detected: ${missingColumns.join(', ')}`)
-                logToConsole('⚠ This requires database migration via Supabase dashboard')
-                logToConsole('⚠ Migration: 20260122150054_add_sale_and_purchase_price_columns.sql')
-                toast.warning('Database migration required via Supabase dashboard')
-              } else {
-                logToConsole('✓ All columns present, issue may be resolved')
-                fixedCount++
-              }
-            }
-          } catch (error: any) {
-            logToConsole(`✗ Could not verify columns: ${error.message}`)
-          }
-        }
-
-        if (test.name === 'Composite unique constraints check') {
-          logToConsole('Checking composite unique constraint...')
-          logToConsole('⚠ Constraint creation requires database migration')
-          logToConsole('⚠ Migration: 20260126075224_fix_products_sku_unique_constraint.sql')
-          toast.warning('Database migration required via Supabase dashboard')
-        }
-
-        if (test.name === 'Customer CRUD test' && test.error?.includes('42501')) {
-          logToConsole('Detected RLS policy issue...')
-          logToConsole('⚠ RLS policies require database migration')
-          logToConsole('⚠ Check migrations: 20260122063731_fix_all_tables_rls_policies.sql')
-          toast.warning('RLS policy migration required via Supabase dashboard')
-        }
-
-        if (test.name === 'Duplicate SKU warning test') {
-          logToConsole('Checking duplicate SKU handling...')
-
-          try {
-            const testSKU = `FIX_TEST_${Date.now()}`
-            const { data: session } = await supabase.auth.getSession()
-            const tenantId = session?.session?.user?.id
-
-            if (tenantId) {
-              const { data: firstProduct } = await supabase
-                .from('products')
-                .insert([{
-                  name: 'Fix Test Product',
-                  sku: testSKU,
-                  category: 'product',
-                  unit: 'piece',
-                  sale_price: 100,
-                  tenant_id: tenantId
-                }])
-                .select()
-                .maybeSingle()
-
-              if (firstProduct) {
-                const { error: duplicateError } = await supabase
-                  .from('products')
-                  .insert([{
-                    name: 'Fix Test Product 2',
-                    sku: testSKU,
-                    category: 'product',
-                    unit: 'piece',
-                    sale_price: 200,
-                    tenant_id: tenantId
-                  }])
-
-                await supabase.from('products').delete().eq('id', firstProduct.id)
-
-                if (duplicateError && duplicateError.code === '23505') {
-                  logToConsole('✓ Duplicate constraint is working correctly')
-                  fixedCount++
-                } else {
-                  logToConsole('⚠ Constraint still missing, migration required')
-                  logToConsole('⚠ Migration: 20260126075224_fix_products_sku_unique_constraint.sql')
-                }
-              }
-            }
-          } catch (error: any) {
-            if (error.code === '23505') {
-              logToConsole('✓ Duplicate constraint is working correctly')
-              fixedCount++
-            } else {
-              logToConsole(`✗ Fix verification failed: ${error.message}`)
-            }
-          }
-        }
-
-        logToConsole('')
-      }
-
-      logToConsole('=== Auto-Fix Complete ===')
-      logToConsole(`Fixed: ${fixedCount} issue(s)`)
-      logToConsole(`Remaining: ${failedTests.length - fixedCount} issue(s) require manual migration`)
-      logToConsole('')
-      logToConsole('💡 For database migrations:')
-      logToConsole('1. Open Supabase Dashboard')
-      logToConsole('2. Go to SQL Editor')
-      logToConsole('3. Run the migration files mentioned above')
-      logToConsole('4. Return here and click "Run All Tests" to verify')
-
-      if (fixedCount > 0) {
-        toast.success(`Auto-fix completed: ${fixedCount} issue(s) resolved`)
-        logToConsole('')
-        logToConsole('Re-running tests to verify fixes...')
-        setTimeout(() => runAllTests(), 2000)
-      } else {
-        toast.info('Manual migrations required - see console for details')
-      }
-    } catch (error: any) {
-      logToConsole(`=== Auto-Fix Error: ${error.message} ===`)
-      toast.error('Auto-fix failed: ' + error.message)
-    } finally {
-      setRunning(false)
+  const handleClearCache = async () => {
+    await signOut()
+    if (typeof window !== 'undefined') {
+      localStorage.clear()
+      sessionStorage.clear()
     }
+    toast.success(t.cacheCleared)
+    router.push('/admin/login')
   }
 
   const getStatusIcon = (status: TestResult['status']) => {
@@ -823,196 +699,191 @@ export default function DiagnosticsPage() {
     const passed = allTests.filter(t => t.status === 'pass').length
     const failed = allTests.filter(t => t.status === 'fail').length
     const warnings = allTests.filter(t => t.status === 'warning').length
-    const fixable = allTests.filter(t => t.status === 'fail' && t.fixable).length
     const total = allTests.length
-
-    return { passed, failed, warnings, fixable, total }
+    return { passed, failed, warnings, total }
   }
 
   const summary = getSummary()
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">System Diagnostics & Test Suite</h1>
-        <p className="text-gray-600 mt-2">Comprehensive ERP system health check and error prevention</p>
-      </div>
+    <div className="max-w-7xl mx-auto space-y-8">
+      {/* Page Header */}
+      <header>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-50">
+          System Diagnostics & Test Suite
+        </h1>
+        <p className="mt-2 text-slate-600 dark:text-slate-400">
+          Comprehensive ERP system health check and error prevention
+        </p>
+      </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Test Controls</CardTitle>
-              <CardDescription>Run automated tests and apply fixes</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex gap-2">
-                <Button onClick={runAllTests} disabled={running} className="flex-1">
-                  {running ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Running Tests...
-                    </>
-                  ) : (
-                    <>
-                      <Play className="mr-2 h-4 w-4" />
-                      Run All Tests
-                    </>
-                  )}
-                </Button>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        onClick={fixAutomatically}
-                        disabled={running || summary.fixable === 0}
-                        variant="outline"
-                      >
-                        <Wrench className="mr-2 h-4 w-4" />
-                        Fix Automatically
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {summary.total === 0 ? (
-                        <p>Run tests first to detect fixable issues</p>
-                      ) : summary.fixable === 0 ? (
-                        <p>No fixable issues detected</p>
-                      ) : (
-                        <p>{summary.fixable} issue(s) can be fixed automatically</p>
-                      )}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-
-              {summary.total > 0 ? (
-                <>
-                  <div className="flex gap-4 text-sm">
-                    <div>
-                      <span className="font-semibold text-green-600">🟢 {summary.passed} Passed</span>
-                    </div>
-                    <div>
-                      <span className="font-semibold text-red-600">🔴 {summary.failed} Failed</span>
-                    </div>
-                    <div>
-                      <span className="font-semibold text-yellow-600">🟡 {summary.warnings} Warnings</span>
-                    </div>
-                  </div>
-
-                  {summary.fixable > 0 ? (
-                    <div className="bg-blue-50 border border-blue-200 rounded p-3 text-sm">
-                      <p className="text-blue-800 font-medium">
-                        <Wrench className="inline h-4 w-4 mr-1" />
-                        {summary.fixable} issue{summary.fixable > 1 ? 's' : ''} can be fixed automatically
-                      </p>
-                    </div>
-                  ) : summary.failed > 0 ? (
-                    <div className="bg-amber-50 border border-amber-200 rounded p-3 text-sm">
-                      <p className="text-amber-800">
-                        <AlertTriangle className="inline h-4 w-4 mr-1" />
-                        All detected issues require manual database migration
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="bg-green-50 border border-green-200 rounded p-3 text-sm">
-                      <p className="text-green-800">
-                        <CheckCircle2 className="inline h-4 w-4 mr-1" />
-                        All tests passed - system is healthy
-                      </p>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="bg-gray-50 border border-gray-200 rounded p-3 text-sm">
-                  <p className="text-gray-600">
-                    <Play className="inline h-4 w-4 mr-1" />
-                    Click "Run All Tests" to start system diagnostics
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Test Console</CardTitle>
-              <CardDescription>Real-time test execution log</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-black text-green-400 font-mono text-xs p-4 rounded-lg h-64 overflow-y-auto">
-                {consoleLog.length === 0 ? (
-                  <div className="text-gray-500">Console output will appear here...</div>
+      {/* Actions Section */}
+      <section aria-label="Actions">
+        <Card>
+          <CardHeader>
+            <CardTitle>Test Controls</CardTitle>
+            <CardDescription>Run automated tests and utility actions</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3">
+              <Button
+                id="run-all-tests-btn"
+                type="button"
+                onClick={runAllTests}
+                disabled={running}
+                className="gap-2"
+              >
+                {running ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Running Tests...
+                  </>
                 ) : (
-                  consoleLog.map((log, idx) => (
-                    <div key={idx} className="mb-1">{log}</div>
-                  ))
+                  <>
+                    <Play className="h-4 w-4" />
+                    Run All Tests
+                  </>
                 )}
-              </div>
-              {consoleLog.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setConsoleLog([])}
-                  className="mt-2 w-full"
-                >
-                  <RefreshCw className="mr-2 h-3 w-3" />
-                  Clear Console
-                </Button>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+              </Button>
+              <Button
+                id="auth-diag-btn"
+                type="button"
+                variant="outline"
+                onClick={handleRunAuthDiagnostics}
+                className="gap-2"
+              >
+                <Bug className="h-4 w-4 shrink-0" />
+                {t.runAuthDiag}
+              </Button>
+              <Button
+                id="clear-cache-btn"
+                type="button"
+                variant="outline"
+                onClick={handleClearCache}
+                className="gap-2"
+              >
+                <Trash2 className="h-4 w-4 shrink-0" />
+                {t.clearCache}
+              </Button>
+            </div>
 
+            {summary.total > 0 && (
+              <div className="flex flex-wrap gap-4 text-sm">
+                <span className="font-semibold text-green-600">Passed: {summary.passed}</span>
+                <span className="font-semibold text-red-600">Failed: {summary.failed}</span>
+                <span className="font-semibold text-yellow-600">Warnings: {summary.warnings}</span>
+              </div>
+            )}
+
+            {summary.total > 0 && summary.failed > 0 && (
+              <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                <p className="text-sm text-amber-800 dark:text-amber-200 flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  Failed issues may require manual database migration. Check test details below.
+                </p>
+              </div>
+            )}
+
+            {summary.total > 0 && summary.failed === 0 && (
+              <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                <p className="text-sm text-green-800 dark:text-green-200 flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  All tests passed — system is healthy.
+                </p>
+              </div>
+            )}
+
+            {summary.total === 0 && (
+              <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
+                <p className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                  <Play className="h-4 w-4 shrink-0" />
+                  Click &quot;Run All Tests&quot; to start system diagnostics.
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Test Console Section */}
+      <section aria-label="Test console">
+        <Card>
+          <CardHeader>
+            <CardTitle>Test Console</CardTitle>
+            <CardDescription>Real-time test execution log</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="bg-slate-950 text-green-400 font-mono text-xs p-4 rounded-lg h-64 overflow-y-auto">
+              {consoleLog.length === 0 ? (
+                <p className="text-slate-500">Console output will appear here...</p>
+              ) : (
+                consoleLog.map((log, idx) => (
+                  <div key={idx} className="mb-1">{log}</div>
+                ))
+              )}
+            </div>
+            {consoleLog.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setConsoleLog([])}
+                className="mt-3 gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Clear Console
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Test Results Section */}
+      <section aria-label="Test results">
         {testResults.map((category) => (
-          <Card key={category.category}>
+          <Card key={category.category} className="mb-6">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 {category.category}
-                <Badge variant="outline" className="text-xs">
-                  {category.tests.length} test{category.tests.length > 1 ? 's' : ''}
+                <Badge variant="outline" className="text-xs font-normal">
+                  {category.tests.length} test{category.tests.length !== 1 ? 's' : ''}
                 </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {category.tests.map((test) => (
-                <div key={test.name} className="border rounded-lg p-4 space-y-2">
+                <div
+                  key={test.name}
+                  className="border rounded-lg p-4 space-y-2 bg-slate-50/50 dark:bg-slate-900/30"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {getStatusIcon(test.status)}
                       <span className="font-medium">{test.name}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {test.fixable && test.status === 'fail' && (
-                        <Badge variant="outline" className="text-xs">
-                          <Wrench className="h-3 w-3 mr-1" />
-                          Fixable
-                        </Badge>
-                      )}
-                      {getStatusBadge(test.status)}
-                    </div>
+                    {getStatusBadge(test.status)}
                   </div>
-
                   {test.message && (
-                    <p className={`text-sm ${
-                      test.status === 'pass' ? 'text-green-700' :
-                      test.status === 'fail' ? 'text-red-700' :
-                      test.status === 'warning' ? 'text-yellow-700' :
-                      'text-gray-600'
-                    }`}>
+                    <p
+                      className={`text-sm ${
+                        test.status === 'pass' ? 'text-green-700 dark:text-green-300' :
+                        test.status === 'fail' ? 'text-red-700 dark:text-red-300' :
+                        test.status === 'warning' ? 'text-yellow-700 dark:text-yellow-300' :
+                        'text-slate-600 dark:text-slate-400'
+                      }`}
+                    >
                       {test.message}
                     </p>
                   )}
-
                   {test.details && test.details.length > 0 && (
-                    <ul className="text-sm space-y-1 pl-8">
+                    <ul className="text-sm space-y-1 pl-6 list-disc">
                       {test.details.map((detail, idx) => (
-                        <li key={idx} className="text-gray-600">{detail}</li>
+                        <li key={idx} className="text-slate-600 dark:text-slate-400">{detail}</li>
                       ))}
                     </ul>
                   )}
-
                   {test.error && (
-                    <div className="bg-red-50 border border-red-200 rounded p-2 mt-2">
-                      <p className="text-sm text-red-800 font-mono">{test.error}</p>
+                    <div className="mt-2 rounded p-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800">
+                      <p className="text-sm font-mono text-red-800 dark:text-red-200">{test.error}</p>
                     </div>
                   )}
                 </div>
@@ -1023,15 +894,18 @@ export default function DiagnosticsPage() {
 
         {testResults.length === 0 && (
           <Card>
-            <CardContent className="py-12 text-center">
-              <Play className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 mb-2">Click "Run All Tests" to start comprehensive system diagnostics</p>
-              <p className="text-sm text-gray-500">
-                Tests include: Schema integrity, RLS policies, CRUD flows, duplicate detection, and more
+            <CardContent className="py-16 text-center">
+              <Play className="h-14 w-14 mx-auto mb-4 text-slate-400" />
+              <p className="text-slate-600 dark:text-slate-400 mb-2">
+                Click &quot;Run All Tests&quot; to start comprehensive system diagnostics.
+              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-500">
+                Tests include: Schema integrity, RLS policies, CRUD flows, duplicate detection, and more.
               </p>
             </CardContent>
           </Card>
         )}
+      </section>
     </div>
   )
 }

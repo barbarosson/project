@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import { ModulusLogo } from '@/components/modulus-logo'
 import { Button } from '@/components/ui/button'
 import { Menu, X, Globe, ChevronDown } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
@@ -51,15 +51,7 @@ export function MarketingHeader() {
       <nav className="h-full" style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px' }}>
         <div className="flex items-center justify-between h-full">
           <Link href="/landing" className="flex items-center shrink-0 mr-10 relative" style={{ height: '76px' }}>
-            <Image
-              src="/image copy copy.png"
-              alt="Modulus Business"
-              width={280}
-              height={76}
-              className="transition-opacity duration-300"
-              style={{ height: '76px', width: 'auto' }}
-              priority
-            />
+            <ModulusLogo size={48} variant="default" showText={true} className="transition-opacity duration-300" />
           </Link>
 
           <div className="hidden lg:flex items-center gap-8 nav-links-24bold">

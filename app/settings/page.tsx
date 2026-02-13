@@ -386,7 +386,7 @@ export default function SettingsPage() {
                 <DemoRestrictedButton
                   onClick={handleSaveCompanySettings}
                   disabled={saving}
-                  className="bg-[#2ECC71] hover:bg-[#27AE60]"
+                  className="bg-[#00D4AA] hover:bg-[#00B894]"
                   action="save"
                 >
                   {saving ? t.common.loading : t.common.save}
@@ -413,14 +413,14 @@ export default function SettingsPage() {
                     <Button
                       variant={language === 'en' ? 'default' : 'outline'}
                       onClick={() => setLanguage('en')}
-                      className={language === 'en' ? 'bg-[#2ECC71] hover:bg-[#27AE60]' : ''}
+                      className={language === 'en' ? 'bg-[#00D4AA] hover:bg-[#00B894]' : ''}
                     >
                       🇺🇸 English
                     </Button>
                     <Button
                       variant={language === 'tr' ? 'default' : 'outline'}
                       onClick={() => setLanguage('tr')}
-                      className={language === 'tr' ? 'bg-[#2ECC71] hover:bg-[#27AE60]' : ''}
+                      className={language === 'tr' ? 'bg-[#00D4AA] hover:bg-[#00B894]' : ''}
                     >
                       🇹🇷 Türkçe
                     </Button>

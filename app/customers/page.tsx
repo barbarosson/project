@@ -435,7 +435,7 @@ export default function CustomersPage() {
 
   const getStatusBadge = (status: string) => {
     return status === 'active'
-      ? 'bg-[#2ECC71] text-white'
+      ? 'bg-[#00D4AA] text-white'
       : 'bg-gray-400 text-white'
   }
 
@@ -474,7 +474,7 @@ export default function CustomersPage() {
             </Button>
             <Button
               onClick={() => setIsAddDialogOpen(true)}
-              className="bg-[#2ECC71] hover:bg-[#27AE60]"
+              className="bg-[#00D4AA] hover:bg-[#00B894]"
             >
               <Plus className="mr-2 h-4 w-4" />
               {t.customers.addCustomer}
@@ -673,7 +673,7 @@ export default function CustomersPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <span className={`font-semibold ${
-                            customer.balance >= 0 ? 'text-[#2ECC71]' : 'text-red-600'
+                            customer.balance >= 0 ? 'text-[#00D4AA]' : 'text-red-600'
                           }`}>
                             ${customer.balance?.toLocaleString() || '0'}
                           </span>
@@ -685,7 +685,7 @@ export default function CustomersPage() {
                         </TableCell>
                         <TableCell>
                           {customer.e_invoice_enabled ? (
-                            <Badge className="bg-[#2ECC71] text-white shadow-lg shadow-[#2ECC71]/30">
+                            <Badge className="bg-[#00D4AA] text-white shadow-lg shadow-[#00D4AA]/30">
                               <span className="relative flex h-2 w-2 mr-1">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>

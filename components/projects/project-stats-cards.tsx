@@ -22,7 +22,7 @@ export function ProjectStatsCards({ stats, isTR, currency = 'TRY' }: ProjectStat
       title: isTR ? 'Toplam Proje' : 'Total Projects',
       value: String(stats.total),
       icon: FolderKanban,
-      color: 'text-[#0D1B2A]',
+      color: 'text-[#0A2540]',
       bg: 'bg-slate-50',
     },
     {

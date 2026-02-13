@@ -88,7 +88,7 @@ export default function FinanceRobotPage() {
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
           <div className="relative">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#0D1B2A] to-[#1a3a5c] flex items-center justify-center animate-pulse">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#0A2540] to-[#1e3a5f] flex items-center justify-center animate-pulse">
               <Bot className="text-[#B8E6FF]" size={36} />
             </div>
           </div>
@@ -133,7 +133,7 @@ export default function FinanceRobotPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#0D1B2A] to-[#1a3a5c]">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#0A2540] to-[#1e3a5f]">
               <Bot className="text-[#B8E6FF]" size={24} />
             </div>
             <div>
@@ -189,7 +189,7 @@ export default function FinanceRobotPage() {
 
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <BarChart3 size={18} className="text-[#0D1B2A]" />
+                <BarChart3 size={18} className="text-[#0A2540]" />
                 <h2 className="text-lg font-semibold text-gray-900">
                   {tr ? 'Modul Analizleri' : 'Module Analysis'}
                 </h2>
@@ -287,7 +287,7 @@ export default function FinanceRobotPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <div className="flex items-center gap-2">
-                    <Banknote size={18} className="text-[#0D1B2A]" />
+                    <Banknote size={18} className="text-[#0A2540]" />
                     <CardTitle className="text-base">
                       {tr ? '3 Aylik Nakit Akisi Tahmini' : '3-Month Cash Flow Forecast'}
                     </CardTitle>
@@ -299,16 +299,16 @@ export default function FinanceRobotPage() {
                       <AreaChart data={forecastData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                         <defs>
                           <linearGradient id="colorInflow" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#2ECC71" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#2ECC71" stopOpacity={0} />
+                            <stop offset="5%" stopColor="#00D4AA" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#00D4AA" stopOpacity={0} />
                           </linearGradient>
                           <linearGradient id="colorOutflow" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="#E74C3C" stopOpacity={0.3} />
                             <stop offset="95%" stopColor="#E74C3C" stopOpacity={0} />
                           </linearGradient>
                           <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#0D1B2A" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#0D1B2A" stopOpacity={0} />
+                            <stop offset="5%" stopColor="#0A2540" stopOpacity={0.3} />
+                            <stop offset="95%" stopColor="#0A2540" stopOpacity={0} />
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -318,15 +318,15 @@ export default function FinanceRobotPage() {
                           contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
                           formatter={(value: number) => formatCurrency(value)}
                         />
-                        <Area type="monotone" dataKey="inflow" stroke="#2ECC71" fill="url(#colorInflow)" strokeWidth={2} name={tr ? 'Giris' : 'Inflow'} />
+                        <Area type="monotone" dataKey="inflow" stroke="#00D4AA" fill="url(#colorInflow)" strokeWidth={2} name={tr ? 'Giris' : 'Inflow'} />
                         <Area type="monotone" dataKey="outflow" stroke="#E74C3C" fill="url(#colorOutflow)" strokeWidth={2} name={tr ? 'Cikis' : 'Outflow'} />
-                        <Area type="monotone" dataKey="balance" stroke="#0D1B2A" fill="url(#colorBalance)" strokeWidth={2} name={tr ? 'Bakiye' : 'Balance'} />
+                        <Area type="monotone" dataKey="balance" stroke="#0A2540" fill="url(#colorBalance)" strokeWidth={2} name={tr ? 'Bakiye' : 'Balance'} />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
                   <div className="flex items-center justify-center gap-6 mt-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-[#2ECC71]" />
+                      <div className="w-3 h-3 rounded-full bg-[#00D4AA]" />
                       <span className="text-xs text-gray-600">{tr ? 'Tahmini Giris' : 'Predicted Inflow'}</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -334,7 +334,7 @@ export default function FinanceRobotPage() {
                       <span className="text-xs text-gray-600">{tr ? 'Tahmini Cikis' : 'Predicted Outflow'}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full bg-[#0D1B2A]" />
+                      <div className="w-3 h-3 rounded-full bg-[#0A2540]" />
                       <span className="text-xs text-gray-600">{tr ? 'Tahmini Bakiye' : 'Predicted Balance'}</span>
                     </div>
                   </div>

@@ -547,7 +547,7 @@ export function MarketplaceOrders({ orders, marketplaces, onRefresh }: Marketpla
                     </div>
                   ) : (
                     <Button
-                      className="w-full bg-[#2ECC71] hover:bg-[#27AE60] text-sm"
+                      className="w-full bg-[#00D4AA] hover:bg-[#00B894] text-sm"
                       onClick={() => handleCreateLocalOrder(selectedOrder)}
                       disabled={!!creatingOrderFor}
                     >

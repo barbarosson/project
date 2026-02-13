@@ -7,9 +7,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const { config } = useSiteConfig();
 
   useEffect(() => {
-    if (!config) return;
+    if (!config) return
 
-    const root = document.documentElement;
+    const root = document.documentElement
 
     if (config.primary_color) {
       root.style.setProperty('--color-primary', config.primary_color);
@@ -84,6 +84,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       }
       styleElement.textContent = config.custom_css;
     }
+    window.dispatchEvent(new Event('site-config-applied'));
   }, [config]);
 
   return <>{children}</>;

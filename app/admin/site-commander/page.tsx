@@ -44,7 +44,7 @@ export default function SiteCommanderPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-[#2ECC71]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#00D4AA]" />
       </div>
     );
   }
@@ -59,7 +59,7 @@ export default function SiteCommanderPage() {
               Manage content, banners, themes, typography, and site design
             </p>
           </div>
-          <Badge className="bg-[#2ECC71]">Admin Tools</Badge>
+          <Badge className="bg-[#00D4AA]">Admin Tools</Badge>
         </div>
       </div>
 

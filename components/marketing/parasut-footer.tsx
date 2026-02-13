@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
+import { ModulusLogo } from '@/components/modulus-logo'
 import { Facebook, Twitter, Linkedin, Github, Circle } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
 import { useSiteConfig } from '@/contexts/site-config-context'
@@ -91,13 +91,7 @@ export function ParasutFooter() {
           <div className="pt-10" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
             <div className="flex flex-col lg:flex-row justify-between items-center gap-8">
               <Link href="/login" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-                <Image
-                  src="/logo-modulus-business-white.png"
-                  alt="Modulus Business"
-                  width={440}
-                  height={124}
-                  style={{ height: '124px', width: 'auto' }}
-                />
+                <ModulusLogo size={56} variant="light" showText={true} />
               </Link>
 
               <div className="flex items-center gap-6">

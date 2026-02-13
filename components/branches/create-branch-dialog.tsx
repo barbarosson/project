@@ -173,7 +173,7 @@ export function CreateBranchDialog({ open, onOpenChange, tenantId, onSuccess, is
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               {isTR ? 'Iptal' : 'Cancel'}
             </Button>
-            <Button onClick={handleSubmit} disabled={saving} className="bg-[#2ECC71] hover:bg-[#27AE60]">
+            <Button onClick={handleSubmit} disabled={saving} className="bg-[#00D4AA] hover:bg-[#00B894]">
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {isTR ? 'Sube Olustur' : 'Create Branch'}
             </Button>

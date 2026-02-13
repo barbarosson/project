@@ -398,7 +398,7 @@ export default function LiveSupportManagementPage() {
   if (loading || tenantLoading || authLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-[#2ECC71]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#00D4AA]" />
       </div>
     )
   }
@@ -421,7 +421,7 @@ export default function LiveSupportManagementPage() {
             </Badge>
             <Dialog open={newChatDialogOpen} onOpenChange={setNewChatDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-[#2ECC71] hover:bg-[#27AE60]">
+                <Button className="bg-[#00D4AA] hover:bg-[#00B894]">
                   <Plus className="h-4 w-4 mr-2" />
                   {language === 'tr' ? 'Yeni Sohbet Başlat' : 'Start New Chat'}
                 </Button>
@@ -513,7 +513,7 @@ export default function LiveSupportManagementPage() {
                     </Button>
                     <Button
                       onClick={startNewChat}
-                      className="flex-1 bg-[#2ECC71] hover:bg-[#27AE60]"
+                      className="flex-1 bg-[#00D4AA] hover:bg-[#00B894]"
                     >
                       {language === 'tr' ? 'Sohbeti Başlat' : 'Start Chat'}
                     </Button>
@@ -544,7 +544,7 @@ export default function LiveSupportManagementPage() {
                         key={session.id}
                         onClick={() => setSelectedSession(session)}
                         className={`w-full text-left p-4 hover:bg-gray-50 transition-colors ${
-                          selectedSession?.id === session.id ? 'bg-[#2ECC71]/10 border-l-4 border-[#2ECC71]' : ''
+                          selectedSession?.id === session.id ? 'bg-[#00D4AA]/10 border-l-4 border-[#00D4AA]' : ''
                         }`}
                       >
                         <div className="flex items-start justify-between mb-2">
@@ -615,7 +615,7 @@ export default function LiveSupportManagementPage() {
                           key={msg.id}
                           className={`flex ${msg.is_admin_reply ? 'justify-end' : 'justify-start'}`}
                         >
-                          <div className={`max-w-[70%] ${msg.is_admin_reply ? 'bg-[#2ECC71] text-white' : 'bg-gray-100'} rounded-lg p-3`}>
+                          <div className={`max-w-[70%] ${msg.is_admin_reply ? 'bg-[#00D4AA] text-white' : 'bg-gray-100'} rounded-lg p-3`}>
                             <div className="text-xs font-medium mb-1 opacity-70">
                               {msg.is_admin_reply ? t.support.you : msg.sender_name}
                             </div>
@@ -640,7 +640,7 @@ export default function LiveSupportManagementPage() {
                       <Button
                         onClick={sendMessage}
                         disabled={!inputMessage.trim()}
-                        className="bg-[#2ECC71] hover:bg-[#27AE60]"
+                        className="bg-[#00D4AA] hover:bg-[#00B894]"
                       >
                         <Send className="h-4 w-4" />
                       </Button>

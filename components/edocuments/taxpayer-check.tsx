@@ -67,7 +67,7 @@ export function TaxpayerCheck({ tenantId, language, translations: t }: TaxpayerC
     <Card>
       <CardHeader>
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-[#0D1B2A]">
+          <div className="p-2 rounded-lg bg-[#0A2540]">
             <Building2 className="h-5 w-5 text-[#B8E6FF]" />
           </div>
           <div>
@@ -90,7 +90,7 @@ export function TaxpayerCheck({ tenantId, language, translations: t }: TaxpayerC
             className="max-w-xs"
             onKeyDown={(e) => e.key === 'Enter' && handleCheck()}
           />
-          <Button onClick={handleCheck} disabled={checking || !vkn.trim()} className="bg-[#0D1B2A] hover:bg-[#132d46]">
+          <Button onClick={handleCheck} disabled={checking || !vkn.trim()} className="bg-[#0A2540] hover:bg-[#1e3a5f]">
             {checking ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
             {t.checkTaxpayer}
           </Button>

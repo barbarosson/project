@@ -24,7 +24,8 @@ export function PublicFooter() {
         { label: language === 'tr' ? 'Hakkımızda' : 'About Us', href: '#' },
         { label: language === 'tr' ? 'Blog' : 'Blog', href: '#' },
         { label: language === 'tr' ? 'Kariyer' : 'Careers', href: '#' },
-        { label: language === 'tr' ? 'İletişim' : 'Contact', href: '#' }
+        { label: language === 'tr' ? 'İletişim' : 'Contact', href: '#' },
+        { label: 'Admin', href: '/admin/login' }
       ]
     },
     legal: {
@@ -78,7 +79,7 @@ export function PublicFooter() {
                   <li key={index}>
                     <a
                       href={link.href}
-                      className="text-gray-400 hover:text-[#2ECC71] text-sm transition-colors"
+                      className="text-gray-400 hover:text-[#00D4AA] text-sm transition-colors"
                     >
                       {link.label}
                     </a>
@@ -99,13 +100,13 @@ export function PublicFooter() {
               <div className="space-y-3 text-sm text-gray-400">
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
-                  <a href="mailto:info@modulus.app" className="hover:text-[#2ECC71]">
+                  <a href="mailto:info@modulus.app" className="hover:text-[#00D4AA]">
                     info@modulus.app
                   </a>
                 </div>
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4" />
-                  <a href="tel:+902121234567" className="hover:text-[#2ECC71]">
+                  <a href="tel:+902121234567" className="hover:text-[#00D4AA]">
                     +90 212 123 45 67
                   </a>
                 </div>
@@ -127,19 +128,19 @@ export function PublicFooter() {
               <div className="flex gap-4">
                 <a
                   href="#"
-                  className="w-10 h-10 rounded-lg bg-slate-800 hover:bg-[#2ECC71] flex items-center justify-center transition-colors"
+                  className="w-10 h-10 rounded-lg bg-slate-800 hover:bg-[#00D4AA] flex items-center justify-center transition-colors"
                 >
                   <Twitter className="h-5 w-5" />
                 </a>
                 <a
                   href="#"
-                  className="w-10 h-10 rounded-lg bg-slate-800 hover:bg-[#2ECC71] flex items-center justify-center transition-colors"
+                  className="w-10 h-10 rounded-lg bg-slate-800 hover:bg-[#00D4AA] flex items-center justify-center transition-colors"
                 >
                   <Linkedin className="h-5 w-5" />
                 </a>
                 <a
                   href="#"
-                  className="w-10 h-10 rounded-lg bg-slate-800 hover:bg-[#2ECC71] flex items-center justify-center transition-colors"
+                  className="w-10 h-10 rounded-lg bg-slate-800 hover:bg-[#00D4AA] flex items-center justify-center transition-colors"
                 >
                   <Facebook className="h-5 w-5" />
                 </a>

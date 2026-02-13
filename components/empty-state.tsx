@@ -20,7 +20,7 @@ export function EmptyState({ icon: Icon, title, description, action }: EmptyStat
       <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
       <p className="text-sm text-gray-500 mb-6 max-w-sm">{description}</p>
       {action && (
-        <Button onClick={action.onClick} className="bg-[#2ECC71] hover:bg-[#27AE60]">
+        <Button onClick={action.onClick} className="bg-[#00D4AA] hover:bg-[#00B894]">
           {action.label}
         </Button>
       )}

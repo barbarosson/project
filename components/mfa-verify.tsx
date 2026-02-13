@@ -13,6 +13,7 @@ interface MfaVerifyProps {
   onVerified: () => void
   onCancel: () => void
   language: 'tr' | 'en'
+  embedded?: boolean
 }
 
 const t = {
@@ -40,7 +41,7 @@ const t = {
   },
 }
 
-export function MfaVerify({ onVerified, onCancel, language }: MfaVerifyProps) {
+export function MfaVerify({ onVerified, onCancel, language, embedded = false }: MfaVerifyProps) {
   const l = t[language]
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
@@ -96,19 +97,19 @@ export function MfaVerify({ onVerified, onCancel, language }: MfaVerifyProps) {
     }
   }, [code, handleVerify])
 
-  return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
+  const content = (
+    <div className="w-full max-w-md space-y-6">
+      {!embedded && (
         <div className="text-center space-y-2">
           <div className="mb-6 flex justify-center">
             <ModulusLogoSvgOnly size={96} />
           </div>
         </div>
-
-        <Card className="border-2">
+      )}
+      <Card className={embedded ? 'border-0 shadow-none bg-transparent' : 'border-2'}>
           <CardHeader className="text-center pb-2">
-            <div className="mx-auto w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-4">
-              <ShieldCheck className="h-8 w-8 text-emerald-600" />
+            <div className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={embedded ? { background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)' } : { backgroundColor: 'rgb(209, 250, 229)' }}>
+              <ShieldCheck className="h-8 w-8" style={embedded ? { color: '#7DD3FC' } : { color: 'rgb(5, 150, 105)' }} />
             </div>
             <CardTitle className="text-xl">{l.title}</CardTitle>
             <CardDescription>{l.subtitle}</CardDescription>
@@ -138,7 +139,8 @@ export function MfaVerify({ onVerified, onCancel, language }: MfaVerifyProps) {
             </div>
 
             <Button
-              className="w-full bg-[#2ECC71] hover:bg-[#27AE60]"
+              className="w-full rounded-full font-semibold"
+              style={embedded ? { backgroundColor: '#0A2540', color: '#ffffff' } : { backgroundColor: '#00D4AA' }}
               onClick={() => handleVerify(code)}
               disabled={loading || code.length !== 6}
             >
@@ -167,6 +169,15 @@ export function MfaVerify({ onVerified, onCancel, language }: MfaVerifyProps) {
           </CardContent>
         </Card>
       </div>
+  )
+
+  if (embedded) {
+    return content
+  }
+
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      {content}
     </div>
   )
 }

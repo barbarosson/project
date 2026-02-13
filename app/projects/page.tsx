@@ -215,7 +215,7 @@ export default function ProjectsPage() {
               </p>
             </div>
           </div>
-          <Button onClick={() => setShowCreateDialog(true)} className="bg-[#2ECC71] hover:bg-[#27AE60]">
+          <Button onClick={() => setShowCreateDialog(true)} className="bg-[#00D4AA] hover:bg-[#00B894]">
             <Plus className="h-4 w-4 mr-2" />
             {isTR ? 'Yeni Proje' : 'New Project'}
           </Button>
@@ -233,7 +233,7 @@ export default function ProjectsPage() {
                     variant={statusFilter === s ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setStatusFilter(s)}
-                    className={statusFilter === s ? 'bg-[#0D1B2A]' : ''}
+                    className={statusFilter === s ? 'bg-[#0A2540]' : ''}
                   >
                     {getStatusLabel(s)}
                   </Button>
@@ -283,7 +283,7 @@ export default function ProjectsPage() {
                               className="text-left"
                               onClick={() => router.push(`/projects/${project.id}`)}
                             >
-                              <p className="font-medium text-[#0D1B2A] hover:underline">{project.name}</p>
+                              <p className="font-medium text-[#0A2540] hover:underline">{project.name}</p>
                               {project.code && (
                                 <p className="text-xs text-muted-foreground font-mono">{project.code}</p>
                               )}

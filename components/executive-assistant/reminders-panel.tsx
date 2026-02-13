@@ -121,7 +121,7 @@ export function RemindersPanel({ reminders, tenantId, userId, onRefresh }: Remin
                 {isTR ? 'Kapatılan' : 'Dismissed'} ({dismissed.length})
               </button>
             </div>
-            <Button onClick={() => setDialogOpen(true)} size="sm" className="bg-[#2ECC71] hover:bg-[#27AE60] text-white">
+            <Button onClick={() => setDialogOpen(true)} size="sm" className="bg-[#00D4AA] hover:bg-[#00B894] text-white">
               <Plus className="h-4 w-4 mr-1" />
               {isTR ? 'Yeni' : 'New'}
             </Button>
@@ -220,7 +220,7 @@ export function RemindersPanel({ reminders, tenantId, userId, onRefresh }: Remin
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               {isTR ? 'İptal' : 'Cancel'}
             </Button>
-            <Button onClick={handleSave} disabled={saving || !form.title || !form.remind_at} className="bg-[#2ECC71] hover:bg-[#27AE60] text-white">
+            <Button onClick={handleSave} disabled={saving || !form.title || !form.remind_at} className="bg-[#00D4AA] hover:bg-[#00B894] text-white">
               {saving ? (isTR ? 'Kaydediliyor...' : 'Saving...') : (isTR ? 'Kaydet' : 'Save')}
             </Button>
           </DialogFooter>

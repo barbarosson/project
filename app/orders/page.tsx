@@ -207,7 +207,7 @@ export default function OrdersPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#0D1B2A] to-[#1B3A5C]">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#0A2540] to-[#1e3a5f]">
               <ShoppingCart className="h-6 w-6 text-[#B8E6FF]" />
             </div>
             <div>
@@ -221,7 +221,7 @@ export default function OrdersPage() {
               </p>
             </div>
           </div>
-          <Button onClick={() => setShowCreateDialog(true)} className="bg-[#2ECC71] hover:bg-[#27AE60]">
+          <Button onClick={() => setShowCreateDialog(true)} className="bg-[#00D4AA] hover:bg-[#00B894]">
             <Plus className="h-4 w-4 mr-2" />
             {isTR ? 'Yeni Siparis' : 'New Order'}
           </Button>
@@ -239,7 +239,7 @@ export default function OrdersPage() {
                     variant={statusFilter === s ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setStatusFilter(s)}
-                    className={statusFilter === s ? 'bg-[#0D1B2A]' : ''}
+                    className={statusFilter === s ? 'bg-[#0A2540]' : ''}
                   >
                     {s === 'all' ? (isTR ? 'Tumu' : 'All') : getStatusLabel(s)}
                   </Button>
@@ -285,7 +285,7 @@ export default function OrdersPage() {
                       >
                         <TableCell>
                           <button
-                            className="font-medium text-[#0D1B2A] hover:underline text-left"
+                            className="font-medium text-[#0A2540] hover:underline text-left"
                             onClick={() => { setSelectedOrderId(order.id); setShowDetailSheet(true) }}
                           >
                             {order.order_number}

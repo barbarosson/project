@@ -271,7 +271,7 @@ export function WarehouseStockAdjustmentDialog({ open, onOpenChange, tenantId, w
 
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>{isTR ? 'Iptal' : 'Cancel'}</Button>
-            <Button onClick={handleSubmit} disabled={saving} className="bg-[#2ECC71] hover:bg-[#27AE60]">
+            <Button onClick={handleSubmit} disabled={saving} className="bg-[#00D4AA] hover:bg-[#00B894]">
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {isTR ? 'Ayarlamayi Kaydet' : 'Save Adjustment'}
             </Button>

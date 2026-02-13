@@ -312,7 +312,7 @@ export default function NewInvoicePage() {
             <Button
               onClick={saveInvoice}
               disabled={loading}
-              className="bg-[#2ECC71] hover:bg-[#27AE60]"
+              className="bg-[#00D4AA] hover:bg-[#00B894]"
             >
               <Save className="mr-2 h-4 w-4" />
               {loading ? 'Saving...' : 'Save Invoice'}
@@ -390,7 +390,7 @@ export default function NewInvoicePage() {
             <Button
               onClick={addLineItem}
               size="sm"
-              className="bg-[#2ECC71] hover:bg-[#27AE60]"
+              className="bg-[#00D4AA] hover:bg-[#00B894]"
             >
               <Plus className="mr-2 h-4 w-4" />
               Add Line
@@ -508,7 +508,7 @@ export default function NewInvoicePage() {
                   <span className="text-gray-600">Total VAT:</span>
                   <span className="font-semibold">${totalVat.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between py-3 bg-[#2ECC71] text-white px-4 rounded-lg">
+                <div className="flex justify-between py-3 bg-[#00D4AA] text-white px-4 rounded-lg">
                   <span className="font-bold text-lg">Grand Total:</span>
                   <span className="font-bold text-lg">${grandTotal.toFixed(2)}</span>
                 </div>

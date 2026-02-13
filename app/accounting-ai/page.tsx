@@ -257,7 +257,7 @@ export default function AccountingAIPage() {
                 </div>
                 <div>
                   <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{s.label}</p>
-                  <p className="text-sm font-bold text-[#0D1B2A]">{s.value}</p>
+                  <p className="text-sm font-bold text-[#0A2540]">{s.value}</p>
                 </div>
               </CardContent>
             </Card>
@@ -314,7 +314,7 @@ export default function AccountingAIPage() {
                       <Bot className="h-4 w-4 text-white" />
                     </div>
                     <div>
-                      <CardTitle className="text-base text-[#0D1B2A]">
+                      <CardTitle className="text-base text-[#0A2540]">
                         {isTR ? 'Muhasebe Mevzuati Gorus Bildirme AI' : 'Accounting Legislation AI Advisor'}
                       </CardTitle>
                       <p className="text-[10px] text-muted-foreground">
@@ -340,7 +340,7 @@ export default function AccountingAIPage() {
                           <div className="p-4 rounded-full bg-gradient-to-br from-teal-100 to-emerald-100 mb-4">
                             <Scale className="h-10 w-10 text-teal-600" />
                           </div>
-                          <h3 className="font-bold text-lg mb-1 text-[#0D1B2A]">
+                          <h3 className="font-bold text-lg mb-1 text-[#0A2540]">
                             {isTR ? 'Muhasebe Mevzuati Danismani' : 'Accounting Legislation Advisor'}
                           </h3>
                           <p className="text-sm text-muted-foreground text-center max-w-md mb-6">

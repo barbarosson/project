@@ -3,7 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { ClientProviders } from '@/components/client-providers'
 
-// v2.2 - Force deployment: 1739082650
+// v2.3 - Theme sync: 1739350000 (cache bust)
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
@@ -89,7 +89,7 @@ export const viewport: Viewport = {
   minimumScale: 1,
   maximumScale: 5,
   userScalable: true,
-  themeColor: '#0D1B2A',
+  themeColor: '#0A2540',
 }
 
 export default function RootLayout({
@@ -99,7 +99,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={inter.variable}>
-      <body className={`${inter.className} font-inter`}>
+      <body className={`${inter.className} font-inter text-gray-900 bg-white`}>
         <ClientProviders>{children}</ClientProviders>
       </body>
     </html>

@@ -241,14 +241,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       <aside
         className={cn(
-          'fixed top-0 left-0 h-full bg-[#0D1B2A] text-white w-64 z-50 transition-transform duration-300 flex flex-col',
+          'fixed top-0 left-0 h-full w-64 z-50 transition-transform duration-300 flex flex-col',
           'lg:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
+        style={{ background: 'linear-gradient(180deg, #0f172a 0%, #0A2540 50%, #0A2540 100%)' }}
       >
-        <div className="flex flex-col items-center border-b border-white/10">
-          <Link href="/" className="flex items-center justify-center w-full py-6 px-3">
-            <ModulusLogo size={42} variant="light" />
+        <div className="flex flex-col items-center border-b py-5 px-3" style={{ borderColor: 'rgba(125,211,252,0.15)' }}>
+          <Link href="/landing" className="flex items-center justify-center w-full py-2">
+            <ModulusLogo size={42} variant="light" showText={true} />
           </Link>
           <button
             onClick={onClose}
@@ -303,7 +304,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                                 className={cn(
                                   'flex items-center gap-3 px-4 py-2 rounded-lg transition-all',
                                   'hover:bg-white/10',
-                                  isSubActive && 'bg-[#2ECC71] hover:bg-[#27AE60]'
+                                  isSubActive && 'bg-[#00D4AA]/20 text-[#7DD3FC] hover:bg-[#00D4AA]/30'
                                 )}
                               >
                                 <SubIcon size={18} />
@@ -358,7 +359,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                       className={cn(
                         'flex items-center gap-3 px-4 py-3 rounded-lg transition-all',
                         'hover:bg-white/10',
-                        isActive && 'bg-[#2ECC71] hover:bg-[#27AE60]'
+                        isActive && 'bg-[#00D4AA]/20 text-[#7DD3FC] hover:bg-[#00D4AA]/30'
                       )}
                     >
                       <Icon size={20} />
@@ -373,8 +374,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           </ul>
         </nav>
 
-        <div className="p-4 border-t border-white/10">
-          <div className="text-xs text-gray-400 text-center">
+        <div className="p-4 border-t" style={{ borderColor: 'rgba(125,211,252,0.15)' }}>
+          <div className="text-xs text-center" style={{ color: 'rgba(125,211,252,0.7)' }}>
             © 2026 MODULUS ERP
           </div>
         </div>

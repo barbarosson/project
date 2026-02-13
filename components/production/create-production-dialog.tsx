@@ -259,7 +259,7 @@ export function CreateProductionDialog({ open, onOpenChange, tenantId, onSuccess
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               {isTR ? 'Iptal' : 'Cancel'}
             </Button>
-            <Button onClick={handleSubmit} disabled={saving} className="bg-[#2ECC71] hover:bg-[#27AE60]">
+            <Button onClick={handleSubmit} disabled={saving} className="bg-[#00D4AA] hover:bg-[#00B894]">
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {isTR ? 'Uretim Emri Olustur' : 'Create Production Order'}
             </Button>

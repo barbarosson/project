@@ -177,7 +177,7 @@ export function LaborTracker({ productionOrderId, isTR, readOnly }: LaborTracker
                 value={newEntry.work_date}
                 onChange={e => setNewEntry({ ...newEntry, work_date: e.target.value })}
               />
-              <Button onClick={handleAdd} disabled={adding} size="sm" className="bg-[#2ECC71] hover:bg-[#27AE60]">
+              <Button onClick={handleAdd} disabled={adding} size="sm" className="bg-[#00D4AA] hover:bg-[#00B894]">
                 {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Plus className="h-4 w-4 mr-1" /> {isTR ? 'Ekle' : 'Add'}</>}
               </Button>
             </div>

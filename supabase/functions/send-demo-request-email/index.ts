@@ -64,13 +64,13 @@ Deno.serve(async (req: Request) => {
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+            .header { background: linear-gradient(135deg, #00D4AA 0%, #00B894 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
             .content { background: #f9f9f9; padding: 30px; border: 1px solid #ddd; border-top: none; }
             .field { margin-bottom: 15px; }
             .label { font-weight: bold; color: #555; }
             .value { color: #333; margin-top: 5px; }
             .footer { text-align: center; margin-top: 20px; color: #888; font-size: 12px; }
-            .badge { display: inline-block; background: #2ECC71; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; }
+            .badge { display: inline-block; background: #00D4AA; color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; }
           </style>
         </head>
         <body>
@@ -116,7 +116,7 @@ Deno.serve(async (req: Request) => {
               ${message ? `
               <div class="field">
                 <div class="label">💬 Message:</div>
-                <div class="value" style="background: white; padding: 15px; border-radius: 5px; border-left: 3px solid #2ECC71;">${message.replace(/\n/g, '<br>')}</div>
+                <div class="value" style="background: white; padding: 15px; border-radius: 5px; border-left: 3px solid #00D4AA;">${message.replace(/\n/g, '<br>')}</div>
               </div>
               ` : ''}
 

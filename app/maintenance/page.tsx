@@ -149,7 +149,7 @@ export default function MaintenancePage() {
               </p>
             </div>
           </div>
-          <Button className="bg-[#2ECC71] hover:bg-[#27AE60]">
+          <Button className="bg-[#00D4AA] hover:bg-[#00B894]">
             <Plus className="h-4 w-4 mr-2" />
             {isTR ? 'Yeni İş Emri' : 'New Work Order'}
           </Button>

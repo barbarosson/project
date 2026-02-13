@@ -115,7 +115,7 @@ export default function InvoicesPage() {
     const colors: Record<string, string> = {
       draft: 'bg-gray-400 text-white',
       sent: 'bg-blue-500 text-white',
-      paid: 'bg-[#2ECC71] text-white',
+      paid: 'bg-[#00D4AA] text-white',
       overdue: 'bg-red-600 text-white',
       cancelled: 'bg-gray-500 text-white'
     }
@@ -232,7 +232,7 @@ export default function InvoicesPage() {
             </Button>
             <Button
               onClick={() => router.push('/invoices/new')}
-              className="bg-[#2ECC71] hover:bg-[#27AE60]"
+              className="bg-[#00D4AA] hover:bg-[#00B894]"
             >
               <Plus className="mr-2 h-4 w-4" />
               {t.invoices.createNewInvoice}
@@ -246,42 +246,42 @@ export default function InvoicesPage() {
               <Button
                 variant={statusFilter === 'all' ? 'default' : 'outline'}
                 onClick={() => setStatusFilter('all')}
-                className={statusFilter === 'all' ? 'bg-[#0D1B2A]' : ''}
+                className={statusFilter === 'all' ? 'bg-[#0A2540]' : ''}
               >
                 {t.common.all}
               </Button>
               <Button
                 variant={statusFilter === 'draft' ? 'default' : 'outline'}
                 onClick={() => setStatusFilter('draft')}
-                className={statusFilter === 'draft' ? 'bg-[#0D1B2A]' : ''}
+                className={statusFilter === 'draft' ? 'bg-[#0A2540]' : ''}
               >
                 {t.common.draft}
               </Button>
               <Button
                 variant={statusFilter === 'sent' ? 'default' : 'outline'}
                 onClick={() => setStatusFilter('sent')}
-                className={statusFilter === 'sent' ? 'bg-[#0D1B2A]' : ''}
+                className={statusFilter === 'sent' ? 'bg-[#0A2540]' : ''}
               >
                 {t.common.sent}
               </Button>
               <Button
                 variant={statusFilter === 'paid' ? 'default' : 'outline'}
                 onClick={() => setStatusFilter('paid')}
-                className={statusFilter === 'paid' ? 'bg-[#0D1B2A]' : ''}
+                className={statusFilter === 'paid' ? 'bg-[#0A2540]' : ''}
               >
                 {t.common.paid}
               </Button>
               <Button
                 variant={statusFilter === 'overdue' ? 'default' : 'outline'}
                 onClick={() => setStatusFilter('overdue')}
-                className={statusFilter === 'overdue' ? 'bg-[#0D1B2A]' : ''}
+                className={statusFilter === 'overdue' ? 'bg-[#0A2540]' : ''}
               >
                 {t.common.overdue}
               </Button>
               <Button
                 variant={statusFilter === 'cancelled' ? 'default' : 'outline'}
                 onClick={() => setStatusFilter('cancelled')}
-                className={statusFilter === 'cancelled' ? 'bg-[#0D1B2A]' : ''}
+                className={statusFilter === 'cancelled' ? 'bg-[#0A2540]' : ''}
               >
                 {t.common.cancelled}
               </Button>

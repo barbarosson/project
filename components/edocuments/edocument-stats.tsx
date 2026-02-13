@@ -85,7 +85,7 @@ export function EdocumentStats({ tenantId, language }: EdocumentStatsProps) {
   }
 
   const cards = [
-    { label: language === 'tr' ? 'Toplam Belge' : 'Total Documents', value: stats.total, icon: FileText, color: 'text-[#0D1B2A]', bg: 'bg-[#0D1B2A]/5' },
+    { label: language === 'tr' ? 'Toplam Belge' : 'Total Documents', value: stats.total, icon: FileText, color: 'text-[#0A2540]', bg: 'bg-[#0A2540]/5' },
     { label: language === 'tr' ? 'Gelen' : 'Incoming', value: stats.incoming, icon: ArrowDownLeft, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: language === 'tr' ? 'Giden' : 'Outgoing', value: stats.outgoing, icon: ArrowUpRight, color: 'text-teal-600', bg: 'bg-teal-50' },
     { label: language === 'tr' ? 'Taslak' : 'Draft', value: stats.draft, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },

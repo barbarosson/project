@@ -364,7 +364,7 @@ export default function CampaignsPage() {
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-[#0D1B2A] hover:bg-[#1a2d42] text-white">
+              <Button className="bg-[#0A2540] hover:bg-[#1e3a5f] text-white">
                 <Plus className="h-4 w-4 mr-2" />
                 {t.campaigns.newCampaign}
               </Button>
@@ -481,7 +481,7 @@ export default function CampaignsPage() {
                   {t.common.cancel}
                 </Button>
                 <Button
-                  className="bg-[#0D1B2A] hover:bg-[#1a2d42] text-white"
+                  className="bg-[#0A2540] hover:bg-[#1e3a5f] text-white"
                   onClick={handleCreateCampaign}
                 >
                   {t.campaigns.createCampaign}
@@ -526,7 +526,7 @@ export default function CampaignsPage() {
                       </div>
                       <Button
                         size="sm"
-                        className="bg-[#0D1B2A] hover:bg-[#1a2d42] text-white"
+                        className="bg-[#0A2540] hover:bg-[#1e3a5f] text-white"
                         onClick={() => applyRecommendation(rec)}
                       >
                         {t.campaigns.useThis}

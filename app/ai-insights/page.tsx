@@ -639,7 +639,7 @@ export default function AIInsightsPage() {
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-[#0D1B2A]" />
+                  <TrendingUp className="h-5 w-5 text-[#0A2540]" />
                   <CardTitle>Predictive Cash Flow</CardTitle>
                 </div>
                 <CardDescription>
@@ -657,16 +657,16 @@ export default function AIInsightsPage() {
                       <Area
                         type="monotone"
                         dataKey="revenue"
-                        stroke="#0D1B2A"
-                        fill="#0D1B2A"
+                        stroke="#0A2540"
+                        fill="#0A2540"
                         fillOpacity={0.6}
                         name="Actual Revenue"
                       />
                       <Area
                         type="monotone"
                         dataKey="predicted"
-                        stroke="#2ECC71"
-                        fill="#2ECC71"
+                        stroke="#00D4AA"
+                        fill="#00D4AA"
                         fillOpacity={0.3}
                         strokeDasharray="5 5"
                         name="Predicted Revenue"
@@ -728,7 +728,7 @@ export default function AIInsightsPage() {
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Bot className="h-5 w-5 text-[#0D1B2A]" />
+                        <Bot className="h-5 w-5 text-[#0A2540]" />
                         <CardTitle className="text-[#0A192F]">AI CFO Assistant</CardTitle>
                       </div>
                       <Badge variant="outline" className="bg-white">
@@ -770,14 +770,14 @@ export default function AIInsightsPage() {
                               {msg.role === 'assistant' && (
                                 <div className="flex-shrink-0">
                                   <div className="w-8 h-8 rounded-full bg-sky-100 flex items-center justify-center">
-                                    <Bot className="h-5 w-5 text-[#0D1B2A]" />
+                                    <Bot className="h-5 w-5 text-[#0A2540]" />
                                   </div>
                                 </div>
                               )}
                               <div
                                 className={`max-w-[80%] rounded-lg p-3 ${
                                   msg.role === 'user'
-                                    ? 'bg-[#0D1B2A] text-white'
+                                    ? 'bg-[#0A2540] text-white'
                                     : 'bg-gray-100 text-gray-900'
                                 }`}
                               >
@@ -788,7 +788,7 @@ export default function AIInsightsPage() {
                               </div>
                               {msg.role === 'user' && (
                                 <div className="flex-shrink-0">
-                                  <div className="w-8 h-8 rounded-full bg-[#0D1B2A] flex items-center justify-center text-white text-sm font-medium">
+                                  <div className="w-8 h-8 rounded-full bg-[#0A2540] flex items-center justify-center text-white text-sm font-medium">
                                     You
                                   </div>
                                 </div>
@@ -799,7 +799,7 @@ export default function AIInsightsPage() {
                             <div className="flex gap-3 justify-start">
                               <div className="flex-shrink-0">
                                 <div className="w-8 h-8 rounded-full bg-sky-100 flex items-center justify-center">
-                                  <Bot className="h-5 w-5 text-[#0D1B2A] animate-pulse" />
+                                  <Bot className="h-5 w-5 text-[#0A2540] animate-pulse" />
                                 </div>
                               </div>
                               <div className="bg-gray-100 rounded-lg p-3">
@@ -829,7 +829,7 @@ export default function AIInsightsPage() {
                           <Button
                             onClick={handleSendMessage}
                             disabled={chatLoading || !userInput.trim()}
-                            className="bg-[#0D1B2A] hover:bg-[#1a2d42] text-white self-end"
+                            className="bg-[#0A2540] hover:bg-[#1a2d42] text-white self-end"
                             size="lg"
                           >
                             <Send className="h-5 w-5" />

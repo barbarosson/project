@@ -192,7 +192,7 @@ export default function EdocumentsPage() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#0D1B2A] to-[#1B3A5C]">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#0A2540] to-[#1e3a5f]">
               <FileCheck2 className="h-6 w-6 text-[#B8E6FF]" />
             </div>
             <div>
@@ -294,7 +294,7 @@ export default function EdocumentsPage() {
                     {language === 'tr' ? 'Entegrasyon Yapilandirilmamis' : 'Integration Not Configured'}
                   </h3>
                   <p className="text-sm text-muted-foreground max-w-md mb-4">{tr.notConfigured}</p>
-                  <Button onClick={() => setActiveTab('settings')} className="bg-[#0D1B2A] hover:bg-[#132d46]">
+                  <Button onClick={() => setActiveTab('settings')} className="bg-[#0A2540] hover:bg-[#1e3a5f]">
                     <Settings2 className="mr-2 h-4 w-4" />
                     {tr.settings}
                   </Button>

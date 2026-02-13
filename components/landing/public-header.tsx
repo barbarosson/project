@@ -43,7 +43,7 @@ export function PublicHeader() {
               <button
                 key={item.id}
                 onClick={() => scrollToSection(item.id)}
-                className="text-gray-700 hover:text-[#2ECC71] font-medium transition-colors"
+                className="text-gray-700 hover:text-[#00D4AA] font-medium transition-colors"
               >
                 {item.label}
               </button>
@@ -69,7 +69,7 @@ export function PublicHeader() {
             </Button>
             <Button
               onClick={() => router.push('/login?mode=register')}
-              className="bg-[#2ECC71] hover:bg-[#27AE60] text-white"
+              className="bg-[#00D4AA] hover:bg-[#00B894] text-white"
             >
               {language === 'tr' ? 'Ücretsiz Başla' : 'Start Free'}
             </Button>
@@ -96,7 +96,7 @@ export function PublicHeader() {
                 <button
                   key={item.id}
                   onClick={() => scrollToSection(item.id)}
-                  className="text-gray-700 hover:text-[#2ECC71] font-medium text-left"
+                  className="text-gray-700 hover:text-[#00D4AA] font-medium text-left"
                 >
                   {item.label}
                 </button>
@@ -126,7 +126,7 @@ export function PublicHeader() {
                     router.push('/login?mode=register')
                     setMobileMenuOpen(false)
                   }}
-                  className="bg-[#2ECC71] hover:bg-[#27AE60] text-white w-full"
+                  className="bg-[#00D4AA] hover:bg-[#00B894] text-white w-full"
                 >
                   {language === 'tr' ? 'Ücretsiz Başla' : 'Start Free'}
                 </Button>

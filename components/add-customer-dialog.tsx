@@ -882,7 +882,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
             <Button
               type="submit"
               disabled={loading}
-              className="bg-[#2ECC71] hover:bg-[#27AE60]"
+              className="bg-[#00D4AA] hover:bg-[#00B894]"
             >
               {loading ? t.common.adding : t.customers.addCustomer}
             </Button>

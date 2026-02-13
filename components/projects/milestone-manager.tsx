@@ -164,7 +164,7 @@ export function MilestoneManager({ projectId, tenantId, isTR }: MilestoneManager
                   </div>
                 </div>
                 {m.invoice_amount > 0 && (
-                  <span className="text-sm font-semibold text-[#0D1B2A]">
+                  <span className="text-sm font-semibold text-[#0A2540]">
                     {Number(m.invoice_amount).toLocaleString('tr-TR')}
                   </span>
                 )}
@@ -212,7 +212,7 @@ export function MilestoneManager({ projectId, tenantId, isTR }: MilestoneManager
               <Switch checked={newAutoInvoice} onCheckedChange={setNewAutoInvoice} />
               <Label className="text-xs">{isTR ? 'Tamamlandiginda otomatik fatura' : 'Auto invoice on complete'}</Label>
             </div>
-            <Button size="sm" onClick={addMilestone} disabled={saving || !newTitle.trim()} className="bg-[#0D1B2A]">
+            <Button size="sm" onClick={addMilestone} disabled={saving || !newTitle.trim()} className="bg-[#0A2540]">
               {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Plus className="h-3.5 w-3.5 mr-1" />}
               {isTR ? 'Ekle' : 'Add'}
             </Button>

@@ -116,84 +116,90 @@ export function ProductTour({ open, onClose }: ProductTourProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto p-0">
-        <div className="relative">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gray-200">
+      <DialogContent className="max-w-[380px] max-h-[min(80vh,480px)] overflow-x-hidden overflow-y-auto p-0 gap-0">
+        <div className="relative min-w-0">
+          <div className="absolute top-0 left-0 right-0 h-0.5 bg-gray-200 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-[#2ECC71] to-[#27AE60] transition-all duration-300"
+              className="h-full bg-gradient-to-r from-[#00D4AA] to-[#00B894] transition-all duration-300"
               style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
             />
           </div>
 
-          <div className="p-5 pt-8">
-            <div className="text-center space-y-4">
+          <div className="p-3 pt-5 overflow-y-auto overflow-x-hidden max-h-[min(80vh,460px)] min-w-0">
+            <div className="text-center space-y-2 min-w-0">
               <div className="flex justify-center">
-                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${currentStepData.gradient} flex items-center justify-center shadow-lg`}>
-                  <currentStepData.icon className="h-7 w-7 text-white" />
+                <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${currentStepData.gradient} flex items-center justify-center shadow-md`}>
+                  <currentStepData.icon className="h-4 w-4 text-white" />
                 </div>
               </div>
 
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-[9px] px-1 py-0">
                 {language === 'tr' ? 'Adım' : 'Step'} {currentStep + 1} / {steps.length}
               </Badge>
 
-              <div className="space-y-2">
-                <h2 className="text-xl font-bold text-gray-900">
+              <div className="space-y-1">
+                <h2 className="text-sm font-bold text-gray-900 leading-tight">
                   {currentStepData.title}
                 </h2>
-                <p className="text-sm text-gray-600">
+                <p className="text-[11px] text-gray-600 leading-snug line-clamp-2">
                   {currentStepData.description}
                 </p>
               </div>
 
-              <Card className="mx-auto">
-                <CardContent className="p-4">
-                  <div className="space-y-2">
+              <Card className="mx-auto w-full max-w-full overflow-hidden">
+                <CardContent className="p-2">
+                  <div className="space-y-1 overflow-hidden">
                     {currentStepData.features.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2.5 text-left">
-                        <CheckCircle2 className="h-4 w-4 text-[#2ECC71] flex-shrink-0" />
-                        <span className="text-sm text-gray-700">{feature}</span>
+                      <div key={index} className="flex items-center gap-1.5 text-left min-w-0">
+                        <CheckCircle2 className="h-3 w-3 text-[#00D4AA] flex-shrink-0" />
+                        <span className="text-[11px] text-gray-700 break-words">{feature}</span>
                       </div>
                     ))}
                   </div>
                 </CardContent>
               </Card>
 
-              <div className="flex items-center justify-between pt-3">
+              <div className="flex items-center justify-between pt-1.5">
                 <Button
                   variant="outline"
                   size="sm"
+                  className="h-7 text-[11px] gap-1 px-2"
                   onClick={handlePrevious}
                   disabled={currentStep === 0}
-                  className="gap-1.5"
                 >
-                  <ArrowLeft className="h-3.5 w-3.5" />
-                  {language === 'tr' ? 'Geri' : 'Previous'}
+                  <ArrowLeft className="h-3 w-3" />
+                  {language === 'tr' ? 'Geri' : 'Prev'}
                 </Button>
 
-                <div className="flex gap-1">
+                <div className="flex items-center gap-[3px] shrink-0">
                   {steps.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => setCurrentStep(index)}
-                      className={`w-1.5 h-1.5 rounded-full transition-all ${
+                      className={`rounded-full transition-all shrink-0 ${
                         index === currentStep
-                          ? 'bg-[#2ECC71] w-5'
+                          ? 'bg-[#00D4AA]'
                           : 'bg-gray-300 hover:bg-gray-400'
                       }`}
+                      style={{
+                        width: index === currentStep ? 5 : 3,
+                        height: index === currentStep ? 5 : 3,
+                        minWidth: index === currentStep ? 5 : 3,
+                        minHeight: index === currentStep ? 5 : 3,
+                      }}
                     />
                   ))}
                 </div>
 
                 <Button
                   size="sm"
+                  className="h-7 text-[11px] bg-[#00D4AA] hover:bg-[#00B894] gap-1 px-2"
                   onClick={handleNext}
-                  className="bg-[#2ECC71] hover:bg-[#27AE60] gap-1.5"
                 >
                   {currentStep === steps.length - 1
-                    ? (language === 'tr' ? 'Başla' : 'Get Started')
+                    ? (language === 'tr' ? 'Başla' : 'Start')
                     : (language === 'tr' ? 'İleri' : 'Next')}
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <ArrowRight className="h-3 w-3" />
                 </Button>
               </div>
 
@@ -202,9 +208,9 @@ export function ProductTour({ open, onClose }: ProductTourProps) {
                   variant="ghost"
                   size="sm"
                   onClick={onClose}
-                  className="text-gray-500 text-xs"
+                  className="text-gray-600 hover:text-gray-800 text-[9px] h-5 px-2 mt-0.5 border border-gray-200 hover:bg-gray-100"
                 >
-                  {language === 'tr' ? 'Turu Atla' : 'Skip Tour'}
+                  {language === 'tr' ? 'Turu Atla' : 'Skip'}
                 </Button>
               )}
             </div>

@@ -142,10 +142,10 @@ export function DemoRequestForm() {
 
   if (submitted) {
     return (
-      <Card className="border-2 border-[#2ECC71] bg-gradient-to-br from-white to-green-50" id="demo-request">
+      <Card className="border-2 border-[#00D4AA] bg-gradient-to-br from-white to-green-50" id="demo-request">
         <CardContent className="p-12 text-center">
           <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 bg-[#2ECC71] rounded-full flex items-center justify-center">
+            <div className="w-20 h-20 bg-[#00D4AA] rounded-full flex items-center justify-center">
               <CheckCircle2 className="h-10 w-10 text-white" />
             </div>
           </div>
@@ -160,7 +160,7 @@ export function DemoRequestForm() {
           <Button
             onClick={() => setSubmitted(false)}
             variant="outline"
-            className="border-[#2ECC71] text-[#2ECC71]"
+            className="border-[#00D4AA] text-[#00D4AA]"
           >
             {language === 'tr' ? 'Yeni Talep Gönder' : 'Submit Another Request'}
           </Button>
@@ -173,7 +173,7 @@ export function DemoRequestForm() {
     <Card className="border-2" id="demo-request">
       <CardHeader className="text-center">
         <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 bg-gradient-to-r from-[#2ECC71] to-[#27AE60] rounded-full flex items-center justify-center">
+          <div className="w-16 h-16 bg-gradient-to-r from-[#00D4AA] to-[#00B894] rounded-full flex items-center justify-center">
             <Sparkles className="h-8 w-8 text-white" />
           </div>
         </div>
@@ -323,7 +323,7 @@ export function DemoRequestForm() {
 
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-[#2ECC71] to-[#27AE60] hover:from-[#27AE60] hover:to-[#229954] text-white"
+            className="w-full bg-gradient-to-r from-[#00D4AA] to-[#00B894] hover:from-[#00B894] hover:to-[#00997a] text-white"
             disabled={loading}
           >
             {loading ? (

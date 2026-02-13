@@ -197,7 +197,7 @@ export default function WarehousesPage() {
               <ClipboardList className="h-4 w-4 mr-2" />
               {isTR ? 'Stok Ayarla' : 'Adjust Stock'}
             </Button>
-            <Button onClick={() => setShowCreateDialog(true)} className="bg-[#2ECC71] hover:bg-[#27AE60]">
+            <Button onClick={() => setShowCreateDialog(true)} className="bg-[#00D4AA] hover:bg-[#00B894]">
               <Plus className="h-4 w-4 mr-2" />
               {isTR ? 'Yeni Depo' : 'New Warehouse'}
             </Button>
@@ -211,7 +211,7 @@ export default function WarehousesPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-[#7DD3FC]" />
-                <CardTitle className="text-sm text-[#0D1B2A]">
+                <CardTitle className="text-sm text-[#0A2540]">
                   {isTR ? 'MODULUS AI: Akilli Yeniden Siparis' : 'MODULUS AI: Smart Reorder'}
                 </CardTitle>
               </div>
@@ -268,10 +268,10 @@ export default function WarehousesPage() {
                             <div className="flex items-start justify-between">
                               <div className="flex items-center gap-3 mb-3">
                                 <div className="p-2 rounded-lg bg-slate-100">
-                                  <Warehouse className="h-5 w-5 text-[#0D1B2A]" />
+                                  <Warehouse className="h-5 w-5 text-[#0A2540]" />
                                 </div>
                                 <div>
-                                  <h3 className="font-bold text-[#0D1B2A]">{warehouse.name}</h3>
+                                  <h3 className="font-bold text-[#0A2540]">{warehouse.name}</h3>
                                   {warehouse.code && (
                                     <span className="text-xs font-mono text-muted-foreground">{warehouse.code}</span>
                                   )}

@@ -5,6 +5,38 @@ import { supabase } from '@/lib/supabase'
 
 export function UIStyleInjector() {
   useEffect(() => {
+    const applyReadabilityOverride = () => {
+      let el = document.getElementById('ui-readability-override')
+      if (el) el.remove()
+      el = document.createElement('style')
+      el.id = 'ui-readability-override'
+      el.textContent = `
+        /* Highest priority - must appear after custom_css */
+        header.h-16.bg-white button,
+        header.h-16.bg-white [role="button"],
+        header.bg-white button,
+        header.bg-white [role="button"],
+        .min-h-screen.bg-slate-50 header button,
+        .min-h-screen.bg-slate-50 header [role="button"] {
+          color: #1e293b !important;
+        }
+        header.h-16.bg-white button svg,
+        header.h-16.bg-white [role="button"] svg,
+        header.bg-white button svg,
+        header.bg-white [role="button"] svg,
+        .min-h-screen.bg-slate-50 header button svg,
+        .min-h-screen.bg-slate-50 header [role="button"] svg {
+          color: #1e293b !important;
+          stroke: #1e293b !important;
+          fill: #1e293b !important;
+        }
+      `
+      document.head.appendChild(el)
+    }
+
+    // Apply immediately so no flash of white
+    applyReadabilityOverride()
+
     const applyStyles = async () => {
       try {
         const stylesRes = await supabase.from('ui_styles').select('*')
@@ -30,11 +62,17 @@ export function UIStyleInjector() {
           applyButtonStyles(buttonStyles)
         }
 
+        // Always apply last - overrides any DB styles that make buttons invisible
+        applyReadabilityOverride()
+
         requestAnimationFrame(() => {
           document.body.style.display = 'block'
         })
       } catch (error) {
         console.error('❌ Error applying styles:', error)
+      } finally {
+        // Ensure override always runs, even after errors
+        setTimeout(() => applyReadabilityOverride(), 0)
       }
     }
 
@@ -142,7 +180,8 @@ export function UIStyleInjector() {
         if (font_family) properties.push(`font-family: ${font_family} !important;`)
         if (font_size_text) properties.push(`font-size: ${font_size_text} !important;`)
         if (font_weight) properties.push(`font-weight: ${font_weight} !important;`)
-        if (font_color) properties.push(`color: ${font_color};`)
+        // Skip font_color for buttons - prevents white/invisible text when admin sets light colors
+        if (font_color && element_name !== 'button') properties.push(`color: ${font_color};`)
         if (line_height_value) properties.push(`line-height: ${line_height_value} !important;`)
         if (letter_spacing_value) properties.push(`letter-spacing: ${letter_spacing_value} !important;`)
         if (text_transform) properties.push(`text-transform: ${text_transform};`)
@@ -156,9 +195,14 @@ export function UIStyleInjector() {
 
     applyStyles()
 
+    // Re-apply override when ThemeProvider injects custom_css (so we stay last)
+    const handleSiteConfigApplied = () => setTimeout(() => applyReadabilityOverride(), 0)
+    window.addEventListener('site-config-applied', handleSiteConfigApplied)
+
     // Listen for custom typography update events
     const handleTypographyUpdate = () => {
       applyStyles()
+      setTimeout(() => applyReadabilityOverride(), 100)
     }
     window.addEventListener('typography-updated', handleTypographyUpdate)
 
@@ -181,6 +225,7 @@ export function UIStyleInjector() {
     return () => {
       stylesChannel.unsubscribe()
       window.removeEventListener('typography-updated', handleTypographyUpdate)
+      window.removeEventListener('site-config-applied', handleSiteConfigApplied)
     }
   }, [])
 

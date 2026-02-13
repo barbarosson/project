@@ -25,7 +25,7 @@ function buildWelcomeHtml(fullName: string, lang: string): string {
   body{font-family:'Segoe UI',Arial,sans-serif;line-height:1.6;color:#333;margin:0;padding:0;background:#f4f7fa}
   .wrap{max-width:600px;margin:0 auto;padding:20px}
   .card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08)}
-  .hdr{background:linear-gradient(135deg,#2ECC71 0%,#27AE60 100%);color:#fff;padding:40px 30px;text-align:center}
+  .hdr{background:linear-gradient(135deg,#00D4AA 0%,#00B894 100%);color:#fff;padding:40px 30px;text-align:center}
   .hdr h1{margin:0;font-size:28px}
   .hdr p{margin:8px 0 0;opacity:.9;font-size:16px}
   .body{padding:30px}
@@ -35,7 +35,7 @@ function buildWelcomeHtml(fullName: string, lang: string): string {
   .steps ol{margin:0;padding-left:20px}
   .steps li{margin-bottom:8px;color:#15803d}
   .cta{text-align:center;margin:24px 0}
-  .cta a{display:inline-block;background:#2ECC71;color:#fff;text-decoration:none;padding:14px 40px;border-radius:8px;font-weight:600;font-size:16px}
+  .cta a{display:inline-block;background:#00D4AA;color:#fff;text-decoration:none;padding:14px 40px;border-radius:8px;font-weight:600;font-size:16px}
   .ftr{text-align:center;padding:20px 30px;color:#9ca3af;font-size:12px;border-top:1px solid #f3f4f6}
 </style>
 </head>

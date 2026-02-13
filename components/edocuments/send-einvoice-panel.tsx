@@ -191,7 +191,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-[#0D1B2A]">
+            <div className="p-2 rounded-lg bg-[#0A2540]"">
               <Send className="h-5 w-5 text-[#B8E6FF]" />
             </div>
             <div>
@@ -323,7 +323,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
             <Button
               onClick={handleSendEInvoice}
               disabled={sending || !selectedInvoiceId}
-              className="bg-[#0D1B2A] hover:bg-[#132d46]"
+              className="bg-[#0A2540] hover:bg-[#1e3a5f]"
             >
               {sending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

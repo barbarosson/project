@@ -212,7 +212,7 @@ export default function ProductionPage() {
               </p>
             </div>
           </div>
-          <Button onClick={() => setShowCreateDialog(true)} className="bg-[#2ECC71] hover:bg-[#27AE60]">
+          <Button onClick={() => setShowCreateDialog(true)} className="bg-[#00D4AA] hover:bg-[#00B894]">
             <Plus className="h-4 w-4 mr-2" />
             {isTR ? 'Yeni Uretim Emri' : 'New Production Order'}
           </Button>
@@ -230,7 +230,7 @@ export default function ProductionPage() {
                     variant={statusFilter === s ? 'default' : 'outline'}
                     size="sm"
                     onClick={() => setStatusFilter(s)}
-                    className={statusFilter === s ? 'bg-[#0D1B2A]' : ''}
+                    className={statusFilter === s ? 'bg-[#0A2540]' : ''}
                   >
                     {getStatusLabel(s)}
                   </Button>
@@ -283,7 +283,7 @@ export default function ProductionPage() {
                               className="text-left"
                               onClick={() => router.push(`/production/${order.id}`)}
                             >
-                              <p className="font-medium text-[#0D1B2A] hover:underline">{order.product_name}</p>
+                              <p className="font-medium text-[#0A2540] hover:underline">{order.product_name}</p>
                               <p className="text-xs text-muted-foreground font-mono">{order.order_number}</p>
                               {order.projects && (
                                 <p className="text-[10px] text-blue-600">{order.projects.code || order.projects.name}</p>

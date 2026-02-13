@@ -23,7 +23,7 @@ export function BranchStatsCards({ stats, isTR }: BranchStatsProps) {
       title: isTR ? 'Aktif Sube' : 'Active Branches',
       value: String(stats.totalBranches),
       icon: Building2,
-      color: 'text-[#0D1B2A]',
+      color: 'text-[#0A2540]',
       bg: 'bg-slate-50',
     },
     {

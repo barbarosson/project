@@ -231,7 +231,7 @@ export function RobotChat({ tenantId, language, financialContext }: RobotChatPro
                     className={cn(
                       'group flex items-center gap-2 p-2.5 rounded-lg cursor-pointer transition-colors text-sm',
                       currentThreadId === thread.id
-                        ? 'bg-[#0D1B2A] text-white'
+                        ? 'bg-[#0A2540] text-white'
                         : 'hover:bg-gray-100 text-gray-700'
                     )}
                   >
@@ -262,7 +262,7 @@ export function RobotChat({ tenantId, language, financialContext }: RobotChatPro
             </Button>
           )}
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <div className="p-1.5 rounded-lg bg-[#0D1B2A]">
+            <div className="p-1.5 rounded-lg bg-[#0A2540]">
               <Bot size={16} className="text-[#B8E6FF]" />
             </div>
             <div className="min-w-0">
@@ -283,7 +283,7 @@ export function RobotChat({ tenantId, language, financialContext }: RobotChatPro
         <ScrollArea className="flex-1 p-4">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-4 py-8">
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-[#0D1B2A] to-[#1a3a5c]">
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-[#0A2540] to-[#1e3a5f]">
                 <Bot size={32} className="text-[#B8E6FF]" />
               </div>
               <div className="text-center max-w-sm">
@@ -319,7 +319,7 @@ export function RobotChat({ tenantId, language, financialContext }: RobotChatPro
                   )}
                 >
                   {msg.role === 'assistant' && (
-                    <div className="shrink-0 w-7 h-7 rounded-lg bg-[#0D1B2A] flex items-center justify-center mt-0.5">
+                    <div className="shrink-0 w-7 h-7 rounded-lg bg-[#0A2540] flex items-center justify-center mt-0.5">
                       <Bot size={14} className="text-[#B8E6FF]" />
                     </div>
                   )}
@@ -327,7 +327,7 @@ export function RobotChat({ tenantId, language, financialContext }: RobotChatPro
                     className={cn(
                       'max-w-[80%] rounded-xl px-3.5 py-2.5 text-sm leading-relaxed',
                       msg.role === 'user'
-                        ? 'bg-[#0D1B2A] text-white rounded-br-sm'
+                        ? 'bg-[#0A2540] text-white rounded-br-sm'
                         : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                     )}
                   >
@@ -346,7 +346,7 @@ export function RobotChat({ tenantId, language, financialContext }: RobotChatPro
               ))}
               {sending && (
                 <div className="flex gap-3 justify-start">
-                  <div className="shrink-0 w-7 h-7 rounded-lg bg-[#0D1B2A] flex items-center justify-center">
+                  <div className="shrink-0 w-7 h-7 rounded-lg bg-[#0A2540] flex items-center justify-center">
                     <Bot size={14} className="text-[#B8E6FF]" />
                   </div>
                   <div className="bg-gray-100 rounded-xl rounded-bl-sm px-4 py-3">
@@ -379,7 +379,7 @@ export function RobotChat({ tenantId, language, financialContext }: RobotChatPro
               size="icon"
               onClick={sendMessage}
               disabled={!input.trim() || sending}
-              className="shrink-0 h-10 w-10 bg-[#0D1B2A] hover:bg-[#132d46]"
+              className="shrink-0 h-10 w-10 bg-[#0A2540] hover:bg-[#1e3a5f]"
             >
               {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
             </Button>

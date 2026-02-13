@@ -18,7 +18,7 @@
 
 @layer base {
   :root {
-    /* Dark Navy (#0D1B2A) and Ice Blue (#E0F4FF) Color Palette */
+    /* Dark Navy (#0A2540) and Ice Blue (#E0F4FF) Color Palette */
     --background: 0 0% 100%;
     --foreground: 0 0% 7%;
     --card: 0 0% 100%;
@@ -407,6 +407,38 @@
 .nav-links-24bold span {
   font-size: 24px !important;
   font-weight: 700 !important;
+}
+
+/* Force visible colors on topbar - override ui_styles/site_config */
+header.h-16.bg-white button,
+header.h-16.bg-white [role="button"],
+header.h-16 button.inline-flex {
+  color: #1e293b !important;
+}
+header.h-16.bg-white button:hover,
+header.h-16.bg-white [role="button"]:hover {
+  color: #0f172a !important;
+}
+header.h-16.bg-white button svg,
+header.h-16.bg-white [role="button"] svg {
+  color: inherit !important;
+  stroke: currentColor !important;
+  fill: currentColor !important;
+}
+/* Dashboard & main app content - ensure buttons/icons visible on light bg */
+.min-h-screen.bg-slate-50 header button,
+.min-h-screen.bg-slate-50 header [role="button"] {
+  color: #1e293b !important;
+}
+.min-h-screen.bg-slate-50 header button:hover,
+.min-h-screen.bg-slate-50 header [role="button"]:hover {
+  color: #0f172a !important;
+}
+.min-h-screen.bg-slate-50 header button svg,
+.min-h-screen.bg-slate-50 header [role="button"] svg {
+  color: inherit !important;
+  stroke: currentColor !important;
+  fill: currentColor !important;
 }
 
 /* Tiptap Editor Styles */

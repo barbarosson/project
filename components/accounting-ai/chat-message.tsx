@@ -33,11 +33,11 @@ export function AccountingChatMessage({ role, content, timestamp, messageId, onF
   if (role === 'user') {
     return (
       <div className="flex gap-3 justify-end">
-        <div className="max-w-[80%] rounded-2xl rounded-tr-sm px-4 py-3 bg-[#0D1B2A] text-white">
+        <div className="max-w-[80%] rounded-2xl rounded-tr-sm px-4 py-3 bg-[#0A2540] text-white">
           <p className="text-sm whitespace-pre-wrap leading-relaxed">{content}</p>
           <p className="text-[10px] opacity-50 mt-1.5 text-right">{format(timestamp, 'HH:mm')}</p>
         </div>
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#0D1B2A] flex items-center justify-center text-white">
+        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[#0A2540] flex items-center justify-center text-white">
           <User className="h-4 w-4" />
         </div>
       </div>
@@ -52,8 +52,8 @@ export function AccountingChatMessage({ role, content, timestamp, messageId, onF
       <div className="max-w-[85%]">
         <div className="rounded-2xl rounded-tl-sm px-4 py-3 bg-white border border-gray-100 shadow-sm">
           <div className="text-sm whitespace-pre-wrap leading-relaxed prose prose-sm max-w-none
-            prose-headings:text-[#0D1B2A] prose-headings:font-bold prose-headings:mt-3 prose-headings:mb-1
-            prose-strong:text-[#0D1B2A] prose-p:my-1">
+            prose-headings:text-[#0A2540] prose-headings:font-bold prose-headings:mt-3 prose-headings:mb-1
+            prose-strong:text-[#0A2540] prose-p:my-1">
             {content}
           </div>
           <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-50">

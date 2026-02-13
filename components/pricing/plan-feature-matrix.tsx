@@ -40,7 +40,7 @@ const PLAN_COLORS: Record<string, string> = {
   KUCUK: '#0EA5E9',
   ORTA: '#00D1A0',
   BUYUK: '#F59E0B',
-  ENTERPRISE: '#0D1B2A',
+  ENTERPRISE: '#0A2540',
 };
 
 const PLAN_LABELS: Record<string, { tr: string; en: string }> = {

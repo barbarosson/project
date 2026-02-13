@@ -6,12 +6,11 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/use-auth';
 import { useLanguage } from '@/contexts/language-context';
-import { runFullDiagnostics } from '@/lib/auth-debug';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Shield, Loader2, Bug, Trash2, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Shield, Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { ParasutFooter } from '@/components/marketing/parasut-footer';
 
 const adminT = {
@@ -26,8 +25,6 @@ const adminT = {
     signingIn: 'Giriş yapılıyor...',
     help: 'Yardım mı lazım? Sistem yöneticinizle iletişime geçin',
     note: 'Not: Hesabınızın profiles tablosunda admin rolü olmalıdır',
-    runDiag: 'Tanılamayı Çalıştır',
-    clearCache: 'Önbelleği Temizle',
     backToHome: 'Ana Sayfaya Dön',
   },
   en: {
@@ -41,8 +38,6 @@ const adminT = {
     signingIn: 'Signing in...',
     help: 'Need help? Contact your system administrator',
     note: 'Note: Your user account must have admin role in the profiles table',
-    runDiag: 'Run Diagnostics',
-    clearCache: 'Clear Cache',
     backToHome: 'Back to Home',
   },
 };
@@ -145,20 +140,6 @@ function AdminLoginContent() {
         setLocalError(err.message || (language === 'tr' ? 'Giriş başarısız. Lütfen tekrar deneyin.' : 'Login failed. Please try again.'));
       }
     }
-  };
-
-  const handleRunDiagnostics = () => {
-    runFullDiagnostics(supabase);
-  };
-
-  const handleClearCache = async () => {
-    await supabase.auth.signOut();
-    localStorage.clear();
-    sessionStorage.clear();
-    setLocalError('');
-    setEmail('');
-    setPassword('');
-    alert(language === 'tr' ? 'Tüm önbellek temizlendi. Tekrar giriş yapabilirsiniz.' : 'All cached data cleared. You can now login again.');
   };
 
   return (
@@ -290,30 +271,6 @@ function AdminLoginContent() {
                 <p className="text-xs text-center" style={{ color: '#425466' }}>
                   {t.note}
                 </p>
-                <div className="flex flex-col sm:flex-row flex-wrap gap-2 justify-center w-full">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRunDiagnostics}
-                    className="gap-2 rounded-full shrink-0"
-                    style={{ borderColor: '#E6EBF1', color: '#0A2540' }}
-                  >
-                    <Bug className="h-4 w-4 shrink-0" />
-                    <span className="truncate">{t.runDiag}</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={handleClearCache}
-                    className="gap-2 rounded-full shrink-0"
-                    style={{ borderColor: '#E6EBF1', color: '#0A2540' }}
-                  >
-                    <Trash2 className="h-4 w-4 shrink-0" />
-                    <span className="truncate">{t.clearCache}</span>
-                  </Button>
-                </div>
               </div>
             </div>
           </div>

@@ -344,14 +344,14 @@ export function AdvancedSiteSettings() {
                     <Input
                       id="primary_color"
                       type="color"
-                      value={config.primary_color || '#2ECC71'}
+                      value={config.primary_color || '#00D4AA'}
                       onChange={(e) => updateField('primary_color', e.target.value)}
                       className="w-20 h-10 p-1"
                     />
                     <Input
-                      value={config.primary_color || '#2ECC71'}
+                      value={config.primary_color || '#00D4AA'}
                       onChange={(e) => updateField('primary_color', e.target.value)}
-                      placeholder="#2ECC71"
+                      placeholder="#00D4AA"
                       className="flex-1"
                     />
                   </div>

@@ -50,7 +50,7 @@ Deno.serve(async (req: Request) => {
           <style>
             body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
+            .header { background: linear-gradient(135deg, #00D4AA 0%, #00B894 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0; }
             .content { background: #f9f9f9; padding: 30px; border: 1px solid #ddd; border-top: none; }
             .field { margin-bottom: 15px; }
             .label { font-weight: bold; color: #555; }
@@ -60,7 +60,7 @@ Deno.serve(async (req: Request) => {
             .badge-high { background: #dc3545; }
             .badge-medium { background: #ffc107; color: #333; }
             .badge-low { background: #28a745; }
-            .message-box { background: white; padding: 15px; border-radius: 5px; border-left: 3px solid #2ECC71; margin-top: 10px; }
+            .message-box { background: white; padding: 15px; border-radius: 5px; border-left: 3px solid #00D4AA; margin-top: 10px; }
           </style>
         </head>
         <body>
@@ -78,7 +78,7 @@ Deno.serve(async (req: Request) => {
 
               <div class="field">
                 <div class="label">🎫 Ticket Number:</div>
-                <div class="value" style="font-size: 18px; font-weight: bold; color: #2ECC71;">${ticketData.ticket_number}</div>
+                <div class="value" style="font-size: 18px; font-weight: bold; color: #00D4AA;">${ticketData.ticket_number}</div>
               </div>
 
               <div class="field">

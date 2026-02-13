@@ -155,7 +155,7 @@ export function MarketplaceAccounts({ accounts, marketplaces, tenantId, userId, 
           <CardTitle className="text-lg font-semibold text-[#0A192F]">
             {isTR ? 'Pazaryeri Hesapları' : 'Marketplace Accounts'}
           </CardTitle>
-          <Button onClick={openCreate} size="sm" className="bg-[#2ECC71] hover:bg-[#27AE60] text-white">
+          <Button onClick={openCreate} size="sm" className="bg-[#00D4AA] hover:bg-[#00B894] text-white">
             <Plus className="h-4 w-4 mr-1" />
             {isTR ? 'Pazaryeri Ekle' : 'Add Marketplace'}
           </Button>
@@ -290,7 +290,7 @@ export function MarketplaceAccounts({ accounts, marketplaces, tenantId, userId, 
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               {isTR ? 'İptal' : 'Cancel'}
             </Button>
-            <Button onClick={handleSave} disabled={saving || !form.marketplace_id || !form.api_key} className="bg-[#2ECC71] hover:bg-[#27AE60] text-white">
+            <Button onClick={handleSave} disabled={saving || !form.marketplace_id || !form.api_key} className="bg-[#00D4AA] hover:bg-[#00B894] text-white">
               {saving ? (isTR ? 'Kaydediliyor...' : 'Saving...') : (isTR ? 'Kaydet' : 'Save')}
             </Button>
           </DialogFooter>

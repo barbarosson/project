@@ -186,7 +186,7 @@ export function MeetingsPanel({ meetings, tenantId, userId, onRefresh }: Meeting
                 {isTR ? 'Tümü' : 'All'}
               </button>
             </div>
-            <Button onClick={openCreate} size="sm" className="bg-[#2ECC71] hover:bg-[#27AE60] text-white">
+            <Button onClick={openCreate} size="sm" className="bg-[#00D4AA] hover:bg-[#00B894] text-white">
               <Plus className="h-4 w-4 mr-1" />
               {isTR ? 'Yeni Toplantı' : 'New Meeting'}
             </Button>
@@ -344,7 +344,7 @@ export function MeetingsPanel({ meetings, tenantId, userId, onRefresh }: Meeting
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
               {isTR ? 'İptal' : 'Cancel'}
             </Button>
-            <Button onClick={handleSave} disabled={saving || !form.title || !form.start_time || !form.end_time} className="bg-[#2ECC71] hover:bg-[#27AE60] text-white">
+            <Button onClick={handleSave} disabled={saving || !form.title || !form.start_time || !form.end_time} className="bg-[#00D4AA] hover:bg-[#00B894] text-white">
               {saving ? (isTR ? 'Kaydediliyor...' : 'Saving...') : (isTR ? 'Kaydet' : 'Save')}
             </Button>
           </DialogFooter>

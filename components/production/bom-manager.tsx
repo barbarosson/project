@@ -226,7 +226,7 @@ export function BomManager({ productionOrderId, tenantId, isTR, readOnly }: BomM
                 min={0}
                 step={0.01}
               />
-              <Button onClick={handleAdd} disabled={adding} size="sm" className="bg-[#2ECC71] hover:bg-[#27AE60]">
+              <Button onClick={handleAdd} disabled={adding} size="sm" className="bg-[#00D4AA] hover:bg-[#00B894]">
                 {adding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
               </Button>
             </div>

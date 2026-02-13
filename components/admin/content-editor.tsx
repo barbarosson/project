@@ -288,7 +288,7 @@ export function ContentEditor() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-[#2ECC71]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#00D4AA]" />
       </div>
     );
   }
@@ -317,7 +317,7 @@ export function ContentEditor() {
                 <Button
                   onClick={handleSaveAll}
                   disabled={saving}
-                  className="bg-[#2ECC71] hover:bg-[#27AE60] gap-2"
+                  className="bg-[#00D4AA] hover:bg-[#00B894] gap-2"
                 >
                   {saving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -400,7 +400,7 @@ export function ContentEditor() {
               const catConfig = CATEGORY_CONFIG[section.category] || DEFAULT_CATEGORY_CONFIG;
 
               return (
-                <Card key={section.id} className={hasChanges ? 'border-[#2ECC71] border-2' : ''}>
+                <Card key={section.id} className={hasChanges ? 'border-[#00D4AA] border-2' : ''}>
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
@@ -412,7 +412,7 @@ export function ContentEditor() {
                             {catConfig.label}
                           </Badge>
                           {hasChanges && (
-                            <Badge className="bg-[#2ECC71]">Modified</Badge>
+                            <Badge className="bg-[#00D4AA]">Modified</Badge>
                           )}
                         </div>
                         <CardDescription className="text-xs mt-1 font-mono">
@@ -425,7 +425,7 @@ export function ContentEditor() {
                             size="sm"
                             onClick={() => handleSave(section.id)}
                             disabled={saving}
-                            className="bg-[#2ECC71] hover:bg-[#27AE60] gap-1"
+                            className="bg-[#00D4AA] hover:bg-[#00B894] gap-1"
                           >
                             <Save className="h-3 w-3" />
                             Save
@@ -648,7 +648,7 @@ export function ContentEditor() {
             <Button
               onClick={handleAddSection}
               disabled={addingSection || !newSection.section_key || !newSection.label_en}
-              className="bg-[#2ECC71] hover:bg-[#27AE60] gap-2"
+              className="bg-[#00D4AA] hover:bg-[#00B894] gap-2"
             >
               {addingSection ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

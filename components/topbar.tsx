@@ -139,20 +139,23 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   }
 
   return (
-    <header className="h-16 bg-white border-b border-gray-200 flex items-center px-4 lg:px-6 gap-4">
+    <header
+        className="h-16 bg-white border-b border-gray-200 flex items-center px-4 lg:px-6 gap-4 [&_button]:!text-gray-800 [&_button_svg]:!stroke-gray-800"
+        style={{ color: '#1e293b' }}
+      >
       <Button
         variant="ghost"
         size="icon"
-        className="lg:hidden"
+        className="lg:hidden text-gray-800 hover:text-gray-900 hover:bg-gray-100"
         onClick={onMenuClick}
       >
-        <Menu size={20} />
+        <Menu size={20} className="stroke-[1.5]" />
       </Button>
 
       <div className="flex-1 max-w-xl">
         <button
           onClick={() => setOpen(true)}
-          className="w-full flex items-center gap-2 pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg hover:border-[#2ECC71] focus:outline-none focus:ring-2 focus:ring-[#2ECC71] focus:border-transparent transition-all text-left"
+          className="w-full flex items-center gap-2 pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg hover:border-[#00D4AA] focus:outline-none focus:ring-2 focus:ring-[#00D4AA] focus:border-transparent transition-all text-left"
         >
           <Search className="absolute left-3 text-gray-400" size={18} />
           <span className="text-gray-500 text-sm">
@@ -232,7 +235,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
       <div className="flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="text-gray-700 hover:text-gray-900 hover:bg-gray-100">
               <Globe size={20} />
             </Button>
           </DropdownMenuTrigger>
@@ -266,11 +269,11 @@ export function Topbar({ onMenuClick }: TopbarProps) {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative text-gray-700 hover:text-gray-900 hover:bg-gray-100">
               <Bell size={20} />
               {unreadCount > 0 && (
                 <Badge
-                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-[#2ECC71] text-white text-xs"
+                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-[#00D4AA] text-white text-xs"
                 >
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </Badge>
@@ -287,7 +290,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                   variant="ghost"
                   size="sm"
                   onClick={markAllAsRead}
-                  className="h-7 text-xs text-[#2ECC71] hover:text-[#27AE60]"
+                  className="h-7 text-xs text-[#00D4AA] hover:text-[#00B894]"
                 >
                   {language === 'tr' ? 'Tümünü Okundu İşaretle' : 'Mark all as read'}
                 </Button>
@@ -321,7 +324,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                               {notification.title}
                             </p>
                             {!notification.is_read && (
-                              <div className="h-2 w-2 bg-[#2ECC71] rounded-full flex-shrink-0 mt-1" />
+                              <div className="h-2 w-2 bg-[#00D4AA] rounded-full flex-shrink-0 mt-1" />
                             )}
                           </div>
                           <p className="text-xs text-gray-600 mt-1 line-clamp-2">
@@ -355,9 +358,9 @@ export function Topbar({ onMenuClick }: TopbarProps) {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="gap-2">
+            <Button variant="ghost" className="gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100">
               <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-[#0D1B2A] text-white text-sm">
+                <AvatarFallback className="bg-[#0A2540] text-white text-sm">
                   AD
                 </AvatarFallback>
               </Avatar>

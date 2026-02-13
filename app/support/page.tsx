@@ -211,7 +211,7 @@ export default function SupportPage() {
           </TabsList>
 
           <TabsContent value="support" className="space-y-6">
-            <Card className="bg-gradient-to-r from-[#2ECC71]/10 to-blue-50 border-[#2ECC71]/20">
+            <Card className="bg-gradient-to-r from-[#00D4AA]/10 to-blue-50 border-[#00D4AA]/20">
               <CardContent className="p-8">
                 <div className="text-center mb-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-2">{t.support.needHelp}</h2>
@@ -219,10 +219,10 @@ export default function SupportPage() {
                 </div>
 
                 <div className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
-                  <Card className={`cursor-pointer hover:shadow-xl transition-all border-2 ${hasLiveChat ? 'border-[#2ECC71] hover:border-[#27AE60]' : 'border-gray-200 opacity-75'}`}>
+                  <Card className={`cursor-pointer hover:shadow-xl transition-all border-2 ${hasLiveChat ? 'border-[#00D4AA] hover:border-[#00B894]' : 'border-gray-200 opacity-75'}`}>
                     <CardHeader>
                       <div className="flex items-center gap-3">
-                        <div className={`p-4 rounded-lg ${hasLiveChat ? 'bg-[#2ECC71]' : 'bg-gray-300'}`}>
+                        <div className={`p-4 rounded-lg ${hasLiveChat ? 'bg-[#00D4AA]' : 'bg-gray-300'}`}>
                           <MessageSquare className="h-8 w-8 text-white" />
                         </div>
                         <div className="flex-1">
@@ -247,7 +247,7 @@ export default function SupportPage() {
                               ? 'Canlı sohbet widget\'i sağ alt köşede açılmıştır. Çevrimiçi olup olmadığımızı kontrol edin ve sohbeti başlatın.'
                               : 'A live chat widget has appeared in the bottom right corner. Check if we\'re online and start chatting.'}
                           </p>
-                          <Button className="w-full bg-[#2ECC71] hover:bg-[#27AE60]">
+                          <Button className="w-full bg-[#00D4AA] hover:bg-[#00B894]">
                             <MessageSquare className="mr-2 h-4 w-4" />
                             {language === 'tr' ? 'Canlı Sohbeti Aç' : 'Open Live Chat'}
                           </Button>
@@ -510,7 +510,7 @@ export default function SupportPage() {
                                 ? 'Yardım makalesi yakında eklenecek'
                                 : 'Help article coming soon')
                             }}
-                            className="block p-3 rounded-lg border hover:border-[#2ECC71] hover:bg-gray-50 cursor-pointer transition-all"
+                            className="block p-3 rounded-lg border hover:border-[#00D4AA] hover:bg-gray-50 cursor-pointer transition-all"
                           >
                             <div className="flex items-start gap-3">
                               <FileText className="h-5 w-5 text-gray-400 flex-shrink-0 mt-0.5" />
@@ -533,7 +533,7 @@ export default function SupportPage() {
               })}
             </div>
 
-            <Card className="bg-gradient-to-r from-[#2ECC71] to-[#27AE60] text-white">
+            <Card className="bg-gradient-to-r from-[#00D4AA] to-[#00B894] text-white">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -548,7 +548,7 @@ export default function SupportPage() {
                   </div>
                   <Button
                     onClick={() => setCreateDialogOpen(true)}
-                    className="bg-white text-[#2ECC71] hover:bg-gray-100"
+                    className="bg-white text-[#00D4AA] hover:bg-gray-100"
                   >
                     <Plus className="mr-2 h-4 w-4" />
                     {language === 'tr' ? 'Destek ile İletişim' : 'Contact Support'}

@@ -169,7 +169,7 @@ export function ProjectDetailSheet({ projectId, tenantId, open, onOpenChange, is
                     <Card>
                       <CardContent className="p-3 text-center">
                         <p className="text-xs text-muted-foreground">{isTR ? 'Butce' : 'Budget'}</p>
-                        <p className="text-lg font-bold text-[#0D1B2A]">
+                        <p className="text-lg font-bold text-[#0A2540]">
                           {Number(summary.budget).toLocaleString('tr-TR', { minimumFractionDigits: 0 })}
                         </p>
                       </CardContent>
@@ -202,7 +202,7 @@ export function ProjectDetailSheet({ projectId, tenantId, open, onOpenChange, is
                   <div className="mt-3">
                     <div className="flex items-center justify-between text-sm mb-1">
                       <span className="text-muted-foreground">{isTR ? 'Butce Kullanimi' : 'Budget Consumption'}</span>
-                      <span className={`font-semibold ${Number(summary.budget_consumption_percent) > 100 ? 'text-red-600' : 'text-[#0D1B2A]'}`}>
+                      <span className={`font-semibold ${Number(summary.budget_consumption_percent) > 100 ? 'text-red-600' : 'text-[#0A2540]'}`}>
                         {Number(summary.budget_consumption_percent).toFixed(1)}%
                       </span>
                     </div>

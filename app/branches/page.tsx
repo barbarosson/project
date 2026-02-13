@@ -131,7 +131,7 @@ export default function BranchesPage() {
               </p>
             </div>
           </div>
-          <Button onClick={() => setShowCreateDialog(true)} className="bg-[#2ECC71] hover:bg-[#27AE60]">
+          <Button onClick={() => setShowCreateDialog(true)} className="bg-[#00D4AA] hover:bg-[#00B894]">
             <Plus className="h-4 w-4 mr-2" />
             {isTR ? 'Yeni Sube' : 'New Branch'}
           </Button>
@@ -144,7 +144,7 @@ export default function BranchesPage() {
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-[#7DD3FC]" />
-                <CardTitle className="text-sm text-[#0D1B2A]">
+                <CardTitle className="text-sm text-[#0A2540]">
                   {isTR ? 'MODULUS AI: Sube Denetcisi' : 'MODULUS AI: Branch Auditor'}
                 </CardTitle>
               </div>

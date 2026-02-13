@@ -18,14 +18,14 @@ interface RecentActivityProps {
 }
 
 const activityColors = {
-  payment: 'bg-[#2ECC71]',
+  payment: 'bg-[#00D4AA]',
   customer: 'bg-blue-500',
   inventory: 'bg-orange-500',
   invoice: 'bg-purple-500'
 }
 
 const statusColors = {
-  success: 'bg-[#2ECC71]',
+  success: 'bg-[#00D4AA]',
   warning: 'bg-orange-500',
   info: 'bg-blue-500'
 }

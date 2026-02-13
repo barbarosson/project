@@ -106,7 +106,7 @@ export default function InvoiceDetailPage() {
     const colors: Record<string, string> = {
       draft: 'bg-gray-400 text-white',
       sent: 'bg-blue-500 text-white',
-      paid: 'bg-[#2ECC71] text-white',
+      paid: 'bg-[#00D4AA] text-white',
       cancelled: 'bg-red-500 text-white',
       pending: 'bg-orange-500 text-white',
       overdue: 'bg-red-600 text-white'
@@ -157,7 +157,7 @@ export default function InvoiceDetailPage() {
           <div className="flex gap-2">
             <Button
               onClick={() => setShowEInvoice(true)}
-              className="bg-[#2ECC71] hover:bg-[#27AE60]"
+              className="bg-[#00D4AA] hover:bg-[#00B894]"
             >
               <Eye className="mr-2 h-4 w-4" />
               Preview E-Invoice
@@ -259,7 +259,7 @@ export default function InvoiceDetailPage() {
                   <span className="text-gray-600">Total VAT:</span>
                   <span className="font-semibold">${invoice.total_vat.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between py-3 bg-[#2ECC71] text-white px-4 rounded-lg">
+                <div className="flex justify-between py-3 bg-[#00D4AA] text-white px-4 rounded-lg">
                   <span className="font-bold text-lg">Grand Total:</span>
                   <span className="font-bold text-lg">${invoice.amount.toFixed(2)}</span>
                 </div>

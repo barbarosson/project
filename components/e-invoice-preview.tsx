@@ -59,13 +59,13 @@ export function EInvoicePreview({ isOpen, onClose, invoice, customer, lineItems 
         <div className="bg-white border-2 border-gray-300 p-8 space-y-6">
           <div className="flex items-start justify-between border-b-2 border-gray-300 pb-4">
             <div>
-              <h1 className="text-3xl font-bold text-[#0D1B2A]">E-FATURA</h1>
+              <h1 className="text-3xl font-bold text-[#0A2540]">E-FATURA</h1>
               <p className="text-sm text-gray-600 mt-1">Electronic Invoice</p>
-              <Badge className="mt-2 bg-[#2ECC71]">GİB Onaylı</Badge>
+              <Badge className="mt-2 bg-[#00D4AA]">GİB Onaylı</Badge>
             </div>
             <div className="text-right">
               <div className="text-sm text-gray-600">Fatura No</div>
-              <div className="text-2xl font-bold text-[#0D1B2A]">{invoice.invoice_number}</div>
+              <div className="text-2xl font-bold text-[#0A2540]">{invoice.invoice_number}</div>
               <div className="mt-2 text-sm text-gray-600">Düzenleme Tarihi</div>
               <div className="font-semibold">{new Date(invoice.issue_date).toLocaleDateString('tr-TR')}</div>
             </div>
@@ -73,7 +73,7 @@ export function EInvoicePreview({ isOpen, onClose, invoice, customer, lineItems 
 
           <div className="grid grid-cols-2 gap-6">
             <div className="border border-gray-300 p-4 rounded">
-              <h3 className="font-bold text-[#0D1B2A] mb-3">SATICI BİLGİLERİ</h3>
+              <h3 className="font-bold text-[#0A2540] mb-3">SATICI BİLGİLERİ</h3>
               <div className="space-y-1 text-sm">
                 <div><span className="font-semibold">Ünvan:</span> MODULUS ERP Ltd. Şti.</div>
                 <div><span className="font-semibold">Vergi Dairesi:</span> Kadıköy V.D.</div>
@@ -84,7 +84,7 @@ export function EInvoicePreview({ isOpen, onClose, invoice, customer, lineItems 
             </div>
 
             <div className="border border-gray-300 p-4 rounded">
-              <h3 className="font-bold text-[#0D1B2A] mb-3">ALICI BİLGİLERİ</h3>
+              <h3 className="font-bold text-[#0A2540] mb-3">ALICI BİLGİLERİ</h3>
               <div className="space-y-1 text-sm">
                 <div><span className="font-semibold">Ünvan:</span> {customer.company_title || customer.name}</div>
                 <div><span className="font-semibold">Vergi Dairesi:</span> {customer.tax_office || 'N/A'}</div>
@@ -152,7 +152,7 @@ export function EInvoicePreview({ isOpen, onClose, invoice, customer, lineItems 
               </div>
               <div className="flex justify-between pt-2 border-t-2 border-gray-300">
                 <span className="font-bold text-lg">GENEL TOPLAM:</span>
-                <span className="font-bold text-lg text-[#2ECC71]">${invoice.amount.toFixed(2)}</span>
+                <span className="font-bold text-lg text-[#00D4AA]">${invoice.amount.toFixed(2)}</span>
               </div>
             </div>
           </div>

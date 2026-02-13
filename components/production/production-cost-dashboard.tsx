@@ -140,7 +140,7 @@ export function ProductionCostDashboard({ productionOrderId, tenantId, isTR }: P
             <span className="text-sm text-muted-foreground">
               {Number(analytics.total_production_cost).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} / {estimatedTotal.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} TRY
             </span>
-            <span className={`text-sm font-bold ${isOverBudget ? 'text-red-600' : 'text-[#0D1B2A]'}`}>
+            <span className={`text-sm font-bold ${isOverBudget ? 'text-red-600' : 'text-[#0A2540]'}`}>
               {costEfficiency}%
             </span>
           </div>

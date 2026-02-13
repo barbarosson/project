@@ -85,7 +85,7 @@ export function CustomerDetailSheet({ customer, isOpen, onClose }: CustomerDetai
 
   const getStatusColor = (status: string) => {
     return status === 'active'
-      ? 'bg-[#2ECC71] text-white'
+      ? 'bg-[#00D4AA] text-white'
       : 'bg-gray-400 text-white'
   }
 
@@ -108,7 +108,7 @@ export function CustomerDetailSheet({ customer, isOpen, onClose }: CustomerDetai
               {customer.status.charAt(0).toUpperCase() + customer.status.slice(1)}
             </Badge>
             {customer.e_invoice_enabled && (
-              <Badge className="bg-[#2ECC71] text-white animate-pulse">
+              <Badge className="bg-[#00D4AA] text-white animate-pulse">
                 E-Invoice
               </Badge>
             )}
@@ -123,7 +123,7 @@ export function CustomerDetailSheet({ customer, isOpen, onClose }: CustomerDetai
                 <DollarSign size={20} className="text-gray-400" />
                 <span className="text-sm text-gray-600">{t.customers.balance}</span>
               </div>
-              <span className={`text-2xl font-bold ${customer.balance >= 0 ? 'text-[#2ECC71]' : 'text-red-600'}`}>
+              <span className={`text-2xl font-bold ${customer.balance >= 0 ? 'text-[#00D4AA]' : 'text-red-600'}`}>
                 ${customer.balance.toLocaleString()}
               </span>
             </div>
@@ -317,7 +317,7 @@ export function CustomerDetailSheet({ customer, isOpen, onClose }: CustomerDetai
                     <div className="text-xs text-gray-500 mt-1">{transaction.date}</div>
                   </div>
                   <div className={`text-sm font-semibold ${
-                    transaction.type === 'credit' ? 'text-[#2ECC71]' : 'text-gray-900'
+                    transaction.type === 'credit' ? 'text-[#00D4AA]' : 'text-gray-900'
                   }`}>
                     {transaction.type === 'credit' ? '+' : ''}{transaction.type === 'debit' ? '-' : ''}${transaction.amount.toLocaleString()}
                   </div>

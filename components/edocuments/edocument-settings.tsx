@@ -153,7 +153,7 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-[#0D1B2A]">
+            <div className="p-2 rounded-lg bg-[#0A2540]">
               <Settings2 className="h-5 w-5 text-[#B8E6FF]" />
             </div>
             <div>
@@ -239,7 +239,7 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-[#0D1B2A]">
+            <div className="p-2 rounded-lg bg-[#0A2540]">
               <Building2 className="h-5 w-5 text-[#B8E6FF]" />
             </div>
             <div>
@@ -287,7 +287,7 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-[#0D1B2A]">
+            <div className="p-2 rounded-lg bg-[#0A2540]">
               <Shield className="h-5 w-5 text-[#B8E6FF]" />
             </div>
             <div>
@@ -333,7 +333,7 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={saving} className="bg-[#0D1B2A] hover:bg-[#132d46]">
+        <Button onClick={handleSave} disabled={saving} className="bg-[#0A2540] hover:bg-[#1e3a5f]">
           {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
           {language === 'tr' ? 'Ayarları Kaydet' : 'Save Settings'}
         </Button>
