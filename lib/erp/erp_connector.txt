@@ -1,0 +1,611 @@
+"""
+ERP Connector Module
+Güvenli ERP sistemlerine bağlantı kuran ve veri çıkaran modül
+Desteklenen ERP: SAP, Oracle, Microsoft Dynamics, Odoo
+"""
+
+import asyncio
+import logging
+from abc import ABC, abstractmethod
+from typing import Dict, List, Optional, Any
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+import aiohttp
+import jwt
+from functools import lru_cache
+import hashlib
+import json
+
+# Konfigürasyon
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class ERPConfig:
+    """ERP Bağlantı Konfigürasyonu"""
+    erp_type: str  # 'SAP', 'ORACLE', 'DYNAMICS', 'ODOO'
+    api_endpoint: str
+    username: str
+    password: str
+    api_key: str
+    client_id: str
+    client_secret: str
+    tenant_id: Optional[str] = None  # Dynamics için gerekli
+    timeout: int = 30
+    max_retries: int = 3
+    cache_duration: int = 300  # saniye
+
+
+@dataclass
+class CashFlowData:
+    """Nakit Akışı Veri Modeli"""
+    date: datetime
+    cash_in: float  # Gelen nakit
+    cash_out: float  # Giden nakit
+    balance: float  # Nakit balansı
+    accounts_receivable: float  # Alacaklar
+    accounts_payable: float  # Borçlar
+    planned_cash_flows: List[Dict[str, Any]]  # Planlı nakit hareketleri
+    source: str  # Veri kaynağı
+
+
+class ERPAuthenticator(ABC):
+    """Abstract kimlik doğrulama sınıfı"""
+
+    @abstractmethod
+    async def get_token(self) -> str:
+        """Erişim token'ı al"""
+        pass
+
+    @abstractmethod
+    async def refresh_token(self) -> str:
+        """Token yenile"""
+        pass
+
+
+class SAPAuthenticator(ERPAuthenticator):
+    """SAP OAuth 2.0 Kimlik Doğrulaması"""
+
+    def __init__(self, config: ERPConfig):
+        self.config = config
+        self.token = None
+        self.token_expires_at = None
+
+    async def get_token(self) -> str:
+        """SAP için OAuth 2.0 token al"""
+        if self.token and self.token_expires_at > datetime.now():
+            return self.token
+
+        async with aiohttp.ClientSession() as session:
+            auth_url = f"{self.config.api_endpoint}/oauth/token"
+            payload = {
+                "grant_type": "client_credentials",
+                "client_id": self.config.client_id,
+                "client_secret": self.config.client_secret,
+            }
+
+            try:
+                async with session.post(
+                    auth_url,
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=self.config.timeout),
+                ) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        self.token = data["access_token"]
+                        expires_in = data.get("expires_in", 3600)
+                        self.token_expires_at = datetime.now() + timedelta(
+                            seconds=expires_in - 60
+                        )
+                        logger.info("SAP token başarıyla alındı")
+                        return self.token
+                    else:
+                        logger.error(f"SAP kimlik doğrulama başarısız: {response.status}")
+                        raise Exception(
+                            f"SAP authentication failed with status {response.status}"
+                        )
+            except Exception as e:
+                logger.error(f"SAP kimlik doğrulama hatası: {e}")
+                raise
+
+    async def refresh_token(self) -> str:
+        """Token yenile"""
+        self.token = None
+        self.token_expires_at = None
+        return await self.get_token()
+
+
+class DynamicsAuthenticator(ERPAuthenticator):
+    """Microsoft Dynamics 365 Azure AD Kimlik Doğrulaması"""
+
+    def __init__(self, config: ERPConfig):
+        self.config = config
+        self.token = None
+        self.token_expires_at = None
+
+    async def get_token(self) -> str:
+        """Azure AD token al"""
+        if self.token and self.token_expires_at > datetime.now():
+            return self.token
+
+        async with aiohttp.ClientSession() as session:
+            token_url = f"https://login.microsoftonline.com/{self.config.tenant_id}/oauth2/v2.0/token"
+            payload = {
+                "grant_type": "client_credentials",
+                "client_id": self.config.client_id,
+                "client_secret": self.config.client_secret,
+                "scope": "https://org.crm.dynamics.com/.default",
+            }
+
+            try:
+                async with session.post(
+                    token_url, data=payload, timeout=aiohttp.ClientTimeout(total=30)
+                ) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        self.token = data["access_token"]
+                        expires_in = data.get("expires_in", 3600)
+                        self.token_expires_at = datetime.now() + timedelta(
+                            seconds=expires_in - 60
+                        )
+                        logger.info("Dynamics token başarıyla alındı")
+                        return self.token
+                    else:
+                        logger.error(
+                            f"Dynamics kimlik doğrulama başarısız: {response.status}"
+                        )
+                        raise Exception(
+                            f"Dynamics authentication failed with status {response.status}"
+                        )
+            except Exception as e:
+                logger.error(f"Dynamics kimlik doğrulama hatası: {e}")
+                raise
+
+    async def refresh_token(self) -> str:
+        """Token yenile"""
+        self.token = None
+        self.token_expires_at = None
+        return await self.get_token()
+
+
+class OdooAuthenticator(ERPAuthenticator):
+    """Odoo Token Kimlik Doğrulaması"""
+
+    def __init__(self, config: ERPConfig):
+        self.config = config
+        self.token = None
+
+    async def get_token(self) -> str:
+        """Odoo auth token al"""
+        if self.token:
+            return self.token
+
+        async with aiohttp.ClientSession() as session:
+            auth_url = f"{self.config.api_endpoint}/api/auth/authenticate"
+            payload = {"login": self.config.username, "password": self.config.password}
+
+            try:
+                async with session.post(auth_url, json=payload, timeout=30) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        self.token = data.get("token")
+                        logger.info("Odoo token başarıyla alındı")
+                        return self.token
+                    else:
+                        raise Exception(
+                            f"Odoo authentication failed with status {response.status}"
+                        )
+            except Exception as e:
+                logger.error(f"Odoo kimlik doğrulama hatası: {e}")
+                raise
+
+    async def refresh_token(self) -> str:
+        """Token yenile"""
+        self.token = None
+        return await self.get_token()
+
+
+class ERPDataExtractor(ABC):
+    """Abstract veri çıkartma sınıfı"""
+
+    @abstractmethod
+    async def get_cash_flow_data(
+        self, start_date: datetime, end_date: datetime
+    ) -> List[CashFlowData]:
+        """Nakit akışı verilerini çıkar"""
+        pass
+
+    @abstractmethod
+    async def get_accounts_receivable(self) -> Dict[str, float]:
+        """Alacaklar verilerini çıkar"""
+        pass
+
+    @abstractmethod
+    async def get_accounts_payable(self) -> Dict[str, float]:
+        """Borçlar verilerini çıkar"""
+        pass
+
+
+class SAPDataExtractor(ERPDataExtractor):
+    """SAP S/4HANA Veri Çıkartma"""
+
+    def __init__(self, config: ERPConfig, authenticator: SAPAuthenticator):
+        self.config = config
+        self.authenticator = authenticator
+        self.session = None
+
+    async def _get_headers(self) -> Dict[str, str]:
+        """API headers oluştur"""
+        token = await self.authenticator.get_token()
+        return {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
+
+    async def get_cash_flow_data(
+        self, start_date: datetime, end_date: datetime
+    ) -> List[CashFlowData]:
+        """SAP'dan nakit akışı verisi çıkar"""
+        logger.info(f"SAP nakit akışı verisi çıkartılıyor: {start_date} - {end_date}")
+
+        headers = await self._get_headers()
+        cash_flow_list = []
+
+        # SAP API sorgusu: Finansal muhasebe nakit hesapları
+        query = {
+            "entity": "GLAccountBalances",
+            "filter": {
+                "ChartOfAccounts": "INT",
+                "GLAccount": ["1000", "1010", "1020"],  # Nakit hesapları
+                "FiscalYear": start_date.year,
+            },
+            "select": ["GLAccount", "DebitAmount", "CreditAmount", "PostingDate"],
+        }
+
+        async with aiohttp.ClientSession() as session:
+            api_url = f"{self.config.api_endpoint}/sap/opu/odata/sap/C_GLACCOUNT_BALANCE_CDS"
+
+            try:
+                async with session.get(
+                    api_url,
+                    headers=headers,
+                    params={"$filter": f"PostingDate ge datetime'{start_date.isoformat()}'"},
+                    timeout=aiohttp.ClientTimeout(total=self.config.timeout),
+                ) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        for entry in data.get("value", []):
+                            cash_flow = CashFlowData(
+                                date=datetime.fromisoformat(entry["PostingDate"]),
+                                cash_in=float(entry.get("CreditAmount", 0)),
+                                cash_out=float(entry.get("DebitAmount", 0)),
+                                balance=float(entry.get("CreditAmount", 0))
+                                - float(entry.get("DebitAmount", 0)),
+                                accounts_receivable=0.0,
+                                accounts_payable=0.0,
+                                planned_cash_flows=[],
+                                source="SAP S/4HANA",
+                            )
+                            cash_flow_list.append(cash_flow)
+                        logger.info(f"SAP'dan {len(cash_flow_list)} nakit akışı kaydı çıkartıldı")
+                    else:
+                        logger.error(f"SAP veri çıkartma başarısız: {response.status}")
+            except Exception as e:
+                logger.error(f"SAP veri çıkartma hatası: {e}")
+                raise
+
+        return cash_flow_list
+
+    async def get_accounts_receivable(self) -> Dict[str, float]:
+        """SAP'dan alacaklar verisi çıkar"""
+        logger.info("SAP alacaklar verisi çıkartılıyor")
+
+        headers = await self._get_headers()
+        receivables = {}
+
+        async with aiohttp.ClientSession() as session:
+            api_url = f"{self.config.api_endpoint}/sap/opu/odata/sap/C_ARINVOICEITEM_CDS"
+
+            try:
+                async with session.get(
+                    api_url,
+                    headers=headers,
+                    params={"$filter": "BillingDocumentType eq 'F'"},
+                    timeout=aiohttp.ClientTimeout(total=self.config.timeout),
+                ) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        total_receivables = sum(
+                            float(entry.get("Amount", 0))
+                            for entry in data.get("value", [])
+                        )
+                        receivables["total"] = total_receivables
+                        logger.info(f"SAP alacaklar toplam: {total_receivables}")
+                    else:
+                        logger.error(f"SAP alacaklar çıkartma başarısız: {response.status}")
+            except Exception as e:
+                logger.error(f"SAP alacaklar çıkartma hatası: {e}")
+
+        return receivables
+
+    async def get_accounts_payable(self) -> Dict[str, float]:
+        """SAP'dan borçlar verisi çıkar"""
+        logger.info("SAP borçlar verisi çıkartılıyor")
+
+        headers = await self._get_headers()
+        payables = {}
+
+        async with aiohttp.ClientSession() as session:
+            api_url = f"{self.config.api_endpoint}/sap/opu/odata/sap/C_APINVOICEITEM_CDS"
+
+            try:
+                async with session.get(
+                    api_url,
+                    headers=headers,
+                    params={"$filter": "InvoiceType eq 'FC'"},
+                    timeout=aiohttp.ClientTimeout(total=self.config.timeout),
+                ) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        total_payables = sum(
+                            float(entry.get("Amount", 0))
+                            for entry in data.get("value", [])
+                        )
+                        payables["total"] = total_payables
+                        logger.info(f"SAP borçlar toplam: {total_payables}")
+                    else:
+                        logger.error(f"SAP borçlar çıkartma başarısız: {response.status}")
+            except Exception as e:
+                logger.error(f"SAP borçlar çıkartma hatası: {e}")
+
+        return payables
+
+
+class DynamicsDataExtractor(ERPDataExtractor):
+    """Microsoft Dynamics 365 Veri Çıkartma"""
+
+    def __init__(self, config: ERPConfig, authenticator: DynamicsAuthenticator):
+        self.config = config
+        self.authenticator = authenticator
+
+    async def _get_headers(self) -> Dict[str, str]:
+        """API headers oluştur"""
+        token = await self.authenticator.get_token()
+        return {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+            "OData-Version": "4.0",
+            "Accept": "application/json",
+        }
+
+    async def get_cash_flow_data(
+        self, start_date: datetime, end_date: datetime
+    ) -> List[CashFlowData]:
+        """Dynamics'ten nakit akışı verisi çıkar"""
+        logger.info(
+            f"Dynamics nakit akışı verisi çıkartılıyor: {start_date} - {end_date}"
+        )
+
+        headers = await self._get_headers()
+        cash_flow_list = []
+
+        async with aiohttp.ClientSession() as session:
+            # Dynamics OData sorgusu
+            query = f"{self.config.api_endpoint}/api/data/v9.2/msdyn_cashflowentities?$filter=createdon ge {start_date.isoformat()} and createdon le {end_date.isoformat()}"
+
+            try:
+                async with session.get(
+                    query,
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=self.config.timeout),
+                ) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        for entry in data.get("value", []):
+                            cash_flow = CashFlowData(
+                                date=datetime.fromisoformat(
+                                    entry["createdon"].replace("Z", "+00:00")
+                                ),
+                                cash_in=float(entry.get("msdyn_cashinamount", 0)),
+                                cash_out=float(entry.get("msdyn_cashoutamount", 0)),
+                                balance=float(entry.get("msdyn_balance", 0)),
+                                accounts_receivable=float(
+                                    entry.get("msdyn_receivables", 0)
+                                ),
+                                accounts_payable=float(entry.get("msdyn_payables", 0)),
+                                planned_cash_flows=entry.get("msdyn_plannedflows", []),
+                                source="Microsoft Dynamics 365",
+                            )
+                            cash_flow_list.append(cash_flow)
+                        logger.info(
+                            f"Dynamics'ten {len(cash_flow_list)} nakit akışı kaydı çıkartıldı"
+                        )
+                    else:
+                        logger.error(
+                            f"Dynamics veri çıkartma başarısız: {response.status}"
+                        )
+            except Exception as e:
+                logger.error(f"Dynamics veri çıkartma hatası: {e}")
+                raise
+
+        return cash_flow_list
+
+    async def get_accounts_receivable(self) -> Dict[str, float]:
+        """Dynamics'ten alacaklar verisi çıkar"""
+        logger.info("Dynamics alacaklar verisi çıkartılıyor")
+        headers = await self._get_headers()
+
+        async with aiohttp.ClientSession() as session:
+            query = f"{self.config.api_endpoint}/api/data/v9.2/invoices?$filter=statuscode eq 2"
+
+            try:
+                async with session.get(
+                    query, headers=headers, timeout=aiohttp.ClientTimeout(total=30)
+                ) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        total = sum(
+                            float(entry.get("totalamount", 0))
+                            for entry in data.get("value", [])
+                        )
+                        return {"total": total}
+                    else:
+                        logger.error(
+                            f"Dynamics alacaklar çıkartma başarısız: {response.status}"
+                        )
+            except Exception as e:
+                logger.error(f"Dynamics alacaklar çıkartma hatası: {e}")
+
+        return {}
+
+    async def get_accounts_payable(self) -> Dict[str, float]:
+        """Dynamics'ten borçlar verisi çıkar"""
+        logger.info("Dynamics borçlar verisi çıkartılıyor")
+        headers = await self._get_headers()
+
+        async with aiohttp.ClientSession() as session:
+            query = f"{self.config.api_endpoint}/api/data/v9.2/invoices?$filter=statuscode eq 3"
+
+            try:
+                async with session.get(
+                    query, headers=headers, timeout=aiohttp.ClientTimeout(total=30)
+                ) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        total = sum(
+                            float(entry.get("totalamount", 0))
+                            for entry in data.get("value", [])
+                        )
+                        return {"total": total}
+                    else:
+                        logger.error(
+                            f"Dynamics borçlar çıkartma başarısız: {response.status}"
+                        )
+            except Exception as e:
+                logger.error(f"Dynamics borçlar çıkartma hatası: {e}")
+
+        return {}
+
+
+class ERPConnectorFactory:
+    """ERP Bağlantı Fabrikası - uygun authenticator ve extractor seç"""
+
+    @staticmethod
+    def create_authenticator(config: ERPConfig) -> ERPAuthenticator:
+        """Authenticator oluştur"""
+        if config.erp_type == "SAP":
+            return SAPAuthenticator(config)
+        elif config.erp_type == "DYNAMICS":
+            return DynamicsAuthenticator(config)
+        elif config.erp_type == "ODOO":
+            return OdooAuthenticator(config)
+        else:
+            raise ValueError(f"Desteklenmeyen ERP türü: {config.erp_type}")
+
+    @staticmethod
+    def create_extractor(
+        config: ERPConfig, authenticator: ERPAuthenticator
+    ) -> ERPDataExtractor:
+        """Data Extractor oluştur"""
+        if config.erp_type == "SAP":
+            return SAPDataExtractor(config, authenticator)
+        elif config.erp_type == "DYNAMICS":
+            return DynamicsDataExtractor(config, authenticator)
+        else:
+            raise ValueError(f"Desteklenmeyen ERP türü: {config.erp_type}")
+
+
+class ERPConnector:
+    """Ana ERP Bağlantı Sınıfı"""
+
+    def __init__(self, config: ERPConfig):
+        self.config = config
+        self.authenticator = ERPConnectorFactory.create_authenticator(config)
+        self.extractor = ERPConnectorFactory.create_extractor(config, self.authenticator)
+        self._cache = {}
+
+    async def get_cash_flow_data(
+        self, start_date: datetime, end_date: datetime, use_cache: bool = True
+    ) -> List[CashFlowData]:
+        """Nakit akışı verisi al"""
+        cache_key = f"cash_flow_{start_date.isoformat()}_{end_date.isoformat()}"
+
+        if use_cache and cache_key in self._cache:
+            logger.info("Cache'den nakit akışı verisi alındı")
+            return self._cache[cache_key]
+
+        data = await self.extractor.get_cash_flow_data(start_date, end_date)
+        self._cache[cache_key] = data
+        return data
+
+    async def get_accounts_receivable(self, use_cache: bool = True) -> Dict[str, float]:
+        """Alacaklar verisi al"""
+        cache_key = "accounts_receivable"
+
+        if use_cache and cache_key in self._cache:
+            logger.info("Cache'den alacaklar verisi alındı")
+            return self._cache[cache_key]
+
+        data = await self.extractor.get_accounts_receivable()
+        self._cache[cache_key] = data
+        return data
+
+    async def get_accounts_payable(self, use_cache: bool = True) -> Dict[str, float]:
+        """Borçlar verisi al"""
+        cache_key = "accounts_payable"
+
+        if use_cache and cache_key in self._cache:
+            logger.info("Cache'den borçlar verisi alındı")
+            return self._cache[cache_key]
+
+        data = await self.extractor.get_accounts_payable()
+        self._cache[cache_key] = data
+        return data
+
+    def clear_cache(self):
+        """Cache temizle"""
+        self._cache.clear()
+        logger.info("Cache temizlendi")
+
+
+# Örnek kullanım
+async def example_usage():
+    """ERP Bağlantı Modülü Örneği"""
+
+    # SAP Konfigürasyonu
+    sap_config = ERPConfig(
+        erp_type="SAP",
+        api_endpoint="https://sap-system.example.com:8080",
+        username="sap_user",
+        password="sap_password",
+        api_key="sap_api_key",
+        client_id="sap_client_id",
+        client_secret="sap_client_secret",
+    )
+
+    # Bağlantı oluştur
+    connector = ERPConnector(sap_config)
+
+    # Nakit akışı verisi al
+    start_date = datetime.now() - timedelta(days=30)
+    end_date = datetime.now()
+
+    try:
+        cash_flows = await connector.get_cash_flow_data(start_date, end_date)
+        logger.info(f"Toplam {len(cash_flows)} nakit akışı kaydı alındı")
+
+        # Alacaklar al
+        receivables = await connector.get_accounts_receivable()
+        logger.info(f"Alacaklar: {receivables}")
+
+        # Borçlar al
+        payables = await connector.get_accounts_payable()
+        logger.info(f"Borçlar: {payables}")
+
+    except Exception as e:
+        logger.error(f"Hata: {e}")
+
+
+if __name__ == "__main__":
+    asyncio.run(example_usage())

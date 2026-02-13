@@ -1,0 +1,32 @@
+{
+  "theme": {
+    "extend": {
+      "colors": {
+        "primary": "#111827",
+        "secondary": "#E0F4FF",
+        "gray": {
+          "50": "#f9fafb",
+          "100": "#f3f4f6",
+          "200": "#e5e7eb",
+          "600": "#4b5563",
+          "800": "#1f2937",
+          "900": "#111827"
+        },
+        "blue": {
+          "50": "#eff6ff"
+        }
+      },
+      "fontFamily": {
+        "sans": ["Inter", "system-ui", "-apple-system", "sans-serif"]
+      },
+      "borderRadius": {
+        "xl": "12px"
+      },
+      "maxWidth": {
+        "7xl": "80rem",
+        "4xl": "56rem",
+        "3xl": "48rem"
+      }
+    }
+  }
+}

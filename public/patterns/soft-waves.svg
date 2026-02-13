@@ -1,0 +1,9 @@
+<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="soft-waves" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+      <path d="M0 50 Q 25 40, 50 50 T 100 50" stroke="currentColor" stroke-width="0.5" fill="none"/>
+      <path d="M0 70 Q 25 60, 50 70 T 100 70" stroke="currentColor" stroke-width="0.5" fill="none" opacity="0.5"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#soft-waves)"/>
+</svg>

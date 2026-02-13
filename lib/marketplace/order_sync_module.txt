@@ -1,0 +1,625 @@
+"""
+Sipariş Senkronizasyonu Modülü
+Tüm pazaryerlerden siparişleri merkezi veritabanına senkronize eder
+"""
+
+from typing import List, Dict, Optional, Any, Tuple
+from datetime import datetime, timedelta
+from enum import Enum
+import logging
+from abc import ABC, abstractmethod
+import asyncio
+from dataclasses import dataclass
+import hashlib
+import json
+
+# Logging yapılandırması
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class SyncConfig:
+    """Senkronizasyon yapılandırması"""
+    batch_size: int = 50
+    max_retries: int = 3
+    retry_delay: float = 5.0
+    timeout: int = 30
+    poll_interval: int = 900  # 15 dakika
+
+
+class SyncStatus(Enum):
+    """Senkronizasyon durumları"""
+    PENDING = "pending"
+    SYNCING = "syncing"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    PARTIAL = "partial"
+
+
+class OrderSyncService:
+    \"\"\"Sipariş senkronizasyonu hizmeti\"\"\"
+    
+    def __init__(self, db_connection, adapter_factory, config: Optional[SyncConfig] = None):
+        \"\"\"
+        Hizmeti başlat
+        
+        Args:
+            db_connection: Veritabanı bağlantısı
+            adapter_factory: Pazaryeri adaptörü factory'si
+            config: Senkronizasyon yapılandırması
+        \"\"\"
+        self.db = db_connection
+        self.adapter_factory = adapter_factory
+        self.config = config or SyncConfig()
+        self.sync_state = {}
+    
+    async def sync_all_orders(self, seller_id: int) -> Dict[str, Any]:
+        \"\"\"
+        Satıcının tüm pazaryerlerinden siparişleri senkronize et
+        
+        Args:
+            seller_id: Satıcı ID'si
+        
+        Returns:
+            Senkronizasyon sonucu
+        \"\"\"
+        logger.info(f"Satıcı {seller_id} için tüm siparişler senkronize ediliyor...")
+        
+        # Satıcının bağlı pazaryerlerini getir
+        marketplaces = self._get_seller_marketplaces(seller_id)
+        
+        sync_results = {
+            "seller_id": seller_id,
+            "timestamp": datetime.now().isoformat(),
+            "total_synced": 0,
+            "total_failed": 0,
+            "marketplace_results": {}
+        }
+        
+        for marketplace in marketplaces:
+            try:
+                result = await self._sync_marketplace_orders(
+                    seller_id,
+                    marketplace["id"],
+                    marketplace["code"]
+                )
+                sync_results["marketplace_results"][marketplace["code"]] = result
+                sync_results["total_synced"] += result.get("synced_count", 0)
+                sync_results["total_failed"] += result.get("failed_count", 0)
+            except Exception as e:
+                logger.error(f"Pazaryeri {marketplace['code']} senkronizasyonunda hata: {e}")
+                sync_results["marketplace_results"][marketplace["code"]] = {
+                    "status": "failed",
+                    "error": str(e)
+                }
+        
+        # Senkronizasyon logunu kaydet
+        self._log_sync(seller_id, sync_results)
+        
+        return sync_results
+    
+    async def _sync_marketplace_orders(self, 
+                                      seller_id: int, 
+                                      marketplace_id: int,
+                                      marketplace_code: str) -> Dict[str, Any]:
+        \"\"\"
+        Belirtilen pazaryerden siparişleri senkronize et
+        
+        Args:
+            seller_id: Satıcı ID'si
+            marketplace_id: Pazaryeri ID'si
+            marketplace_code: Pazaryeri kodu
+        
+        Returns:
+            Pazaryeri senkronizasyon sonucu
+        \"\"\"
+        logger.info(f"Pazaryeri {marketplace_code} siparişleri senkronize ediliyor...")
+        
+        # Adaptörü oluştur
+        adapter = self._get_marketplace_adapter(seller_id, marketplace_id, marketplace_code)
+        if not adapter.authenticate():
+            raise Exception(f"{marketplace_code} kimlik doğrulaması başarısız")
+        
+        synced_count = 0
+        failed_count = 0
+        page = 1
+        
+        # Son senkronizasyon zamanını getir
+        last_sync = self._get_last_sync_time(seller_id, marketplace_id)
+        
+        while True:
+            try:
+                # Pazaryerden siparişleri getir
+                orders_data = adapter.get_orders(
+                    start_date=last_sync,
+                    page=page,
+                    page_size=self.config.batch_size
+                )
+                
+                if not orders_data.get("orders"):
+                    break
+                
+                # Her sipariş için senkronizasyon yapılması gereken işlemler
+                for order in orders_data["orders"]:
+                    try:
+                        self._sync_single_order(
+                            seller_id,
+                            marketplace_id,
+                            order
+                        )
+                        synced_count += 1
+                    except Exception as e:
+                        logger.error(f"Sipariş senkronizasyonunda hata: {e}")
+                        failed_count += 1
+                        # Hata detaylarını kaydet
+                        self._log_sync_error(seller_id, marketplace_id, order, e)
+                
+                # Sayfalama kontrolü
+                if len(orders_data["orders"]) < self.config.batch_size:
+                    break
+                page += 1
+                
+            except Exception as e:
+                logger.error(f"Pazaryeri {marketplace_code} siparişleri getirirken hata: {e}")
+                failed_count += 1
+        
+        return {
+            "status": "completed" if failed_count == 0 else "partial",
+            "synced_count": synced_count,
+            "failed_count": failed_count,
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    def _sync_single_order(self, seller_id: int, marketplace_id: int, order_data: Dict[str, Any]):
+        \"\"\"
+        Tek bir sipariş kaydını senkronize et
+        
+        Args:
+            seller_id: Satıcı ID'si
+            marketplace_id: Pazaryeri ID'si
+            order_data: Pazaryerden gelen sipariş verisi
+        \"\"\"
+        # Pazaryeri sipariş ID'sinden hash oluştur (duplicate kontrol)
+        marketplace_order_id = order_data.get("id") or order_data.get("orderId")
+        order_hash = self._generate_order_hash(marketplace_id, marketplace_order_id)
+        
+        # Sipariş zaten mevcut mi kontrol et
+        existing_order = self._get_order_by_marketplace_id(marketplace_id, marketplace_order_id)
+        
+        if existing_order:
+            # Siparişi güncelle
+            self._update_order(existing_order["id"], order_data)
+        else:
+            # Yeni sipariş oluştur
+            self._create_order(seller_id, marketplace_id, order_data)
+    
+    def _create_order(self, seller_id: int, marketplace_id: int, order_data: Dict[str, Any]):
+        \"\"\"
+        Yeni sipariş kaydı oluştur
+        
+        Args:
+            seller_id: Satıcı ID'si
+            marketplace_id: Pazaryeri ID'si
+            order_data: Sipariş verisi
+        \"\"\"
+        try:
+            # Sipariş bilgilerini extract et
+            order = {
+                "seller_id": seller_id,
+                "marketplace_id": marketplace_id,
+                "marketplace_order_id": order_data.get("id") or order_data.get("orderId"),
+                "order_date": self._parse_date(order_data.get("orderDate") or order_data.get("date")),
+                "customer_id": order_data.get("customerId") or order_data.get("buyerId"),
+                "customer_name": order_data.get("customerName") or order_data.get("buyerName"),
+                "customer_email": order_data.get("customerEmail") or order_data.get("buyerEmail"),
+                "customer_phone": order_data.get("customerPhone") or order_data.get("buyerPhone"),
+                "status": self._normalize_status(order_data.get("status")),
+                "total_amount": float(order_data.get("totalAmount") or order_data.get("total") or 0),
+                "currency": order_data.get("currency", "TRY"),
+                "shipping_address": self._extract_address(order_data),
+                "notes": order_data.get("notes", ""),
+                "is_sync_to_erp": False,
+                "created_at": datetime.now(),
+                "updated_at": datetime.now()
+            }
+            
+            # Sipariş kayıtlarını oluştur
+            order_id = self.db.insert_order(order)
+            logger.info(f"Sipariş oluşturuldu: {order_id}")
+            
+            # Sipariş satırlarını ekle
+            self._sync_order_items(order_id, order_data.get("items", []))
+            
+        except Exception as e:
+            logger.error(f"Sipariş oluştururken hata: {e}")
+            raise
+    
+    def _update_order(self, order_id: int, order_data: Dict[str, Any]):
+        \"\"\"
+        Mevcut sipariş kaydını güncelle
+        
+        Args:
+            order_id: Sipariş ID'si
+            order_data: Güncellenmiş sipariş verisi
+        \"\"\"
+        try:
+            updates = {
+                "status": self._normalize_status(order_data.get("status")),
+                "customer_name": order_data.get("customerName") or order_data.get("buyerName"),
+                "customer_email": order_data.get("customerEmail") or order_data.get("buyerEmail"),
+                "customer_phone": order_data.get("customerPhone") or order_data.get("buyerPhone"),
+                "updated_at": datetime.now()
+            }
+            
+            self.db.update_order(order_id, updates)
+            logger.info(f"Sipariş güncellendi: {order_id}")
+            
+            # Sipariş satırlarını senkronize et
+            self._sync_order_items(order_id, order_data.get("items", []))
+            
+        except Exception as e:
+            logger.error(f"Sipariş güncellenirken hata: {e}")
+            raise
+    
+    def _sync_order_items(self, order_id: int, items_data: List[Dict[str, Any]]):
+        \"\"\"
+        Sipariş satırlarını senkronize et
+        
+        Args:
+            order_id: Sipariş ID'si
+            items_data: Satır verisi
+        \"\"\"
+        for item in items_data:
+            try:
+                item_record = {
+                    "order_id": order_id,
+                    "marketplace_product_id": item.get("productId"),
+                    "quantity": int(item.get("quantity", 1)),
+                    "unit_price": float(item.get("price", 0)),
+                    "discount": float(item.get("discount", 0)),
+                    "tax": float(item.get("tax", 0)),
+                    "total": float(item.get("total", 0))
+                }
+                
+                self.db.insert_order_item(item_record)
+                
+            except Exception as e:
+                logger.error(f"Sipariş satırı senkronizasyonunda hata: {e}")
+    
+    def _sync_order_status(self, order_id: int, new_status: str, reason: str = ""):
+        \"\"\"
+        Sipariş durumu değişikliğini kaydını tut
+        
+        Args:
+            order_id: Sipariş ID'si
+            new_status: Yeni durum
+            reason: Durum değişikliği sebebi
+        \"\"\"
+        try:
+            # Mevcut durumu getir
+            order = self.db.get_order(order_id)
+            old_status = order.get("status")
+            
+            if old_status != new_status:
+                history_record = {
+                    "order_id": order_id,
+                    "old_status": old_status,
+                    "new_status": new_status,
+                    "reason": reason,
+                    "created_at": datetime.now()
+                }
+                
+                self.db.insert_order_status_history(history_record)
+                logger.info(f"Sipariş durumu değişikliği kaydedildi: {order_id} ({old_status} -> {new_status})")
+                
+        except Exception as e:
+            logger.error(f"Sipariş durumu değişikliği kaydedilirken hata: {e}")
+    
+    def _normalize_status(self, marketplace_status: str) -> str:
+        \"\"\"
+        Pazaryeri-spesifik durum kodlarını standart kodlara çevir
+        
+        Args:
+            marketplace_status: Pazaryeri durum kodu
+        
+        Returns:
+            Standartlaştırılmış durum kodu
+        \"\"\"
+        status_map = {
+            # Hepsiburada
+            "Pending": "pending",
+            "Confirmed": "confirmed",
+            "Shipped": "shipped",
+            "Delivered": "delivered",
+            "Cancelled": "cancelled",
+            
+            # Trendyol
+            "Awaiting": "pending",
+            "Prepared": "confirmed",
+            "Shipped": "shipped",
+            "Delivered": "delivered",
+            "Cancelled": "cancelled",
+            
+            # Amazon
+            "pending": "pending",
+            "unshipped": "pending",
+            "partially_shipped": "shipped",
+            "shipped": "shipped",
+            "cancelled": "cancelled",
+            
+            # N11
+            "1": "pending",
+            "2": "confirmed",
+            "3": "shipped",
+            "4": "delivered",
+            "5": "cancelled",
+        }
+        
+        return status_map.get(marketplace_status, marketplace_status.lower())
+    
+    def _parse_date(self, date_value: Any) -> datetime:
+        \"\"\"
+        Farklı tarih formatlarını parse et
+        
+        Args:
+            date_value: Tarih değeri (string, timestamp vb.)
+        
+        Returns:
+            datetime nesnesi
+        \"\"\"
+        if isinstance(date_value, datetime):
+            return date_value
+        
+        if isinstance(date_value, (int, float)):
+            # Unix timestamp (milisaniye cinsinden olabilir)
+            if date_value > 10000000000:  # Milisaniye
+                return datetime.fromtimestamp(date_value / 1000)
+            else:
+                return datetime.fromtimestamp(date_value)
+        
+        if isinstance(date_value, str):
+            # ISO format veya başka format
+            try:
+                return datetime.fromisoformat(date_value.replace("Z", "+00:00"))
+            except:
+                pass
+            
+            try:
+                return datetime.strptime(date_value, "%Y-%m-%d %H:%M:%S")
+            except:
+                pass
+        
+        return datetime.now()
+    
+    def _extract_address(self, order_data: Dict[str, Any]) -> Dict[str, str]:
+        \"\"\"
+        Sipariş verilerinden adresi extract et
+        
+        Args:
+            order_data: Sipariş verisi
+        
+        Returns:
+            Adres bilgileri
+        \"\"\"
+        address_data = order_data.get("shippingAddress") or order_data.get("address", {})
+        
+        return {
+            "name": address_data.get("name", ""),
+            "street": address_data.get("street") or address_data.get("address1", ""),
+            "city": address_data.get("city", ""),
+            "state": address_data.get("state") or address_data.get("province", ""),
+            "postal_code": address_data.get("postalCode") or address_data.get("zip", ""),
+            "country": address_data.get("country", "TR"),
+            "phone": address_data.get("phone", "")
+        }
+    
+    def _get_seller_marketplaces(self, seller_id: int) -> List[Dict[str, Any]]:
+        \"\"\"
+        Satıcının aktif pazaryerlerini getir
+        
+        Args:
+            seller_id: Satıcı ID'si
+        
+        Returns:
+            Pazaryeri listesi
+        \"\"\"
+        return self.db.get_seller_marketplace_accounts(seller_id, active_only=True)
+    
+    def _get_marketplace_adapter(self, seller_id: int, marketplace_id: int, 
+                                marketplace_code: str):
+        \"\"\"
+        Pazaryeri adaptörünü oluştur ve konfigüre et
+        
+        Args:
+            seller_id: Satıcı ID'si
+            marketplace_id: Pazaryeri ID'si
+            marketplace_code: Pazaryeri kodu
+        
+        Returns:
+            Yapılandırılmış adaptör
+        \"\"\"
+        # API anahtarlarını getir
+        account = self.db.get_seller_marketplace_account(seller_id, marketplace_id)
+        
+        # Adaptörü oluştur
+        adapter = self.adapter_factory.create_adapter(
+            marketplace_code,
+            account["api_key"],
+            account["api_secret"],
+            account.get("seller_code")
+        )
+        
+        return adapter
+    
+    def _get_last_sync_time(self, seller_id: int, marketplace_id: int) -> Optional[datetime]:
+        \"\"\"
+        Son senkronizasyon zamanını getir
+        
+        Args:
+            seller_id: Satıcı ID'si
+            marketplace_id: Pazaryeri ID'si
+        
+        Returns:
+            Son senkronizasyon zamanı veya None
+        \"\"\"
+        sync_log = self.db.get_last_sync_log(seller_id, marketplace_id, "orders")
+        
+        if sync_log:
+            # Son 5 dakika geriye git (duplicate'leri yakala)
+            return sync_log["completed_at"] - timedelta(minutes=5)
+        
+        # İlk senkronizasyon ise 30 gün geriye git
+        return datetime.now() - timedelta(days=30)
+    
+    def _get_order_by_marketplace_id(self, marketplace_id: int, 
+                                    marketplace_order_id: str) -> Optional[Dict[str, Any]]:
+        \"\"\"
+        Pazaryeri sipariş ID'sine göre siparişi getir
+        
+        Args:
+            marketplace_id: Pazaryeri ID'si
+            marketplace_order_id: Pazaryeri sipariş ID'si
+        
+        Returns:
+            Sipariş kaydı veya None
+        \"\"\"
+        return self.db.get_order_by_marketplace_id(marketplace_id, marketplace_order_id)
+    
+    def _generate_order_hash(self, marketplace_id: int, order_id: str) -> str:
+        \"\"\"
+        Sipariş hash'i oluştur
+        
+        Args:
+            marketplace_id: Pazaryeri ID'si
+            order_id: Sipariş ID'si
+        
+        Returns:
+            Hash değer
+        \"\"\"
+        data = f"{marketplace_id}:{order_id}"
+        return hashlib.sha256(data.encode()).hexdigest()
+    
+    def _log_sync(self, seller_id: int, sync_results: Dict[str, Any]):
+        \"\"\"
+        Senkronizasyon işlemini kaydet
+        
+        Args:
+            seller_id: Satıcı ID'si
+            sync_results: Senkronizasyon sonuçları
+        \"\"\"
+        try:
+            self.db.insert_sync_log({
+                "seller_id": seller_id,
+                "sync_type": "orders",
+                "status": "completed",
+                "total_records": sync_results["total_synced"],
+                "processed_records": sync_results["total_synced"],
+                "failed_records": sync_results["total_failed"],
+                "duration_seconds": 0,  # Gerçek kod'da hesaplanacak
+                "created_at": datetime.now()
+            })
+        except Exception as e:
+            logger.error(f"Senkronizasyon logu kaydedilirken hata: {e}")
+    
+    def _log_sync_error(self, seller_id: int, marketplace_id: int, 
+                       order_data: Dict[str, Any], error: Exception):
+        \"\"\"
+        Senkronizasyon hatasını kaydet
+        
+        Args:
+            seller_id: Satıcı ID'si
+            marketplace_id: Pazaryeri ID'si
+            order_data: Sipariş verisi
+            error: Hata nesnesi
+        \"\"\"
+        try:
+            error_log = {
+                "seller_id": seller_id,
+                "marketplace_id": marketplace_id,
+                "sync_type": "order",
+                "reference_id": order_data.get("id"),
+                "error_message": str(error),
+                "error_details": json.dumps(order_data),
+                "created_at": datetime.now()
+            }
+            self.db.insert_sync_error_log(error_log)
+        except Exception as e:
+            logger.error(f"Hata logu kaydedilirken hata: {e}")
+
+
+class IncrementalOrderSync:
+    \"\"\"
+    Artımlı sipariş senkronizasyonu
+    Yalnızca değişen siparişleri senkronize eder
+    \"\"\"
+    
+    def __init__(self, order_sync_service: OrderSyncService):
+        \"\"\"
+        Başlat
+        
+        Args:
+            order_sync_service: Sipariş senkronizasyon hizmeti
+        \"\"\"
+        self.sync_service = order_sync_service
+        self.last_sync_tokens = {}
+    
+    async def sync_incremental(self, seller_id: int, 
+                              marketplace_id: int) -> Dict[str, Any]:
+        \"\"\"
+        Artımlı senkronizasyon yapılması gereken siparişleri senkronize et
+        
+        Args:
+            seller_id: Satıcı ID'si
+            marketplace_id: Pazaryeri ID'si
+        
+        Returns:
+            Senkronizasyon sonucu
+        \"\"\"
+        logger.info(f"Artımlı senkronizasyon başlatıldı: Satıcı {seller_id}, Pazaryeri {marketplace_id}")
+        
+        # Adaptörü oluştur
+        adapter = self.sync_service._get_marketplace_adapter(
+            seller_id, 
+            marketplace_id,
+            self.sync_service.db.get_marketplace(marketplace_id)["code"]
+        )
+        
+        # Değişen siparişleri getir (webhook veya delta API kullanarak)
+        changed_orders = adapter.get_changed_orders(
+            since_token=self.last_sync_tokens.get((seller_id, marketplace_id))
+        )
+        
+        result = {
+            "synced_count": 0,
+            "failed_count": 0
+        }
+        
+        for order in changed_orders:
+            try:
+                self.sync_service._sync_single_order(seller_id, marketplace_id, order)
+                result["synced_count"] += 1
+            except Exception as e:
+                logger.error(f"Sipariş senkronizasyonunda hata: {e}")
+                result["failed_count"] += 1
+        
+        return result
+
+
+# Örnek kullanım
+if __name__ == "__main__":
+    # İçe aktarılacak modüllerin mock'u
+    class MockDB:
+        def get_seller_marketplace_accounts(self, seller_id, active_only=False):
+            return [
+                {"id": 1, "code": "hepsiburada", "name": "Hepsiburada"}
+            ]
+        
+        def get_last_sync_log(self, seller_id, marketplace_id, sync_type):
+            return None
+    
+    # Senkronizasyon hizmetini başlat
+    db = MockDB()
+    
+    # Örnek: sync_service = OrderSyncService(db, adapter_factory)
+    # await sync_service.sync_all_orders(seller_id=1)

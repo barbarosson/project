@@ -1,0 +1,362 @@
+# ERP Entegre Nakit Akışı Analiz Agensi
+
+## Proje Özeti
+
+ERP Entegre Nakit Akışı Analiz Agensi, kurumsal ERP sistemlerine bağlanarak gerçek zamanlı finansal veri analizi, tahmin ve yapay zeka destekli öneriler sunan enterprise-grade bir agent sistemidir. Sistem, SAP, Oracle, Microsoft Dynamics ve Odoo gibi başlıca ERP platformlarıyla uyumlu olarak tasarlanmıştır.
+
+### Ana Özellikler
+
+- **ERP Entegrasyonu:** SAP S/4HANA, Oracle E-Business, Dynamics 365, Odoo
+- **Gerçek Zamanlı Veri Senkronizasyonu:** Günlük/saatlik otomatik veri güncelleme
+- **Nakit Akışı Tahmini:** 90 günlük tahmin modellemesi
+- **Risk Analizi:** Otomatik likidite ve finansal risk tespit
+- **AI-Tabanlı Öneriler:** LLM destekli akılcı finansal önerileri
+- **REST API:** Harici uygulamalara entegrasyon
+- **Hibrit Motor:** Kural tabanlı + Makine öğrenmesi kombinasyonu
+
+## Proje Yapısı
+
+```
+erp-cash-flow-agent/
+├── erp_agent_architecture.md          # Sistem mimarisi dokümantasyonu
+├── erp_connector.py                   # ERP bağlantı modülü
+├── cash_flow_analyzer.py              # Nakit akışı analiz motoru
+├── ai_recommendations_engine.py       # AI-tabanlı öneriler sistemi
+├── api_service.py                     # FastAPI REST servisi
+├── integration_guide.md                # Entegrasyon ve kurulum rehberi
+├── requirements.txt                    # Python bağımlılıkları
+├── Dockerfile                          # Container konfigürasyonu
+├── docker-compose.yml                  # Multi-container orchestration
+├── config/
+│   ├── erp_mappings.json              # ERP sistem eşlemeleri
+│   ├── financial_rules.json            # Kural tabanlı motor kuralları
+│   └── models/                         # ML modelleri
+├── tests/
+│   ├── test_connector.py              # ERP bağlantı testleri
+│   ├── test_analyzer.py               # Analiz motoru testleri
+│   ├── test_api.py                    # API endpoint testleri
+│   └── fixtures/                       # Test verileri
+├── logs/                              # Uygulama logları
+└── README.md                          # Bu dosya
+```
+
+## Teknik Stack
+
+| Katman | Teknoloji | Açıklama |
+|--------|-----------|----------|
+| **Backend** | Python 3.10+ | Ana yazılım dili |
+| **Web Framework** | FastAPI | REST API framework |
+| **Async** | asyncio, aiohttp | Asenkron işlemler |
+| **Veri İşleme** | Pandas, NumPy, SciPy | Finansal analiz |
+| **Tahmin** | Prophet, ARIMA | Zaman serisi tahmini |
+| **Database** | PostgreSQL | Ana veri deposu |
+| **Cache** | Redis | Hızlı sorgu cevapları |
+| **LLM** | OpenAI GPT-4 | Yapay zeka motor |
+| **API Gateway** | Nginx | Ters proxy ve yük dengeleme |
+| **Container** | Docker | Konteynerizasyon |
+| **Orchestration** | Kubernetes | Ölçeklenebilirlik |
+
+## Kurulum
+
+### Gereksinimler
+
+- Python 3.10 veya üzeri
+- PostgreSQL 13+
+- Redis 6+
+- Docker ve Docker Compose (opsiyonel)
+- OpenAI API Anahtarı (LLM entegrasyonu için)
+
+### Hızlı Başlangıç
+
+#### 1. Depoyu Clone Et
+
+```bash
+git clone https://github.com/your-org/erp-cash-flow-agent.git
+cd erp-cash-flow-agent
+```
+
+#### 2. Sanal Ortam Oluştur
+
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/macOS
+# veya
+venv\Scripts\activate  # Windows
+```
+
+#### 3. Bağımlılıkları Yükle
+
+```bash
+pip install -r requirements.txt
+```
+
+#### 4. Ortam Değişkenlerini Ayarla
+
+```bash
+cp .env.example .env
+# .env dosyasını düzenle ve kredileri gir
+```
+
+#### 5. API Sunucusunu Başlat
+
+```bash
+# Geliştirme modunda
+python api_service.py
+
+# Üretim modunda
+gunicorn api_service:app --workers 4 --worker-class uvicorn.workers.UvicornWorker
+```
+
+### Docker ile Kurulum
+
+```bash
+# Docker Compose ile başlat
+docker-compose up -d
+
+# Logu görüntüle
+docker-compose logs -f api
+```
+
+## Kullanım
+
+### Python'da Basit Örnek
+
+```python
+import asyncio
+from datetime import datetime, timedelta
+from erp_connector import ERPConnector, ERPConfig
+from cash_flow_analyzer import CashFlowAnalyzer
+
+async def analyze_cash_flow():
+    # ERP Konfigürasyonu
+    config = ERPConfig(
+        erp_type="SAP",
+        api_endpoint="https://sap-system.example.com",
+        username="user",
+        password="password",
+        api_key="key",
+        client_id="client",
+        client_secret="secret"
+    )
+    
+    # Bağlantı Oluştur
+    connector = ERPConnector(config)
+    
+    # Veri Al
+    start = datetime.now() - timedelta(days=90)
+    end = datetime.now()
+    data = await connector.get_cash_flow_data(start, end)
+    
+    # Analiz Yap
+    analyzer = CashFlowAnalyzer(data)
+    metrics = analyzer.calculate_metrics()
+    risks = analyzer.identify_risks()
+    
+    # Rapor
+    print(f"Net Cash Flow: ${metrics.net_cash_flow:,.2f}")
+    print(f"Risk Count: {len(risks)}")
+
+asyncio.run(analyze_cash_flow())
+```
+
+### REST API ile Örnek
+
+```bash
+# ERP'ye Bağlan
+curl -X POST http://localhost:8000/api/v1/erp/connect \
+  -H "Content-Type: application/json" \
+  -d '{
+    "erp_type": "SAP",
+    "api_endpoint": "https://sap-system.example.com",
+    "username": "user",
+    "password": "password",
+    "api_key": "key",
+    "client_id": "client",
+    "client_secret": "secret"
+  }'
+
+# Metrikleri Al
+curl -X POST http://localhost:8000/api/v1/cash-flow/metrics?erp_type=SAP \
+  -H "Content-Type: application/json" \
+  -d '{
+    "start_date": "2024-01-01T00:00:00",
+    "end_date": "2024-04-01T00:00:00",
+    "use_cache": true
+  }'
+
+# Öneriler Al
+curl -X POST http://localhost:8000/api/v1/recommendations/generate?erp_type=SAP \
+  -H "Content-Type: application/json" \
+  -d '{
+    "start_date": "2024-01-01T00:00:00",
+    "end_date": "2024-04-01T00:00:00"
+  }'
+```
+
+## API Dokumentasyon
+
+API tam otomatik Swagger/OpenAPI dokümantasyonuyla gelir:
+
+- **Swagger UI:** http://localhost:8000/docs
+- **ReDoc:** http://localhost:8000/redoc
+- **OpenAPI JSON:** http://localhost:8000/openapi.json
+
+### Temel Endpoint'ler
+
+| Method | Endpoint | Açıklama |
+|--------|----------|----------|
+| GET | `/health` | Sistem sağlığı kontrolü |
+| POST | `/api/v1/erp/connect` | ERP bağlantısı kur |
+| POST | `/api/v1/cash-flow/metrics` | Metrikleri al |
+| POST | `/api/v1/cash-flow/forecast` | Tahmin yap |
+| POST | `/api/v1/recommendations/generate` | Öneriler oluştur |
+| POST | `/api/v1/analysis/comprehensive` | Kapsamlı analiz |
+| POST | `/api/v1/scenario/analyze` | Senaryo analizi |
+
+## Test
+
+### Unit Testleri Çalıştır
+
+```bash
+pytest tests/ -v
+
+# Belirli test dosyası
+pytest tests/test_analyzer.py -v
+
+# Coverage raporu
+pytest tests/ --cov=. --cov-report=html
+```
+
+### Entegrasyon Testleri
+
+```bash
+# Test ERP Bağlantısı
+python -m pytest tests/test_connector.py::test_sap_connection -v
+
+# Test Analiz Motoru
+python -m pytest tests/test_analyzer.py::test_metrics_calculation -v
+
+# Test API Endpoint'leri
+python -m pytest tests/test_api.py -v
+```
+
+## Performans ve Ölçeklenebilirlik
+
+### Performans Metrikleri
+
+- **API Yanıt Süresi:** < 500ms (ortalama)
+- **Analiz Süresi:** < 30 saniye (90 günlük veri)
+- **Tahmin Oluşturma:** < 10 saniye
+- **Öneriler Motoru:** < 5 saniye (kural tabanlı)
+
+### Ölçeklenebilirlik
+
+- **Yatay Ölçekleme:** Kubernetes ile otomatik ölçekleme
+- **Dikey Ölçekleme:** PostgreSQL ve Redis replication
+- **Cache:** Redis ile çoklu düğüm desteği
+- **Load Balancing:** Nginx upstream balancing
+
+## Güvenlik
+
+### Kimlik Doğrulama
+
+- **ERP Sistemlerine:** OAuth 2.0, API Keys, mTLS
+- **API Endpoint'lerine:** JWT tokens, API keys
+- **Veri Koruma:** TLS 1.3, AES-256 encryption
+
+### Yetkilendirme
+
+- **Role-Based Access Control (RBAC):** Yönetici, Mali Müdür, Mali Yönetici rolleri
+- **Field-Level Security:** Hassas alanlar maskeleme
+- **Audit Logging:** Tüm işlemler kaydedilir
+
+## Bakım ve Destek
+
+### Loglama
+
+```python
+# Uygulama logları
+tail -f logs/app.log
+
+# API logları
+tail -f logs/api.log
+
+# ERP Bağlantı logları
+tail -f logs/erp_connection.log
+```
+
+### Monitoring
+
+- **Prometheus:** http://localhost:9090
+- **Grafana:** http://localhost:3000
+- **Alert Manager:** Critical issues için uyarılar
+
+### Troubleshooting
+
+| Sorun | Çözüm |
+|------|-------|
+| ERP Bağlantı Başarısız | API uç noktasını ve kimlik bilgilerini kontrol et |
+| Yavaş Yanıt | Cache durumunu kontrol et, indexes oluştur |
+| LLM Hatası | OpenAI API anahtarını ve kota sınırını kontrol et |
+| Database Sorunu | PostgreSQL bağlantısını ve storage kontrolü et |
+
+## Roadmap
+
+### v1.1 (Q2 2024)
+- Geliştirilmiş XGBoost tahmin modelleri
+- Mobil dashboard (React Native)
+- WhatsApp/Slack uyarıları
+
+### v1.2 (Q3 2024)
+- Multi-currency desteği
+- Blockchain tabanlı ödeme izleme
+- Hedge stratejileri
+
+### v2.0 (Q4 2024)
+- Otonom agent sistem
+- Gerçek zamanlı ödeme otomasyonu
+- Marjinal analiz ve optimizasyon
+
+## Lisans
+
+MIT License - Detaylar için LICENSE dosyasına bak
+
+## Katkıda Bulunma
+
+Katkılara hoş geldiniz! Lütfen önce issue açın ve sonra pull request gönder.
+
+```bash
+# Feature branch oluştur
+git checkout -b feature/new-feature
+
+# Commit et
+git commit -am 'Add new feature'
+
+# Push et
+git push origin feature/new-feature
+
+# Pull Request aç
+```
+
+## İletişim
+
+- **E-Mail:** support@erp-agent.example.com
+- **Issues:** https://github.com/your-org/erp-cash-flow-agent/issues
+- **Discussions:** https://github.com/your-org/erp-cash-flow-agent/discussions
+
+## Teşekkürler
+
+Bu proje aşağıdaki kütüphaneler ve platformlar tarafından desteklenmektedir:
+
+- FastAPI
+- Pandas
+- OpenAI
+- PostgreSQL
+- Redis
+- Docker
+
+---
+
+**Versiyon:** 1.0.0  
+**Güncelleme:** 2024-01-15  
+**Geliştirici:** Monica AI Team

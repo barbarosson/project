@@ -1,0 +1,1188 @@
+#!/usr/bin/env python3
+"""
+Çoklu Dil Desteği Kontrol Sistemi - Tamamlanmış Uygulama
+Web sitelerinin tercüme dosyalarını tarayıp eksik tercümeler tespit etme
+
+Bu dosya tüm işlevselliği içeren tek dosya uygulamasıdır.
+Kütüphaneler: PyYAML (pip install pyyaml), requests (pip install requests)
+
+Kullanım:
+    python multilingual_checker.py --path ./locales --format html --output report.html
+    python multilingual_checker.py --github https://github.com/owner/repo --format json
+    python multilingual_checker.py --path ./locales --verbose
+"""
+
+import os
+import re
+import json
+import csv
+import sys
+import argparse
+import logging
+from pathlib import Path
+from typing import Dict, List, Any, Optional, Set, Tuple
+from dataclasses import dataclass, asdict, field
+from enum import Enum
+from datetime import datetime
+from abc import ABC, abstractmethod
+
+# ============================================================================
+# BÖLÜM 1: TEMEL VERİ YAPILARI VE ENUM'LAR
+# ============================================================================
+
+class FileFormat(Enum):
+    """Desteklenen dil dosya formatları"""
+    JSON = "json"
+    YAML = "yaml"
+    PO = "po"
+    PROPERTIES = "properties"
+    XML = "xml"
+    CSV = "csv"
+
+
+@dataclass
+class LanguageMetadata:
+    """Bir dil için meta veriler"""
+    language_code: str
+    language_name: str
+    file_path: str
+    file_format: FileFormat
+    total_keys: int = 0
+    translated_keys: int = 0
+    missing_keys: List[str] = field(default_factory=list)
+    empty_values: List[str] = field(default_factory=list)
+    errors: List[str] = field(default_factory=list)
+    
+    @property
+    def completion_percentage(self) -> float:
+        """Tercüme tamamlanma yüzdesini hesapla"""
+        if self.total_keys == 0:
+            return 0.0
+        return (self.translated_keys / self.total_keys) * 100
+    
+    @property
+    def missing_count(self) -> int:
+        """Eksik tercümelerin sayısı"""
+        return len(self.missing_keys) + len(self.empty_values)
+
+
+@dataclass
+class TranslationIssue:
+    """Bir tercüme sorunu"""
+    issue_type: str
+    key: str
+    language: str
+    file_path: str
+    details: str = ""
+    severity: str = "warning"
+
+
+# ============================================================================
+# BÖLÜM 2: LOGLAMA KURULUMU
+# ============================================================================
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+
+# ============================================================================
+# BÖLÜM 3: DOSYA TARAMA VE AYRIŞTIIRMA
+# ============================================================================
+
+class FileScanner(ABC):
+    """Dil dosyalarını taramak için temel sınıf"""
+    
+    @abstractmethod
+    def scan(self) -> Dict[str, List[str]]:
+        """Tarama yaparak dil ve dosya eşlemesi döndür"""
+        pass
+
+
+class LocalFileScanner(FileScanner):
+    """Yerel dosya sistemini tarayan sınıf"""
+    
+    def __init__(self, base_path: str, extensions: Optional[List[str]] = None):
+        """
+        Başlatıcı
+        
+        Args:
+            base_path: Taranacak temel dizin
+            extensions: Taranacak dosya uzantıları
+        """
+        self.base_path = Path(base_path)
+        self.extensions = extensions or [".json", ".yaml", ".yml", ".po"]
+        
+        if not self.base_path.exists():
+            raise ValueError(f"Dizin bulunamadı: {base_path}")
+    
+    def scan(self) -> Dict[str, List[str]]:
+        """Yerel dizinde dil dosyalarını tara"""
+        logger.info(f"Yerel tarama başlatılıyor: {self.base_path}")
+        
+        language_files: Dict[str, List[str]] = {}
+        
+        for file_path in self.base_path.rglob("*"):
+            if not file_path.is_file():
+                continue
+            
+            if file_path.suffix.lower() not in self.extensions:
+                continue
+            
+            language_code = self._extract_language_code(file_path)
+            
+            if language_code:
+                if language_code not in language_files:
+                    language_files[language_code] = []
+                language_files[language_code].append(str(file_path))
+                logger.debug(f"Dosya bulundu: {file_path} ({language_code})")
+        
+        logger.info(f"Toplam {len(language_files)} dil bulundu")
+        return language_files
+    
+    @staticmethod
+    def _extract_language_code(file_path: Path) -> Optional[str]:
+        """Dosya yolundan dil kodunu çıkar"""
+        stem = file_path.stem
+        if len(stem) == 2 and stem.isalpha():
+            return stem.lower()
+        
+        for parent in file_path.parents:
+            if len(parent.name) == 2 and parent.name.isalpha():
+                return parent.name.lower()
+        
+        return None
+
+
+class LanguageFileParser(ABC):
+    """Dil dosyalarını ayrıştırmak için temel sınıf"""
+    
+    @abstractmethod
+    def parse(self, file_path: str) -> Tuple[Dict[str, Any], List[str]]:
+        """Dosyayı ayrıştır"""
+        pass
+    
+    @staticmethod
+    def detect_format(file_path: str) -> FileFormat:
+        """Dosya formatını uzantıdan belirle"""
+        ext = Path(file_path).suffix.lower()
+        format_map = {
+            ".json": FileFormat.JSON,
+            ".yaml": FileFormat.YAML,
+            ".yml": FileFormat.YAML,
+            ".po": FileFormat.PO,
+            ".properties": FileFormat.PROPERTIES,
+            ".xml": FileFormat.XML,
+            ".csv": FileFormat.CSV,
+        }
+        return format_map.get(ext, FileFormat.JSON)
+
+
+class JSONParser(LanguageFileParser):
+    """JSON dosyalarını ayrıştırma"""
+    
+    def parse(self, file_path: str) -> Tuple[Dict[str, Any], List[str]]:
+        """JSON dosyasını ayrıştır"""
+        errors = []
+        
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                logger.debug(f"JSON ayrıştırıldı: {file_path}")
+                return self._flatten_dict(data), errors
+        except json.JSONDecodeError as e:
+            error_msg = f"JSON ayrıştırma hatası: {e}"
+            errors.append(error_msg)
+            logger.error(error_msg)
+            return {}, errors
+        except Exception as e:
+            error_msg = f"Dosya okuma hatası: {e}"
+            errors.append(error_msg)
+            logger.error(error_msg)
+            return {}, errors
+    
+    @staticmethod
+    def _flatten_dict(d: Dict, parent_key: str = '', sep: str = '.') -> Dict[str, Any]:
+        """İç içe geçmiş sözlüğü düzleştir"""
+        items = []
+        for k, v in d.items():
+            new_key = f"{parent_key}{sep}{k}" if parent_key else k
+            if isinstance(v, dict):
+                items.extend(JSONParser._flatten_dict(v, new_key, sep).items())
+            else:
+                items.append((new_key, v))
+        return dict(items)
+
+
+class YAMLParser(LanguageFileParser):
+    """YAML dosyalarını ayrıştırma"""
+    
+    def parse(self, file_path: str) -> Tuple[Dict[str, Any], List[str]]:
+        """YAML dosyasını ayrıştır"""
+        errors = []
+        
+        try:
+            import yaml
+            with open(file_path, 'r', encoding='utf-8') as f:
+                data = yaml.safe_load(f)
+                if data is None:
+                    data = {}
+                logger.debug(f"YAML ayrıştırıldı: {file_path}")
+                return self._flatten_dict(data), errors
+        except ImportError:
+            error_msg = "PyYAML kurulmamış. Kurmak için: pip install pyyaml"
+            errors.append(error_msg)
+            logger.error(error_msg)
+            return {}, errors
+        except Exception as e:
+            error_msg = f"YAML ayrıştırma hatası: {e}"
+            errors.append(error_msg)
+            logger.error(error_msg)
+            return {}, errors
+    
+    @staticmethod
+    def _flatten_dict(d: Dict, parent_key: str = '', sep: str = '.') -> Dict[str, Any]:
+        """İç içe geçmiş sözlüğü düzleştir"""
+        if not isinstance(d, dict):
+            return {}
+        
+        items = []
+        for k, v in d.items():
+            new_key = f"{parent_key}{sep}{k}" if parent_key else k
+            if isinstance(v, dict):
+                items.extend(YAMLParser._flatten_dict(v, new_key, sep).items())
+            else:
+                items.append((new_key, v))
+        return dict(items)
+
+
+# ============================================================================
+# BÖLÜM 4: ANALİZ MODÜLLERI
+# ============================================================================
+
+class TranslationAnalyzer:
+    """Tercüme dosyalarını analiz eden sınıf"""
+    
+    def __init__(self):
+        self.parsers: Dict[FileFormat, LanguageFileParser] = {
+            FileFormat.JSON: JSONParser(),
+            FileFormat.YAML: YAMLParser(),
+        }
+    
+    def analyze_language(self, language_code: str, file_paths: List[str]) -> LanguageMetadata:
+        """Bir dilin tüm dosyalarını analiz et"""
+        combined_data: Dict[str, Any] = {}
+        all_errors: List[str] = []
+        
+        for file_path in file_paths:
+            file_format = LanguageFileParser.detect_format(file_path)
+            
+            if file_format not in self.parsers:
+                error_msg = f"Desteklenmeyen format: {file_format.value}"
+                all_errors.append(error_msg)
+                logger.warning(error_msg)
+                continue
+            
+            parser = self.parsers[file_format]
+            data, errors = parser.parse(file_path)
+            
+            combined_data.update(data)
+            all_errors.extend(errors)
+        
+        metadata = LanguageMetadata(
+            language_code=language_code,
+            language_name=self._get_language_name(language_code),
+            file_path=file_paths[0] if file_paths else "",
+            file_format=LanguageFileParser.detect_format(file_paths[0]) if file_paths else FileFormat.JSON,
+            total_keys=len(combined_data),
+            errors=all_errors
+        )
+        
+        self._analyze_translation_status(combined_data, metadata)
+        
+        return metadata
+    
+    @staticmethod
+    def _get_language_name(language_code: str) -> str:
+        """Dil kodundan dil adını al"""
+        language_names = {
+            'en': 'English',
+            'tr': 'Türkçe',
+            'de': 'Deutsch',
+            'fr': 'Français',
+            'es': 'Español',
+            'it': 'Italiano',
+            'pt': 'Português',
+            'ru': 'Русский',
+            'ja': 'Japanese',
+            'zh': '中文',
+            'ar': 'العربية',
+            'ko': '한국어',
+        }
+        return language_names.get(language_code, language_code.upper())
+    
+    @staticmethod
+    def _analyze_translation_status(data: Dict[str, Any], metadata: LanguageMetadata) -> None:
+        """Tercüme durumunu analiz et"""
+        for key, value in data.items():
+            if value is None or (isinstance(value, str) and not value.strip()):
+                metadata.empty_values.append(key)
+            elif isinstance(value, str) and value.strip():
+                metadata.translated_keys += 1
+            else:
+                metadata.translated_keys += 1
+
+
+class ConsistencyValidator:
+    """Dil dosyalarının tutarlılığını doğrula"""
+    
+    def __init__(self, reference_language: str = "en"):
+        self.reference_language = reference_language
+        self.issues: List[TranslationIssue] = []
+    
+    def validate_consistency(self, languages: Dict[str, LanguageMetadata]) -> List[TranslationIssue]:
+        """Tüm dilleri karşılaştıra tutarlılığı doğrula"""
+        self.issues.clear()
+        
+        if self.reference_language not in languages:
+            logger.warning(f"Referans dil bulunamadı: {self.reference_language}")
+            return self.issues
+        
+        reference_metadata = languages[self.reference_language]
+        
+        for lang_code, metadata in languages.items():
+            if lang_code == self.reference_language:
+                continue
+            
+            self._check_key_consistency(reference_metadata, metadata)
+            self._check_empty_values(metadata)
+        
+        logger.info(f"Tutarlılık kontrol tamamlandı: {len(self.issues)} sorun bulundu")
+        return self.issues
+    
+    def _check_key_consistency(self, reference: LanguageMetadata, target: LanguageMetadata) -> None:
+        """Anahtarların tutarlılığını kontrol et"""
+        if reference.total_keys != target.total_keys:
+            issue = TranslationIssue(
+                issue_type='key_mismatch',
+                key='__all__',
+                language=target.language_code,
+                file_path=target.file_path,
+                details=f"Anahtar sayısı uyuşmuyor: Referans: {reference.total_keys}, Hedef: {target.total_keys}",
+                severity='error'
+            )
+            self.issues.append(issue)
+    
+    def _check_empty_values(self, metadata: LanguageMetadata) -> None:
+        """Boş değerleri kontrol et"""
+        for key in metadata.empty_values:
+            issue = TranslationIssue(
+                issue_type='empty',
+                key=key,
+                language=metadata.language_code,
+                file_path=metadata.file_path,
+                details=f"Boş tercüme değeri",
+                severity='warning'
+            )
+            self.issues.append(issue)
+
+
+class FormatValidator:
+    """Format parametrelerinin tutarlılığını doğrula"""
+    
+    POSITIONAL_PATTERN = re.compile(r'\{\d+\}')
+    PERCENT_PATTERN = re.compile(r'%[sd]')
+    
+    @staticmethod
+    def extract_format_params(text: str) -> Set[str]:
+        """Metinden format parametrelerini çıkar"""
+        if not isinstance(text, str):
+            return set()
+        
+        params = set()
+        params.update(FormatValidator.POSITIONAL_PATTERN.findall(text))
+        params.update(FormatValidator.PERCENT_PATTERN.findall(text))
+        
+        return params
+    
+    @classmethod
+    def validate_parameter_consistency(cls, reference_text: str, target_text: str) -> Tuple[bool, List[str]]:
+        """Referans ve hedef metinlerdeki parametrelerin tutarlılığını doğrula"""
+        errors = []
+        
+        if not isinstance(reference_text, str) or not isinstance(target_text, str):
+            return True, errors
+        
+        ref_params = cls.extract_format_params(reference_text)
+        target_params = cls.extract_format_params(target_text)
+        
+        if ref_params != target_params:
+            missing = ref_params - target_params
+            extra = target_params - ref_params
+            
+            if missing:
+                errors.append(f"Eksik parametreler: {', '.join(missing)}")
+            if extra:
+                errors.append(f"Fazla parametreler: {', '.join(extra)}")
+            
+            return False, errors
+        
+        return True, errors
+
+
+class ContextualAnalyzer:
+    """Anahtarların kontekstini ve amacını analiz eder"""
+    
+    ERROR_PATTERNS = ['error', 'fail', 'invalid', 'danger', 'warning']
+    SUCCESS_PATTERNS = ['success', 'ok', 'valid', 'done', 'complete']
+    UI_PATTERNS = ['button', 'label', 'placeholder', 'tooltip', 'hint', 'title', 'header']
+    ACTION_PATTERNS = ['action', 'save', 'delete', 'edit', 'create', 'update']
+    
+    @classmethod
+    def categorize_key(cls, key: str) -> str:
+        """Anahtarı kategorilere ayır"""
+        key_lower = key.lower()
+        
+        for pattern in cls.ERROR_PATTERNS:
+            if pattern in key_lower:
+                return 'error'
+        
+        for pattern in cls.SUCCESS_PATTERNS:
+            if pattern in key_lower:
+                return 'success'
+        
+        for pattern in cls.UI_PATTERNS:
+            if pattern in key_lower:
+                return 'ui_element'
+        
+        for pattern in cls.ACTION_PATTERNS:
+            if pattern in key_lower:
+                return 'action'
+        
+        return 'other'
+    
+    @classmethod
+    def get_keys_by_category(cls, keys: List[str]) -> Dict[str, List[str]]:
+        """Anahtarları kategorilere göre grupla"""
+        categorized: Dict[str, List[str]] = {
+            'error': [],
+            'success': [],
+            'ui_element': [],
+            'action': [],
+            'other': []
+        }
+        
+        for key in keys:
+            category = cls.categorize_key(key)
+            categorized[category].append(key)
+        
+        return categorized
+
+
+class SimilarityAnalyzer:
+    """Benzer anahtarları ve değerleri analiz eder"""
+    
+    @staticmethod
+    def levenshtein_distance(s1: str, s2: str) -> int:
+        """Levenshtein mesafesini hesapla"""
+        if len(s1) < len(s2):
+            return SimilarityAnalyzer.levenshtein_distance(s2, s1)
+        
+        if len(s2) == 0:
+            return len(s1)
+        
+        previous_row = range(len(s2) + 1)
+        for i, c1 in enumerate(s1):
+            current_row = [i + 1]
+            for j, c2 in enumerate(s2):
+                insertions = previous_row[j + 1] + 1
+                deletions = current_row[j] + 1
+                substitutions = previous_row[j] + (c1 != c2)
+                current_row.append(min(insertions, deletions, substitutions))
+            previous_row = current_row
+        
+        return previous_row[-1]
+    
+    @classmethod
+    def find_similar_keys(cls, keys: List[str], threshold: float = 0.8) -> List[Tuple[str, str, float]]:
+        """Benzer anahtarları bul"""
+        similar_pairs = []
+        
+        for i, key1 in enumerate(keys):
+            for key2 in keys[i + 1:]:
+                max_len = max(len(key1), len(key2))
+                if max_len == 0:
+                    similarity = 1.0
+                else:
+                    distance = cls.levenshtein_distance(key1, key2)
+                    similarity = 1 - (distance / max_len)
+                
+                if similarity >= threshold:
+                    similar_pairs.append((key1, key2, similarity))
+        
+        return sorted(similar_pairs, key=lambda x: x[2], reverse=True)
+
+
+class QualityScorer:
+    """Tercüme kalitesini puanla"""
+    
+    def __init__(self, reference_language: str = "en"):
+        self.reference_language = reference_language
+    
+    def calculate_language_quality_score(
+        self,
+        metadata: LanguageMetadata,
+        issues: List[TranslationIssue]
+    ) -> float:
+        """Bir dilin tercüme kalitesini hesapla (0-100)"""
+        score = 100.0
+        
+        completion_loss = 100 - metadata.completion_percentage
+        score -= completion_loss * 0.5
+        
+        error_count = sum(1 for issue in issues if issue.severity == 'error')
+        score -= error_count * 2
+        
+        warning_count = sum(1 for issue in issues if issue.severity == 'warning')
+        score -= warning_count * 0.5
+        
+        file_error_count = len(metadata.errors)
+        score -= file_error_count * 5
+        
+        return max(0, min(100, score))
+
+
+class GitHubIntegration:
+    """GitHub deposu ile entegrasyon"""
+    
+    def __init__(self, repo_url: str):
+        self.repo_url = repo_url.rstrip('/')
+        self.api_url = self._convert_to_api_url(repo_url)
+    
+    @staticmethod
+    def _convert_to_api_url(repo_url: str) -> str:
+        """GitHub web URL'sini API URL'sine çevir"""
+        match = re.search(r'github\.com/([^/]+)/([^/]+)', repo_url)
+        if match:
+            owner, repo = match.groups()
+            return f"https://api.github.com/repos/{owner}/{repo}"
+        return ""
+    
+    def get_file_content(self, file_path: str, branch: str = "main") -> Optional[str]:
+        """GitHub deposundan dosya içeriğini al"""
+        try:
+            import requests
+            
+            url = f"{self.repo_url}/raw/{branch}/{file_path}"
+            response = requests.get(url, timeout=10)
+            if response.status_code == 200:
+                return response.text
+            
+            logger.warning(f"GitHub dosyası alınamadı: {url}")
+            return None
+        
+        except ImportError:
+            logger.error("requests kütüphanesi gereklidir: pip install requests")
+            return None
+        except Exception as e:
+            logger.error(f"GitHub dosyası alınırken hata: {e}")
+            return None
+
+
+# ============================================================================
+# BÖLÜM 5: RAPOR ÜRETİMİ
+# ============================================================================
+
+class TranslationReport:
+    """Tercüme analiz raporu"""
+    
+    def __init__(self, analysis_date: datetime = None):
+        self.analysis_date = analysis_date or datetime.now()
+        self.languages: Dict[str, Any] = {}
+        self.issues: List[Any] = []
+        self.summary: Dict[str, Any] = {}
+        self.distribution: Dict[str, Any] = {}
+    
+    def add_language(self, language_code: str, metadata: LanguageMetadata) -> None:
+        """Dil metadata'sı ekle"""
+        self.languages[language_code] = {
+            'code': language_code,
+            'name': metadata.language_name,
+            'total_keys': metadata.total_keys,
+            'translated_keys': metadata.translated_keys,
+            'missing_keys': len(metadata.missing_keys),
+            'empty_values': len(metadata.empty_values),
+            'completion_percentage': metadata.completion_percentage,
+            'errors': metadata.errors
+        }
+    
+    def add_issue(self, issue: TranslationIssue) -> None:
+        """Sorun ekle"""
+        self.issues.append({
+            'type': issue.issue_type,
+            'key': issue.key,
+            'language': issue.language,
+            'file_path': issue.file_path,
+            'details': issue.details,
+            'severity': issue.severity
+        })
+    
+    def calculate_summary(self) -> None:
+        """Özet istatistikleri hesapla"""
+        if not self.languages:
+            self.summary = {
+                'total_languages': 0,
+                'total_issues': 0,
+                'critical_issues': 0,
+                'average_completion': 0,
+                'best_language': None,
+                'worst_language': None
+            }
+            return
+        
+        completions = [lang['completion_percentage'] for lang in self.languages.values()]
+        critical_issues = sum(1 for issue in self.issues if issue['severity'] == 'error')
+        
+        best_lang = max(self.languages.items(), 
+                       key=lambda x: x[1]['completion_percentage'])[0]
+        worst_lang = min(self.languages.items(),
+                        key=lambda x: x[1]['completion_percentage'])[0]
+        
+        self.summary = {
+            'total_languages': len(self.languages),
+            'total_issues': len(self.issues),
+            'critical_issues': critical_issues,
+            'warning_issues': sum(1 for issue in self.issues if issue['severity'] == 'warning'),
+            'average_completion': sum(completions) / len(completions) if completions else 0,
+            'best_language': best_lang,
+            'worst_language': worst_lang,
+            'analysis_date': self.analysis_date.isoformat()
+        }
+
+
+class ReportGenerator(ABC):
+    """Rapor üretmek için temel sınıf"""
+    
+    def __init__(self, report: TranslationReport):
+        self.report = report
+    
+    @abstractmethod
+    def generate(self) -> str:
+        """Raporu üret ve dön"""
+        pass
+
+
+class JSONReportGenerator(ReportGenerator):
+    """JSON formatında rapor üret"""
+    
+    def generate(self, indent: int = 2) -> str:
+        """JSON rapor üret"""
+        report_dict = {
+            'metadata': {
+                'analysis_date': self.report.analysis_date.isoformat(),
+                'generated_by': 'MultiLanguageChecker'
+            },
+            'summary': self.report.summary,
+            'languages': self.report.languages,
+            'issues': self.report.issues,
+            'distribution': self.report.distribution
+        }
+        
+        return json.dumps(report_dict, indent=indent, ensure_ascii=False)
+    
+    def save_to_file(self, file_path: str) -> None:
+        """Raporu dosyaya kaydet"""
+        try:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(self.generate())
+            logger.info(f"JSON rapor kaydedildi: {file_path}")
+        except Exception as e:
+            logger.error(f"JSON rapor kaydedilirken hata: {e}")
+
+
+class HTMLReportGenerator(ReportGenerator):
+    """HTML formatında rapor üret"""
+    
+    def generate(self) -> str:
+        """HTML rapor üret"""
+        html_parts = [
+            self._generate_header(),
+            self._generate_summary(),
+            self._generate_language_overview(),
+            self._generate_issues_section(),
+            self._generate_footer()
+        ]
+        
+        return "\n".join(html_parts)
+    
+    def _generate_header(self) -> str:
+        """HTML başlığını üret"""
+        return f"""<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Çoklu Dil Desteği Kontrolü Raporu</title>
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f5f5; padding: 20px; }}
+        .container {{ max-width: 1200px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+        h1 {{ color: #333; padding: 20px; border-bottom: 3px solid #007bff; }}
+        h2 {{ color: #555; padding: 15px 20px 10px; margin-top: 20px; border-left: 4px solid #007bff; }}
+        .summary-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; padding: 20px; }}
+        .summary-card {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px; }}
+        .summary-card.critical {{ background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }}
+        .summary-card.success {{ background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }}
+        .summary-card h3 {{ font-size: 14px; opacity: 0.9; margin-bottom: 10px; }}
+        .summary-card .value {{ font-size: 28px; font-weight: bold; }}
+        table {{ width: 100%; border-collapse: collapse; margin: 20px; }}
+        th {{ background: #f8f9fa; padding: 12px; text-align: left; border-bottom: 2px solid #dee2e6; font-weight: 600; color: #333; }}
+        td {{ padding: 12px; border-bottom: 1px solid #dee2e6; }}
+        tr:hover {{ background: #f8f9fa; }}
+        .progress-bar {{ background: #e9ecef; border-radius: 4px; height: 20px; overflow: hidden; }}
+        .progress-fill {{ background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%); height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold; }}
+        .severity-error {{ color: #dc3545; font-weight: 600; }}
+        .severity-warning {{ color: #ffc107; font-weight: 600; }}
+        .footer {{ text-align: center; padding: 20px; color: #999; font-size: 12px; border-top: 1px solid #eee; }}
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📊 Çoklu Dil Desteği Kontrolü Raporu</h1>
+    <p style="padding: 0 20px; color: #666;">Analiz Tarihi: {self.report.analysis_date.strftime('%d.%m.%Y %H:%M:%S')}</p>
+"""
+    
+    def _generate_summary(self) -> str:
+        """Özet bölümünü üret"""
+        summary = self.report.summary
+        
+        return f"""
+    <h2>📈 Özet Bilgiler</h2>
+    <div class="summary-grid">
+        <div class="summary-card">
+            <h3>Toplam Diller</h3>
+            <div class="value">{summary.get('total_languages', 0)}</div>
+        </div>
+        <div class="summary-card">
+            <h3>Ortalama Tamamlanma</h3>
+            <div class="value">{summary.get('average_completion', 0):.1f}%</div>
+        </div>
+        <div class="summary-card critical">
+            <h3>Kritik Sorunlar</h3>
+            <div class="value">{summary.get('critical_issues', 0)}</div>
+        </div>
+        <div class="summary-card">
+            <h3>Uyarılar</h3>
+            <div class="value">{summary.get('warning_issues', 0)}</div>
+        </div>
+    </div>
+"""
+    
+    def _generate_language_overview(self) -> str:
+        """Dil genel bakış bölümünü üret"""
+        html = "<h2>🌐 Dil Durumu</h2><table><tr><th>Dil</th><th>Toplam Anahtarlar</th><th>Tercüme Edilen</th><th>Tamamlanma %</th><th>Eksik/Boş</th></tr>"
+        
+        for code, lang_data in self.report.languages.items():
+            completion = lang_data['completion_percentage']
+            missing = lang_data['missing_keys'] + lang_data['empty_values']
+            
+            html += f"""
+<tr>
+    <td><strong>{lang_data['name']}</strong> ({code})</td>
+    <td>{lang_data['total_keys']}</td>
+    <td>{lang_data['translated_keys']}</td>
+    <td>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {completion}%">{completion:.1f}%</div>
+        </div>
+    </td>
+    <td>{missing}</td>
+</tr>
+"""
+        
+        html += "</table>"
+        return html
+    
+    def _generate_issues_section(self) -> str:
+        """Sorunlar bölümünü üret"""
+        if not self.report.issues:
+            return "<h2>✅ Sorun Bulunamadı</h2>"
+        
+        html = "<h2>⚠️ Tespit Edilen Sorunlar</h2>"
+        html += "<table><tr><th>Tür</th><th>Anahtar</th><th>Dil</th><th>Dosya</th><th>Açıklama</th><th>Önem</th></tr>"
+        
+        for issue in self.report.issues:
+            severity_class = f"severity-{issue['severity']}"
+            html += f"""
+<tr>
+    <td>{issue['type']}</td>
+    <td><code>{issue['key']}</code></td>
+    <td>{issue['language']}</td>
+    <td><small>{issue['file_path']}</small></td>
+    <td>{issue['details']}</td>
+    <td><span class="{severity_class}">{issue['severity'].upper()}</span></td>
+</tr>
+"""
+        
+        html += "</table>"
+        return html
+    
+    def _generate_footer(self) -> str:
+        """HTML altbilgisini üret"""
+        return """
+    <div class="footer">
+        <p>Bu rapor otomatik olarak Çoklu Dil Desteği Kontrol Sistemi tarafından oluşturulmuştur.</p>
+    </div>
+</div>
+</body>
+</html>
+"""
+    
+    def save_to_file(self, file_path: str) -> None:
+        """Raporu dosyaya kaydet"""
+        try:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(self.generate())
+            logger.info(f"HTML rapor kaydedildi: {file_path}")
+        except Exception as e:
+            logger.error(f"HTML rapor kaydedilirken hata: {e}")
+
+
+class CSVReportGenerator(ReportGenerator):
+    """CSV formatında rapor üret"""
+    
+    def generate(self) -> str:
+        """CSV rapor üret"""
+        lines = []
+        
+        lines.append("# Çoklu Dil Desteği Kontrol Raporu")
+        lines.append(f"# Analiz Tarihi: {self.report.analysis_date.isoformat()}")
+        lines.append("")
+        
+        lines.append("## Özet")
+        lines.append("Metrik,Değer")
+        lines.append(f"Toplam Diller,{self.report.summary.get('total_languages', 0)}")
+        lines.append(f"Ortalama Tamamlanma,{self.report.summary.get('average_completion', 0):.2f}%")
+        lines.append(f"Toplam Sorunlar,{self.report.summary.get('total_issues', 0)}")
+        lines.append(f"Kritik Sorunlar,{self.report.summary.get('critical_issues', 0)}")
+        lines.append("")
+        
+        lines.append("## Dil Durumu")
+        lines.append("Dil,Kod,Toplam Anahtarlar,Tercüme Edilen,Tamamlanma %,Eksik,Boş Değerler,Hatalar")
+        for code, lang in self.report.languages.items():
+            lines.append(f"{lang['name']},{code},{lang['total_keys']},{lang['translated_keys']},"
+                        f"{lang['completion_percentage']:.2f}%,{lang['missing_keys']},{lang['empty_values']},"
+                        f"{len(lang['errors'])}")
+        lines.append("")
+        
+        if self.report.issues:
+            lines.append("## Sorunlar")
+            lines.append("Tür,Anahtar,Dil,Dosya,Açıklama,Önem")
+            for issue in self.report.issues:
+                lines.append(f"{issue['type']},\"{issue['key']}\",{issue['language']},"
+                            f"\"{issue['file_path']}\",\"{issue['details']}\",{issue['severity']}")
+        
+        return "\n".join(lines)
+    
+    def save_to_file(self, file_path: str) -> None:
+        """Raporu dosyaya kaydet"""
+        try:
+            with open(file_path, 'w', encoding='utf-8', newline='') as f:
+                f.write(self.generate())
+            logger.info(f"CSV rapor kaydedildi: {file_path}")
+        except Exception as e:
+            logger.error(f"CSV rapor kaydedilirken hata: {e}")
+
+
+class MarkdownReportGenerator(ReportGenerator):
+    """Markdown formatında rapor üret"""
+    
+    def generate(self) -> str:
+        """Markdown rapor üret"""
+        md_parts = [
+            self._generate_header(),
+            self._generate_summary(),
+            self._generate_language_overview(),
+            self._generate_issues_section(),
+            self._generate_recommendations()
+        ]
+        
+        return "\n\n".join(md_parts)
+    
+    def _generate_header(self) -> str:
+        """Başlık bölümü"""
+        return f"""# Çoklu Dil Desteği Kontrolü Raporu
+
+**Analiz Tarihi:** {self.report.analysis_date.strftime('%d.%m.%Y %H:%M:%S')}
+
+**Üretici:** Çoklu Dil Desteği Kontrol Sistemi"""
+    
+    def _generate_summary(self) -> str:
+        """Özet bölümü"""
+        summary = self.report.summary
+        
+        summary_text = f"""## Özet Bilgiler
+
+| Metrik | Değer |\n|--------|-------|\n| Toplam Diller | {summary.get('total_languages', 0)} |\n| Ortalama Tamamlanma | {summary.get('average_completion', 0):.2f}% |\n| Toplam Sorunlar | {summary.get('total_issues', 0)} |\n| Kritik Sorunlar | {summary.get('critical_issues', 0)} |\n| Uyarılar | {summary.get('warning_issues', 0)} |\n| En İyi Dil | {summary.get('best_language', 'N/A')} |\n| En Kötü Dil | {summary.get('worst_language', 'N/A')} |"""
+        
+        return summary_text
+    
+    def _generate_language_overview(self) -> str:
+        """Dil durumu bölümü"""
+        md = "## 🌐 Dil Durumu\n\n"
+        md += "| Dil | Kod | Toplam Anahtarlar | Tercüme Edilen | Tamamlanma % | Eksik |\n"
+        md += "|-----|------|-------------------|-----------------|---------------|--------|\n"
+        
+        for code, lang in self.report.languages.items():
+            missing = lang['missing_keys'] + lang['empty_values']
+            md += f"| {lang['name']} | `{code}` | {lang['total_keys']} | {lang['translated_keys']} | {lang['completion_percentage']:.2f}% | {missing} |\n"
+        
+        return md
+    
+    def _generate_issues_section(self) -> str:
+        """Sorunlar bölümü"""
+        if not self.report.issues:
+            return "## ✅ Sorun Bulunamadı"
+        
+        md = "## ⚠️ Tespit Edilen Sorunlar\n\n"
+        
+        issues_by_type = {}
+        for issue in self.report.issues:
+            issue_type = issue['type']
+            if issue_type not in issues_by_type:
+                issues_by_type[issue_type] = []
+            issues_by_type[issue_type].append(issue)
+        
+        for issue_type, issues in issues_by_type.items():
+            md += f"### {issue_type.upper()}\n\n"
+            for issue in issues[:10]:
+                md += f"- **Anahtar:** `{issue['key']}`\n"
+                md += f"  - **Dil:** {issue['language']}\n"
+                md += f"  - **Dosya:** {issue['file_path']}\n"
+                md += f"  - **Açıklama:** {issue['details']}\n"
+                md += f"  - **Önem:** {issue['severity'].upper()}\n\n"
+            
+            if len(issues) > 10:
+                md += f"*...ve {len(issues) - 10} daha*\n\n"
+        
+        return md
+    
+    def _generate_recommendations(self) -> str:
+        """Öneriler bölümü"""
+        recommendations = []
+        
+        summary = self.report.summary
+        
+        if summary.get('critical_issues', 0) > 0:
+            recommendations.append("- Kritik sorunlar derhal düzeltilmelidir")
+        
+        avg_completion = summary.get('average_completion', 0)
+        if avg_completion < 50:
+            recommendations.append("- Tercümeleme projesinin genel ilerlemesi zayıftır")
+        elif avg_completion < 80:
+            recommendations.append("- Bazı diller hala eksik tercümeler içermektedir")
+        
+        if not recommendations:
+            recommendations.append("- Tercümeleme durumu iyi seyrinde devam etmektedir")
+        
+        return "## 💡 Öneriler\n\n" + "\n".join(recommendations)
+    
+    def save_to_file(self, file_path: str) -> None:
+        """Raporu dosyaya kaydet"""
+        try:
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(self.generate())
+            logger.info(f"Markdown rapor kaydedildi: {file_path}")
+        except Exception as e:
+            logger.error(f"Markdown rapor kaydedilirken hata: {e}")
+
+
+# ============================================================================
+# BÖLÜM 6: ANA UYGULAAMA
+# ============================================================================
+
+class MultiLanguageChecker:
+    """Ana çoklu dil kontrol sınıfı"""
+    
+    def __init__(self, base_path: str, reference_language: str = "en"):
+        self.base_path = base_path
+        self.reference_language = reference_language
+        self.analyzer = TranslationAnalyzer()
+        self.validator = ConsistencyValidator(reference_language)
+        self.quality_scorer = QualityScorer(reference_language)
+    
+    def check_local_files(self, extensions: Optional[list] = None) -> TranslationReport:
+        """Yerel dosyaları kontrol et ve rapor üret"""
+        logger.info(f"Yerel dosyalar kontrol ediliyor: {self.base_path}")
+        
+        scanner = LocalFileScanner(self.base_path, extensions)
+        language_files = scanner.scan()
+        
+        if not language_files:
+            logger.warning("Hiçbir dil dosyası bulunamadı")
+            return TranslationReport()
+        
+        languages_metadata = {}
+        for language_code, file_paths in language_files.items():
+            logger.info(f"Analiz ediliyor: {language_code} ({len(file_paths)} dosya)")
+            metadata = self.analyzer.analyze_language(language_code, file_paths)
+            languages_metadata[language_code] = metadata
+        
+        issues = self.validator.validate_consistency(languages_metadata)
+        
+        report = TranslationReport()
+        
+        for language_code, metadata in languages_metadata.items():
+            report.add_language(language_code, metadata)
+        
+        for issue in issues:
+            report.add_issue(issue)
+        
+        report.calculate_summary()
+        
+        return report
+    
+    def check_github_repo(self, repo_url: str, branch: str = "main", path: str = "") -> TranslationReport:
+        """GitHub deposundan dosyaları kontrol et"""
+        logger.info(f"GitHub deposu kontrol ediliyor: {repo_url}")
+        
+        github = GitHubIntegration(repo_url)
+        
+        logger.info(f"Dil dosyaları aranıyor...")
+        language_files = {}
+        
+        json_files = github.list_files(path, branch, ".json")
+        for file_path in json_files:
+            lang_code = self._extract_language_code(file_path)
+            if lang_code:
+                if lang_code not in language_files:
+                    language_files[lang_code] = []
+                language_files[lang_code].append(file_path)
+        
+        if not language_files:
+            logger.warning("GitHub deposunda dil dosyası bulunamadı")
+            return TranslationReport()
+        
+        report = TranslationReport()
+        logger.warning("GitHub analiz kısmi olarak gerçekleştirilmiştir")
+        
+        return report
+    
+    @staticmethod
+    def _extract_language_code(file_path: str) -> Optional[str]:
+        """Dosya yolundan dil kodunu çıkar"""
+        path = Path(file_path)
+        stem = path.stem
+        
+        if len(stem) == 2 and stem.isalpha():
+            return stem.lower()
+        
+        for parent in path.parents:
+            if len(parent.name) == 2 and parent.name.isalpha():
+                return parent.name.lower()
+        
+        return None
+
+
+def main():
+    """Ana fonksiyon"""
+    parser = argparse.ArgumentParser(
+        description="Web sitelerinin çoklu dil desteğini kontrol eder",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Örnekler:
+  # Yerel dizini kontrol et
+  python multilingual_checker.py --path ./locales
+
+  # Özel çıktı formatı ile rapor üret
+  python multilingual_checker.py --path ./locales --format html --output report.html
+
+  # GitHub deposu kontrol et
+  python multilingual_checker.py --github https://github.com/owner/repo
+
+  # Detaylı loglama ile çalıştır
+  python multilingual_checker.py --path ./locales --verbose
+        """
+    )
+    
+    input_group = parser.add_mutually_exclusive_group(required=True)
+    input_group.add_argument(
+        '--path', '-p',
+        help='Taranacak yerel dizin yolu'
+    )
+    input_group.add_argument(
+        '--github', '-g',
+        help='Kontrol edilecek GitHub depo URL\'si'
+    )
+    
+    parser.add_argument(
+        '--format', '-f',
+        choices=['json', 'html', 'csv', 'markdown'],
+        default='markdown',
+        help='Rapor formatı (varsayılan: markdown)'
+    )
+    parser.add_argument(
+        '--output', '-o',
+        help='Çıktı dosyası yolu (varsayılan: ekrana yazdır)'
+    )
+    
+    parser.add_argument(
+        '--reference', '-r',
+        default='en',
+        help='Referans dil kodu (varsayılan: en)'
+    )
+    parser.add_argument(
+        '--branch', '-b',
+        default='main',
+        help='GitHub branch adı (varsayılan: main)'
+    )
+    parser.add_argument(
+        '--verbose', '-v',
+        action='store_true',
+        help='Detaylı loglama çıktısı'
+    )
+    
+    args = parser.parse_args()
+    
+    if args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+    
+    try:
+        if args.path:
+            logger.info("Yerel dosya kontrolü başlatılıyor...")
+            checker = MultiLanguageChecker(args.path, args.reference)
+            report = checker.check_local_files()
+        else:
+            logger.info("GitHub depo kontrolü başlatılıyor...")
+            checker = MultiLanguageChecker(".", args.reference)
+            report = checker.check_github_repo(args.github, args.branch)
+        
+        generators = {
+            'json': JSONReportGenerator,
+            'html': HTMLReportGenerator,
+            'csv': CSVReportGenerator,
+            'markdown': MarkdownReportGenerator
+        }
+        
+        generator_class = generators[args.format]
+        generator = generator_class(report)
+        report_content = generator.generate()
+        
+        if args.output:
+            generator.save_to_file(args.output)
+            logger.info(f"Rapor kaydedildi: {args.output}")
+        else:
+            print(report_content)
+        
+        logger.info("Kontrol tamamlandı")
+        return 0
+    
+    except Exception as e:
+        logger.error(f"Hata oluştu: {e}", exc_info=args.verbose)
+        return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -1,0 +1,35 @@
+{
+  "$schema": "https://shuffle.dev/user-library/schema.json",
+  "name": "Modulus ERP Hero Section",
+  "description": "Professional hero section for SaaS landing pages with trust badges and dual CTAs",
+  "framework": "tailwind",
+  "tailwindConfig": {
+    "theme": {
+      "extend": {
+        "colors": {
+          "primary": "#111827",
+          "secondary": "#E0F4FF"
+        },
+        "fontFamily": {
+          "sans": ["Inter", "sans-serif"]
+        },
+        "borderRadius": {
+          "xl": "12px"
+        }
+      }
+    }
+  },
+  "categories": [
+    {
+      "id": "hero-sections",
+      "name": "Hero Sections",
+      "components": [
+        {
+          "id": "hero-with-trust-badge",
+          "name": "Hero with Trust Badge",
+          "html_file": "hero-section.html"
+        }
+      ]
+    }
+  ]
+}

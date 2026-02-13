@@ -1,0 +1,633 @@
+"""
+ERP Cash Flow Agent - API Service
+FastAPI ile REST API endpoint'leri
+"""
+
+from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List, Optional, Dict, Any
+from datetime import datetime, timedelta
+import logging
+import asyncio
+from functools import lru_cache
+
+# İçe Aktarımlar
+from erp_connector import ERPConnector, ERPConfig
+from cash_flow_analyzer import CashFlowAnalyzer, CashFlowForecast
+from ai_recommendations_engine import (
+    HybridRecommendationEngine,
+    OpenAIProvider,
+    FinancialRecommendation,
+)
+
+# Konfigürasyon
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# FastAPI Uygulaması
+app = FastAPI(
+    title="ERP Cash Flow Agent API",
+    description="ERP Entegre Nakit Akışı Analiz ve Öneriler API",
+    version="1.0.0",
+)
+
+# CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ==================== Pydantic Modeller ====================
+
+
+class ERPConnectionConfig(BaseModel):
+    """ERP Bağlantı Konfigürasyonu"""
+
+    erp_type: str  # SAP, ORACLE, DYNAMICS, ODOO
+    api_endpoint: str
+    username: str
+    password: str
+    api_key: str
+    client_id: str
+    client_secret: str
+    tenant_id: Optional[str] = None
+    max_retries: int = 3
+    timeout: int = 30
+
+
+class CashFlowRequest(BaseModel):
+    """Nakit Akışı Sorgusu"""
+
+    start_date: datetime
+    end_date: datetime
+    include_forecast: bool = True
+    forecast_days: int = 90
+    use_cache: bool = True
+
+
+class AnalysisRequest(BaseModel):
+    """Analiz Sorgusu"""
+
+    erp_config: ERPConnectionConfig
+    start_date: datetime
+    end_date: datetime
+    include_risks: bool = True
+    include_recommendations: bool = True
+    forecast_days: int = 90
+
+
+class ScenarioAnalysisRequest(BaseModel):
+    """Senaryo Analiz Sorgusu"""
+
+    scenario: str
+    financial_data: Optional[Dict[str, Any]] = None
+
+
+class CashFlowMetricsResponse(BaseModel):
+    """Nakit Akışı Metrikleri Yanıtı"""
+
+    average_daily_cash_in: float
+    average_daily_cash_out: float
+    net_cash_flow: float
+    cash_conversion_cycle: float
+    receivables_days: float
+    payables_days: float
+    current_ratio: float
+    quick_ratio: float
+    cash_ratio: float
+    operating_cash_flow_ratio: float
+    free_cash_flow: float
+    efficiency_score: float
+
+
+class RiskResponse(BaseModel):
+    """Risk Yanıtı"""
+
+    risk_type: str
+    severity: str
+    description: str
+    recommended_action: str
+    impact_amount: float
+
+
+class RecommendationResponse(BaseModel):
+    """Tavsiye Yanıtı"""
+
+    recommendation_id: str
+    category: str
+    title: str
+    description: str
+    implementation_steps: List[str]
+    expected_impact: Dict[str, float]
+    priority: str
+    estimated_effort: str
+    ai_confidence: float
+    generated_by: str
+
+
+class CashFlowForecastResponse(BaseModel):
+    """Nakit Akışı Tahmini Yanıtı"""
+
+    forecast_date: datetime
+    predicted_cash_in: float
+    predicted_cash_out: float
+    predicted_balance: float
+    confidence_interval: tuple
+    risk_level: str
+
+
+class AnalysisReport(BaseModel):
+    """Analiz Raporu"""
+
+    analysis_id: str
+    timestamp: datetime
+    period: Dict[str, Any]
+    metrics: CashFlowMetricsResponse
+    risks: List[RiskResponse]
+    recommendations: List[RecommendationResponse]
+    forecasts: List[CashFlowForecastResponse]
+    efficiency_score: float
+    summary: str
+
+
+# ==================== Global Değişkenler ====================
+
+# ERP Bağlantı Cache'i
+erp_connectors: Dict[str, ERPConnector] = {}
+
+# Hibrit Öneriler Motoru
+recommendation_engine: Optional[HybridRecommendationEngine] = None
+
+
+# ==================== Dependency'ler ====================
+
+
+@lru_cache()
+def get_recommendation_engine() -> HybridRecommendationEngine:
+    """Öneriler Motoru'nu al"""
+    global recommendation_engine
+
+    if recommendation_engine is None:
+        try:
+            # OpenAI entegrasyonu (API key'i env'den al)
+            import os
+
+            openai_key = os.getenv("OPENAI_API_KEY")
+            if openai_key:
+                llm_provider = OpenAIProvider(openai_key)
+                recommendation_engine = HybridRecommendationEngine(llm_provider)
+                logger.info("Hibrit Öneriler Motoru LLM ile başlatıldı")
+            else:
+                recommendation_engine = HybridRecommendationEngine()
+                logger.info("Hibrit Öneriler Motoru kural tabanlı modda başlatıldı")
+        except Exception as e:
+            logger.warning(f"LLM başlatma hatası: {e}")
+            recommendation_engine = HybridRecommendationEngine()
+
+    return recommendation_engine
+
+
+# ==================== Endpoint'ler ====================
+
+
+@app.get("/health", tags=["Health"])
+async def health_check():
+    """Sistem sağlığı kontrolü"""
+    return {
+        "status": "healthy",
+        "timestamp": datetime.now(),
+        "version": "1.0.0",
+    }
+
+
+@app.post("/api/v1/erp/connect", tags=["ERP Connection"])
+async def connect_erp(config: ERPConnectionConfig):
+    """
+    ERP sistemine bağlan
+
+    - **erp_type**: SAP, ORACLE, DYNAMICS, ODOO
+    - **api_endpoint**: ERP API sunucusu
+    - **credentials**: Kullanıcı adı, şifre ve API key
+    """
+    try:
+        logger.info(f"ERP Bağlantısı kurulmuyor: {config.erp_type}")
+
+        # Bağlantı konfigürasyonu oluştur
+        erp_config = ERPConfig(
+            erp_type=config.erp_type,
+            api_endpoint=config.api_endpoint,
+            username=config.username,
+            password=config.password,
+            api_key=config.api_key,
+            client_id=config.client_id,
+            client_secret=config.client_secret,
+            tenant_id=config.tenant_id,
+            timeout=config.timeout,
+            max_retries=config.max_retries,
+        )
+
+        # Bağlantıyı oluştur
+        connector = ERPConnector(erp_config)
+
+        # Bağlantıyı test et
+        await connector.get_accounts_receivable(use_cache=False)
+
+        # Cache'de sakla
+        erp_connectors[config.erp_type] = connector
+
+        logger.info(f"ERP Bağlantısı başarılı: {config.erp_type}")
+        return {
+            "status": "connected",
+            "erp_type": config.erp_type,
+            "timestamp": datetime.now(),
+            "message": f"{config.erp_type} ERP sistemine başarıyla bağlandı",
+        }
+
+    except Exception as e:
+        logger.error(f"ERP Bağlantı Hatası: {e}")
+        raise HTTPException(status_code=500, detail=f"ERP bağlantı hatası: {str(e)}")
+
+
+@app.post("/api/v1/cash-flow/metrics", tags=["Cash Flow Analysis"])
+async def get_cash_flow_metrics(request: CashFlowRequest, erp_type: str = "SAP"):
+    """
+    Nakit akışı metriklerini al
+
+    - **start_date**: Başlangıç tarihi
+    - **end_date**: Bitiş tarihi
+    - **erp_type**: ERP sistem türü
+    """
+    try:
+        if erp_type not in erp_connectors:
+            raise HTTPException(
+                status_code=400, detail=f"{erp_type} ERP sistemi bağlanmamış"
+            )
+
+        connector = erp_connectors[erp_type]
+
+        # Nakit akışı verilerini al
+        logger.info(f"Nakit akışı verisi çekiliyor: {request.start_date} - {request.end_date}")
+        cash_flow_data = await connector.get_cash_flow_data(
+            request.start_date, request.end_date, use_cache=request.use_cache
+        )
+
+        # Analiz yap
+        analyzer = CashFlowAnalyzer(cash_flow_data)
+        metrics = analyzer.calculate_metrics()
+        efficiency = analyzer.get_cash_flow_efficiency()
+
+        logger.info(f"Metrikler hesaplandı")
+        return {
+            "metrics": {
+                "average_daily_cash_in": metrics.average_daily_cash_in,
+                "average_daily_cash_out": metrics.average_daily_cash_out,
+                "net_cash_flow": metrics.net_cash_flow,
+                "cash_conversion_cycle": metrics.cash_conversion_cycle,
+                "receivables_days": metrics.receivables_days,
+                "payables_days": metrics.payables_days,
+                "current_ratio": metrics.current_ratio,
+                "quick_ratio": metrics.quick_ratio,
+                "cash_ratio": metrics.cash_ratio,
+                "operating_cash_flow_ratio": metrics.operating_cash_flow_ratio,
+                "free_cash_flow": metrics.free_cash_flow,
+                "efficiency_score": efficiency,
+            },
+            "period": {
+                "start": request.start_date,
+                "end": request.end_date,
+                "days": (request.end_date - request.start_date).days,
+            },
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Metrik Hesaplama Hatası: {e}")
+        raise HTTPException(status_code=500, detail=f"Metrik hesaplama hatası: {str(e)}")
+
+
+@app.post("/api/v1/cash-flow/forecast", tags=["Cash Flow Analysis"])
+async def get_cash_flow_forecast(request: CashFlowRequest, erp_type: str = "SAP"):
+    """
+    Nakit akışı tahmini al
+
+    - **forecast_days**: Tahmin günü (varsayılan: 90)
+    """
+    try:
+        if erp_type not in erp_connectors:
+            raise HTTPException(
+                status_code=400, detail=f"{erp_type} ERP sistemi bağlanmamış"
+            )
+
+        connector = erp_connectors[erp_type]
+
+        # Nakit akışı verilerini al
+        cash_flow_data = await connector.get_cash_flow_data(
+            request.start_date, request.end_date, use_cache=request.use_cache
+        )
+
+        # Analiz ve tahmin yap
+        analyzer = CashFlowAnalyzer(cash_flow_data)
+        forecasts = analyzer.forecast_cash_flow(periods=request.forecast_days)
+
+        logger.info(f"Tahmin yapıldı: {len(forecasts)} dönem")
+        return {
+            "forecasts": [
+                {
+                    "forecast_date": f.forecast_date,
+                    "predicted_cash_in": f.predicted_cash_in,
+                    "predicted_cash_out": f.predicted_cash_out,
+                    "predicted_balance": f.predicted_balance,
+                    "confidence_interval": f.confidence_interval,
+                    "risk_level": f.risk_level,
+                }
+                for f in forecasts
+            ],
+            "forecast_period_days": request.forecast_days,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Tahmin Hatası: {e}")
+        raise HTTPException(status_code=500, detail=f"Tahmin hatası: {str(e)}")
+
+
+@app.post("/api/v1/recommendations/generate", tags=["Recommendations"])
+async def generate_recommendations(
+    request: CashFlowRequest, erp_type: str = "SAP", background_tasks: BackgroundTasks = None
+):
+    """
+    AI-tabanlı finansal öneriler oluştur
+    """
+    try:
+        if erp_type not in erp_connectors:
+            raise HTTPException(
+                status_code=400, detail=f"{erp_type} ERP sistemi bağlanmamış"
+            )
+
+        connector = erp_connectors[erp_type]
+
+        # Nakit akışı verilerini al
+        cash_flow_data = await connector.get_cash_flow_data(
+            request.start_date, request.end_date, use_cache=request.use_cache
+        )
+
+        # Analiz yap
+        analyzer = CashFlowAnalyzer(cash_flow_data)
+        metrics = analyzer.calculate_metrics()
+        risks = analyzer.identify_risks()
+
+        # Öneriler oluştur
+        engine = get_recommendation_engine()
+        recommendations = await engine.generate_comprehensive_recommendations(metrics, risks)
+
+        logger.info(f"{len(recommendations)} önerisi oluşturuldu")
+        return {
+            "recommendations": [
+                {
+                    "recommendation_id": r.recommendation_id,
+                    "category": r.category,
+                    "title": r.title,
+                    "description": r.description,
+                    "implementation_steps": r.implementation_steps,
+                    "expected_impact": r.expected_impact,
+                    "priority": r.priority,
+                    "estimated_effort": r.estimated_effort,
+                    "ai_confidence": r.ai_confidence,
+                    "generated_by": r.generated_by,
+                }
+                for r in recommendations
+            ],
+            "total_recommendations": len(recommendations),
+            "high_priority_count": sum(1 for r in recommendations if r.priority == "HIGH"),
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Öneriler Oluşturma Hatası: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Öneriler oluşturma hatası: {str(e)}"
+        )
+
+
+@app.post("/api/v1/analysis/comprehensive", tags=["Analysis"])
+async def comprehensive_analysis(request: AnalysisRequest):
+    """
+    Kapsamlı Nakit Akışı Analizi
+
+    Metrik, riskler, tahmin ve öneriler hepsi bir sorguda
+    """
+    try:
+        # ERP Bağlantısı kur
+        erp_config = ERPConfig(
+            erp_type=request.erp_config.erp_type,
+            api_endpoint=request.erp_config.api_endpoint,
+            username=request.erp_config.username,
+            password=request.erp_config.password,
+            api_key=request.erp_config.api_key,
+            client_id=request.erp_config.client_id,
+            client_secret=request.erp_config.client_secret,
+            tenant_id=request.erp_config.tenant_id,
+        )
+
+        connector = ERPConnector(erp_config)
+
+        # Veri çek
+        logger.info("Kapsamlı analiz başlanıyor")
+        cash_flow_data = await connector.get_cash_flow_data(
+            request.start_date, request.end_date
+        )
+
+        # Analiz
+        analyzer = CashFlowAnalyzer(cash_flow_data)
+        metrics = analyzer.calculate_metrics()
+        efficiency = analyzer.get_cash_flow_efficiency()
+
+        response_data = {
+            "analysis_id": f"analysis_{datetime.now().timestamp()}",
+            "timestamp": datetime.now(),
+            "period": {
+                "start": request.start_date,
+                "end": request.end_date,
+                "days": (request.end_date - request.start_date).days,
+            },
+            "metrics": {
+                "average_daily_cash_in": metrics.average_daily_cash_in,
+                "average_daily_cash_out": metrics.average_daily_cash_out,
+                "net_cash_flow": metrics.net_cash_flow,
+                "cash_conversion_cycle": metrics.cash_conversion_cycle,
+                "receivables_days": metrics.receivables_days,
+                "payables_days": metrics.payables_days,
+                "current_ratio": metrics.current_ratio,
+                "quick_ratio": metrics.quick_ratio,
+                "cash_ratio": metrics.cash_ratio,
+                "operating_cash_flow_ratio": metrics.operating_cash_flow_ratio,
+                "free_cash_flow": metrics.free_cash_flow,
+                "efficiency_score": efficiency,
+            },
+        }
+
+        # Riskler
+        if request.include_risks:
+            risks = analyzer.identify_risks()
+            response_data["risks"] = [
+                {
+                    "risk_type": r.risk_type,
+                    "severity": r.severity,
+                    "description": r.description,
+                    "recommended_action": r.recommended_action,
+                    "impact_amount": r.impact_amount,
+                }
+                for r in risks
+            ]
+
+        # Tahmin
+        forecasts = analyzer.forecast_cash_flow(periods=request.forecast_days)
+        response_data["forecasts"] = [
+            {
+                "forecast_date": f.forecast_date,
+                "predicted_cash_in": f.predicted_cash_in,
+                "predicted_cash_out": f.predicted_cash_out,
+                "predicted_balance": f.predicted_balance,
+                "confidence_interval": f.confidence_interval,
+                "risk_level": f.risk_level,
+            }
+            for f in forecasts[:10]  # İlk 10 tahmin
+        ]
+
+        # Öneriler
+        if request.include_recommendations:
+            engine = get_recommendation_engine()
+            risks = analyzer.identify_risks()
+            recommendations = await engine.generate_comprehensive_recommendations(
+                metrics, risks
+            )
+            response_data["recommendations"] = [
+                {
+                    "recommendation_id": r.recommendation_id,
+                    "category": r.category,
+                    "title": r.title,
+                    "description": r.description,
+                    "implementation_steps": r.implementation_steps,
+                    "expected_impact": r.expected_impact,
+                    "priority": r.priority,
+                    "estimated_effort": r.estimated_effort,
+                    "ai_confidence": r.ai_confidence,
+                    "generated_by": r.generated_by,
+                }
+                for r in recommendations
+            ]
+
+        logger.info("Kapsamlı analiz tamamlandı")
+        return response_data
+
+    except Exception as e:
+        logger.error(f"Kapsamlı Analiz Hatası: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Analiz hatası: {str(e)}"
+        )
+
+
+@app.post("/api/v1/scenario/analyze", tags=["Scenario Analysis"])
+async def analyze_scenario(request: ScenarioAnalysisRequest):
+    """
+    Özel finansal senaryoyu AI ile analiz et
+    """
+    try:
+        engine = get_recommendation_engine()
+        analysis = await engine.analyze_scenario(request.scenario)
+
+        logger.info("Senaryo analizi tamamlandı")
+        return {
+            "scenario": request.scenario,
+            "analysis": analysis,
+            "timestamp": datetime.now(),
+        }
+
+    except Exception as e:
+        logger.error(f"Senaryo Analiz Hatası: {e}")
+        raise HTTPException(
+            status_code=500, detail=f"Senaryo analizi hatası: {str(e)}"
+        )
+
+
+@app.get("/api/v1/erp/supported-systems", tags=["ERP Connection"])
+async def get_supported_systems():
+    """Desteklenen ERP sistemlerini listele"""
+    return {
+        "supported_systems": [
+            {
+                "name": "SAP S/4HANA",
+                "type": "SAP",
+                "api_type": "REST/SOAP",
+                "authentication": "OAuth 2.0",
+            },
+            {
+                "name": "Oracle E-Business Suite",
+                "type": "ORACLE",
+                "api_type": "REST",
+                "authentication": "OAuth 2.0",
+            },
+            {
+                "name": "Microsoft Dynamics 365",
+                "type": "DYNAMICS",
+                "api_type": "OData",
+                "authentication": "Azure AD",
+            },
+            {
+                "name": "Odoo",
+                "type": "ODOO",
+                "api_type": "REST",
+                "authentication": "Token-based",
+            },
+        ]
+    }
+
+
+# ==================== Error Handlers ====================
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc):
+    """HTTP Exception Handler"""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": exc.detail,
+            "timestamp": datetime.now(),
+        },
+    )
+
+
+# ==================== Startup/Shutdown ====================
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Uygulama başlangıcı"""
+    logger.info("ERP Cash Flow Agent API başlatıldı")
+    get_recommendation_engine()  # Motor'u başlat
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Uygulama kapatması"""
+    logger.info("ERP Cash Flow Agent API kapatıldı")
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8000,
+        log_level="info",
+    )

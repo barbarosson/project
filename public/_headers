@@ -1,0 +1,19 @@
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Deployment-Version: v2-1739082650
+  X-Force-Cache-Bust: true
+
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/static/*
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/*.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.css
+  Cache-Control: public, max-age=0, must-revalidate
+
+/manifest.json
+  Cache-Control: public, max-age=0, must-revalidate

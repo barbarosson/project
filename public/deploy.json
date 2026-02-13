@@ -1,0 +1,6 @@
+{
+  "deployment_version": "v2.2",
+  "timestamp": 1739082650,
+  "trigger": "manual-force-rebuild",
+  "cache_bust": true
+}

@@ -1,0 +1,1334 @@
+"""
+Pazaryeri Entegrasyon Agenti - API Adaptör Sınıfları
+Tüm pazaryerlerin API'lerine erişim için standart arayüz sağlayan sınıflar
+"""
+
+from abc import ABC, abstractmethod
+from typing import List, Dict, Optional, Any, Tuple
+from datetime import datetime
+import requests
+from requests.auth import HTTPBasicAuth
+import logging
+from enum import Enum
+import time
+from zeep import Client as SoapClient
+from zeep.exceptions import Fault
+import json
+
+# Logging yapılandırması
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class MarketplaceType(Enum):
+    """Pazaryeri türleri"""
+    HEPSIBURADA = "hepsiburada"
+    TRENDYOL = "trendyol"
+    AMAZON = "amazon"
+    N11 = "n11"
+    PAZARAMA = "pazarama"
+    CICEKSEPETI = "ciceksepeti"
+    AKAKCE = "akakce"
+    CIMRI = "cimri"
+    IDEFIX = "idefix"
+    TEKNOSA = "teknosa"
+
+
+class OrderStatus(Enum):
+    """Sipariş durumları"""
+    PENDING = "pending"
+    CONFIRMED = "confirmed"
+    SHIPPED = "shipped"
+    DELIVERED = "delivered"
+    CANCELLED = "cancelled"
+    RETURNED = "returned"
+
+
+class ProductStatus(Enum):
+    """Ürün durumları"""
+    DRAFT = "draft"
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+
+
+class IMarketplaceAdapter(ABC):
+    """Tüm pazaryeri adaptörleri için temel arayüz"""
+    
+    def __init__(self, api_key: str, api_secret: str, seller_code: Optional[str] = None):
+        """
+        Adaptörü başlat
+        
+        Args:
+            api_key: API anahtarı
+            api_secret: API gizli anahtarı
+            seller_code: Satıcı kodu (bazı pazaryerlerde gerekli)
+        """
+        self.api_key = api_key
+        self.api_secret = api_secret
+        self.seller_code = seller_code
+        self.rate_limit_remaining = 1000
+        self.rate_limit_reset = None
+    
+    @abstractmethod
+    def authenticate(self) -> bool:
+        """API'ye bağlan ve kimlik doğrulaması yap"""
+        pass
+    
+    @abstractmethod
+    def get_products(self, 
+                    page: int = 1, 
+                    page_size: int = 50,
+                    status: Optional[ProductStatus] = None) -> Dict[str, Any]:
+        """
+        Ürünleri listele
+        
+        Returns:
+            Ürün listesi ve sayfalama bilgisi
+        """
+        pass
+    
+    @abstractmethod
+    def create_product(self, product_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Yeni ürün oluştur"""
+        pass
+    
+    @abstractmethod
+    def update_product(self, product_id: str, product_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Ürünü güncelle"""
+        pass
+    
+    @abstractmethod
+    def delete_product(self, product_id: str) -> bool:
+        """Ürünü sil"""
+        pass
+    
+    @abstractmethod
+    def get_orders(self, 
+                  start_date: Optional[datetime] = None,
+                  end_date: Optional[datetime] = None,
+                  page: int = 1,
+                  page_size: int = 50) -> Dict[str, Any]:
+        """
+        Siparişleri listele
+        
+        Returns:
+            Sipariş listesi ve sayfalama bilgisi
+        """
+        pass
+    
+    @abstractmethod
+    def get_order_details(self, order_id: str) -> Dict[str, Any]:
+        """Sipariş detaylarını getir"""
+        pass
+    
+    @abstractmethod
+    def update_order_status(self, order_id: str, status: OrderStatus) -> bool:
+        """Sipariş durumunu güncelle"""
+        pass
+    
+    @abstractmethod
+    def get_inventory(self, product_id: str) -> Dict[str, Any]:
+        """Ürün envanterini getir"""
+        pass
+    
+    @abstractmethod
+    def update_inventory(self, product_id: str, quantity: int) -> bool:
+        """Ürün envanterini güncelle"""
+        pass
+    
+    @abstractmethod
+    def create_invoice(self, order_id: str, invoice_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Fatura oluştur"""
+        pass
+    
+    @abstractmethod
+    def get_shipment_status(self, shipment_id: str) -> Dict[str, Any]:
+        """Kargo durumunu getir"""
+        pass
+    
+    @abstractmethod
+    def update_shipment_status(self, shipment_id: str, 
+                              tracking_number: str,
+                              status: str) -> bool:
+        """Kargo durumunu güncelle"""
+        pass
+    
+    @abstractmethod
+    def get_messages(self, 
+                    page: int = 1, 
+                    page_size: int = 50,
+                    unread_only: bool = False) -> Dict[str, Any]:
+        """Müşteri mesajlarını getir"""
+        pass
+    
+    @abstractmethod
+    def send_message(self, customer_id: str, message: str) -> bool:
+        """Müşteriye mesaj gönder"""
+        pass
+    
+    def _handle_rate_limit(self, response: requests.Response) -> None:
+        """
+        Rate limit bilgisini işle
+        
+        Args:
+            response: HTTP response nesnesi
+        """
+        if "X-RateLimit-Remaining" in response.headers:
+            self.rate_limit_remaining = int(response.headers["X-RateLimit-Remaining"])
+        if "X-RateLimit-Reset" in response.headers:
+            self.rate_limit_reset = datetime.fromtimestamp(
+                int(response.headers["X-RateLimit-Reset"])
+            )
+        
+        # Limit'e yaklaşmışsa bekle
+        if self.rate_limit_remaining < 10 and self.rate_limit_reset:
+            wait_time = (self.rate_limit_reset - datetime.now()).total_seconds()
+            if wait_time > 0:
+                logger.warning(f"Rate limit'e yaklaşıldı. {wait_time:.0f} saniye bekleniyor...")
+                time.sleep(wait_time + 1)
+
+
+class HepsiburadaAdapter(IMarketplaceAdapter):
+    """Hepsiburada API adaptörü"""
+    
+    BASE_URL = "https://api.hepsiburada.com/api/v1"
+    
+    def __init__(self, api_key: str, api_secret: str):
+        super().__init__(api_key, api_secret)
+        self.session = requests.Session()
+        self.session.headers.update({
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        })
+    
+    def authenticate(self) -> bool:
+        """Hepsiburada API'sine bağlan"""
+        try:
+            response = self.session.get(f"{self.BASE_URL}/products", params={"pageSize": 1})
+            if response.status_code == 200:
+                logger.info("Hepsiburada API kimlik doğrulaması başarılı")
+                self._handle_rate_limit(response)
+                return True
+            logger.error(f"Hepsiburada kimlik doğrulaması başarısız: {response.status_code}")
+            return False
+        except Exception as e:
+            logger.error(f"Hepsiburada bağlantı hatası: {e}")
+            return False
+    
+    def get_products(self, 
+                    page: int = 1, 
+                    page_size: int = 50,
+                    status: Optional[ProductStatus] = None) -> Dict[str, Any]:
+        """Hepsiburada ürünlerini getir"""
+        try:
+            params = {
+                "pageNumber": page,
+                "pageSize": page_size
+            }
+            response = self.session.get(f"{self.BASE_URL}/products", params=params)
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Ürünleri getirirken hata: {e}")
+            return {"products": [], "total": 0}
+    
+    def create_product(self, product_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Hepsiburada'da ürün oluştur"""
+        try:
+            response = self.session.post(
+                f"{self.BASE_URL}/products",
+                json=product_data
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Ürün oluşturuldu: {response.json().get('productId')}")
+            return response.json()
+        except Exception as e:
+            logger.error(f"Ürün oluştururken hata: {e}")
+            return {"error": str(e)}
+    
+    def update_product(self, product_id: str, product_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Hepsiburada'da ürünü güncelle"""
+        try:
+            response = self.session.put(
+                f"{self.BASE_URL}/products/{product_id}",
+                json=product_data
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Ürün güncellendi: {product_id}")
+            return response.json()
+        except Exception as e:
+            logger.error(f"Ürünü güncellerken hata: {e}")
+            return {"error": str(e)}
+    
+    def delete_product(self, product_id: str) -> bool:
+        """Hepsiburada'da ürünü sil"""
+        try:
+            response = self.session.delete(f"{self.BASE_URL}/products/{product_id}")
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Ürün silindi: {product_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Ürünü silerken hata: {e}")
+            return False
+    
+    def get_orders(self, 
+                  start_date: Optional[datetime] = None,
+                  end_date: Optional[datetime] = None,
+                  page: int = 1,
+                  page_size: int = 50) -> Dict[str, Any]:
+        """Hepsiburada siparişlerini getir"""
+        try:
+            params = {
+                "pageNumber": page,
+                "pageSize": page_size
+            }
+            if start_date:
+                params["startDate"] = start_date.isoformat()
+            if end_date:
+                params["endDate"] = end_date.isoformat()
+            
+            response = self.session.get(f"{self.BASE_URL}/orders", params=params)
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Siparişleri getirirken hata: {e}")
+            return {"orders": [], "total": 0}
+    
+    def get_order_details(self, order_id: str) -> Dict[str, Any]:
+        """Hepsiburada sipariş detaylarını getir"""
+        try:
+            response = self.session.get(f"{self.BASE_URL}/orders/{order_id}")
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Sipariş detaylarını getirirken hata: {e}")
+            return {}
+    
+    def update_order_status(self, order_id: str, status: OrderStatus) -> bool:
+        """Hepsiburada sipariş durumunu güncelle"""
+        try:
+            data = {"status": status.value}
+            response = self.session.put(
+                f"{self.BASE_URL}/orders/{order_id}",
+                json=data
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Sipariş durumu güncellendi: {order_id} -> {status.value}")
+            return True
+        except Exception as e:
+            logger.error(f"Sipariş durumunu güncellerken hata: {e}")
+            return False
+    
+    def get_inventory(self, product_id: str) -> Dict[str, Any]:
+        """Hepsiburada ürün envanterini getir"""
+        try:
+            response = self.session.get(f"{self.BASE_URL}/products/{product_id}/inventory")
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Envanteri getirirken hata: {e}")
+            return {}
+    
+    def update_inventory(self, product_id: str, quantity: int) -> bool:
+        """Hepsiburada envanter güncelle"""
+        try:
+            data = {"quantity": quantity}
+            response = self.session.put(
+                f"{self.BASE_URL}/products/{product_id}/inventory",
+                json=data
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Envanter güncellendi: {product_id} -> {quantity}")
+            return True
+        except Exception as e:
+            logger.error(f"Envanter güncellenirken hata: {e}")
+            return False
+    
+    def create_invoice(self, order_id: str, invoice_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Hepsiburada'da fatura oluştur"""
+        try:
+            response = self.session.post(
+                f"{self.BASE_URL}/orders/{order_id}/invoices",
+                json=invoice_data
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Fatura oluşturuldu: {order_id}")
+            return response.json()
+        except Exception as e:
+            logger.error(f"Fatura oluştururken hata: {e}")
+            return {"error": str(e)}
+    
+    def get_shipment_status(self, shipment_id: str) -> Dict[str, Any]:
+        """Hepsiburada kargo durumunu getir"""
+        try:
+            response = self.session.get(f"{self.BASE_URL}/shipments/{shipment_id}")
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Kargo durumunu getirirken hata: {e}")
+            return {}
+    
+    def update_shipment_status(self, shipment_id: str, 
+                              tracking_number: str,
+                              status: str) -> bool:
+        """Hepsiburada kargo durumunu güncelle"""
+        try:
+            data = {
+                "trackingNumber": tracking_number,
+                "status": status
+            }
+            response = self.session.put(
+                f"{self.BASE_URL}/shipments/{shipment_id}",
+                json=data
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Kargo durumu güncellendi: {shipment_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Kargo durumunu güncellerken hata: {e}")
+            return False
+    
+    def get_messages(self, 
+                    page: int = 1, 
+                    page_size: int = 50,
+                    unread_only: bool = False) -> Dict[str, Any]:
+        """Hepsiburada müşteri mesajlarını getir"""
+        try:
+            params = {
+                "pageNumber": page,
+                "pageSize": page_size,
+                "unreadOnly": unread_only
+            }
+            response = self.session.get(f"{self.BASE_URL}/messages", params=params)
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Mesajları getirirken hata: {e}")
+            return {"messages": [], "total": 0}
+    
+    def send_message(self, customer_id: str, message: str) -> bool:
+        """Hepsiburada'da müşteriye mesaj gönder"""
+        try:
+            data = {
+                "customerId": customer_id,
+                "message": message
+            }
+            response = self.session.post(
+                f"{self.BASE_URL}/messages",
+                json=data
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Mesaj gönderildi: {customer_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Mesaj gönderirken hata: {e}")
+            return False
+
+
+class TrendyolAdapter(IMarketplaceAdapter):
+    """Trendyol API adaptörü"""
+    
+    BASE_URL = "https://api.trendyol.com/api"
+    
+    def __init__(self, api_key: str, api_secret: str):
+        super().__init__(api_key, api_secret)
+        self.session = requests.Session()
+        auth = HTTPBasicAuth(api_key, api_secret)
+        self.session.auth = auth
+        self.session.headers.update({"Content-Type": "application/json"})
+    
+    def authenticate(self) -> bool:
+        """Trendyol API'sine bağlan"""
+        try:
+            response = self.session.get(f"{self.BASE_URL}/v1/suppliers", timeout=10)
+            if response.status_code == 200:
+                logger.info("Trendyol API kimlik doğrulaması başarılı")
+                self._handle_rate_limit(response)
+                return True
+            logger.error(f"Trendyol kimlik doğrulaması başarısız: {response.status_code}")
+            return False
+        except Exception as e:
+            logger.error(f"Trendyol bağlantı hatası: {e}")
+            return False
+    
+    def get_products(self, 
+                    page: int = 1, 
+                    page_size: int = 50,
+                    status: Optional[ProductStatus] = None) -> Dict[str, Any]:
+        """Trendyol ürünlerini getir"""
+        try:
+            params = {
+                "pageNumber": page,
+                "pageSize": page_size
+            }
+            response = self.session.get(
+                f"{self.BASE_URL}/v2/products",
+                params=params,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Trendyol ürünlerini getirirken hata: {e}")
+            return {"products": [], "total": 0}
+    
+    def create_product(self, product_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Trendyol'da ürün oluştur"""
+        try:
+            response = self.session.post(
+                f"{self.BASE_URL}/v2/products",
+                json=product_data,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info("Trendyol ürünü oluşturuldu")
+            return response.json()
+        except Exception as e:
+            logger.error(f"Trendyol ürünü oluştururken hata: {e}")
+            return {"error": str(e)}
+    
+    def update_product(self, product_id: str, product_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Trendyol'da ürünü güncelle"""
+        try:
+            response = self.session.put(
+                f"{self.BASE_URL}/v2/products/{product_id}",
+                json=product_data,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Trendyol ürünü güncellendi: {product_id}")
+            return response.json()
+        except Exception as e:
+            logger.error(f"Trendyol ürünü güncellerken hata: {e}")
+            return {"error": str(e)}
+    
+    def delete_product(self, product_id: str) -> bool:
+        """Trendyol'da ürünü sil"""
+        try:
+            response = self.session.delete(
+                f"{self.BASE_URL}/v2/products/{product_id}",
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Trendyol ürünü silindi: {product_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Trendyol ürünü silerken hata: {e}")
+            return False
+    
+    def get_orders(self, 
+                  start_date: Optional[datetime] = None,
+                  end_date: Optional[datetime] = None,
+                  page: int = 1,
+                  page_size: int = 50) -> Dict[str, Any]:
+        """Trendyol siparişlerini getir"""
+        try:
+            params = {
+                "pageNumber": page,
+                "pageSize": page_size
+            }
+            if start_date:
+                params["startDate"] = int(start_date.timestamp() * 1000)
+            if end_date:
+                params["endDate"] = int(end_date.timestamp() * 1000)
+            
+            response = self.session.get(
+                f"{self.BASE_URL}/v2/orders",
+                params=params,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Trendyol siparişlerini getirirken hata: {e}")
+            return {"orders": [], "total": 0}
+    
+    def get_order_details(self, order_id: str) -> Dict[str, Any]:
+        """Trendyol sipariş detaylarını getir"""
+        try:
+            response = self.session.get(
+                f"{self.BASE_URL}/v2/orders/{order_id}",
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Trendyol sipariş detaylarını getirirken hata: {e}")
+            return {}
+    
+    def update_order_status(self, order_id: str, status: OrderStatus) -> bool:
+        """Trendyol sipariş durumunu güncelle"""
+        try:
+            data = {"status": status.value}
+            response = self.session.put(
+                f"{self.BASE_URL}/v2/orders/{order_id}",
+                json=data,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Trendyol sipariş durumu güncellendi: {order_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Trendyol sipariş durumunu güncellerken hata: {e}")
+            return False
+    
+    def get_inventory(self, product_id: str) -> Dict[str, Any]:
+        """Trendyol ürün envanterini getir"""
+        try:
+            response = self.session.get(
+                f"{self.BASE_URL}/v2/products/{product_id}/stock",
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Trendyol envanterini getirirken hata: {e}")
+            return {}
+    
+    def update_inventory(self, product_id: str, quantity: int) -> bool:
+        """Trendyol envanter güncelle"""
+        try:
+            data = {"quantity": quantity}
+            response = self.session.put(
+                f"{self.BASE_URL}/v2/products/{product_id}/stock",
+                json=data,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Trendyol envanter güncellendi: {product_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Trendyol envanter güncellenirken hata: {e}")
+            return False
+    
+    def create_invoice(self, order_id: str, invoice_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Trendyol'da fatura oluştur"""
+        try:
+            response = self.session.post(
+                f"{self.BASE_URL}/v2/orders/{order_id}/invoice",
+                json=invoice_data,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Trendyol faturası oluşturuldu: {order_id}")
+            return response.json()
+        except Exception as e:
+            logger.error(f"Trendyol faturası oluştururken hata: {e}")
+            return {"error": str(e)}
+    
+    def get_shipment_status(self, shipment_id: str) -> Dict[str, Any]:
+        """Trendyol kargo durumunu getir"""
+        try:
+            response = self.session.get(
+                f"{self.BASE_URL}/v2/shipments/{shipment_id}",
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Trendyol kargo durumunu getirirken hata: {e}")
+            return {}
+    
+    def update_shipment_status(self, shipment_id: str, 
+                              tracking_number: str,
+                              status: str) -> bool:
+        """Trendyol kargo durumunu güncelle"""
+        try:
+            data = {
+                "trackingNumber": tracking_number,
+                "status": status
+            }
+            response = self.session.put(
+                f"{self.BASE_URL}/v2/shipments/{shipment_id}",
+                json=data,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Trendyol kargo durumu güncellendi: {shipment_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Trendyol kargo durumunu güncellerken hata: {e}")
+            return False
+    
+    def get_messages(self, 
+                    page: int = 1, 
+                    page_size: int = 50,
+                    unread_only: bool = False) -> Dict[str, Any]:
+        """Trendyol müşteri mesajlarını getir"""
+        try:
+            params = {
+                "pageNumber": page,
+                "pageSize": page_size
+            }
+            response = self.session.get(
+                f"{self.BASE_URL}/v1/messages",
+                params=params,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Trendyol mesajlarını getirirken hata: {e}")
+            return {"messages": [], "total": 0}
+    
+    def send_message(self, customer_id: str, message: str) -> bool:
+        """Trendyol'da müşteriye mesaj gönder"""
+        try:
+            data = {
+                "customerId": customer_id,
+                "message": message
+            }
+            response = self.session.post(
+                f"{self.BASE_URL}/v1/messages",
+                json=data,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Trendyol mesajı gönderildi: {customer_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Trendyol mesajı gönderirken hata: {e}")
+            return False
+
+
+class AmazonSPAPIAdapter(IMarketplaceAdapter):
+    """Amazon Selling Partner API adaptörü"""
+    
+    BASE_URL = "https://sellingpartnerapi-eu.amazon.com"  # EU bölgesi
+    
+    def __init__(self, api_key: str, api_secret: str, seller_code: Optional[str] = None):
+        super().__init__(api_key, api_secret, seller_code)
+        self.session = requests.Session()
+        self.access_token = None
+        self.refresh_token = None
+    
+    def authenticate(self) -> bool:
+        """Amazon SP-API'sine bağlan"""
+        try:
+            # Amazon SP-API OAuth 2.0 kimlik doğrulaması
+            # Bu örnekte bearer token kullanılmaktadır
+            self.session.headers.update({
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json"
+            })
+            
+            # Test call
+            response = self.session.get(
+                f"{self.BASE_URL}/catalog/2022-04-01/items",
+                params={"marketplaceIds": "A1F83G7G2DBL7J"},
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                logger.info("Amazon SP-API kimlik doğrulaması başarılı")
+                self._handle_rate_limit(response)
+                return True
+            logger.error(f"Amazon kimlik doğrulaması başarısız: {response.status_code}")
+            return False
+        except Exception as e:
+            logger.error(f"Amazon bağlantı hatası: {e}")
+            return False
+    
+    def get_products(self, 
+                    page: int = 1, 
+                    page_size: int = 50,
+                    status: Optional[ProductStatus] = None) -> Dict[str, Any]:
+        """Amazon ürünlerini getir"""
+        try:
+            params = {
+                "marketplaceIds": "A1F83G7G2DBL7J",
+                "pageSize": min(page_size, 20)  # Amazon limiti
+            }
+            response = self.session.get(
+                f"{self.BASE_URL}/catalog/2022-04-01/items",
+                params=params,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Amazon ürünlerini getirirken hata: {e}")
+            return {"items": []}
+    
+    def create_product(self, product_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Amazon'da ürün oluştur"""
+        try:
+            response = self.session.post(
+                f"{self.BASE_URL}/listings/2021-08-01/listings",
+                json=product_data,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info("Amazon ürünü oluşturuldu")
+            return response.json()
+        except Exception as e:
+            logger.error(f"Amazon ürünü oluştururken hata: {e}")
+            return {"error": str(e)}
+    
+    def update_product(self, product_id: str, product_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Amazon'da ürünü güncelle"""
+        try:
+            response = self.session.patch(
+                f"{self.BASE_URL}/listings/2021-08-01/listings/{product_id}",
+                json=product_data,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Amazon ürünü güncellendi: {product_id}")
+            return response.json()
+        except Exception as e:
+            logger.error(f"Amazon ürünü güncellerken hata: {e}")
+            return {"error": str(e)}
+    
+    def delete_product(self, product_id: str) -> bool:
+        """Amazon'da ürünü sil"""
+        try:
+            response = self.session.delete(
+                f"{self.BASE_URL}/listings/2021-08-01/listings/{product_id}",
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Amazon ürünü silindi: {product_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Amazon ürünü silerken hata: {e}")
+            return False
+    
+    def get_orders(self, 
+                  start_date: Optional[datetime] = None,
+                  end_date: Optional[datetime] = None,
+                  page: int = 1,
+                  page_size: int = 50) -> Dict[str, Any]:
+        """Amazon siparişlerini getir"""
+        try:
+            params = {
+                "MarketplaceIds": "A1F83G7G2DBL7J",
+                "CreatedAfter": start_date.isoformat() if start_date else None,
+                "CreatedBefore": end_date.isoformat() if end_date else None,
+                "MaxResultsPerPage": min(page_size, 100)
+            }
+            params = {k: v for k, v in params.items() if v is not None}
+            
+            response = self.session.get(
+                f"{self.BASE_URL}/orders/v0/orders",
+                params=params,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Amazon siparişlerini getirirken hata: {e}")
+            return {"Orders": []}
+    
+    def get_order_details(self, order_id: str) -> Dict[str, Any]:
+        """Amazon sipariş detaylarını getir"""
+        try:
+            response = self.session.get(
+                f"{self.BASE_URL}/orders/v0/orders/{order_id}",
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Amazon sipariş detaylarını getirirken hata: {e}")
+            return {}
+    
+    def update_order_status(self, order_id: str, status: OrderStatus) -> bool:
+        """Amazon sipariş durumunu güncelle"""
+        # Amazon SP-API'de sipariş durumu doğrudan güncellenmez,
+        # bunun yerine shipment ve fulfillment işlemleri yapılır
+        logger.warning("Amazon SP-API sipariş durumunu doğrudan güncellemiyor")
+        return False
+    
+    def get_inventory(self, product_id: str) -> Dict[str, Any]:
+        """Amazon ürün envanterini getir"""
+        try:
+            response = self.session.get(
+                f"{self.BASE_URL}/fba-inventory/v1/inventory-summaries",
+                params={"asin": product_id},
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Amazon envanterini getirirken hata: {e}")
+            return {}
+    
+    def update_inventory(self, product_id: str, quantity: int) -> bool:
+        """Amazon envanter güncelle"""
+        try:
+            data = {
+                "inventoryUpdate": {
+                    "quantity": quantity
+                }
+            }
+            response = self.session.post(
+                f"{self.BASE_URL}/fba-inventory/v1/inventory-items/{product_id}",
+                json=data,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Amazon envanter güncellendi: {product_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Amazon envanter güncellenirken hata: {e}")
+            return False
+    
+    def create_invoice(self, order_id: str, invoice_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Amazon'da fatura oluştur"""
+        logger.warning("Amazon SP-API'de fatura oluşturma desteklenmiyor")
+        return {"error": "Not supported"}
+    
+    def get_shipment_status(self, shipment_id: str) -> Dict[str, Any]:
+        """Amazon kargo durumunu getir"""
+        try:
+            response = self.session.get(
+                f"{self.BASE_URL}/shipping/v1/shipments/{shipment_id}",
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Amazon kargo durumunu getirirken hata: {e}")
+            return {}
+    
+    def update_shipment_status(self, shipment_id: str, 
+                              tracking_number: str,
+                              status: str) -> bool:
+        """Amazon kargo durumunu güncelle"""
+        try:
+            data = {
+                "trackingNumber": tracking_number,
+                "status": status
+            }
+            response = self.session.put(
+                f"{self.BASE_URL}/shipping/v1/shipments/{shipment_id}",
+                json=data,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Amazon kargo durumu güncellendi: {shipment_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Amazon kargo durumunu güncellerken hata: {e}")
+            return False
+    
+    def get_messages(self, 
+                    page: int = 1, 
+                    page_size: int = 50,
+                    unread_only: bool = False) -> Dict[str, Any]:
+        """Amazon müşteri mesajlarını getir"""
+        try:
+            params = {
+                "pageSize": min(page_size, 100)
+            }
+            response = self.session.get(
+                f"{self.BASE_URL}/messaging/v1/messages",
+                params=params,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            return response.json()
+        except Exception as e:
+            logger.error(f"Amazon mesajlarını getirirken hata: {e}")
+            return {"messages": []}
+    
+    def send_message(self, customer_id: str, message: str) -> bool:
+        """Amazon'da müşteriye mesaj gönder"""
+        try:
+            data = {
+                "customerId": customer_id,
+                "message": message
+            }
+            response = self.session.post(
+                f"{self.BASE_URL}/messaging/v1/messages",
+                json=data,
+                timeout=10
+            )
+            response.raise_for_status()
+            self._handle_rate_limit(response)
+            logger.info(f"Amazon mesajı gönderildi: {customer_id}")
+            return True
+        except Exception as e:
+            logger.error(f"Amazon mesajı gönderirken hata: {e}")
+            return False
+
+
+class N11SOAPAdapter(IMarketplaceAdapter):
+    """N11 SOAP API adaptörü"""
+    
+    PRODUCT_SERVICE_URL = "https://api.n11.com/ws/ProductService.wsdl"
+    ORDER_SERVICE_URL = "https://api.n11.com/ws/OrderService.wsdl"
+    
+    def __init__(self, api_key: str, api_secret: str):
+        super().__init__(api_key, api_secret)
+        self.product_client = None
+        self.order_client = None
+    
+    def authenticate(self) -> bool:
+        """N11 SOAP API'sine bağlan"""
+        try:
+            self.product_client = SoapClient(wsdl=self.PRODUCT_SERVICE_URL)
+            self.order_client = SoapClient(wsdl=self.ORDER_SERVICE_URL)
+            logger.info("N11 SOAP API kimlik doğrulaması başarılı")
+            return True
+        except Exception as e:
+            logger.error(f"N11 bağlantı hatası: {e}")
+            return False
+    
+    def get_products(self, 
+                    page: int = 1, 
+                    page_size: int = 50,
+                    status: Optional[ProductStatus] = None) -> Dict[str, Any]:
+        """N11 ürünlerini getir"""
+        try:
+            result = self.product_client.service.GetProducts(
+                Auth={
+                    "apiKey": self.api_key,
+                    "apiSecret": self.api_secret
+                },
+                PageNumber=page,
+                PageSize=page_size
+            )
+            logger.info(f"N11 ürünleri getirildi")
+            return {
+                "products": result.get("Products", []),
+                "total": result.get("TotalCount", 0)
+            }
+        except Fault as e:
+            logger.error(f"N11 SOAP Fault: {e}")
+            return {"products": [], "total": 0}
+        except Exception as e:
+            logger.error(f"N11 ürünlerini getirirken hata: {e}")
+            return {"products": [], "total": 0}
+    
+    def create_product(self, product_data: Dict[str, Any]) -> Dict[str, Any]:
+        """N11'de ürün oluştur"""
+        try:
+            result = self.product_client.service.CreateProduct(
+                Auth={
+                    "apiKey": self.api_key,
+                    "apiSecret": self.api_secret
+                },
+                ProductRequest=product_data
+            )
+            logger.info("N11 ürünü oluşturuldu")
+            return result
+        except Exception as e:
+            logger.error(f"N11 ürünü oluştururken hata: {e}")
+            return {"error": str(e)}
+    
+    def update_product(self, product_id: str, product_data: Dict[str, Any]) -> Dict[str, Any]:
+        """N11'de ürünü güncelle"""
+        try:
+            result = self.product_client.service.UpdateProduct(
+                Auth={
+                    "apiKey": self.api_key,
+                    "apiSecret": self.api_secret
+                },
+                ProductId=product_id,
+                ProductRequest=product_data
+            )
+            logger.info(f"N11 ürünü güncellendi: {product_id}")
+            return result
+        except Exception as e:
+            logger.error(f"N11 ürünü güncellerken hata: {e}")
+            return {"error": str(e)}
+    
+    def delete_product(self, product_id: str) -> bool:
+        """N11'de ürünü sil"""
+        try:
+            result = self.product_client.service.DeleteProduct(
+                Auth={
+                    "apiKey": self.api_key,
+                    "apiSecret": self.api_secret
+                },
+                ProductId=product_id
+            )
+            logger.info(f"N11 ürünü silindi: {product_id}")
+            return True
+        except Exception as e:
+            logger.error(f"N11 ürünü silerken hata: {e}")
+            return False
+    
+    def get_orders(self, 
+                  start_date: Optional[datetime] = None,
+                  end_date: Optional[datetime] = None,
+                  page: int = 1,
+                  page_size: int = 50) -> Dict[str, Any]:
+        """N11 siparişlerini getir"""
+        try:
+            params = {
+                "Auth": {
+                    "apiKey": self.api_key,
+                    "apiSecret": self.api_secret
+                },
+                "PageNumber": page,
+                "PageSize": page_size
+            }
+            
+            if start_date:
+                params["StartDate"] = start_date.isoformat()
+            if end_date:
+                params["EndDate"] = end_date.isoformat()
+            
+            result = self.order_client.service.GetOrders(**params)
+            logger.info(f"N11 siparişleri getirildi")
+            return {
+                "orders": result.get("Orders", []),
+                "total": result.get("TotalCount", 0)
+            }
+        except Exception as e:
+            logger.error(f"N11 siparişlerini getirirken hata: {e}")
+            return {"orders": [], "total": 0}
+    
+    def get_order_details(self, order_id: str) -> Dict[str, Any]:
+        """N11 sipariş detaylarını getir"""
+        try:
+            result = self.order_client.service.GetOrderDetail(
+                Auth={
+                    "apiKey": self.api_key,
+                    "apiSecret": self.api_secret
+                },
+                OrderId=order_id
+            )
+            return result
+        except Exception as e:
+            logger.error(f"N11 sipariş detaylarını getirirken hata: {e}")
+            return {}
+    
+    def update_order_status(self, order_id: str, status: OrderStatus) -> bool:
+        """N11 sipariş durumunu güncelle"""
+        try:
+            result = self.order_client.service.UpdateOrderStatus(
+                Auth={
+                    "apiKey": self.api_key,
+                    "apiSecret": self.api_secret
+                },
+                OrderId=order_id,
+                Status=status.value
+            )
+            logger.info(f"N11 sipariş durumu güncellendi: {order_id}")
+            return True
+        except Exception as e:
+            logger.error(f"N11 sipariş durumunu güncellerken hata: {e}")
+            return False
+    
+    def get_inventory(self, product_id: str) -> Dict[str, Any]:
+        """N11 ürün envanterini getir"""
+        try:
+            result = self.product_client.service.GetInventory(
+                Auth={
+                    "apiKey": self.api_key,
+                    "apiSecret": self.api_secret
+                },
+                ProductId=product_id
+            )
+            return result
+        except Exception as e:
+            logger.error(f"N11 envanterini getirirken hata: {e}")
+            return {}
+    
+    def update_inventory(self, product_id: str, quantity: int) -> bool:
+        """N11 envanter güncelle"""
+        try:
+            result = self.product_client.service.UpdateInventory(
+                Auth={
+                    "apiKey": self.api_key,
+                    "apiSecret": self.api_secret
+                },
+                ProductId=product_id,
+                Quantity=quantity
+            )
+            logger.info(f"N11 envanter güncellendi: {product_id}")
+            return True
+        except Exception as e:
+            logger.error(f"N11 envanter güncellenirken hata: {e}")
+            return False
+    
+    def create_invoice(self, order_id: str, invoice_data: Dict[str, Any]) -> Dict[str, Any]:
+        """N11'de fatura oluştur"""
+        try:
+            result = self.order_client.service.CreateInvoice(
+                Auth={
+                    "apiKey": self.api_key,
+                    "apiSecret": self.api_secret
+                },
+                OrderId=order_id,
+                InvoiceRequest=invoice_data
+            )
+            logger.info(f"N11 faturası oluşturuldu: {order_id}")
+            return result
+        except Exception as e:
+            logger.error(f"N11 faturası oluştururken hata: {e}")
+            return {"error": str(e)}
+    
+    def get_shipment_status(self, shipment_id: str) -> Dict[str, Any]:
+        """N11 kargo durumunu getir"""
+        try:
+            result = self.order_client.service.GetShipment(
+                Auth={
+                    "apiKey": self.api_key,
+                    "apiSecret": self.api_secret
+                },
+                ShipmentId=shipment_id
+            )
+            return result
+        except Exception as e:
+            logger.error(f"N11 kargo durumunu getirirken hata: {e}")
+            return {}
+    
+    def update_shipment_status(self, shipment_id: str, 
+                              tracking_number: str,
+                              status: str) -> bool:
+        """N11 kargo durumunu güncelle"""
+        try:
+            result = self.order_client.service.UpdateShipment(
+                Auth={
+                    "apiKey": self.api_key,
+                    "apiSecret": self.api_secret
+                },
+                ShipmentId=shipment_id,
+                TrackingNumber=tracking_number,
+                Status=status
+            )
+            logger.info(f"N11 kargo durumu güncellendi: {shipment_id}")
+            return True
+        except Exception as e:
+            logger.error(f"N11 kargo durumunu güncellerken hata: {e}")
+            return False
+    
+    def get_messages(self, 
+                    page: int = 1, 
+                    page_size: int = 50,
+                    unread_only: bool = False) -> Dict[str, Any]:
+        """N11 müşteri mesajlarını getir"""
+        try:
+            result = self.order_client.service.GetMessages(
+                Auth={
+                    "apiKey": self.api_key,
+                    "apiSecret": self.api_secret
+                },
+                PageNumber=page,
+                PageSize=page_size,
+                UnreadOnly=unread_only
+            )
+            return {
+                "messages": result.get("Messages", []),
+                "total": result.get("TotalCount", 0)
+            }
+        except Exception as e:
+            logger.error(f"N11 mesajlarını getirirken hata: {e}")
+            return {"messages": [], "total": 0}
+    
+    def send_message(self, customer_id: str, message: str) -> bool:
+        """N11'de müşteriye mesaj gönder"""
+        try:
+            result = self.order_client.service.SendMessage(
+                Auth={
+                    "apiKey": self.api_key,
+                    "apiSecret": self.api_secret
+                },
+                CustomerId=customer_id,
+                Message=message
+            )
+            logger.info(f"N11 mesajı gönderildi: {customer_id}")
+            return True
+        except Exception as e:
+            logger.error(f"N11 mesajı gönderirken hata: {e}")
+            return False
+
+
+# Adaptör factory sınıfı
+class MarketplaceAdapterFactory:
+    """Pazaryeri adaptörü oluşturmak için factory pattern"""
+    
+    @staticmethod
+    def create_adapter(marketplace_type: MarketplaceType, 
+                      api_key: str, 
+                      api_secret: str,
+                      seller_code: Optional[str] = None) -> IMarketplaceAdapter:
+        """
+        Belirtilen pazaryeri için adaptör oluştur
+        
+        Args:
+            marketplace_type: Pazaryeri türü
+            api_key: API anahtarı
+            api_secret: API gizli anahtarı
+            seller_code: Satıcı kodu (isteğe bağlı)
+        
+        Returns:
+            Uygun adaptör instance'ı
+        
+        Raises:
+            ValueError: Desteklenmeyen pazaryeri türü
+        """
+        if marketplace_type == MarketplaceType.HEPSIBURADA:
+            return HepsiburadaAdapter(api_key, api_secret)
+        elif marketplace_type == MarketplaceType.TRENDYOL:
+            return TrendyolAdapter(api_key, api_secret)
+        elif marketplace_type == MarketplaceType.AMAZON:
+            return AmazonSPAPIAdapter(api_key, api_secret, seller_code)
+        elif marketplace_type == MarketplaceType.N11:
+            return N11SOAPAdapter(api_key, api_secret)
+        else:
+            raise ValueError(f"Desteklenmeyen pazaryeri: {marketplace_type}")
+
+
+# Örnek kullanım
+if __name__ == "__main__":
+    # Hepsiburada adaptörünü oluştur
+    hepsiburada = MarketplaceAdapterFactory.create_adapter(
+        MarketplaceType.HEPSIBURADA,
+        "your_api_key",
+        "your_api_secret"
+    )
+    
+    # Kimlik doğrulaması yap
+    if hepsiburada.authenticate():
+        print("Hepsiburada'ya bağlanıldı")
+        
+        # Ürünleri getir
+        products = hepsiburada.get_products(page=1, page_size=10)
+        print(f"Ürün sayısı: {len(products.get('products', []))}")
+    else:
+        print("Hepsiburada'ya bağlanılamadı")

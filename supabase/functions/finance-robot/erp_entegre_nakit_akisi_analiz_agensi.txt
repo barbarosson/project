@@ -1,0 +1,198 @@
+# ERP Entegre Nakit Akışı Analiz Agensi
+
+## 1. Sistem Mimarisi Özeti
+
+ERP Entegre Nakit Akışı Analiz Agensi, kurumsal kaynak planlama (ERP) sistemlerine gerçek zamanlı bağlanarak finansal veri tabanlarından nakit akışı bilgilerini çekerek, yapay zeka destekli analiz ve öngörü sağlayan bir intelligent agent sistemidir. Sistem, SAP, Oracle, Microsoft Dynamics, Odoo ve benzer ERP platformlarıyla uyumlu olarak tasarlanmıştır.
+
+### Ana Bileşenler Mimarisi
+
+| Bileşen | Açıklama | Sorumuluk |
+|---------|----------|-----------|
+| **ERP Bağlantı Katmanı** | ERP sistem API'lerine güvenli bağlantı | SOAP/REST API, OAuth 2.0, OData |
+| **Veri Çıkartma Modülü** | Nakit akışı, ödeme planları, tahminler | SQL sorguları, batch işleme |
+| **Analiz Motoru** | Finansal metrik hesaplama ve eğilim analizi | Python/Pandas veri işleme |
+| **AI Öneriler Sistemi** | Makine öğrenmesi destekli tavsiyeler | LLM entegrasyonu, pattern recognition |
+| **Rapor ve Görselleştirme** | Yönetim dashboardları ve raporlar | React, D3.js, Plotly |
+| **API Gateway** | Harici uygulamaların erişimi | REST API endpoints |
+
+### Sistem Akış Diyagramı
+
+```mermaid
+flowchart TD
+    A["ERP Sistem<br/>SAP, Oracle, Dynamics"] -->|API| B["Güvenli Bağlantı<br/>Katmanı"]
+    B -->|OAuth 2.0| C["Veri Çıkartma<br/>Modülü"]
+    C -->|Raw Data| D["Veri İşleme<br/>Pipeline"]
+    D -->|Temiz Veri| E["Analiz Motoru"]
+    E -->|Metrics| F["AI Öneriler<br/>Motoru"]
+    F -->|İhtiyaçlar| G["LLM Model"]
+    G -->|Tavsiyeler| H["Rapor & Dashboard"]
+    H -->|Sonuç| I["Kullanıcı Arayüzü"]
+    J["Dış Uygulamalar"] -->|REST API| K["API Gateway"]
+    K -->|Sorgu| L["Cache Layer"]
+    L -->|Veri| M["Sonuç Döndür"]
+```
+
+## 2. Sistem Gereksinimleri
+
+### Fonksiyonel Gereksinimler
+
+Sistem aşağıdaki temel fonksiyonları sağlamaktadır:
+
+**Gerçek Zamanlı Veri Senkronizasyonu:** ERP sistemindeki nakit akışı hesaplarından, ödeme bilgilerinden ve bütçe verilerinden otomatik veri çekmesi yapılmaktadır. Sistem, günlük veya saatlik aralıklarla veri güncellemeyi desteklemektedir.
+
+**Nakit Akışı Tahmini:** Tarihsel veriler ve mevsimsel eğilimler kullanarak gelecek 3 ay, 6 ay ve 1 yıllık nakit pozisyonunun tahmini yapılmaktadır.
+
+**Likidite Yönetimi Analizi:** Işletme maliyetleri, gelir geri tahsili, borç ödeme planları ve yatırım gereksinimleri dikkate alınarak likidite pozisyonu değerlendirilmektedir.
+
+**Ödeme Optimizasyonu:** Fatura vade tarihlerini, ödeme koşullarını ve mevcut nakit konumunu analiz ederek optimal ödeme stratejileri önerilmektedir.
+
+**Finansal Risk Uyarıları:** Nakit eksikliği, riskli ödeme gecikmesi veya sınırsız borç artışı gibi sorunların erken tespit edilerek uyarı verilmektedir.
+
+### Teknik Gereksinimler
+
+| Gereksinim | Detay |
+|------------|-------|
+| **API Uyumluluğu** | SAP RESTful API, Oracle E-Business Suite API, Microsoft Dynamics OData |
+| **Veri Güvenliği** | TLS 1.3 şifreleme, OAuth 2.0, JWT token yönetimi |
+| **Skalabilite** | 1000+ firma/entity, 100+ milyon işlem kaydı |
+| **Performans** | Sorgu yanıt süresi < 500ms, rapor oluşturma < 30 sn |
+| **Kullanılabilirlik** | 99.5% uptime, yedek sistem ve feather yönetimi |
+
+## 3. Yazılım Mimarisi Detayları
+
+### Backend Teknoloji Stack'i
+
+Sistem backend bileşenleri Python ve Node.js üzerine kurgulanmıştır. Asenkron işleme ve yüksek eşzamanlılık gereksinimlerini karşılamak için aşağıdaki teknolojiler kullanılmaktadır:
+
+**Python (Ana Dil):** Veri işleme, analiz ve makine öğrenmesi görevleri için Python 3.11+ kullanılmaktadır. FastAPI framework'ü API endpoint'leri sağlamak için tercih edilmektedir. Pandas ve NumPy kütüphaneleri finansal veri analiz için kullanılmaktadır.
+
+**Database Katmanı:** PostgreSQL 15+ ana veri deposu olarak görev yapmaktadır. Redis, cache layer ve hızlı sorgu sonuçları için kullanılmaktadır. InfluxDB zaman serisi veriler (nakit akışı trendi) için tercih edilmektedir.
+
+**Message Queue:** RabbitMQ veya Apache Kafka asenkron görevler ve veri pipeline'ları için kullanılmaktadır. Bu, başka araç üstünde çalışan sorguların ERP üzerindeki yükü azaltmaktadır.
+
+**LLM Integration:** OpenAI GPT-4 API veya benzer LLM modellerine API aracılığıyla bağlanmaktadır. Özel fine-tuned model seçeneği de mevcuttur.
+
+### Frontend Teknoloji Stack'i
+
+**React 18+:** Kullanıcı arayüzü ve dashboard bileşenleri React ile oluşturulmaktadır. State management için Redux Toolkit kullanılmaktadır.
+
+**Grafik Kütüphaneleri:** D3.js ve Plotly.js nakit akışı trendleri, tahminler ve karşılaştırmalı analizler için görselleştirme sağlamaktadır.
+
+**UI Framework:** Material-UI veya Ant Design kurumsal düzeyde profesyonel arayüz bileşenleri sağlamaktadır.
+
+## 4. Veri Akışı Detayları
+
+### ERP Bağlantı Detayları
+
+Sistem, ERP platformlarıyla güvenli bağlantı kurmaktadır:
+
+**Bağlantı Kurulum Adımları:**
+
+1. ERP sistem yöneticisi, agent sistemi için özel kullanıcı hesabı ve API anahtarı oluşturmaktadır.
+2. OAuth 2.0 veya API key-based authentication kullanılarak güvenli bağlantı kanalı açılmaktadır.
+3. Sistem, belirli ERP modüllerine (Finansal Muhasebe, Alacaklar, Borçlar, Bütçe) sınırlı erişim yapılmaktadır.
+4. TLS 1.3 üzerinde şifreli veri aktarımı gerçekleştirilmektedir.
+
+**Desteklenen ERP Sistemleri:**
+
+| ERP Sistemi | API Tipi | Kimlik Doğrulama | Durumu |
+|-------------|----------|-----------------|--------|
+| SAP S/4HANA | REST/SOAP | OAuth 2.0, mTLS | Tam Destek |
+| Oracle E-Business | REST | OAuth 2.0 | Tam Destek |
+| Microsoft Dynamics 365 | OData | Azure AD | Tam Destek |
+| Odoo | REST | Token-based | Tam Destek |
+| IFS Cloud | REST | OAuth 2.0 | Kısmi Destek |
+
+### Nakit Akışı Veri Modeli
+
+Sistem, aşağıdaki temel finansal veri öğelerini ERP'den çıkarmaktadır:
+
+**Nakit Girişleri:** Müşteri ödemelerinden ve satış gelirlerinden kaynaklanan nakit artışı. Bu veriler, satışlar modülü ve tahsil edilebilir hesaplarından alınmaktadır.
+
+**Nakit Çıkışları:** Tedarikçi ödemelerine, maaş ve ücretlere, vergilere, kredi ödemelerine ve işletme giderlerine ilişkin nakit çıkışı. Bu veriler, muhasebe modülü ve borçlar modülünden alınmaktadır.
+
+**Nakit Balansı:** Belirli tarihte mevcut nakit miktarı. Banka hesap işlemleri modülünden alınmaktadır.
+
+**Planlı Nakit Hareketleri:** Onaylanmış satın alma siparişleri, tahminî gelir ve maliye faturalarına göre planlı nakit hareketleri. Bütçe ve tahmin modüllerinden alınmaktadır.
+
+## 5. AI-Tabanlı Öneriler Motoru
+
+### Öneriler Kategorileri
+
+Sistem, aşağıdaki tür finansal öneriler sunmaktadır:
+
+**Likidite Optimizasyonu:** Nakit rezerv tutarı, kredili mevduat kullanımı ve nakit tahsisinin optimal seviyesini önerilmektedir.
+
+**Ödeme Stratejisi:** Erken ödeme indirimlerinden yararlanma, ödeme sürelerinin uzatılması veya faiz oranı açısından avantajlı borç refinansmanı önerilmektedir.
+
+**Gelir İyileştirmesi:** Tahsil edilen alacakların artırılması, faturalandırma döngüsünün kısaltılması ve müşteri kredi koşullarının gözden geçirilmesi önerilmektedir.
+
+**Maliyet Azaltma:** Tedarikçi fiyat müzakereleri, satın alma siparişi batching ve gider denetimi konularında öneriler sunulmaktadır.
+
+**Risk Yönetimi:** Nakit eksikliği senaryoları, kredi limitlerinin artırılması gerekliliği ve kur riski yönetimi önerilmektedir.
+
+### Öneriler Oluşturma Süreci
+
+Sistem, aşağıdaki adımlar izlemektedir:
+
+1. **Veri Toplama:** ERP'den nakit akışı, maliye ve bütçe verileri çekilmektedir.
+2. **Analiz:** Python'da ARIMA, Prophet gibi tahmin modelleri ve istatistiksel analiz yapılmaktadır.
+3. **LLM Prompt:** Analiz sonuçları ve bağlam bilgisi LLM'e prompt olarak gönderilmektedir.
+4. **Tavsiye Üretimi:** LLM, finansal olarak mantıklı ve uygulanabilir öneriler sunmaktadır.
+5. **Doğrulama:** Sistem, öneriler kaynağında tutarlılık ve yeterliliğini doğrulamaktadır.
+6. **Rapor Üretimi:** Öneriler, yönetim raporunda sunulmaktadır.
+
+## 6. Güvenlik Mimarisi
+
+Sistem, kurumsal finansal veri koruması için çoklu güvenlik katmanları içermektedir:
+
+**Kimlik Doğrulama ve Yetkilendirme:**
+
+- Kullanıcı kaydı: Multi-factor authentication (MFA) ile güvenli giriş sağlanmaktadır.
+- API Anahtarı: Her bütünleşik ERP sistemi için güçlü, döner API anahtarları kullanılmaktadır.
+- Role-based Access Control (RBAC): Yönetici, mali müdür, Mali Yönetici rollerine göre erişim kontrolü yapılmaktadır.
+
+**Veri Koruması:**
+
+- Veriler TLS 1.3 ve AES-256 şifreleme ile korunmaktadır.
+- Hassas veriler (nakit bilgileri, kredi limitleri) maskelenerek gösterilmektedir.
+- Audit logging: Tüm sistem erişimleri ve değişiklikler kaydedilmektedir.
+- Veri saklama: GDPR ve diğer maliye düzenlemeleri uyarınca veri silme politikaları uygulanmaktadır.
+
+**Ağ Güvenliği:**
+
+- VPC (Virtual Private Cloud) içinde sistem barındırılmaktadır.
+- Web Application Firewall (WAF) saldırıları önlemektedir.
+- DDoS koruması etkinleştirilmektedir.
+
+## 7. Dağıtım Mimarisi
+
+### Bulut Mimarisi
+
+Sistem, AWS, Azure veya Google Cloud platformlarında dağıtılmaktadır:
+
+**Container Orchestration:** Kubernetes (EKS/AKS/GKE) mikro hizmet mimarisine dayalı olarak ölçeklenebilirlik sağlamaktadır.
+
+**Database:** Managed PostgreSQL, Redis ve InfluxDB hizmetleri kullanılmaktadır.
+
+**CI/CD Pipeline:** GitHub Actions veya GitLab CI/CD otomatik test ve dağıtım sağlamaktadır.
+
+### Yüksek Kullanılabilirlik
+
+- Multi-region deployment: Hem primer hem yedek veri merkezleri kullanılmaktadır.
+- Auto-scaling: Yük arttığında otomatik olarak yeni sunucular devreye sokulmaaktadır.
+- Database Replication: Anlık yedekleme ve failover otomatikleştirilmektedir.
+
+## 8. İz Bırakma ve İyileştirme Planı
+
+### Gelecek Versiyonlar
+
+**v1.1:** Advanced tahmin modelleri (XGBoost), geliştirilmiş dashboard özelleştirmeleri.
+
+**v1.2:** Mobil uygulama (iOS/Android), WhatsApp/Slack uyarıları.
+
+**v2.0:** Blockchain-tabanlı ödeme verileri integrasyonu, blockchain tabanlı nakit akışı izleme.
+
+---
+
+Bu dokümantasyon ERP Entegre Nakit Akışı Analiz Agensi'nin mimari yapısını, teknoloji stack'ini ve işletim detaylarını kapsamlı bir şekilde açıklamaktadır. Sonraki aşamada, bileşenlerin yazılım uygulaması başlanacaktır.

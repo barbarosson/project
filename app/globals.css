@@ -1,0 +1,451 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+@layer base {
+  :root {
+    /* Dark Navy (#0D1B2A) and Ice Blue (#E0F4FF) Color Palette */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 7%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 7%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 7%;
+    --primary: 0 0% 7%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 200 100% 94%;
+    --secondary-foreground: 0 0% 7%;
+    --muted: 200 40% 96%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 200 100% 94%;
+    --accent-foreground: 0 0% 7%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 200 30% 90%;
+    --input: 200 30% 90%;
+    --ring: 0 0% 7%;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --chart-1: 210 54% 40%;
+    --chart-2: 200 70% 50%;
+    --chart-3: 190 60% 45%;
+    --chart-4: 205 80% 55%;
+    --chart-5: 195 70% 60%;
+    --radius: 0.75rem;
+
+    /* BizimHesap-inspired spacing and proportions */
+    --logo-width: 180px;
+    --logo-height: 60px;
+    --section-padding-y: 144px;
+    --section-padding-x: 24px;
+    --primary-color: #111827;
+    --secondary-color: #E0F4FF;
+    --accent-color: #111827;
+    --heading-font-size: 56px;
+    --body-font-size: 18px;
+    --border-radius: 12px;
+
+    /* Header & Navigation - BizimHesap proportions */
+    --logo-header-width: 129px;
+    --logo-header-height: 88px;
+    --logo-footer-width: 110px;
+    --logo-footer-height: 75px;
+    --header-height: 88px;
+    --header-padding-x: 32px;
+    --nav-item-spacing: 32px;
+
+    /* Typography - BizimHesap scale */
+    --hero-title-font-size: 56px;
+    --hero-subtitle-font-size: 20px;
+    --section-title-font-size: 40px;
+    --subsection-title-font-size: 28px;
+    --body-text-font-size: 18px;
+    --small-text-font-size: 16px;
+    --nav-text-font-size: 16px;
+
+    /* Text Colors - High Contrast */
+    --heading-text-color: #0A192F;
+    --body-text-color: #0A192F;
+    --text-on-light: #0A192F;
+    --text-on-dark: #7DD3FC;
+
+    /* Spacing - BizimHesap gaps */
+    --section-padding-top: 144px;
+    --section-padding-bottom: 144px;
+    --section-gap: 96px;
+    --section-gap-md: 64px;
+    --section-gap-sm: 48px;
+    --section-gap-xs: 32px;
+    --container-max-width: 1280px;
+    --container-padding: 24px;
+  }
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 16px;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-inter), system-ui, sans-serif;
+    font-size: var(--body-text-font-size);
+    line-height: 1.7;
+    letter-spacing: -0.01em;
+  }
+
+  /* BizimHesap-inspired typography scale */
+  h1 {
+    @apply scroll-m-20 font-bold tracking-tight;
+    font-size: var(--hero-title-font-size);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--heading-text-color, #0A192F);
+  }
+
+  h2 {
+    @apply scroll-m-20 font-bold tracking-tight;
+    font-size: var(--section-title-font-size);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--heading-text-color, #0A192F);
+  }
+
+  h3 {
+    @apply scroll-m-20 font-semibold tracking-tight;
+    font-size: var(--subsection-title-font-size);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--heading-text-color, #0A192F);
+  }
+
+  h4 {
+    @apply scroll-m-20 font-semibold;
+    font-size: var(--body-text-font-size);
+    line-height: 1.4;
+    color: var(--heading-text-color, #0A192F);
+  }
+
+  p {
+    font-size: var(--body-text-font-size);
+    line-height: 1.7;
+    letter-spacing: -0.01em;
+    color: var(--body-text-color, #0A192F);
+  }
+
+  a {
+    @apply transition-colors duration-200;
+  }
+}
+
+@layer components {
+  /* Deep Tech Neon Glow Button */
+  .btn-glow {
+    @apply relative inline-flex items-center justify-center px-8 py-4 font-semibold text-white rounded-lg transition-all duration-300 ease-out;
+    background-color: #1E40AF;
+    box-shadow:
+      0 4px 14px 0 rgba(30, 64, 175, 0.39),
+      0 2px 4px 0 rgba(30, 64, 175, 0.25),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(125, 211, 252, 0.2);
+  }
+
+  .btn-glow:hover,
+  .btn-glow:focus {
+    background-color: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 40px 8px rgba(125, 211, 252, 0.6),
+      0 0 20px 4px rgba(125, 211, 252, 0.8),
+      0 8px 32px 0 rgba(30, 64, 175, 0.5),
+      0 4px 8px 0 rgba(30, 64, 175, 0.3),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.2),
+      0 0 0 3px rgba(125, 211, 252, 0.3);
+    border-color: #7DD3FC;
+  }
+
+  .btn-glow:active {
+    transform: translateY(0);
+    box-shadow:
+      0 0 30px 6px rgba(125, 211, 252, 0.5),
+      0 0 15px 3px rgba(125, 211, 252, 0.7),
+      0 4px 16px 0 rgba(30, 64, 175, 0.4),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+  }
+
+  .btn-glow:focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 40px 8px rgba(125, 211, 252, 0.6),
+      0 0 20px 4px rgba(125, 211, 252, 0.8),
+      0 8px 32px 0 rgba(30, 64, 175, 0.5),
+      0 0 0 4px rgba(125, 211, 252, 0.4);
+  }
+
+  .btn-glow:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow:
+      0 2px 8px 0 rgba(30, 64, 175, 0.2),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .btn-glow:disabled:hover {
+    transform: none;
+    box-shadow:
+      0 2px 8px 0 rgba(30, 64, 175, 0.2),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* Size Variants */
+  .btn-glow-sm {
+    @apply btn-glow px-6 py-3 text-sm;
+  }
+
+  .btn-glow-lg {
+    @apply btn-glow px-10 py-5 text-lg;
+  }
+
+  .btn-glow-xl {
+    @apply btn-glow px-12 py-6 text-xl;
+  }
+
+  /* Outline Variant - Glows from transparent */
+  .btn-glow-outline {
+    @apply relative inline-flex items-center justify-center px-8 py-4 font-semibold rounded-lg transition-all duration-300 ease-out;
+    background-color: transparent;
+    color: #7DD3FC;
+    border: 2px solid #1E40AF;
+    box-shadow:
+      0 2px 8px 0 rgba(30, 64, 175, 0.2),
+      inset 0 0 0 0 rgba(125, 211, 252, 0);
+  }
+
+  .btn-glow-outline:hover,
+  .btn-glow-outline:focus {
+    background-color: rgba(30, 64, 175, 0.1);
+    color: #FFFFFF;
+    border-color: #7DD3FC;
+    transform: translateY(-2px);
+    box-shadow:
+      0 0 40px 8px rgba(125, 211, 252, 0.6),
+      0 0 20px 4px rgba(125, 211, 252, 0.8),
+      0 8px 32px 0 rgba(30, 64, 175, 0.4),
+      inset 0 0 30px 0 rgba(125, 211, 252, 0.2),
+      0 0 0 3px rgba(125, 211, 252, 0.3);
+  }
+}
+
+@layer utilities {
+  /* Parasut-style gradient background */
+  .stripe-hero-gradient {
+    background: linear-gradient(135deg, #0A2540 0%, #0D3A5F 50%, #0A2540 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+  }
+
+  @keyframes gradientShift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* BizimHesap-inspired container and spacing */
+  .container-marketing {
+    max-width: var(--container-max-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--container-padding);
+    padding-right: var(--container-padding);
+  }
+
+  .section-spacing {
+    padding-top: var(--section-padding-top);
+    padding-bottom: var(--section-padding-bottom);
+  }
+
+  /* Responsive section gaps - BizimHesap pattern */
+  .section-gap {
+    gap: var(--section-gap);
+  }
+
+  @media (max-width: 1024px) {
+    .section-gap {
+      gap: var(--section-gap-md);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .section-gap {
+      gap: var(--section-gap-sm);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .section-gap {
+      gap: var(--section-gap-xs);
+    }
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Typography utilities */
+  .text-hero {
+    font-size: var(--hero-title-font-size);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+
+  .text-section-title {
+    font-size: var(--section-title-font-size);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+
+  .text-body-large {
+    font-size: var(--hero-subtitle-font-size);
+    line-height: 1.6;
+    letter-spacing: -0.01em;
+  }
+
+  /* Text color utilities for contrast */
+  .text-on-light {
+    color: var(--text-on-light, #0A192F) !important;
+  }
+
+  .text-on-dark {
+    color: var(--text-on-dark, #7DD3FC) !important;
+  }
+
+  /* Helper classes to override white text */
+  .text-contrast {
+    color: var(--heading-text-color, #0A192F) !important;
+  }
+
+  .text-contrast-body {
+    color: var(--body-text-color, #0A192F) !important;
+  }
+
+  /* Auto-contrast text based on background */
+  .text-auto-contrast-light {
+    color: #0A192F !important;
+  }
+
+  .text-auto-contrast-dark {
+    color: #FFFFFF !important;
+  }
+
+  .text-auto-contrast-muted-light {
+    color: #425466 !important;
+  }
+
+  .text-auto-contrast-muted-dark {
+    color: rgba(255, 255, 255, 0.85) !important;
+  }
+}
+
+/* Marketing header nav links - force 24px bold */
+.nav-links-24bold a span,
+.nav-links-24bold span {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+}
+
+/* Tiptap Editor Styles */
+.ProseMirror {
+  outline: none;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: hsl(var(--muted-foreground));
+  pointer-events: none;
+  height: 0;
+}
+
+.ProseMirror:focus {
+  outline: none;
+}
+
+/* Hero Carousel Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out;
+}
+
+.animate-fade-in-delay {
+  animation: fade-in 0.8s ease-out 0.2s both;
+}
+
+.animate-fade-in-delay-2 {
+  animation: fade-in 0.8s ease-out 0.4s both;
+}

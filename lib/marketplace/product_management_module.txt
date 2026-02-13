@@ -1,0 +1,692 @@
+"""
+Ürün Yönetimi Modülü
+Ürünleri merkezi olarak yönetir ve tüm pazaryerlere dağıtır
+"""
+
+from typing import List, Dict, Optional, Any, Tuple
+from datetime import datetime
+from enum import Enum
+import logging
+from dataclasses import dataclass
+import asyncio
+import json
+from abc import ABC, abstractmethod
+
+# Logging yapılandırması
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+class ProductStatus(Enum):
+    \"\"\"Ürün durumları\"\"\"
+    DRAFT = "draft"
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    ARCHIVED = "archived"
+
+
+class SyncAction(Enum):
+    \"\"\"Senkronizasyon işlemleri\"\"\"
+    CREATE = "create"
+    UPDATE = "update"
+    DELETE = "delete"
+    ACTIVATE = "activate"
+    DEACTIVATE = "deactivate"
+
+
+@dataclass
+class ProductMapping:
+    \"\"\"Ürün eşleştirmesi\"\"\"
+    local_product_id: int
+    marketplace_id: int
+    marketplace_product_id: Optional[str] = None
+    marketplace_sku: Optional[str] = None
+    category_id: Optional[str] = None
+    status: str = "synced"
+
+
+class ProductManagementService:
+    \"\"\"Ürün yönetimi hizmeti\"\"\"
+    
+    def __init__(self, db_connection, adapter_factory):
+        \"\"\"
+        Hizmeti başlat
+        
+        Args:
+            db_connection: Veritabanı bağlantısı
+            adapter_factory: Pazaryeri adaptörü factory'si
+        \"\"\"
+        self.db = db_connection
+        self.adapter_factory = adapter_factory
+        self.sync_queue = []
+    
+    async def create_product(self, seller_id: int, product_data: Dict[str, Any], 
+                            sync_marketplaces: Optional[List[int]] = None) -> Dict[str, Any]:
+        \"\"\"
+        Yeni ürün oluştur ve pazaryerlere dağıt
+        
+        Args:
+            seller_id: Satıcı ID'si
+            product_data: Ürün verileri
+            sync_marketplaces: Senkronize edilecek pazaryerler (tümü ise None)
+        
+        Returns:
+            Oluşturulan ürün ve senkronizasyon sonuçları
+        \"\"\"
+        try:
+            logger.info(f"Yeni ürün oluşturuluyor: {product_data.get('sku')}")
+            
+            # Ürün verilerini normalize et
+            normalized_data = self._normalize_product_data(product_data)
+            
+            # Merkezi veritabanında ürün oluştur
+            product_id = self._create_local_product(seller_id, normalized_data)
+            logger.info(f"Merkezi ürün oluşturuldu: {product_id}")
+            
+            # Pazaryerlere dağıt
+            sync_targets = sync_marketplaces or self._get_seller_marketplaces(seller_id)
+            marketplace_results = await self._sync_to_marketplaces(
+                seller_id,
+                product_id,
+                product_data,
+                sync_targets,
+                SyncAction.CREATE
+            )
+            
+            return {
+                "product_id": product_id,
+                "status": "created",
+                "marketplace_results": marketplace_results
+            }
+            
+        except Exception as e:
+            logger.error(f"Ürün oluştururken hata: {e}")
+            return {"error": str(e)}
+    
+    async def update_product(self, seller_id: int, product_id: int, 
+                            product_data: Dict[str, Any],
+                            sync_marketplaces: Optional[List[int]] = None) -> Dict[str, Any]:
+        \"\"\"
+        Ürünü güncelle ve pazaryerlere yayınla
+        
+        Args:
+            seller_id: Satıcı ID'si
+            product_id: Ürün ID'si
+            product_data: Güncellenmiş ürün verileri
+            sync_marketplaces: Senkronize edilecek pazaryerler (tümü ise None)
+        
+        Returns:
+            Güncellenme sonuçları
+        \"\"\"
+        try:
+            logger.info(f"Ürün güncelleniyor: {product_id}")
+            
+            # Mevcut ürünü getir
+            existing_product = self.db.get_product(product_id)
+            if not existing_product:
+                return {"error": "Ürün bulunamadı"}
+            
+            # Ürün verilerini normalize et
+            normalized_data = self._normalize_product_data(product_data)
+            
+            # Merkezi veritabanında güncelle
+            self._update_local_product(product_id, normalized_data)
+            logger.info(f"Merkezi ürün güncellendi: {product_id}")
+            
+            # Pazaryerlere dağıt
+            sync_targets = sync_marketplaces or self._get_seller_marketplaces(seller_id)
+            marketplace_results = await self._sync_to_marketplaces(
+                seller_id,
+                product_id,
+                product_data,
+                sync_targets,
+                SyncAction.UPDATE
+            )
+            
+            return {
+                "product_id": product_id,
+                "status": "updated",
+                "marketplace_results": marketplace_results
+            }
+            
+        except Exception as e:
+            logger.error(f"Ürün güncellenirken hata: {e}")
+            return {"error": str(e)}
+    
+    async def batch_create_products(self, seller_id: int, 
+                                   products: List[Dict[str, Any]],
+                                   sync_marketplaces: Optional[List[int]] = None) -> Dict[str, Any]:
+        \"\"\"
+        Toplu ürün oluştur
+        
+        Args:
+            seller_id: Satıcı ID'si
+            products: Ürün listesi
+            sync_marketplaces: Senkronize edilecek pazaryerler
+        
+        Returns:
+            Toplu oluşturma sonuçları
+        \"\"\"
+        logger.info(f"Toplu ürün oluşturma başlatıldı: {len(products)} ürün")
+        
+        results = {
+            "total": len(products),
+            "succeeded": 0,
+            "failed": 0,
+            "products": []
+        }
+        
+        for product_data in products:
+            try:
+                result = await self.create_product(
+                    seller_id,
+                    product_data,
+                    sync_marketplaces
+                )
+                results["succeeded"] += 1
+                results["products"].append({
+                    "sku": product_data.get("sku"),
+                    "product_id": result.get("product_id"),
+                    "status": "success"
+                })
+            except Exception as e:
+                logger.error(f"Ürün oluşturma başarısız: {e}")
+                results["failed"] += 1
+                results["products"].append({
+                    "sku": product_data.get("sku"),
+                    "status": "failed",
+                    "error": str(e)
+                })
+        
+        return results
+    
+    async def delete_product(self, seller_id: int, product_id: int,
+                            remove_from_marketplaces: bool = True) -> Dict[str, Any]:
+        \"\"\"
+        Ürünü sil
+        
+        Args:
+            seller_id: Satıcı ID'si
+            product_id: Ürün ID'si
+            remove_from_marketplaces: Pazaryerlerden de silinsin mi
+        
+        Returns:
+            Silme sonuçları
+        \"\"\"
+        try:
+            logger.info(f"Ürün siliniyor: {product_id}")
+            
+            if remove_from_marketplaces:
+                # Pazaryerlerden sil
+                marketplace_ids = self._get_seller_marketplaces(seller_id)
+                for marketplace_id in marketplace_ids:
+                    await self._delete_from_marketplace(
+                        seller_id,
+                        product_id,
+                        marketplace_id
+                    )
+            
+            # Merkezi veritabanından sil
+            self.db.delete_product(product_id)
+            logger.info(f"Ürün silindi: {product_id}")
+            
+            return {"status": "deleted", "product_id": product_id}
+            
+        except Exception as e:
+            logger.error(f"Ürün silerken hata: {e}")
+            return {"error": str(e)}
+    
+    async def activate_product(self, seller_id: int, product_id: int,
+                              activate_on_marketplaces: bool = True) -> Dict[str, Any]:
+        \"\"\"
+        Ürünü aktif et
+        
+        Args:
+            seller_id: Satıcı ID'si
+            product_id: Ürün ID'si
+            activate_on_marketplaces: Pazaryerlerde de aktif olsun mu
+        
+        Returns:
+            Aktivasyon sonuçları
+        \"\"\"
+        try:
+            logger.info(f"Ürün aktif ediliyor: {product_id}")
+            
+            # Merkezi veritabanında aktif et
+            self.db.update_product(product_id, {"is_active": True})
+            
+            if activate_on_marketplaces:
+                marketplace_ids = self._get_seller_marketplaces(seller_id)
+                for marketplace_id in marketplace_ids:
+                    await self._activate_on_marketplace(
+                        seller_id,
+                        product_id,
+                        marketplace_id
+                    )
+            
+            return {"status": "activated", "product_id": product_id}
+            
+        except Exception as e:
+            logger.error(f"Ürün aktif ederken hata: {e}")
+            return {"error": str(e)}
+    
+    async def deactivate_product(self, seller_id: int, product_id: int,
+                                deactivate_on_marketplaces: bool = True) -> Dict[str, Any]:
+        \"\"\"
+        Ürünü pasif et
+        
+        Args:
+            seller_id: Satıcı ID'si
+            product_id: Ürün ID'si
+            deactivate_on_marketplaces: Pazaryerlerde de pasif olsun mu
+        
+        Returns:
+            Pasifleştirme sonuçları
+        \"\"\"
+        try:
+            logger.info(f"Ürün pasif ediliyor: {product_id}")
+            
+            # Merkezi veritabanında pasif et
+            self.db.update_product(product_id, {"is_active": False})
+            
+            if deactivate_on_marketplaces:
+                marketplace_ids = self._get_seller_marketplaces(seller_id)
+                for marketplace_id in marketplace_ids:
+                    await self._deactivate_on_marketplace(
+                        seller_id,
+                        product_id,
+                        marketplace_id
+                    )
+            
+            return {"status": "deactivated", "product_id": product_id}
+            
+        except Exception as e:
+            logger.error(f"Ürün pasif ederken hata: {e}")
+            return {"error": str(e)}
+    
+    async def _sync_to_marketplaces(self, seller_id: int, product_id: int,
+                                   product_data: Dict[str, Any],
+                                   marketplace_ids: List[int],
+                                   action: SyncAction) -> Dict[str, Any]:
+        \"\"\"
+        Ürünü pazaryerlere senkronize et
+        
+        Args:
+            seller_id: Satıcı ID'si
+            product_id: Ürün ID'si
+            product_data: Ürün verileri
+            marketplace_ids: Pazaryeri ID'leri
+            action: Senkronizasyon işlemi
+        
+        Returns:
+            Senkronizasyon sonuçları
+        \"\"\"
+        results = {}
+        tasks = []
+        
+        for marketplace_id in marketplace_ids:
+            task = self._sync_single_marketplace(
+                seller_id,
+                product_id,
+                product_data,
+                marketplace_id,
+                action
+            )
+            tasks.append((marketplace_id, task))
+        
+        # Tüm pazaryerler için senkronizasyon paralel olarak yapılsın
+        for marketplace_id, task in tasks:
+            try:
+                result = await task
+                results[marketplace_id] = result
+            except Exception as e:
+                logger.error(f"Pazaryeri {marketplace_id} senkronizasyonunda hata: {e}")
+                results[marketplace_id] = {"status": "failed", "error": str(e)}
+        
+        return results
+    
+    async def _sync_single_marketplace(self, seller_id: int, product_id: int,
+                                      product_data: Dict[str, Any],
+                                      marketplace_id: int,
+                                      action: SyncAction) -> Dict[str, Any]:
+        \"\"\"
+        Ürünü tek bir pazaryere senkronize et
+        
+        Args:
+            seller_id: Satıcı ID'si
+            product_id: Ürün ID'si
+            product_data: Ürün verileri
+            marketplace_id: Pazaryeri ID'si
+            action: Senkronizasyon işlemi
+        
+        Returns:
+            Senkronizasyon sonucu
+        \"\"\"
+        try:
+            # Pazaryeri bilgilerini getir
+            marketplace = self.db.get_marketplace(marketplace_id)
+            
+            # Adaptörü oluştur
+            adapter = self._get_marketplace_adapter(seller_id, marketplace_id)
+            if not adapter.authenticate():
+                return {"status": "failed", "error": "Kimlik doğrulaması başarısız"}
+            
+            # Pazaryeri-spesifik verilere dönüştür
+            marketplace_product_data = self._transform_product_for_marketplace(
+                product_data,
+                marketplace
+            )
+            
+            # Senkronizasyon işlemini yap
+            if action == SyncAction.CREATE:
+                result = adapter.create_product(marketplace_product_data)
+                marketplace_product_id = result.get("productId")
+                
+                # Eşleştirmeyi kaydet
+                self._save_product_mapping(
+                    product_id,
+                    marketplace_id,
+                    marketplace_product_id
+                )
+                
+            elif action == SyncAction.UPDATE:
+                # Mevcut pazaryeri ürün ID'sini getir
+                mapping = self.db.get_product_marketplace_mapping(product_id, marketplace_id)
+                if mapping:
+                    result = adapter.update_product(
+                        mapping["marketplace_product_id"],
+                        marketplace_product_data
+                    )
+                else:
+                    # Eşleştirme bulunamadı, oluştur
+                    result = adapter.create_product(marketplace_product_data)
+                    self._save_product_mapping(
+                        product_id,
+                        marketplace_id,
+                        result.get("productId")
+                    )
+            
+            elif action == SyncAction.DELETE:
+                mapping = self.db.get_product_marketplace_mapping(product_id, marketplace_id)
+                if mapping:
+                    adapter.delete_product(mapping["marketplace_product_id"])
+            
+            logger.info(f"Ürün pazaryerine senkronize edildi: {product_id} -> {marketplace['code']}")
+            return {
+                "status": "synced",
+                "marketplace_id": marketplace_id,
+                "marketplace_product_id": result.get("productId")
+            }
+            
+        except Exception as e:
+            logger.error(f"Pazaryeri senkronizasyonunda hata: {e}")
+            return {"status": "failed", "error": str(e)}
+    
+    def _normalize_product_data(self, product_data: Dict[str, Any]) -> Dict[str, Any]:
+        \"\"\"
+        Ürün verilerini normalize et
+        
+        Args:
+            product_data: Ham ürün verileri
+        
+        Returns:
+            Normalize edilmiş ürün verileri
+        \"\"\"
+        return {
+            "sku": product_data.get("sku", "").strip(),
+            "name": product_data.get("name", "").strip(),
+            "description": product_data.get("description", "").strip(),
+            "category": product_data.get("category", "").strip(),
+            "brand": product_data.get("brand", "").strip(),
+            "price": float(product_data.get("price", 0)),
+            "cost": float(product_data.get("cost", 0)),
+            "images": product_data.get("images", []),
+            "attributes": product_data.get("attributes", {}),
+            "tags": product_data.get("tags", []),
+            "is_active": product_data.get("is_active", True),
+            "created_at": datetime.now(),
+            "updated_at": datetime.now()
+        }
+    
+    def _transform_product_for_marketplace(self, product_data: Dict[str, Any],
+                                          marketplace: Dict[str, Any]) -> Dict[str, Any]:
+        \"\"\"
+        Ürünü pazaryeri formatına dönüştür
+        
+        Args:
+            product_data: Ürün verileri
+            marketplace: Pazaryeri bilgileri
+        
+        Returns:
+            Pazaryeri formatında ürün verileri
+        \"\"\"
+        marketplace_code = marketplace.get("code")
+        
+        # Pazaryeri-spesifik transformasyon
+        if marketplace_code == "trendyol":
+            return self._transform_for_trendyol(product_data)
+        elif marketplace_code == "hepsiburada":
+            return self._transform_for_hepsiburada(product_data)
+        elif marketplace_code == "amazon":
+            return self._transform_for_amazon(product_data)
+        elif marketplace_code == "n11":
+            return self._transform_for_n11(product_data)
+        else:
+            # Varsayılan transformasyon
+            return product_data
+    
+    def _transform_for_trendyol(self, product_data: Dict[str, Any]) -> Dict[str, Any]:
+        \"\"\"Trendyol formatına dönüştür\"\"\"
+        return {
+            "title": product_data.get("name"),
+            "description": product_data.get("description"),
+            "categoryId": self._get_trendyol_category_id(product_data.get("category")),
+            "price": product_data.get("price"),
+            "barcode": product_data.get("sku"),
+            "images": product_data.get("images", []),
+            "attributes": self._transform_trendyol_attributes(product_data.get("attributes", {}))
+        }
+    
+    def _transform_for_hepsiburada(self, product_data: Dict[str, Any]) -> Dict[str, Any]:
+        \"\"\"Hepsiburada formatına dönüştür\"\"\"
+        return {
+            "name": product_data.get("name"),
+            "description": product_data.get("description"),
+            "category": product_data.get("category"),
+            "brand": product_data.get("brand"),
+            "price": product_data.get("price"),
+            "spu": product_data.get("sku"),
+            "images": product_data.get("images", []),
+            "attributes": product_data.get("attributes", {})
+        }
+    
+    def _transform_for_amazon(self, product_data: Dict[str, Any]) -> Dict[str, Any]:
+        \"\"\"Amazon formatına dönüştür\"\"\"
+        return {
+            "title": product_data.get("name"),
+            "description": product_data.get("description"),
+            "price": product_data.get("price"),
+            "sku": product_data.get("sku"),
+            "image_url": product_data.get("images", [None])[0],
+            "product_type": product_data.get("category")
+        }
+    
+    def _transform_for_n11(self, product_data: Dict[str, Any]) -> Dict[str, Any]:
+        \"\"\"N11 formatına dönüştür\"\"\"
+        return {
+            "ProductName": product_data.get("name"),
+            "Description": product_data.get("description"),
+            "Category": product_data.get("category"),
+            "Brand": product_data.get("brand"),
+            "Price": product_data.get("price"),
+            "SellerCode": product_data.get("sku")
+        }
+    
+    def _get_trendyol_category_id(self, category_name: str) -> str:
+        \"\"\"Kategori adından Trendyol kategori ID'sini getir\"\"\"
+        # Bu gerçek implementasyonda API'den kategorileri getirerek eşleştirilebilir
+        category_map = {
+            "Elektronik": "1001",
+            "Giyim": "1002",
+            "Ev ve Bahçe": "1003"
+        }
+        return category_map.get(category_name, "1000")
+    
+    def _transform_trendyol_attributes(self, attributes: Dict[str, Any]) -> Dict[str, Any]:
+        \"\"\"Trendyol formatına özellikleri dönüştür\"\"\"
+        # Trendyol'un özel öznitelik formatını kullan
+        return {
+            key: value for key, value in attributes.items()
+        }
+    
+    def _create_local_product(self, seller_id: int, product_data: Dict[str, Any]) -> int:
+        \"\"\"Merkezi veritabanında ürün oluştur\"\"\"
+        product_record = {
+            "seller_id": seller_id,
+            **product_data
+        }
+        return self.db.insert_product(product_record)
+    
+    def _update_local_product(self, product_id: int, product_data: Dict[str, Any]):
+        \"\"\"Merkezi veritabanında ürünü güncelle\"\"\"
+        self.db.update_product(product_id, product_data)
+    
+    def _save_product_mapping(self, product_id: int, marketplace_id: int,
+                             marketplace_product_id: str):
+        \"\"\"Ürün eşleştirmesini kaydet\"\"\"
+        mapping = {
+            "product_id": product_id,
+            "marketplace_id": marketplace_id,
+            "marketplace_product_id": marketplace_product_id,
+            "status": "synced",
+            "synced_at": datetime.now()
+        }
+        self.db.insert_or_update_product_marketplace_mapping(mapping)
+    
+    async def _delete_from_marketplace(self, seller_id: int, product_id: int,
+                                      marketplace_id: int):
+        \"\"\"Ürünü pazaryerinden sil\"\"\"
+        try:
+            adapter = self._get_marketplace_adapter(seller_id, marketplace_id)
+            mapping = self.db.get_product_marketplace_mapping(product_id, marketplace_id)
+            if mapping:
+                adapter.delete_product(mapping["marketplace_product_id"])
+        except Exception as e:
+            logger.error(f"Pazaryerinden silme hatası: {e}")
+    
+    async def _activate_on_marketplace(self, seller_id: int, product_id: int,
+                                      marketplace_id: int):
+        \"\"\"Ürünü pazaryerde aktif et\"\"\"
+        try:
+            adapter = self._get_marketplace_adapter(seller_id, marketplace_id)
+            mapping = self.db.get_product_marketplace_mapping(product_id, marketplace_id)
+            if mapping:
+                adapter.update_product(
+                    mapping["marketplace_product_id"],
+                    {"status": "active"}
+                )
+        except Exception as e:
+            logger.error(f"Pazaryerde aktivasyon hatası: {e}")
+    
+    async def _deactivate_on_marketplace(self, seller_id: int, product_id: int,
+                                        marketplace_id: int):
+        \"\"\"Ürünü pazaryerde pasif et\"\"\"
+        try:
+            adapter = self._get_marketplace_adapter(seller_id, marketplace_id)
+            mapping = self.db.get_product_marketplace_mapping(product_id, marketplace_id)
+            if mapping:
+                adapter.update_product(
+                    mapping["marketplace_product_id"],
+                    {"status": "inactive"}
+                )
+        except Exception as e:
+            logger.error(f"Pazaryerde pasifleştirme hatası: {e}")
+    
+    def _get_seller_marketplaces(self, seller_id: int) -> List[int]:
+        \"\"\"Satıcının pazaryerlerini getir\"\"\"
+        accounts = self.db.get_seller_marketplace_accounts(seller_id, active_only=True)
+        return [acc["marketplace_id"] for acc in accounts]
+    
+    def _get_marketplace_adapter(self, seller_id: int, marketplace_id: int):
+        \"\"\"Pazaryeri adaptörünü oluştur\"\"\"
+        account = self.db.get_seller_marketplace_account(seller_id, marketplace_id)
+        marketplace = self.db.get_marketplace(marketplace_id)
+        
+        return self.adapter_factory.create_adapter(
+            marketplace["code"],
+            account["api_key"],
+            account["api_secret"],
+            account.get("seller_code")
+        )
+
+
+class ProductCategoryMapper:
+    \"\"\"Pazaryerler arası kategori eşleştirmesi\"\"\"
+    
+    def __init__(self, db_connection):
+        \"\"\"
+        Başlat
+        
+        Args:
+            db_connection: Veritabanı bağlantısı
+        \"\"\"
+        self.db = db_connection
+        self.category_cache = {}
+    
+    def map_category(self, source_marketplace: str, source_category: str,
+                    target_marketplace: str) -> str:
+        \"\"\"
+        Kaynak pazaryeri kategorisini hedef pazaryeri kategorisine eşle
+        
+        Args:
+            source_marketplace: Kaynak pazaryeri kodu
+            source_category: Kaynak kategori
+            target_marketplace: Hedef pazaryeri kodu
+        
+        Returns:
+            Hedef pazaryeri kategori ID'si
+        \"\"\"
+        try:
+            # Veritabanından eşleştirmeyi getir
+            mapping = self.db.get_category_mapping(
+                source_marketplace,
+                source_category,
+                target_marketplace
+            )
+            
+            if mapping:
+                return mapping["target_category_id"]
+            
+            # Eşleştirme bulunamadı, varsayılan kategoriye at
+            return self._get_default_category(target_marketplace)
+            
+        except Exception as e:
+            logger.error(f"Kategori eşleştirmesinde hata: {e}")
+            return self._get_default_category(target_marketplace)
+    
+    def _get_default_category(self, marketplace: str) -> str:
+        \"\"\"Pazaryeri için varsayılan kategoriyi getir\"\"\"
+        defaults = {
+            "trendyol": "1000",
+            "hepsiburada": "1",
+            "amazon": "0",
+            "n11": "1"
+        }
+        return defaults.get(marketplace.lower(), "0")
+
+
+# Örnek kullanım
+if __name__ == "__main__":
+    # İçe aktarılacak modüllerin mock'u
+    class MockDB:
+        def get_seller_marketplace_accounts(self, seller_id, active_only=False):
+            return [{"marketplace_id": 1, "api_key": "key", "api_secret": "secret"}]
+        
+        def get_marketplace(self, marketplace_id):
+            return {"code": "trendyol", "id": marketplace_id}
+    
+    # Ürün yönetim hizmetini başlat
+    db = MockDB()
+    
+    # Örnek: service = ProductManagementService(db, adapter_factory)
+    # await service.create_product(seller_id=1, product_data={...})

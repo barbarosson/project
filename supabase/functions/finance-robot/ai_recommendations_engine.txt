@@ -1,0 +1,526 @@
+"""
+AI-Based Recommendations Engine
+Makine öğrenmesi ve LLM destekli finansal öneriler motoru
+Entegrasyon: OpenAI GPT-4, Claude, yerli LLM modelleri
+"""
+
+import logging
+import json
+from typing import List, Dict, Optional, Tuple
+from dataclasses import dataclass, asdict
+from datetime import datetime
+from abc import ABC, abstractmethod
+import openai
+import asyncio
+import re
+
+# Konfigürasyon
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class CashFlowMetrics:
+    """Nakit Akışı Metrikleri"""
+
+    average_daily_cash_in: float
+    average_daily_cash_out: float
+    net_cash_flow: float
+    cash_conversion_cycle: float
+    receivables_days: float
+    payables_days: float
+    current_ratio: float
+    quick_ratio: float
+    cash_ratio: float
+    operating_cash_flow_ratio: float
+    free_cash_flow: float
+
+
+@dataclass
+class CashFlowRisk:
+    """Nakit Akışı Risk Analizi"""
+
+    risk_type: str
+    severity: str
+    description: str
+    recommended_action: str
+    impact_amount: float
+
+
+@dataclass
+class FinancialRecommendation:
+    """Finansal Tavsiye"""
+
+    recommendation_id: str
+    category: str  # 'liquidity', 'receivables', 'payables', 'efficiency', 'risk'
+    title: str
+    description: str
+    implementation_steps: List[str]
+    expected_impact: Dict[str, float]  # 'cash_saved', 'efficiency_improved', 'risk_reduced'
+    priority: str  # 'HIGH', 'MEDIUM', 'LOW'
+    estimated_effort: str  # 'LOW', 'MEDIUM', 'HIGH'
+    ai_confidence: float  # 0-1
+    generated_by: str  # 'rule_based', 'llm', 'ml_model'
+
+
+class LLMProvider(ABC):
+    """Abstract LLM Provider"""
+
+    @abstractmethod
+    async def generate_recommendations(
+        self, metrics: CashFlowMetrics, risks: List[CashFlowRisk]
+    ) -> List[FinancialRecommendation]:
+        """LLM tarafından öneriler oluştur"""
+        pass
+
+    @abstractmethod
+    async def analyze_custom_scenario(self, scenario: str) -> str:
+        """Özel finansal senaryoyu analiz et"""
+        pass
+
+
+class OpenAIProvider(LLMProvider):
+    """OpenAI GPT-4 Entegrasyonu"""
+
+    def __init__(self, api_key: str, model: str = "gpt-4"):
+        openai.api_key = api_key
+        self.model = model
+        logger.info(f"OpenAI Provider başlatıldı: {model}")
+
+    async def generate_recommendations(
+        self, metrics: CashFlowMetrics, risks: List[CashFlowRisk]
+    ) -> List[FinancialRecommendation]:
+        """GPT-4 ile öneriler oluştur"""
+        logger.info("OpenAI'dan finansal öneriler oluşturuluyor")
+
+        # Metrik ve riskleri prompt'a dönüştür
+        metrics_dict = asdict(metrics)
+        risks_data = [asdict(risk) for risk in risks]
+
+        prompt = f"""
+Siz bir finansal danışman agentttisiniz. Aşağıdaki nakit akışı metrikleri ve risklerine dayanarak, 
+işletme için finansal öneriler üretin:
+
+## Nakit Akışı Metrikleri:
+{json.dumps(metrics_dict, indent=2, ensure_ascii=False)}
+
+## Tanımlanan Riskler:
+{json.dumps(risks_data, indent=2, ensure_ascii=False)}
+
+## İstenen Öneriler Formatı:
+JSON formatında aşağıdaki yapıyla 3-5 adet tavsiye üretin:
+[
+  {{
+    "category": "liquidity|receivables|payables|efficiency|risk",
+    "title": "Tavsiye başlığı",
+    "description": "Detaylı açıklama",
+    "implementation_steps": ["Adım 1", "Adım 2", "Adım 3"],
+    "expected_impact": {{"cash_saved": 10000, "efficiency_improved": 15, "risk_reduced": 20}},
+    "priority": "HIGH|MEDIUM|LOW",
+    "estimated_effort": "LOW|MEDIUM|HIGH"
+  }}
+]
+
+Önerileri finansal olarak akılcı, uygulanabilir ve işletmeye spesifik hale getir.
+"""
+
+        try:
+            response = await asyncio.to_thread(
+                openai.ChatCompletion.create,
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "Siz bir finans danışmanı agentttisiniz.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.7,
+                max_tokens=2000,
+            )
+
+            content = response.choices[0].message.content
+            logger.info("OpenAI yanıtı alındı")
+
+            # JSON'ı çıkart
+            recommendations_data = self._extract_json(content)
+
+            # FinancialRecommendation nesnelerine dönüştür
+            recommendations = []
+            for i, rec_data in enumerate(recommendations_data):
+                rec = FinancialRecommendation(
+                    recommendation_id=f"rec_{datetime.now().timestamp()}_{i}",
+                    category=rec_data.get("category", "efficiency"),
+                    title=rec_data.get("title", ""),
+                    description=rec_data.get("description", ""),
+                    implementation_steps=rec_data.get(
+                        "implementation_steps", []
+                    ),
+                    expected_impact=rec_data.get(
+                        "expected_impact",
+                        {
+                            "cash_saved": 0,
+                            "efficiency_improved": 0,
+                            "risk_reduced": 0,
+                        },
+                    ),
+                    priority=rec_data.get("priority", "MEDIUM"),
+                    estimated_effort=rec_data.get("estimated_effort", "MEDIUM"),
+                    ai_confidence=0.85,
+                    generated_by="llm",
+                )
+                recommendations.append(rec)
+
+            logger.info(f"{len(recommendations)} önerisi oluşturuldu")
+            return recommendations
+
+        except Exception as e:
+            logger.error(f"OpenAI hata: {e}")
+            raise
+
+    async def analyze_custom_scenario(self, scenario: str) -> str:
+        """Özel senaryoyu GPT-4'le analiz et"""
+        logger.info(f"Özel senaryo analiz ediliyor: {scenario[:50]}...")
+
+        prompt = f"""
+Aşağıdaki finansal senaryoyu bir finans danışmanı olarak analiz edin:
+
+Senaryo: {scenario}
+
+Bağlamı göz önüne alarak:
+1. Temel sorunları belirleyin
+2. Olası çözüm seçeneklerini sunun
+3. Kısa ve uzun vadeli sonuçları açıklayın
+4. Eylem planı önerileri yapın
+"""
+
+        try:
+            response = await asyncio.to_thread(
+                openai.ChatCompletion.create,
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "Siz bir deneyimli finans danışmanısınız.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.7,
+                max_tokens=1500,
+            )
+
+            analysis = response.choices[0].message.content
+            logger.info("Senaryo analizi tamamlandı")
+            return analysis
+
+        except Exception as e:
+            logger.error(f"Senaryo analizi hatası: {e}")
+            raise
+
+    def _extract_json(self, text: str) -> List[Dict]:
+        """Metinden JSON arrayı çıkart"""
+        # JSON array'ı bul
+        json_pattern = r"\[.*\]"
+        match = re.search(json_pattern, text, re.DOTALL)
+
+        if match:
+            json_str = match.group(0)
+            return json.loads(json_str)
+        return []
+
+
+class RuleBasedRecommendationEngine:
+    """Kural Tabanlı Öneriler Motoru"""
+
+    def __init__(self):
+        self.rules = self._initialize_rules()
+        logger.info("Kural tabanlı motor başlatıldı")
+
+    def _initialize_rules(self) -> List[Dict]:
+        """Kuralları başlat"""
+        return [
+            {
+                "name": "High Receivables Days",
+                "condition": lambda m: m.receivables_days > 60,
+                "recommendation": self._high_receivables_recommendation,
+            },
+            {
+                "name": "Low Quick Ratio",
+                "condition": lambda m: m.quick_ratio < 1.0,
+                "recommendation": self._low_liquidity_recommendation,
+            },
+            {
+                "name": "High CCC",
+                "condition": lambda m: m.cash_conversion_cycle > 90,
+                "recommendation": self._high_ccc_recommendation,
+            },
+            {
+                "name": "Negative Cash Flow",
+                "condition": lambda m: m.net_cash_flow < 0,
+                "recommendation": self._negative_cash_flow_recommendation,
+            },
+            {
+                "name": "Low Operating Efficiency",
+                "condition": lambda m: m.operating_cash_flow_ratio < 0.5,
+                "recommendation": self._efficiency_recommendation,
+            },
+        ]
+
+    def generate_recommendations(
+        self, metrics: CashFlowMetrics
+    ) -> List[FinancialRecommendation]:
+        """Kural tabanlı öneriler oluştur"""
+        logger.info("Kural tabanlı öneriler oluşturuluyor")
+
+        recommendations = []
+
+        for rule in self.rules:
+            if rule["condition"](metrics):
+                rec = rule["recommendation"](metrics)
+                recommendations.append(rec)
+                logger.info(f"Kural tetiklendi: {rule['name']}")
+
+        logger.info(f"{len(recommendations)} kural tabanlı önerisi oluşturuldu")
+        return recommendations
+
+    def _high_receivables_recommendation(
+        self, metrics: CashFlowMetrics
+    ) -> FinancialRecommendation:
+        """Yüksek alacak gün sayısı önerisi"""
+        return FinancialRecommendation(
+            recommendation_id=f"rec_receivables_{datetime.now().timestamp()}",
+            category="receivables",
+            title="Alacak Tahsil Hızını Artır",
+            description=f"Alacak gün sayısı {metrics.receivables_days:.0f} gün olarak hesaplanmıştır. Bu, standart 30-45 gün aralığından yüksektir.",
+            implementation_steps=[
+                "Müşteri ödeme koşullarını gözden geçir",
+                "Erken ödeme indirimleri sunmayı değerlendir",
+                "Tahsilat sürecini otomatikleştir",
+                "Uzun süredir ödenmemiş faturaları tekrardan kontrol et",
+            ],
+            expected_impact={
+                "cash_saved": 20000,
+                "efficiency_improved": 25,
+                "risk_reduced": 15,
+            },
+            priority="HIGH",
+            estimated_effort="MEDIUM",
+            ai_confidence=0.9,
+            generated_by="rule_based",
+        )
+
+    def _low_liquidity_recommendation(
+        self, metrics: CashFlowMetrics
+    ) -> FinancialRecommendation:
+        """Düşük likidite önerisi"""
+        return FinancialRecommendation(
+            recommendation_id=f"rec_liquidity_{datetime.now().timestamp()}",
+            category="liquidity",
+            title="Likidite Yedekleri Oluştur",
+            description=f"Quick ratio {metrics.quick_ratio:.2f} olarak hesaplanmıştır. Bu kritik düşük likidite seviyesini gösterir.",
+            implementation_steps=[
+                "Acil kredi hattını güvenle",
+                "Operasyonel harcamaları 10-15% azalt",
+                "Ödeme planlarını ertelemeyi ve uzatmayı değerlendir",
+                "Likit olmayan varlıkları kısa sürede nakde çevir",
+            ],
+            expected_impact={
+                "cash_saved": 50000,
+                "efficiency_improved": 20,
+                "risk_reduced": 40,
+            },
+            priority="HIGH",
+            estimated_effort="HIGH",
+            ai_confidence=0.95,
+            generated_by="rule_based",
+        )
+
+    def _high_ccc_recommendation(
+        self, metrics: CashFlowMetrics
+    ) -> FinancialRecommendation:
+        """Yüksek nakit dönüştürme döngüsü önerisi"""
+        return FinancialRecommendation(
+            recommendation_id=f"rec_ccc_{datetime.now().timestamp()}",
+            category="efficiency",
+            title="Nakit Dönüştürme Döngüsünü Optimize Et",
+            description=f"Cash Conversion Cycle {metrics.cash_conversion_cycle:.0f} gün ile yüksektir. Çalışma sermayesi verimliliğini iyileştirme fırsat var.",
+            implementation_steps=[
+                "Ödeme sürelerinizi tedarikçilerle müzakere et",
+                "Envanter yönetimini optimize et",
+                "Müşteri ödeme prosesini hızlandır",
+                "Üretim ve lojistik verimliliğini artır",
+            ],
+            expected_impact={
+                "cash_saved": 35000,
+                "efficiency_improved": 30,
+                "risk_reduced": 25,
+            },
+            priority="MEDIUM",
+            estimated_effort="MEDIUM",
+            ai_confidence=0.85,
+            generated_by="rule_based",
+        )
+
+    def _negative_cash_flow_recommendation(
+        self, metrics: CashFlowMetrics
+    ) -> FinancialRecommendation:
+        """Negatif nakit akışı önerisi"""
+        return FinancialRecommendation(
+            recommendation_id=f"rec_negflow_{datetime.now().timestamp()}",
+            category="risk",
+            title="Nakit Akışını Pozitif Hale Getir",
+            description="İşletme negatif nakit akışı göstermektedir. Bu durum sürdürülemez ve acil müdahale gereklidir.",
+            implementation_steps=[
+                "Gelir artırıcı faaliyetlere yoğunlaş",
+                "Tüm işletme giderlerini ayrıntılı analiz et",
+                "Kârlılığı düşük veya negatif ürünleri değerlendir",
+                "Önemli gider başlıklarında kesintiler yap",
+                "Muhasebe stratejisini gözden geçir",
+            ],
+            expected_impact={
+                "cash_saved": 100000,
+                "efficiency_improved": 50,
+                "risk_reduced": 80,
+            },
+            priority="HIGH",
+            estimated_effort="HIGH",
+            ai_confidence=0.95,
+            generated_by="rule_based",
+        )
+
+    def _efficiency_recommendation(
+        self, metrics: CashFlowMetrics
+    ) -> FinancialRecommendation:
+        """Düşük işletme verimliliği önerisi"""
+        return FinancialRecommendation(
+            recommendation_id=f"rec_efficiency_{datetime.now().timestamp()}",
+            category="efficiency",
+            title="İşletme Verimliliğini Artır",
+            description="İşletme nakit akışı oranı düşüktür. Operasyonel verimliliği artırarak profitabiliteyi iyileştirme ihtiyacı vardır.",
+            implementation_steps=[
+                "Maliyet yapısını ayrıntılı analiz et",
+                "Tedarikçi maliyetleri üzerine müzakere et",
+                "Üretim proseslerini optimize et",
+                "Yönetim giderlerini azalt",
+                "Pazarlama ve satış verimliliğini iyileştir",
+            ],
+            expected_impact={
+                "cash_saved": 30000,
+                "efficiency_improved": 35,
+                "risk_reduced": 20,
+            },
+            priority="MEDIUM",
+            estimated_effort="HIGH",
+            ai_confidence=0.80,
+            generated_by="rule_based",
+        )
+
+
+class HybridRecommendationEngine:
+    """Hibrit Öneriler Motoru (Kural Tabanlı + LLM)"""
+
+    def __init__(self, llm_provider: Optional[LLMProvider] = None):
+        self.rule_engine = RuleBasedRecommendationEngine()
+        self.llm_provider = llm_provider
+        logger.info("Hibrit Öneriler Motoru başlatıldı")
+
+    async def generate_comprehensive_recommendations(
+        self, metrics: CashFlowMetrics, risks: List[CashFlowRisk]
+    ) -> List[FinancialRecommendation]:
+        """Kapsamlı öneriler oluştur (kural tabanlı + LLM)"""
+        logger.info("Kapsamlı öneriler oluşturuluyor")
+
+        # Kural tabanlı öneriler
+        rule_recommendations = self.rule_engine.generate_recommendations(metrics)
+        logger.info(f"Kural tabanlı: {len(rule_recommendations)} önerisi")
+
+        # LLM öneriler (varsa)
+        llm_recommendations = []
+        if self.llm_provider:
+            try:
+                llm_recommendations = await self.llm_provider.generate_recommendations(
+                    metrics, risks
+                )
+                logger.info(f"LLM: {len(llm_recommendations)} önerisi")
+            except Exception as e:
+                logger.warning(f"LLM önerisi alınamadı: {e}")
+
+        # Tekrar eden önerileri birleştir
+        all_recommendations = rule_recommendations + llm_recommendations
+        unique_recommendations = self._deduplicate_recommendations(all_recommendations)
+
+        # Önceliğe göre sırala
+        sorted_recommendations = sorted(
+            unique_recommendations, key=lambda x: self._priority_score(x.priority), reverse=True
+        )
+
+        logger.info(f"Toplam {len(sorted_recommendations)} önerisi sunuluyor")
+        return sorted_recommendations
+
+    def _deduplicate_recommendations(
+        self, recommendations: List[FinancialRecommendation]
+    ) -> List[FinancialRecommendation]:
+        """Tekrar eden önerileri birleştir"""
+        seen_categories = {}
+
+        for rec in recommendations:
+            if rec.category not in seen_categories:
+                seen_categories[rec.category] = rec
+            else:
+                # Eğer LLM önerisi daha güvenilir ise, LLM'i tut
+                if rec.generated_by == "llm" and seen_categories[rec.category].generated_by == "rule_based":
+                    seen_categories[rec.category] = rec
+
+        return list(seen_categories.values())
+
+    def _priority_score(self, priority: str) -> int:
+        """Öncelik puanı hesapla"""
+        scores = {"HIGH": 3, "MEDIUM": 2, "LOW": 1}
+        return scores.get(priority, 0)
+
+    async def analyze_scenario(self, scenario: str) -> Dict:
+        """Finansal senaryoyu analiz et"""
+        logger.info(f"Senaryo analiz ediliyor: {scenario[:50]}...")
+
+        if not self.llm_provider:
+            logger.warning("LLM provider tanımlanmamış. Senaryo analizi yapılamaz.")
+            return {}
+
+        analysis = await self.llm_provider.analyze_custom_scenario(scenario)
+        return {"scenario": scenario, "analysis": analysis}
+
+
+if __name__ == "__main__":
+    # Test: Kural tabanlı motor
+    from datetime import datetime
+
+    test_metrics = CashFlowMetrics(
+        average_daily_cash_in=5000,
+        average_daily_cash_out=4500,
+        net_cash_flow=45000,
+        cash_conversion_cycle=75,
+        receivables_days=70,
+        payables_days=-5,
+        current_ratio=1.5,
+        quick_ratio=0.8,
+        cash_ratio=0.5,
+        operating_cash_flow_ratio=0.6,
+        free_cash_flow=35000,
+    )
+
+    test_risks = [
+        CashFlowRisk(
+            risk_type="High Receivables",
+            severity="MEDIUM",
+            description="Alacak gün sayısı yüksek",
+            recommended_action="Tahsilat hızındırmak",
+            impact_amount=70,
+        )
+    ]
+
+    # Kural tabanlı test
+    rule_engine = RuleBasedRecommendationEngine()
+    recommendations = rule_engine.generate_recommendations(test_metrics)
+    print(f"Kural tabanlı öneriler: {len(recommendations)}")
+    for rec in recommendations:
+        print(f"- {rec.title}")

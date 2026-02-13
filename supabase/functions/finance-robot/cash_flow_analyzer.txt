@@ -1,0 +1,470 @@
+"""
+Cash Flow Analysis Module
+Nakit akışı verilerini analiz ve tahmin yapan modül
+Özellikler: Trend analizi, tahmin, risk değerlendirmesi
+"""
+
+import logging
+from typing import List, Dict, Tuple, Optional
+from dataclasses import dataclass
+from datetime import datetime, timedelta
+import numpy as np
+import pandas as pd
+from scipy import stats
+import warnings
+
+# Konfigürasyon
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+warnings.filterwarnings("ignore")
+
+
+@dataclass
+class CashFlowData:
+    """Nakit Akışı Veri Modeli"""
+
+    date: datetime
+    cash_in: float
+    cash_out: float
+    balance: float
+    accounts_receivable: float
+    accounts_payable: float
+
+
+@dataclass
+class CashFlowMetrics:
+    """Nakit Akışı Metrikleri"""
+
+    average_daily_cash_in: float
+    average_daily_cash_out: float
+    net_cash_flow: float
+    cash_conversion_cycle: float
+    receivables_days: float
+    payables_days: float
+    current_ratio: float
+    quick_ratio: float
+    cash_ratio: float
+    operating_cash_flow_ratio: float
+    free_cash_flow: float
+
+
+@dataclass
+class CashFlowForecast:
+    """Nakit Akışı Tahmini"""
+
+    forecast_date: datetime
+    predicted_cash_in: float
+    predicted_cash_out: float
+    predicted_balance: float
+    confidence_interval: Tuple[float, float]
+    risk_level: str  # 'LOW', 'MEDIUM', 'HIGH'
+
+
+@dataclass
+class CashFlowRisk:
+    """Nakit Akışı Risk Analizi"""
+
+    risk_type: str
+    severity: str  # 'LOW', 'MEDIUM', 'HIGH'
+    description: str
+    recommended_action: str
+    impact_amount: float
+
+
+class CashFlowAnalyzer:
+    """Nakit Akışı Analiz ve Tahmin Motoru"""
+
+    def __init__(self, data: List[CashFlowData]):
+        self.data = data
+        self.df = self._prepare_dataframe()
+        self.metrics = None
+        self.forecasts = {}
+
+    def _prepare_dataframe(self) -> pd.DataFrame:
+        """Veriyi DataFrame'e dönüştür"""
+        logger.info("Veri DataFrame'e dönüştürülüyor")
+
+        data_dict = {
+            "date": [d.date for d in self.data],
+            "cash_in": [d.cash_in for d in self.data],
+            "cash_out": [d.cash_out for d in self.data],
+            "balance": [d.balance for d in self.data],
+            "accounts_receivable": [d.accounts_receivable for d in self.data],
+            "accounts_payable": [d.accounts_payable for d in self.data],
+        }
+
+        df = pd.DataFrame(data_dict)
+        df["date"] = pd.to_datetime(df["date"])
+        df = df.sort_values("date")
+        df["net_cash_flow"] = df["cash_in"] - df["cash_out"]
+
+        logger.info(f"DataFrame hazırlandı: {len(df)} satır")
+        return df
+
+    def calculate_metrics(self) -> CashFlowMetrics:
+        """Temel nakit akışı metriklerini hesapla"""
+        logger.info("Nakit akışı metrikleri hesaplanıyor")
+
+        if len(self.df) == 0:
+            logger.error("Yeterli veri yok")
+            raise ValueError("Yeterli veri yok")
+
+        # Günlük ortalamaları hesapla
+        days_count = (self.df["date"].max() - self.df["date"].min()).days + 1
+        total_cash_in = self.df["cash_in"].sum()
+        total_cash_out = self.df["cash_out"].sum()
+
+        average_daily_cash_in = total_cash_in / days_count if days_count > 0 else 0
+        average_daily_cash_out = total_cash_out / days_count if days_count > 0 else 0
+        net_cash_flow = total_cash_in - total_cash_out
+
+        # Alacak ve Borç Gün Sayısı (DPO, DSO)
+        avg_receivables = self.df["accounts_receivable"].mean()
+        avg_payables = self.df["accounts_payable"].mean()
+
+        receivables_days = (
+            (avg_receivables / average_daily_cash_in * 365) if average_daily_cash_in > 0 else 0
+        )
+        payables_days = (
+            (avg_payables / average_daily_cash_out * 365) if average_daily_cash_out > 0 else 0
+        )
+
+        # Likidite Oranları
+        current_balance = self.df["balance"].iloc[-1]
+        current_receivables = self.df["accounts_receivable"].iloc[-1]
+        current_payables = self.df["accounts_payable"].iloc[-1]
+
+        current_ratio = (current_balance + current_receivables) / current_payables if current_payables > 0 else 1.0
+        quick_ratio = current_balance / current_payables if current_payables > 0 else 1.0
+        cash_ratio = current_balance / current_payables if current_payables > 0 else 1.0
+
+        # Nakit Akışı Oranları
+        operating_cash_flow = self.df["net_cash_flow"].mean() * 365  # Yıllık
+        monthly_expense = average_daily_cash_out * 30
+        operating_cash_flow_ratio = (
+            operating_cash_flow / (monthly_expense * 12) if (monthly_expense * 12) > 0 else 0
+        )
+
+        # Serbest Nakit Akışı (FCF)
+        free_cash_flow = net_cash_flow - (current_payables * 0.1)  # Basitleştirilmiş
+
+        # Cash Conversion Cycle
+        cash_conversion_cycle = receivables_days - payables_days
+
+        metrics = CashFlowMetrics(
+            average_daily_cash_in=average_daily_cash_in,
+            average_daily_cash_out=average_daily_cash_out,
+            net_cash_flow=net_cash_flow,
+            cash_conversion_cycle=cash_conversion_cycle,
+            receivables_days=receivables_days,
+            payables_days=payables_days,
+            current_ratio=current_ratio,
+            quick_ratio=quick_ratio,
+            cash_ratio=cash_ratio,
+            operating_cash_flow_ratio=operating_cash_flow_ratio,
+            free_cash_flow=free_cash_flow,
+        )
+
+        self.metrics = metrics
+        logger.info(f"Metrikler hesaplandı: Net Cash Flow = {net_cash_flow:.2f}")
+        return metrics
+
+    def forecast_cash_flow(
+        self, periods: int = 90, method: str = "exponential_smoothing"
+    ) -> List[CashFlowForecast]:
+        """Nakit akışı tahmin yap"""
+        logger.info(f"Nakit akışı tahmini yapılıyor: {periods} gün, method={method}")
+
+        if len(self.df) < 7:
+            logger.error("Tahmin için yeterli veri yok (minimum 7 gün)")
+            raise ValueError("Tahmin için yeterli veri yok")
+
+        forecasts = []
+
+        # Son 30 günün ortalamasını al
+        recent_data = self.df.tail(30)
+        avg_cash_in = recent_data["cash_in"].mean()
+        avg_cash_out = recent_data["cash_out"].mean()
+        std_dev = recent_data["net_cash_flow"].std()
+
+        # Trend hesapla (lineer regresyon)
+        x = np.arange(len(recent_data))
+        y_in = recent_data["cash_in"].values
+        y_out = recent_data["cash_out"].values
+
+        slope_in, intercept_in = np.polyfit(x, y_in, 1)
+        slope_out, intercept_out = np.polyfit(x, y_out, 1)
+
+        current_balance = self.df["balance"].iloc[-1]
+        last_date = self.df["date"].iloc[-1]
+
+        for i in range(1, periods + 1):
+            forecast_date = last_date + timedelta(days=i)
+
+            # Trend ve sezonalite ile tahmin
+            predicted_cash_in = max(0, avg_cash_in + (slope_in * i / 30))
+            predicted_cash_out = max(0, avg_cash_out + (slope_out * i / 30))
+
+            # Sezonalite (haftanın günü etkisi)
+            day_of_week = forecast_date.weekday()
+            if day_of_week >= 4:  # Cuma, Cumartesi, Pazar
+                predicted_cash_in *= 0.85
+                predicted_cash_out *= 1.05
+
+            predicted_net = predicted_cash_in - predicted_cash_out
+            predicted_balance = current_balance + predicted_net
+
+            # Güven aralığı
+            confidence = 0.95
+            margin_of_error = stats.norm.ppf((1 + confidence) / 2) * std_dev
+            ci_lower = predicted_balance - margin_of_error
+            ci_upper = predicted_balance + margin_of_error
+
+            # Risk seviyesi
+            if predicted_balance < -10000:
+                risk_level = "HIGH"
+            elif predicted_balance < 0:
+                risk_level = "MEDIUM"
+            else:
+                risk_level = "LOW"
+
+            forecast = CashFlowForecast(
+                forecast_date=forecast_date,
+                predicted_cash_in=predicted_cash_in,
+                predicted_cash_out=predicted_cash_out,
+                predicted_balance=predicted_balance,
+                confidence_interval=(ci_lower, ci_upper),
+                risk_level=risk_level,
+            )
+
+            forecasts.append(forecast)
+            current_balance = predicted_balance
+
+        self.forecasts[method] = forecasts
+        logger.info(f"{len(forecasts)} dönem tahmini tamamlandı")
+        return forecasts
+
+    def identify_risks(self) -> List[CashFlowRisk]:
+        """Nakit akışı riskleri tanımla"""
+        logger.info("Nakit akışı riskleri analiz ediliyor")
+
+        risks = []
+
+        if not self.metrics:
+            self.calculate_metrics()
+
+        # Risk 1: Negatif Nakit Akışı
+        if self.metrics.net_cash_flow < 0:
+            risks.append(
+                CashFlowRisk(
+                    risk_type="Negative Cash Flow",
+                    severity="HIGH",
+                    description=f"İşletme negatif nakit akışı gösteriyor: {self.metrics.net_cash_flow:.2f}",
+                    recommended_action="Nakit çıkışlarını azalt veya gelir kaynakları artır",
+                    impact_amount=abs(self.metrics.net_cash_flow),
+                )
+            )
+
+        # Risk 2: Düşük Likidite
+        if self.metrics.quick_ratio < 1.0:
+            risks.append(
+                CashFlowRisk(
+                    risk_type="Low Liquidity",
+                    severity="MEDIUM",
+                    description=f"Düşük likidite oranı: {self.metrics.quick_ratio:.2f}",
+                    recommended_action="Nakit yedekleri artır veya kredi limit kullan",
+                    impact_amount=self.metrics.quick_ratio,
+                )
+            )
+
+        # Risk 3: Yüksek Alacak Gün Sayısı
+        if self.metrics.receivables_days > 60:
+            risks.append(
+                CashFlowRisk(
+                    risk_type="High Receivables Days",
+                    severity="MEDIUM",
+                    description=f"Yüksek alacak gün sayısı: {self.metrics.receivables_days:.0f} gün",
+                    recommended_action="Müşteri ödeme koşullarını sıkı tutarak tahsil ettir",
+                    impact_amount=self.metrics.receivables_days,
+                )
+            )
+
+        # Risk 4: Yüksek Borç Gün Sayısı Farkı
+        if self.metrics.cash_conversion_cycle > 90:
+            risks.append(
+                CashFlowRisk(
+                    risk_type="High Cash Conversion Cycle",
+                    severity="MEDIUM",
+                    description=f"Yüksek nakit dönüştürme döngüsü: {self.metrics.cash_conversion_cycle:.0f} gün",
+                    recommended_action="Alacak tahsil hızını artır ve ödeme süresi uzat",
+                    impact_amount=self.metrics.cash_conversion_cycle,
+                )
+            )
+
+        # Risk 5: İşletme Nakit Akışı Verimsizliği
+        if self.metrics.operating_cash_flow_ratio < 0.5:
+            risks.append(
+                CashFlowRisk(
+                    risk_type="Low Operating Cash Flow Ratio",
+                    severity="MEDIUM",
+                    description=f"İşletme nakit akışı verimsizliği: {self.metrics.operating_cash_flow_ratio:.2f}",
+                    recommended_action="Gider kontrolü yaparak işletme verimliliğini artır",
+                    impact_amount=self.metrics.operating_cash_flow_ratio,
+                )
+            )
+
+        # Risk 6: Tahmin Edilen Negatif Balans
+        if self.forecasts:
+            latest_forecast = list(self.forecasts.values())[0]
+            negative_forecasts = [f for f in latest_forecast if f.predicted_balance < 0]
+            if negative_forecasts:
+                risk_date = negative_forecasts[0].forecast_date
+                risks.append(
+                    CashFlowRisk(
+                        risk_type="Forecasted Negative Balance",
+                        severity="HIGH",
+                        description=f"Nakit açığı tahmin ediliyor: {risk_date.strftime('%Y-%m-%d')}",
+                        recommended_action="Önceden kredi hattı hazırla veya ödemeleri ertel",
+                        impact_amount=abs(negative_forecasts[0].predicted_balance),
+                    )
+                )
+
+        logger.info(f"{len(risks)} risk tanımlandı")
+        return risks
+
+    def analyze_seasonality(self) -> Dict[str, float]:
+        """Mevsimsel eğilimleri analiz et"""
+        logger.info("Mevsimsel eğilimler analiz ediliyor")
+
+        self.df["month"] = self.df["date"].dt.month
+        seasonality = {}
+
+        for month in range(1, 13):
+            month_data = self.df[self.df["month"] == month]
+            if len(month_data) > 0:
+                avg_net_flow = month_data["net_cash_flow"].mean()
+                seasonality[f"Month_{month}"] = avg_net_flow
+
+        logger.info(f"Mevsimsel analiz tamamlandı: {len(seasonality)} ay")
+        return seasonality
+
+    def get_cash_flow_efficiency(self) -> float:
+        """Nakit akışı verimliliğini hesapla (0-100)"""
+        logger.info("Nakit akışı verimliliği hesaplanıyor")
+
+        if not self.metrics:
+            self.calculate_metrics()
+
+        efficiency = 100
+
+        # Negatif akışa ceza
+        if self.metrics.net_cash_flow < 0:
+            efficiency -= 30
+
+        # Düşük likiditeye ceza
+        if self.metrics.quick_ratio < 1.0:
+            efficiency -= (1.0 - self.metrics.quick_ratio) * 20
+
+        # Yüksek alacak günlerine ceza
+        if self.metrics.receivables_days > 60:
+            efficiency -= min(20, (self.metrics.receivables_days - 60) / 10)
+
+        # Yüksek CCC'ye ceza
+        if self.metrics.cash_conversion_cycle > 90:
+            efficiency -= min(15, (self.metrics.cash_conversion_cycle - 90) / 10)
+
+        efficiency = max(0, min(100, efficiency))
+        logger.info(f"Nakit akışı verimliliği: {efficiency:.2f}")
+        return efficiency
+
+    def generate_summary_report(self) -> Dict[str, any]:
+        """Özet rapor oluştur"""
+        logger.info("Özet rapor oluşturuluyor")
+
+        if not self.metrics:
+            self.calculate_metrics()
+
+        risks = self.identify_risks()
+        seasonality = self.analyze_seasonality()
+        efficiency = self.get_cash_flow_efficiency()
+
+        report = {
+            "metrics": self.metrics,
+            "risks": risks,
+            "seasonality": seasonality,
+            "efficiency_score": efficiency,
+            "data_period": {
+                "start": self.df["date"].min(),
+                "end": self.df["date"].max(),
+                "days": (self.df["date"].max() - self.df["date"].min()).days,
+            },
+            "recommendations": self._generate_recommendations(risks, self.metrics),
+        }
+
+        logger.info("Özet rapor tamamlandı")
+        return report
+
+    def _generate_recommendations(
+        self, risks: List[CashFlowRisk], metrics: CashFlowMetrics
+    ) -> List[str]:
+        """Finansal öneriler oluştur"""
+        recommendations = []
+
+        if metrics.net_cash_flow > 100000:
+            recommendations.append("Pozitif nakit akışı sürdürülerek aşırı nakit birikimini değerlendir")
+        elif metrics.net_cash_flow < 0:
+            recommendations.append("Acil olarak nakit akışını pozitif hale getirmeye yönelik önlemler al")
+
+        if metrics.receivables_days > 45:
+            recommendations.append("Alacak tahsil sürecini hızlandırmak için müşteri ödeme koşullarını gözden geçir")
+
+        if metrics.payables_days < metrics.receivables_days / 2:
+            recommendations.append("Tedarikçi ödeme sürelerini uzatmak için müzakerelere gir")
+
+        if metrics.quick_ratio < 1.5:
+            recommendations.append("İşletme kredi hattını arttırarak likidite tamponunu oluştur")
+
+        if metrics.cash_conversion_cycle > 60:
+            recommendations.append("Nakit dönüştürme döngüsünü kısaltmaya odaklan: alacak tahsil + ödeme süresi")
+
+        return recommendations
+
+
+# Test
+if __name__ == "__main__":
+    from datetime import datetime, timedelta
+
+    # Test veri oluştur
+    test_data = []
+    base_date = datetime.now() - timedelta(days=90)
+
+    for i in range(90):
+        date = base_date + timedelta(days=i)
+        cash_in = 50000 + np.random.normal(10000, 5000)
+        cash_out = 40000 + np.random.normal(8000, 4000)
+        balance = 100000 + (cash_in - cash_out) * (i + 1) / 90
+
+        test_data.append(
+            CashFlowData(
+                date=date,
+                cash_in=max(0, cash_in),
+                cash_out=max(0, cash_out),
+                balance=balance,
+                accounts_receivable=120000,
+                accounts_payable=80000,
+            )
+        )
+
+    # Analiz yap
+    analyzer = CashFlowAnalyzer(test_data)
+    metrics = analyzer.calculate_metrics()
+    print(f"Metrikler: {metrics}")
+
+    forecasts = analyzer.forecast_cash_flow(periods=30)
+    print(f"İlk tahmin: {forecasts[0]}")
+
+    risks = analyzer.identify_risks()
+    print(f"Tanımlanan riskler: {len(risks)}")
+
+    report = analyzer.generate_summary_report()
+    print(f"Rapor: {report}")
