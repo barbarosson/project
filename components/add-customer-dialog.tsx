@@ -9,6 +9,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -98,6 +108,8 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
   const [showCustomIndustry, setShowCustomIndustry] = useState(false)
   const [showCustomDistrict, setShowCustomDistrict] = useState(false)
   const [availableParentCustomers, setAvailableParentCustomers] = useState<any[]>([])
+  const [showMergeConfirm, setShowMergeConfirm] = useState(false)
+  const [mergeTargetCustomer, setMergeTargetCustomer] = useState<any | null>(null)
 
   useEffect(() => {
     if (formData.city && hasDistrictData(formData.city)) {
@@ -183,6 +195,132 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
     return { exists: !!data, customer: data }
   }
 
+  const FIELD_LABELS: Record<string, string> = {
+    company_title: 'Şirket Ünvanı',
+    name: 'Yetkili / İsim',
+    account_type: 'Hesap Tipi',
+    tax_office: 'Vergi Dairesi',
+    tax_number: 'Vergi No',
+    email: 'E-posta',
+    phone: 'Telefon',
+    address: 'Adres',
+    city: 'İl',
+    district: 'İlçe',
+    postal_code: 'Posta Kodu',
+    country: 'Ülke',
+    payment_terms: 'Ödeme Vadesi (gün)',
+    payment_terms_type: 'Vade Tipi',
+    bank_name: 'Banka Adı',
+    bank_account_holder: 'Hesap Sahibi',
+    bank_account_number: 'Hesap No',
+    bank_iban: 'IBAN',
+    bank_branch: 'Şube',
+    bank_swift: 'SWIFT',
+    website: 'Web',
+    industry: 'Sektör',
+    notes: 'Notlar',
+    e_invoice_enabled: 'E-Fatura',
+    status: 'Durum',
+  }
+
+  const getMergeChanges = () => {
+    if (!mergeTargetCustomer) return []
+    const payment_terms_days = formData.payment_terms_unit === 'months'
+      ? formData.payment_terms * 30
+      : formData.payment_terms
+    const newIndustry = showCustomIndustry ? formData.industry_custom : formData.industry
+    const newIban = formData.bank_iban ? formatIBAN(formData.bank_iban) : null
+    const changes: { field: string; label: string; oldVal: string; newVal: string }[] = []
+    const pairs: [string, string | number | boolean | null][] = [
+      ['company_title', formData.company_title],
+      ['name', formData.name],
+      ['account_type', 'both'],
+      ['tax_office', formData.tax_office],
+      ['email', formData.email],
+      ['phone', formData.phone],
+      ['address', formData.address],
+      ['city', formData.city],
+      ['district', formData.district],
+      ['postal_code', formData.postal_code],
+      ['country', formData.country],
+      ['payment_terms', payment_terms_days],
+      ['payment_terms_type', formData.payment_terms_type],
+      ['bank_name', formData.bank_name],
+      ['bank_account_holder', formData.bank_account_holder],
+      ['bank_account_number', formData.bank_account_number],
+      ['bank_iban', newIban],
+      ['bank_branch', formData.bank_branch],
+      ['bank_swift', formData.bank_swift],
+      ['website', formData.website],
+      ['industry', newIndustry],
+      ['notes', formData.notes],
+      ['e_invoice_enabled', formData.e_invoice_enabled],
+      ['status', formData.status],
+    ]
+    for (const [key, newVal] of pairs) {
+      const oldVal = mergeTargetCustomer[key]
+      const os = oldVal === null || oldVal === undefined ? '' : String(oldVal)
+      const ns = newVal === null || newVal === undefined ? '' : String(newVal)
+      if (os !== ns) {
+        changes.push({ field: key, label: FIELD_LABELS[key] || key, oldVal: os || '—', newVal: ns || '—' })
+      }
+    }
+    return changes
+  }
+
+  const handleMergeConfirm = async () => {
+    if (!mergeTargetCustomer || !tenantId) return
+    setLoading(true)
+    try {
+      const payment_terms_days = formData.payment_terms_unit === 'months'
+        ? formData.payment_terms * 30
+        : formData.payment_terms
+      const updateData: Record<string, unknown> = {
+        company_title: formData.company_title,
+        name: formData.name,
+        account_type: 'both',
+        tax_office: formData.tax_office || null,
+        tax_number: formData.tax_number || null,
+        tax_id_type: formData.tax_id_type || null,
+        email: formData.email || null,
+        phone: formData.phone || null,
+        address: formData.address || null,
+        city: formData.city || null,
+        district: formData.district || null,
+        postal_code: formData.postal_code || null,
+        country: formData.country || null,
+        payment_terms: payment_terms_days,
+        payment_terms_type: formData.payment_terms_type || null,
+        bank_name: formData.bank_name || null,
+        bank_account_holder: formData.bank_account_holder || null,
+        bank_account_number: formData.bank_account_number || null,
+        bank_iban: formData.bank_iban ? formatIBAN(formData.bank_iban) : null,
+        bank_branch: formData.bank_branch || null,
+        bank_swift: formData.bank_swift || null,
+        website: formData.website || null,
+        industry: showCustomIndustry ? formData.industry_custom : formData.industry || null,
+        notes: formData.notes || null,
+        e_invoice_enabled: formData.e_invoice_enabled,
+        status: formData.status,
+      }
+      const { error } = await supabase
+        .from('customers')
+        .update(updateData)
+        .eq('id', mergeTargetCustomer.id)
+        .eq('tenant_id', tenantId)
+      if (error) throw error
+      toast.success('Cari "Her İkisi" yapıldı ve bilgiler güncellendi.')
+      setShowMergeConfirm(false)
+      setMergeTargetCustomer(null)
+      onSuccess()
+      handleClose()
+    } catch (err: any) {
+      toast.error(err.message || 'Güncelleme yapılamadı')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -201,28 +339,22 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
 
       const tenant_id = userData.user.id
 
-      const duplicateCheck = await checkDuplicateVKN()
+      if (formData.tax_number && formData.tax_number.trim()) {
+        const duplicateCheck = await checkDuplicateVKN()
 
-      if (duplicateCheck.exists && duplicateCheck.customer) {
+        if (duplicateCheck.exists && duplicateCheck.customer) {
         const existing = duplicateCheck.customer
 
-        if (
-          (existing.account_type === 'customer' && formData.account_type === 'vendor') ||
-          (existing.account_type === 'vendor' && formData.account_type === 'customer')
-        ) {
-          const { error: updateError } = await supabase
-            .from('customers')
-            .update({ account_type: 'both' })
-            .eq('id', existing.id)
+        if (existing.account_type === formData.account_type) {
+          setLoading(false)
+          throw new Error(`Bu VKN ile aynı hesap tipinde kayıt zaten var: ${existing.company_title || existing.name}`)
+        }
 
-          if (updateError) throw updateError
-
-          toast.success(`Bu VKN ile kayıtlı cari bulundu. Hesap tipi "Her İkisi" olarak güncellendi.`)
-          onSuccess()
-          handleClose()
-          return
-        } else {
-          throw new Error(`Bu VKN ile sistemde zaten bir cari kayıtlı: ${existing.company_title}`)
+        // Farklı hesap tipi: kullanıcıdan onay alıp güncelleyeceğiz
+        setMergeTargetCustomer(existing)
+        setShowMergeConfirm(true)
+        setLoading(false)
+        return
         }
       }
 
@@ -332,6 +464,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
   const industryOptions = getIndustryOptions(language)
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -890,5 +1023,37 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
         </form>
       </DialogContent>
     </Dialog>
+
+    <AlertDialog open={showMergeConfirm} onOpenChange={setShowMergeConfirm}>
+      <AlertDialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <AlertDialogHeader>
+          <AlertDialogTitle>VKN ile eşleşen cari güncellenecek</AlertDialogTitle>
+          <AlertDialogDescription>
+            Bu VKN ile kayıtlı &quot;{mergeTargetCustomer?.account_type === 'customer' ? 'Müşteri' : 'Tedarikçi'}&quot; tipinde bir cari var.
+            Hesap tipi &quot;Her İkisi&quot; yapılıp aşağıdaki alanlar yeni bilgilerle güncellenecek. Onaylıyor musunuz?
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <div className="my-4 rounded border bg-slate-50 p-3 text-sm">
+          <p className="font-medium text-slate-700 mb-2">Değişecek alanlar:</p>
+          <ul className="space-y-1 max-h-48 overflow-y-auto">
+            {getMergeChanges().map((c, i) => (
+              <li key={i} className="flex flex-wrap gap-x-2 text-slate-600">
+                <span className="font-medium text-slate-800">{c.label}:</span>
+                <span className="line-through text-red-600">{c.oldVal}</span>
+                <span>→</span>
+                <span className="text-green-700">{c.newVal}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => setMergeTargetCustomer(null)}>İptal</AlertDialogCancel>
+          <AlertDialogAction onClick={handleMergeConfirm} disabled={loading} className="bg-[#00D4AA] hover:bg-[#00B894]">
+            {loading ? 'Güncelleniyor...' : 'Güncelle'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </>
   )
 }

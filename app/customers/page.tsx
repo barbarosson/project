@@ -24,6 +24,7 @@ import { EditCustomerDialog } from '@/components/edit-customer-dialog'
 import { CustomerDetailSheet } from '@/components/customer-detail-sheet'
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
 import { MergeCustomersDialog } from '@/components/merge-customers-dialog'
+import { CustomerCsvImportDialog } from '@/components/customer-csv-import-dialog'
 import { CustomerSubBranchesSheet } from '@/components/customer-sub-branches-sheet'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -78,6 +79,7 @@ export default function CustomersPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [customerToDelete, setCustomerToDelete] = useState<string | null>(null)
   const [isMergeDialogOpen, setIsMergeDialogOpen] = useState(false)
+  const [isCsvImportOpen, setIsCsvImportOpen] = useState(false)
   const [isSubBranchesSheetOpen, setIsSubBranchesSheetOpen] = useState(false)
   const [selectedCustomerForBranches, setSelectedCustomerForBranches] = useState<string | null>(null)
 
@@ -429,7 +431,7 @@ export default function CustomersPage() {
             </Button>
             <Button
               variant="outline"
-              onClick={() => {}}
+              onClick={() => setIsCsvImportOpen(true)}
             >
               <Upload className="mr-2 h-4 w-4" />
               {t.common.csvImport}
@@ -736,6 +738,12 @@ export default function CustomersPage() {
       <MergeCustomersDialog
         isOpen={isMergeDialogOpen}
         onClose={() => setIsMergeDialogOpen(false)}
+        onSuccess={fetchCustomers}
+      />
+
+      <CustomerCsvImportDialog
+        isOpen={isCsvImportOpen}
+        onClose={() => setIsCsvImportOpen(false)}
         onSuccess={fetchCustomers}
       />
 
