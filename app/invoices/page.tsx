@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { EditInvoiceDialog } from '@/components/edit-invoice-dialog'
-import { BulkCreateInvoicesDialog } from '@/components/bulk-create-invoices-dialog'
+import { InvoiceCsvImportDialog } from '@/components/invoice-csv-import-dialog'
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
 import { RecordPaymentDialog } from '@/components/record-payment-dialog'
 import { toast } from 'sonner'
@@ -60,7 +60,7 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [showEditDialog, setShowEditDialog] = useState(false)
-  const [showBulkCreateDialog, setShowBulkCreateDialog] = useState(false)
+  const [showCsvImportDialog, setShowCsvImportDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showPaymentDialog, setShowPaymentDialog] = useState(false)
   const [editingInvoice, setEditingInvoice] = useState<any>(null)
@@ -216,19 +216,19 @@ export default function InvoicesPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Invoices</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 min-w-0">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">{language === 'tr' ? 'Satış Faturaları' : 'Invoices'}</h1>
             <p className="text-gray-500 mt-1">{t.invoices.manageInvoicesBilling}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 shrink-0">
             <Button
-              onClick={() => setShowBulkCreateDialog(true)}
+              onClick={() => setShowCsvImportDialog(true)}
               variant="outline"
               className="text-[#0A192F]"
             >
               <Upload className="mr-2 h-4 w-4" />
-              {t.invoices.bulkCreate}
+              {language === 'tr' ? 'CSV İçe Aktar' : 'Import CSV'}
             </Button>
             <Button
               onClick={() => router.push('/invoices/new')}
@@ -389,7 +389,7 @@ export default function InvoicesPage() {
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
+                              <Button variant="ghost" size="sm" className="bg-slate-100 hover:bg-slate-200 text-slate-800">
                                 <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -438,9 +438,9 @@ export default function InvoicesPage() {
         onSuccess={fetchInvoices}
       />
 
-      <BulkCreateInvoicesDialog
-        isOpen={showBulkCreateDialog}
-        onClose={() => setShowBulkCreateDialog(false)}
+      <InvoiceCsvImportDialog
+        isOpen={showCsvImportDialog}
+        onClose={() => setShowCsvImportDialog(false)}
         onSuccess={fetchInvoices}
       />
 

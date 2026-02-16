@@ -21,7 +21,6 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useLanguage } from '@/contexts/language-context'
 import { useNotifications } from '@/contexts/notification-context'
@@ -139,51 +138,177 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   }
 
   return (
-    <header
-        className="h-16 bg-white border-b border-gray-200 flex items-center px-4 lg:px-6 gap-4 [&_button]:!text-gray-800 [&_button_svg]:!stroke-gray-800"
+    <>
+      <header
+        className="h-16 bg-white border-b border-gray-200 px-4 lg:px-6 w-full"
         style={{ color: '#1e293b' }}
       >
-      <Button
-        variant="ghost"
-        size="icon"
-        className="lg:hidden text-gray-800 hover:text-gray-900 hover:bg-gray-100"
-        onClick={onMenuClick}
-      >
-        <Menu size={20} className="stroke-[1.5]" />
-      </Button>
+        <div className="h-full grid grid-cols-1 min-[900px]:grid-cols-[1fr_auto] gap-3 items-center max-w-full">
+          {/* Sol: menü (mobil) + arama */}
+          <div className="min-w-0 flex items-center gap-2 order-1 flex-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden h-9 w-9 shrink-0 text-gray-600 hover:bg-gray-100"
+              onClick={onMenuClick}
+            >
+              <Menu size={20} strokeWidth={1.5} />
+            </Button>
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="relative h-9 w-full min-w-0 flex items-center gap-2 pl-8 pr-2 rounded-md border border-gray-300 bg-gray-100 text-gray-700 text-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-[#00D4AA] focus:border-[#00D4AA]"
+            >
+              <Search className="absolute left-2.5 h-4 w-4 text-gray-500 shrink-0 pointer-events-none" size={16} strokeWidth={2} />
+              <span className="truncate">
+                {language === 'tr' ? 'Arama' : 'Search'}
+              </span>
+              <kbd className="hidden sm:inline ml-auto h-5 px-1.5 rounded border border-gray-400 bg-white text-[10px] text-gray-600 font-mono shrink-0">⌘K</kbd>
+            </button>
+          </div>
 
-      <div className="flex-1 max-w-xl">
-        <button
-          onClick={() => setOpen(true)}
-          className="w-full flex items-center gap-2 pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg hover:border-[#00D4AA] focus:outline-none focus:ring-2 focus:ring-[#00D4AA] focus:border-transparent transition-all text-left"
-        >
-          <Search className="absolute left-3 text-gray-400" size={18} />
-          <span className="text-gray-500 text-sm">
-            {language === 'tr' ? 'Müşteri, fatura, ürün ara...' : 'Search customers, invoices, products...'}
-          </span>
-          <kbd className="ml-auto pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-white px-1.5 font-mono text-[10px] font-medium text-gray-600">
-            <span className="text-xs">⌘</span>K
-          </kbd>
-        </button>
-      </div>
+          {/* Sağ: Dil, Admin, Bildirimler, Kullanıcı – hepsi görünür, sıralı */}
+          <div className="min-w-0 flex items-center justify-end gap-2 flex-shrink-0 order-2 flex-wrap sm:flex-nowrap">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-9 shrink-0 gap-1.5 rounded-md px-2 sm:px-3 text-amber-700 hover:bg-amber-50 text-xs font-medium" title={language === 'tr' ? 'Dil tercihi' : 'Language'}>
+                  <Globe size={18} strokeWidth={1.5} />
+                  <span className="whitespace-nowrap">{language === 'tr' ? 'Dil' : 'Lang'}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setLanguage('en')}>
+                  🇬🇧 English {language === 'en' && '✓'}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setLanguage('tr')}>
+                  🇹🇷 Türkçe {language === 'tr' && '✓'}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {isAdmin && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 shrink-0 gap-1.5 rounded-md px-2 sm:px-3 text-amber-700 hover:bg-amber-50 text-xs font-medium"
+                onClick={() => router.push('/admin/site-commander')}
+              >
+                <Shield size={16} />
+                <span className="whitespace-nowrap">{t.sidebar.admin}</span>
+              </Button>
+            )}
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="relative h-9 shrink-0 gap-1.5 rounded-md px-2 sm:px-3 text-amber-700 hover:bg-amber-50 text-xs font-medium" title={language === 'tr' ? 'Bildirimler' : 'Notifications'}>
+                  <Bell size={18} strokeWidth={1.5} />
+                  <span className="whitespace-nowrap hidden sm:inline">{language === 'tr' ? 'Bildirimler' : 'Notifications'}</span>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 h-4 w-4 flex items-center justify-center rounded-full bg-[#00D4AA] text-white text-[10px] font-medium">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[min(24rem,calc(100vw-2rem))] max-w-96 p-0">
+                <div className="flex items-center justify-between p-4 border-b">
+                  <DropdownMenuLabel className="p-0 font-semibold text-gray-900">
+                    {language === 'tr' ? 'Bildirimler' : 'Notifications'}
+                  </DropdownMenuLabel>
+                  {unreadCount > 0 && (
+                    <Button variant="ghost" size="sm" onClick={markAllAsRead} className="h-7 text-xs text-[#00D4AA]">
+                      {language === 'tr' ? 'Tümünü okundu işaretle' : 'Mark all read'}
+                    </Button>
+                  )}
+                </div>
+                <ScrollArea className="h-[400px]">
+                  {notifications.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-12 text-center">
+                      <Bell className="h-12 w-12 text-gray-300 mb-3" />
+                      <p className="text-sm text-gray-500">{language === 'tr' ? 'Bildirim yok' : 'No notifications'}</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y">
+                      {notifications.map((notification) => (
+                        <div
+                          key={notification.id}
+                          className={`p-4 hover:bg-gray-50 cursor-pointer ${!notification.is_read ? 'bg-blue-50/50' : ''}`}
+                          onClick={() => handleNotificationClick(notification)}
+                        >
+                          <div className="flex gap-3">
+                            <div className="shrink-0 mt-0.5">{getNotificationIcon(notification.type)}</div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-medium text-gray-900">{notification.title}</p>
+                              <p className="text-xs text-gray-600 mt-1 line-clamp-2">{notification.message}</p>
+                              <div className="flex items-center justify-between mt-2">
+                                <span className="text-xs text-gray-400">
+                                  {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
+                                  onClick={(e) => { e.stopPropagation(); deleteNotification(notification.id) }}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </ScrollArea>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-9 shrink-0 gap-1.5 rounded-md px-2 sm:px-3 text-amber-700 hover:bg-amber-50 text-xs font-medium">
+                  <Avatar className="h-6 w-6 shrink-0">
+                    <AvatarFallback className="bg-[#0A2540] text-white text-xs">AD</AvatarFallback>
+                  </Avatar>
+                  <span className="max-w-[90px] truncate whitespace-nowrap">Admin User</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <p className="font-medium text-gray-900">Admin User</p>
+                  <p className="text-xs text-gray-500 font-normal">admin@modulus.com</p>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push('/settings')}>
+                  <User className="mr-2 h-4 w-4" />
+                  {language === 'tr' ? 'Profil' : 'Profile'}
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('/settings')}>
+                  <Settings className="mr-2 h-4 w-4" />
+                  {language === 'tr' ? 'Ayarlar' : 'Settings'}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-red-600" onClick={() => signOut()}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {language === 'tr' ? 'Çıkış Yap' : 'Log out'}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </header>
 
       <CommandDialog open={open} onOpenChange={setOpen}>
         <CommandInput
-          placeholder={language === 'tr' ? 'Müşteri, fatura, ürün ara...' : 'Search customers, invoices, products...'}
+          placeholder={language === 'tr' ? 'Arama' : 'Search'}
           value={searchQuery}
           onValueChange={setSearchQuery}
         />
         <CommandList>
           <CommandEmpty>{language === 'tr' ? 'Sonuç bulunamadı.' : 'No results found.'}</CommandEmpty>
-
           {searchResults.customers.length > 0 && (
             <CommandGroup heading={language === 'tr' ? 'Müşteriler' : 'Customers'}>
               {searchResults.customers.map((customer) => (
-                <CommandItem
-                  key={customer.id}
-                  onSelect={() => handleSelect('customer', customer.id)}
-                  className="cursor-pointer"
-                >
+                <CommandItem key={customer.id} onSelect={() => handleSelect('customer', customer.id)} className="cursor-pointer">
                   <UsersIcon className="mr-2 h-4 w-4" />
                   <div className="flex flex-col">
                     <span>{customer.name}</span>
@@ -193,15 +318,10 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               ))}
             </CommandGroup>
           )}
-
           {searchResults.invoices.length > 0 && (
             <CommandGroup heading={language === 'tr' ? 'Faturalar' : 'Invoices'}>
               {searchResults.invoices.map((invoice) => (
-                <CommandItem
-                  key={invoice.id}
-                  onSelect={() => handleSelect('invoice', invoice.id)}
-                  className="cursor-pointer"
-                >
+                <CommandItem key={invoice.id} onSelect={() => handleSelect('invoice', invoice.id)} className="cursor-pointer">
                   <FileText className="mr-2 h-4 w-4" />
                   <div className="flex items-center justify-between flex-1">
                     <span>{invoice.invoice_number}</span>
@@ -211,15 +331,10 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               ))}
             </CommandGroup>
           )}
-
           {searchResults.products.length > 0 && (
             <CommandGroup heading={language === 'tr' ? 'Ürünler' : 'Products'}>
               {searchResults.products.map((product) => (
-                <CommandItem
-                  key={product.id}
-                  onSelect={() => handleSelect('product', product.id)}
-                  className="cursor-pointer"
-                >
+                <CommandItem key={product.id} onSelect={() => handleSelect('product', product.id)} className="cursor-pointer">
                   <Package className="mr-2 h-4 w-4" />
                   <div className="flex items-center justify-between flex-1">
                     <span>{product.name}</span>
@@ -231,166 +346,6 @@ export function Topbar({ onMenuClick }: TopbarProps) {
           )}
         </CommandList>
       </CommandDialog>
-
-      <div className="flex items-center gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="text-gray-700 hover:text-gray-900 hover:bg-gray-100">
-              <Globe size={20} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setLanguage('en')}>
-              <span className="flex items-center gap-2">
-                🇬🇧 English {language === 'en' && '✓'}
-              </span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setLanguage('tr')}>
-              <span className="flex items-center gap-2">
-                🇹🇷 Türkçe {language === 'tr' && '✓'}
-              </span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {isAdmin && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="gap-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
-            onClick={() => router.push('/admin/site-commander')}
-          >
-            <Shield size={18} />
-            <span className="hidden md:inline text-sm font-medium">
-              {language === 'tr' ? 'Admin Paneli' : 'Admin Panel'}
-            </span>
-          </Button>
-        )}
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="relative text-gray-700 hover:text-gray-900 hover:bg-gray-100">
-              <Bell size={20} />
-              {unreadCount > 0 && (
-                <Badge
-                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-[#00D4AA] text-white text-xs"
-                >
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </Badge>
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-96 p-0">
-            <div className="flex items-center justify-between p-4 border-b">
-              <DropdownMenuLabel className="p-0">
-                {language === 'tr' ? 'Bildirimler' : 'Notifications'}
-              </DropdownMenuLabel>
-              {unreadCount > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={markAllAsRead}
-                  className="h-7 text-xs text-[#00D4AA] hover:text-[#00B894]"
-                >
-                  {language === 'tr' ? 'Tümünü Okundu İşaretle' : 'Mark all as read'}
-                </Button>
-              )}
-            </div>
-            <ScrollArea className="h-[400px]">
-              {notifications.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Bell className="h-12 w-12 text-gray-300 mb-3" />
-                  <p className="text-sm text-gray-500">
-                    {language === 'tr' ? 'Bildirim bulunmuyor' : 'No notifications'}
-                  </p>
-                </div>
-              ) : (
-                <div className="divide-y">
-                  {notifications.map((notification) => (
-                    <div
-                      key={notification.id}
-                      className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                        !notification.is_read ? 'bg-blue-50/50' : ''
-                      }`}
-                      onClick={() => handleNotificationClick(notification)}
-                    >
-                      <div className="flex gap-3">
-                        <div className="flex-shrink-0 mt-1">
-                          {getNotificationIcon(notification.type)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className="text-sm font-medium text-gray-900 leading-tight">
-                              {notification.title}
-                            </p>
-                            {!notification.is_read && (
-                              <div className="h-2 w-2 bg-[#00D4AA] rounded-full flex-shrink-0 mt-1" />
-                            )}
-                          </div>
-                          <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                            {notification.message}
-                          </p>
-                          <div className="flex items-center justify-between mt-2">
-                            <p className="text-xs text-gray-400">
-                              {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
-                            </p>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                deleteNotification(notification.id)
-                              }}
-                              className="h-6 w-6 p-0 text-gray-400 hover:text-red-500"
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </ScrollArea>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-[#0A2540] text-white text-sm">
-                  AD
-                </AvatarFallback>
-              </Avatar>
-              <span className="hidden md:inline text-sm font-medium">Admin User</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel>
-              <div>
-                <p className="font-medium">Admin User</p>
-                <p className="text-xs text-gray-500 font-normal">admin@modulus.com</p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => router.push('/settings')}>
-              <User className="mr-2 h-4 w-4" />
-              {language === 'tr' ? 'Profil' : 'Profile'}
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => router.push('/settings')}>
-              <Settings className="mr-2 h-4 w-4" />
-              {language === 'tr' ? 'Ayarlar' : 'Settings'}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem className="text-red-600" onClick={() => signOut()}>
-              <LogOut className="mr-2 h-4 w-4" />
-              {language === 'tr' ? 'Çıkış Yap' : 'Log out'}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </header>
+    </>
   )
 }

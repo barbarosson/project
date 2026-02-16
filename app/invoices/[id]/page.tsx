@@ -11,6 +11,7 @@ import { supabase } from '@/lib/supabase'
 import { EInvoicePreview } from '@/components/e-invoice-preview'
 import { Toaster } from '@/components/ui/sonner'
 import { useTenant } from '@/contexts/tenant-context'
+import { useLanguage } from '@/contexts/language-context'
 
 interface LineItem {
   id: string
@@ -50,6 +51,7 @@ export default function InvoiceDetailPage() {
   const params = useParams()
   const invoiceId = params.id as string
   const { tenantId, loading: tenantLoading } = useTenant()
+  const { language } = useLanguage()
 
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [lineItems, setLineItems] = useState<LineItem[]>([])
@@ -128,9 +130,10 @@ export default function InvoiceDetailPage() {
     return (
       <DashboardLayout>
         <div className="text-center py-12">
-          <p className="text-gray-500">Invoice not found</p>
-          <Button onClick={() => router.push('/invoices')} className="mt-4">
-            Back to Invoices
+          <p className="text-gray-500">{language === 'tr' ? 'Fatura bulunamadı' : 'Invoice not found'}</p>
+          <Button onClick={() => router.push('/invoices')} className="mt-4" variant="outline">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            {language === 'tr' ? 'Faturalara Geri Dön' : 'Back to Invoices'}
           </Button>
         </div>
       </DashboardLayout>
@@ -143,15 +146,17 @@ export default function InvoiceDetailPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Button
-              variant="ghost"
-              size="icon"
+              variant="outline"
+              size="sm"
               onClick={() => router.push('/invoices')}
+              className="shrink-0 bg-white border-[#0A2540]/20 text-[#0A2540] hover:bg-[#0A2540]/5"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              {language === 'tr' ? 'Geri Dön' : 'Back'}
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">{invoice.invoice_number}</h1>
-              <p className="text-gray-500 mt-1">Invoice Details</p>
+              <p className="text-gray-500 mt-1">{language === 'tr' ? 'Fatura Detayı' : 'Invoice Details'}</p>
             </div>
           </div>
           <div className="flex gap-2">

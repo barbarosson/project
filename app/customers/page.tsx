@@ -567,8 +567,8 @@ export default function CustomersPage() {
               </div>
             </div>
 
-            <div className="border rounded-lg overflow-hidden">
-              <Table>
+            <div className="border rounded-lg overflow-x-auto overflow-y-hidden">
+              <Table className="min-w-[800px]">
                 <TableHeader>
                   <TableRow className="bg-gray-50">
                     <TableHead className="h-8 w-4 min-w-4 max-w-4 p-0.5 text-center align-middle">

@@ -221,14 +221,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   const finalMenuItems = buildMenuHierarchy()
 
-  // Debug: Log menu state
-  console.log('🔵 Sidebar render:', {
-    totalMenus: allMenus.length,
-    visibleCount: visibleMenus.length,
-    parentMenus: finalMenuItems.filter((m: any) => !m.href && m.subItems).length,
-    totalItems: finalMenuItems.length
-  });
-
   return (
     <>
       <div

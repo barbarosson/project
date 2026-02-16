@@ -98,8 +98,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className={`${inter.className} font-inter text-gray-900 bg-white`}>
+    <html lang="tr" className={inter.variable} suppressHydrationWarning>
+      <body className={`${inter.className} font-inter text-[#0A2540] bg-[#0A2540]/5`}>
         <ClientProviders>{children}</ClientProviders>
       </body>
     </html>

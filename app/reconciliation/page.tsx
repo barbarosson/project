@@ -154,7 +154,7 @@ export default function ReconciliationPage() {
       const customer = customers.find(c => c.id === selectedCustomerId)
       const requestNumber = `MUT-${Date.now()}`
 
-      const { error: insertError } = await supabase
+      const { data: insertedRow, error: insertError } = await supabase
         .from('reconciliation_requests')
         .insert([{
           tenant_id: tenantId,
@@ -171,11 +171,20 @@ export default function ReconciliationPage() {
           created_by: user?.id,
           details: statementData
         }])
+        .select('*')
+        .single()
 
       if (insertError) throw insertError
 
       toast.success('Mutabakat talebi olusturuldu: ' + requestNumber)
-      fetchReconciliations()
+      if (insertedRow) {
+        setReconciliations(prev => [{
+          ...insertedRow,
+          customer: customer ? { company_title: customer.company_title, name: customer.name, email: customer.email, tax_id: (customer as any).tax_id, tax_office: (customer as any).tax_office } : null
+        }, ...prev])
+      }
+      setFilterStatus('all')
+      await fetchReconciliations()
       setSelectedCustomerId('')
       setStartDate(undefined)
       setEndDate(undefined)
@@ -188,7 +197,12 @@ export default function ReconciliationPage() {
   }
 
   const sendReconciliationEmail = async (rec: any) => {
-    setSendingId(rec.id)
+    const recId = rec?.id ? String(rec.id) : null
+    if (!recId) {
+      toast.error('Mutabakat kaydi bulunamadi (id eksik). Sayfayi yenileyip tekrar deneyin.')
+      return
+    }
+    setSendingId(recId)
     try {
       const apiUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-reconciliation-email`
       const response = await fetch(apiUrl, {
@@ -197,11 +211,14 @@ export default function ReconciliationPage() {
           'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ reconciliation_id: rec.id }),
+        body: JSON.stringify({ reconciliation_id: recId }),
       })
 
-      const result = await response.json()
-      if (!response.ok) throw new Error(result.error || 'Email gonderilemedi')
+      const result = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        const msg = [result?.error, result?.details].filter(Boolean).join(': ') || 'Email gonderilemedi'
+        throw new Error(msg)
+      }
 
       toast.success(`Mutabakat mektubu ${rec.sent_to_email || rec.customer?.email} adresine gonderildi`)
       fetchReconciliations()
@@ -320,32 +337,34 @@ export default function ReconciliationPage() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label>Baslangic Tarihi</Label>
+              <div className="space-y-2 md:col-span-2">
+                <Label>Donem (Baslangic – Bitis)</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-start">
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {startDate ? format(startDate, 'PPP', { locale: tr }) : 'Tarih secin'}
+                      {startDate && endDate
+                        ? `${format(startDate, 'd MMM yyyy', { locale: tr })} – ${format(endDate, 'd MMM yyyy', { locale: tr })}`
+                        : 'Tarih secin'}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar mode="single" selected={startDate} onSelect={setStartDate} initialFocus />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Bitis Tarihi</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start">
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {endDate ? format(endDate, 'PPP', { locale: tr }) : 'Tarih secin'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar mode="single" selected={endDate} onSelect={setEndDate} initialFocus />
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="range"
+                      selected={startDate && endDate ? { from: startDate, to: endDate } : startDate ? { from: startDate, to: undefined } : undefined}
+                      onSelect={(range: { from?: Date; to?: Date } | undefined) => {
+                        if (range?.from) {
+                          setStartDate(range.from)
+                          setEndDate(range.to ?? range.from)
+                        } else {
+                          setStartDate(undefined)
+                          setEndDate(undefined)
+                        }
+                      }}
+                      numberOfMonths={1}
+                      locale={tr}
+                      initialFocus
+                    />
                   </PopoverContent>
                 </Popover>
               </div>
@@ -448,7 +467,8 @@ export default function ReconciliationPage() {
                             {(rec.status === 'pending' || rec.status === 'sent') && (
                               <Button
                                 size="sm"
-                                variant="outline"
+                                variant="default"
+                                className="bg-[#00D4AA] hover:bg-[#00D4AA]/90 text-white border-0"
                                 onClick={() => sendReconciliationEmail(rec)}
                                 disabled={sendingId === rec.id}
                                 title="E-posta Gonder"
@@ -646,7 +666,7 @@ export default function ReconciliationPage() {
                   <>
                     <Separator />
                     <Button
-                      className="w-full"
+                      className="w-full bg-[#00D4AA] hover:bg-[#00D4AA]/90 text-white border-0"
                       onClick={() => {
                         sendReconciliationEmail(selectedRec)
                         setSheetOpen(false)

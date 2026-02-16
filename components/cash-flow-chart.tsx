@@ -11,6 +11,8 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts'
+import { useLanguage } from '@/contexts/language-context'
+import { useCurrency } from '@/hooks/use-currency'
 
 interface CashFlowData {
   month: string
@@ -23,11 +25,14 @@ interface CashFlowChartProps {
 }
 
 export function CashFlowChart({ data }: CashFlowChartProps) {
+  const { t } = useLanguage()
+  const { formatCurrency } = useCurrency()
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Cash Flow</CardTitle>
-        <CardDescription>Income vs. Expenses over the last 6 months</CardDescription>
+        <CardTitle>{t.dashboard.cashFlow}</CardTitle>
+        <CardDescription>{t.dashboard.cashFlowChartDescription}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-[350px] w-full">
@@ -46,7 +51,7 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                tickFormatter={(value) => formatCurrency(value)}
               />
               <Tooltip
                 contentStyle={{
@@ -54,7 +59,7 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
                   border: '1px solid #e5e7eb',
                   borderRadius: '8px'
                 }}
-                formatter={(value: number) => [`$${value.toLocaleString()}`, '']}
+                formatter={(value: number, name: string) => [formatCurrency(value), name]}
               />
               <Legend
                 wrapperStyle={{
@@ -68,7 +73,7 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
                 strokeWidth={3}
                 dot={{ fill: '#00D4AA', r: 4 }}
                 activeDot={{ r: 6 }}
-                name="Income"
+                name={t.dashboard.cashFlowIncome}
               />
               <Line
                 type="monotone"
@@ -77,7 +82,7 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
                 strokeWidth={3}
                 dot={{ fill: '#E74C3C', r: 4 }}
                 activeDot={{ r: 6 }}
-                name="Expenses"
+                name={t.dashboard.cashFlowExpenses}
               />
             </LineChart>
           </ResponsiveContainer>

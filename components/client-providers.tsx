@@ -15,6 +15,7 @@ import { StickyBar } from '@/components/marketing/sticky-bar'
 import { LeadPopup } from '@/components/marketing/lead-popup'
 import { UIStyleInjector } from '@/components/ui-style-injector'
 import { PageTransitionLogo } from '@/components/page-transition-logo'
+import { HtmlLangSync } from '@/components/html-lang-sync'
 import { Toaster } from 'sonner'
 
 export function ClientProviders({ children }: { children: ReactNode }) {
@@ -25,6 +26,7 @@ export function ClientProviders({ children }: { children: ReactNode }) {
           <SiteConfigProvider>
             <ThemeProvider>
               <LanguageProvider>
+                <HtmlLangSync />
                 <CurrencyProvider>
                   <NotificationProvider>
                     <UIStyleInjector />

@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useTenant } from './tenant-context'
+import { checkOverdueInvoices, checkLowStock, checkOutOfStock } from '@/lib/notifications'
 
 export interface Notification {
   id: string
@@ -38,12 +39,26 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!tenantLoading && tenantId) {
       fetchNotifications()
+      runNotificationChecks(tenantId)
       const cleanup = setupRealtimeSubscription()
       return cleanup
     } else if (!tenantLoading && !tenantId) {
       setLoading(false)
     }
   }, [tenantId, tenantLoading])
+
+  async function runNotificationChecks(tenantId: string) {
+    try {
+      await Promise.all([
+        checkOverdueInvoices(tenantId),
+        checkLowStock(tenantId),
+        checkOutOfStock(tenantId)
+      ])
+      await fetchNotifications()
+    } catch (e) {
+      console.error('Notification checks failed:', e)
+    }
+  }
 
   async function fetchNotifications() {
     if (!tenantId) {

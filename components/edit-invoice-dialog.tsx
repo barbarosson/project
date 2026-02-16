@@ -60,7 +60,7 @@ interface LineItem {
 
 export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditInvoiceDialogProps) {
   const { tenantId } = useTenant()
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [isInitializing, setIsInitializing] = useState(true)
   const [formKey, setFormKey] = useState(0)
@@ -72,7 +72,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
     customer_id: '',
     issue_date: '',
     due_date: '',
-    tax_rate: '18',
+    tax_rate: '20',
     status: 'draft',
     notes: ''
   })
@@ -87,7 +87,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
         customer_id: '',
         issue_date: '',
         due_date: '',
-        tax_rate: '18',
+        tax_rate: '20',
         status: 'draft',
         notes: ''
       })
@@ -137,7 +137,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
           customer_id: invoice.customer_id || '',
           issue_date: issueDate ? issueDate.split('T')[0] : today,
           due_date: invoice.due_date ? invoice.due_date.split('T')[0] : today,
-          tax_rate: '18',
+          tax_rate: '20',
           status: invoice.status || 'draft',
           notes: invoice.notes || ''
         }
@@ -205,7 +205,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
         description: item.description || '',
         quantity: item.quantity || 0,
         unit_price: item.unit_price || 0,
-        vat_rate: item.vat_rate || 20,
+        vat_rate: [0, 1, 10, 20].includes(Number(item.vat_rate)) ? Number(item.vat_rate) : 20,
         line_total: item.line_total || 0,
         vat_amount: item.vat_amount || 0,
         total_with_vat: item.total_with_vat || 0
@@ -225,7 +225,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
         description: '',
         quantity: 1,
         unit_price: 0,
-        vat_rate: 20,
+        vat_rate: parseInt(formData.tax_rate || '20', 10),
         line_total: 0,
         vat_amount: 0,
         total_with_vat: 0
@@ -479,11 +479,42 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
             </div>
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>{language === 'tr' ? 'Vergi kodu / KDV oranı' : 'Tax code / VAT rate'}</Label>
+              <Select
+                value={formData.tax_rate || '20'}
+                onValueChange={(value) => setFormData({ ...formData, tax_rate: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={language === 'tr' ? 'KDV oranı seçin' : 'Select VAT rate'} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">0%</SelectItem>
+                  <SelectItem value="1">1%</SelectItem>
+                  <SelectItem value="10">10%</SelectItem>
+                  <SelectItem value="20">20%</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {language === 'tr' ? 'Yeni eklenen kalemler için varsayılan KDV oranı. Her satırda ayrıca KDV seçebilirsiniz.' : 'Default VAT rate for new line items. You can also set VAT per line below.'}
+              </p>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label>{t.invoices.lineItems}</Label>
             <div className="border rounded-lg p-4 space-y-2">
+              <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-2 text-xs font-medium text-muted-foreground pb-1">
+                <span>{t.invoices.selectProduct}</span>
+                <span>{t.invoices.quantity}</span>
+                <span>{t.invoices.unitPrice}</span>
+                <span>{language === 'tr' ? 'KDV' : 'VAT'}</span>
+                <span>{t.invoices.total}</span>
+                <span />
+              </div>
               {lineItems.map((item) => (
-                <div key={item.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-2">
+                <div key={item.id} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-2 items-center">
                   <Select
                     value={item.product_id || undefined}
                     onValueChange={(value) => updateLineItem(item.id, 'product_id', value)}
@@ -512,6 +543,20 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                     onChange={(e) => updateLineItem(item.id, 'unit_price', parseFloat(e.target.value))}
                     placeholder={t.invoices.unitPrice}
                   />
+                  <Select
+                    value={String([0, 1, 10, 20].includes(item.vat_rate) ? item.vat_rate : 20)}
+                    onValueChange={(value) => updateLineItem(item.id, 'vat_rate', parseInt(value, 10))}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">0%</SelectItem>
+                      <SelectItem value="1">1%</SelectItem>
+                      <SelectItem value="10">10%</SelectItem>
+                      <SelectItem value="20">20%</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Input value={(item.total_with_vat || 0).toFixed(2)} readOnly placeholder={t.invoices.total} />
                   <Button
                     type="button"

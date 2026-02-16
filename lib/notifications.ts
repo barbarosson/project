@@ -98,15 +98,31 @@ export async function checkOverdueInvoices(tenantId: string) {
 
 export async function checkLowStock(tenantId: string) {
   try {
-    const { data: lowStockProducts, error } = await supabase
+    const { data: byStatus, error: errStatus } = await supabase
       .from('products')
       .select('id, name, current_stock, critical_level')
       .eq('tenant_id', tenantId)
       .eq('stock_status', 'low_stock')
 
-    if (error) throw error
+    let lowStockProducts = (byStatus || []) as { id: string; name: string; current_stock?: number; critical_level?: number; stock_quantity?: number; min_stock_level?: number }[]
 
-    for (const product of lowStockProducts || []) {
+    if (errStatus || !lowStockProducts.length) {
+      const { data: byLevel, error: errLevel } = await supabase
+        .from('products')
+        .select('id, name, stock_quantity, min_stock_level')
+        .eq('tenant_id', tenantId)
+
+      if (!errLevel && byLevel?.length) {
+        const minLevel = byLevel.filter(
+          (p: any) => p.min_stock_level != null && Number(p.stock_quantity) <= Number(p.min_stock_level) && Number(p.stock_quantity) > 0
+        )
+        lowStockProducts = minLevel.map((p: any) => ({ id: p.id, name: p.name, current_stock: p.stock_quantity, critical_level: p.min_stock_level }))
+      }
+    }
+
+    for (const product of lowStockProducts) {
+      const stock = product.current_stock ?? (product as any).stock_quantity
+      const level = product.critical_level ?? (product as any).min_stock_level
       const { data: existingNotification } = await supabase
         .from('notifications')
         .select('id')
@@ -121,13 +137,13 @@ export async function checkLowStock(tenantId: string) {
           tenantId,
           type: 'low_stock',
           title: 'Low Stock Alert',
-          message: `${product.name} is running low (${product.current_stock} units remaining)`,
+          message: `${product.name} is running low (${stock} units remaining)`,
           link: '/inventory',
           metadata: {
             product_id: product.id,
             product_name: product.name,
-            current_stock: product.current_stock,
-            critical_level: product.critical_level
+            current_stock: stock,
+            critical_level: level
           }
         })
       }
@@ -142,15 +158,27 @@ export async function checkLowStock(tenantId: string) {
 
 export async function checkOutOfStock(tenantId: string) {
   try {
-    const { data: outOfStockProducts, error } = await supabase
+    const { data: byStatus, error: errStatus } = await supabase
       .from('products')
       .select('id, name, current_stock')
       .eq('tenant_id', tenantId)
       .eq('stock_status', 'out_of_stock')
 
-    if (error) throw error
+    let outOfStockProducts = (byStatus || []) as { id: string; name: string; current_stock?: number; stock_quantity?: number }[]
 
-    for (const product of outOfStockProducts || []) {
+    if (errStatus || !outOfStockProducts.length) {
+      const { data: byQty, error: errQty } = await supabase
+        .from('products')
+        .select('id, name, stock_quantity')
+        .eq('tenant_id', tenantId)
+        .lte('stock_quantity', 0)
+
+      if (!errQty && byQty?.length) {
+        outOfStockProducts = byQty.map((p: any) => ({ id: p.id, name: p.name, current_stock: p.stock_quantity }))
+      }
+    }
+
+    for (const product of outOfStockProducts) {
       const { data: existingNotification } = await supabase
         .from('notifications')
         .select('id')

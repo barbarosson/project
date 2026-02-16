@@ -1,7 +1,10 @@
+'use client'
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
+import { useLanguage } from '@/contexts/language-context'
 
 interface Activity {
   id: string
@@ -32,6 +35,7 @@ const statusColors = {
 
 export function RecentActivity({ activities }: RecentActivityProps) {
   const router = useRouter()
+  const { t } = useLanguage()
 
   const handleActivityClick = (activity: Activity) => {
     if (activity.link) {
@@ -39,11 +43,19 @@ export function RecentActivity({ activities }: RecentActivityProps) {
     }
   }
 
+  const getStatusLabel = (status?: string) => {
+    if (!status) return ''
+    if (status === 'success') return t.common.success
+    if (status === 'warning') return t.common.warning
+    if (status === 'info') return t.common.info
+    return status
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recent Activity</CardTitle>
-        <CardDescription>Latest transactions and status changes</CardDescription>
+        <CardTitle>{t.dashboard.recentActivity}</CardTitle>
+        <CardDescription>{t.dashboard.recentActivityDescription}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -72,7 +84,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
                         statusColors[activity.status]
                       )}
                     >
-                      {activity.status}
+                      {getStatusLabel(activity.status)}
                     </Badge>
                   )}
                 </div>

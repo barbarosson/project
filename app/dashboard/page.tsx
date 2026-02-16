@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { MetricCard } from '@/components/metric-card'
@@ -16,7 +16,8 @@ import { useAuth } from '@/contexts/auth-context'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar as CalendarComponent } from '@/components/ui/calendar'
-import { format, startOfMonth, endOfMonth } from 'date-fns'
+import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns'
+import { tr, enUS } from 'date-fns/locale'
 import { LoadingSpinner } from '@/components/loading-spinner'
 
 interface DashboardMetrics {
@@ -58,7 +59,8 @@ export default function Dashboard() {
   const { user } = useAuth()
   const { tenantId, loading: tenantLoading } = useTenant()
   const { formatCurrency } = useCurrency()
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
+  const dateLocale = language === 'tr' ? tr : enUS
   const [dateRange, setDateRange] = useState<DateRange>({
     from: startOfMonth(new Date()),
     to: endOfMonth(new Date())
@@ -75,10 +77,23 @@ export default function Dashboard() {
     cashOnHand: 0,
     collectedCash: 0
   })
-  const [cashFlowData, setCashFlowData] = useState<CashFlowData[]>([])
+  const [cashFlowSourceInvoices, setCashFlowSourceInvoices] = useState<any[]>([])
+  const [cashFlowSourceExpenses, setCashFlowSourceExpenses] = useState<any[]>([])
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [showProductTour, setShowProductTour] = useState(false)
+
+  const now = new Date()
+  const defaultCashFlowEnd = format(now, 'yyyy-MM')
+  const defaultCashFlowStart = format(subMonths(now, 5), 'yyyy-MM')
+  const [cashFlowStartMonth, setCashFlowStartMonth] = useState(defaultCashFlowStart)
+  const [cashFlowEndMonth, setCashFlowEndMonth] = useState(defaultCashFlowEnd)
+
+  const cashFlowData = useMemo(
+    () =>
+      calculateCashFlow(cashFlowSourceInvoices, cashFlowSourceExpenses, language, cashFlowStartMonth, cashFlowEndMonth),
+    [cashFlowSourceInvoices, cashFlowSourceExpenses, language, cashFlowStartMonth, cashFlowEndMonth]
+  )
 
   useEffect(() => {
     if (!tenantLoading && tenantId) {
@@ -87,7 +102,7 @@ export default function Dashboard() {
     } else if (!tenantLoading && !tenantId) {
       setLoading(false)
     }
-  }, [tenantId, tenantLoading, dateRange])
+  }, [tenantId, tenantLoading, dateRange, language])
 
   async function checkFirstTimeUser() {
     if (!user) return
@@ -193,8 +208,8 @@ export default function Dashboard() {
         collectedCash
       })
 
-      const monthlyData = calculateCashFlow(allInvoices, allExpenses)
-      setCashFlowData(monthlyData)
+      setCashFlowSourceInvoices(allInvoices)
+      setCashFlowSourceExpenses(allExpenses)
 
       const recentActivities = await generateActivities(tenantId)
       setActivities(recentActivities)
@@ -206,13 +221,19 @@ export default function Dashboard() {
     }
   }
 
-  function calculateCashFlow(invoices: any[], expenses: any[]): CashFlowData[] {
+  function calculateCashFlow(
+    invoices: any[],
+    expenses: any[],
+    lang: 'tr' | 'en' = 'tr',
+    startMonth?: string,
+    endMonth?: string
+  ): CashFlowData[] {
     const monthlyData: { [key: string]: { income: number; expenses: number } } = {}
+    const locale = lang === 'tr' ? 'tr-TR' : 'en-US'
 
     invoices
       .filter((inv: any) => inv.status === 'paid')
       .forEach((invoice: any) => {
-        // Eğer payment_date varsa onu kullan, yoksa issue_date kullan
         const relevantDate = invoice.payment_date ? new Date(invoice.payment_date) : new Date(invoice.issue_date)
         const monthKey = `${relevantDate.getFullYear()}-${String(relevantDate.getMonth() + 1).padStart(2, '0')}`
 
@@ -237,76 +258,139 @@ export default function Dashboard() {
       })
 
     const now = new Date()
-    const last6Months: CashFlowData[] = []
+    let fromDate: Date
+    let toDate: Date
+    if (startMonth && endMonth) {
+      const [sy, sm] = startMonth.split('-').map(Number)
+      const [ey, em] = endMonth.split('-').map(Number)
+      fromDate = new Date(sy, sm - 1, 1)
+      toDate = new Date(ey, em - 1, 1)
+      if (fromDate > toDate) {
+        const t = fromDate
+        fromDate = toDate
+        toDate = t
+      }
+    } else {
+      toDate = new Date(now.getFullYear(), now.getMonth(), 1)
+      fromDate = subMonths(toDate, 5)
+    }
 
-    for (let i = 5; i >= 0; i--) {
-      const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
-      const monthLabel = date.toLocaleString('default', { month: 'short', year: '2-digit' })
-
-      last6Months.push({
-        month: monthLabel,
+    const result: CashFlowData[] = []
+    const cursor = new Date(fromDate.getFullYear(), fromDate.getMonth(), 1)
+    while (cursor <= toDate) {
+      const monthKey = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}`
+      result.push({
+        month: cursor.toLocaleString(locale, { month: 'short', year: '2-digit' }),
         income: monthlyData[monthKey]?.income || 0,
         expenses: monthlyData[monthKey]?.expenses || 0
       })
+      cursor.setMonth(cursor.getMonth() + 1)
     }
-
-    return last6Months
+    return result
   }
 
   async function generateActivities(tenantId: string): Promise<Activity[]> {
     const activities: Activity[] = []
 
     try {
-      const [invoicesRes, customersRes, productsRes] = await Promise.all([
+      const [invoicesRes, customersRes, productsRes, transactionsRes, ordersRes] = await Promise.all([
         supabase
           .from('invoices')
-          .select('id, invoice_number, total, status, created_at')
+          .select('id, invoice_number, amount, total, status, created_at, updated_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
-          .limit(5),
+          .limit(10),
         supabase
           .from('customers')
-          .select('id, name, created_at')
+          .select('id, name, company_title, created_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
-          .limit(5),
+          .limit(10),
         supabase
           .from('products')
           .select('id, name, stock_quantity, min_stock_level')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
-          .limit(50)
+          .limit(50),
+        supabase
+          .from('transactions')
+          .select('id, amount, transaction_type, description, transaction_date, created_at')
+          .eq('tenant_id', tenantId)
+          .order('created_at', { ascending: false })
+          .limit(10)
+          .then(r => r.data || []).catch(() => []),
+        supabase
+          .from('orders')
+          .select('id, order_number, total, status, created_at')
+          .eq('tenant_id', tenantId)
+          .order('created_at', { ascending: false })
+          .limit(5)
+          .then(r => r.data || []).catch(() => [])
       ])
 
       const recentInvoices = invoicesRes.data || []
       const recentCustomers = customersRes.data || []
       const allProducts = productsRes.data || []
+      const recentTransactions = Array.isArray(transactionsRes) ? transactionsRes : []
+      const recentOrders = Array.isArray(ordersRes) ? ordersRes : []
       const lowStockProducts = allProducts
-        .filter((p: any) => p.stock_quantity <= p.min_stock_level)
+        .filter((p: any) => p.min_stock_level != null && Number(p.stock_quantity) <= Number(p.min_stock_level))
         .slice(0, 3)
 
       const allActivities: Array<Activity & { timestamp: Date }> = []
 
       recentInvoices.forEach((invoice: any) => {
+        const amount = Number(invoice.amount ?? invoice.total ?? 0)
+        const date = new Date(invoice.updated_at || invoice.created_at)
         allActivities.push({
           id: `invoice-${invoice.id}`,
           type: 'invoice',
           title: invoice.status === 'paid' ? t.dashboard.paymentReceived : t.dashboard.invoiceCreated,
-          description: `${t.common.invoice} ${invoice.invoice_number} - $${Number(invoice.total).toLocaleString()}`,
-          time: getRelativeTime(new Date(invoice.created_at)),
-          timestamp: new Date(invoice.created_at),
-          status: invoice.status === 'paid' ? 'success' : 'info',
+          description: `${t.common.invoice} ${invoice.invoice_number} - ${formatCurrency(amount)}`,
+          time: getRelativeTime(date),
+          timestamp: date,
+          status: invoice.status === 'paid' ? 'success' : invoice.status === 'overdue' ? 'warning' : 'info',
           link: `/invoices/${invoice.id}`
         })
       })
 
+      recentTransactions.forEach((tx: any) => {
+        const date = new Date(tx.transaction_date || tx.date || tx.created_at)
+        const amount = Number(tx.amount || 0)
+        const isIncome = (tx.transaction_type || tx.type) === 'income'
+        allActivities.push({
+          id: `tx-${tx.id}`,
+          type: 'payment',
+          title: isIncome ? t.dashboard.paymentReceived : (language === 'tr' ? 'Gider kaydı' : 'Expense recorded'),
+          description: (tx.description || (isIncome ? 'Gelir' : 'Gider')) + ' - ' + formatCurrency(amount),
+          time: getRelativeTime(date),
+          timestamp: date,
+          status: isIncome ? 'success' : 'warning',
+          link: '/finance/transactions'
+        })
+      })
+
+      recentOrders.forEach((order: any) => {
+        const total = Number(order.total ?? 0)
+        allActivities.push({
+          id: `order-${order.id}`,
+          type: 'invoice',
+          title: language === 'tr' ? 'Sipariş oluşturuldu' : 'Order created',
+          description: `${language === 'tr' ? 'Sipariş' : 'Order'} ${order.order_number || order.id?.slice(0, 8)} - ${formatCurrency(total)}`,
+          time: getRelativeTime(new Date(order.created_at)),
+          timestamp: new Date(order.created_at),
+          status: 'info',
+          link: '/orders'
+        })
+      })
+
       recentCustomers.forEach((customer: any) => {
+        const displayName = customer.company_title || customer.name || '-'
         allActivities.push({
           id: `customer-${customer.id}`,
           type: 'customer',
           title: t.dashboard.newCustomer,
-          description: t.dashboard.customerAdded.replace('{name}', customer.name),
+          description: t.dashboard.customerAdded.replace('{name}', displayName),
           time: getRelativeTime(new Date(customer.created_at)),
           timestamp: new Date(customer.created_at),
           status: 'info',
@@ -321,8 +405,8 @@ export default function Dashboard() {
           title: t.dashboard.lowStockAlert,
           description: t.dashboard.lowStockMessage
             .replace('{name}', product.name)
-            .replace('{current}', product.stock_quantity)
-            .replace('{min}', product.min_stock_level),
+            .replace('{current}', String(product.stock_quantity))
+            .replace('{min}', String(product.min_stock_level)),
           time: t.dashboard.justNow,
           timestamp: new Date(),
           status: 'warning',
@@ -332,7 +416,7 @@ export default function Dashboard() {
 
       allActivities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
 
-      return allActivities.slice(0, 5).map(({ timestamp, ...activity }) => activity)
+      return allActivities.slice(0, 10).map(({ timestamp, ...activity }) => activity)
     } catch (error) {
       console.error('Error generating activities:', error)
       return []
@@ -378,7 +462,7 @@ export default function Dashboard() {
             <PopoverTrigger asChild>
               <Button variant="outline" className="gap-2 !text-gray-900 !bg-white border-gray-300 hover:!bg-gray-50">
                 <Calendar className="h-4 w-4" />
-                {format(dateRange.from, 'MMM dd')} - {format(dateRange.to, 'MMM dd, yyyy')}
+                {format(dateRange.from, 'MMM dd', { locale: dateLocale })} - {format(dateRange.to, 'MMM dd, yyyy', { locale: dateLocale })}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="end">
@@ -389,6 +473,7 @@ export default function Dashboard() {
                     mode="single"
                     selected={dateRange.from}
                     onSelect={(date) => date && setDateRange({ ...dateRange, from: date })}
+                    locale={dateLocale}
                     initialFocus
                   />
                 </div>
@@ -398,6 +483,7 @@ export default function Dashboard() {
                     mode="single"
                     selected={dateRange.to}
                     onSelect={(date) => date && setDateRange({ ...dateRange, to: date })}
+                    locale={dateLocale}
                   />
                 </div>
                 <div className="flex gap-2">
@@ -450,7 +536,7 @@ export default function Dashboard() {
             value={formatCurrency(metrics.totalRevenue)}
             change={metrics.draftRevenue > 0
               ? `${t.dashboard.confirmed || 'Confirmed'}: ${formatCurrency(metrics.confirmedRevenue)} | ${t.dashboard.draft || 'Draft'}: ${formatCurrency(metrics.draftRevenue)}`
-              : `${format(dateRange.from, 'MMM dd')} - ${format(dateRange.to, 'MMM dd')}`
+              : `${format(dateRange.from, 'MMM dd', { locale: dateLocale })} - ${format(dateRange.to, 'MMM dd', { locale: dateLocale })}`
             }
             changeType="positive"
             icon={TrendingUp}
@@ -471,7 +557,7 @@ export default function Dashboard() {
           <MetricCard
             title={t.dashboard.totalExpenses}
             value={formatCurrency(metrics.totalExpenses)}
-            change={`${format(dateRange.from, 'MMM dd')} - ${format(dateRange.to, 'MMM dd')}`}
+            change={`${format(dateRange.from, 'MMM dd', { locale: dateLocale })} - ${format(dateRange.to, 'MMM dd', { locale: dateLocale })}`}
             changeType="neutral"
             icon={TrendingDown}
             iconColor="bg-red-500"
@@ -501,7 +587,23 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-4">
+            <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-card p-4">
+              <label className="text-sm font-medium text-[#0A2540]">{t.dashboard.cashFlowStartMonth}</label>
+              <input
+                type="month"
+                value={cashFlowStartMonth}
+                onChange={(e) => setCashFlowStartMonth(e.target.value)}
+                className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
+              />
+              <label className="text-sm font-medium text-[#0A2540]">{t.dashboard.cashFlowEndMonth}</label>
+              <input
+                type="month"
+                value={cashFlowEndMonth}
+                onChange={(e) => setCashFlowEndMonth(e.target.value)}
+                className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
+              />
+            </div>
             <CashFlowChart data={cashFlowData} />
           </div>
           <div>

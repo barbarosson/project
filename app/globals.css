@@ -64,32 +64,32 @@
     --logo-header-height: 88px;
     --logo-footer-width: 110px;
     --logo-footer-height: 75px;
-    --header-height: 88px;
-    --header-padding-x: 32px;
-    --nav-item-spacing: 32px;
+    --header-height: 64px;
+    --header-padding-x: 24px;
+    --nav-item-spacing: 24px;
 
     /* Typography - BizimHesap scale */
     --hero-title-font-size: 56px;
     --hero-subtitle-font-size: 20px;
     --section-title-font-size: 40px;
     --subsection-title-font-size: 28px;
-    --body-text-font-size: 18px;
-    --small-text-font-size: 16px;
-    --nav-text-font-size: 16px;
+    --body-text-font-size: 15px;
+    --small-text-font-size: 14px;
+    --nav-text-font-size: 14px;
 
-    /* Text Colors - High Contrast */
-    --heading-text-color: #0A192F;
-    --body-text-color: #0A192F;
+    /* Text Colors - Lacivert, belirgin */
+    --heading-text-color: #0A2540;
+    --body-text-color: #0A2540;
     --text-on-light: #0A192F;
     --text-on-dark: #7DD3FC;
 
     /* Spacing - BizimHesap gaps */
-    --section-padding-top: 144px;
-    --section-padding-bottom: 144px;
-    --section-gap: 96px;
-    --section-gap-md: 64px;
-    --section-gap-sm: 48px;
-    --section-gap-xs: 32px;
+    --section-padding-top: 80px;
+    --section-padding-bottom: 80px;
+    --section-gap: 48px;
+    --section-gap-md: 32px;
+    --section-gap-sm: 24px;
+    --section-gap-xs: 16px;
     --container-max-width: 1280px;
     --container-padding: 24px;
   }

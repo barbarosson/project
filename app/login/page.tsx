@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { useLanguage } from '@/contexts/language-context'
@@ -128,6 +128,8 @@ function LoginContent() {
   const [password, setPassword] = useState('')
   const [confirmPw, setConfirmPw] = useState('')
   const [fullName, setFullName] = useState('')
+  const loginEmailRef = useRef<HTMLInputElement>(null)
+  const loginPasswordRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const errorParam = searchParams.get('error')
@@ -175,13 +177,15 @@ function LoginContent() {
   }
 
   async function handleEmailSignIn() {
-    if (!email || !password) {
+    const emailVal = loginEmailRef.current?.value?.trim() ?? ''
+    const passwordVal = loginPasswordRef.current?.value ?? ''
+    if (!emailVal || !passwordVal) {
       toast.error(l.fillAll)
       return
     }
     setLoading(true)
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data, error } = await supabase.auth.signInWithPassword({ email: emailVal, password: passwordVal })
       if (error) throw error
 
       const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
@@ -396,7 +400,7 @@ function LoginContent() {
     <div className="min-h-screen bg-white">
       <MarketingHeader />
       <main>
-        <section className="stripe-hero-gradient relative min-h-[calc(100vh-80px)] flex items-center justify-center" style={{ paddingTop: '120px', paddingBottom: '120px' }}>
+        <section className="stripe-hero-gradient relative min-h-[calc(100vh-80px)] flex items-center justify-center pt-20 pb-12 px-4 sm:pt-28 sm:pb-20">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-black select-none"
@@ -519,7 +523,7 @@ function LoginContent() {
   return (
     <LandingShell>
       <div
-        className="rounded-2xl p-8 shadow-2xl overflow-hidden animate-fade-in"
+        className="rounded-2xl p-4 sm:p-8 shadow-2xl overflow-hidden animate-fade-in w-full max-w-md"
         style={{
           backgroundColor: 'rgba(255,255,255,0.98)',
           border: '1px solid rgba(255,255,255,0.2)',
@@ -593,17 +597,17 @@ function LoginContent() {
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="email" className="space-y-4 mt-4">
+                <TabsContent value="email" className="space-y-4 mt-4" forceMount hidden={authMethod !== 'email'}>
                   <div className="space-y-2">
                     <Label htmlFor="login-email">{l.email}</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                       <Input
+                        ref={loginEmailRef}
                         id="login-email"
                         type="email"
                         placeholder="ornek@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        autoComplete="email"
                         className="pl-10 rounded-xl"
                         style={{ borderColor: '#E6EBF1' }}
                         disabled={loading}
@@ -616,11 +620,11 @@ function LoginContent() {
                     <div className="relative">
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                       <Input
+                        ref={loginPasswordRef}
                         id="login-password"
                         type="password"
                         placeholder="********"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="current-password"
                         className="pl-10 rounded-xl"
                         style={{ borderColor: '#E6EBF1' }}
                         disabled={loading}

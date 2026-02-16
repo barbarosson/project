@@ -40,7 +40,19 @@ Deno.serve(async (req: Request) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { reconciliation_id }: ReconciliationPayload = await req.json();
+    let reconciliation_id: string | undefined;
+    try {
+      const body = await req.json();
+      reconciliation_id = body?.reconciliation_id != null ? String(body.reconciliation_id) : undefined;
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON body" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
 
     if (!reconciliation_id) {
       return new Response(
@@ -63,9 +75,27 @@ Deno.serve(async (req: Request) => {
       .eq("id", reconciliation_id)
       .maybeSingle();
 
-    if (recError || !rec) {
+    if (recError) {
+      console.error("Reconciliation fetch error:", recError.message, "id:", reconciliation_id);
       return new Response(
-        JSON.stringify({ error: "Reconciliation not found" }),
+        JSON.stringify({
+          error: "Reconciliation not found",
+          details: "Database query failed. Check that the table exists and RLS allows service role access.",
+        }),
+        {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (!rec) {
+      console.error("Reconciliation not found for id:", reconciliation_id);
+      return new Response(
+        JSON.stringify({
+          error: "Reconciliation not found",
+          details: "No row with this id. Ensure the request was saved and you are using the same Supabase project.",
+        }),
         {
           status: 404,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
