@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle2, XCircle, Loader2, Play, AlertTriangle, RefreshCw, Bug, Trash2 } from 'lucide-react'
+import { CheckCircle2, XCircle, Loader2, Play, AlertTriangle, RefreshCw, Bug, Trash2, Github, ExternalLink } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { runFullDiagnostics } from '@/lib/auth-debug'
 import { toast } from 'sonner'
@@ -27,9 +27,26 @@ interface TestCategory {
   tests: TestResult[]
 }
 
+const BOLT_NEW_GITHUB_URL = 'https://bolt.new/~github.com/barbarosson/project/tree/main'
+const GITHUB_REPO_URL = 'https://github.com/barbarosson/project'
+
 const diagT = {
-  tr: { runAuthDiag: 'Tanılamayı Çalıştır', clearCache: 'Önbelleği Temizle', cacheCleared: 'Tüm önbellek temizlendi. Tekrar giriş yapabilirsiniz.' },
-  en: { runAuthDiag: 'Run Diagnostics', clearCache: 'Clear Cache', cacheCleared: 'All cached data cleared. You can now login again.' },
+  tr: {
+    runAuthDiag: 'Tanılamayı Çalıştır',
+    clearCache: 'Önbelleği Temizle',
+    cacheCleared: 'Tüm önbellek temizlendi. Tekrar giriş yapabilirsiniz.',
+    openInBolt: "Bolt.new'da Aç (GitHub'dan güncel)",
+    openInBoltDesc: 'GitHub\'daki güncel kodu Bolt.new\'da yeni bir projede açar.',
+    openGitHub: 'GitHub Repo',
+  },
+  en: {
+    runAuthDiag: 'Run Diagnostics',
+    clearCache: 'Clear Cache',
+    cacheCleared: 'All cached data cleared. You can now login again.',
+    openInBolt: 'Open in Bolt.new (latest from GitHub)',
+    openInBoltDesc: 'Opens the latest code from GitHub in a new Bolt.new project.',
+    openGitHub: 'GitHub Repo',
+  },
 }
 
 export default function DiagnosticsPage() {
@@ -716,6 +733,42 @@ export default function DiagnosticsPage() {
           Comprehensive ERP system health check and error prevention
         </p>
       </header>
+
+      {/* GitHub & Bolt.new Section */}
+      <section aria-label="GitHub and Bolt.new">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Github className="h-5 w-5" />
+              GitHub & Bolt.new
+            </CardTitle>
+            <CardDescription>
+              {t.openInBoltDesc}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-3">
+            <Button
+              id="open-bolt-new-btn"
+              type="button"
+              onClick={() => window.open(BOLT_NEW_GITHUB_URL, '_blank', 'noopener,noreferrer')}
+              className="gap-2"
+              style={{ backgroundColor: '#0A2540' }}
+            >
+              <ExternalLink className="h-4 w-4" />
+              {t.openInBolt}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => window.open(GITHUB_REPO_URL, '_blank', 'noopener,noreferrer')}
+              className="gap-2"
+            >
+              <Github className="h-4 w-4" />
+              {t.openGitHub}
+            </Button>
+          </CardContent>
+        </Card>
+      </section>
 
       {/* Actions Section */}
       <section aria-label="Actions">

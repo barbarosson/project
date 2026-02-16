@@ -242,6 +242,7 @@ export function MergeCustomersDialog({
                       className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded"
                     >
                       <Checkbox
+                        size="sm"
                         id={`customer-${customer.id}`}
                         checked={sourceCustomerIds.includes(customer.id)}
                         onCheckedChange={() => toggleSourceCustomer(customer.id)}

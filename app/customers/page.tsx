@@ -212,7 +212,7 @@ export default function CustomersPage() {
   }
 
   function handleRowClick(customer: Customer, e: React.MouseEvent) {
-    if ((e.target as HTMLElement).closest('button, input[type="checkbox"]')) {
+    if ((e.target as HTMLElement).closest('button, [role="checkbox"]')) {
       return
     }
     setSelectedCustomer(customer)
@@ -313,31 +313,15 @@ export default function CustomersPage() {
 
       for (const customerId of customerIds) {
         const [invoicesResult, proposalsResult, transactionsResult] = await Promise.all([
-          supabase
-            .from('invoices')
-            .select('id')
-            .eq('customer_id', customerId)
-            .eq('tenant_id', tenantId)
-            .limit(1),
-          supabase
-            .from('proposals')
-            .select('id')
-            .eq('customer_id', customerId)
-            .eq('tenant_id', tenantId)
-            .limit(1),
-          supabase
-            .from('transactions')
-            .select('id')
-            .eq('entity_id', customerId)
-            .eq('entity_type', 'customer')
-            .eq('tenant_id', tenantId)
-            .limit(1)
+          supabase.from('invoices').select('id').eq('customer_id', customerId).eq('tenant_id', tenantId).limit(1),
+          supabase.from('proposals').select('id').eq('customer_id', customerId).eq('tenant_id', tenantId).limit(1),
+          supabase.from('transactions').select('id').eq('entity_id', customerId).eq('entity_type', 'customer').eq('tenant_id', tenantId).limit(1)
         ])
 
         const hasRelations =
-          (invoicesResult.data && invoicesResult.data.length > 0) ||
-          (proposalsResult.data && proposalsResult.data.length > 0) ||
-          (transactionsResult.data && transactionsResult.data.length > 0)
+          (invoicesResult.data?.length ?? 0) > 0 ||
+          (proposalsResult.data?.length ?? 0) > 0 ||
+          (transactionsResult.data?.length ?? 0) > 0
 
         if (hasRelations) {
           customersToDeactivate.push(customerId)
@@ -347,38 +331,19 @@ export default function CustomersPage() {
       }
 
       if (customersToDeactivate.length > 0) {
-        const { error: deactivateError } = await supabase
-          .from('customers')
-          .update({ status: 'inactive' })
-          .in('id', customersToDeactivate)
-          .eq('tenant_id', tenantId)
-
-        if (deactivateError) throw deactivateError
+        await supabase.from('customers').update({ status: 'inactive' }).in('id', customersToDeactivate).eq('tenant_id', tenantId)
       }
-
       if (customersToDelete.length > 0) {
-        const { error: deleteError } = await supabase
-          .from('customers')
-          .delete()
-          .in('id', customersToDelete)
-          .eq('tenant_id', tenantId)
-
-        if (deleteError) throw deleteError
+        await supabase.from('customers').delete().in('id', customersToDelete).eq('tenant_id', tenantId)
       }
 
-      const message: string[] = []
-      if (customersToDelete.length > 0) {
-        message.push(`${customersToDelete.length} customer(s) deleted`)
-      }
-      if (customersToDeactivate.length > 0) {
-        message.push(`${customersToDeactivate.length} customer(s) deactivated (had existing invoices/proposals/payments)`)
-      }
-
-      toast.success(message.join(', '))
+      const msg: string[] = []
+      if (customersToDelete.length > 0) msg.push(`${customersToDelete.length} silindi`)
+      if (customersToDeactivate.length > 0) msg.push(`${customersToDeactivate.length} devre dışı bırakıldı`)
+      toast.success(msg.join(', '))
       setSelectedIds(new Set())
       fetchCustomers()
     } catch (error: any) {
-      console.error('Error deleting customers:', error)
       toast.error(error.message || t.customers.failedToDeleteMultiple)
     } finally {
       setIsDeleteDialogOpen(false)
@@ -386,21 +351,18 @@ export default function CustomersPage() {
   }
 
   function toggleSelectAll() {
-    if (selectedIds.size === filteredCustomers.length) {
-      setSelectedIds(new Set())
-    } else {
-      setSelectedIds(new Set(filteredCustomers.map(c => c.id)))
-    }
+    setSelectedIds(prev =>
+      prev.size === filteredCustomers.length ? new Set() : new Set(filteredCustomers.map(c => c.id))
+    )
   }
 
   function toggleSelect(id: string) {
-    const newSelected = new Set(selectedIds)
-    if (newSelected.has(id)) {
-      newSelected.delete(id)
-    } else {
-      newSelected.add(id)
-    }
-    setSelectedIds(newSelected)
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
   }
 
   async function toggleCustomerStatus(customer: Customer, e: React.MouseEvent) {
@@ -485,15 +447,9 @@ export default function CustomersPage() {
         {selectedIds.size > 0 && (
           <Card className="bg-blue-50 border-blue-200">
             <CardContent className="py-3 flex items-center justify-between">
-              <span className="text-sm font-medium">
-                {selectedIds.size} {t.common.selected}
-              </span>
+              <span className="text-sm font-medium">{selectedIds.size} {t.common.selected}</span>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setSelectedIds(new Set())}
-                >
+                <Button variant="outline" size="sm" onClick={() => setSelectedIds(new Set())}>
                   {t.common.cancel}
                 </Button>
                 <Button
@@ -613,11 +569,14 @@ export default function CustomersPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
-                    <TableHead className="w-12">
-                      <Checkbox
-                        checked={selectedIds.size === filteredCustomers.length && filteredCustomers.length > 0}
-                        onCheckedChange={toggleSelectAll}
-                      />
+                    <TableHead className="h-8 w-4 min-w-4 max-w-4 p-0.5 text-center align-middle">
+                      <div className="inline-flex items-center justify-center w-4 h-6">
+                        <Checkbox
+                          size="sm"
+                          checked={filteredCustomers.length > 0 && selectedIds.size === filteredCustomers.length}
+                          onCheckedChange={toggleSelectAll}
+                        />
+                      </div>
                     </TableHead>
                     <TableHead className="font-semibold">{t.customers.companyTitle}</TableHead>
                     <TableHead className="font-semibold">{t.customers.type}</TableHead>
@@ -643,11 +602,14 @@ export default function CustomersPage() {
                         className="cursor-pointer hover:bg-gray-50 transition-colors"
                         onClick={(e) => handleRowClick(customer, e)}
                       >
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <Checkbox
-                            checked={selectedIds.has(customer.id)}
-                            onCheckedChange={() => toggleSelect(customer.id)}
-                          />
+                        <TableCell className="w-4 min-w-4 max-w-4 p-0.5 text-center align-middle" onClick={(e) => e.stopPropagation()}>
+                          <div className="inline-flex items-center justify-center w-4 h-6">
+                            <Checkbox
+                              size="sm"
+                              checked={selectedIds.has(customer.id)}
+                              onCheckedChange={() => toggleSelect(customer.id)}
+                            />
+                          </div>
                         </TableCell>
                         <TableCell>
                           <div>
@@ -699,7 +661,7 @@ export default function CustomersPage() {
                         <TableCell onClick={(e) => e.stopPropagation()}>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
+                              <Button variant="ghost" size="sm" className="bg-slate-100 hover:bg-slate-200 text-slate-800">
                                 {t.common.actions}
                               </Button>
                             </DropdownMenuTrigger>
@@ -760,9 +722,15 @@ export default function CustomersPage() {
 
       <ConfirmDeleteDialog
         open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsDeleteDialogOpen(open)
+          if (!open) {
+            setCustomerToDelete(null)
+            setSelectedIds(new Set())
+          }
+        }}
         onConfirm={customerToDelete ? handleDelete : handleBulkDelete}
-        itemCount={customerToDelete ? undefined : selectedIds.size}
+        itemCount={customerToDelete ? 1 : selectedIds.size}
       />
 
       <MergeCustomersDialog

@@ -441,6 +441,16 @@ header.h-16.bg-white [role="button"] svg {
   fill: currentColor !important;
 }
 
+/* Small table checkboxes - force size so nothing overrides */
+button[role="checkbox"][data-size="sm"] {
+  width: 10px !important;
+  height: 10px !important;
+  min-width: 10px !important;
+  min-height: 10px !important;
+  padding: 0 !important;
+  border-radius: 2px !important;
+}
+
 /* Tiptap Editor Styles */
 .ProseMirror {
   outline: none;

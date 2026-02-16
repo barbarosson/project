@@ -116,7 +116,11 @@ export function ProductTour({ open, onClose }: ProductTourProps) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-[380px] max-h-[min(80vh,480px)] overflow-x-hidden overflow-y-auto p-0 gap-0">
+      <DialogContent
+        id="product-tour-dialog"
+        data-product-tour="dialog"
+        className="max-w-[380px] max-h-[min(80vh,480px)] overflow-x-hidden overflow-y-auto p-0 gap-0"
+      >
         <div className="relative min-w-0">
           <div className="absolute top-0 left-0 right-0 h-0.5 bg-gray-200 rounded-full overflow-hidden">
             <div
@@ -159,52 +163,60 @@ export function ProductTour({ open, onClose }: ProductTourProps) {
                 </CardContent>
               </Card>
 
-              <div className="flex items-center justify-between pt-1.5">
+              <div className="flex items-center justify-between pt-1 gap-1" data-product-tour-nav>
                 <Button
+                  id="product-tour-prev"
+                  data-product-tour="prev"
                   variant="outline"
                   size="sm"
-                  className="h-7 text-[11px] gap-1 px-2"
+                  className="h-6 min-w-0 text-[10px] gap-0.5 px-2 shrink-0"
                   onClick={handlePrevious}
                   disabled={currentStep === 0}
                 >
-                  <ArrowLeft className="h-3 w-3" />
+                  <ArrowLeft className="h-3 w-3 shrink-0" />
                   {language === 'tr' ? 'Geri' : 'Prev'}
                 </Button>
 
-                <div className="flex items-center gap-[3px] shrink-0">
+                <div className="flex items-center gap-1 shrink-0" role="tablist" aria-label={language === 'tr' ? 'Adımlar' : 'Steps'}>
                   {steps.map((_, index) => (
                     <button
                       key={index}
+                      id={`product-tour-step-${index}`}
+                      data-product-tour={`step-${index}`}
+                      role="tab"
+                      aria-selected={index === currentStep}
                       onClick={() => setCurrentStep(index)}
                       className={`rounded-full transition-all shrink-0 ${
-                        index === currentStep
-                          ? 'bg-[#00D4AA]'
-                          : 'bg-gray-300 hover:bg-gray-400'
+                        index === currentStep ? 'bg-[#00D4AA]' : 'bg-gray-300 hover:bg-gray-400'
                       }`}
                       style={{
-                        width: index === currentStep ? 5 : 3,
-                        height: index === currentStep ? 5 : 3,
-                        minWidth: index === currentStep ? 5 : 3,
-                        minHeight: index === currentStep ? 5 : 3,
+                        width: index === currentStep ? 8 : 6,
+                        height: index === currentStep ? 8 : 6,
+                        minWidth: 8,
+                        minHeight: 8,
                       }}
                     />
                   ))}
                 </div>
 
                 <Button
+                  id="product-tour-next"
+                  data-product-tour="next"
                   size="sm"
-                  className="h-7 text-[11px] bg-[#00D4AA] hover:bg-[#00B894] gap-1 px-2"
+                  className="h-6 min-w-0 text-[10px] bg-[#00D4AA] hover:bg-[#00B894] gap-0.5 px-2 shrink-0"
                   onClick={handleNext}
                 >
                   {currentStep === steps.length - 1
                     ? (language === 'tr' ? 'Başla' : 'Start')
                     : (language === 'tr' ? 'İleri' : 'Next')}
-                  <ArrowRight className="h-3 w-3" />
+                  <ArrowRight className="h-3 w-3 shrink-0" />
                 </Button>
               </div>
 
               {currentStep < steps.length - 1 && (
                 <Button
+                  id="product-tour-skip"
+                  data-product-tour="skip"
                   variant="ghost"
                   size="sm"
                   onClick={onClose}
