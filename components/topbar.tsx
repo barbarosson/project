@@ -36,7 +36,9 @@ interface TopbarProps {
 export function Topbar({ onMenuClick }: TopbarProps) {
   const { language, setLanguage, t } = useLanguage()
   const { tenantId } = useTenant()
-  const { signOut, isAdmin } = useAuth()
+  const { user, signOut, isAdmin } = useAuth()
+  const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || t.nav.adminUser
+  const initials = (displayName || 'AD').slice(0, 2).toUpperCase()
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications()
   const router = useRouter()
   const [open, setOpen] = useState(false)
@@ -194,7 +196,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                 onClick={() => router.push('/admin/site-commander')}
               >
                 <Shield size={16} />
-                <span className="whitespace-nowrap">{t.sidebar.admin}</span>
+                <span className="whitespace-nowrap">{t.nav.admin}</span>
               </Button>
             )}
 
@@ -267,29 +269,29 @@ export function Topbar({ onMenuClick }: TopbarProps) {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm" className="h-9 shrink-0 gap-1.5 rounded-md px-2 sm:px-3 text-amber-700 hover:bg-amber-50 text-xs font-medium">
                   <Avatar className="h-6 w-6 shrink-0">
-                    <AvatarFallback className="bg-[#0A2540] text-white text-xs">AD</AvatarFallback>
+                    <AvatarFallback className="bg-[#0A2540] text-white text-xs">{initials}</AvatarFallback>
                   </Avatar>
-                  <span className="max-w-[90px] truncate whitespace-nowrap">Admin User</span>
+                  <span className="max-w-[90px] truncate whitespace-nowrap">{displayName}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
-                  <p className="font-medium text-gray-900">Admin User</p>
-                  <p className="text-xs text-gray-500 font-normal">admin@modulus.com</p>
+                  <p className="font-medium text-gray-900">{displayName}</p>
+                  <p className="text-xs text-gray-500 font-normal">{user?.email ?? ''}</p>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => router.push('/settings')}>
                   <User className="mr-2 h-4 w-4" />
-                  {language === 'tr' ? 'Profil' : 'Profile'}
+                  {t.settings.profile}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => router.push('/settings')}>
                   <Settings className="mr-2 h-4 w-4" />
-                  {language === 'tr' ? 'Ayarlar' : 'Settings'}
+                  {t.nav.settings}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem className="text-red-600" onClick={() => signOut()}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  {language === 'tr' ? 'Çıkış Yap' : 'Log out'}
+                  {t.common.logOut}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

@@ -26,6 +26,8 @@ import { useLanguage } from '@/contexts/language-context'
 import { toast } from 'sonner'
 import { Upload, FileSpreadsheet, Loader2, Download } from 'lucide-react'
 import { formatIBAN, getTaxIdType, validateVKN, validateTCKN, validateTurkishIBAN } from '@/lib/turkish-validations'
+import { createOpeningBalanceInvoice } from '@/lib/customer-opening-balance'
+import * as XLSX from 'xlsx'
 
 const FIELD_LABELS: Record<string, string> = {
   company_title: 'Şirket Ünvanı',
@@ -80,6 +82,7 @@ const CSV_HEADERS = [
   'notes',
   'e_invoice_enabled',
   'status',
+  'opening_balance',
 ] as const
 
 const CSV_HEADERS_TR: Record<string, string> = {
@@ -150,17 +153,27 @@ const CSV_HEADERS_TR: Record<string, string> = {
   'e_invoice_enabled': 'e_invoice_enabled',
   'durum': 'status',
   'status': 'status',
+  'açılış bakiyesi': 'opening_balance',
+  'acilis bakiyesi': 'opening_balance',
+  'açılışbakiyesi': 'opening_balance',
+  'acilisbakiyesi': 'opening_balance',
+  'açılış bakiyesi ': 'opening_balance',
+  'bakiye': 'opening_balance',
+  'opening balance': 'opening_balance',
+  'opening_balance': 'opening_balance',
+  'openingbalance': 'opening_balance',
 }
 
-function parseCSVLine(line: string): string[] {
+function parseCSVLine(line: string, delimiter: string): string[] {
   const result: string[] = []
   let current = ''
   let inQuotes = false
+  const sep = delimiter === ';' ? ';' : ','
   for (let i = 0; i < line.length; i++) {
     const c = line[i]
     if (c === '"') {
       inQuotes = !inQuotes
-    } else if ((c === ',' && !inQuotes) || c === '\t') {
+    } else if ((c === sep && !inQuotes) || (delimiter === ',' && c === '\t')) {
       result.push(current.trim())
       current = ''
     } else {
@@ -171,16 +184,91 @@ function parseCSVLine(line: string): string[] {
   return result
 }
 
+function detectDelimiter(firstLine: string): ',' | ';' {
+  const byComma = parseCSVLine(firstLine, ',').length
+  const bySemicolon = parseCSVLine(firstLine, ';').length
+  return bySemicolon > byComma ? ';' : ','
+}
+
 function parseCSV(text: string): { headers: string[]; rows: string[][] } {
-  const lines = text.split(/\r?\n/).filter((l) => l.trim())
+  const raw = text.replace(/^\uFEFF/, '').trim()
+  const lines = raw.split(/\r?\n/).filter((l) => l.trim())
   if (lines.length === 0) return { headers: [], rows: [] }
-  const headers = parseCSVLine(lines[0])
-  const rows = lines.slice(1).map((l) => parseCSVLine(l)).filter((r) => r.some((c) => c))
+  const delimiter = detectDelimiter(lines[0])
+  const headers = parseCSVLine(lines[0], delimiter)
+  let rows = lines.slice(1).map((l) => parseCSVLine(l, delimiter)).filter((r) => r.some((c) => c))
+  // Bakiye yanlışlıkla sonraki satıra düşmüşse (tek sütunlu satır sayıysa) önceki satıra ekle
+  const merged: string[][] = []
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i]
+    if (row.length === 1 && headers.length > 1 && /^-?\d+([.,]\d+)?$/.test(String(row[0]).trim().replace(/\s/g, ''))) {
+      if (merged.length > 0 && merged[merged.length - 1].length === headers.length - 1)
+        merged[merged.length - 1] = [...merged[merged.length - 1], row[0]]
+      else
+        merged.push(row)
+    } else {
+      merged.push(row)
+    }
+  }
+  return { headers, rows: merged }
+}
+
+function cellToString(val: unknown): string {
+  if (val == null) return ''
+  if (typeof val === 'number') return String(val)
+  if (typeof val === 'boolean') return val ? '1' : '0'
+  if (val instanceof Date) return val.toISOString().slice(0, 10)
+  return String(val).trim()
+}
+
+function parseExcel(buffer: ArrayBuffer): { headers: string[]; rows: string[][] } {
+  const wb = XLSX.read(buffer, { type: 'array' })
+  const firstSheet = wb.Sheets[wb.SheetNames[0]]
+  if (!firstSheet) return { headers: [], rows: [] }
+  const aoa = XLSX.utils.sheet_to_json<any[]>(firstSheet, { header: 1, defval: '' }) as unknown[][]
+  if (aoa.length === 0) return { headers: [], rows: [] }
+  const headers = (aoa[0] || []).map(cellToString)
+  const colCount = headers.length
+  const rows = aoa.slice(1)
+    .map((row) => {
+      const arr = (Array.isArray(row) ? row : []).map(cellToString)
+      // Excel satırları bazen kısa döner; son sütun (bakiye) kaybolmasın diye başlık kadar doldur
+      while (arr.length < colCount) arr.push('')
+      return arr
+    })
+    .filter((r) => r.some((c) => c !== ''))
   return { headers, rows }
 }
 
 function normalizeHeader(h: string): string {
   return h.toLowerCase().replace(/\s+/g, ' ').trim()
+}
+
+function parseOpeningBalance(value: string): number {
+  const s = String(value || '').replace(/\s/g, '').trim()
+  if (!s) return 0
+  const negative = s.startsWith('-')
+  const numPart = negative ? s.slice(1) : s
+  let normalized = numPart
+  if (numPart.includes(',') && numPart.includes('.')) {
+    const lastComma = numPart.lastIndexOf(',')
+    const lastDot = numPart.lastIndexOf('.')
+    if (lastComma > lastDot) {
+      normalized = numPart.replace(/\./g, '').replace(',', '.')
+    } else {
+      normalized = numPart.replace(/,/g, '')
+    }
+  } else if (numPart.includes(',')) {
+    const parts = numPart.split(',')
+    normalized = parts.length > 1 && parts[parts.length - 1].length <= 2
+      ? numPart.replace(/\./g, '').replace(',', '.')
+      : numPart.replace(/,/g, '')
+  } else {
+    normalized = numPart.replace(/\./g, '')
+  }
+  const n = parseFloat(normalized)
+  if (Number.isNaN(n)) return 0
+  return negative ? -n : n
 }
 
 function mapRowToCustomer(
@@ -257,22 +345,59 @@ function mapRowToCustomer(
     e_invoice_enabled,
     status,
     balance: 0,
+    opening_balance: (() => {
+      const byKey = get('opening_balance')
+      if (byKey !== '') return parseOpeningBalance(byKey)
+      // Herhangi bir sütun başlığı "bakiye" veya "balance" içeriyorsa o sütunu kullan
+      for (let i = 0; i < headers.length; i++) {
+        const h = normalizeHeader(headers[i] || '')
+        if (h.includes('bakiye') || h.includes('balance')) {
+          const v = values[i] !== undefined && values[i] !== null ? String(values[i]).trim() : ''
+          const p = parseOpeningBalance(v)
+          if (p !== 0) return p
+          break
+        }
+      }
+      const lastIdx = headers.length - 1
+      if (lastIdx >= 0 && values[lastIdx] !== undefined) {
+        const lastHeader = normalizeHeader(headers[lastIdx] || '')
+        if (lastHeader.includes('bakiye') || lastHeader.includes('balance')) return parseOpeningBalance(String(values[lastIdx]))
+      }
+      // Şablonda bakiye 26. sütun (index 25): satırda 26+ sütun varsa 26. hücreyi dene (Excel için)
+      if (values.length >= 26) {
+        const p = parseOpeningBalance(String(values[25] ?? '').trim())
+        if (p !== 0) return p
+      }
+      // Bakiye sütunu bulundu ama hücre boştu; son hücreyi dene (Excel son sütun bazen eksik gelir)
+      if (values.length > 0) {
+        const lastVal = String(values[values.length - 1] ?? '').trim()
+        const p = parseOpeningBalance(lastVal)
+        if (p !== 0) return p
+      }
+      // Sondan en fazla 3 hücreye bak
+      for (let i = values.length - 1; i >= Math.max(0, values.length - 3); i--) {
+        if (values[i] === undefined || values[i] === null) continue
+        const parsed = parseOpeningBalance(String(values[i]).trim())
+        if (parsed !== 0) return parsed
+      }
+      return 0
+    })(),
   }
 }
 
-const TR_HEADERS = 'Şirket Ünvanı,Yetkili,Hesap Tipi,Vergi Dairesi,Vergi No,E-posta,Telefon,Adres,İl,İlçe,Posta Kodu,Ülke,Ödeme Vadesi,Vade Tipi,Banka Adı,Hesap Sahibi,Hesap No,IBAN,Şube,SWIFT,Web,Sektör,Notlar,E-Fatura,Durum'
+const TR_HEADERS = 'Şirket Ünvanı,Yetkili,Hesap Tipi,Vergi Dairesi,Vergi No,E-posta,Telefon,Adres,İl,İlçe,Posta Kodu,Ülke,Ödeme Vadesi,Vade Tipi,Banka Adı,Hesap Sahibi,Hesap No,IBAN,Şube,SWIFT,Web,Sektör,Notlar,E-Fatura,Durum,Açılış Bakiyesi'
 const EN_HEADERS = CSV_HEADERS.join(',')
 
 const TEMPLATE_ROWS_TR = [
-  'Örnek Müşteri A.Ş.,Ahmet Yılmaz,müşteri,Kadıköy VD,1234567890,info@ornek.com,05321234567,Örnek Mah. No:1,Kadıköy,,34000,Türkiye,30,net,Ziraat Bankası,Örnek Şirket,12345678,TR00 0000 0000 0000 0000 0000 00,,,https://ornek.com,Teknoloji,Örnek not,hayır,aktif',
-  'Örnek Tedarikçi Ltd.,Mehmet Kaya,tedarikçi,Beşiktaş VD,9876543210,tedarik@ornek.com,05329876543,Sanayi Cad. No:5,İstanbul,,34000,Türkiye,60,net,İş Bankası,Tedarikçi Firma,87654321,TR00 0000 0000 0000 0000 0000 01,,,https://tedarik.com,Üretim,Tedarikçi notu,hayır,aktif',
-  'Örnek Her İkisi A.Ş.,Ayşe Demir,her ikisi,Şişli VD,5555555555,info@herikisi.com,05325555555,Merkez Mah.,İstanbul,,34394,Türkiye,30,net,Yapı Kredi,Her İkisi Firma,11223344,TR00 0000 0000 0000 0000 0000 02,,,,Hem müşteri hem tedarikçi,hayır,aktif',
+  'Örnek Müşteri A.Ş.,Ahmet Yılmaz,müşteri,Kadıköy VD,1234567890,info@ornek.com,05321234567,Örnek Mah. No:1,Kadıköy,,34000,Türkiye,30,net,Ziraat Bankası,Örnek Şirket,12345678,TR00 0000 0000 0000 0000 0000 00,,,https://ornek.com,Teknoloji,Örnek not,hayır,aktif,5000',
+  'Örnek Tedarikçi Ltd.,Mehmet Kaya,tedarikçi,Beşiktaş VD,9876543210,tedarik@ornek.com,05329876543,Sanayi Cad. No:5,İstanbul,,34000,Türkiye,60,net,İş Bankası,Tedarikçi Firma,87654321,TR00 0000 0000 0000 0000 0000 01,,,https://tedarik.com,Üretim,Tedarikçi notu,hayır,aktif,-1500',
+  'Örnek Her İkisi A.Ş.,Ayşe Demir,her ikisi,Şişli VD,5555555555,info@herikisi.com,05325555555,Merkez Mah.,İstanbul,,34394,Türkiye,30,net,Yapı Kredi,Her İkisi Firma,11223344,TR00 0000 0000 0000 0000 0000 02,,,,Hem müşteri hem tedarikçi,hayır,aktif,0',
 ]
 
 const TEMPLATE_ROWS_EN = [
-  'Example Customer Inc.,John Doe,customer,Downtown Tax Office,1234567890,info@example.com,+901234567890,123 Main St,Istanbul,,34000,Turkey,30,net,Bank of Example,Example Corp,12345678,TR00 0000 0000 0000 0000 0000 00,,,https://example.com,Technology,Sample note,false,active',
-  'Example Vendor Ltd.,Jane Smith,vendor,Industrial Tax Office,9876543210,vendor@example.com,+909876543210,456 Industrial Ave,Istanbul,,34000,Turkey,60,net,Business Bank,Vendor Co,87654321,TR00 0000 0000 0000 0000 0000 01,,,https://vendor.com,Manufacturing,Vendor note,false,active',
-  'Example Both LLC,Alex Brown,both,Central Tax Office,5555555555,info@both.com,+905555555555,789 Center St,Istanbul,,34394,Turkey,30,net,Credit Bank,Both Company,11223344,TR00 0000 0000 0000 0000 0000 02,,,,Customer and vendor,false,active',
+  'Example Customer Inc.,John Doe,customer,Downtown Tax Office,1234567890,info@example.com,+901234567890,123 Main St,Istanbul,,34000,Turkey,30,net,Bank of Example,Example Corp,12345678,TR00 0000 0000 0000 0000 0000 00,,,https://example.com,Technology,Sample note,false,active,5000',
+  'Example Vendor Ltd.,Jane Smith,vendor,Industrial Tax Office,9876543210,vendor@example.com,+909876543210,456 Industrial Ave,Istanbul,,34000,Turkey,60,net,Business Bank,Vendor Co,87654321,TR00 0000 0000 0000 0000 0000 01,,,https://vendor.com,Manufacturing,Vendor note,false,active,-1500',
+  'Example Both LLC,Alex Brown,both,Central Tax Office,5555555555,info@both.com,+905555555555,789 Center St,Istanbul,,34394,Turkey,30,net,Credit Bank,Both Company,11223344,TR00 0000 0000 0000 0000 0000 02,,,,Customer and vendor,false,active,0',
 ]
 
 function getTemplateCsv(lang: 'tr' | 'en'): string {
@@ -335,42 +460,58 @@ export function CustomerCsvImportDialog({
     setParseError(null)
     setPreview(null)
     if (!f) return
-    if (!f.name.toLowerCase().endsWith('.csv') && !f.name.toLowerCase().endsWith('.xlsx')) {
-      setParseError('Lütfen .csv dosyası seçin.')
+    const isXlsx = f.name.toLowerCase().endsWith('.xlsx')
+    if (!f.name.toLowerCase().endsWith('.csv') && !isXlsx) {
+      setParseError('Lütfen .csv veya .xlsx dosyası seçin.')
       return
     }
-    if (!f.name.toLowerCase().endsWith('.csv')) {
-      setParseError('Şu an sadece .csv destekleniyor. Excel dosyasını "CSV (Virgülle Ayrılmış)" olarak kaydedin.')
-      return
-    }
-    const reader = new FileReader()
-    reader.onload = () => {
-      try {
-        const text = String(reader.result)
-        const { headers, rows } = parseCSV(text)
-        if (headers.length === 0) {
-          setParseError('CSV başlıkları bulunamadı.')
-          return
+    if (isXlsx) {
+      const reader = new FileReader()
+      reader.onload = () => {
+        try {
+          const { headers, rows } = parseExcel(reader.result as ArrayBuffer)
+          if (headers.length === 0) {
+            setParseError('Excel\'de başlık satırı bulunamadı.')
+            return
+          }
+          setPreview({ headers, rows, count: rows.length })
+        } catch (err) {
+          setParseError('Excel dosyası okunamadı.')
         }
-        setPreview({ headers, rows, count: rows.length })
-      } catch (err) {
-        setParseError('Dosya okunamadı.')
       }
+      reader.readAsArrayBuffer(f)
+    } else {
+      const reader = new FileReader()
+      reader.onload = () => {
+        try {
+          const text = String(reader.result)
+          const { headers, rows } = parseCSV(text)
+          if (headers.length === 0) {
+            setParseError('CSV başlıkları bulunamadı.')
+            return
+          }
+          setPreview({ headers, rows, count: rows.length })
+        } catch (err) {
+          setParseError('Dosya okunamadı.')
+        }
+      }
+      reader.readAsText(f, 'UTF-8')
     }
-    reader.readAsText(f, 'UTF-8')
   }
 
   const handleImport = async () => {
     if (!tenantId || !file || !preview) return
     setLoading(true)
     try {
-      const text = await new Promise<string>((res, rej) => {
-        const r = new FileReader()
-        r.onload = () => res(String(r.result))
-        r.onerror = rej
-        r.readAsText(file, 'UTF-8')
-      })
-      const { headers, rows } = parseCSV(text)
+      const isXlsx = file.name.toLowerCase().endsWith('.xlsx')
+      const { headers, rows } = isXlsx
+        ? parseExcel(await file.arrayBuffer())
+        : parseCSV(await new Promise<string>((res, rej) => {
+            const r = new FileReader()
+            r.onload = () => res(String(r.result))
+            r.onerror = rej
+            r.readAsText(file, 'UTF-8')
+          }))
       const failedDetails: { row: number; company: string; reason: string }[] = []
       const validated: { rowIndex: number; company: string; customer: Record<string, unknown> }[] = []
 
@@ -443,10 +584,24 @@ export function CustomerCsvImportDialog({
       }
 
       const BATCH = 50
+      const lang = language === 'en' ? 'en' : 'tr'
       for (let i = 0; i < toInsert.length; i += BATCH) {
-        const batch = toInsert.slice(i, i + BATCH).map((x) => x.data)
-        const { error } = await supabase.from('customers').insert(batch)
+        const chunk = toInsert.slice(i, i + BATCH)
+        const batch = chunk.map((x) => {
+          const { opening_balance: _ob, balance: _b, ...rest } = x.data as Record<string, unknown>
+          return rest
+        })
+        const { data: inserted, error } = await supabase.from('customers').insert(batch).select('id')
         if (error) throw error
+        for (let j = 0; j < chunk.length && inserted?.[j]; j++) {
+          const ob = Number((chunk[j].data as any).opening_balance) || 0
+          if (ob !== 0) {
+            const res = await createOpeningBalanceInvoice(tenantId!, inserted[j].id, ob, lang)
+            if (!res.ok) {
+              toast.error(language === 'tr' ? `Bakiye faturası oluşturulamadı (${chunk[j].company}): ${res.error}` : `Opening balance invoice failed (${chunk[j].company}): ${res.error}`)
+            }
+          }
+        }
       }
 
       const report: ImportReport = {
@@ -525,10 +680,24 @@ export function CustomerCsvImportDialog({
         if (error) throw error
       }
       const BATCH = 50
+      const lang = language === 'en' ? 'en' : 'tr'
       for (let i = 0; i < pendingImport.toInsert.length; i += BATCH) {
-        const batch = pendingImport.toInsert.slice(i, i + BATCH).map((x) => x.data)
-        const { error } = await supabase.from('customers').insert(batch)
+        const chunk = pendingImport.toInsert.slice(i, i + BATCH)
+        const batch = chunk.map((x) => {
+          const { opening_balance: _ob, balance: _b, ...rest } = x.data as Record<string, unknown>
+          return rest
+        })
+        const { data: inserted, error } = await supabase.from('customers').insert(batch).select('id')
         if (error) throw error
+        for (let j = 0; j < chunk.length && inserted?.[j]; j++) {
+          const ob = Number((chunk[j].data as any).opening_balance) || 0
+          if (ob !== 0) {
+            const res = await createOpeningBalanceInvoice(tenantId!, inserted[j].id, ob, lang)
+            if (!res.ok) {
+              toast.error(language === 'tr' ? `Bakiye faturası oluşturulamadı (${chunk[j].company}): ${res.error}` : `Opening balance invoice failed (${chunk[j].company}): ${res.error}`)
+            }
+          }
+        }
       }
       const successDetails = [
         ...pendingImport.toUpdate.map((x) => ({ row: x.rowIndex, company: x.company })),
@@ -556,16 +725,28 @@ export function CustomerCsvImportDialog({
     }
   }
 
-  const handleDownloadTemplate = () => {
+  const handleDownloadTemplate = (format: 'csv' | 'xlsx') => {
     const lang = language === 'en' ? 'en' : 'tr'
-    const csv = getTemplateCsv(lang)
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = lang === 'tr' ? 'cari_import_sablonu.csv' : 'customer_import_template.csv'
-    a.click()
-    URL.revokeObjectURL(url)
+    if (format === 'xlsx') {
+      const headerLine = lang === 'tr' ? TR_HEADERS : EN_HEADERS
+      const rowLines = lang === 'tr' ? TEMPLATE_ROWS_TR : TEMPLATE_ROWS_EN
+      const headerArr = parseCSVLine(headerLine, ',')
+      const rowArrs = rowLines.map((line) => parseCSVLine(line, ','))
+      const aoa = [headerArr, ...rowArrs]
+      const ws = XLSX.utils.aoa_to_sheet(aoa)
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, lang === 'tr' ? 'Cariler' : 'Customers')
+      XLSX.writeFile(wb, lang === 'tr' ? 'cari_import_sablonu.xlsx' : 'customer_import_template.xlsx')
+    } else {
+      const csv = getTemplateCsv(lang)
+      const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = lang === 'tr' ? 'cari_import_sablonu.csv' : 'customer_import_template.csv'
+      a.click()
+      URL.revokeObjectURL(url)
+    }
   }
 
   const handleClose = () => {
@@ -668,8 +849,8 @@ export function CustomerCsvImportDialog({
           <DialogTitle>CSV ile Cari İçe Aktar</DialogTitle>
           <DialogDescription>
             {language === 'tr'
-              ? 'CSV dosyanızda ilk satır sütun başlıkları olmalıdır. Şablonu indirip doldurup yükleyebilirsiniz.'
-              : 'The first row of your CSV must be column headers. You can download the template and fill it in.'}
+              ? 'CSV veya Excel dosyasında ilk satır sütun başlıkları olmalıdır. Excel şablonu ile sütunlar ayrı kalır; şablonu indirip doldurup yükleyebilirsiniz.'
+              : 'The first row must be column headers. Use the Excel template to keep columns separate; download, fill in, and upload.'}
             <span className="mt-2 block text-xs text-muted-foreground">
               {language === 'tr'
                 ? <>Hesap Tipi: <strong>müşteri</strong>, <strong>tedarikçi</strong>, <strong>her ikisi</strong>. Durum: <strong>aktif</strong> / <strong>pasif</strong>. E-Fatura: <strong>evet</strong> / <strong>hayır</strong>.</>
@@ -678,15 +859,19 @@ export function CustomerCsvImportDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={handleDownloadTemplate} className="flex items-center gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="outline" onClick={() => handleDownloadTemplate('csv')} className="flex items-center gap-2">
               <Download className="h-4 w-4" />
-              Şablon İndir
+              CSV Şablonu
+            </Button>
+            <Button type="button" variant="outline" onClick={() => handleDownloadTemplate('xlsx')} className="flex items-center gap-2">
+              <Download className="h-4 w-4" />
+              Excel Şablonu
             </Button>
             <input
               ref={inputRef}
               type="file"
-              accept=".csv"
+              accept=".csv,.xlsx"
               className="hidden"
               onChange={handleFileChange}
             />

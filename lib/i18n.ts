@@ -33,6 +33,7 @@ export const translations = {
       support: 'Support & Help',
       settings: 'Settings',
       admin: 'Admin',
+      adminUser: 'Admin User',
       diagnostics: 'System Diagnostics',
     },
     common: {
@@ -119,6 +120,7 @@ export const translations = {
       disabled: 'Disabled',
       details: 'Details',
       settings: 'Settings',
+      logOut: 'Log out',
       more: 'More',
       less: 'Less',
       show: 'Show',
@@ -487,6 +489,7 @@ export const translations = {
     },
     settings: {
       title: 'Settings',
+      profile: 'Profile',
       companyInfo: 'Company Information',
       language: 'Language',
       currency: 'Currency',
@@ -1163,6 +1166,7 @@ export const translations = {
       support: 'Destek ve Yardım',
       settings: 'Ayarlar',
       admin: 'Yönetim',
+      adminUser: 'Yönetici',
       diagnostics: 'Sistem Testleri',
     },
     common: {
@@ -1249,6 +1253,7 @@ export const translations = {
       disabled: 'Devre Dışı',
       details: 'Detaylar',
       settings: 'Ayarlar',
+      logOut: 'Çıkış Yap',
       more: 'Daha Fazla',
       less: 'Daha Az',
       show: 'Göster',
@@ -1617,6 +1622,7 @@ export const translations = {
     },
     settings: {
       title: 'Ayarlar',
+      profile: 'Profil',
       companyInfo: 'Şirket Bilgileri',
       language: 'Dil',
       currency: 'Para Birimi',

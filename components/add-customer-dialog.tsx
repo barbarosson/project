@@ -44,6 +44,7 @@ import {
   formatIBAN,
   getTaxIdType
 } from '@/lib/turkish-validations'
+import { createOpeningBalanceInvoice as createOpeningBalanceInvoiceLib } from '@/lib/customer-opening-balance'
 import {
   getDistrictsByProvince,
   hasDistrictData
@@ -382,8 +383,14 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
 
       if (error) throw error
 
-      if (formData.opening_balance !== 0 && data && data[0]) {
-        await createOpeningBalanceInvoice(data[0].id, formData.opening_balance)
+      if (formData.opening_balance !== 0 && data && data[0] && tenantId) {
+        const res = await createOpeningBalanceInvoiceLib(tenantId, data[0].id, formData.opening_balance, language)
+        if (res.ok) {
+          const msg = formData.opening_balance < 0
+            ? (language === 'tr' ? 'Açılış bakiyesi için devir iade faturası oluşturuldu.' : 'Opening balance refund invoice created.')
+            : (language === 'tr' ? 'Açılış bakiyesi için devir faturası oluşturuldu.' : 'Opening balance invoice created.')
+          toast.success(msg)
+        } else toast.error(res.error || (language === 'tr' ? 'Devir faturası oluşturulamadı' : 'Failed to create opening balance invoice'))
       }
 
       toast.success(t.toast.customerAdded)
@@ -394,30 +401,6 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
       toast.error(error.message || t.toast.customerError)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const createOpeningBalanceInvoice = async (customerId: string, balance: number) => {
-    try {
-      const invoiceData = {
-        customer_id: customerId,
-        invoice_number: `DEV-${Date.now()}`,
-        issue_date: new Date().toISOString().split('T')[0],
-        due_date: new Date().toISOString().split('T')[0],
-        subtotal: Math.abs(balance),
-        total: Math.abs(balance),
-        tax_amount: 0,
-        status: balance > 0 ? 'paid' : 'unpaid',
-        notes: 'Devir Faturası - Açılış bakiyesi',
-        tenant_id: tenantId,
-        type: balance > 0 ? 'income' : 'expense'
-      }
-
-      await supabase.from('invoices').insert([invoiceData])
-      toast.success('Açılış bakiyesi için devir faturası oluşturuldu')
-    } catch (error) {
-      console.error('Error creating opening invoice:', error)
-      toast.error('Devir faturası oluşturulamadı')
     }
   }
 
