@@ -539,7 +539,7 @@ export function CustomerCsvImportDialog({
         return
       }
 
-      const vknList = [...new Set(validated.map((v) => v.customer.tax_number as string).filter(Boolean))]
+      const vknList = Array.from(new Set(validated.map((v) => v.customer.tax_number as string).filter(Boolean)))
       let existingByVkn: Map<string, any> = new Map()
       if (vknList.length > 0) {
         const { data: existingRows } = await supabase
