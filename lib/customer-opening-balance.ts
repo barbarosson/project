@@ -22,6 +22,7 @@ export async function createOpeningBalanceInvoice(
       ? (language === 'tr' ? 'Devir Faturası (İade) - Açılış bakiyesi' : 'Opening balance invoice (Refund)')
       : (language === 'tr' ? 'Devir Faturası - Açılış bakiyesi' : 'Opening balance invoice')
 
+    // Devir faturasında KDV kesinlikle 0 (total_vat: 0, tax_amount: 0)
     const invoicePayload: Record<string, unknown> = {
       tenant_id: tenantId,
       customer_id: customerId,

@@ -539,9 +539,7 @@ export function CustomerCsvImportDialog({
         return
       }
 
-      // DÜZELTME: Netlify hatasını önlemek için Array.from(new Set(...)) kullanıldı.
-      const vknList = Array.from(new Set(validated.map((v) => v.customer.tax_number as string).filter(Boolean)))
-      
+      const vknList = [...new Set(validated.map((v) => v.customer.tax_number as string).filter(Boolean))]
       let existingByVkn: Map<string, any> = new Map()
       if (vknList.length > 0) {
         const { data: existingRows } = await supabase
@@ -576,10 +574,7 @@ export function CustomerCsvImportDialog({
         toUpdate.push({ existing, newData: v.customer, rowIndex: v.rowIndex, company: v.company })
       }
 
-      const allFailed = [
-        ...failedDetails, 
-        ...skippedSameType.map((s) => ({ row: s.rowIndex, company: s.company, reason: 'Aynı VKN ve hesap tipinde kayıt zaten var' as const }))
-      ]
+      const allFailed = [...failedDetails, ...skippedSameType.map((s) => ({ row: s.rowIndex, company: s.company, reason: 'Aynı VKN ve hesap tipinde kayıt zaten var' as const }))]
 
       if (toUpdate.length > 0) {
         setPendingImport({ toInsert, toUpdate, skippedSameType, initialFailedDetails: failedDetails })
