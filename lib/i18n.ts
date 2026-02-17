@@ -36,6 +36,12 @@ export const translations = {
       adminUser: 'Admin User',
       diagnostics: 'System Diagnostics',
     },
+    // DÜZELTME: Topbar.tsx tarafından beklenen sidebar anahtarı eklendi
+    sidebar: {
+      admin: 'Admin',
+      superAdmin: 'Super Admin',
+      settings: 'Settings',
+    },
     common: {
       add: 'Add',
       edit: 'Edit',
@@ -470,7 +476,7 @@ export const translations = {
       limitedTimeOffer: 'Limited Time Offer: Clear Out Sale!',
       specialDiscountInside: 'Special Discount Inside - Don\'t Miss Out!',
       reEngagementCampaign: 'Re-Engagement Campaign for Inactive Customers',
-      targetInactiveCustomers: 'Target customers who haven\'t made a purchase recently with a special comeback offer.',
+      targetInactiveCustomers: 'Target customers who haven\'t ordered lately with a special comeback offer.',
       weMissYouSubject: 'We Miss You! Here\'s 10% Off Your Next Order',
       comeBackAndSave: 'Come Back and Save - Special Offer Inside',
       welcomeBackDiscount: 'Your Exclusive Welcome Back Discount',
@@ -1140,7 +1146,7 @@ export const translations = {
       customers: 'Cari Yönetimi',
       inventory: 'Ürün ve Hizmetler',
       warehouses: 'Depolar',
-      branches: 'Subeler',
+      branches: 'Şubeler',
       invoices: 'Faturalar',
       proposals: 'Teklifler',
       expenses: 'Giderler',
@@ -1156,7 +1162,7 @@ export const translations = {
       trendAgent: 'Trend Ürünler',
       orders: 'Siparişler',
       projects: 'Projeler',
-      production: 'Uretim Takip',
+      production: 'Üretim Takip',
       aiProductionAdvisor: 'AI Üretim Stratejisti',
       marketplace: 'Pazaryeri',
       edocuments: 'E-Belgeler',
@@ -1168,6 +1174,12 @@ export const translations = {
       admin: 'Yönetim',
       adminUser: 'Yönetici',
       diagnostics: 'Sistem Testleri',
+    },
+    // DÜZELTME: Topbar.tsx tarafından beklenen sidebar anahtarı eklendi
+    sidebar: {
+      admin: 'Yönetim',
+      superAdmin: 'Süper Yönetici',
+      settings: 'Ayarlar',
     },
     common: {
       add: 'Ekle',
@@ -1263,7 +1275,7 @@ export const translations = {
     },
     dashboard: {
       title: 'Kontrol Paneli',
-      welcomeMessage: 'Hoş geldiniz! Akıllı finansal özet sizini bekliyor.',
+      welcomeMessage: 'Hoş geldiniz! Akıllı finansal özet sizi bekliyor.',
       loadingDashboard: 'Kontrol paneli yükleniyor...',
       totalRevenue: 'Toplam Gelir',
       totalExpenses: 'Toplam Gider',
