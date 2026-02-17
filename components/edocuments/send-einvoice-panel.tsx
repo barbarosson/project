@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
-import { sendInvoice, sendEArchive, checkTaxpayer } from '@/lib/nes-api'
+import { sendInvoice, sendEArchive } from '@/lib/nes-api'
 import { toast } from 'sonner'
 import {
-  Send, Loader2, FileText, CheckCircle2, AlertTriangle, ArrowRight,
+  Send, Loader2, FileText, AlertTriangle,
 } from 'lucide-react'
 
 interface SendEInvoicePanelProps {
@@ -72,7 +72,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
 
   async function handleSendEInvoice() {
     if (!selectedInvoiceId) {
-      toast.error(isTr ? 'Lutfen bir fatura secin' : 'Please select an invoice')
+      toast.error(isTr ? 'Lütfen bir fatura seçin' : 'Please select an invoice')
       return
     }
 
@@ -84,7 +84,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
         .eq('id', selectedInvoiceId)
         .single()
 
-      if (invError || !invoice) throw new Error(isTr ? 'Fatura bulunamadi' : 'Invoice not found')
+      if (invError || !invoice) throw new Error(isTr ? 'Fatura bulunamadı' : 'Invoice not found')
 
       const { data: lineItems } = await supabase
         .from('invoice_line_items')
@@ -107,7 +107,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
         customer = c
       }
 
-      const { data: edoc } = await supabase
+      const { data: edoc, error: insertError } = await supabase
         .from('edocuments')
         .insert({
           tenant_id: tenantId,
@@ -130,6 +130,8 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
         .select()
         .single()
 
+      if (insertError) throw insertError
+
       const nesInvoiceData = {
         InvoiceNumber: invoice.invoice_number,
         IssueDate: invoice.issue_date || new Date().toISOString().split('T')[0],
@@ -141,7 +143,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
         ReceiverTitle: customer?.name || '',
         ReceiverAddress: customer?.address || '',
         ReceiverCity: customer?.city || '',
-        ReceiverCountry: customer?.country || 'Turkiye',
+        ReceiverCountry: customer?.country || 'Türkiye',
         TaxExclusiveAmount: invoice.subtotal || 0,
         TaxAmount: invoice.tax_total || 0,
         PayableAmount: invoice.total || 0,
@@ -165,12 +167,13 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
       }
 
       toast.success(isTr
-        ? `${docType === 'efatura' ? 'E-Fatura' : 'E-Arsiv'} ${sendAsDraft ? 'taslak olarak kaydedildi' : 'gonderildi'}!`
+        ? `${docType === 'efatura' ? 'E-Fatura' : 'E-Arşiv'} ${sendAsDraft ? 'taslak olarak kaydedildi' : 'gönderildi'}!`
         : `${docType === 'efatura' ? 'E-Invoice' : 'E-Archive'} ${sendAsDraft ? 'saved as draft' : 'sent'}!`
       )
       setSelectedInvoiceId('')
+      loadInvoices()
     } catch (error: any) {
-      toast.error(error.message || (isTr ? 'Gonderim basarisiz' : 'Send failed'))
+      toast.error(error.message || (isTr ? 'Gönderim başarısız' : 'Send failed'))
     } finally {
       setSending(false)
     }
@@ -191,16 +194,16 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
       <Card>
         <CardHeader>
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-[#0A2540]"">
+            <div className="p-2 rounded-lg bg-[#0A2540]">
               <Send className="h-5 w-5 text-[#B8E6FF]" />
             </div>
             <div>
               <CardTitle className="text-lg">
-                {isTr ? 'Faturadan E-Belge Gonder' : 'Send E-Document from Invoice'}
+                {isTr ? 'Faturadan E-Belge Gönder' : 'Send E-Document from Invoice'}
               </CardTitle>
               <CardDescription>
                 {isTr
-                  ? 'Sistemdeki bir faturayi secip NES uzerinden e-fatura veya e-arsiv olarak gonderin'
+                  ? 'Sistemdeki bir faturayı seçip NES üzerinden e-fatura veya e-arşiv olarak gönderin'
                   : 'Select an existing invoice and send it as e-invoice or e-archive via NES'}
               </CardDescription>
             </div>
@@ -210,16 +213,16 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                {isTr ? 'Fatura Sec' : 'Select Invoice'}
+                {isTr ? 'Fatura Seç' : 'Select Invoice'}
               </label>
               <Select value={selectedInvoiceId} onValueChange={setSelectedInvoiceId}>
                 <SelectTrigger>
-                  <SelectValue placeholder={isTr ? 'Fatura secin...' : 'Choose invoice...'} />
+                  <SelectValue placeholder={isTr ? 'Fatura seçin...' : 'Choose invoice...'} />
                 </SelectTrigger>
                 <SelectContent>
                   {invoices.length === 0 ? (
                     <div className="py-4 text-center text-sm text-muted-foreground">
-                      {isTr ? 'Gonderilecek fatura bulunamadi' : 'No invoices ready to send'}
+                      {isTr ? 'Gönderilecek fatura bulunamadı' : 'No invoices ready to send'}
                     </div>
                   ) : (
                     invoices.map(inv => (
@@ -234,7 +237,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
 
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                {isTr ? 'Belge Turu' : 'Document Type'}
+                {isTr ? 'Belge Türü' : 'Document Type'}
               </label>
               <Select value={docType} onValueChange={(v) => setDocType(v as 'efatura' | 'earsiv')}>
                 <SelectTrigger>
@@ -242,26 +245,26 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="efatura">{isTr ? 'E-Fatura' : 'E-Invoice'}</SelectItem>
-                  <SelectItem value="earsiv">{isTr ? 'E-Arsiv' : 'E-Archive'}</SelectItem>
+                  <SelectItem value="earsiv">{isTr ? 'E-Arşiv' : 'E-Archive'}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                {isTr ? 'Fatura Turu' : 'Invoice Type'}
+                {isTr ? 'Fatura Türü' : 'Invoice Type'}
               </label>
               <Select value={invoiceType} onValueChange={setInvoiceType}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="SATIS">{isTr ? 'Satis' : 'Sales'}</SelectItem>
-                  <SelectItem value="IADE">{isTr ? 'Iade' : 'Return'}</SelectItem>
+                  <SelectItem value="SATIS">{isTr ? 'Satış' : 'Sales'}</SelectItem>
+                  <SelectItem value="IADE">{isTr ? 'İade' : 'Return'}</SelectItem>
                   <SelectItem value="TEVKIFAT">{isTr ? 'Tevkifat' : 'Withholding'}</SelectItem>
-                  <SelectItem value="ISTISNA">{isTr ? 'Istisna' : 'Exemption'}</SelectItem>
-                  <SelectItem value="OZELMATRAH">{isTr ? 'Ozel Matrah' : 'Special Base'}</SelectItem>
-                  <SelectItem value="IHRACKAYITLI">{isTr ? 'Ihrac Kayitli' : 'Export Registered'}</SelectItem>
+                  <SelectItem value="ISTISNA">{isTr ? 'İstisna' : 'Exemption'}</SelectItem>
+                  <SelectItem value="OZELMATRAH">{isTr ? 'Özel Matrah' : 'Special Base'}</SelectItem>
+                  <SelectItem value="IHRACKAYITLI">{isTr ? 'İhraç Kayıtlı' : 'Export Registered'}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -269,7 +272,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
             {docType === 'efatura' && (
               <div className="space-y-2">
                 <label className="text-sm font-medium">
-                  {isTr ? 'Gonderim Modu' : 'Send Mode'}
+                  {isTr ? 'Gönderim Modu' : 'Send Mode'}
                 </label>
                 <Select
                   value={sendAsDraft ? 'draft' : 'send'}
@@ -279,7 +282,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="send">{isTr ? 'Direkt Gonder' : 'Send Directly'}</SelectItem>
+                    <SelectItem value="send">{isTr ? 'Direkt Gönder' : 'Send Directly'}</SelectItem>
                     <SelectItem value="draft">{isTr ? 'Taslak Kaydet' : 'Save as Draft'}</SelectItem>
                   </SelectContent>
                 </Select>
@@ -300,7 +303,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
               </div>
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
-                  <p className="text-xs text-muted-foreground">{isTr ? 'Musteri' : 'Customer'}</p>
+                  <p className="text-xs text-muted-foreground">{isTr ? 'Müşteri' : 'Customer'}</p>
                   <p className="font-medium">{selectedInvoice.customers?.name || '-'}</p>
                 </div>
                 <div>
@@ -331,7 +334,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
                 <Send className="mr-2 h-4 w-4" />
               )}
               {isTr
-                ? sendAsDraft ? 'Taslak Olarak Kaydet' : 'E-Belge Gonder'
+                ? sendAsDraft ? 'Taslak Olarak Kaydet' : 'E-Belge Gönder'
                 : sendAsDraft ? 'Save as Draft' : 'Send E-Document'}
             </Button>
 
@@ -339,7 +342,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
                 {isTr
-                  ? 'Gonderdikten sonra iptal edilemez'
+                  ? 'Gönderdikten sonra iptal edilemez'
                   : 'Cannot be cancelled after sending'}
               </div>
             )}
@@ -351,6 +354,6 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
 }
 
 function formatCurrency(amount: number, currency: string) {
-  const symbols: Record<string, string> = { TRY: '\u20BA', USD: '$', EUR: '\u20AC', GBP: '\u00A3' }
+  const symbols: Record<string, string> = { TRY: '₺', USD: '$', EUR: '€', GBP: '£' }
   return `${symbols[currency] || ''}${amount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })}`
 }
