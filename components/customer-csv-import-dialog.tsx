@@ -162,6 +162,10 @@ const CSV_HEADERS_TR: Record<string, string> = {
   'opening balance': 'opening_balance',
   'opening_balance': 'opening_balance',
   'openingbalance': 'opening_balance',
+  'devir bakiyesi': 'opening_balance',
+  'devir': 'opening_balance',
+  'başlangıç bakiyesi': 'opening_balance',
+  'baslangic bakiyesi': 'opening_balance',
 }
 
 function parseCSVLine(line: string, delimiter: string): string[] {
@@ -196,13 +200,14 @@ function parseCSV(text: string): { headers: string[]; rows: string[][] } {
   if (lines.length === 0) return { headers: [], rows: [] }
   const delimiter = detectDelimiter(lines[0])
   const headers = parseCSVLine(lines[0], delimiter)
+  const headerCount = headers.length
   let rows = lines.slice(1).map((l) => parseCSVLine(l, delimiter)).filter((r) => r.some((c) => c))
   // Bakiye yanlışlıkla sonraki satıra düşmüşse (tek sütunlu satır sayıysa) önceki satıra ekle
   const merged: string[][] = []
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i]
-    if (row.length === 1 && headers.length > 1 && /^-?\d+([.,]\d+)?$/.test(String(row[0]).trim().replace(/\s/g, ''))) {
-      if (merged.length > 0 && merged[merged.length - 1].length === headers.length - 1)
+    if (row.length === 1 && headerCount > 1 && /^-?\d+([.,]\d+)?$/.test(String(row[0]).trim().replace(/\s/g, ''))) {
+      if (merged.length > 0 && merged[merged.length - 1].length === headerCount - 1)
         merged[merged.length - 1] = [...merged[merged.length - 1], row[0]]
       else
         merged.push(row)
@@ -210,7 +215,13 @@ function parseCSV(text: string): { headers: string[]; rows: string[][] } {
       merged.push(row)
     }
   }
-  return { headers, rows: merged }
+  // Son satırda hücre kayması olmasın: her satırı başlık sütun sayısına sabitle (eksikse doldur, fazlaysa kes)
+  const normalized = merged.map((r) => {
+    const arr = [...r]
+    while (arr.length < headerCount) arr.push('')
+    return arr.slice(0, headerCount)
+  })
+  return { headers, rows: normalized }
 }
 
 function cellToString(val: unknown): string {
@@ -232,9 +243,9 @@ function parseExcel(buffer: ArrayBuffer): { headers: string[]; rows: string[][] 
   const rows = aoa.slice(1)
     .map((row) => {
       const arr = (Array.isArray(row) ? row : []).map(cellToString)
-      // Excel satırları bazen kısa döner; son sütun (bakiye) kaybolmasın diye başlık kadar doldur
+      // Sütun sayısını başlıkla aynı tut: eksikse doldur, fazlaysa kes (son satırda hücre kayması önlenir)
       while (arr.length < colCount) arr.push('')
-      return arr
+      return arr.slice(0, colCount)
     })
     .filter((r) => r.some((c) => c !== ''))
   return { headers, rows }
@@ -347,68 +358,63 @@ function mapRowToCustomer(
     balance: 0,
     opening_balance: (() => {
       const tryParse = (v: string): number => parseOpeningBalance(String(v || '').trim())
-      // 1) Önce "Açılış Bakiyesi" / "bakiye" / "opening balance" başlıklı sütunu ara
+      const rawStr = (i: number): string => (values[i] !== undefined && values[i] !== null ? String(values[i]).trim() : '')
+
+      // 1) get('opening_balance') ile eşleşen sütun (şablon: Açılış Bakiyesi)
       const byKey = get('opening_balance')
-      if (byKey !== '') {
-        const p = tryParse(byKey)
-        if (p !== 0) return p
-      }
-      // 2) Başlık adı "bakiye", "balance", "acilis", "opening", "devir" içeren sütunlar
-      const balanceKeywords = ['bakiye', 'balance', 'açılış', 'acilis', 'opening', 'devir']
+      if (byKey !== '') return tryParse(byKey)
+
+      // 2) Başlık "bakiye", "balance", "açılış", "acilis", "opening", "devir", "başlangıç" içeren sütun
+      const balanceKeywords = ['bakiye', 'balance', 'açılış', 'acilis', 'opening', 'devir', 'başlangıç', 'baslangic']
       for (let i = 0; i < headers.length; i++) {
         const h = normalizeHeader(headers[i] || '')
-        const hasKeyword = balanceKeywords.some((k) => h.includes(k))
-        if (hasKeyword) {
-          const v = values[i] !== undefined && values[i] !== null ? String(values[i]).trim() : ''
-          const p = tryParse(v)
-          if (p !== 0) return p
-        }
+        if (balanceKeywords.some((k) => h.includes(k))) return tryParse(rawStr(i))
       }
-      // 3) Şablonda bakiye 26. sütun (index 25) - Excel/CSV şablonu ile uyumlu
-      if (values.length >= 26) {
-        const p = tryParse(String(values[25] ?? ''))
-        if (p !== 0) return p
-      }
-      // 4) Son sütun - Excel'de bakiye genelde en sonda (Durum'dan sonra)
+
+      // 3) Şablonda 26. sütun (index 25) = Açılış Bakiyesi
+      if (values.length > 25) return tryParse(rawStr(25))
+
+      // 4) Son sütun sayıysa bakiye kabul et (şablon: son sütun bakiye)
       if (values.length > 0) {
-        const lastVal = String(values[values.length - 1] ?? '').trim()
-        const p = tryParse(lastVal)
-        if (p !== 0) return p
+        const last = rawStr(values.length - 1)
+        if (/^-?\d+([.,]\d+)?\s*$/.test(last.replace(/\s/g, ''))) return tryParse(last)
       }
-      // 5) Sondan 5 hücre - "aktif"/"pasif" atlanır, ilk geçerli sayı alınır
+
+      // 5) Sondan 5 hücrede ilk geçerli sayıyı al
       for (let i = values.length - 1; i >= Math.max(0, values.length - 5); i--) {
-        const raw = values[i]
-        if (raw === undefined || raw === null) continue
-        const s = String(raw).trim()
-        if (/^-?\d+([.,]\d+)?$/.test(s.replace(/\s/g, ''))) {
-          const parsed = tryParse(s)
-          return parsed
-        }
+        const s = rawStr(i).replace(/\s/g, '')
+        if (s && /^-?\d+([.,]\d+)?$/.test(s)) return tryParse(String(values[i]))
       }
       return 0
     })(),
   }
 }
 
-const TR_HEADERS = 'Şirket Ünvanı,Yetkili,Hesap Tipi,Vergi Dairesi,Vergi No,E-posta,Telefon,Adres,İl,İlçe,Posta Kodu,Ülke,Ödeme Vadesi,Vade Tipi,Banka Adı,Hesap Sahibi,Hesap No,IBAN,Şube,SWIFT,Web,Sektör,Notlar,E-Fatura,Durum,Açılış Bakiyesi'
-const EN_HEADERS = CSV_HEADERS.join(',')
+// Şablon: 26 sütun sabit (parse hatası ve son satır kayması olmasın diye dizi olarak tanımlı)
+const TEMPLATE_HEADERS_TR = ['Şirket Ünvanı', 'Yetkili', 'Hesap Tipi', 'Vergi Dairesi', 'Vergi No', 'E-posta', 'Telefon', 'Adres', 'İl', 'İlçe', 'Posta Kodu', 'Ülke', 'Ödeme Vadesi', 'Vade Tipi', 'Banka Adı', 'Hesap Sahibi', 'Hesap No', 'IBAN', 'Şube', 'SWIFT', 'Web', 'Sektör', 'Notlar', 'E-Fatura', 'Durum', 'Açılış Bakiyesi']
+const TEMPLATE_HEADERS_EN = ['Company Title', 'Name', 'Account Type', 'Tax Office', 'Tax Number', 'Email', 'Phone', 'Address', 'City', 'District', 'Postal Code', 'Country', 'Payment Terms', 'Terms Type', 'Bank Name', 'Account Holder', 'Account Number', 'IBAN', 'Branch', 'SWIFT', 'Website', 'Industry', 'Notes', 'E-Invoice', 'Status', 'Opening Balance']
 
-const TEMPLATE_ROWS_TR = [
-  'Örnek Müşteri A.Ş.,Ahmet Yılmaz,müşteri,Kadıköy VD,1234567890,info@ornek.com,05321234567,Örnek Mah. No:1,Kadıköy,,34000,Türkiye,30,net,Ziraat Bankası,Örnek Şirket,12345678,TR00 0000 0000 0000 0000 0000 00,,,https://ornek.com,Teknoloji,Örnek not,hayır,aktif,5000',
-  'Örnek Tedarikçi Ltd.,Mehmet Kaya,tedarikçi,Beşiktaş VD,9876543210,tedarik@ornek.com,05329876543,Sanayi Cad. No:5,İstanbul,,34000,Türkiye,60,net,İş Bankası,Tedarikçi Firma,87654321,TR00 0000 0000 0000 0000 0000 01,,,https://tedarik.com,Üretim,Tedarikçi notu,hayır,aktif,-1500',
-  'Örnek Her İkisi A.Ş.,Ayşe Demir,her ikisi,Şişli VD,5555555555,info@herikisi.com,05325555555,Merkez Mah.,İstanbul,,34394,Türkiye,30,net,Yapı Kredi,Her İkisi Firma,11223344,TR00 0000 0000 0000 0000 0000 02,,,,Hem müşteri hem tedarikçi,hayır,aktif,0',
+const TEMPLATE_DATA_TR: string[][] = [
+  ['Örnek Müşteri A.Ş.', 'Ahmet Yılmaz', 'müşteri', 'Kadıköy VD', '1234567890', 'info@ornek.com', '05321234567', 'Örnek Mah. No:1', 'Kadıköy', '', '34000', 'Türkiye', '30', 'net', 'Ziraat Bankası', 'Örnek Şirket', '12345678', 'TR00 0000 0000 0000 0000 0000 00', '', '', 'https://ornek.com', 'Teknoloji', 'Örnek not', 'hayır', 'aktif', '5000'],
+  ['Örnek Tedarikçi Ltd.', 'Mehmet Kaya', 'tedarikçi', 'Beşiktaş VD', '9876543210', 'tedarik@ornek.com', '05329876543', 'Sanayi Cad. No:5', 'İstanbul', '', '34000', 'Türkiye', '60', 'net', 'İş Bankası', 'Tedarikçi Firma', '87654321', 'TR00 0000 0000 0000 0000 0000 01', '', '', 'https://tedarik.com', 'Üretim', 'Tedarikçi notu', 'hayır', 'aktif', '-1500'],
+  ['Örnek Her İkisi A.Ş.', 'Ayşe Demir', 'her ikisi', 'Şişli VD', '5555555555', 'info@herikisi.com', '05325555555', 'Merkez Mah.', 'İstanbul', '', '34394', 'Türkiye', '30', 'net', 'Yapı Kredi', 'Her İkisi Firma', '11223344', 'TR00 0000 0000 0000 0000 0000 02', '', '', '', 'Hem müşteri hem tedarikçi', '', 'hayır', 'aktif', '0'],
 ]
 
-const TEMPLATE_ROWS_EN = [
-  'Example Customer Inc.,John Doe,customer,Downtown Tax Office,1234567890,info@example.com,+901234567890,123 Main St,Istanbul,,34000,Turkey,30,net,Bank of Example,Example Corp,12345678,TR00 0000 0000 0000 0000 0000 00,,,https://example.com,Technology,Sample note,false,active,5000',
-  'Example Vendor Ltd.,Jane Smith,vendor,Industrial Tax Office,9876543210,vendor@example.com,+909876543210,456 Industrial Ave,Istanbul,,34000,Turkey,60,net,Business Bank,Vendor Co,87654321,TR00 0000 0000 0000 0000 0000 01,,,https://vendor.com,Manufacturing,Vendor note,false,active,-1500',
-  'Example Both LLC,Alex Brown,both,Central Tax Office,5555555555,info@both.com,+905555555555,789 Center St,Istanbul,,34394,Turkey,30,net,Credit Bank,Both Company,11223344,TR00 0000 0000 0000 0000 0000 02,,,,Customer and vendor,false,active,0',
+const TEMPLATE_DATA_EN: string[][] = [
+  ['Example Customer Inc.', 'John Doe', 'customer', 'Downtown Tax Office', '1234567890', 'info@example.com', '+901234567890', '123 Main St', 'Istanbul', '', '34000', 'Turkey', '30', 'net', 'Bank of Example', 'Example Corp', '12345678', 'TR00 0000 0000 0000 0000 0000 00', '', '', 'https://example.com', 'Technology', 'Sample note', 'false', 'active', '5000'],
+  ['Example Vendor Ltd.', 'Jane Smith', 'vendor', 'Industrial Tax Office', '9876543210', 'vendor@example.com', '+909876543210', '456 Industrial Ave', 'Istanbul', '', '34000', 'Turkey', '60', 'net', 'Business Bank', 'Vendor Co', '87654321', 'TR00 0000 0000 0000 0000 0000 01', '', '', 'https://vendor.com', 'Manufacturing', 'Vendor note', 'false', 'active', '-1500'],
+  ['Example Both LLC', 'Alex Brown', 'both', 'Central Tax Office', '5555555555', 'info@both.com', '+905555555555', '789 Center St', 'Istanbul', '', '34394', 'Turkey', '30', 'net', 'Credit Bank', 'Both Company', '11223344', 'TR00 0000 0000 0000 0000 0000 02', '', '', '', 'Customer and vendor', '', 'false', 'active', '0'],
 ]
+
+const TR_HEADERS = TEMPLATE_HEADERS_TR.join(',')
+const EN_HEADERS = TEMPLATE_HEADERS_EN.join(',')
 
 function getTemplateCsv(lang: 'tr' | 'en'): string {
-  const headers = lang === 'tr' ? TR_HEADERS : EN_HEADERS
-  const rows = lang === 'tr' ? TEMPLATE_ROWS_TR : TEMPLATE_ROWS_EN
-  return [headers, ...rows].join('\n')
+  const headers = lang === 'tr' ? TEMPLATE_HEADERS_TR : TEMPLATE_HEADERS_EN
+  const data = lang === 'tr' ? TEMPLATE_DATA_TR : TEMPLATE_DATA_EN
+  const headerLine = headers.join(',')
+  const rowLines = data.map((row) => row.map((cell) => (cell.includes(',') ? `"${cell}"` : cell)).join(','))
+  return [headerLine, ...rowLines].join('\n')
 }
 
 function validateRowForImport(customer: Record<string, unknown>): string | null {
@@ -425,7 +431,7 @@ function validateRowForImport(customer: Record<string, unknown>): string | null 
 
 export type ImportReport = {
   successCount: number
-  successDetails: { row: number; company: string }[]
+  successDetails: { row: number; company: string; balance: number }[]
   failedCount: number
   failedDetails: { row: number; company: string; reason: string }[]
 }
@@ -590,31 +596,46 @@ export function CustomerCsvImportDialog({
 
       const BATCH = 50
       const lang = language === 'en' ? 'en' : 'tr'
+      let totalBalanceInvoiceCount = 0
       for (let i = 0; i < toInsert.length; i += BATCH) {
         const chunk = toInsert.slice(i, i + BATCH)
         const batch = chunk.map((x) => {
-          const { opening_balance: _ob, balance: _b, ...rest } = x.data as Record<string, unknown>
-          return { ...rest, balance: 0 }
+          const { opening_balance: obRaw, balance: _b, ...rest } = x.data as Record<string, unknown>
+          const ob = typeof obRaw === 'number' ? obRaw : (Number(obRaw) || parseOpeningBalance(String(obRaw ?? '')))
+          return { ...rest, balance: ob }
         })
         const { data: inserted, error } = await supabase.from('customers').insert(batch).select('id')
         if (error) throw error
-        let balanceInvoiceCount = 0
         for (let j = 0; j < chunk.length && inserted?.[j]; j++) {
           const rawOb = (chunk[j].data as any).opening_balance
           const ob = typeof rawOb === 'number' ? rawOb : (Number(rawOb) || parseOpeningBalance(String(rawOb ?? '')))
           if (ob !== 0) {
-            const res = await createOpeningBalanceInvoice(tenantId!, inserted[j].id, ob, lang, false)
-            if (res.ok) balanceInvoiceCount++
+            const res = await createOpeningBalanceInvoice(tenantId!, inserted[j].id, ob, lang, true)
+            if (res.ok) totalBalanceInvoiceCount++
+            else toast.error(language === 'tr' ? `Bakiye faturası (${chunk[j].company}): ${res.error}` : `Opening balance (${chunk[j].company}): ${res.error}`)
           }
         }
-        if (balanceInvoiceCount > 0) {
-          toast.success(language === 'tr' ? `${balanceInvoiceCount} devir faturası oluşturuldu` : `${balanceInvoiceCount} opening balance invoice(s) created`)
+      }
+      if (totalBalanceInvoiceCount > 0) {
+        toast.success(language === 'tr' ? `${totalBalanceInvoiceCount} devir faturası oluşturuldu` : `${totalBalanceInvoiceCount} opening balance invoice(s) created`)
+      } else if (toInsert.length > 0) {
+        const hasAnyBalance = toInsert.some((x) => {
+          const ob = (x.data as any).opening_balance
+          const n = typeof ob === 'number' ? ob : parseOpeningBalance(String(ob ?? ''))
+          return n !== 0
+        })
+        if (!hasAnyBalance) {
+          toast.warning(language === 'tr' ? 'Açılış bakiyesi sütunu bulunamadı veya tüm değerler 0; bakiyeler 0 atandı. Sütun adı "Açılış Bakiyesi" veya "Bakiye" olmalı.' : 'Opening balance column not found or all zeros; balances set to 0. Use column "Açılış Bakiyesi" or "Bakiye".')
         }
       }
 
       const report: ImportReport = {
         successCount: toInsert.length,
-        successDetails: toInsert.map((x) => ({ row: x.rowIndex, company: x.company })),
+        successDetails: toInsert.map((x) => {
+          const ob = (x.data as any).opening_balance
+          const balance = typeof ob === 'number' ? ob : parseOpeningBalance(String(ob ?? ''))
+          return { row: x.rowIndex, company: x.company, balance }
+        }),
         failedCount: allFailed.length,
         failedDetails: allFailed,
       }
@@ -692,8 +713,9 @@ export function CustomerCsvImportDialog({
       for (let i = 0; i < pendingImport.toInsert.length; i += BATCH) {
         const chunk = pendingImport.toInsert.slice(i, i + BATCH)
         const batch = chunk.map((x) => {
-          const { opening_balance: _ob, balance: _b, ...rest } = x.data as Record<string, unknown>
-          return { ...rest, balance: 0 }
+          const { opening_balance: obRaw, balance: _b, ...rest } = x.data as Record<string, unknown>
+          const ob = typeof obRaw === 'number' ? obRaw : (Number(obRaw) || parseOpeningBalance(String(obRaw ?? '')))
+          return { ...rest, balance: ob }
         })
         const { data: inserted, error } = await supabase.from('customers').insert(batch).select('id')
         if (error) throw error
@@ -702,17 +724,31 @@ export function CustomerCsvImportDialog({
           const rawOb = (chunk[j].data as any).opening_balance
           const ob = typeof rawOb === 'number' ? rawOb : (Number(rawOb) || parseOpeningBalance(String(rawOb ?? '')))
           if (ob !== 0) {
-            const res = await createOpeningBalanceInvoice(tenantId!, inserted[j].id, ob, lang, false)
+            const res = await createOpeningBalanceInvoice(tenantId!, inserted[j].id, ob, lang, true)
             if (res.ok) balanceInvoiceCount++
+            else toast.error(language === 'tr' ? `Bakiye faturası (${chunk[j].company}): ${res.error}` : `Opening balance (${chunk[j].company}): ${res.error}`)
           }
         }
         if (balanceInvoiceCount > 0) {
           toast.success(language === 'tr' ? `${balanceInvoiceCount} devir faturası oluşturuldu` : `${balanceInvoiceCount} opening balance invoice(s) created`)
+        } else {
+          const hasAnyBalance = pendingImport.toInsert.some((x) => {
+            const ob = (x.data as any).opening_balance
+            const n = typeof ob === 'number' ? ob : parseOpeningBalance(String(ob ?? ''))
+            return n !== 0
+          })
+          if (!hasAnyBalance && pendingImport.toInsert.length > 0) {
+            toast.warning(language === 'tr' ? 'Açılış bakiyesi sütunu bulunamadı veya tüm değerler 0; bakiyeler 0 atandı. Sütun adı "Açılış Bakiyesi" veya "Bakiye" olmalı.' : 'Opening balance column not found or all zeros; balances set to 0. Use column "Açılış Bakiyesi" or "Bakiye".')
+          }
         }
       }
-      const successDetails = [
-        ...pendingImport.toUpdate.map((x) => ({ row: x.rowIndex, company: x.company })),
-        ...pendingImport.toInsert.map((x) => ({ row: x.rowIndex, company: x.company })),
+      const successDetails: { row: number; company: string; balance: number }[] = [
+        ...pendingImport.toUpdate.map((x) => ({ row: x.rowIndex, company: x.company, balance: 0 })),
+        ...pendingImport.toInsert.map((x) => {
+          const ob = (x.data as any).opening_balance
+          const balance = typeof ob === 'number' ? ob : parseOpeningBalance(String(ob ?? ''))
+          return { row: x.rowIndex, company: x.company, balance }
+        }),
       ]
       const failedDetails = [
         ...pendingImport.initialFailedDetails,
@@ -739,11 +775,15 @@ export function CustomerCsvImportDialog({
   const handleDownloadTemplate = (format: 'csv' | 'xlsx') => {
     const lang = language === 'en' ? 'en' : 'tr'
     if (format === 'xlsx') {
-      const headerLine = lang === 'tr' ? TR_HEADERS : EN_HEADERS
-      const rowLines = lang === 'tr' ? TEMPLATE_ROWS_TR : TEMPLATE_ROWS_EN
-      const headerArr = parseCSVLine(headerLine, ',')
-      const rowArrs = rowLines.map((line) => parseCSVLine(line, ','))
-      const aoa = [headerArr, ...rowArrs]
+      const headers = lang === 'tr' ? TEMPLATE_HEADERS_TR : TEMPLATE_HEADERS_EN
+      const data = lang === 'tr' ? TEMPLATE_DATA_TR : TEMPLATE_DATA_EN
+      const colCount = headers.length
+      const aoa: string[][] = [headers]
+      data.forEach((row) => {
+        const r = row.length >= colCount ? row.slice(0, colCount) : [...row]
+        while (r.length < colCount) r.push('')
+        aoa.push(r)
+      })
       const ws = XLSX.utils.aoa_to_sheet(aoa)
       const wb = XLSX.utils.book_new()
       XLSX.utils.book_append_sheet(wb, ws, lang === 'tr' ? 'Cariler' : 'Customers')
@@ -778,12 +818,13 @@ export function CustomerCsvImportDialog({
     const colResult = lang === 'tr' ? 'Sonuç' : 'Result'
     const colRow = lang === 'tr' ? 'Satır' : 'Row'
     const colCompany = lang === 'tr' ? 'Cari / Açıklama' : 'Customer / Description'
+    const colBalance = lang === 'tr' ? 'Bakiye' : 'Balance'
     const colReason = lang === 'tr' ? 'Neden' : 'Reason'
-    const headers = `${colResult},${colRow},${colCompany},${colReason}\n`
+    const headers = `${colResult},${colRow},${colCompany},${colBalance},${colReason}\n`
     const successLabel = lang === 'tr' ? 'Başarılı' : 'Success'
     const failedLabel = lang === 'tr' ? 'Başarısız' : 'Failed'
-    const successLines = importReport.successDetails.map((s) => `${successLabel},${s.row},${s.company},`).join('\n')
-    const failedLines = importReport.failedDetails.map((f) => `${failedLabel},${f.row},${f.company},${f.reason}`).join('\n')
+    const successLines = importReport.successDetails.map((s) => `${successLabel},${s.row},${s.company},${s.balance.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })},`).join('\n')
+    const failedLines = importReport.failedDetails.map((f) => `${failedLabel},${f.row},${f.company},,${f.reason}`).join('\n')
     const summary = lang === 'tr'
       ? `İçe Aktarma Raporu\nToplam başarılı: ${importReport.successCount}\nToplam başarısız: ${importReport.failedCount}\n\n`
       : `Import Report\nTotal success: ${importReport.successCount}\nTotal failed: ${importReport.failedCount}\n\n`
@@ -821,7 +862,12 @@ export function CustomerCsvImportDialog({
                     <li className="text-muted-foreground">—</li>
                   ) : (
                     importReport.successDetails.map((s, i) => (
-                      <li key={i}>{language === 'tr' ? `Satır ${s.row}:` : `Row ${s.row}:`} {s.company}</li>
+                      <li key={i}>
+                        {language === 'tr' ? `Satır ${s.row}:` : `Row ${s.row}:`} {s.company}
+                        <span className="text-green-600 ml-1">
+                          — {language === 'tr' ? 'Bakiye:' : 'Balance:'} {s.balance.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </li>
                     ))
                   )}
                 </ul>

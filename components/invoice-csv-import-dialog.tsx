@@ -16,7 +16,7 @@ import { useLanguage } from '@/contexts/language-context'
 import { toast } from 'sonner'
 import { Upload, FileSpreadsheet, Loader2, Download } from 'lucide-react'
 
-const CSV_HEADERS = ['customer', 'amount', 'issue_date', 'due_date', 'notes', 'status']
+const CSV_HEADERS = ['customer', 'amount', 'issue_date', 'due_date', 'notes', 'status', 'invoice_type']
 
 interface InvoiceCsvImportDialogProps {
   isOpen: boolean
@@ -36,11 +36,11 @@ export function InvoiceCsvImportDialog({ isOpen, onClose, onSuccess }: InvoiceCs
 
   const downloadTemplate = () => {
     const headers = isTr
-      ? ['cari_unvan_veya_eposta', 'tutar', 'duzenleme_tarihi', 'vade_tarihi', 'notlar', 'durum']
+      ? ['cari_unvan_veya_eposta', 'tutar', 'duzenleme_tarihi', 'vade_tarihi', 'notlar', 'durum', 'fatura_tipi']
       : CSV_HEADERS
     const example = isTr
-      ? ['Cariler sayfasindaki sirket unvani veya e-posta', '1500.00', '2025-01-15', '2025-02-15', 'Ornek not', 'draft']
-      : ['Company title or email from Customers page', '1500.00', '2025-01-15', '2025-02-15', 'Sample note', 'draft']
+      ? ['Cariler sayfasindaki sirket unvani veya e-posta', '1500.00', '2025-01-15', '2025-02-15', 'Ornek not', 'draft', 'sale']
+      : ['Company title or email from Customers page', '1500.00', '2025-01-15', '2025-02-15', 'Sample note', 'draft', 'sale']
     const csv = '\uFEFF' + [headers.join(','), example.join(',')].join('\n')
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
@@ -117,7 +117,8 @@ export function InvoiceCsvImportDialog({ isOpen, onClose, onSuccess }: InvoiceCs
       const issueDateIdx = headerRow.indexOf('issue_date')
       const dueDateIdx = headerRow.indexOf('due_date')
       const notesIdx = headerRow.indexOf('notes') >= 0 ? headerRow.indexOf('notes') : -1
-      const statusIdx = headerRow.indexOf('status') >= 0 ? headerRow.indexOf('status') : -1
+      const statusIdx = headerRow.indexOf('status') >= 0 ? headerRow.indexOf('status') : headerRow.indexOf('durum')
+      const typeIdx = headerRow.indexOf('invoice_type') >= 0 ? headerRow.indexOf('invoice_type') : headerRow.indexOf('fatura_tipi')
 
       if (customerIdx < 0 || amountIdx < 0 || issueDateIdx < 0 || dueDateIdx < 0) {
         toast.error(isTr ? 'CSV sütunları: customer, amount, issue_date, due_date gerekli' : 'CSV must have columns: customer, amount, issue_date, due_date')
@@ -144,6 +145,7 @@ export function InvoiceCsvImportDialog({ isOpen, onClose, onSuccess }: InvoiceCs
         const dueDateVal = row[dueDateIdx]?.trim()
         const notesVal = notesIdx >= 0 ? row[notesIdx]?.trim() : ''
         const statusVal = statusIdx >= 0 ? (row[statusIdx]?.trim() || 'draft') : 'draft'
+        const typeVal = typeIdx >= 0 ? (row[typeIdx]?.trim() || 'sale') : 'sale'
 
         if (!customerVal || !amountVal || !issueDateVal || !dueDateVal) {
           failed.push({ row: i + 1, reason: isTr ? 'Eksik alan' : 'Missing required field' })
@@ -171,6 +173,9 @@ export function InvoiceCsvImportDialog({ isOpen, onClose, onSuccess }: InvoiceCs
         const status = ['draft', 'sent', 'paid', 'overdue', 'cancelled'].includes(statusVal.toLowerCase())
           ? statusVal.toLowerCase()
           : 'draft'
+        const invoiceType = ['sale', 'sale_return', 'devir', 'devir_return'].includes(typeVal.toLowerCase())
+          ? typeVal.toLowerCase()
+          : 'sale'
 
         try {
           const invoiceNumber = `INV-${Date.now().toString().slice(-8)}-${i}`
@@ -184,6 +189,7 @@ export function InvoiceCsvImportDialog({ isOpen, onClose, onSuccess }: InvoiceCs
               subtotal: amount,
               total_vat: 0,
               status,
+              invoice_type: invoiceType,
               issue_date: issueDate,
               due_date: dueDate,
               notes: notesVal || null,

@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Search, FileText, Receipt, CheckCircle2, XCircle, Eye, Trash2, Pencil } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
@@ -44,6 +45,7 @@ interface PurchaseInvoice {
   due_date: string | null
   total_amount: number
   status: 'pending' | 'accepted' | 'rejected'
+  invoice_type: string
   rejection_reason: string | null
   supplier: {
     company_title: string
@@ -51,13 +53,28 @@ interface PurchaseInvoice {
   }
 }
 
+const PURCHASE_TYPE_LABELS: Record<string, Record<string, string>> = {
+  purchase: { tr: 'Alış', en: 'Purchase' },
+  purchase_return: { tr: 'Alıştan İade', en: 'Purchase Return' },
+  devir: { tr: 'Devir', en: 'Carry Forward' },
+  devir_return: { tr: 'Devir İade', en: 'Carry Fwd Return' },
+}
+const PURCHASE_TYPE_COLORS: Record<string, string> = {
+  purchase: 'bg-emerald-100 text-emerald-800',
+  purchase_return: 'bg-orange-100 text-orange-800',
+  devir: 'bg-violet-100 text-violet-800',
+  devir_return: 'bg-pink-100 text-pink-800',
+}
+
 export default function ExpensesPage() {
   const { tenantId, loading: tenantLoading } = useTenant()
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [purchaseInvoices, setPurchaseInvoices] = useState<PurchaseInvoice[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [purchaseTypeFilter, setPurchaseTypeFilter] = useState<string>('all')
+  const [purchaseStatusFilter, setPurchaseStatusFilter] = useState<string>('all')
   const [isAddExpenseDialogOpen, setIsAddExpenseDialogOpen] = useState(false)
   const [isEditExpenseDialogOpen, setIsEditExpenseDialogOpen] = useState(false)
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null)
@@ -272,11 +289,17 @@ export default function ExpensesPage() {
     expense.category.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const filteredInvoices = purchaseInvoices.filter(invoice =>
-    invoice.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    invoice.supplier?.company_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    invoice.supplier?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredInvoices = purchaseInvoices.filter((invoice) => {
+    if (purchaseStatusFilter !== 'all' && invoice.status !== purchaseStatusFilter) return false
+    if (purchaseTypeFilter !== 'all' && (invoice.invoice_type || 'purchase') !== purchaseTypeFilter) return false
+    const q = searchQuery.toLowerCase()
+    if (q && !(
+      invoice.invoice_number.toLowerCase().includes(q) ||
+      invoice.supplier?.company_title?.toLowerCase().includes(q) ||
+      invoice.supplier?.name?.toLowerCase().includes(q)
+    )) return false
+    return true
+  })
 
   const totalManualExpenses = expenses.reduce((sum, exp) => sum + Number(exp.amount), 0)
   const totalAcceptedInvoices = purchaseInvoices
@@ -451,10 +474,36 @@ export default function ExpensesPage() {
               </TabsContent>
 
               <TabsContent value="incoming" className="mt-6">
+                <div className="flex flex-wrap items-center gap-3 mb-4">
+                  <Select value={purchaseStatusFilter} onValueChange={setPurchaseStatusFilter}>
+                    <SelectTrigger className="w-[160px] h-9">
+                      <SelectValue placeholder={language === 'tr' ? 'Durum' : 'Status'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{language === 'tr' ? 'Tüm Durumlar' : 'All Status'}</SelectItem>
+                      <SelectItem value="pending">{language === 'tr' ? 'Bekleyen' : 'Pending'}</SelectItem>
+                      <SelectItem value="accepted">{language === 'tr' ? 'Kabul' : 'Accepted'}</SelectItem>
+                      <SelectItem value="rejected">{language === 'tr' ? 'Red' : 'Rejected'}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select value={purchaseTypeFilter} onValueChange={setPurchaseTypeFilter}>
+                    <SelectTrigger className="w-[180px] h-9">
+                      <SelectValue placeholder={language === 'tr' ? 'Fatura Tipi' : 'Invoice Type'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{language === 'tr' ? 'Tüm Tipler' : 'All Types'}</SelectItem>
+                      <SelectItem value="purchase">{language === 'tr' ? 'Alış' : 'Purchase'}</SelectItem>
+                      <SelectItem value="purchase_return">{language === 'tr' ? 'Alıştan İade' : 'Purchase Return'}</SelectItem>
+                      <SelectItem value="devir">{language === 'tr' ? 'Devir' : 'Carry Forward'}</SelectItem>
+                      <SelectItem value="devir_return">{language === 'tr' ? 'Devir İade' : 'Carry Fwd Return'}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>{t.expenses.invoiceNumber}</TableHead>
+                      <TableHead>{language === 'tr' ? 'Tip' : 'Type'}</TableHead>
                       <TableHead>{t.expenses.supplier}</TableHead>
                       <TableHead>{t.expenses.invoiceDate}</TableHead>
                       <TableHead>{t.expenses.total}</TableHead>
@@ -465,7 +514,7 @@ export default function ExpensesPage() {
                   <TableBody>
                     {filteredInvoices.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                        <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                           {t.common.noData}
                         </TableCell>
                       </TableRow>
@@ -473,6 +522,11 @@ export default function ExpensesPage() {
                       filteredInvoices.map((invoice) => (
                         <TableRow key={invoice.id}>
                           <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
+                          <TableCell>
+                            <Badge className={PURCHASE_TYPE_COLORS[invoice.invoice_type || 'purchase'] || 'bg-gray-100 text-gray-800'} variant="secondary">
+                              {PURCHASE_TYPE_LABELS[invoice.invoice_type || 'purchase']?.[language] || (invoice.invoice_type || 'purchase')}
+                            </Badge>
+                          </TableCell>
                           <TableCell>{invoice.supplier?.company_title || invoice.supplier?.name}</TableCell>
                           <TableCell>{format(new Date(invoice.invoice_date), 'MMM dd, yyyy')}</TableCell>
                           <TableCell className="font-semibold">${Number(invoice.total_amount).toLocaleString()}</TableCell>

@@ -14,7 +14,9 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Card, CardContent } from '@/components/ui/card'
-import { Plus, Loader2, Eye, MoreVertical, Edit, Trash2, Upload, AlertCircle, ShoppingCart, FileCheck2 } from 'lucide-react'
+import { Plus, Loader2, Eye, MoreVertical, Edit, Trash2, Upload, AlertCircle, ShoppingCart, FileCheck2, CheckSquare } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
 import { Toaster } from '@/components/ui/sonner'
 import {
@@ -42,6 +44,7 @@ interface Invoice {
   paid_amount: number
   remaining_amount: number
   status: string
+  invoice_type: string
   issue_date: string
   due_date: string
   created_at: string
@@ -52,6 +55,19 @@ interface Invoice {
   }
 }
 
+const INVOICE_TYPE_LABELS: Record<string, Record<string, string>> = {
+  sale: { tr: 'Satış', en: 'Sale' },
+  sale_return: { tr: 'Satıştan İade', en: 'Sale Return' },
+  devir: { tr: 'Devir', en: 'Carry Forward' },
+  devir_return: { tr: 'Devir İade', en: 'Carry Fwd Return' },
+}
+const INVOICE_TYPE_COLORS: Record<string, string> = {
+  sale: 'bg-emerald-100 text-emerald-800',
+  sale_return: 'bg-orange-100 text-orange-800',
+  devir: 'bg-violet-100 text-violet-800',
+  devir_return: 'bg-pink-100 text-pink-800',
+}
+
 export default function InvoicesPage() {
   const router = useRouter()
   const { tenantId, loading: tenantLoading } = useTenant()
@@ -59,6 +75,8 @@ export default function InvoicesPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [typeFilter, setTypeFilter] = useState<string>('all')
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showCsvImportDialog, setShowCsvImportDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -199,9 +217,51 @@ export default function InvoicesPage() {
     }
   }
 
-  const filteredInvoices = statusFilter === 'all'
-    ? invoices
-    : invoices.filter(inv => inv.status === statusFilter)
+  const filteredInvoices = invoices.filter((inv) => {
+    if (statusFilter !== 'all' && inv.status !== statusFilter) return false
+    if (typeFilter !== 'all' && (inv.invoice_type || 'sale') !== typeFilter) return false
+    return true
+  })
+
+  const allVisibleSelected = filteredInvoices.length > 0 && filteredInvoices.every((inv) => selectedIds.has(inv.id))
+  const someSelected = selectedIds.size > 0
+
+  function toggleSelectAll() {
+    if (allVisibleSelected) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(filteredInvoices.map((inv) => inv.id)))
+    }
+  }
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  async function handleBulkDelete() {
+    if (!tenantId || selectedIds.size === 0) return
+    const confirmed = window.confirm(
+      language === 'tr'
+        ? `${selectedIds.size} fatura silinecek. Emin misiniz?`
+        : `Delete ${selectedIds.size} invoice(s). Are you sure?`
+    )
+    if (!confirmed) return
+    try {
+      for (const id of selectedIds) {
+        await supabase.from('invoice_line_items').delete().eq('invoice_id', id).eq('tenant_id', tenantId)
+        await supabase.from('invoices').delete().eq('id', id).eq('tenant_id', tenantId)
+      }
+      toast.success(language === 'tr' ? `${selectedIds.size} fatura silindi` : `${selectedIds.size} invoice(s) deleted`)
+      setSelectedIds(new Set())
+      fetchInvoices()
+    } catch (err: any) {
+      toast.error(err.message || 'Hata')
+    }
+  }
 
   if (loading || tenantLoading) {
     return (
@@ -242,69 +302,74 @@ export default function InvoicesPage() {
 
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center gap-2 mb-6">
-              <Button
-                variant={statusFilter === 'all' ? 'default' : 'outline'}
-                onClick={() => setStatusFilter('all')}
-                className={statusFilter === 'all' ? 'bg-[#0A2540]' : ''}
-              >
-                {t.common.all}
-              </Button>
-              <Button
-                variant={statusFilter === 'draft' ? 'default' : 'outline'}
-                onClick={() => setStatusFilter('draft')}
-                className={statusFilter === 'draft' ? 'bg-[#0A2540]' : ''}
-              >
-                {t.common.draft}
-              </Button>
-              <Button
-                variant={statusFilter === 'sent' ? 'default' : 'outline'}
-                onClick={() => setStatusFilter('sent')}
-                className={statusFilter === 'sent' ? 'bg-[#0A2540]' : ''}
-              >
-                {t.common.sent}
-              </Button>
-              <Button
-                variant={statusFilter === 'paid' ? 'default' : 'outline'}
-                onClick={() => setStatusFilter('paid')}
-                className={statusFilter === 'paid' ? 'bg-[#0A2540]' : ''}
-              >
-                {t.common.paid}
-              </Button>
-              <Button
-                variant={statusFilter === 'overdue' ? 'default' : 'outline'}
-                onClick={() => setStatusFilter('overdue')}
-                className={statusFilter === 'overdue' ? 'bg-[#0A2540]' : ''}
-              >
-                {t.common.overdue}
-              </Button>
-              <Button
-                variant={statusFilter === 'cancelled' ? 'default' : 'outline'}
-                onClick={() => setStatusFilter('cancelled')}
-                className={statusFilter === 'cancelled' ? 'bg-[#0A2540]' : ''}
-              >
-                {t.common.cancelled}
-              </Button>
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setSelectedIds(new Set()) }}>
+                <SelectTrigger className="w-[160px] h-9">
+                  <SelectValue placeholder={language === 'tr' ? 'Durum' : 'Status'} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t.common.all}</SelectItem>
+                  <SelectItem value="draft">{t.common.draft}</SelectItem>
+                  <SelectItem value="sent">{t.common.sent}</SelectItem>
+                  <SelectItem value="paid">{t.common.paid}</SelectItem>
+                  <SelectItem value="overdue">{t.common.overdue}</SelectItem>
+                  <SelectItem value="cancelled">{t.common.cancelled}</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v); setSelectedIds(new Set()) }}>
+                <SelectTrigger className="w-[180px] h-9">
+                  <SelectValue placeholder={language === 'tr' ? 'Fatura Tipi' : 'Invoice Type'} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{language === 'tr' ? 'Tüm Tipler' : 'All Types'}</SelectItem>
+                  <SelectItem value="sale">{language === 'tr' ? 'Satış' : 'Sale'}</SelectItem>
+                  <SelectItem value="sale_return">{language === 'tr' ? 'Satıştan İade' : 'Sale Return'}</SelectItem>
+                  <SelectItem value="devir">{language === 'tr' ? 'Devir' : 'Carry Forward'}</SelectItem>
+                  <SelectItem value="devir_return">{language === 'tr' ? 'Devir İade' : 'Carry Fwd Return'}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+            {/* Toplu işlem çubuğu */}
+            {someSelected && (
+              <div className="flex items-center gap-3 mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <CheckSquare className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-800">
+                  {language === 'tr' ? `${selectedIds.size} fatura seçili` : `${selectedIds.size} invoice(s) selected`}
+                </span>
+                <Button size="sm" variant="destructive" onClick={handleBulkDelete}>
+                  <Trash2 className="h-3.5 w-3.5 mr-1" />
+                  {language === 'tr' ? 'Seçilenleri Sil' : 'Delete Selected'}
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setSelectedIds(new Set())}>
+                  {language === 'tr' ? 'Seçimi Temizle' : 'Clear Selection'}
+                </Button>
+              </div>
+            )}
 
             <div className="border rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
+                    <TableHead className="h-8 w-4 min-w-4 max-w-4 p-0.5 text-center align-middle">
+                      <div className="inline-flex items-center justify-center w-4 h-6">
+                        <Checkbox size="sm" checked={allVisibleSelected && filteredInvoices.length > 0} onCheckedChange={toggleSelectAll} aria-label="Select all" />
+                      </div>
+                    </TableHead>
                     <TableHead className="font-semibold">{t.invoices.invoiceNo}</TableHead>
+                    <TableHead className="font-semibold">{language === 'tr' ? 'Tip' : 'Type'}</TableHead>
                     <TableHead className="font-semibold">{t.invoices.customer}</TableHead>
                     <TableHead className="font-semibold">{t.invoices.issueDate}</TableHead>
                     <TableHead className="font-semibold">{t.invoices.dueDate}</TableHead>
                     <TableHead className="font-semibold text-right">{t.invoices.amount}</TableHead>
                     <TableHead className="font-semibold">{t.common.status}</TableHead>
-                    <TableHead className="font-semibold">{language === 'tr' ? 'Baglanti' : 'Links'}</TableHead>
+                    <TableHead className="font-semibold">{language === 'tr' ? 'Bağlantı' : 'Links'}</TableHead>
                     <TableHead className="font-semibold">{t.invoices.actions}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredInvoices.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-12 text-gray-500">
+                      <TableCell colSpan={10} className="text-center py-12 text-gray-500">
                         {t.invoices.noInvoicesFound}
                       </TableCell>
                     </TableRow>
@@ -314,8 +379,13 @@ export default function InvoicesPage() {
                         key={invoice.id}
                         className={`cursor-pointer hover:bg-gray-50 transition-colors ${
                           invoice.status === 'overdue' ? 'border-l-4 border-l-red-600 bg-red-50' : ''
-                        }`}
+                        } ${selectedIds.has(invoice.id) ? 'bg-blue-50' : ''}`}
                       >
+                        <TableCell className="w-4 min-w-4 max-w-4 p-0.5 text-center align-middle" onClick={(e) => e.stopPropagation()}>
+                          <div className="inline-flex items-center justify-center w-4 h-6">
+                            <Checkbox size="sm" checked={selectedIds.has(invoice.id)} onCheckedChange={() => toggleSelect(invoice.id)} aria-label="Select" />
+                          </div>
+                        </TableCell>
                         <TableCell>
                           <div className="font-medium text-gray-900 flex items-center gap-2">
                             {invoice.status === 'overdue' && (
@@ -323,6 +393,11 @@ export default function InvoicesPage() {
                             )}
                             {invoice.invoice_number}
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={INVOICE_TYPE_COLORS[invoice.invoice_type || 'sale'] || 'bg-gray-100 text-gray-800'} variant="secondary">
+                            {INVOICE_TYPE_LABELS[invoice.invoice_type || 'sale']?.[language] || (invoice.invoice_type || 'sale')}
+                          </Badge>
                         </TableCell>
                         <TableCell>
                           <div>

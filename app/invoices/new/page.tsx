@@ -20,6 +20,7 @@ import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 import { useTenant } from '@/contexts/tenant-context'
+import { useLanguage } from '@/contexts/language-context'
 
 interface LineItem {
   id: string
@@ -52,6 +53,7 @@ interface Product {
 export default function NewInvoicePage() {
   const router = useRouter()
   const { tenantId, loading: tenantLoading } = useTenant()
+  const { language } = useLanguage()
   const [customers, setCustomers] = useState<Customer[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
@@ -64,6 +66,7 @@ export default function NewInvoicePage() {
     new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   )
   const [notes, setNotes] = useState<string>('')
+  const [invoiceType, setInvoiceType] = useState<string>('sale')
 
   const [lineItems, setLineItems] = useState<LineItem[]>([
     {
@@ -207,6 +210,7 @@ export default function NewInvoicePage() {
             subtotal: subtotal,
             total_vat: totalVat,
             status: 'draft',
+            invoice_type: invoiceType,
             issue_date: issueDate,
             due_date: dueDate,
             notes: notes,
@@ -343,7 +347,22 @@ export default function NewInvoicePage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="issue_date">Issue Date</Label>
+                <Label htmlFor="invoice_type">{language === 'tr' ? 'Fatura Tipi' : 'Invoice Type'}</Label>
+                <Select value={invoiceType} onValueChange={setInvoiceType}>
+                  <SelectTrigger id="invoice_type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sale">{language === 'tr' ? 'Satış' : 'Sale'}</SelectItem>
+                    <SelectItem value="sale_return">{language === 'tr' ? 'Satıştan İade' : 'Sale Return'}</SelectItem>
+                    <SelectItem value="devir">{language === 'tr' ? 'Devir' : 'Carry Forward'}</SelectItem>
+                    <SelectItem value="devir_return">{language === 'tr' ? 'Devir İade' : 'Carry Fwd Return'}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="issue_date">{language === 'tr' ? 'Düzenleme Tarihi' : 'Issue Date'}</Label>
                 <Input
                   id="issue_date"
                   type="date"

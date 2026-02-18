@@ -74,6 +74,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
     due_date: '',
     tax_rate: '20',
     status: 'draft',
+    invoice_type: 'sale',
     notes: ''
   })
 
@@ -89,6 +90,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
         due_date: '',
         tax_rate: '20',
         status: 'draft',
+        invoice_type: 'sale',
         notes: ''
       })
       setLineItems([])
@@ -139,6 +141,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
           due_date: invoice.due_date ? invoice.due_date.split('T')[0] : today,
           tax_rate: '20',
           status: invoice.status || 'draft',
+          invoice_type: invoice.invoice_type || 'sale',
           notes: invoice.notes || ''
         }
 
@@ -299,6 +302,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
           total_vat: taxAmount,
           amount: total,
           status: formData.status,
+          invoice_type: formData.invoice_type,
           notes: formData.notes,
           tenant_id: tenantId,
           updated_at: new Date().toISOString(),
@@ -430,6 +434,24 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                       {customer.company_title}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>{language === 'tr' ? 'Fatura Tipi' : 'Invoice Type'}</Label>
+              <Select
+                value={formData.invoice_type || 'sale'}
+                onValueChange={(value) => setFormData({ ...formData, invoice_type: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sale">{language === 'tr' ? 'Satış' : 'Sale'}</SelectItem>
+                  <SelectItem value="sale_return">{language === 'tr' ? 'Satıştan İade' : 'Sale Return'}</SelectItem>
+                  <SelectItem value="devir">{language === 'tr' ? 'Devir' : 'Carry Forward'}</SelectItem>
+                  <SelectItem value="devir_return">{language === 'tr' ? 'Devir İade' : 'Carry Fwd Return'}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
