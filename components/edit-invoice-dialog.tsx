@@ -35,6 +35,7 @@ interface Invoice {
   total_vat: number
   amount: number
   status: string
+  invoice_type?: string
   notes: string
 }
 
