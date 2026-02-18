@@ -4,11 +4,15 @@ export async function createOpeningBalanceInvoice(
   tenantId: string,
   customerId: string,
   enteredBalance: number,
-  language: 'tr' | 'en'
+  language: 'tr' | 'en',
+  /** true = içe aktarmada balance zaten insert ile set edildi, tekrar güncelleme (çift sayım olmasın) */
+  skipBalanceUpdate = false
 ): Promise<{ ok: boolean; error?: string }> {
   try {
+    const entered = Number(enteredBalance)
+    if (Number.isNaN(entered)) return { ok: false, error: 'Invalid opening balance' }
     const systemBalance = 0
-    const difference = enteredBalance - systemBalance
+    const difference = entered - systemBalance
     if (difference === 0) return { ok: true }
 
     const isRefund = difference < 0
@@ -23,6 +27,7 @@ export async function createOpeningBalanceInvoice(
       : (language === 'tr' ? 'Devir Faturası - Açılış bakiyesi' : 'Opening balance invoice')
 
     // Devir faturasında KDV kesinlikle 0 (total_vat: 0, tax_amount: 0)
+    // Devir = önceki dönemden kalan bakiye, gerçek tahsilat yok; banka hareketi olmadığı için unpaid
     const invoicePayload: Record<string, unknown> = {
       tenant_id: tenantId,
       customer_id: customerId,
@@ -31,15 +36,13 @@ export async function createOpeningBalanceInvoice(
       due_date: today,
       subtotal: amount,
       amount,
+      total: amount,
       total_vat: 0,
       tax_amount: 0,
-      status: isRefund ? 'unpaid' : 'paid',
+      status: 'sent',
+      paid_amount: 0,
+      remaining_amount: amount,
       notes
-    }
-    if (!isRefund) {
-      invoicePayload.payment_date = today
-      invoicePayload.paid_amount = amount
-      invoicePayload.remaining_amount = 0
     }
 
     const { data: invoice, error: invError } = await supabase
@@ -65,6 +68,9 @@ export async function createOpeningBalanceInvoice(
     })
     if (lineError) throw lineError
 
+    // Bakiye güncellemesi: devir faturalarında DB trigger (sync_customer_balance_on_devir_invoice)
+    // INSERT sonrası customers.balance ve total_revenue'yu günceller. RLS'tan bağımsız, tek kaynak.
+    // skipBalanceUpdate eski davranış için bırakıldı; artık trigger her zaman bakiyeyi günceller.
     return { ok: true }
   } catch (err: any) {
     console.error('Error creating opening balance invoice:', err)

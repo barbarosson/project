@@ -171,6 +171,12 @@ export function RecordPaymentDialog({
           .eq('id', referenceId)
 
         if (invoiceError) throw invoiceError
+
+        if (customerId) {
+          const { data: cust } = await supabase.from('customers').select('balance').eq('id', customerId).maybeSingle()
+          const newBalance = Number(cust?.balance ?? 0) - amount
+          await supabase.from('customers').update({ balance: newBalance }).eq('id', customerId)
+        }
       } else if (type === 'expense') {
         const { error: expenseError } = await supabase
           .from('expenses')

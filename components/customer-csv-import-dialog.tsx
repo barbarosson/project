@@ -346,39 +346,44 @@ function mapRowToCustomer(
     status,
     balance: 0,
     opening_balance: (() => {
+      const tryParse = (v: string): number => parseOpeningBalance(String(v || '').trim())
+      // 1) Önce "Açılış Bakiyesi" / "bakiye" / "opening balance" başlıklı sütunu ara
       const byKey = get('opening_balance')
-      if (byKey !== '') return parseOpeningBalance(byKey)
-      // Herhangi bir sütun başlığı "bakiye" veya "balance" içeriyorsa o sütunu kullan
+      if (byKey !== '') {
+        const p = tryParse(byKey)
+        if (p !== 0) return p
+      }
+      // 2) Başlık adı "bakiye", "balance", "acilis", "opening", "devir" içeren sütunlar
+      const balanceKeywords = ['bakiye', 'balance', 'açılış', 'acilis', 'opening', 'devir']
       for (let i = 0; i < headers.length; i++) {
         const h = normalizeHeader(headers[i] || '')
-        if (h.includes('bakiye') || h.includes('balance')) {
+        const hasKeyword = balanceKeywords.some((k) => h.includes(k))
+        if (hasKeyword) {
           const v = values[i] !== undefined && values[i] !== null ? String(values[i]).trim() : ''
-          const p = parseOpeningBalance(v)
+          const p = tryParse(v)
           if (p !== 0) return p
-          break
         }
       }
-      const lastIdx = headers.length - 1
-      if (lastIdx >= 0 && values[lastIdx] !== undefined) {
-        const lastHeader = normalizeHeader(headers[lastIdx] || '')
-        if (lastHeader.includes('bakiye') || lastHeader.includes('balance')) return parseOpeningBalance(String(values[lastIdx]))
-      }
-      // Şablonda bakiye 26. sütun (index 25): satırda 26+ sütun varsa 26. hücreyi dene (Excel için)
+      // 3) Şablonda bakiye 26. sütun (index 25) - Excel/CSV şablonu ile uyumlu
       if (values.length >= 26) {
-        const p = parseOpeningBalance(String(values[25] ?? '').trim())
+        const p = tryParse(String(values[25] ?? ''))
         if (p !== 0) return p
       }
-      // Bakiye sütunu bulundu ama hücre boştu; son hücreyi dene (Excel son sütun bazen eksik gelir)
+      // 4) Son sütun - Excel'de bakiye genelde en sonda (Durum'dan sonra)
       if (values.length > 0) {
         const lastVal = String(values[values.length - 1] ?? '').trim()
-        const p = parseOpeningBalance(lastVal)
+        const p = tryParse(lastVal)
         if (p !== 0) return p
       }
-      // Sondan en fazla 3 hücreye bak
-      for (let i = values.length - 1; i >= Math.max(0, values.length - 3); i--) {
-        if (values[i] === undefined || values[i] === null) continue
-        const parsed = parseOpeningBalance(String(values[i]).trim())
-        if (parsed !== 0) return parsed
+      // 5) Sondan 5 hücre - "aktif"/"pasif" atlanır, ilk geçerli sayı alınır
+      for (let i = values.length - 1; i >= Math.max(0, values.length - 5); i--) {
+        const raw = values[i]
+        if (raw === undefined || raw === null) continue
+        const s = String(raw).trim()
+        if (/^-?\d+([.,]\d+)?$/.test(s.replace(/\s/g, ''))) {
+          const parsed = tryParse(s)
+          return parsed
+        }
       }
       return 0
     })(),
@@ -589,18 +594,21 @@ export function CustomerCsvImportDialog({
         const chunk = toInsert.slice(i, i + BATCH)
         const batch = chunk.map((x) => {
           const { opening_balance: _ob, balance: _b, ...rest } = x.data as Record<string, unknown>
-          return rest
+          return { ...rest, balance: 0 }
         })
         const { data: inserted, error } = await supabase.from('customers').insert(batch).select('id')
         if (error) throw error
+        let balanceInvoiceCount = 0
         for (let j = 0; j < chunk.length && inserted?.[j]; j++) {
-          const ob = Number((chunk[j].data as any).opening_balance) || 0
+          const rawOb = (chunk[j].data as any).opening_balance
+          const ob = typeof rawOb === 'number' ? rawOb : (Number(rawOb) || parseOpeningBalance(String(rawOb ?? '')))
           if (ob !== 0) {
-            const res = await createOpeningBalanceInvoice(tenantId!, inserted[j].id, ob, lang)
-            if (!res.ok) {
-              toast.error(language === 'tr' ? `Bakiye faturası oluşturulamadı (${chunk[j].company}): ${res.error}` : `Opening balance invoice failed (${chunk[j].company}): ${res.error}`)
-            }
+            const res = await createOpeningBalanceInvoice(tenantId!, inserted[j].id, ob, lang, false)
+            if (res.ok) balanceInvoiceCount++
           }
+        }
+        if (balanceInvoiceCount > 0) {
+          toast.success(language === 'tr' ? `${balanceInvoiceCount} devir faturası oluşturuldu` : `${balanceInvoiceCount} opening balance invoice(s) created`)
         }
       }
 
@@ -685,18 +693,21 @@ export function CustomerCsvImportDialog({
         const chunk = pendingImport.toInsert.slice(i, i + BATCH)
         const batch = chunk.map((x) => {
           const { opening_balance: _ob, balance: _b, ...rest } = x.data as Record<string, unknown>
-          return rest
+          return { ...rest, balance: 0 }
         })
         const { data: inserted, error } = await supabase.from('customers').insert(batch).select('id')
         if (error) throw error
+        let balanceInvoiceCount = 0
         for (let j = 0; j < chunk.length && inserted?.[j]; j++) {
-          const ob = Number((chunk[j].data as any).opening_balance) || 0
+          const rawOb = (chunk[j].data as any).opening_balance
+          const ob = typeof rawOb === 'number' ? rawOb : (Number(rawOb) || parseOpeningBalance(String(rawOb ?? '')))
           if (ob !== 0) {
-            const res = await createOpeningBalanceInvoice(tenantId!, inserted[j].id, ob, lang)
-            if (!res.ok) {
-              toast.error(language === 'tr' ? `Bakiye faturası oluşturulamadı (${chunk[j].company}): ${res.error}` : `Opening balance invoice failed (${chunk[j].company}): ${res.error}`)
-            }
+            const res = await createOpeningBalanceInvoice(tenantId!, inserted[j].id, ob, lang, false)
+            if (res.ok) balanceInvoiceCount++
           }
+        }
+        if (balanceInvoiceCount > 0) {
+          toast.success(language === 'tr' ? `${balanceInvoiceCount} devir faturası oluşturuldu` : `${balanceInvoiceCount} opening balance invoice(s) created`)
         }
       }
       const successDetails = [

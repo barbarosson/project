@@ -253,8 +253,7 @@ export default function CustomersPage() {
         supabase
           .from('transactions')
           .select('id')
-          .eq('entity_id', customerToDelete)
-          .eq('entity_type', 'customer')
+          .eq('customer_id', customerToDelete)
           .eq('tenant_id', tenantId)
           .limit(1)
       ])
@@ -317,7 +316,7 @@ export default function CustomersPage() {
         const [invoicesResult, proposalsResult, transactionsResult] = await Promise.all([
           supabase.from('invoices').select('id').eq('customer_id', customerId).eq('tenant_id', tenantId).limit(1),
           supabase.from('proposals').select('id').eq('customer_id', customerId).eq('tenant_id', tenantId).limit(1),
-          supabase.from('transactions').select('id').eq('entity_id', customerId).eq('entity_type', 'customer').eq('tenant_id', tenantId).limit(1)
+          supabase.from('transactions').select('id').eq('customer_id', customerId).eq('tenant_id', tenantId).limit(1)
         ])
 
         const hasRelations =

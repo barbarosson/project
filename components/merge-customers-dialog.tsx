@@ -113,8 +113,7 @@ export function MergeCustomersDialog({
             supabase
               .from('transactions')
               .select('id', { count: 'exact', head: true })
-              .eq('entity_id', sourceId)
-              .eq('entity_type', 'customer')
+              .eq('customer_id', sourceId)
           ])
 
           return {
