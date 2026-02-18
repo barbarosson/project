@@ -251,7 +251,7 @@ export default function InvoicesPage() {
     )
     if (!confirmed) return
     try {
-      for (const id of selectedIds) {
+      for (const id of Array.from(selectedIds)) {
         await supabase.from('invoice_line_items').delete().eq('invoice_id', id).eq('tenant_id', tenantId)
         await supabase.from('invoices').delete().eq('id', id).eq('tenant_id', tenantId)
       }
