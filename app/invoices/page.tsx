@@ -307,7 +307,7 @@ export default function InvoicesPage() {
           <CardContent className="p-6">
             <div className="flex flex-wrap items-center gap-3 mb-4">
               <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setSelectedIds(new Set()) }}>
-                <SelectTrigger className="w-[160px] h-9">
+                <SelectTrigger className="w-[160px] h-9" data-field="invoices-status-filter">
                   <SelectValue placeholder={language === 'tr' ? 'Durum' : 'Status'} />
                 </SelectTrigger>
                 <SelectContent>
@@ -320,7 +320,7 @@ export default function InvoicesPage() {
                 </SelectContent>
               </Select>
               <Select value={typeFilter} onValueChange={(v) => { setTypeFilter(v); setSelectedIds(new Set()) }}>
-                <SelectTrigger className="w-[180px] h-9">
+                <SelectTrigger className="w-[180px] h-9" data-field="invoices-type-filter">
                   <SelectValue placeholder={language === 'tr' ? 'Fatura Tipi' : 'Invoice Type'} />
                 </SelectTrigger>
                 <SelectContent>
@@ -355,7 +355,7 @@ export default function InvoicesPage() {
                   <TableRow className="bg-gray-50">
                     <TableHead className="h-8 w-4 min-w-4 max-w-4 p-0.5 text-center align-middle">
                       <div className="inline-flex items-center justify-center w-4 h-6">
-                        <Checkbox size="sm" checked={allVisibleSelected && filteredInvoices.length > 0} onCheckedChange={toggleSelectAll} aria-label="Select all" />
+                        <Checkbox size="sm" checked={allVisibleSelected && filteredInvoices.length > 0} onCheckedChange={toggleSelectAll} aria-label="Select all" data-field="invoices-select-all" />
                       </div>
                     </TableHead>
                     <TableHead className="font-semibold">{t.invoices.invoiceNo}</TableHead>
@@ -387,7 +387,7 @@ export default function InvoicesPage() {
                       >
                         <TableCell className="w-4 min-w-4 max-w-4 p-0.5 text-center align-middle" onClick={(e) => e.stopPropagation()}>
                           <div className="inline-flex items-center justify-center w-4 h-6">
-                            <Checkbox size="sm" checked={selectedIds.has(invoice.id)} onCheckedChange={() => toggleSelect(invoice.id)} aria-label="Select" />
+                            <Checkbox size="sm" checked={selectedIds.has(invoice.id)} onCheckedChange={() => toggleSelect(invoice.id)} aria-label="Select" data-field="invoices-row-select" />
                           </div>
                         </TableCell>
                         <TableCell>

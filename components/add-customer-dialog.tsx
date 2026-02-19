@@ -518,7 +518,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
                 value={formData.account_type}
                 onValueChange={(value) => setFormData({ ...formData, account_type: value })}
               >
-                <SelectTrigger id="account_type">
+                <SelectTrigger id="account_type" data-field="add-customer-account-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -634,7 +634,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
                     value={formData.industry}
                     onValueChange={(value) => setFormData({ ...formData, industry: value })}
                   >
-                    <SelectTrigger id="industry">
+                    <SelectTrigger id="industry" data-field="add-customer-industry">
                       <SelectValue placeholder="Sektör seçin" />
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px]">
@@ -661,7 +661,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
                     value={formData.branch_type}
                     onValueChange={(value: any) => setFormData({ ...formData, branch_type: value })}
                   >
-                    <SelectTrigger id="branch_type">
+                    <SelectTrigger id="branch_type" data-field="add-customer-branch-type">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -698,7 +698,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
                     value={formData.parent_customer_id || ''}
                     onValueChange={(value) => setFormData({ ...formData, parent_customer_id: value || null })}
                   >
-                    <SelectTrigger id="parent_customer">
+                    <SelectTrigger id="parent_customer" data-field="add-customer-parent">
                       <SelectValue placeholder="Ana cari seçin..." />
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px]">
@@ -778,7 +778,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
                     value={formData.district}
                     onValueChange={(value) => setFormData({ ...formData, district: value })}
                   >
-                    <SelectTrigger id="district">
+                    <SelectTrigger id="district" data-field="add-customer-district">
                       <SelectValue placeholder={t.placeholders.districtName} />
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px]">
@@ -830,7 +830,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
                 value={formData.currency || 'TRY'}
                 onValueChange={(value) => setFormData({ ...formData, currency: value })}
               >
-                <SelectTrigger id="currency">
+                <SelectTrigger id="currency" data-field="add-customer-currency">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -849,7 +849,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
                   value={formData.payment_terms_unit}
                   onValueChange={(value: 'days' | 'months') => setFormData({ ...formData, payment_terms_unit: value })}
                 >
-                  <SelectTrigger id="payment_terms_unit">
+                  <SelectTrigger id="payment_terms_unit" data-field="add-customer-payment-terms-unit">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -882,7 +882,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
                   value={formData.payment_terms_type}
                   onValueChange={(value) => setFormData({ ...formData, payment_terms_type: value })}
                 >
-                  <SelectTrigger id="payment_terms_type">
+                  <SelectTrigger id="payment_terms_type" data-field="add-customer-payment-terms-type">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

@@ -314,7 +314,7 @@ export function BulkCreateInvoicesDialog({ isOpen, onClose, onSuccess }: BulkCre
                   value={invoice.customer_id}
                   onValueChange={(value) => updateRow(invoice.id, 'customer_id', value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger data-field="bulk-invoices-customer">
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>
@@ -329,7 +329,7 @@ export function BulkCreateInvoicesDialog({ isOpen, onClose, onSuccess }: BulkCre
                   value={invoice.product_id}
                   onValueChange={(value) => updateRow(invoice.id, 'product_id', value)}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger data-field="bulk-invoices-product">
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>

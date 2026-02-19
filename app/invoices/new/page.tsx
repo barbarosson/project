@@ -342,7 +342,7 @@ export default function NewInvoicePage() {
               <div className="space-y-2">
                 <Label htmlFor="customer">Customer *</Label>
                 <Select value={selectedCustomerId} onValueChange={setSelectedCustomerId}>
-                  <SelectTrigger id="customer">
+                  <SelectTrigger id="customer" data-field="new-invoice-customer">
                     <SelectValue placeholder="Select customer" />
                   </SelectTrigger>
                   <SelectContent>
@@ -358,7 +358,7 @@ export default function NewInvoicePage() {
               <div className="space-y-2">
                 <Label htmlFor="invoice_type">{language === 'tr' ? 'Fatura Tipi' : 'Invoice Type'}</Label>
                 <Select value={invoiceType} onValueChange={setInvoiceType}>
-                  <SelectTrigger id="invoice_type">
+                  <SelectTrigger id="invoice_type" data-field="new-invoice-type">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -373,7 +373,7 @@ export default function NewInvoicePage() {
               <div className="space-y-2">
                 <Label htmlFor="currency">{language === 'tr' ? 'Para Birimi' : 'Currency'}</Label>
                 <Select value={currency} onValueChange={setCurrency}>
-                  <SelectTrigger id="currency">
+                  <SelectTrigger id="currency" data-field="new-invoice-currency">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -393,6 +393,7 @@ export default function NewInvoicePage() {
                   type="date"
                   value={issueDate}
                   onChange={(e) => setIssueDate(e.target.value)}
+                  data-field="new-invoice-issue-date"
                 />
               </div>
 
@@ -403,6 +404,7 @@ export default function NewInvoicePage() {
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
+                  data-field="new-invoice-due-date"
                 />
               </div>
             </div>
@@ -411,7 +413,7 @@ export default function NewInvoicePage() {
               <div className="space-y-2">
                 <Label htmlFor="project">Project</Label>
                 <Select value={selectedProjectId || 'none'} onValueChange={v => setSelectedProjectId(v === 'none' ? '' : v)}>
-                  <SelectTrigger id="project">
+                  <SelectTrigger id="project" data-field="new-invoice-project">
                     <SelectValue placeholder="Select project (optional)" />
                   </SelectTrigger>
                   <SelectContent>
@@ -462,7 +464,7 @@ export default function NewInvoicePage() {
                           value={item.product_id || ''}
                           onValueChange={(value) => selectProduct(index, value)}
                         >
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger className="w-full" data-field={`line-item-${index}-product`}>
                             <SelectValue placeholder="Select or type..." />
                           </SelectTrigger>
                           <SelectContent>
@@ -478,6 +480,7 @@ export default function NewInvoicePage() {
                           onChange={(e) => updateLineItem(index, 'product_name', e.target.value)}
                           placeholder="Or type custom name"
                           className="mt-1"
+                          data-field={`line-item-${index}-product-name`}
                         />
                       </td>
                       <td className="p-2">
@@ -485,6 +488,7 @@ export default function NewInvoicePage() {
                           value={item.description}
                           onChange={(e) => updateLineItem(index, 'description', e.target.value)}
                           placeholder="Optional"
+                          data-field={`line-item-${index}-description`}
                         />
                       </td>
                       <td className="p-2">
@@ -495,6 +499,7 @@ export default function NewInvoicePage() {
                           min="0"
                           step="0.01"
                           className="text-right"
+                          data-field={`line-item-${index}-quantity`}
                         />
                       </td>
                       <td className="p-2">
@@ -505,6 +510,7 @@ export default function NewInvoicePage() {
                           min="0"
                           step="0.01"
                           className="text-right"
+                          data-field={`line-item-${index}-unit-price`}
                         />
                       </td>
                       <td className="p-2">
@@ -512,7 +518,7 @@ export default function NewInvoicePage() {
                           value={item.vat_rate.toString()}
                           onValueChange={(value) => updateLineItem(index, 'vat_rate', parseFloat(value))}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger data-field={`line-item-${index}-vat`}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>

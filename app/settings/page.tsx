@@ -223,6 +223,7 @@ export default function SettingsPage() {
                       value={companySettings.company_name}
                       onChange={(e) => setCompanySettings({ ...companySettings, company_name: e.target.value })}
                       placeholder="MODULUS Inc."
+                      data-field="settings-company-name"
                     />
                   </div>
 
@@ -233,6 +234,7 @@ export default function SettingsPage() {
                       value={companySettings.company_title}
                       onChange={(e) => setCompanySettings({ ...companySettings, company_title: e.target.value })}
                       placeholder="MODULUS Technology Inc."
+                      data-field="settings-company-title"
                     />
                   </div>
                 </div>
@@ -245,6 +247,7 @@ export default function SettingsPage() {
                       value={companySettings.tax_office}
                       onChange={(e) => setCompanySettings({ ...companySettings, tax_office: e.target.value })}
                       placeholder={language === 'tr' ? 'Merkez Vergi Dairesi' : 'Central Tax Office'}
+                      data-field="settings-tax-office"
                     />
                   </div>
 
@@ -255,6 +258,7 @@ export default function SettingsPage() {
                       value={companySettings.tax_number}
                       onChange={(e) => setCompanySettings({ ...companySettings, tax_number: e.target.value })}
                       placeholder="1234567890"
+                      data-field="settings-tax-number"
                     />
                   </div>
                 </div>
@@ -267,6 +271,7 @@ export default function SettingsPage() {
                     onChange={(e) => setCompanySettings({ ...companySettings, address: e.target.value })}
                     placeholder={language === 'tr' ? 'Atatürk Caddesi No:123 Kat:4' : '123 Business Street, Suite 100'}
                     rows={2}
+                    data-field="settings-address"
                   />
                 </div>
 
@@ -286,6 +291,7 @@ export default function SettingsPage() {
                       value={companySettings.postal_code}
                       onChange={(e) => setCompanySettings({ ...companySettings, postal_code: e.target.value })}
                       placeholder="34000"
+                      data-field="settings-postal-code"
                     />
                   </div>
 
@@ -295,7 +301,7 @@ export default function SettingsPage() {
                       value={companySettings.country}
                       onValueChange={(value) => setCompanySettings({ ...companySettings, country: value })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger data-field="settings-country">
                         <SelectValue placeholder={language === 'tr' ? 'Ülke seçin' : 'Select country'} />
                       </SelectTrigger>
                       <SelectContent>
@@ -334,6 +340,7 @@ export default function SettingsPage() {
                       value={companySettings.phone}
                       onChange={(e) => setCompanySettings({ ...companySettings, phone: e.target.value })}
                       placeholder="+90 212 345 6789"
+                      data-field="settings-phone"
                     />
                   </div>
 
@@ -345,6 +352,7 @@ export default function SettingsPage() {
                       value={companySettings.email}
                       onChange={(e) => setCompanySettings({ ...companySettings, email: e.target.value })}
                       placeholder="info@sirket.com"
+                      data-field="settings-email"
                     />
                   </div>
                 </div>
@@ -356,6 +364,7 @@ export default function SettingsPage() {
                     value={companySettings.website}
                     onChange={(e) => setCompanySettings({ ...companySettings, website: e.target.value })}
                     placeholder="https://www.sirket.com"
+                    data-field="settings-website"
                   />
                 </div>
 
@@ -377,6 +386,7 @@ export default function SettingsPage() {
                         value={companySettings.iban}
                         onChange={(e) => setCompanySettings({ ...companySettings, iban: e.target.value })}
                         placeholder="TR00 0000 0000 0000 0000 0000 00"
+                        data-field="settings-iban"
                       />
                     </div>
                   </div>
@@ -434,7 +444,7 @@ export default function SettingsPage() {
                       value={selectedCurrency}
                       onValueChange={(value) => handleCurrencyChange(value)}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger data-field="settings-currency">
                         <SelectValue placeholder={t.settings.selectCurrency} />
                       </SelectTrigger>
                       <SelectContent>

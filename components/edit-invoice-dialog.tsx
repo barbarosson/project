@@ -433,7 +433,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                 value={formData.customer_id || undefined}
                 onValueChange={(value) => setFormData({ ...formData, customer_id: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger data-field="edit-invoice-customer">
                   <SelectValue placeholder={t.invoices.selectCustomer} />
                 </SelectTrigger>
                 <SelectContent>
@@ -452,7 +452,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                 value={formData.invoice_type || 'sale'}
                 onValueChange={(value) => setFormData({ ...formData, invoice_type: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger data-field="edit-invoice-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -470,7 +470,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                 value={formData.currency || 'TRY'}
                 onValueChange={(value) => setFormData({ ...formData, currency: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger data-field="edit-invoice-currency">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -489,7 +489,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                 value={formData.status || undefined}
                 onValueChange={(value) => setFormData({ ...formData, status: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger data-field="edit-invoice-status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -514,6 +514,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                 value={formData.issue_date}
                 onChange={(e) => setFormData({ ...formData, issue_date: e.target.value })}
                 required
+                data-field="edit-invoice-issue-date"
               />
             </div>
 
@@ -524,6 +525,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                 value={formData.due_date}
                 onChange={(e) => setFormData({ ...formData, due_date: e.target.value })}
                 required
+                data-field="edit-invoice-due-date"
               />
             </div>
           </div>
@@ -535,7 +537,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                 value={formData.tax_rate || '20'}
                 onValueChange={(value) => setFormData({ ...formData, tax_rate: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger data-field="edit-invoice-vat-rate">
                   <SelectValue placeholder={language === 'tr' ? 'KDV oranı seçin' : 'Select VAT rate'} />
                 </SelectTrigger>
                 <SelectContent>
@@ -568,7 +570,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                     value={item.product_id || undefined}
                     onValueChange={(value) => updateLineItem(item.id, 'product_id', value)}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger data-field="edit-invoice-line-product">
                       <SelectValue placeholder={t.invoices.selectProduct} />
                     </SelectTrigger>
                     <SelectContent>
@@ -596,7 +598,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                     value={String([0, 1, 10, 20].includes(item.vat_rate) ? item.vat_rate : 20)}
                     onValueChange={(value) => updateLineItem(item.id, 'vat_rate', parseInt(value, 10))}
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full" data-field="edit-invoice-line-vat">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
