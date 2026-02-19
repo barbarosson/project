@@ -12,6 +12,7 @@ import { EInvoicePreview } from '@/components/e-invoice-preview'
 import { Toaster } from '@/components/ui/sonner'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
+import { useCurrency } from '@/contexts/currency-context'
 
 interface LineItem {
   id: string
@@ -33,6 +34,7 @@ interface Invoice {
   subtotal: number
   total_vat: number
   status: string
+  currency?: string
   issue_date: string
   due_date: string
   notes: string
@@ -52,8 +54,10 @@ export default function InvoiceDetailPage() {
   const invoiceId = params.id as string
   const { tenantId, loading: tenantLoading } = useTenant()
   const { language } = useLanguage()
+  const { formatCurrency } = useCurrency()
 
   const [invoice, setInvoice] = useState<Invoice | null>(null)
+  const curr = (invoice?.currency || 'TRY') as string
   const [lineItems, setLineItems] = useState<LineItem[]>([])
   const [loading, setLoading] = useState(true)
   const [showEInvoice, setShowEInvoice] = useState(false)
@@ -241,13 +245,13 @@ export default function InvoiceDetailPage() {
                         )}
                       </td>
                       <td className="p-2 text-right">{item.quantity}</td>
-                      <td className="p-2 text-right">${item.unit_price.toFixed(2)}</td>
-                      <td className="p-2 text-right">${item.line_total.toFixed(2)}</td>
+                      <td className="p-2 text-right">{formatCurrency(item.unit_price, curr)}</td>
+                      <td className="p-2 text-right">{formatCurrency(item.line_total, curr)}</td>
                       <td className="p-2 text-right">
-                        ${item.vat_amount.toFixed(2)}
+                        {formatCurrency(item.vat_amount, curr)}
                         <span className="text-xs text-gray-500 ml-1">({item.vat_rate}%)</span>
                       </td>
-                      <td className="p-2 text-right font-semibold">${item.total_with_vat.toFixed(2)}</td>
+                      <td className="p-2 text-right font-semibold">{formatCurrency(item.total_with_vat, curr)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -258,15 +262,15 @@ export default function InvoiceDetailPage() {
               <div className="w-80 space-y-2">
                 <div className="flex justify-between py-2 border-b">
                   <span className="text-gray-600">Subtotal:</span>
-                  <span className="font-semibold">${invoice.subtotal.toFixed(2)}</span>
+                  <span className="font-semibold">{formatCurrency(invoice.subtotal, curr)}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
                   <span className="text-gray-600">Total VAT:</span>
-                  <span className="font-semibold">${invoice.total_vat.toFixed(2)}</span>
+                  <span className="font-semibold">{formatCurrency(invoice.total_vat, curr)}</span>
                 </div>
                 <div className="flex justify-between py-3 bg-[#00D4AA] text-white px-4 rounded-lg">
                   <span className="font-bold text-lg">Grand Total:</span>
-                  <span className="font-bold text-lg">${invoice.amount.toFixed(2)}</span>
+                  <span className="font-bold text-lg">{formatCurrency(invoice.amount, curr)}</span>
                 </div>
               </div>
             </div>

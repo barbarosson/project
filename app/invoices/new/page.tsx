@@ -21,6 +21,8 @@ import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
+import { useCurrency } from '@/contexts/currency-context'
+import { CURRENCY_LIST, getCurrencyLabel } from '@/lib/currencies'
 
 interface LineItem {
   id: string
@@ -67,6 +69,8 @@ export default function NewInvoicePage() {
   )
   const [notes, setNotes] = useState<string>('')
   const [invoiceType, setInvoiceType] = useState<string>('sale')
+  const { currency: companyCurrency } = useCurrency()
+  const [currency, setCurrency] = useState<string>('TRY')
 
   const [lineItems, setLineItems] = useState<LineItem[]>([
     {
@@ -81,6 +85,10 @@ export default function NewInvoicePage() {
       total_with_vat: 0
     }
   ])
+
+  useEffect(() => {
+    if (companyCurrency) setCurrency(companyCurrency)
+  }, [companyCurrency])
 
   useEffect(() => {
     if (!tenantLoading && tenantId) {
@@ -211,6 +219,7 @@ export default function NewInvoicePage() {
             total_vat: totalVat,
             status: 'draft',
             invoice_type: invoiceType,
+            currency: currency || companyCurrency || 'TRY',
             issue_date: issueDate,
             due_date: dueDate,
             notes: notes,
@@ -357,6 +366,22 @@ export default function NewInvoicePage() {
                     <SelectItem value="sale_return">{language === 'tr' ? 'Satıştan İade' : 'Sale Return'}</SelectItem>
                     <SelectItem value="devir">{language === 'tr' ? 'Devir' : 'Carry Forward'}</SelectItem>
                     <SelectItem value="devir_return">{language === 'tr' ? 'Devir İade' : 'Carry Fwd Return'}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="currency">{language === 'tr' ? 'Para Birimi' : 'Currency'}</Label>
+                <Select value={currency} onValueChange={setCurrency}>
+                  <SelectTrigger id="currency">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CURRENCY_LIST.map((c) => (
+                      <SelectItem key={c.code} value={c.code}>
+                        {getCurrencyLabel(c, language)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

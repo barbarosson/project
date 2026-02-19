@@ -23,6 +23,8 @@ import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
+import { useCurrency } from '@/contexts/currency-context'
+import { CURRENCY_LIST, getCurrencyLabel } from '@/lib/currencies'
 import { Plus, Trash2, Loader2 } from 'lucide-react'
 
 interface Invoice {
@@ -36,6 +38,7 @@ interface Invoice {
   amount: number
   status: string
   invoice_type?: string
+  currency?: string
   notes: string
 }
 
@@ -76,6 +79,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
     tax_rate: '20',
     status: 'draft',
     invoice_type: 'sale',
+    currency: 'TRY',
     notes: ''
   })
 
@@ -92,6 +96,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
         tax_rate: '20',
         status: 'draft',
         invoice_type: 'sale',
+        currency: 'TRY',
         notes: ''
       })
       setLineItems([])
@@ -143,6 +148,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
           tax_rate: '20',
           status: invoice.status || 'draft',
           invoice_type: invoice.invoice_type || 'sale',
+          currency: invoice.currency || 'TRY',
           notes: invoice.notes || ''
         }
 
@@ -304,6 +310,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
           amount: total,
           status: formData.status,
           invoice_type: formData.invoice_type,
+          currency: formData.currency || 'TRY',
           notes: formData.notes,
           tenant_id: tenantId,
           updated_at: new Date().toISOString(),
@@ -453,6 +460,25 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                   <SelectItem value="sale_return">{language === 'tr' ? 'Satıştan İade' : 'Sale Return'}</SelectItem>
                   <SelectItem value="devir">{language === 'tr' ? 'Devir' : 'Carry Forward'}</SelectItem>
                   <SelectItem value="devir_return">{language === 'tr' ? 'Devir İade' : 'Carry Fwd Return'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>{language === 'tr' ? 'Para Birimi' : 'Currency'}</Label>
+              <Select
+                value={formData.currency || 'TRY'}
+                onValueChange={(value) => setFormData({ ...formData, currency: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCY_LIST.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {getCurrencyLabel(c, language)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

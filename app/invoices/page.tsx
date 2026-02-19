@@ -32,6 +32,7 @@ import { RecordPaymentDialog } from '@/components/record-payment-dialog'
 import { toast } from 'sonner'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
+import { useCurrency } from '@/contexts/currency-context'
 import { DollarSign } from 'lucide-react'
 
 interface Invoice {
@@ -45,6 +46,7 @@ interface Invoice {
   remaining_amount: number
   status: string
   invoice_type: string
+  currency?: string
   issue_date: string
   due_date: string
   created_at: string
@@ -72,6 +74,7 @@ export default function InvoicesPage() {
   const router = useRouter()
   const { tenantId, loading: tenantLoading } = useTenant()
   const { language, t } = useLanguage()
+  const { formatCurrency } = useCurrency()
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<string>('all')
@@ -357,6 +360,7 @@ export default function InvoicesPage() {
                     </TableHead>
                     <TableHead className="font-semibold">{t.invoices.invoiceNo}</TableHead>
                     <TableHead className="font-semibold">{language === 'tr' ? 'Tip' : 'Type'}</TableHead>
+                    <TableHead className="font-semibold">{language === 'tr' ? 'Para Birimi' : 'Currency'}</TableHead>
                     <TableHead className="font-semibold">{t.invoices.customer}</TableHead>
                     <TableHead className="font-semibold">{t.invoices.issueDate}</TableHead>
                     <TableHead className="font-semibold">{t.invoices.dueDate}</TableHead>
@@ -369,7 +373,7 @@ export default function InvoicesPage() {
                 <TableBody>
                   {filteredInvoices.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={10} className="text-center py-12 text-gray-500">
+                      <TableCell colSpan={11} className="text-center py-12 text-gray-500">
                         {t.invoices.noInvoicesFound}
                       </TableCell>
                     </TableRow>
@@ -400,6 +404,9 @@ export default function InvoicesPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
+                          <span className="text-sm font-medium text-gray-700">{invoice.currency || 'TRY'}</span>
+                        </TableCell>
+                        <TableCell>
                           <div>
                             <div className="font-medium text-gray-900">
                               {invoice.customers?.company_title || invoice.customers?.name || 'N/A'}
@@ -423,16 +430,16 @@ export default function InvoicesPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="font-semibold text-gray-900">
-                            ${Number(invoice.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {formatCurrency(Number(invoice.amount || 0), invoice.currency || 'TRY')}
                           </div>
                           {invoice.paid_amount > 0 && invoice.status !== 'draft' && (
                             <div className="text-xs text-green-600">
-                              {t.common.paid}: ${Number(invoice.paid_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                              {t.common.paid}: {formatCurrency(Number(invoice.paid_amount), invoice.currency || 'TRY')}
                             </div>
                           )}
                           {Number(invoice.remaining_amount || 0) > 0.01 && invoice.status !== 'paid' && (
                             <div className="text-xs text-red-600">
-                              {t.invoices.remaining}: ${Number(invoice.remaining_amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                              {t.invoices.remaining}: {formatCurrency(Number(invoice.remaining_amount), invoice.currency || 'TRY')}
                             </div>
                           )}
                         </TableCell>

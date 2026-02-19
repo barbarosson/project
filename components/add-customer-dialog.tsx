@@ -38,6 +38,8 @@ import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
+import { useCurrency } from '@/contexts/currency-context'
+import { CURRENCY_LIST, getCurrencyLabel } from '@/lib/currencies'
 import {
   validateTaxNumber,
   validateTurkishIBAN,
@@ -65,6 +67,7 @@ interface AddCustomerDialogProps {
 export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDialogProps) {
   const { tenantId } = useTenant()
   const { t, language } = useLanguage()
+  const { currency: companyCurrency } = useCurrency()
   const [loading, setLoading] = useState(false)
   const [showBalanceConfirm, setShowBalanceConfirm] = useState(false)
   const [balanceDifference, setBalanceDifference] = useState(0)
@@ -83,6 +86,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
     district: '',
     postal_code: '',
     country: 'Türkiye',
+    currency: 'TRY',
     payment_terms: 0,
     payment_terms_unit: 'days' as 'days' | 'months',
     payment_terms_type: 'net',
@@ -111,6 +115,12 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
   const [availableParentCustomers, setAvailableParentCustomers] = useState<any[]>([])
   const [showMergeConfirm, setShowMergeConfirm] = useState(false)
   const [mergeTargetCustomer, setMergeTargetCustomer] = useState<any | null>(null)
+
+  useEffect(() => {
+    if (isOpen && companyCurrency) {
+      setFormData(prev => ({ ...prev, currency: companyCurrency }))
+    }
+  }, [isOpen, companyCurrency])
 
   useEffect(() => {
     if (formData.city && hasDistrictData(formData.city)) {
@@ -419,6 +429,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
       district: '',
       postal_code: '',
       country: 'Türkiye',
+      currency: companyCurrency || 'TRY',
       payment_terms: 0,
       payment_terms_unit: 'days',
       payment_terms_type: 'net',
@@ -813,6 +824,24 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
           </TabsContent>
 
           <TabsContent value="payment" className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="currency">{language === 'tr' ? 'Para Birimi' : 'Currency'}</Label>
+              <Select
+                value={formData.currency || 'TRY'}
+                onValueChange={(value) => setFormData({ ...formData, currency: value })}
+              >
+                <SelectTrigger id="currency">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {CURRENCY_LIST.map((c) => (
+                    <SelectItem key={c.code} value={c.code}>
+                      {getCurrencyLabel(c, language)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="payment_terms_unit">Vade Tipi</Label>

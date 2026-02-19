@@ -20,7 +20,8 @@ import { Building, Upload, Globe, Languages, ShieldCheck } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
-import { useCurrency, Currency, currencySymbols, currencyNames } from '@/contexts/currency-context'
+import { useCurrency } from '@/contexts/currency-context'
+import { CURRENCY_LIST, getCurrencyLabel } from '@/lib/currencies'
 import { toast } from 'sonner'
 import { TurkishProvinceSelect } from '@/components/turkish-province-select'
 import { TurkishBankSelect } from '@/components/turkish-bank-select'
@@ -44,8 +45,6 @@ interface CompanySettings {
   logo_url: string | null
   currency: string
 }
-
-const currencies: Currency[] = ['TRY', 'USD', 'EUR', 'GBP', 'CHF', 'CAD', 'AUD', 'JPY', 'SAR', 'AED']
 
 export default function SettingsPage() {
   const { tenantId, loading: tenantLoading } = useTenant()
@@ -100,7 +99,7 @@ export default function SettingsPage() {
     }
   }
 
-  async function handleCurrencyChange(newCurrency: Currency) {
+  async function handleCurrencyChange(newCurrency: string) {
     try {
       await updateCurrency(newCurrency)
       setCompanySettings({ ...companySettings, currency: newCurrency })
@@ -433,15 +432,15 @@ export default function SettingsPage() {
                     <Label htmlFor="currency">{t.settings.defaultCurrency}</Label>
                     <Select
                       value={selectedCurrency}
-                      onValueChange={(value) => handleCurrencyChange(value as Currency)}
+                      onValueChange={(value) => handleCurrencyChange(value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder={t.settings.selectCurrency} />
                       </SelectTrigger>
                       <SelectContent>
-                        {currencies.map((curr) => (
-                          <SelectItem key={curr} value={curr}>
-                            {currencySymbols[curr]} - {curr} ({currencyNames[curr]})
+                        {CURRENCY_LIST.map((c) => (
+                          <SelectItem key={c.code} value={c.code}>
+                            {getCurrencyLabel(c, language)}
                           </SelectItem>
                         ))}
                       </SelectContent>

@@ -13,10 +13,11 @@ import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
+import { CURRENCY_LIST } from '@/lib/currencies'
 import { toast } from 'sonner'
 import { Upload, FileSpreadsheet, Loader2, Download } from 'lucide-react'
 
-const CSV_HEADERS = ['customer', 'amount', 'issue_date', 'due_date', 'notes', 'status', 'invoice_type']
+const CSV_HEADERS = ['customer', 'amount', 'issue_date', 'due_date', 'notes', 'status', 'invoice_type', 'currency']
 
 interface InvoiceCsvImportDialogProps {
   isOpen: boolean
@@ -36,11 +37,11 @@ export function InvoiceCsvImportDialog({ isOpen, onClose, onSuccess }: InvoiceCs
 
   const downloadTemplate = () => {
     const headers = isTr
-      ? ['cari_unvan_veya_eposta', 'tutar', 'duzenleme_tarihi', 'vade_tarihi', 'notlar', 'durum', 'fatura_tipi']
+      ? ['cari_unvan_veya_eposta', 'tutar', 'duzenleme_tarihi', 'vade_tarihi', 'notlar', 'durum', 'fatura_tipi', 'para_birimi']
       : CSV_HEADERS
     const example = isTr
-      ? ['Cariler sayfasindaki sirket unvani veya e-posta', '1500.00', '2025-01-15', '2025-02-15', 'Ornek not', 'draft', 'sale']
-      : ['Company title or email from Customers page', '1500.00', '2025-01-15', '2025-02-15', 'Sample note', 'draft', 'sale']
+      ? ['Cariler sayfasindaki sirket unvani veya e-posta', '1500.00', '2025-01-15', '2025-02-15', 'Ornek not', 'draft', 'sale', 'TRY']
+      : ['Company title or email from Customers page', '1500.00', '2025-01-15', '2025-02-15', 'Sample note', 'draft', 'sale', 'TRY']
     const csv = '\uFEFF' + [headers.join(','), example.join(',')].join('\n')
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
@@ -81,6 +82,8 @@ export function InvoiceCsvImportDialog({ isOpen, onClose, onSuccess }: InvoiceCs
     if (s === 'vade_tarihi' || s === 'due_date') return 'due_date'
     if (s === 'notlar' || s === 'notes') return 'notes'
     if (s === 'durum' || s === 'status') return 'status'
+    if (s === 'fatura_tipi' || s === 'invoice_type') return 'invoice_type'
+    if (s === 'para_birimi' || s === 'currency') return 'currency'
     return s
   }
 
@@ -119,6 +122,7 @@ export function InvoiceCsvImportDialog({ isOpen, onClose, onSuccess }: InvoiceCs
       const notesIdx = headerRow.indexOf('notes') >= 0 ? headerRow.indexOf('notes') : -1
       const statusIdx = headerRow.indexOf('status') >= 0 ? headerRow.indexOf('status') : headerRow.indexOf('durum')
       const typeIdx = headerRow.indexOf('invoice_type') >= 0 ? headerRow.indexOf('invoice_type') : headerRow.indexOf('fatura_tipi')
+      const currencyIdx = headerRow.indexOf('currency') >= 0 ? headerRow.indexOf('currency') : -1
 
       if (customerIdx < 0 || amountIdx < 0 || issueDateIdx < 0 || dueDateIdx < 0) {
         toast.error(isTr ? 'CSV sütunları: customer, amount, issue_date, due_date gerekli' : 'CSV must have columns: customer, amount, issue_date, due_date')
@@ -146,6 +150,8 @@ export function InvoiceCsvImportDialog({ isOpen, onClose, onSuccess }: InvoiceCs
         const notesVal = notesIdx >= 0 ? row[notesIdx]?.trim() : ''
         const statusVal = statusIdx >= 0 ? (row[statusIdx]?.trim() || 'draft') : 'draft'
         const typeVal = typeIdx >= 0 ? (row[typeIdx]?.trim() || 'sale') : 'sale'
+        const currencyVal = currencyIdx >= 0 ? (row[currencyIdx]?.trim() || 'TRY').toUpperCase() : 'TRY'
+        const currencyCode = CURRENCY_LIST.some(c => c.code === currencyVal) ? currencyVal : 'TRY'
 
         if (!customerVal || !amountVal || !issueDateVal || !dueDateVal) {
           failed.push({ row: i + 1, reason: isTr ? 'Eksik alan' : 'Missing required field' })
@@ -190,6 +196,7 @@ export function InvoiceCsvImportDialog({ isOpen, onClose, onSuccess }: InvoiceCs
               total_vat: 0,
               status,
               invoice_type: invoiceType,
+              currency: currencyCode,
               issue_date: issueDate,
               due_date: dueDate,
               notes: notesVal || null,

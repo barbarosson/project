@@ -22,6 +22,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { useTenant } from '@/contexts/tenant-context'
+import { useCurrency } from '@/contexts/currency-context'
 import { Plus, Trash2 } from 'lucide-react'
 
 interface BulkCreateInvoicesDialogProps {
@@ -41,6 +42,7 @@ interface InvoiceRow {
 
 export function BulkCreateInvoicesDialog({ isOpen, onClose, onSuccess }: BulkCreateInvoicesDialogProps) {
   const { tenantId } = useTenant()
+  const { currency: companyCurrency } = useCurrency()
   const [loading, setLoading] = useState(false)
   const [customers, setCustomers] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
@@ -169,6 +171,7 @@ export function BulkCreateInvoicesDialog({ isOpen, onClose, onSuccess }: BulkCre
                 total,
                 amount: total,
                 status: 'draft',
+                currency: companyCurrency || 'TRY',
                 tenant_id: tenantId,
               })
               .select()
