@@ -23,6 +23,7 @@ import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
 import { useCurrency } from '@/contexts/currency-context'
 import { CURRENCY_LIST, getCurrencyLabel } from '@/lib/currencies'
+import { convertAmount, getRateForType, type TcmbRatesByCurrency } from '@/lib/tcmb'
 
 interface LineItem {
   id: string
@@ -69,8 +70,9 @@ export default function NewInvoicePage() {
   )
   const [notes, setNotes] = useState<string>('')
   const [invoiceType, setInvoiceType] = useState<string>('sale')
-  const { currency: companyCurrency } = useCurrency()
+  const { currency: companyCurrency, formatCurrency, displayCurrencies, defaultRateType } = useCurrency()
   const [currency, setCurrency] = useState<string>('TRY')
+  const [tcmbRates, setTcmbRates] = useState<TcmbRatesByCurrency | null>(null)
 
   const [lineItems, setLineItems] = useState<LineItem[]>([
     {
@@ -89,6 +91,13 @@ export default function NewInvoicePage() {
   useEffect(() => {
     if (companyCurrency) setCurrency(companyCurrency)
   }, [companyCurrency])
+
+  useEffect(() => {
+    fetch(`/api/tcmb?date=${issueDate}`)
+      .then((res) => (res.ok ? res.json() : {}))
+      .then(setTcmbRates)
+      .catch(() => setTcmbRates({}))
+  }, [issueDate])
 
   useEffect(() => {
     if (!tenantLoading && tenantId) {
@@ -530,7 +539,7 @@ export default function NewInvoicePage() {
                         </Select>
                       </td>
                       <td className="p-2 text-right font-semibold">
-                        ${item.total_with_vat.toFixed(2)}
+                        {formatCurrency(item.total_with_vat, currency)}
                       </td>
                       <td className="p-2">
                         <Button
@@ -552,16 +561,41 @@ export default function NewInvoicePage() {
               <div className="w-80 space-y-2">
                 <div className="flex justify-between py-2 border-b">
                   <span className="text-gray-600">Subtotal:</span>
-                  <span className="font-semibold">${subtotal.toFixed(2)}</span>
+                  <span className="font-semibold">{formatCurrency(subtotal, currency)}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
                   <span className="text-gray-600">Total VAT:</span>
-                  <span className="font-semibold">${totalVat.toFixed(2)}</span>
+                  <span className="font-semibold">{formatCurrency(totalVat, currency)}</span>
                 </div>
                 <div className="flex justify-between py-3 bg-[#00D4AA] text-white px-4 rounded-lg">
                   <span className="font-bold text-lg">Grand Total:</span>
-                  <span className="font-bold text-lg">${grandTotal.toFixed(2)}</span>
+                  <span className="font-bold text-lg">{formatCurrency(grandTotal, currency)}</span>
                 </div>
+                {displayCurrencies.length > 0 &&
+                  displayCurrencies.filter((c) => c !== currency).length > 0 && (
+                    <div className="pt-3 mt-3 border-t border-white/30 space-y-2">
+                      <div className="text-xs font-medium text-white/90">
+                        {language === 'tr' ? 'Çevrilmiş tutarlar' : 'Converted amounts'}
+                      </div>
+                      {displayCurrencies
+                        .filter((c) => c !== currency)
+                        .map((targetCode) => {
+                          const rate = tcmbRates && getRateForType(tcmbRates[targetCode], defaultRateType)
+                          const converted = tcmbRates ? convertAmount(grandTotal, currency, targetCode, tcmbRates, defaultRateType) : null
+                          return (
+                            <div key={targetCode} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-sm text-white/95">
+                              <span className="font-medium w-10">{targetCode}</span>
+                              <span className="text-white/80">
+                                {language === 'tr' ? 'Kur:' : 'Rate:'} 1 {targetCode} = {rate != null ? rate.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '–'} TRY
+                              </span>
+                              <span className="font-semibold">
+                                {converted != null ? formatCurrency(converted, targetCode) : '–'}
+                              </span>
+                            </div>
+                          )
+                        })}
+                    </div>
+                  )}
               </div>
             </div>
           </CardContent>

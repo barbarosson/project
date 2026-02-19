@@ -25,6 +25,7 @@ import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
 import { useCurrency } from '@/contexts/currency-context'
 import { CURRENCY_LIST, getCurrencyLabel } from '@/lib/currencies'
+import { convertAmount, getRateForType, type TcmbRatesByCurrency } from '@/lib/tcmb'
 import { Plus, Trash2, Loader2 } from 'lucide-react'
 
 interface Invoice {
@@ -65,6 +66,8 @@ interface LineItem {
 export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditInvoiceDialogProps) {
   const { tenantId } = useTenant()
   const { t, language } = useLanguage()
+  const { formatCurrency, displayCurrencies, defaultRateType } = useCurrency()
+  const [tcmbRates, setTcmbRates] = useState<TcmbRatesByCurrency | null>(null)
   const [loading, setLoading] = useState(false)
   const [isInitializing, setIsInitializing] = useState(true)
   const [formKey, setFormKey] = useState(0)
@@ -85,6 +88,15 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
 
   const lastProcessedInvoiceId = useRef<string | null>(null)
   const dataLoadStarted = useRef(false)
+
+  useEffect(() => {
+    if (isOpen && formData.issue_date) {
+      fetch(`/api/tcmb?date=${formData.issue_date}`)
+        .then((res) => (res.ok ? res.json() : {}))
+        .then(setTcmbRates)
+        .catch(() => setTcmbRates({}))
+    } else if (!isOpen) setTcmbRates(null)
+  }, [isOpen, formData.issue_date])
 
   useEffect(() => {
     if (!isOpen) {
@@ -637,16 +649,42 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
           <div className="border-t pt-4 space-y-2">
             <div className="flex justify-between">
               <span>{t.invoices.subtotal}:</span>
-              <span className="font-medium">${subtotal.toFixed(2)}</span>
+              <span className="font-medium">{formatCurrency(subtotal, formData.currency || 'TRY')}</span>
             </div>
             <div className="flex justify-between">
               <span>{t.invoices.tax} ({formData.tax_rate}%):</span>
-              <span className="font-medium">${taxAmount.toFixed(2)}</span>
+              <span className="font-medium">{formatCurrency(taxAmount, formData.currency || 'TRY')}</span>
             </div>
             <div className="flex justify-between text-lg font-bold">
               <span>{t.invoices.total}:</span>
-              <span>${total.toFixed(2)}</span>
+              <span>{formatCurrency(total, formData.currency || 'TRY')}</span>
             </div>
+            {displayCurrencies.length > 0 &&
+              displayCurrencies.filter((c) => c !== (formData.currency || 'TRY')).length > 0 && (
+                <div className="pt-2 mt-2 border-t space-y-2">
+                  <div className="text-xs font-medium text-muted-foreground">
+                    {language === 'tr' ? 'Çevrilmiş tutarlar' : 'Converted amounts'}
+                  </div>
+                  {displayCurrencies
+                    .filter((c) => c !== (formData.currency || 'TRY'))
+                    .map((targetCode) => {
+                      const curr = formData.currency || 'TRY'
+                      const rate = tcmbRates && getRateForType(tcmbRates[targetCode], defaultRateType)
+                      const converted = tcmbRates ? convertAmount(total, curr, targetCode, tcmbRates, defaultRateType) : null
+                      return (
+                        <div key={targetCode} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-sm">
+                          <span className="font-medium w-10">{targetCode}</span>
+                          <span className="text-muted-foreground">
+                            {language === 'tr' ? 'Kur:' : 'Rate:'} 1 {targetCode} = {rate != null ? rate.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '–'} TRY
+                          </span>
+                          <span className="font-semibold">
+                            {converted != null ? formatCurrency(converted, targetCode) : '–'}
+                          </span>
+                        </div>
+                      )
+                    })}
+                </div>
+              )}
           </div>
 
           <DialogFooter>

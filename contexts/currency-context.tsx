@@ -1,11 +1,12 @@
 'use client'
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useTenant } from './tenant-context'
 import { CURRENCY_LIST, CURRENCY_BY_CODE, DEFAULT_CURRENCY_CODE } from '@/lib/currencies'
 
 export type Currency = string
+export type TcmbRateType = 'MBDA' | 'MBDS' | 'MEDA' | 'MEDS'
 
 export const currencySymbols: Record<string, string> = Object.fromEntries(
   CURRENCY_LIST.map(c => [c.code, c.symbol])
@@ -14,12 +15,26 @@ export const currencyNames: Record<string, string> = Object.fromEntries(
   CURRENCY_LIST.map(c => [c.code, c.name])
 )
 
+export const TCMB_RATE_TYPE_LABELS: Record<TcmbRateType, { tr: string; en: string }> = {
+  MBDA: { tr: 'Döviz Alış (MBDA)', en: 'Forex Buying (MBDA)' },
+  MBDS: { tr: 'Döviz Satış (MBDS)', en: 'Forex Selling (MBDS)' },
+  MEDA: { tr: 'Efektif Alış (MEDA)', en: 'Banknote Buying (MEDA)' },
+  MEDS: { tr: 'Efektif Satış (MEDS)', en: 'Banknote Selling (MEDS)' }
+}
+
 interface CurrencyContextType {
   currency: Currency
   setCurrency: (currency: Currency) => Promise<void>
   formatCurrency: (amount: number, currencyCode?: string) => string
   getCurrencySymbol: (currencyCode?: string) => string
   loading: boolean
+  /** Faturada çevrilmiş tutar gösterilecek para birimleri (tercih para birimi dışında) */
+  displayCurrencies: string[]
+  /** TCMB kur tipi: MBDA, MBDS, MEDA, MEDS */
+  defaultRateType: TcmbRateType
+  setDisplayCurrencies: (codes: string[]) => Promise<void>
+  setDefaultRateType: (type: TcmbRateType) => Promise<void>
+  refreshCompanySettings: () => Promise<void>
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined)
@@ -27,17 +42,11 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined
 export function CurrencyProvider({ children }: { children: ReactNode }) {
   const { tenantId, loading: tenantLoading } = useTenant()
   const [currency, setCurrencyState] = useState<Currency>(DEFAULT_CURRENCY_CODE)
+  const [displayCurrencies, setDisplayCurrenciesState] = useState<string[]>([])
+  const [defaultRateType, setDefaultRateTypeState] = useState<TcmbRateType>('MBDA')
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (!tenantLoading && tenantId) {
-      loadCurrency()
-    } else if (!tenantLoading && !tenantId) {
-      setLoading(false)
-    }
-  }, [tenantId, tenantLoading])
-
-  async function loadCurrency() {
+  const loadCurrency = useCallback(async () => {
     if (!tenantId) {
       setLoading(false)
       return
@@ -46,21 +55,37 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('company_settings')
-        .select('currency')
+        .select('currency, display_currencies, default_rate_type')
         .eq('tenant_id', tenantId)
         .maybeSingle()
 
       if (error) throw error
 
-      if (data && data.currency && CURRENCY_BY_CODE[data.currency]) {
-        setCurrencyState(data.currency)
+      if (data) {
+        if (data.currency && CURRENCY_BY_CODE[data.currency]) {
+          setCurrencyState(data.currency)
+        }
+        const disp = data.display_currencies
+        setDisplayCurrenciesState(Array.isArray(disp) ? disp : [])
+        const rtype = data.default_rate_type
+        setDefaultRateTypeState(
+          rtype === 'MBDS' || rtype === 'MEDA' || rtype === 'MEDS' ? rtype : 'MBDA'
+        )
       }
     } catch (error) {
       console.error('Error loading currency:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [tenantId])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId) {
+      loadCurrency()
+    } else if (!tenantLoading && !tenantId) {
+      setLoading(false)
+    }
+  }, [tenantId, tenantLoading, loadCurrency])
 
   async function setCurrency(newCurrency: Currency) {
     if (!tenantId) return
@@ -110,6 +135,36 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function setDisplayCurrencies(codes: string[]) {
+    if (!tenantId) return
+    try {
+      const { error } = await supabase
+        .from('company_settings')
+        .update({ display_currencies: codes })
+        .eq('tenant_id', tenantId)
+      if (error) throw error
+      setDisplayCurrenciesState(codes)
+    } catch (error) {
+      console.error('Error setting display currencies:', error)
+      throw error
+    }
+  }
+
+  async function setDefaultRateType(type: TcmbRateType) {
+    if (!tenantId) return
+    try {
+      const { error } = await supabase
+        .from('company_settings')
+        .update({ default_rate_type: type })
+        .eq('tenant_id', tenantId)
+      if (error) throw error
+      setDefaultRateTypeState(type)
+    } catch (error) {
+      console.error('Error setting default rate type:', error)
+      throw error
+    }
+  }
+
   function getCurrencySymbol(currencyCode?: string): string {
     const code = currencyCode || currency
     return CURRENCY_BY_CODE[code]?.symbol ?? code
@@ -135,7 +190,12 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
         setCurrency,
         formatCurrency,
         getCurrencySymbol,
-        loading
+        loading,
+        displayCurrencies,
+        defaultRateType,
+        setDisplayCurrencies,
+        setDefaultRateType,
+        refreshCompanySettings: loadCurrency
       }}
     >
       {children}

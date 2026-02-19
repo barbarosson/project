@@ -20,8 +20,9 @@ import { Building, Upload, Globe, Languages, ShieldCheck } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
-import { useCurrency } from '@/contexts/currency-context'
+import { useCurrency, TCMB_RATE_TYPE_LABELS } from '@/contexts/currency-context'
 import { CURRENCY_LIST, getCurrencyLabel } from '@/lib/currencies'
+import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import { TurkishProvinceSelect } from '@/components/turkish-province-select'
 import { TurkishBankSelect } from '@/components/turkish-bank-select'
@@ -49,7 +50,14 @@ interface CompanySettings {
 export default function SettingsPage() {
   const { tenantId, loading: tenantLoading } = useTenant()
   const { t, language, setLanguage } = useLanguage()
-  const { currency: selectedCurrency, setCurrency: updateCurrency } = useCurrency()
+  const {
+    currency: selectedCurrency,
+    setCurrency: updateCurrency,
+    displayCurrencies,
+    defaultRateType,
+    setDisplayCurrencies,
+    setDefaultRateType
+  } = useCurrency()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [companySettings, setCompanySettings] = useState<CompanySettings>({
@@ -459,6 +467,66 @@ export default function SettingsPage() {
                       {language === 'tr'
                         ? 'Seçilen para birimi tüm finansal gösterimlerde kullanılacaktır'
                         : 'Selected currency will be used across all financial displays'}
+                    </p>
+                  </div>
+
+                  <div className="border-t pt-4 mt-4 space-y-3">
+                    <h4 className="text-sm font-semibold">
+                      {language === 'tr'
+                        ? 'Faturada çevrilmiş tutar gösterilecek para birimleri'
+                        : 'Display converted amounts on invoices (currencies)'}
+                    </h4>
+                    <p className="text-xs text-gray-500">
+                      {language === 'tr'
+                        ? 'Seçtiğiniz birimlerde fatura tutarı TCMB kuru ile çevrilerek gösterilir. Fatura tarihindeki kur kullanılır.'
+                        : 'Selected currencies will show invoice amount converted using TCMB rate for the invoice date.'}
+                    </p>
+                    <div className="flex flex-wrap gap-4">
+                      {CURRENCY_LIST.filter((c) => c.code !== selectedCurrency).map((c) => (
+                        <label
+                          key={c.code}
+                          className="flex items-center gap-2 cursor-pointer text-sm"
+                        >
+                          <Checkbox
+                            checked={displayCurrencies.includes(c.code)}
+                            onCheckedChange={(checked) => {
+                              const next = checked
+                                ? [...displayCurrencies, c.code]
+                                : displayCurrencies.filter((x) => x !== c.code)
+                              setDisplayCurrencies(next)
+                            }}
+                          />
+                          <span>
+                            {c.code} ({language === 'tr' ? c.nameTr : c.name})
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="border-t pt-4 mt-4 space-y-2">
+                    <Label>
+                      {language === 'tr' ? 'Varsayılan kur tipi (TCMB)' : 'Default rate type (TCMB)'}
+                    </Label>
+                    <Select
+                      value={defaultRateType}
+                      onValueChange={(v) => setDefaultRateType(v as 'MBDA' | 'MBDS' | 'MEDA' | 'MEDS')}
+                    >
+                      <SelectTrigger data-field="settings-rate-type">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(['MBDA', 'MBDS', 'MEDA', 'MEDS'] as const).map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {language === 'tr' ? TCMB_RATE_TYPE_LABELS[type].tr : TCMB_RATE_TYPE_LABELS[type].en}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-gray-500">
+                      {language === 'tr'
+                        ? 'Birim fiyat ve çevrilmiş tutar hesaplamalarında kullanılacak TCMB kur tipi. Fatura ekranında manuel kur da girebilirsiniz.'
+                        : 'TCMB rate type used for unit price and converted amount. You can also enter manual rate on the invoice screen.'}
                     </p>
                   </div>
                 </div>

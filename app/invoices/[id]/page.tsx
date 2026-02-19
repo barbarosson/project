@@ -6,13 +6,17 @@ import { DashboardLayout } from '@/components/dashboard-layout'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, Eye, Loader2 } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { ArrowLeft, Eye, Loader2, Pencil } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { EInvoicePreview } from '@/components/e-invoice-preview'
 import { Toaster } from '@/components/ui/sonner'
+import { toast } from 'sonner'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
 import { useCurrency } from '@/contexts/currency-context'
+import { convertAmount, getRateForType, type TcmbRatesByCurrency } from '@/lib/tcmb'
 
 interface LineItem {
   id: string
@@ -26,6 +30,8 @@ interface LineItem {
   total_with_vat: number
 }
 
+export type ExchangeRateOverride = { rate?: number; converted_amount?: number }
+
 interface Invoice {
   id: string
   invoice_number: string
@@ -38,6 +44,7 @@ interface Invoice {
   issue_date: string
   due_date: string
   notes: string
+  exchange_rate_overrides?: Record<string, ExchangeRateOverride>
   customers: {
     id: string
     name: string
@@ -54,19 +61,36 @@ export default function InvoiceDetailPage() {
   const invoiceId = params.id as string
   const { tenantId, loading: tenantLoading } = useTenant()
   const { language } = useLanguage()
-  const { formatCurrency } = useCurrency()
+  const {
+    formatCurrency,
+    displayCurrencies,
+    defaultRateType
+  } = useCurrency()
 
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const curr = (invoice?.currency || 'TRY') as string
   const [lineItems, setLineItems] = useState<LineItem[]>([])
   const [loading, setLoading] = useState(true)
   const [showEInvoice, setShowEInvoice] = useState(false)
+  const [tcmbRates, setTcmbRates] = useState<TcmbRatesByCurrency | null>(null)
+  const [editingOverrideFor, setEditingOverrideFor] = useState<string | null>(null)
+  const [overrideRate, setOverrideRate] = useState('')
+  const [overrideAmount, setOverrideAmount] = useState('')
+  const [savingOverride, setSavingOverride] = useState(false)
 
   useEffect(() => {
     if (!tenantLoading && tenantId && invoiceId) {
       fetchInvoiceDetails()
     }
   }, [tenantId, tenantLoading, invoiceId])
+
+  useEffect(() => {
+    if (!invoice?.issue_date) return
+    fetch(`/api/tcmb?date=${invoice.issue_date}`)
+      .then((res) => (res.ok ? res.json() : {}))
+      .then(setTcmbRates)
+      .catch(() => setTcmbRates({}))
+  }, [invoice?.issue_date])
 
   async function fetchInvoiceDetails() {
     if (!tenantId) return
@@ -105,6 +129,53 @@ export default function InvoiceDetailPage() {
       console.error('Error fetching invoice:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  function getConvertedAmount(targetCurrency: string): { value: number; source: 'manual_amount' | 'manual_rate' | 'tcmb' } | null {
+    if (!invoice || targetCurrency === curr) return null
+    const overrides = invoice.exchange_rate_overrides || {}
+    const ov = overrides[targetCurrency]
+    if (ov?.converted_amount != null) return { value: ov.converted_amount, source: 'manual_amount' }
+    if (ov?.rate != null && ov.rate !== 0) {
+      const r = ov.rate
+      if (curr === 'TRY') return { value: invoice.amount / r, source: 'manual_rate' }
+      if (targetCurrency === 'TRY') return { value: invoice.amount * r, source: 'manual_rate' }
+      const tryAmount = invoice.amount * (getRateForType(tcmbRates?.[curr], defaultRateType) ?? 0)
+      return { value: tryAmount / r, source: 'manual_rate' }
+    }
+    if (tcmbRates) {
+      const converted = convertAmount(invoice.amount, curr, targetCurrency, tcmbRates, defaultRateType)
+      if (converted != null) return { value: converted, source: 'tcmb' }
+    }
+    return null
+  }
+
+  async function saveOverride(targetCurrency: string) {
+    if (!invoice || !tenantId) return
+    setSavingOverride(true)
+    try {
+      const overrides = { ...(invoice.exchange_rate_overrides || {}) }
+      const rateVal = overrideRate.trim() ? parseFloat(overrideRate.replace(',', '.')) : undefined
+      const amountVal = overrideAmount.trim() ? parseFloat(overrideAmount.replace(',', '.')) : undefined
+      if (rateVal != null && !isNaN(rateVal)) overrides[targetCurrency] = { ...overrides[targetCurrency], rate: rateVal }
+      if (amountVal != null && !isNaN(amountVal)) overrides[targetCurrency] = { ...overrides[targetCurrency], converted_amount: amountVal }
+      if (!rateVal && amountVal == null) delete overrides[targetCurrency]
+      const { error } = await supabase
+        .from('invoices')
+        .update({ exchange_rate_overrides: overrides })
+        .eq('id', invoice.id)
+        .eq('tenant_id', tenantId)
+      if (error) throw error
+      setInvoice({ ...invoice, exchange_rate_overrides: overrides })
+      setEditingOverrideFor(null)
+      setOverrideRate('')
+      setOverrideAmount('')
+      toast.success(language === 'tr' ? 'Kur / tutar kaydedildi' : 'Rate / amount saved')
+    } catch (err: any) {
+      toast.error(err.message || (language === 'tr' ? 'Kaydedilemedi' : 'Failed to save'))
+    } finally {
+      setSavingOverride(false)
     }
   }
 
@@ -276,6 +347,129 @@ export default function InvoiceDetailPage() {
             </div>
           </CardContent>
         </Card>
+
+        {displayCurrencies.length > 0 && displayCurrencies.filter((c) => c !== curr).length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {language === 'tr' ? 'Çevrilmiş tutarlar' : 'Converted amounts'}
+              </CardTitle>
+              <p className="text-sm text-gray-500 font-normal">
+                {language === 'tr'
+                  ? `Fatura tarihi (${new Date(invoice.issue_date).toLocaleDateString('tr-TR')}) TCMB kuru (${defaultRateType}). Manuel kur veya tutar girebilirsiniz.`
+                  : `Invoice date (${new Date(invoice.issue_date).toLocaleDateString()}) TCMB rate (${defaultRateType}). You can enter manual rate or amount.`}
+                {(!tcmbRates || Object.keys(tcmbRates).length === 0) && (
+                  <span className="block mt-1 text-amber-600">
+                    {language === 'tr'
+                      ? 'TCMB kurları yüklenemedi veya bu tarih için yayım yok. Kur sütunundan manuel girebilirsiniz.'
+                      : 'TCMB rates could not be loaded for this date. You can enter the rate manually in the rate column.'}
+                  </span>
+                )}
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-gray-500 font-medium">
+                      <th className="py-2 pr-4">{language === 'tr' ? 'Para birimi' : 'Currency'}</th>
+                      <th className="py-2 pr-4">{language === 'tr' ? 'Kur (1 birim = TRY)' : 'Rate (1 unit = TRY)'}</th>
+                      <th className="py-2 pr-4">{language === 'tr' ? 'Çevrilmiş tutar' : 'Converted amount'}</th>
+                      <th className="py-2 w-10" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {displayCurrencies
+                      .filter((c) => c !== curr)
+                      .map((targetCurrency) => {
+                        const result = getConvertedAmount(targetCurrency)
+                        const isEditing = editingOverrideFor === targetCurrency
+                        const override = (invoice.exchange_rate_overrides || {})[targetCurrency]
+                        const rateDisplay =
+                          override?.rate != null && override.rate !== 0
+                            ? override.rate
+                            : targetCurrency === 'TRY'
+                              ? getRateForType(tcmbRates?.[curr], defaultRateType)
+                              : getRateForType(tcmbRates?.[targetCurrency], defaultRateType)
+                        const rateLabel =
+                          targetCurrency === 'TRY'
+                            ? `1 ${curr} = ${rateDisplay != null ? rateDisplay.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '–'} TRY`
+                            : `1 ${targetCurrency} = ${rateDisplay != null ? rateDisplay.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '–'} TRY`
+                        return (
+                          <tr key={targetCurrency} className="border-b last:border-0">
+                            <td className="py-2 pr-4 font-medium">{targetCurrency}</td>
+                            <td className="py-2 pr-4">
+                              {isEditing ? (
+                                <div className="flex items-center gap-2">
+                                  <Label className="text-xs whitespace-nowrap sr-only">
+                                    {targetCurrency === 'TRY' ? `1 ${curr} = ? TRY` : `1 ${targetCurrency} = ? TRY`}
+                                  </Label>
+                                  <Input
+                                    type="text"
+                                    inputMode="decimal"
+                                    placeholder={override?.rate?.toString() || ''}
+                                    value={overrideRate}
+                                    onChange={(e) => setOverrideRate(e.target.value)}
+                                    className="w-28 h-8"
+                                  />
+                                </div>
+                              ) : (
+                                <span className="text-gray-700">{rateLabel}</span>
+                              )}
+                            </td>
+                            <td className="py-2 pr-4">
+                              {isEditing ? (
+                                <div className="flex items-center gap-2">
+                                  <Label className="text-xs whitespace-nowrap sr-only">{language === 'tr' ? 'Çevrilmiş tutar' : 'Converted amount'}</Label>
+                                  <Input
+                                    type="text"
+                                    inputMode="decimal"
+                                    placeholder={override?.converted_amount?.toString() || ''}
+                                    value={overrideAmount}
+                                    onChange={(e) => setOverrideAmount(e.target.value)}
+                                    className="w-28 h-8"
+                                  />
+                                </div>
+                              ) : result != null ? (
+                                <span className="font-semibold">{formatCurrency(result.value, targetCurrency)}</span>
+                              ) : (
+                                <span className="text-gray-400">–</span>
+                              )}
+                            </td>
+                            <td className="py-2">
+                              {isEditing ? (
+                                <>
+                                  <Button size="sm" onClick={() => saveOverride(targetCurrency)} disabled={savingOverride} className="mr-1">
+                                    {language === 'tr' ? 'Kaydet' : 'Save'}
+                                  </Button>
+                                  <Button size="sm" variant="outline" onClick={() => { setEditingOverrideFor(null); setOverrideRate(''); setOverrideAmount('') }}>
+                                    {language === 'tr' ? 'İptal' : 'Cancel'}
+                                  </Button>
+                                </>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-7 px-1"
+                                  onClick={() => {
+                                    setEditingOverrideFor(targetCurrency)
+                                    setOverrideRate(override?.rate?.toString() ?? '')
+                                    setOverrideAmount(override?.converted_amount?.toString() ?? '')
+                                  }}
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {invoice.notes && (
           <Card>

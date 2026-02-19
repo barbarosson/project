@@ -26,6 +26,7 @@ import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { useLanguage } from '@/contexts/language-context'
 import { useTenant } from '@/contexts/tenant-context'
+import { useCurrency } from '@/contexts/currency-context'
 import { useAuth } from '@/hooks/use-auth'
 import { AlertCircle, CheckCircle2, Users, ArrowRight } from 'lucide-react'
 
@@ -43,6 +44,7 @@ export function MergeCustomersDialog({
   const { t } = useLanguage()
   const { tenantId } = useTenant()
   const { user } = useAuth()
+  const { formatCurrency } = useCurrency()
   const [loading, setLoading] = useState(false)
   const [customers, setCustomers] = useState<any[]>([])
   const [targetCustomerId, setTargetCustomerId] = useState('')
@@ -255,10 +257,7 @@ export function MergeCustomersDialog({
                       </label>
                       {customer.balance !== 0 && (
                         <Badge variant="secondary">
-                          {new Intl.NumberFormat('tr-TR', {
-                            style: 'currency',
-                            currency: 'TRY'
-                          }).format(customer.balance)}
+                          {formatCurrency(customer.balance)}
                         </Badge>
                       )}
                     </div>

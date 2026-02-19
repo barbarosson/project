@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Mail, Phone, MapPin, Building2, FileText, DollarSign, Globe, CreditCard, Calendar, StickyNote } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
+import { useCurrency } from '@/contexts/currency-context'
 
 interface Customer {
   id: string
@@ -60,6 +61,7 @@ interface CustomerDetailSheetProps {
 
 export function CustomerDetailSheet({ customer, isOpen, onClose }: CustomerDetailSheetProps) {
   const { t } = useLanguage()
+  const { formatCurrency } = useCurrency()
   if (!customer) return null
 
   const mockTransactions: Transaction[] = [
@@ -124,7 +126,7 @@ export function CustomerDetailSheet({ customer, isOpen, onClose }: CustomerDetai
                 <span className="text-sm text-gray-600">{t.customers.balance}</span>
               </div>
               <span className={`text-2xl font-bold ${customer.balance >= 0 ? 'text-[#00D4AA]' : 'text-red-600'}`}>
-                ${customer.balance.toLocaleString()}
+                {formatCurrency(customer.balance)}
               </span>
             </div>
           </div>

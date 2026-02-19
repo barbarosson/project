@@ -30,6 +30,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
 import { useLanguage } from '@/contexts/language-context'
 import { useTenant } from '@/contexts/tenant-context'
+import { useCurrency } from '@/contexts/currency-context'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -65,6 +66,7 @@ interface CustomerSegment {
 export default function CustomersPage() {
   const { t } = useLanguage()
   const { tenantId, loading: tenantLoading } = useTenant()
+  const { formatCurrency } = useCurrency()
   const [customers, setCustomers] = useState<Customer[]>([])
   const [filteredCustomers, setFilteredCustomers] = useState<Customer[]>([])
   const [customerSegments, setCustomerSegments] = useState<CustomerSegment[]>([])
@@ -638,7 +640,7 @@ export default function CustomersPage() {
                           <span className={`font-semibold ${
                             customer.balance >= 0 ? 'text-[#00D4AA]' : 'text-red-600'
                           }`}>
-                            ${customer.balance?.toLocaleString() || '0'}
+                            {formatCurrency(customer.balance ?? 0)}
                           </span>
                         </TableCell>
                         <TableCell>
