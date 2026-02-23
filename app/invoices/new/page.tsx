@@ -348,10 +348,10 @@ export default function NewInvoicePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="customer">Customer *</Label>
+              <div className="space-y-2" data-field="new-invoice-customer" data-testid="new-invoice-customer">
+                <Label htmlFor="customer" data-field="new-invoice-customer-label" className="cursor-text select-text">Customer *</Label>
                 <Select value={selectedCustomerId} onValueChange={setSelectedCustomerId}>
-                  <SelectTrigger id="customer" data-field="new-invoice-customer">
+                  <SelectTrigger id="customer" data-field="new-invoice-customer" data-testid="new-invoice-customer-trigger">
                     <SelectValue placeholder="Select customer" />
                   </SelectTrigger>
                   <SelectContent>
@@ -364,10 +364,10 @@ export default function NewInvoicePage() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="invoice_type">{language === 'tr' ? 'Fatura Tipi' : 'Invoice Type'}</Label>
+              <div className="space-y-2" data-field="new-invoice-type" data-testid="new-invoice-type">
+                <Label htmlFor="invoice_type" data-field="new-invoice-type-label" className="cursor-text select-text">{language === 'tr' ? 'Fatura Tipi' : 'Invoice Type'}</Label>
                 <Select value={invoiceType} onValueChange={setInvoiceType}>
-                  <SelectTrigger id="invoice_type" data-field="new-invoice-type">
+                  <SelectTrigger id="invoice_type" data-field="new-invoice-type" data-testid="new-invoice-type-trigger">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -379,10 +379,10 @@ export default function NewInvoicePage() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="currency">{language === 'tr' ? 'Para Birimi' : 'Currency'}</Label>
+              <div className="space-y-2" data-field="new-invoice-currency" data-testid="new-invoice-currency">
+                <Label htmlFor="currency" data-field="new-invoice-currency-label" className="cursor-text select-text">{language === 'tr' ? 'Para Birimi' : 'Currency'}</Label>
                 <Select value={currency} onValueChange={setCurrency}>
-                  <SelectTrigger id="currency" data-field="new-invoice-currency">
+                  <SelectTrigger id="currency" data-field="new-invoice-currency" data-testid="new-invoice-currency-trigger">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -395,25 +395,27 @@ export default function NewInvoicePage() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="issue_date">{language === 'tr' ? 'Düzenleme Tarihi' : 'Issue Date'}</Label>
+              <div className="space-y-2" data-field="new-invoice-issue-date" data-testid="new-invoice-issue-date">
+                <Label htmlFor="issue_date" data-field="new-invoice-issue-date-label" className="cursor-text select-text">{language === 'tr' ? 'Düzenleme Tarihi' : 'Issue Date'}</Label>
                 <Input
                   id="issue_date"
                   type="date"
                   value={issueDate}
                   onChange={(e) => setIssueDate(e.target.value)}
                   data-field="new-invoice-issue-date"
+                  data-testid="new-invoice-issue-date-input"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="due_date">Due Date</Label>
+              <div className="space-y-2" data-field="new-invoice-due-date" data-testid="new-invoice-due-date">
+                <Label htmlFor="due_date" data-field="new-invoice-due-date-label" className="cursor-text select-text">Due Date</Label>
                 <Input
                   id="due_date"
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
                   data-field="new-invoice-due-date"
+                  data-testid="new-invoice-due-date-input"
                 />
               </div>
             </div>
@@ -462,6 +464,11 @@ export default function NewInvoicePage() {
                     <th className="text-right p-2 text-sm font-semibold w-32">Unit Price</th>
                     <th className="text-right p-2 text-sm font-semibold w-24">VAT %</th>
                     <th className="text-right p-2 text-sm font-semibold w-32">Total</th>
+                    {currency !== companyCurrency && (
+                      <th className="text-right p-2 text-sm font-semibold w-32">
+                        {language === 'tr' ? `Çevrilmiş (${companyCurrency})` : `Converted (${companyCurrency})`}
+                      </th>
+                    )}
                     <th className="w-12"></th>
                   </tr>
                 </thead>
@@ -541,6 +548,16 @@ export default function NewInvoicePage() {
                       <td className="p-2 text-right font-semibold">
                         {formatCurrency(item.total_with_vat, currency)}
                       </td>
+                      {currency !== companyCurrency && (
+                        <td className="p-2 text-right text-muted-foreground text-sm">
+                          {tcmbRates
+                            ? (() => {
+                                const conv = convertAmount(item.total_with_vat, currency, companyCurrency, tcmbRates, defaultRateType)
+                                return conv != null ? formatCurrency(conv, companyCurrency) : '–'
+                              })()
+                            : '–'}
+                        </td>
+                      )}
                       <td className="p-2">
                         <Button
                           variant="ghost"
@@ -571,31 +588,34 @@ export default function NewInvoicePage() {
                   <span className="font-bold text-lg">Grand Total:</span>
                   <span className="font-bold text-lg">{formatCurrency(grandTotal, currency)}</span>
                 </div>
-                {displayCurrencies.length > 0 &&
-                  displayCurrencies.filter((c) => c !== currency).length > 0 && (
-                    <div className="pt-3 mt-3 border-t border-white/30 space-y-2">
-                      <div className="text-xs font-medium text-white/90">
-                        {language === 'tr' ? 'Çevrilmiş tutarlar' : 'Converted amounts'}
-                      </div>
-                      {displayCurrencies
-                        .filter((c) => c !== currency)
-                        .map((targetCode) => {
-                          const rate = tcmbRates && getRateForType(tcmbRates[targetCode], defaultRateType)
-                          const converted = tcmbRates ? convertAmount(grandTotal, currency, targetCode, tcmbRates, defaultRateType) : null
-                          return (
-                            <div key={targetCode} className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-sm text-white/95">
-                              <span className="font-medium w-10">{targetCode}</span>
-                              <span className="text-white/80">
-                                {language === 'tr' ? 'Kur:' : 'Rate:'} 1 {targetCode} = {rate != null ? rate.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '–'} TRY
-                              </span>
-                              <span className="font-semibold">
-                                {converted != null ? formatCurrency(converted, targetCode) : '–'}
-                              </span>
-                            </div>
-                          )
-                        })}
+                {currency !== companyCurrency && (
+                  <div className="pt-3 mt-3 border-t border-white/30 space-y-2">
+                    <div className="text-xs font-medium text-white/90">
+                      {language === 'tr' ? `Çevrilmiş tutar (tercih: ${companyCurrency})` : `Converted amount (preference: ${companyCurrency})`}
                     </div>
-                  )}
+                    {(() => {
+                      const targetCode = companyCurrency
+                      const rateFrom = tcmbRates && getRateForType(tcmbRates[currency], defaultRateType)
+                      const rateTo = targetCode === 'TRY' ? null : tcmbRates && getRateForType(tcmbRates[targetCode], defaultRateType)
+                      const rateDisplay = rateFrom != null && (targetCode === 'TRY' || (rateTo != null && rateTo !== 0))
+                        ? (targetCode === 'TRY' ? rateFrom : rateFrom / rateTo)
+                        : null
+                      const converted = tcmbRates ? convertAmount(grandTotal, currency, targetCode, tcmbRates, defaultRateType) : null
+                      const rateLabel = `1 ${currency} = ${rateDisplay != null ? rateDisplay.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '–'} ${targetCode}`
+                      return (
+                        <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-sm text-white/95">
+                          <span className="font-medium w-10">{targetCode}</span>
+                          <span className="text-white/80">
+                            {language === 'tr' ? 'Kur:' : 'Rate:'} {rateLabel}
+                          </span>
+                          <span className="font-semibold">
+                            {converted != null ? formatCurrency(converted, targetCode) : '–'}
+                          </span>
+                        </div>
+                      )
+                    })()}
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>

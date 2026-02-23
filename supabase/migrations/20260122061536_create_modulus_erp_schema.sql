@@ -120,89 +120,105 @@ ALTER TABLE inventory ENABLE ROW LEVEL SECURITY;
 ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 
--- Create policies for customers
+-- Create policies for customers (idempotent: drop if exists first)
+DROP POLICY IF EXISTS "Authenticated users can view customers" ON customers;
 CREATE POLICY "Authenticated users can view customers"
   ON customers FOR SELECT
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "Authenticated users can insert customers" ON customers;
 CREATE POLICY "Authenticated users can insert customers"
   ON customers FOR INSERT
   TO authenticated
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Authenticated users can update customers" ON customers;
 CREATE POLICY "Authenticated users can update customers"
   ON customers FOR UPDATE
   TO authenticated
   USING (true)
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Authenticated users can delete customers" ON customers;
 CREATE POLICY "Authenticated users can delete customers"
   ON customers FOR DELETE
   TO authenticated
   USING (true);
 
 -- Create policies for inventory
+DROP POLICY IF EXISTS "Authenticated users can view inventory" ON inventory;
 CREATE POLICY "Authenticated users can view inventory"
   ON inventory FOR SELECT
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "Authenticated users can insert inventory" ON inventory;
 CREATE POLICY "Authenticated users can insert inventory"
   ON inventory FOR INSERT
   TO authenticated
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Authenticated users can update inventory" ON inventory;
 CREATE POLICY "Authenticated users can update inventory"
   ON inventory FOR UPDATE
   TO authenticated
   USING (true)
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Authenticated users can delete inventory" ON inventory;
 CREATE POLICY "Authenticated users can delete inventory"
   ON inventory FOR DELETE
   TO authenticated
   USING (true);
 
 -- Create policies for invoices
+DROP POLICY IF EXISTS "Authenticated users can view invoices" ON invoices;
 CREATE POLICY "Authenticated users can view invoices"
   ON invoices FOR SELECT
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "Authenticated users can insert invoices" ON invoices;
 CREATE POLICY "Authenticated users can insert invoices"
   ON invoices FOR INSERT
   TO authenticated
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Authenticated users can update invoices" ON invoices;
 CREATE POLICY "Authenticated users can update invoices"
   ON invoices FOR UPDATE
   TO authenticated
   USING (true)
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Authenticated users can delete invoices" ON invoices;
 CREATE POLICY "Authenticated users can delete invoices"
   ON invoices FOR DELETE
   TO authenticated
   USING (true);
 
 -- Create policies for transactions
+DROP POLICY IF EXISTS "Authenticated users can view transactions" ON transactions;
 CREATE POLICY "Authenticated users can view transactions"
   ON transactions FOR SELECT
   TO authenticated
   USING (true);
 
+DROP POLICY IF EXISTS "Authenticated users can insert transactions" ON transactions;
 CREATE POLICY "Authenticated users can insert transactions"
   ON transactions FOR INSERT
   TO authenticated
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Authenticated users can update transactions" ON transactions;
 CREATE POLICY "Authenticated users can update transactions"
   ON transactions FOR UPDATE
   TO authenticated
   USING (true)
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Authenticated users can delete transactions" ON transactions;
 CREATE POLICY "Authenticated users can delete transactions"
   ON transactions FOR DELETE
   TO authenticated
@@ -219,30 +235,38 @@ INSERT INTO customers (name, email, phone, status, total_revenue) VALUES
   ('Enterprise Systems', 'contact@enterprise.com', '+1-555-0105', 'active', 234000)
 ON CONFLICT DO NOTHING;
 
--- Sample inventory
+-- Sample inventory (idempotent: skip if sku exists)
 INSERT INTO inventory (name, sku, category, quantity, min_quantity, unit_price) VALUES
   ('Laptop Pro 15"', 'LPT-001', 'Electronics', 45, 10, 1299.99),
   ('Wireless Mouse', 'MSE-001', 'Electronics', 5, 20, 29.99),
   ('Office Chair Deluxe', 'CHR-001', 'Furniture', 25, 10, 399.99),
   ('Monitor 27" 4K', 'MON-001', 'Electronics', 8, 15, 549.99),
   ('USB-C Hub', 'HUB-001', 'Electronics', 120, 30, 49.99)
-ON CONFLICT DO NOTHING;
+ON CONFLICT (sku) DO NOTHING;
 
--- Sample transactions for the last 6 months
-INSERT INTO transactions (type, category, amount, description, date) VALUES
-  ('income', 'Sales', 45000, 'Q4 Product Sales', CURRENT_DATE - INTERVAL '1 month'),
-  ('expense', 'Operations', 12000, 'Office Rent', CURRENT_DATE - INTERVAL '1 month'),
-  ('income', 'Sales', 52000, 'Q3 Product Sales', CURRENT_DATE - INTERVAL '2 months'),
-  ('expense', 'Operations', 12000, 'Office Rent', CURRENT_DATE - INTERVAL '2 months'),
-  ('expense', 'Marketing', 8500, 'Ad Campaign', CURRENT_DATE - INTERVAL '2 months'),
-  ('income', 'Sales', 38000, 'Product Sales', CURRENT_DATE - INTERVAL '3 months'),
-  ('expense', 'Operations', 12000, 'Office Rent', CURRENT_DATE - INTERVAL '3 months'),
-  ('income', 'Sales', 61000, 'Product Sales', CURRENT_DATE - INTERVAL '4 months'),
-  ('expense', 'Operations', 12000, 'Office Rent', CURRENT_DATE - INTERVAL '4 months'),
-  ('expense', 'Payroll', 35000, 'Monthly Salaries', CURRENT_DATE - INTERVAL '4 months'),
-  ('income', 'Sales', 47000, 'Product Sales', CURRENT_DATE - INTERVAL '5 months'),
-  ('expense', 'Operations', 12000, 'Office Rent', CURRENT_DATE - INTERVAL '5 months'),
-  ('income', 'Sales', 55000, 'Product Sales', CURRENT_DATE - INTERVAL '6 months'),
-  ('expense', 'Operations', 12000, 'Office Rent', CURRENT_DATE - INTERVAL '6 months'),
-  ('expense', 'Marketing', 15000, 'Conference Sponsorship', CURRENT_DATE - INTERVAL '6 months')
-ON CONFLICT DO NOTHING;
+-- Sample transactions for the last 6 months (only if table has original schema with "type" column)
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'transactions' AND column_name = 'type'
+  ) THEN
+    INSERT INTO transactions (type, category, amount, description, date) VALUES
+      ('income', 'Sales', 45000, 'Q4 Product Sales', CURRENT_DATE - INTERVAL '1 month'),
+      ('expense', 'Operations', 12000, 'Office Rent', CURRENT_DATE - INTERVAL '1 month'),
+      ('income', 'Sales', 52000, 'Q3 Product Sales', CURRENT_DATE - INTERVAL '2 months'),
+      ('expense', 'Operations', 12000, 'Office Rent', CURRENT_DATE - INTERVAL '2 months'),
+      ('expense', 'Marketing', 8500, 'Ad Campaign', CURRENT_DATE - INTERVAL '2 months'),
+      ('income', 'Sales', 38000, 'Product Sales', CURRENT_DATE - INTERVAL '3 months'),
+      ('expense', 'Operations', 12000, 'Office Rent', CURRENT_DATE - INTERVAL '3 months'),
+      ('income', 'Sales', 61000, 'Product Sales', CURRENT_DATE - INTERVAL '4 months'),
+      ('expense', 'Operations', 12000, 'Office Rent', CURRENT_DATE - INTERVAL '4 months'),
+      ('expense', 'Payroll', 35000, 'Monthly Salaries', CURRENT_DATE - INTERVAL '4 months'),
+      ('income', 'Sales', 47000, 'Product Sales', CURRENT_DATE - INTERVAL '5 months'),
+      ('expense', 'Operations', 12000, 'Office Rent', CURRENT_DATE - INTERVAL '5 months'),
+      ('income', 'Sales', 55000, 'Product Sales', CURRENT_DATE - INTERVAL '6 months'),
+      ('expense', 'Operations', 12000, 'Office Rent', CURRENT_DATE - INTERVAL '6 months'),
+      ('expense', 'Marketing', 15000, 'Conference Sponsorship', CURRENT_DATE - INTERVAL '6 months')
+    ON CONFLICT DO NOTHING;
+  END IF;
+END $$;

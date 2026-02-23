@@ -12,6 +12,11 @@ import { Plus, Trash2, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { createOrder } from '@/lib/module-integration'
 import { toast } from 'sonner'
+import { useCurrency } from '@/contexts/currency-context'
+import { getRateForType, convertAmount, type TcmbRatesByCurrency } from '@/lib/tcmb'
+import { CURRENCY_LIST } from '@/lib/currencies'
+
+const VAT_RATES = [0, 1, 8, 10, 18, 20] as const
 
 interface CreateOrderDialogProps {
   open: boolean
@@ -32,23 +37,38 @@ interface LineItem {
 }
 
 export function CreateOrderDialog({ open, onOpenChange, tenantId, onSuccess, isTR }: CreateOrderDialogProps) {
+  const { defaultRateType, currency: companyCurrency } = useCurrency()
   const [customers, setCustomers] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [projects, setProjects] = useState<any[]>([])
   const [customerId, setCustomerId] = useState('')
   const [projectId, setProjectId] = useState('')
   const [currency, setCurrency] = useState('TRY')
+  const [orderDate, setOrderDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [notes, setNotes] = useState('')
   const [items, setItems] = useState<LineItem[]>([
     { productId: '', productName: '', sku: '', quantity: 1, unitPrice: 0, taxRate: 18, discount: 0 },
   ])
   const [saving, setSaving] = useState(false)
+  const [tcmbRates, setTcmbRates] = useState<TcmbRatesByCurrency | null>(null)
 
   useEffect(() => {
     if (open && tenantId) {
       loadData()
     }
   }, [open, tenantId])
+
+  useEffect(() => {
+    if (open && (currency !== 'TRY' || (companyCurrency && companyCurrency !== 'TRY'))) {
+      const dateStr = orderDate || new Date().toISOString().slice(0, 10)
+      fetch(`/api/tcmb?date=${dateStr}`)
+        .then(res => res.ok ? res.json() : {})
+        .then(setTcmbRates)
+        .catch(() => setTcmbRates(null))
+    } else {
+      setTcmbRates(null)
+    }
+  }, [open, currency, companyCurrency, orderDate])
 
   async function loadData() {
     const [custRes, prodRes, projRes] = await Promise.all([
@@ -104,6 +124,24 @@ export function CreateOrderDialog({ open, onOpenChange, tenantId, onSuccess, isT
       return
     }
 
+    let exchangeRate: number | null = null
+    let exchangeRateDate: string | null = null
+    const orderDateStr = orderDate || new Date().toISOString().slice(0, 10)
+    if (currency && currency !== 'TRY' && CURRENCY_LIST.some(c => c.code === currency)) {
+      if (tcmbRates && tcmbRates[currency]) {
+        const rate = getRateForType(tcmbRates[currency], defaultRateType)
+        if (rate != null) {
+          exchangeRate = rate
+          exchangeRateDate = orderDateStr
+        }
+        if (rate == null) {
+          toast.warning(isTR ? 'Döviz kuru alınamadı; sipariş kaydedilecek ancak çevrim kuru boş kalacak.' : 'Exchange rate could not be fetched; order will be saved without rate.')
+        }
+      } else {
+        toast.warning(isTR ? 'Döviz kuru yükleniyor veya bulunamadı; sipariş kaydedilecek.' : 'Exchange rate loading or not found; order will be saved.')
+      }
+    }
+
     setSaving(true)
     const result = await createOrder({
       tenantId,
@@ -111,6 +149,9 @@ export function CreateOrderDialog({ open, onOpenChange, tenantId, onSuccess, isT
       projectId: projectId || undefined,
       source: 'manual',
       currency,
+      orderDate: orderDateStr,
+      exchangeRate: exchangeRate ?? undefined,
+      exchangeRateDate: exchangeRateDate ?? undefined,
       notes,
       items: validItems.map(i => ({
         productId: i.productId || undefined,
@@ -138,6 +179,7 @@ export function CreateOrderDialog({ open, onOpenChange, tenantId, onSuccess, isT
     setCustomerId('')
     setProjectId('')
     setCurrency('TRY')
+    setOrderDate(new Date().toISOString().slice(0, 10))
     setNotes('')
     setItems([{ productId: '', productName: '', sku: '', quantity: 1, unitPrice: 0, taxRate: 18, discount: 0 }])
   }
@@ -150,7 +192,7 @@ export function CreateOrderDialog({ open, onOpenChange, tenantId, onSuccess, isT
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div>
               <Label>{isTR ? 'Musteri' : 'Customer'}</Label>
               <Select value={customerId} onValueChange={setCustomerId}>
@@ -165,6 +207,15 @@ export function CreateOrderDialog({ open, onOpenChange, tenantId, onSuccess, isT
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label>{isTR ? 'Siparis Tarihi' : 'Order Date'}</Label>
+              <Input
+                type="date"
+                value={orderDate}
+                onChange={e => setOrderDate(e.target.value)}
+                className="h-10"
+              />
             </div>
             <div>
               <Label>{isTR ? 'Para Birimi' : 'Currency'}</Label>
@@ -210,7 +261,7 @@ export function CreateOrderDialog({ open, onOpenChange, tenantId, onSuccess, isT
                     <TableHead className="w-[200px]">{isTR ? 'Urun' : 'Product'}</TableHead>
                     <TableHead className="w-[80px] text-right">{isTR ? 'Miktar' : 'Qty'}</TableHead>
                     <TableHead className="w-[100px] text-right">{isTR ? 'Birim Fiyat' : 'Unit Price'}</TableHead>
-                    <TableHead className="w-[70px] text-right">{isTR ? 'KDV %' : 'Tax %'}</TableHead>
+                    <TableHead className="w-[72px] text-right">{isTR ? 'KDV %' : 'VAT %'}</TableHead>
                     <TableHead className="w-[90px] text-right">{isTR ? 'Toplam' : 'Total'}</TableHead>
                     <TableHead className="w-[40px]" />
                   </TableRow>
@@ -223,7 +274,7 @@ export function CreateOrderDialog({ open, onOpenChange, tenantId, onSuccess, isT
                           value={item.productId}
                           onValueChange={(val) => handleProductSelect(idx, val)}
                         >
-                          <SelectTrigger className="h-8 text-sm">
+                          <SelectTrigger className="h-8 text-sm !text-[#0A2540] [&>span]:!text-[#0A2540] placeholder:!text-[#0A2540]/80">
                             <SelectValue placeholder={isTR ? 'Urun sec...' : 'Select...'} />
                           </SelectTrigger>
                           <SelectContent>
@@ -246,7 +297,7 @@ export function CreateOrderDialog({ open, onOpenChange, tenantId, onSuccess, isT
                       <TableCell>
                         <Input
                           type="number"
-                          className="h-8 text-sm text-right"
+                          className="h-8 text-sm text-right text-[#0A2540] placeholder:text-[#0A2540]/70"
                           value={item.quantity}
                           onChange={e => updateItem(idx, 'quantity', Number(e.target.value))}
                           min={0.01}
@@ -256,22 +307,31 @@ export function CreateOrderDialog({ open, onOpenChange, tenantId, onSuccess, isT
                       <TableCell>
                         <Input
                           type="number"
-                          className="h-8 text-sm text-right"
+                          className="h-8 text-sm text-right text-[#0A2540] placeholder:text-[#0A2540]/70"
                           value={item.unitPrice}
                           onChange={e => updateItem(idx, 'unitPrice', Number(e.target.value))}
                           min={0}
                           step={0.01}
                         />
                       </TableCell>
-                      <TableCell>
-                        <Input
-                          type="number"
-                          className="h-8 text-sm text-right"
-                          value={item.taxRate}
-                          onChange={e => updateItem(idx, 'taxRate', Number(e.target.value))}
-                          min={0}
-                          max={100}
-                        />
+                      <TableCell className="p-1">
+                        <Select
+                          value={String(item.taxRate)}
+                          onValueChange={v => updateItem(idx, 'taxRate', Number(v))}
+                        >
+                          <SelectTrigger
+                            className="h-8 text-sm text-right w-full min-w-0 max-w-[72px] bg-white border-gray-300 !text-[#0A2540] [&>span]:!text-[#0A2540] [&>span]:!font-semibold placeholder:!text-[#0A2540]"
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {VAT_RATES.map(r => (
+                              <SelectItem key={r} value={String(r)}>
+                                %{r}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       <TableCell className="text-right text-sm font-medium">
                         {calculateLineTotal(item).toFixed(2)}
@@ -300,6 +360,15 @@ export function CreateOrderDialog({ open, onOpenChange, tenantId, onSuccess, isT
               <div className="text-right">
                 <span className="text-sm text-muted-foreground mr-2">{isTR ? 'Genel Toplam:' : 'Total:'}</span>
                 <span className="text-lg font-bold">{grandTotal.toFixed(2)} {currency}</span>
+                {currency && companyCurrency && currency !== companyCurrency && tcmbRates && (() => {
+                  const converted = convertAmount(grandTotal, currency, companyCurrency, tcmbRates, defaultRateType)
+                  if (converted == null) return null
+                  return (
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      ≈ {converted.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} {companyCurrency}
+                    </div>
+                  )
+                })()}
               </div>
             </div>
           </div>

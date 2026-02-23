@@ -8,6 +8,11 @@ export interface CreateOrderParams {
   sourceId?: string
   marketplaceAccountId?: string
   currency?: string
+  /** Sipariş tarihi (YYYY-MM-DD); kur bu tarihe göre alınır */
+  orderDate?: string
+  /** 1 unit of order currency = this many TRY (when currency !== TRY) */
+  exchangeRate?: number | null
+  exchangeRateDate?: string | null
   shippingAddress?: Record<string, unknown>
   billingAddress?: Record<string, unknown>
   notes?: string
@@ -59,25 +64,31 @@ export async function createOrder(params: CreateOrderParams): Promise<Integratio
       }
     })
 
+    const orderCurrency = params.currency || 'TRY'
+    const insertPayload: Record<string, unknown> = {
+      tenant_id: params.tenantId,
+      order_number: orderNumber,
+      source: params.source,
+      source_id: params.sourceId || null,
+      customer_id: params.customerId || null,
+      marketplace_account_id: params.marketplaceAccountId || null,
+      currency: orderCurrency,
+      subtotal,
+      tax_total: taxTotal,
+      total: subtotal + taxTotal,
+      shipping_address: params.shippingAddress || null,
+      billing_address: params.billingAddress || null,
+      notes: params.notes || null,
+      status: 'pending',
+    }
+    if (params.projectId != null) (insertPayload as any).project_id = params.projectId
+    if (orderCurrency !== 'TRY' && params.exchangeRate != null && !Number.isNaN(Number(params.exchangeRate))) {
+      (insertPayload as any).exchange_rate = Number(params.exchangeRate)
+      if (params.exchangeRateDate && /^\d{4}-\d{2}-\d{2}$/.test(params.exchangeRateDate)) (insertPayload as any).exchange_rate_date = params.exchangeRateDate
+    }
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .insert({
-        tenant_id: params.tenantId,
-        order_number: orderNumber,
-        source: params.source,
-        source_id: params.sourceId || null,
-        customer_id: params.customerId || null,
-        project_id: params.projectId || null,
-        marketplace_account_id: params.marketplaceAccountId || null,
-        currency: params.currency || 'TRY',
-        subtotal,
-        tax_total: taxTotal,
-        total: subtotal + taxTotal,
-        shipping_address: params.shippingAddress || null,
-        billing_address: params.billingAddress || null,
-        notes: params.notes || null,
-        status: 'pending',
-      })
+      .insert(insertPayload)
       .select()
       .single()
 

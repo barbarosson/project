@@ -39,25 +39,29 @@ DROP POLICY IF EXISTS "Users can insert customers" ON customers;
 DROP POLICY IF EXISTS "Users can update customers" ON customers;
 DROP POLICY IF EXISTS "Users can delete customers" ON customers;
 
--- Create new policies that allow public access for development
+-- Create new policies that allow public access for development (idempotent)
 -- Note: In production, replace 'public' with 'authenticated' and add proper tenant checks
 
+DROP POLICY IF EXISTS "Allow public to view customers" ON customers;
 CREATE POLICY "Allow public to view customers"
   ON customers FOR SELECT
   TO public
   USING (true);
 
+DROP POLICY IF EXISTS "Allow public to insert customers" ON customers;
 CREATE POLICY "Allow public to insert customers"
   ON customers FOR INSERT
   TO public
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Allow public to update customers" ON customers;
 CREATE POLICY "Allow public to update customers"
   ON customers FOR UPDATE
   TO public
   USING (true)
   WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Allow public to delete customers" ON customers;
 CREATE POLICY "Allow public to delete customers"
   ON customers FOR DELETE
   TO public

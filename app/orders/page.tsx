@@ -17,18 +17,24 @@ import {
 } from '@/components/ui/dropdown-menu'
 import {
   ShoppingCart, Plus, Search, MoreVertical, Eye, FileText,
-  Trash2, Loader2, Store, Link2, ArrowRight, CheckCircle2,
-  Truck, XCircle, Package,
+  Trash2, Loader2, Store, Upload, Link2, ArrowRight, CheckCircle2,
+  Truck, XCircle, Package, Filter,
 } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Label } from '@/components/ui/label'
 import { supabase } from '@/lib/supabase'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
 import { toast } from 'sonner'
 import { createInvoiceFromOrder, updateOrderStatus } from '@/lib/module-integration'
+import { convertAmount, type TcmbRatesByCurrency } from '@/lib/tcmb'
 import { OrderStatsCards } from '@/components/orders/order-stats-cards'
 import { CreateOrderDialog } from '@/components/orders/create-order-dialog'
 import { OrderDetailSheet } from '@/components/orders/order-detail-sheet'
+import { OrderExcelImportDialog } from '@/components/order-excel-import-dialog'
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
+import { useCurrency } from '@/contexts/currency-context'
 
 interface Order {
   id: string
@@ -41,6 +47,9 @@ interface Order {
   tax_total: number
   total: number
   currency: string
+  order_date?: string | null
+  exchange_rate: number | null
+  exchange_rate_date: string | null
   invoice_id: string | null
   marketplace_account_id: string | null
   notes: string | null
@@ -56,18 +65,34 @@ const STATUS_FILTERS = ['all', 'pending', 'confirmed', 'processing', 'shipped', 
 export default function OrdersPage() {
   const { tenantId, loading: tenantLoading } = useTenant()
   const { language } = useLanguage()
+  const { defaultRateType } = useCurrency()
   const isTR = language === 'tr'
 
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('all')
+  const [invoiceFilter, setInvoiceFilter] = useState<'all' | 'yes' | 'no'>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [detailDateFrom, setDetailDateFrom] = useState('')
+  const [detailDateTo, setDetailDateTo] = useState('')
+  const [detailAmountMin, setDetailAmountMin] = useState('')
+  const [detailAmountMax, setDetailAmountMax] = useState('')
+  const [detailSource, setDetailSource] = useState<'all' | 'manual' | 'marketplace'>('all')
+  const [filterPopoverOpen, setFilterPopoverOpen] = useState(false)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
+  const [showExcelImport, setShowExcelImport] = useState(false)
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
   const [showDetailSheet, setShowDetailSheet] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [deletingOrder, setDeletingOrder] = useState<Order | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [tcmbRates, setTcmbRates] = useState<TcmbRatesByCurrency | null>(null)
+  const [statsDateFrom, setStatsDateFrom] = useState(() => {
+    const d = new Date()
+    d.setDate(d.getDate() - 30)
+    return d.toISOString().slice(0, 10)
+  })
+  const [statsDateTo, setStatsDateTo] = useState(() => new Date().toISOString().slice(0, 10))
 
   const fetchOrders = useCallback(async () => {
     if (!tenantId) return
@@ -94,17 +119,47 @@ export default function OrdersPage() {
     if (!tenantLoading && tenantId) fetchOrders()
   }, [tenantId, tenantLoading, fetchOrders])
 
+  const hasNonTryOrders = orders.some(o => o.currency && o.currency !== 'TRY')
+  useEffect(() => {
+    if (!hasNonTryOrders) return
+    const dateStr = new Date().toISOString().slice(0, 10)
+    fetch(`/api/tcmb?date=${dateStr}`)
+      .then(res => res.ok ? res.json() : {})
+      .then(setTcmbRates)
+      .catch(() => setTcmbRates(null))
+  }, [hasNonTryOrders])
+
+  const orderDate = (o: Order) => o.order_date || o.created_at
+  const statsOrders = orders.filter((o) => {
+    const d = orderDate(o)
+    if (!d) return true
+    const t = new Date(d).getTime()
+    if (statsDateFrom) {
+      const from = new Date(statsDateFrom).setHours(0, 0, 0, 0)
+      if (t < from) return false
+    }
+    if (statsDateTo) {
+      const to = new Date(statsDateTo).setHours(23, 59, 59, 999)
+      if (t > to) return false
+    }
+    return true
+  })
   const stats = {
-    total: orders.length,
-    pending: orders.filter(o => o.status === 'pending').length,
-    processing: orders.filter(o => o.status === 'confirmed' || o.status === 'processing').length,
-    shipped: orders.filter(o => o.status === 'shipped').length,
-    completed: orders.filter(o => o.status === 'completed' || o.status === 'delivered').length,
-    fromMarketplace: orders.filter(o => o.source === 'marketplace').length,
+    total: statsOrders.length,
+    pending: statsOrders.filter(o => o.status === 'pending').length,
+    processing: statsOrders.filter(o => o.status === 'confirmed' || o.status === 'processing').length,
+    shipped: statsOrders.filter(o => o.status === 'shipped').length,
+    completed: statsOrders.filter(o => o.status === 'completed' || o.status === 'delivered').length,
+    fromMarketplace: statsOrders.filter(o => o.source === 'marketplace').length,
   }
 
   const filteredOrders = orders
     .filter(o => statusFilter === 'all' || o.status === statusFilter)
+    .filter(o => {
+      if (invoiceFilter === 'yes') return !!o.invoice_id
+      if (invoiceFilter === 'no') return !o.invoice_id
+      return true
+    })
     .filter(o => {
       if (!searchQuery) return true
       const q = searchQuery.toLowerCase()
@@ -114,6 +169,28 @@ export default function OrdersPage() {
         o.customers?.company_title?.toLowerCase().includes(q) ||
         o.source_id?.toLowerCase().includes(q)
       )
+    })
+    .filter(o => {
+      if (detailDateFrom) {
+        const from = new Date(detailDateFrom)
+        if (new Date(o.created_at) < from) return false
+      }
+      if (detailDateTo) {
+        const to = new Date(detailDateTo)
+        to.setHours(23, 59, 59, 999)
+        if (new Date(o.created_at) > to) return false
+      }
+      if (detailAmountMin !== '') {
+        const min = parseFloat(detailAmountMin)
+        if (!isNaN(min) && Number(o.total) < min) return false
+      }
+      if (detailAmountMax !== '') {
+        const max = parseFloat(detailAmountMax)
+        if (!isNaN(max) && Number(o.total) > max) return false
+      }
+      if (detailSource === 'manual' && o.source !== 'manual') return false
+      if (detailSource === 'marketplace' && o.source !== 'marketplace') return false
+      return true
     })
 
   function getStatusBadge(status: string) {
@@ -221,38 +298,146 @@ export default function OrdersPage() {
               </p>
             </div>
           </div>
-          <Button onClick={() => setShowCreateDialog(true)} className="bg-[#00D4AA] hover:bg-[#00B894]">
-            <Plus className="h-4 w-4 mr-2" />
-            {isTR ? 'Yeni Siparis' : 'New Order'}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setShowExcelImport(true)}>
+              <Upload className="h-4 w-4 mr-2" />
+              {isTR ? 'Excel ile aktar' : 'Import Excel'}
+            </Button>
+            <Button onClick={() => setShowCreateDialog(true)} className="bg-[#00D4AA] hover:bg-[#00B894]">
+              <Plus className="h-4 w-4 mr-2" />
+              {isTR ? 'Yeni Siparis' : 'New Order'}
+            </Button>
+          </div>
         </div>
 
-        <OrderStatsCards stats={stats} isTR={isTR} />
+        <OrderStatsCards
+          stats={stats}
+          isTR={isTR}
+          dateFrom={statsDateFrom}
+          dateTo={statsDateTo}
+          onDateFromChange={setStatsDateFrom}
+          onDateToChange={setStatsDateTo}
+        />
 
         <Card>
           <CardContent className="p-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4 flex-wrap">
               <div className="flex items-center gap-2 flex-wrap">
-                {STATUS_FILTERS.map(s => (
-                  <Button
-                    key={s}
-                    variant={statusFilter === s ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setStatusFilter(s)}
-                    className={statusFilter === s ? 'bg-[#0A2540]' : ''}
-                  >
-                    {s === 'all' ? (isTR ? 'Tumu' : 'All') : getStatusLabel(s)}
-                  </Button>
-                ))}
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-[180px] h-9 bg-white">
+                    <SelectValue placeholder={isTR ? 'Durum' : 'Status'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {STATUS_FILTERS.map(s => (
+                      <SelectItem key={s} value={s}>
+                        {s === 'all' ? (isTR ? 'Tümü' : 'All') : getStatusLabel(s)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select value={invoiceFilter} onValueChange={(v: 'all' | 'yes' | 'no') => setInvoiceFilter(v)}>
+                  <SelectTrigger className="w-[160px] h-9 bg-white">
+                    <SelectValue placeholder={isTR ? 'Fatura' : 'Invoice'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{isTR ? 'Tümü' : 'All'}</SelectItem>
+                    <SelectItem value="yes">{isTR ? 'Faturalandı' : 'Invoiced'}</SelectItem>
+                    <SelectItem value="no">{isTR ? 'Faturalanmamış' : 'Not invoiced'}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="relative flex-1 min-w-[200px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={isTR ? 'Siparis ara...' : 'Search orders...'}
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
+              <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                <div className="relative flex-1 min-w-[180px]">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder={isTR ? 'Sipariş ara (no, müşteri, kaynak)...' : 'Search (no, customer, source)...'}
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="pl-9 h-9"
+                  />
+                </div>
+                <Popover open={filterPopoverOpen} onOpenChange={setFilterPopoverOpen}>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-9 shrink-0">
+                      <Filter className="h-4 w-4 mr-1.5" />
+                      {isTR ? 'Detaylı filtre' : 'Advanced filter'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80" align="start">
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-sm">{isTR ? 'Detaylı filtre' : 'Advanced filter'}</h4>
+                      <div className="space-y-2">
+                        <Label className="text-xs">{isTR ? 'Tarih aralığı' : 'Date range'}</Label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input
+                            type="date"
+                            placeholder={isTR ? 'Başlangıç' : 'From'}
+                            value={detailDateFrom}
+                            onChange={e => setDetailDateFrom(e.target.value)}
+                            className="h-9"
+                          />
+                          <Input
+                            type="date"
+                            placeholder={isTR ? 'Bitiş' : 'To'}
+                            value={detailDateTo}
+                            onChange={e => setDetailDateTo(e.target.value)}
+                            className="h-9"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">{isTR ? 'Tutar aralığı' : 'Amount range'}</Label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            placeholder={isTR ? 'Min' : 'Min'}
+                            value={detailAmountMin}
+                            onChange={e => setDetailAmountMin(e.target.value)}
+                            className="h-9"
+                          />
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            placeholder={isTR ? 'Max' : 'Max'}
+                            value={detailAmountMax}
+                            onChange={e => setDetailAmountMax(e.target.value)}
+                            className="h-9"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">{isTR ? 'Kaynak' : 'Source'}</Label>
+                        <Select value={detailSource} onValueChange={(v: 'all' | 'manual' | 'marketplace') => setDetailSource(v)}>
+                          <SelectTrigger className="h-9">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">{isTR ? 'Tümü' : 'All'}</SelectItem>
+                            <SelectItem value="manual">{isTR ? 'Manuel' : 'Manual'}</SelectItem>
+                            <SelectItem value="marketplace">{isTR ? 'Pazaryeri' : 'Marketplace'}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full"
+                        onClick={() => {
+                          setDetailDateFrom('')
+                          setDetailDateTo('')
+                          setDetailAmountMin('')
+                          setDetailAmountMax('')
+                          setDetailSource('all')
+                        }}
+                      >
+                        {isTR ? 'Filtreleri temizle' : 'Clear filters'}
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
@@ -303,10 +488,30 @@ export default function OrdersPage() {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <span className="font-semibold">
-                            {Number(order.total).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
-                          </span>
-                          <span className="text-xs text-muted-foreground ml-1">{order.currency}</span>
+                          <div className="flex flex-col items-end">
+                            <span className="font-semibold">
+                              {Number(order.total).toLocaleString('tr-TR', { minimumFractionDigits: 2 })}
+                              <span className="text-xs font-normal text-muted-foreground ml-1">{order.currency}</span>
+                            </span>
+                            {order.currency && order.currency !== 'TRY' && (() => {
+                              const totalNum = Number(order.total)
+                              let tlAmount: number | null = null
+                              let rateSource = ''
+                              if (order.exchange_rate != null && Number(order.exchange_rate) > 0) {
+                                tlAmount = totalNum * Number(order.exchange_rate)
+                                rateSource = order.exchange_rate_date ? ` (${order.exchange_rate_date})` : ''
+                              } else if (tcmbRates) {
+                                tlAmount = convertAmount(totalNum, order.currency, 'TRY', tcmbRates, defaultRateType)
+                                rateSource = ' (TCMB)'
+                              }
+                              if (tlAmount == null) return null
+                              return (
+                                <span className="text-xs text-muted-foreground mt-0.5" title={order.exchange_rate != null ? (isTR ? `Kur: ${Number(order.exchange_rate).toLocaleString('tr-TR')}${rateSource}` : `Rate: ${Number(order.exchange_rate).toLocaleString('en-US')}${rateSource}`) : undefined}>
+                                  ≈ {tlAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} TL{rateSource}
+                                </span>
+                              )
+                            })()}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <Badge className={getStatusBadge(order.status)}>
@@ -410,6 +615,12 @@ export default function OrdersPage() {
         tenantId={tenantId || ''}
         onSuccess={fetchOrders}
         isTR={isTR}
+      />
+
+      <OrderExcelImportDialog
+        isOpen={showExcelImport}
+        onClose={() => setShowExcelImport(false)}
+        onSuccess={() => { setShowExcelImport(false); fetchOrders() }}
       />
 
       <OrderDetailSheet

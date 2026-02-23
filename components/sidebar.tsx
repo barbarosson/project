@@ -68,7 +68,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { isAdmin: userIsAdmin } = useAuth()
   const { hasFeature } = useSubscription()
   const { menus: allMenus } = useSiteConfig()
-  const [expandedMenus, setExpandedMenus] = useState<string[]>(['finance'])
+  const [openSubPanel, setOpenSubPanel] = useState<string | null>(null) // parent id: alt menü sağda açılsın
   const [unreadChatCount, setUnreadChatCount] = useState(0)
   const [upgradeDialog, setUpgradeDialog] = useState<{ open: boolean; featureName: string; requiredPlan: PlanName } | null>(null)
 
@@ -111,14 +111,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     Truck,
     FileSpreadsheet,
     Brain
-  }
-
-  const toggleMenu = (menuKey: string) => {
-    setExpandedMenus(prev =>
-      prev.includes(menuKey)
-        ? prev.filter(key => key !== menuKey)
-        : [...prev, menuKey]
-    )
   }
 
   // Load unread chat messages count
@@ -258,62 +250,27 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               const isActive = item.href && pathname === item.href
               const hasSubItems = 'subItems' in item && item.subItems
               const itemKey = 'key' in item ? item.key : undefined
-              const isExpanded = itemKey && expandedMenus.includes(itemKey)
-              const isSubItemActive = hasSubItems && item.subItems?.some(sub => pathname === sub.href)
+              const isSubItemActive = hasSubItems && item.subItems?.some((sub: any) => pathname === sub.href)
 
               if (hasSubItems && item.subItems) {
+                const isSubPanelOpen = itemKey && openSubPanel === itemKey
                 return (
                   <li key={itemKey || index}>
                     <button
-                      onClick={() => itemKey && toggleMenu(itemKey)}
+                      onClick={() => itemKey && setOpenSubPanel(isSubPanelOpen ? null : itemKey)}
                       className={cn(
                         'w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all',
                         'hover:bg-white/10',
-                        isSubItemActive && 'bg-white/5'
+                        isSubItemActive && 'bg-white/5',
+                        isSubPanelOpen && 'bg-white/5'
                       )}
                     >
                       <Icon size={20} />
                       <div className="flex-1 text-left">
                         <div className="text-sm font-medium">{item.title}</div>
                       </div>
-                      {isExpanded ? (
-                        <ChevronDown size={16} />
-                      ) : (
-                        <ChevronRight size={16} />
-                      )}
+                      <ChevronRight size={16} className={cn(isSubPanelOpen && 'rotate-90')} />
                     </button>
-                    {isExpanded && (
-                      <ul className="mt-1 ml-4 space-y-1">
-                        {item.subItems.map((subItem: any) => {
-                          const SubIcon = subItem.icon
-                          const isSubActive = pathname === subItem.href
-
-                          return (
-                            <li key={subItem.href}>
-                              <Link
-                                href={subItem.href}
-                                onClick={onClose}
-                                className={cn(
-                                  'flex items-center gap-3 px-4 py-2 rounded-lg transition-all',
-                                  'hover:bg-white/10',
-                                  isSubActive && 'bg-[#00D4AA]/20 text-[#7DD3FC] hover:bg-[#00D4AA]/30'
-                                )}
-                              >
-                                <SubIcon size={18} />
-                                <div className="flex-1">
-                                  <div className="text-sm">{subItem.title}</div>
-                                </div>
-                                {subItem.badge && (
-                                  <Badge className="bg-red-500 text-white text-xs px-1.5 py-0 min-w-[20px] h-5 flex items-center justify-center">
-                                    {subItem.badge}
-                                  </Badge>
-                                )}
-                              </Link>
-                            </li>
-                          )
-                        })}
-                      </ul>
-                    )}
                   </li>
                 )
               }
@@ -372,6 +329,61 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           </div>
         </div>
       </aside>
+
+      {/* Alt menü paneli: Cariler, Ebelge İşlemleri vb. alt başlıklar sağda */}
+      {openSubPanel && (() => {
+        const parentItem = finalMenuItems.find((m: any) => 'key' in m && m.key === openSubPanel)
+        const subItems = parentItem?.subItems as Array<{ id: string; title: string; href: string; icon: any; badge?: number }> | undefined
+        if (!subItems?.length) return null
+        return (
+          <>
+            <div
+              className="fixed inset-0 z-40 lg:z-30 lg:bg-transparent"
+              aria-hidden
+              onClick={() => setOpenSubPanel(null)}
+            />
+            <div
+              className="fixed top-[5.5rem] left-64 z-50 w-56 h-auto max-h-[calc(100vh-6rem)] flex flex-col animate-in slide-in-from-left-2 duration-200 lg:left-64 rounded-r-lg shadow-xl"
+              style={{ background: 'linear-gradient(180deg, #0f172a 0%, #0A2540 50%, #0A2540 100%)', borderLeft: '1px solid rgba(125,211,252,0.15)' }}
+            >
+              <div className="p-3 border-b shrink-0" style={{ borderColor: 'rgba(125,211,252,0.15)' }}>
+                <p className="text-xs font-medium uppercase tracking-wider" style={{ color: 'rgba(125,211,252,0.8)' }}>
+                  {parentItem?.title}
+                </p>
+              </div>
+              <nav className="p-2 overflow-y-auto shrink-0">
+                <ul className="space-y-0.5">
+                  {subItems.map((subItem: any) => {
+                    const SubIcon = subItem.icon
+                    const isSubActive = pathname === subItem.href
+                    return (
+                      <li key={subItem.href}>
+                        <Link
+                          href={subItem.href}
+                          onClick={() => { setOpenSubPanel(null); onClose() }}
+                          className={cn(
+                            'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all',
+                            'hover:bg-white/10',
+                            isSubActive && 'bg-[#00D4AA]/20 text-[#7DD3FC] hover:bg-[#00D4AA]/30'
+                          )}
+                        >
+                          <SubIcon size={18} />
+                          <span className="text-sm flex-1">{subItem.title}</span>
+                          {subItem.badge != null && (
+                            <Badge className="bg-red-500 text-white text-xs px-1.5 py-0 min-w-[20px] h-5 flex items-center justify-center">
+                              {subItem.badge}
+                            </Badge>
+                          )}
+                        </Link>
+                      </li>
+                    )
+                  })}
+                </ul>
+              </nav>
+            </div>
+          </>
+        )
+      })()}
 
       {upgradeDialog && (
         <UpgradePlanDialog
