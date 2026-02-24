@@ -347,7 +347,8 @@ CREATE INDEX IF NOT EXISTS idx_expenses_production ON expenses(production_order_
 -- ============================================================
 -- 6. PRODUCTION COST ANALYTICS VIEW
 -- ============================================================
-CREATE OR REPLACE VIEW production_cost_analytics AS
+CREATE OR REPLACE VIEW public.production_cost_analytics
+WITH (security_invoker = true) AS
 SELECT
   po.id AS production_order_id,
   po.tenant_id,

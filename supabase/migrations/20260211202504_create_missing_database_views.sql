@@ -88,7 +88,8 @@ WHERE w.is_active = true AND p.is_active = true;
 -- 3. production_cost_analytics
 -- Uses actual column names: planned_quantity, actual_quantity, hours_worked, hourly_rate
 -- =============================================
-CREATE OR REPLACE VIEW production_cost_analytics AS
+CREATE OR REPLACE VIEW public.production_cost_analytics
+WITH (security_invoker = true) AS
 SELECT
   po.id AS production_order_id,
   po.tenant_id,
