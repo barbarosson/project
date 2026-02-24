@@ -597,9 +597,12 @@ export default function NewInvoicePage() {
                       const targetCode = companyCurrency
                       const rateFrom = tcmbRates && getRateForType(tcmbRates[currency], defaultRateType)
                       const rateTo = targetCode === 'TRY' ? null : tcmbRates && getRateForType(tcmbRates[targetCode], defaultRateType)
-                      const rateDisplay = rateFrom != null && (targetCode === 'TRY' || (rateTo != null && rateTo !== 0))
-                        ? (targetCode === 'TRY' ? rateFrom : rateFrom / rateTo)
-                        : null
+                      const rateDisplay =
+                        rateFrom != null && rateTo != null
+                          ? targetCode === 'TRY'
+                            ? rateTo
+                            : rateFrom
+                          : null
                       const converted = tcmbRates ? convertAmount(grandTotal, currency, targetCode, tcmbRates, defaultRateType) : null
                       const rateLabel = `1 ${currency} = ${rateDisplay != null ? rateDisplay.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 4 }) : '–'} ${targetCode}`
                       return (

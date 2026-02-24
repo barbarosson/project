@@ -31,6 +31,10 @@ DROP POLICY IF EXISTS "Allow public to delete invoice line items" ON invoice_lin
 DROP POLICY IF EXISTS "Allow public to insert invoice line items" ON invoice_line_items;
 DROP POLICY IF EXISTS "Allow public to update invoice line items" ON invoice_line_items;
 DROP POLICY IF EXISTS "Allow public to view invoice line items" ON invoice_line_items;
+DROP POLICY IF EXISTS "Users can view own tenant invoice_line_items" ON invoice_line_items;
+DROP POLICY IF EXISTS "Users can insert own tenant invoice_line_items" ON invoice_line_items;
+DROP POLICY IF EXISTS "Users can update own tenant invoice_line_items" ON invoice_line_items;
+DROP POLICY IF EXISTS "Users can delete own tenant invoice_line_items" ON invoice_line_items;
 
 CREATE POLICY "Users can view own tenant invoice_line_items"
   ON invoice_line_items FOR SELECT
@@ -326,92 +330,43 @@ CREATE POLICY "Users can manage own tenant production_recipe_items"
   );
 
 -- ============================================================================
--- Fix testing and metrics tables
+-- Fix testing and metrics tables (only if tables exist)
 -- ============================================================================
-
--- performance_metrics
-DROP POLICY IF EXISTS "Authenticated users can manage performance metrics" ON performance_metrics;
-
-CREATE POLICY "Admins can manage performance_metrics"
-  ON performance_metrics FOR ALL
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = (SELECT auth.uid()) 
-      AND role IN ('admin', 'super_admin')
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = (SELECT auth.uid()) 
-      AND role IN ('admin', 'super_admin')
-    )
-  );
-
--- stress_test_results
-DROP POLICY IF EXISTS "Authenticated users can manage stress test results" ON stress_test_results;
-
-CREATE POLICY "Admins can manage stress_test_results"
-  ON stress_test_results FOR ALL
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = (SELECT auth.uid()) 
-      AND role IN ('admin', 'super_admin')
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = (SELECT auth.uid()) 
-      AND role IN ('admin', 'super_admin')
-    )
-  );
-
--- test_results
-DROP POLICY IF EXISTS "Authenticated users can manage test results" ON test_results;
-
-CREATE POLICY "Admins can manage test_results"
-  ON test_results FOR ALL
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = (SELECT auth.uid()) 
-      AND role IN ('admin', 'super_admin')
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = (SELECT auth.uid()) 
-      AND role IN ('admin', 'super_admin')
-    )
-  );
-
--- test_suites
-DROP POLICY IF EXISTS "Authenticated users can manage test suites" ON test_suites;
-
-CREATE POLICY "Admins can manage test_suites"
-  ON test_suites FOR ALL
-  TO authenticated
-  USING (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = (SELECT auth.uid()) 
-      AND role IN ('admin', 'super_admin')
-    )
-  )
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = (SELECT auth.uid()) 
-      AND role IN ('admin', 'super_admin')
-    )
-  );
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'performance_metrics') THEN
+    DROP POLICY IF EXISTS "Authenticated users can manage performance metrics" ON performance_metrics;
+    DROP POLICY IF EXISTS "Admins can manage performance_metrics" ON performance_metrics;
+    CREATE POLICY "Admins can manage performance_metrics"
+      ON performance_metrics FOR ALL TO authenticated
+      USING (EXISTS (SELECT 1 FROM profiles WHERE id = (SELECT auth.uid()) AND role IN ('admin', 'super_admin')))
+      WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE id = (SELECT auth.uid()) AND role IN ('admin', 'super_admin')));
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'stress_test_results') THEN
+    DROP POLICY IF EXISTS "Authenticated users can manage stress test results" ON stress_test_results;
+    DROP POLICY IF EXISTS "Admins can manage stress_test_results" ON stress_test_results;
+    CREATE POLICY "Admins can manage stress_test_results"
+      ON stress_test_results FOR ALL TO authenticated
+      USING (EXISTS (SELECT 1 FROM profiles WHERE id = (SELECT auth.uid()) AND role IN ('admin', 'super_admin')))
+      WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE id = (SELECT auth.uid()) AND role IN ('admin', 'super_admin')));
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'test_results') THEN
+    DROP POLICY IF EXISTS "Authenticated users can manage test results" ON test_results;
+    DROP POLICY IF EXISTS "Admins can manage test_results" ON test_results;
+    CREATE POLICY "Admins can manage test_results"
+      ON test_results FOR ALL TO authenticated
+      USING (EXISTS (SELECT 1 FROM profiles WHERE id = (SELECT auth.uid()) AND role IN ('admin', 'super_admin')))
+      WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE id = (SELECT auth.uid()) AND role IN ('admin', 'super_admin')));
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'test_suites') THEN
+    DROP POLICY IF EXISTS "Authenticated users can manage test suites" ON test_suites;
+    DROP POLICY IF EXISTS "Admins can manage test_suites" ON test_suites;
+    CREATE POLICY "Admins can manage test_suites"
+      ON test_suites FOR ALL TO authenticated
+      USING (EXISTS (SELECT 1 FROM profiles WHERE id = (SELECT auth.uid()) AND role IN ('admin', 'super_admin')))
+      WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE id = (SELECT auth.uid()) AND role IN ('admin', 'super_admin')));
+  END IF;
+END $$;
 
 -- ============================================================================
 -- Fix tax_rates with tenant isolation
@@ -442,22 +397,18 @@ CREATE POLICY "Users can delete own tenant tax_rates"
   USING (tenant_id IN (SELECT tenant_id FROM profiles WHERE id = (SELECT auth.uid())));
 
 -- ============================================================================
--- Fix global_health_reports with proper restrictions
+-- Fix global_health_reports with proper restrictions (only if table exists)
 -- ============================================================================
-
--- global_health_reports - only admins can insert
-DROP POLICY IF EXISTS "Authenticated users can insert health reports" ON global_health_reports;
-
-CREATE POLICY "Admins can insert global_health_reports"
-  ON global_health_reports FOR INSERT
-  TO authenticated
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM profiles 
-      WHERE id = (SELECT auth.uid()) 
-      AND role IN ('admin', 'super_admin')
-    )
-  );
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'global_health_reports') THEN
+    DROP POLICY IF EXISTS "Authenticated users can insert health reports" ON global_health_reports;
+    DROP POLICY IF EXISTS "Admins can insert global_health_reports" ON global_health_reports;
+    CREATE POLICY "Admins can insert global_health_reports"
+      ON global_health_reports FOR INSERT TO authenticated
+      WITH CHECK (EXISTS (SELECT 1 FROM profiles WHERE id = (SELECT auth.uid()) AND role IN ('admin', 'super_admin')));
+  END IF;
+END $$;
 
 -- Log completion
 DO $$

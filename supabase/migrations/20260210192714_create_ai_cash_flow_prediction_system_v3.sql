@@ -47,6 +47,10 @@ CREATE INDEX IF NOT EXISTS idx_cash_flow_rules_type ON public.cash_flow_rules(ru
 
 ALTER TABLE public.cash_flow_rules ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own tenant cash flow rules" ON public.cash_flow_rules;
+DROP POLICY IF EXISTS "Users can insert cash flow rules" ON public.cash_flow_rules;
+DROP POLICY IF EXISTS "Users can update own tenant cash flow rules" ON public.cash_flow_rules;
+
 CREATE POLICY "Users can view own tenant cash flow rules"
   ON public.cash_flow_rules FOR SELECT
   TO authenticated
@@ -93,6 +97,9 @@ CREATE INDEX IF NOT EXISTS idx_cash_flow_predictions_scenario ON public.cash_flo
 
 ALTER TABLE public.cash_flow_predictions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own tenant predictions" ON public.cash_flow_predictions;
+DROP POLICY IF EXISTS "Service role can manage predictions" ON public.cash_flow_predictions;
+
 CREATE POLICY "Users can view own tenant predictions"
   ON public.cash_flow_predictions FOR SELECT
   TO authenticated
@@ -126,6 +133,9 @@ CREATE INDEX IF NOT EXISTS idx_ai_model_metrics_branch ON public.ai_model_metric
 CREATE INDEX IF NOT EXISTS idx_ai_model_metrics_version ON public.ai_model_metrics(model_version, training_date DESC);
 
 ALTER TABLE public.ai_model_metrics ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own tenant model metrics" ON public.ai_model_metrics;
+DROP POLICY IF EXISTS "Service role can manage model metrics" ON public.ai_model_metrics;
 
 CREATE POLICY "Users can view own tenant model metrics"
   ON public.ai_model_metrics FOR SELECT
@@ -162,6 +172,9 @@ CREATE INDEX IF NOT EXISTS idx_production_bom_component ON public.production_bom
 CREATE INDEX IF NOT EXISTS idx_production_bom_tenant ON public.production_bom(tenant_id);
 
 ALTER TABLE public.production_bom ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own tenant BOM" ON public.production_bom;
+DROP POLICY IF EXISTS "Users can manage own tenant BOM" ON public.production_bom;
 
 CREATE POLICY "Users can view own tenant BOM"
   ON public.production_bom FOR SELECT

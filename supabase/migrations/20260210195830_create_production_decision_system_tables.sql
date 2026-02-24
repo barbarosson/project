@@ -96,6 +96,10 @@ ALTER TABLE public.production_recipes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.production_recipe_items ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ai_production_suggestions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow authenticated users" ON public.production_recipes;
+DROP POLICY IF EXISTS "Allow authenticated users" ON public.production_recipe_items;
+DROP POLICY IF EXISTS "Allow authenticated users" ON public.ai_production_suggestions;
+
 CREATE POLICY "Allow authenticated users" ON public.production_recipes FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow authenticated users" ON public.production_recipe_items FOR ALL TO authenticated USING (true) WITH CHECK (true);
 CREATE POLICY "Allow authenticated users" ON public.ai_production_suggestions FOR ALL TO authenticated USING (true) WITH CHECK (true);

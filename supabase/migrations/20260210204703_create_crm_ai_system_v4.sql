@@ -117,6 +117,8 @@ CREATE INDEX IF NOT EXISTS idx_interactions_created ON public.customer_interacti
 
 ALTER TABLE public.customer_interactions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can manage interactions" ON public.customer_interactions;
+
 CREATE POLICY "Authenticated users can manage interactions"
     ON public.customer_interactions FOR ALL
     TO authenticated
@@ -156,6 +158,8 @@ CREATE INDEX IF NOT EXISTS idx_insights_churn ON public.crm_ai_insights(churn_pr
 
 ALTER TABLE public.crm_ai_insights ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can manage insights" ON public.crm_ai_insights;
+
 CREATE POLICY "Authenticated users can manage insights"
     ON public.crm_ai_insights FOR ALL
     TO authenticated
@@ -189,6 +193,8 @@ CREATE INDEX IF NOT EXISTS idx_tasks_status ON public.crm_tasks(status);
 
 ALTER TABLE public.crm_tasks ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can manage tasks" ON public.crm_tasks;
+
 CREATE POLICY "Authenticated users can manage tasks"
     ON public.crm_tasks FOR ALL
     TO authenticated
@@ -214,6 +220,8 @@ CREATE TABLE IF NOT EXISTS public.customer_segment_history (
 CREATE INDEX IF NOT EXISTS idx_segment_history_customer ON public.customer_segment_history(customer_id);
 
 ALTER TABLE public.customer_segment_history ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Authenticated users can view segment history" ON public.customer_segment_history;
 
 CREATE POLICY "Authenticated users can view segment history"
     ON public.customer_segment_history FOR ALL

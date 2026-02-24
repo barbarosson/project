@@ -75,8 +75,13 @@ CREATE INDEX IF NOT EXISTS idx_purchase_orders_received_by ON purchase_orders(re
 -- stock_movements
 CREATE INDEX IF NOT EXISTS idx_stock_movements_created_by ON stock_movements(created_by);
 
--- stress_test_results
-CREATE INDEX IF NOT EXISTS idx_stress_test_results_executed_by ON stress_test_results(executed_by);
+-- stress_test_results (only if table exists)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'stress_test_results') THEN
+    CREATE INDEX IF NOT EXISTS idx_stress_test_results_executed_by ON stress_test_results(executed_by);
+  END IF;
+END $$;
 
 -- support_chat_sessions
 CREATE INDEX IF NOT EXISTS idx_support_chat_sessions_user_id ON support_chat_sessions(user_id);
@@ -87,8 +92,13 @@ CREATE INDEX IF NOT EXISTS idx_support_messages_sender_id ON support_messages(se
 -- support_tickets
 CREATE INDEX IF NOT EXISTS idx_support_tickets_created_by ON support_tickets(created_by);
 
--- test_results
-CREATE INDEX IF NOT EXISTS idx_test_results_executed_by ON test_results(executed_by);
+-- test_results (only if table exists)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'test_results') THEN
+    CREATE INDEX IF NOT EXISTS idx_test_results_executed_by ON test_results(executed_by);
+  END IF;
+END $$;
 
 -- trend_saved_reports
 CREATE INDEX IF NOT EXISTS idx_trend_saved_reports_user_id ON trend_saved_reports(user_id);

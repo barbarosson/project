@@ -61,6 +61,30 @@ BEGIN
 END $$;
 
 -- ============================================================================
+-- Step 2.5: Ensure every tenant_id in use exists in tenants (fix orphan FKs)
+-- ============================================================================
+DO $$
+DECLARE
+  first_owner_id uuid;
+BEGIN
+  SELECT owner_id INTO first_owner_id FROM tenants LIMIT 1;
+  IF first_owner_id IS NOT NULL THEN
+    INSERT INTO tenants (id, name, owner_id, created_at, updated_at)
+    SELECT d.tid, 'Legacy Tenant', first_owner_id, now(), now()
+    FROM (
+      SELECT DISTINCT tenant_id AS tid FROM customers WHERE tenant_id IS NOT NULL
+      UNION
+      SELECT DISTINCT tenant_id FROM invoices WHERE tenant_id IS NOT NULL
+      UNION
+      SELECT DISTINCT tenant_id FROM inventory WHERE tenant_id IS NOT NULL
+      UNION
+      SELECT DISTINCT tenant_id FROM transactions WHERE tenant_id IS NOT NULL
+    ) d
+    WHERE NOT EXISTS (SELECT 1 FROM tenants t WHERE t.id = d.tid);
+  END IF;
+END $$;
+
+-- ============================================================================
 -- Step 3: Add constraints and indexes
 -- ============================================================================
 
@@ -137,6 +161,10 @@ DROP POLICY IF EXISTS "Allow public to delete transactions" ON transactions;
 -- ============================================================================
 
 -- customers
+DROP POLICY IF EXISTS "Users can view own tenant customers" ON customers;
+DROP POLICY IF EXISTS "Users can insert own tenant customers" ON customers;
+DROP POLICY IF EXISTS "Users can update own tenant customers" ON customers;
+DROP POLICY IF EXISTS "Users can delete own tenant customers" ON customers;
 CREATE POLICY "Users can view own tenant customers"
   ON customers FOR SELECT TO authenticated
   USING (tenant_id IN (SELECT tenant_id FROM profiles WHERE id = (SELECT auth.uid())));
@@ -155,6 +183,10 @@ CREATE POLICY "Users can delete own tenant customers"
   USING (tenant_id IN (SELECT tenant_id FROM profiles WHERE id = (SELECT auth.uid())));
 
 -- invoices
+DROP POLICY IF EXISTS "Users can view own tenant invoices" ON invoices;
+DROP POLICY IF EXISTS "Users can insert own tenant invoices" ON invoices;
+DROP POLICY IF EXISTS "Users can update own tenant invoices" ON invoices;
+DROP POLICY IF EXISTS "Users can delete own tenant invoices" ON invoices;
 CREATE POLICY "Users can view own tenant invoices"
   ON invoices FOR SELECT TO authenticated
   USING (tenant_id IN (SELECT tenant_id FROM profiles WHERE id = (SELECT auth.uid())));
@@ -173,6 +205,10 @@ CREATE POLICY "Users can delete own tenant invoices"
   USING (tenant_id IN (SELECT tenant_id FROM profiles WHERE id = (SELECT auth.uid())));
 
 -- inventory
+DROP POLICY IF EXISTS "Users can view own tenant inventory" ON inventory;
+DROP POLICY IF EXISTS "Users can insert own tenant inventory" ON inventory;
+DROP POLICY IF EXISTS "Users can update own tenant inventory" ON inventory;
+DROP POLICY IF EXISTS "Users can delete own tenant inventory" ON inventory;
 CREATE POLICY "Users can view own tenant inventory"
   ON inventory FOR SELECT TO authenticated
   USING (tenant_id IN (SELECT tenant_id FROM profiles WHERE id = (SELECT auth.uid())));
@@ -191,6 +227,10 @@ CREATE POLICY "Users can delete own tenant inventory"
   USING (tenant_id IN (SELECT tenant_id FROM profiles WHERE id = (SELECT auth.uid())));
 
 -- transactions
+DROP POLICY IF EXISTS "Users can view own tenant transactions" ON transactions;
+DROP POLICY IF EXISTS "Users can insert own tenant transactions" ON transactions;
+DROP POLICY IF EXISTS "Users can update own tenant transactions" ON transactions;
+DROP POLICY IF EXISTS "Users can delete own tenant transactions" ON transactions;
 CREATE POLICY "Users can view own tenant transactions"
   ON transactions FOR SELECT TO authenticated
   USING (tenant_id IN (SELECT tenant_id FROM profiles WHERE id = (SELECT auth.uid())));

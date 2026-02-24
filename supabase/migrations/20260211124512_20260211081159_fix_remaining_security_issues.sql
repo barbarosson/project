@@ -28,16 +28,19 @@ END;
 $$;
 
 -- ============================================================================
--- Restrict materialized views to admin access only
+-- Restrict materialized views to admin access only (only if they exist)
 -- ============================================================================
-
--- Revoke all access from anon and authenticated
-REVOKE ALL ON mv_global_business_health FROM anon, authenticated;
-REVOKE ALL ON mv_critical_dates FROM anon, authenticated;
-
--- Grant select only to admins via RLS (create policies)
-ALTER MATERIALIZED VIEW mv_global_business_health OWNER TO postgres;
-ALTER MATERIALIZED VIEW mv_critical_dates OWNER TO postgres;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_matviews WHERE schemaname = 'public' AND matviewname = 'mv_global_business_health') THEN
+    REVOKE ALL ON mv_global_business_health FROM anon, authenticated;
+    ALTER MATERIALIZED VIEW mv_global_business_health OWNER TO postgres;
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_matviews WHERE schemaname = 'public' AND matviewname = 'mv_critical_dates') THEN
+    REVOKE ALL ON mv_critical_dates FROM anon, authenticated;
+    ALTER MATERIALIZED VIEW mv_critical_dates OWNER TO postgres;
+  END IF;
+END $$;
 
 -- ============================================================================
 -- Fix security definer view v_customer_360

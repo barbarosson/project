@@ -46,12 +46,12 @@ const DialogContent = React.forwardRef<
       {children}
       <DialogPrimitive.Close
         className={cn(
-          'absolute right-4 top-4 inline-flex items-center justify-center rounded-md border px-3 py-2 text-sm font-medium',
+          'absolute right-3 top-3 inline-flex items-center justify-center rounded-md border px-2 py-1.5 text-xs font-medium',
           'bg-white border-[#0A2540]/20 text-[#0A2540] hover:bg-[#0A2540]/5',
           'ring-offset-background transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none'
         )}
       >
-        <ArrowLeft className="h-4 w-4 mr-2" />
+        <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
         <span>Geri Dön</span>
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>

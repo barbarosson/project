@@ -22,36 +22,36 @@ DROP POLICY IF EXISTS "Users can view orders in their tenant" ON public.orders;
 CREATE POLICY "Users can view orders in their tenant" ON public.orders
   FOR SELECT TO authenticated
   USING (
-    tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
-    OR tenant_id IN (SELECT tenant_id FROM public.profiles WHERE id = (SELECT auth.uid()))
+    tenant_id IN (SELECT id::text FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
+    OR tenant_id IN (SELECT tenant_id::text FROM public.profiles WHERE id = (SELECT auth.uid()))
   );
 
 DROP POLICY IF EXISTS "Users can insert orders in their tenant" ON public.orders;
 CREATE POLICY "Users can insert orders in their tenant" ON public.orders
   FOR INSERT TO authenticated
   WITH CHECK (
-    tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
-    OR tenant_id IN (SELECT tenant_id FROM public.profiles WHERE id = (SELECT auth.uid()))
+    tenant_id IN (SELECT id::text FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
+    OR tenant_id IN (SELECT tenant_id::text FROM public.profiles WHERE id = (SELECT auth.uid()))
   );
 
 DROP POLICY IF EXISTS "Users can update orders in their tenant" ON public.orders;
 CREATE POLICY "Users can update orders in their tenant" ON public.orders
   FOR UPDATE TO authenticated
   USING (
-    tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
-    OR tenant_id IN (SELECT tenant_id FROM public.profiles WHERE id = (SELECT auth.uid()))
+    tenant_id IN (SELECT id::text FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
+    OR tenant_id IN (SELECT tenant_id::text FROM public.profiles WHERE id = (SELECT auth.uid()))
   )
   WITH CHECK (
-    tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
-    OR tenant_id IN (SELECT tenant_id FROM public.profiles WHERE id = (SELECT auth.uid()))
+    tenant_id IN (SELECT id::text FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
+    OR tenant_id IN (SELECT tenant_id::text FROM public.profiles WHERE id = (SELECT auth.uid()))
   );
 
 DROP POLICY IF EXISTS "Users can delete orders in their tenant" ON public.orders;
 CREATE POLICY "Users can delete orders in their tenant" ON public.orders
   FOR DELETE TO authenticated
   USING (
-    tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
-    OR tenant_id IN (SELECT tenant_id FROM public.profiles WHERE id = (SELECT auth.uid()))
+    tenant_id IN (SELECT id::text FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
+    OR tenant_id IN (SELECT tenant_id::text FROM public.profiles WHERE id = (SELECT auth.uid()))
   );
 
 -- ============================================================================
@@ -62,8 +62,8 @@ DROP POLICY IF EXISTS "Users can view order_items in their tenant" ON public.ord
 CREATE POLICY "Users can view order_items in their tenant" ON public.order_items
   FOR SELECT TO authenticated
   USING (
-    tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
-    OR tenant_id IN (SELECT tenant_id FROM public.profiles WHERE id = (SELECT auth.uid()))
+    tenant_id IN (SELECT id::text FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
+    OR tenant_id IN (SELECT tenant_id::text FROM public.profiles WHERE id = (SELECT auth.uid()))
   );
 
 DROP POLICY IF EXISTS "Order items tenant insert" ON public.order_items;
@@ -71,8 +71,8 @@ DROP POLICY IF EXISTS "Users can insert order_items in their tenant" ON public.o
 CREATE POLICY "Users can insert order_items in their tenant" ON public.order_items
   FOR INSERT TO authenticated
   WITH CHECK (
-    tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
-    OR tenant_id IN (SELECT tenant_id FROM public.profiles WHERE id = (SELECT auth.uid()))
+    tenant_id IN (SELECT id::text FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
+    OR tenant_id IN (SELECT tenant_id::text FROM public.profiles WHERE id = (SELECT auth.uid()))
   );
 
 DROP POLICY IF EXISTS "Order items tenant update" ON public.order_items;
@@ -80,12 +80,12 @@ DROP POLICY IF EXISTS "Users can update order_items in their tenant" ON public.o
 CREATE POLICY "Users can update order_items in their tenant" ON public.order_items
   FOR UPDATE TO authenticated
   USING (
-    tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
-    OR tenant_id IN (SELECT tenant_id FROM public.profiles WHERE id = (SELECT auth.uid()))
+    tenant_id IN (SELECT id::text FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
+    OR tenant_id IN (SELECT tenant_id::text FROM public.profiles WHERE id = (SELECT auth.uid()))
   )
   WITH CHECK (
-    tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
-    OR tenant_id IN (SELECT tenant_id FROM public.profiles WHERE id = (SELECT auth.uid()))
+    tenant_id IN (SELECT id::text FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
+    OR tenant_id IN (SELECT tenant_id::text FROM public.profiles WHERE id = (SELECT auth.uid()))
   );
 
 DROP POLICY IF EXISTS "Order items tenant delete" ON public.order_items;
@@ -93,8 +93,8 @@ DROP POLICY IF EXISTS "Users can delete order_items in their tenant" ON public.o
 CREATE POLICY "Users can delete order_items in their tenant" ON public.order_items
   FOR DELETE TO authenticated
   USING (
-    tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
-    OR tenant_id IN (SELECT tenant_id FROM public.profiles WHERE id = (SELECT auth.uid()))
+    tenant_id IN (SELECT id::text FROM public.tenants WHERE owner_id = (SELECT auth.uid()))
+    OR tenant_id IN (SELECT tenant_id::text FROM public.profiles WHERE id = (SELECT auth.uid()))
   );
 
 -- ============================================================================

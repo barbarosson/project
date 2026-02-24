@@ -33,6 +33,11 @@ CREATE TABLE IF NOT EXISTS credit_balances (
 
 ALTER TABLE credit_balances ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own credit balance" ON credit_balances;
+DROP POLICY IF EXISTS "Users can insert own credit balance" ON credit_balances;
+DROP POLICY IF EXISTS "Users can update own credit balance" ON credit_balances;
+DROP POLICY IF EXISTS "Users can delete own credit balance" ON credit_balances;
+
 CREATE POLICY "Users can view own credit balance"
   ON credit_balances FOR SELECT
   TO authenticated
@@ -69,6 +74,11 @@ CREATE TABLE IF NOT EXISTS customer_reviews (
 );
 
 ALTER TABLE customer_reviews ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Authenticated users can view customer reviews" ON customer_reviews;
+DROP POLICY IF EXISTS "Admins can insert customer reviews" ON customer_reviews;
+DROP POLICY IF EXISTS "Admins can update customer reviews" ON customer_reviews;
+DROP POLICY IF EXISTS "Admins can delete customer reviews" ON customer_reviews;
 
 CREATE POLICY "Authenticated users can view customer reviews"
   ON customer_reviews FOR SELECT
@@ -132,6 +142,11 @@ CREATE TABLE IF NOT EXISTS faqs (
 );
 
 ALTER TABLE faqs ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Authenticated users can view faqs" ON faqs;
+DROP POLICY IF EXISTS "Admins can insert faqs" ON faqs;
+DROP POLICY IF EXISTS "Admins can update faqs" ON faqs;
+DROP POLICY IF EXISTS "Admins can delete faqs" ON faqs;
 
 CREATE POLICY "Authenticated users can view faqs"
   ON faqs FOR SELECT
@@ -197,6 +212,11 @@ CREATE TABLE IF NOT EXISTS plan_features (
 
 ALTER TABLE plan_features ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can view plan features" ON plan_features;
+DROP POLICY IF EXISTS "Admins can insert plan features" ON plan_features;
+DROP POLICY IF EXISTS "Admins can update plan features" ON plan_features;
+DROP POLICY IF EXISTS "Admins can delete plan features" ON plan_features;
+
 CREATE POLICY "Authenticated users can view plan features"
   ON plan_features FOR SELECT
   TO authenticated
@@ -255,6 +275,11 @@ CREATE TABLE IF NOT EXISTS plan_feature_assignments (
 );
 
 ALTER TABLE plan_feature_assignments ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Authenticated users can view feature assignments" ON plan_feature_assignments;
+DROP POLICY IF EXISTS "Admins can insert feature assignments" ON plan_feature_assignments;
+DROP POLICY IF EXISTS "Admins can update feature assignments" ON plan_feature_assignments;
+DROP POLICY IF EXISTS "Admins can delete feature assignments" ON plan_feature_assignments;
 
 CREATE POLICY "Authenticated users can view feature assignments"
   ON plan_feature_assignments FOR SELECT
@@ -323,6 +348,11 @@ CREATE TABLE IF NOT EXISTS plan_discounts (
 
 ALTER TABLE plan_discounts ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can view plan discounts" ON plan_discounts;
+DROP POLICY IF EXISTS "Admins can insert plan discounts" ON plan_discounts;
+DROP POLICY IF EXISTS "Admins can update plan discounts" ON plan_discounts;
+DROP POLICY IF EXISTS "Admins can delete plan discounts" ON plan_discounts;
+
 CREATE POLICY "Authenticated users can view plan discounts"
   ON plan_discounts FOR SELECT
   TO authenticated
@@ -387,6 +417,11 @@ CREATE TABLE IF NOT EXISTS plan_installment_options (
 
 ALTER TABLE plan_installment_options ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can view installment options" ON plan_installment_options;
+DROP POLICY IF EXISTS "Admins can insert installment options" ON plan_installment_options;
+DROP POLICY IF EXISTS "Admins can update installment options" ON plan_installment_options;
+DROP POLICY IF EXISTS "Admins can delete installment options" ON plan_installment_options;
+
 CREATE POLICY "Authenticated users can view installment options"
   ON plan_installment_options FOR SELECT
   TO authenticated
@@ -446,6 +481,11 @@ CREATE TABLE IF NOT EXISTS ui_toggles (
 
 ALTER TABLE ui_toggles ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can view ui toggles" ON ui_toggles;
+DROP POLICY IF EXISTS "Admins can insert ui toggles" ON ui_toggles;
+DROP POLICY IF EXISTS "Admins can update ui toggles" ON ui_toggles;
+DROP POLICY IF EXISTS "Admins can delete ui toggles" ON ui_toggles;
+
 CREATE POLICY "Authenticated users can view ui toggles"
   ON ui_toggles FOR SELECT
   TO authenticated
@@ -480,7 +520,12 @@ CREATE POLICY "Admins can update ui toggles"
     )
   );
 
-ALTER PUBLICATION supabase_realtime ADD TABLE ui_toggles;
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname = 'supabase_realtime' AND tablename = 'ui_toggles') THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE ui_toggles;
+  END IF;
+END $$;
 
 -- =============================================
 -- Indexes

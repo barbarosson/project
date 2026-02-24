@@ -55,7 +55,7 @@ Tarayıcı açılır; Supabase hesabınla giriş yapıp yetki ver. “Access tok
 ## 5. Projeyi linkle (ilk seferde veya farklı projeye geçerken)
 
 ```bash
-npx supabase link --project-ref PROJECT_REF
+npx supabase link --project-ref itvrvouaxcutpetyzhvg
 ```
 
 **Önemli:** `PROJECT_REF` yerine 2. adımda kopyaladığın Reference ID’yi **sadece harf/rakam olarak** yaz. **`<` ve `>` karakterlerini yazma** (PowerShell/Windows’ta hata verir). Tırnak da gerekmez.
@@ -94,7 +94,7 @@ npx supabase db push
 ```bash
 cd "c:\Cursor\project-bolt-sb1-mzpfuu72 (2)\project"
 npx supabase login
-npx supabase link --project-ref PROJECT_REF
+npx supabase link --project-ref itvrvouaxcutpetyzhvg
 npx supabase db push
 ```
 

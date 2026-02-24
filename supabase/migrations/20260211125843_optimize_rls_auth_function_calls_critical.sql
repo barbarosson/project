@@ -256,7 +256,7 @@ CREATE POLICY "Users can delete expenses in their tenant" ON public.expenses
   );
 
 -- ============================================================================
--- ORDERS TABLE
+-- ORDERS TABLE (orders.tenant_id is text, tenants.id is uuid)
 -- ============================================================================
 DROP POLICY IF EXISTS "Users can view orders in their tenant" ON public.orders;
 CREATE POLICY "Users can view orders in their tenant" ON public.orders
@@ -264,7 +264,7 @@ CREATE POLICY "Users can view orders in their tenant" ON public.orders
   TO authenticated
   USING (
     tenant_id IN (
-      SELECT id FROM public.tenants WHERE owner_id = (SELECT auth.uid())
+      SELECT id::text FROM public.tenants WHERE owner_id = (SELECT auth.uid())
     )
   );
 
@@ -274,7 +274,7 @@ CREATE POLICY "Users can insert orders in their tenant" ON public.orders
   TO authenticated
   WITH CHECK (
     tenant_id IN (
-      SELECT id FROM public.tenants WHERE owner_id = (SELECT auth.uid())
+      SELECT id::text FROM public.tenants WHERE owner_id = (SELECT auth.uid())
     )
   );
 
@@ -284,12 +284,12 @@ CREATE POLICY "Users can update orders in their tenant" ON public.orders
   TO authenticated
   USING (
     tenant_id IN (
-      SELECT id FROM public.tenants WHERE owner_id = (SELECT auth.uid())
+      SELECT id::text FROM public.tenants WHERE owner_id = (SELECT auth.uid())
     )
   )
   WITH CHECK (
     tenant_id IN (
-      SELECT id FROM public.tenants WHERE owner_id = (SELECT auth.uid())
+      SELECT id::text FROM public.tenants WHERE owner_id = (SELECT auth.uid())
     )
   );
 
@@ -299,7 +299,7 @@ CREATE POLICY "Users can delete orders in their tenant" ON public.orders
   TO authenticated
   USING (
     tenant_id IN (
-      SELECT id FROM public.tenants WHERE owner_id = (SELECT auth.uid())
+      SELECT id::text FROM public.tenants WHERE owner_id = (SELECT auth.uid())
     )
   );
 

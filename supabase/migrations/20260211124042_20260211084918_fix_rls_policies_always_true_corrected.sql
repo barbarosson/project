@@ -41,16 +41,16 @@ CREATE POLICY "Anyone can insert demo_requests" ON demo_requests
     AND full_name != ''
   );
 
--- Fix lead_captures policy
--- Keep it public for marketing forms, but validate basic structure
-DROP POLICY IF EXISTS "Anyone can insert lead_captures" ON lead_captures;
-CREATE POLICY "Anyone can insert lead_captures" ON lead_captures 
-  FOR INSERT 
-  TO anon, authenticated
-  WITH CHECK (
-    email IS NOT NULL 
-    AND email != ''
-  );
+-- Fix lead_captures policy (only if table exists)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'lead_captures') THEN
+    DROP POLICY IF EXISTS "Anyone can insert lead_captures" ON lead_captures;
+    CREATE POLICY "Anyone can insert lead_captures" ON lead_captures
+      FOR INSERT TO anon, authenticated
+      WITH CHECK (email IS NOT NULL AND email != '');
+  END IF;
+END $$;
 
 -- Fix tenants policy
 -- Ensure owner_id matches the authenticated user creating the tenant

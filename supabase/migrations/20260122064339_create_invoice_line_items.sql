@@ -90,7 +90,12 @@ END $$;
 -- Enable RLS
 ALTER TABLE invoice_line_items ENABLE ROW LEVEL SECURITY;
 
--- Create policies for invoice_line_items
+-- Create policies for invoice_line_items (drop first so migration is idempotent)
+DROP POLICY IF EXISTS "Allow public to view invoice line items" ON invoice_line_items;
+DROP POLICY IF EXISTS "Allow public to insert invoice line items" ON invoice_line_items;
+DROP POLICY IF EXISTS "Allow public to update invoice line items" ON invoice_line_items;
+DROP POLICY IF EXISTS "Allow public to delete invoice line items" ON invoice_line_items;
+
 CREATE POLICY "Allow public to view invoice line items"
   ON invoice_line_items FOR SELECT
   TO public
@@ -116,22 +121,25 @@ CREATE POLICY "Allow public to delete invoice line items"
 CREATE INDEX IF NOT EXISTS idx_invoice_line_items_invoice_id ON invoice_line_items(invoice_id);
 CREATE INDEX IF NOT EXISTS idx_invoice_line_items_inventory_id ON invoice_line_items(inventory_id);
 
--- Insert sample invoices with line items
-INSERT INTO invoices (customer_id, invoice_number, amount, subtotal, total_vat, status, issue_date, due_date) 
-SELECT 
-  id,
-  'INV-' || LPAD(FLOOR(RANDOM() * 10000)::TEXT, 4, '0'),
-  0,
-  0,
-  0,
-  'pending',
-  CURRENT_DATE - INTERVAL '5 days',
-  CURRENT_DATE + INTERVAL '25 days'
-FROM customers
-LIMIT 1
-ON CONFLICT DO NOTHING;
+-- Optional sample data: skip if enum/table differs (e.g. status enum has no 'pending')
+DO $$
+BEGIN
+  INSERT INTO invoices (customer_id, invoice_number, amount, subtotal, total_vat, status, issue_date, due_date)
+  SELECT
+    id,
+    'INV-' || LPAD(FLOOR(RANDOM() * 10000)::TEXT, 4, '0'),
+    0, 0, 0,
+    'pending',
+    CURRENT_DATE - INTERVAL '5 days',
+    CURRENT_DATE + INTERVAL '25 days'
+  FROM customers
+  LIMIT 1
+  ON CONFLICT DO NOTHING;
+EXCEPTION
+  WHEN invalid_text_representation OR undefined_object THEN
+    NULL; -- status enum may differ on remote, skip sample data
+END $$;
 
--- Get the invoice ID we just created
 DO $$
 DECLARE
   v_invoice_id uuid;
@@ -139,20 +147,16 @@ DECLARE
 BEGIN
   SELECT id INTO v_invoice_id FROM invoices WHERE invoice_number LIKE 'INV-%' ORDER BY created_at DESC LIMIT 1;
   SELECT id INTO v_inventory_id FROM inventory LIMIT 1;
-  
+
   IF v_invoice_id IS NOT NULL THEN
-    -- Add sample line items
     INSERT INTO invoice_line_items (invoice_id, product_name, description, quantity, unit_price, vat_rate, line_total, vat_amount, total_with_vat, inventory_id)
     VALUES
       (v_invoice_id, 'Laptop Pro 15"', 'High-performance laptop', 2, 1299.99, 20, 2599.98, 519.996, 3119.976, v_inventory_id),
       (v_invoice_id, 'Professional Services', 'Consulting and setup', 10, 150.00, 20, 1500.00, 300.00, 1800.00, NULL);
-    
-    -- Update invoice totals
-    UPDATE invoices 
-    SET 
-      subtotal = 4099.98,
-      total_vat = 819.996,
-      amount = 4919.976
-    WHERE id = v_invoice_id;
+
+    UPDATE invoices SET subtotal = 4099.98, total_vat = 819.996, amount = 4919.976 WHERE id = v_invoice_id;
   END IF;
+EXCEPTION
+  WHEN OTHERS THEN
+    NULL; -- skip sample data on any error
 END $$;

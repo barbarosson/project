@@ -475,7 +475,7 @@ BEGIN
   ) THEN
     CREATE POLICY "Anyone can view ui styles"
       ON ui_styles FOR SELECT
-      USING (is_active = true);
+      USING (true);
   END IF;
 
   IF NOT EXISTS (
@@ -503,4 +503,9 @@ CREATE INDEX IF NOT EXISTS idx_user_subscriptions_user_id ON user_subscriptions(
 CREATE INDEX IF NOT EXISTS idx_user_subscriptions_status ON user_subscriptions(status);
 
 CREATE INDEX IF NOT EXISTS idx_ui_styles_element ON ui_styles(element_name);
-CREATE INDEX IF NOT EXISTS idx_ui_styles_active ON ui_styles(is_active);
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'ui_styles' AND column_name = 'is_active') THEN
+    CREATE INDEX IF NOT EXISTS idx_ui_styles_active ON ui_styles(is_active);
+  END IF;
+END $$;

@@ -56,9 +56,16 @@ CREATE INDEX IF NOT EXISTS idx_ai_chat_threads_tenant_id_fkey ON ai_chat_threads
 CREATE INDEX IF NOT EXISTS idx_branches_tenant_id_fkey ON branches(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_campaigns_tenant_id_fkey ON campaigns(tenant_id);
 
--- Cost center indexes
-CREATE INDEX IF NOT EXISTS idx_cost_allocations_cost_center_id_fkey ON cost_allocations(cost_center_id);
-CREATE INDEX IF NOT EXISTS idx_cost_centers_parent_id_fkey ON cost_centers(parent_id);
+-- Cost center indexes (only if tables exist)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'cost_allocations') THEN
+    CREATE INDEX IF NOT EXISTS idx_cost_allocations_cost_center_id_fkey ON cost_allocations(cost_center_id);
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'cost_centers') THEN
+    CREATE INDEX IF NOT EXISTS idx_cost_centers_parent_id_fkey ON cost_centers(parent_id);
+  END IF;
+END $$;
 
 -- CRM indexes
 CREATE INDEX IF NOT EXISTS idx_crm_tasks_customer_id_fkey ON crm_tasks(customer_id);
@@ -95,11 +102,18 @@ CREATE INDEX IF NOT EXISTS idx_invoice_line_items_invoice_id_fkey ON invoice_lin
 CREATE INDEX IF NOT EXISTS idx_invoices_customer_id_fkey ON invoices(customer_id);
 CREATE INDEX IF NOT EXISTS idx_invoices_tenant_id_fkey ON invoices(tenant_id);
 
--- Maintenance indexes
-CREATE INDEX IF NOT EXISTS idx_maintenance_schedules_assigned_to_fkey ON maintenance_schedules(assigned_to);
-CREATE INDEX IF NOT EXISTS idx_maintenance_schedules_equipment_id_fkey ON maintenance_schedules(equipment_id);
-CREATE INDEX IF NOT EXISTS idx_maintenance_work_orders_assigned_to_fkey ON maintenance_work_orders(assigned_to);
-CREATE INDEX IF NOT EXISTS idx_maintenance_work_orders_equipment_id_fkey ON maintenance_work_orders(equipment_id);
+-- Maintenance indexes (only if tables exist)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'maintenance_schedules') THEN
+    CREATE INDEX IF NOT EXISTS idx_maintenance_schedules_assigned_to_fkey ON maintenance_schedules(assigned_to);
+    CREATE INDEX IF NOT EXISTS idx_maintenance_schedules_equipment_id_fkey ON maintenance_schedules(equipment_id);
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'maintenance_work_orders') THEN
+    CREATE INDEX IF NOT EXISTS idx_maintenance_work_orders_assigned_to_fkey ON maintenance_work_orders(assigned_to);
+    CREATE INDEX IF NOT EXISTS idx_maintenance_work_orders_equipment_id_fkey ON maintenance_work_orders(equipment_id);
+  END IF;
+END $$;
 
 -- Marketplace indexes
 CREATE INDEX IF NOT EXISTS idx_marketplace_accounts_marketplace_id_fkey ON marketplace_accounts(marketplace_id);
@@ -158,13 +172,27 @@ CREATE INDEX IF NOT EXISTS idx_purchase_orders_tenant_id_fkey ON purchase_orders
 CREATE INDEX IF NOT EXISTS idx_purchase_requisitions_product_id_fkey ON purchase_requisitions(product_id);
 CREATE INDEX IF NOT EXISTS idx_purchase_requisitions_tenant_id_fkey ON purchase_requisitions(tenant_id);
 
--- Quality indexes
-CREATE INDEX IF NOT EXISTS idx_quality_defects_inspection_id_fkey ON quality_defects(inspection_id);
-CREATE INDEX IF NOT EXISTS idx_quality_inspections_inspector_id_fkey ON quality_inspections(inspector_id);
+-- Quality indexes (only if tables exist)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'quality_defects') THEN
+    CREATE INDEX IF NOT EXISTS idx_quality_defects_inspection_id_fkey ON quality_defects(inspection_id);
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'quality_inspections') THEN
+    CREATE INDEX IF NOT EXISTS idx_quality_inspections_inspector_id_fkey ON quality_inspections(inspector_id);
+  END IF;
+END $$;
 
--- Staff indexes
-CREATE INDEX IF NOT EXISTS idx_staff_manager_id_fkey ON staff(manager_id);
-CREATE INDEX IF NOT EXISTS idx_staff_ai_insights_staff_id_fkey ON staff_ai_insights(staff_id);
+-- Staff indexes (only if tables exist)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'staff') THEN
+    CREATE INDEX IF NOT EXISTS idx_staff_manager_id_fkey ON staff(manager_id);
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'staff_ai_insights') THEN
+    CREATE INDEX IF NOT EXISTS idx_staff_ai_insights_staff_id_fkey ON staff_ai_insights(staff_id);
+  END IF;
+END $$;
 
 -- Stock and supplier indexes
 CREATE INDEX IF NOT EXISTS idx_stock_movements_product_id_fkey ON stock_movements(product_id);
@@ -178,7 +206,12 @@ CREATE INDEX IF NOT EXISTS idx_support_tickets_tenant_id_fkey ON support_tickets
 
 -- Tenant and transaction indexes
 CREATE INDEX IF NOT EXISTS idx_tenants_owner_id_fkey ON tenants(owner_id);
-CREATE INDEX IF NOT EXISTS idx_test_results_suite_id_fkey ON test_results(suite_id);
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'test_results') THEN
+    CREATE INDEX IF NOT EXISTS idx_test_results_suite_id_fkey ON test_results(suite_id);
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS idx_transactions_tenant_id_fkey ON transactions(tenant_id);
 
 -- Trend indexes

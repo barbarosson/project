@@ -94,20 +94,20 @@ DROP POLICY IF EXISTS "Users can delete own tenant orders" ON orders;
 
 CREATE POLICY "Users can view own tenant orders"
   ON orders FOR SELECT TO authenticated
-  USING (tenant_id IN (SELECT tenant_id FROM profiles WHERE id = (SELECT auth.uid())));
+  USING (tenant_id IN (SELECT tenant_id::text FROM profiles WHERE id = (SELECT auth.uid())));
 
 CREATE POLICY "Users can insert own tenant orders"
   ON orders FOR INSERT TO authenticated
-  WITH CHECK (tenant_id IN (SELECT tenant_id FROM profiles WHERE id = (SELECT auth.uid())));
+  WITH CHECK (tenant_id IN (SELECT tenant_id::text FROM profiles WHERE id = (SELECT auth.uid())));
 
 CREATE POLICY "Users can update own tenant orders"
   ON orders FOR UPDATE TO authenticated
-  USING (tenant_id IN (SELECT tenant_id FROM profiles WHERE id = (SELECT auth.uid())))
-  WITH CHECK (tenant_id IN (SELECT tenant_id FROM profiles WHERE id = (SELECT auth.uid())));
+  USING (tenant_id IN (SELECT tenant_id::text FROM profiles WHERE id = (SELECT auth.uid())))
+  WITH CHECK (tenant_id IN (SELECT tenant_id::text FROM profiles WHERE id = (SELECT auth.uid())));
 
 CREATE POLICY "Users can delete own tenant orders"
   ON orders FOR DELETE TO authenticated
-  USING (tenant_id IN (SELECT tenant_id FROM profiles WHERE id = (SELECT auth.uid())));
+  USING (tenant_id IN (SELECT tenant_id::text FROM profiles WHERE id = (SELECT auth.uid())));
 
 -- ============================================================================
 -- Optimize expenses table

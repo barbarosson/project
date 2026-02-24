@@ -24,6 +24,10 @@ DROP POLICY IF EXISTS "Authenticated users can view inventory" ON inventory;
 DROP POLICY IF EXISTS "Authenticated users can insert inventory" ON inventory;
 DROP POLICY IF EXISTS "Authenticated users can update inventory" ON inventory;
 DROP POLICY IF EXISTS "Authenticated users can delete inventory" ON inventory;
+DROP POLICY IF EXISTS "Allow public to view inventory" ON inventory;
+DROP POLICY IF EXISTS "Allow public to insert inventory" ON inventory;
+DROP POLICY IF EXISTS "Allow public to update inventory" ON inventory;
+DROP POLICY IF EXISTS "Allow public to delete inventory" ON inventory;
 
 CREATE POLICY "Allow public to view inventory"
   ON inventory FOR SELECT
@@ -54,6 +58,10 @@ DROP POLICY IF EXISTS "Authenticated users can view invoices" ON invoices;
 DROP POLICY IF EXISTS "Authenticated users can insert invoices" ON invoices;
 DROP POLICY IF EXISTS "Authenticated users can update invoices" ON invoices;
 DROP POLICY IF EXISTS "Authenticated users can delete invoices" ON invoices;
+DROP POLICY IF EXISTS "Allow public to view invoices" ON invoices;
+DROP POLICY IF EXISTS "Allow public to insert invoices" ON invoices;
+DROP POLICY IF EXISTS "Allow public to update invoices" ON invoices;
+DROP POLICY IF EXISTS "Allow public to delete invoices" ON invoices;
 
 CREATE POLICY "Allow public to view invoices"
   ON invoices FOR SELECT
@@ -84,6 +92,10 @@ DROP POLICY IF EXISTS "Authenticated users can view transactions" ON transaction
 DROP POLICY IF EXISTS "Authenticated users can insert transactions" ON transactions;
 DROP POLICY IF EXISTS "Authenticated users can update transactions" ON transactions;
 DROP POLICY IF EXISTS "Authenticated users can delete transactions" ON transactions;
+DROP POLICY IF EXISTS "Allow public to view transactions" ON transactions;
+DROP POLICY IF EXISTS "Allow public to insert transactions" ON transactions;
+DROP POLICY IF EXISTS "Allow public to update transactions" ON transactions;
+DROP POLICY IF EXISTS "Allow public to delete transactions" ON transactions;
 
 CREATE POLICY "Allow public to view transactions"
   ON transactions FOR SELECT

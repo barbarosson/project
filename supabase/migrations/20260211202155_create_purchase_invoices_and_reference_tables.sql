@@ -57,6 +57,11 @@ CREATE TABLE IF NOT EXISTS purchase_invoices (
 
 ALTER TABLE purchase_invoices ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own tenant purchase invoices" ON purchase_invoices;
+DROP POLICY IF EXISTS "Users can insert purchase invoices for own tenant" ON purchase_invoices;
+DROP POLICY IF EXISTS "Users can update own tenant purchase invoices" ON purchase_invoices;
+DROP POLICY IF EXISTS "Users can delete own tenant purchase invoices" ON purchase_invoices;
+
 CREATE POLICY "Users can view own tenant purchase invoices"
   ON purchase_invoices FOR SELECT
   TO authenticated
@@ -117,6 +122,11 @@ CREATE TABLE IF NOT EXISTS purchase_invoice_line_items (
 
 ALTER TABLE purchase_invoice_line_items ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own tenant purchase invoice items" ON purchase_invoice_line_items;
+DROP POLICY IF EXISTS "Users can insert purchase invoice items for own tenant" ON purchase_invoice_line_items;
+DROP POLICY IF EXISTS "Users can update own tenant purchase invoice items" ON purchase_invoice_line_items;
+DROP POLICY IF EXISTS "Users can delete own tenant purchase invoice items" ON purchase_invoice_line_items;
+
 CREATE POLICY "Users can view own tenant purchase invoice items"
   ON purchase_invoice_line_items FOR SELECT
   TO authenticated
@@ -172,6 +182,8 @@ CREATE TABLE IF NOT EXISTS turkish_provinces (
 );
 
 ALTER TABLE turkish_provinces ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Authenticated users can view turkish provinces" ON turkish_provinces;
 
 CREATE POLICY "Authenticated users can view turkish provinces"
   ON turkish_provinces FOR SELECT

@@ -62,11 +62,11 @@ CREATE INDEX IF NOT EXISTS idx_invoices_customer_id ON invoices(customer_id);
 -- Production & Manufacturing
 CREATE INDEX IF NOT EXISTS idx_production_bom_items_production_order_id ON production_bom_items(production_order_id);
 CREATE INDEX IF NOT EXISTS idx_production_bom_items_product_id ON production_bom_items(product_id);
-CREATE INDEX IF NOT EXISTS idx_production_bom_items_tenant_id ON production_bom_items(tenant_id);
+-- production_bom_items has no tenant_id
 CREATE INDEX IF NOT EXISTS idx_production_labor_entries_production_order_id ON production_labor_entries(production_order_id);
-CREATE INDEX IF NOT EXISTS idx_production_labor_entries_tenant_id ON production_labor_entries(tenant_id);
+-- production_labor_entries has no tenant_id
 CREATE INDEX IF NOT EXISTS idx_production_quality_checks_production_order_id ON production_quality_checks(production_order_id);
-CREATE INDEX IF NOT EXISTS idx_production_quality_checks_tenant_id ON production_quality_checks(tenant_id);
+-- production_quality_checks has no tenant_id
 CREATE INDEX IF NOT EXISTS idx_production_orders_product_id ON production_orders(product_id);
 CREATE INDEX IF NOT EXISTS idx_production_orders_tenant_id ON production_orders(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_ai_production_suggestions_product_id ON ai_production_suggestions(product_id);
@@ -114,7 +114,7 @@ CREATE INDEX IF NOT EXISTS idx_orders_tenant_id ON orders(tenant_id);
 -- Warehouse & Inventory
 CREATE INDEX IF NOT EXISTS idx_warehouse_stock_warehouse_id ON warehouse_stock(warehouse_id);
 CREATE INDEX IF NOT EXISTS idx_warehouse_stock_product_id ON warehouse_stock(product_id);
-CREATE INDEX IF NOT EXISTS idx_warehouse_stock_tenant_id ON warehouse_stock(tenant_id);
+-- warehouse_stock has no tenant_id
 CREATE INDEX IF NOT EXISTS idx_warehouse_transfers_from_warehouse_id ON warehouse_transfers(from_warehouse_id);
 CREATE INDEX IF NOT EXISTS idx_warehouse_transfers_to_warehouse_id ON warehouse_transfers(to_warehouse_id);
 CREATE INDEX IF NOT EXISTS idx_warehouse_transfers_product_id ON warehouse_transfers(product_id);
@@ -144,26 +144,44 @@ CREATE INDEX IF NOT EXISTS idx_branch_targets_tenant_id ON branch_targets(tenant
 CREATE INDEX IF NOT EXISTS idx_branches_tenant_id ON branches(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_staff_manager_id ON staff(manager_id);
 CREATE INDEX IF NOT EXISTS idx_staff_tenant_id ON staff(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_staff_ai_insights_staff_id ON staff_ai_insights(staff_id);
-CREATE INDEX IF NOT EXISTS idx_staff_ai_insights_tenant_id ON staff_ai_insights(tenant_id);
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'staff_ai_insights') THEN
+    CREATE INDEX IF NOT EXISTS idx_staff_ai_insights_staff_id ON staff_ai_insights(staff_id);
+    CREATE INDEX IF NOT EXISTS idx_staff_ai_insights_tenant_id ON staff_ai_insights(tenant_id);
+  END IF;
+END $$;
 CREATE INDEX IF NOT EXISTS idx_payroll_tenant_id ON payroll(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_payroll_items_payroll_id ON payroll_items(payroll_id);
 CREATE INDEX IF NOT EXISTS idx_payroll_items_staff_id ON payroll_items(staff_id);
 CREATE INDEX IF NOT EXISTS idx_payroll_items_tenant_id ON payroll_items(tenant_id);
 
--- Maintenance & Quality
-CREATE INDEX IF NOT EXISTS idx_equipment_tenant_id ON equipment(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_maintenance_schedules_equipment_id ON maintenance_schedules(equipment_id);
-CREATE INDEX IF NOT EXISTS idx_maintenance_schedules_assigned_to ON maintenance_schedules(assigned_to);
-CREATE INDEX IF NOT EXISTS idx_maintenance_schedules_tenant_id ON maintenance_schedules(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_maintenance_work_orders_equipment_id ON maintenance_work_orders(equipment_id);
-CREATE INDEX IF NOT EXISTS idx_maintenance_work_orders_assigned_to ON maintenance_work_orders(assigned_to);
-CREATE INDEX IF NOT EXISTS idx_maintenance_work_orders_tenant_id ON maintenance_work_orders(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_quality_inspections_inspector_id ON quality_inspections(inspector_id);
-CREATE INDEX IF NOT EXISTS idx_quality_inspections_product_id ON quality_inspections(product_id);
-CREATE INDEX IF NOT EXISTS idx_quality_inspections_tenant_id ON quality_inspections(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_quality_defects_inspection_id ON quality_defects(inspection_id);
-CREATE INDEX IF NOT EXISTS idx_quality_defects_tenant_id ON quality_defects(tenant_id);
+-- Maintenance & Quality (only if tables exist)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'equipment') THEN
+    CREATE INDEX IF NOT EXISTS idx_equipment_tenant_id ON equipment(tenant_id);
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'maintenance_schedules') THEN
+    CREATE INDEX IF NOT EXISTS idx_maintenance_schedules_equipment_id ON maintenance_schedules(equipment_id);
+    CREATE INDEX IF NOT EXISTS idx_maintenance_schedules_assigned_to ON maintenance_schedules(assigned_to);
+    CREATE INDEX IF NOT EXISTS idx_maintenance_schedules_tenant_id ON maintenance_schedules(tenant_id);
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'maintenance_work_orders') THEN
+    CREATE INDEX IF NOT EXISTS idx_maintenance_work_orders_equipment_id ON maintenance_work_orders(equipment_id);
+    CREATE INDEX IF NOT EXISTS idx_maintenance_work_orders_assigned_to ON maintenance_work_orders(assigned_to);
+    CREATE INDEX IF NOT EXISTS idx_maintenance_work_orders_tenant_id ON maintenance_work_orders(tenant_id);
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'quality_inspections') THEN
+    CREATE INDEX IF NOT EXISTS idx_quality_inspections_inspector_id ON quality_inspections(inspector_id);
+    CREATE INDEX IF NOT EXISTS idx_quality_inspections_product_id ON quality_inspections(product_id);
+    CREATE INDEX IF NOT EXISTS idx_quality_inspections_tenant_id ON quality_inspections(tenant_id);
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'quality_defects') THEN
+    CREATE INDEX IF NOT EXISTS idx_quality_defects_inspection_id ON quality_defects(inspection_id);
+    CREATE INDEX IF NOT EXISTS idx_quality_defects_tenant_id ON quality_defects(tenant_id);
+  END IF;
+END $$;
 
 -- Core Tables
 CREATE INDEX IF NOT EXISTS idx_campaigns_tenant_id ON campaigns(tenant_id);
@@ -184,29 +202,64 @@ CREATE INDEX IF NOT EXISTS idx_ai_model_metrics_tenant_id ON ai_model_metrics(te
 CREATE INDEX IF NOT EXISTS idx_cash_flow_predictions_tenant_id ON cash_flow_predictions(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_cash_flow_rules_tenant_id ON cash_flow_rules(tenant_id);
 
--- CMS & Navigation
-CREATE INDEX IF NOT EXISTS idx_cms_page_sections_page_id ON cms_page_sections(page_id);
-CREATE INDEX IF NOT EXISTS idx_navigation_menus_parent_id ON navigation_menus(parent_id);
-CREATE INDEX IF NOT EXISTS idx_accounting_kb_categories_parent_id ON accounting_kb_categories(parent_id);
+-- CMS & Navigation (only if tables exist)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'cms_page_sections') THEN
+    CREATE INDEX IF NOT EXISTS idx_cms_page_sections_page_id ON cms_page_sections(page_id);
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'navigation_menus') THEN
+    CREATE INDEX IF NOT EXISTS idx_navigation_menus_parent_id ON navigation_menus(parent_id);
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'accounting_kb_categories') THEN
+    CREATE INDEX IF NOT EXISTS idx_accounting_kb_categories_parent_id ON accounting_kb_categories(parent_id);
+  END IF;
+END $$;
 
--- Cost Centers
-CREATE INDEX IF NOT EXISTS idx_cost_centers_tenant_id ON cost_centers(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_cost_centers_parent_id ON cost_centers(parent_id);
-CREATE INDEX IF NOT EXISTS idx_cost_allocations_cost_center_id ON cost_allocations(cost_center_id);
-CREATE INDEX IF NOT EXISTS idx_cost_allocations_product_id ON cost_allocations(product_id);
-CREATE INDEX IF NOT EXISTS idx_cost_allocations_tenant_id ON cost_allocations(tenant_id);
+-- Cost Centers (only if tables exist)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'cost_centers') THEN
+    CREATE INDEX IF NOT EXISTS idx_cost_centers_tenant_id ON cost_centers(tenant_id);
+    CREATE INDEX IF NOT EXISTS idx_cost_centers_parent_id ON cost_centers(parent_id);
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'cost_allocations') THEN
+    CREATE INDEX IF NOT EXISTS idx_cost_allocations_cost_center_id ON cost_allocations(cost_center_id);
+    CREATE INDEX IF NOT EXISTS idx_cost_allocations_product_id ON cost_allocations(product_id);
+    CREATE INDEX IF NOT EXISTS idx_cost_allocations_tenant_id ON cost_allocations(tenant_id);
+  END IF;
+END $$;
 
--- Production BOM and Recipes
-CREATE INDEX IF NOT EXISTS idx_production_bom_product_id ON production_bom(product_id);
-CREATE INDEX IF NOT EXISTS idx_production_bom_tenant_id ON production_bom(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_production_recipes_tenant_id ON production_recipes(tenant_id);
+-- Production BOM and Recipes (only if tables exist)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'production_bom') THEN
+    CREATE INDEX IF NOT EXISTS idx_production_bom_product_id ON production_bom(product_id);
+    CREATE INDEX IF NOT EXISTS idx_production_bom_tenant_id ON production_bom(tenant_id);
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'production_recipes') THEN
+    CREATE INDEX IF NOT EXISTS idx_production_recipes_tenant_id ON production_recipes(tenant_id);
+  END IF;
+END $$;
 
--- Tax and Salary
-CREATE INDEX IF NOT EXISTS idx_tax_rates_tenant_id ON tax_rates(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_salary_definitions_tenant_id ON salary_definitions(tenant_id);
+-- Tax and Salary (only if tables exist)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'tax_rates') THEN
+    CREATE INDEX IF NOT EXISTS idx_tax_rates_tenant_id ON tax_rates(tenant_id);
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'salary_definitions') THEN
+    CREATE INDEX IF NOT EXISTS idx_salary_definitions_tenant_id ON salary_definitions(tenant_id);
+  END IF;
+END $$;
 
--- einvoice
-CREATE INDEX IF NOT EXISTS idx_einvoice_details_tenant_id ON einvoice_details(tenant_id);
+-- einvoice (only if table exists)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'einvoice_details') THEN
+    CREATE INDEX IF NOT EXISTS idx_einvoice_details_tenant_id ON einvoice_details(tenant_id);
+  END IF;
+END $$;
 
 -- Log completion
 DO $$
