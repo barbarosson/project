@@ -1,0 +1,11 @@
+---
+description: Cursor'da "Select element" ile alan seçimi
+globs: 
+alwaysApply: false
+---
+
+# Select element ile alan seçimi
+
+- **Dropdown/Select alanları:** Butona basıp doğrudan Select kutusuna tıklarsanız dropdown açılır ve tıklama Cursor tarafından "element seçimi" olarak algılanmayabilir.
+- **Çözüm:** Select/Input yerine **etiket (Label) metnine** tıklayın (örn. "Customer *", "Para Birimi"). Etiketlerde `data-field` ve `select-text` var; seçim bu şekilde çalışabilir.
+- **Alternatif:** Alanı kodda bulmak için `data-field="new-invoice-customer"` veya `data-testid="new-invoice-customer"` ile arayın; form grupları bu attribute’larla işaretli.
