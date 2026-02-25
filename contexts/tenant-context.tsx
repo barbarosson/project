@@ -50,9 +50,18 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
       const userId = session.user.id
       const isSuperAdminUser = isSuperAdmin(session.user)
-
       setSuperAdmin(isSuperAdminUser)
-      setTenantId(userId)
+
+      // Siparişler ve diğer veriler genelde profiles.tenant_id ile kaydedilir; önce onu kullan
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('tenant_id')
+        .eq('id', userId)
+        .maybeSingle()
+
+      const effectiveTenantId =
+        profile?.tenant_id != null ? String(profile.tenant_id) : userId
+      setTenantId(effectiveTenantId)
     } catch (error) {
       setTenantId(null)
       setSuperAdmin(false)

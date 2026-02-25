@@ -22,7 +22,8 @@ interface CreateOrderDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   tenantId: string
-  onSuccess: () => void
+  /** Called after successful create; receives the new order so the list can show it immediately (optimistic). */
+  onSuccess: (newOrder?: Record<string, unknown>) => void
   isTR: boolean
 }
 
@@ -166,7 +167,7 @@ export function CreateOrderDialog({ open, onOpenChange, tenantId, onSuccess, isT
 
     if (result.success) {
       toast.success(isTR ? 'Siparis olusturuldu' : 'Order created')
-      onSuccess()
+      onSuccess(result.data as Record<string, unknown>)
       onOpenChange(false)
       resetForm()
     } else {

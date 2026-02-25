@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -93,10 +93,12 @@ export default function OrdersPage() {
     return d.toISOString().slice(0, 10)
   })
   const [statsDateTo, setStatsDateTo] = useState(() => new Date().toISOString().slice(0, 10))
+  const pendingCreatedOrderRef = useRef<Order | null>(null)
 
   const fetchOrders = useCallback(async () => {
     if (!tenantId) return
     try {
+      setLoading(true)
       const { data, error } = await supabase
         .from('orders')
         .select(`
@@ -107,7 +109,14 @@ export default function OrdersPage() {
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setOrders(data || [])
+      const list = data || []
+      const pending = pendingCreatedOrderRef.current
+      if (pending && !list.some((o: Order) => o.id === pending.id)) {
+        setOrders([pending, ...list])
+      } else {
+        setOrders(list)
+      }
+      pendingCreatedOrderRef.current = null
     } catch (error) {
       console.error('Error fetching orders:', error)
     } finally {
@@ -613,7 +622,14 @@ export default function OrdersPage() {
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
         tenantId={tenantId || ''}
-        onSuccess={fetchOrders}
+        onSuccess={(newOrder) => {
+          if (newOrder) {
+            const orderRow = { ...newOrder, customers: null } as Order
+            pendingCreatedOrderRef.current = orderRow
+            setOrders((prev) => [orderRow, ...prev])
+          }
+          fetchOrders()
+        }}
         isTR={isTR}
       />
 
