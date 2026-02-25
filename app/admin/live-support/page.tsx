@@ -41,6 +41,7 @@ interface Message {
 interface Customer {
   id: string
   name: string
+  company_title?: string
   email: string
 }
 
