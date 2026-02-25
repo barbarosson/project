@@ -243,7 +243,7 @@ export default function FinanceRobotPage() {
                     { label: tr ? 'Risk Altinda' : 'At Risk', value: String(report.customers.atRiskCustomers) },
                     { label: tr ? 'Ort. Gelir' : 'Avg Revenue', value: formatCurrency(Math.round(report.customers.avgRevenuePerCustomer)) },
                     { label: tr ? 'Kayip Riski' : 'Churn Risk', value: `${report.customers.churnRisk}%` },
-                    { label: tr ? 'En Iyi' : 'Top Customer', value: report.customers.topCustomers[0]?.company_title || report.customers.topCustomers[0]?.name || '-' },
+                    { label: tr ? 'En Iyi' : 'Top Customer', value: report.customers.topCustomers[0]?.name || '-' },
                   ]}
                 />
 
