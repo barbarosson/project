@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Toaster } from '@/components/ui/sonner'
 import {
@@ -19,7 +20,7 @@ import {
 import {
   ShoppingCart, Plus, Search, MoreVertical, Eye, FileText,
   Trash2, Loader2, Store, Upload, Link2, ArrowRight, CheckCircle2,
-  Truck, XCircle, Package, Filter,
+  Truck, XCircle, Package, Filter, CheckSquare,
 } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -95,6 +96,7 @@ export default function OrdersPage() {
     return d.toISOString().slice(0, 10)
   })
   const [statsDateTo, setStatsDateTo] = useState(() => new Date().toISOString().slice(0, 10))
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const pendingCreatedOrderRef = useRef<Order | null>(null)
 
   const fetchOrders = useCallback(async () => {
@@ -122,8 +124,15 @@ export default function OrdersPage() {
     } catch (err: unknown) {
       console.error('Error fetching orders:', err)
       setOrders([])
-      const msg = err instanceof Error ? err.message : String(err)
-      toast.error(isTR ? `Siparişler yüklenemedi: ${msg}` : `Failed to load orders: ${msg}`)
+      const msg =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'object' && err !== null && 'message' in err
+            ? String((err as { message?: string }).message)
+            : typeof err === 'string'
+              ? err
+              : JSON.stringify(err)
+      toast.error(isTR ? `Siparişler yüklenemedi: ${msg || 'Bilinmeyen hata'}` : `Failed to load orders: ${msg || 'Unknown error'}`)
     } finally {
       setLoading(false)
     }
@@ -293,6 +302,40 @@ export default function OrdersPage() {
     }
   }
 
+  const allVisibleSelected = filteredOrders.length > 0 && filteredOrders.every((o) => selectedIds.has(o.id))
+  const someSelected = selectedIds.size > 0
+  function toggleSelectAll() {
+    if (allVisibleSelected) setSelectedIds(new Set())
+    else setSelectedIds(new Set(filteredOrders.map((o) => o.id)))
+  }
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+  async function handleBulkDelete() {
+    if (!tenantId || selectedIds.size === 0) return
+    const confirmed = window.confirm(
+      isTR ? `${selectedIds.size} sipariş silinecek. Emin misiniz?` : `Delete ${selectedIds.size} order(s). Are you sure?`
+    )
+    if (!confirmed) return
+    try {
+      for (const id of Array.from(selectedIds)) {
+        await supabase.from('order_items').delete().eq('order_id', id).eq('tenant_id', tenantId)
+        await supabase.from('orders').delete().eq('id', id).eq('tenant_id', tenantId)
+      }
+      toast.success(isTR ? `${selectedIds.size} sipariş silindi` : `${selectedIds.size} order(s) deleted`)
+      setSelectedIds(new Set())
+      fetchOrders()
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      toast.error(msg)
+    }
+  }
+
   if (loading || tenantLoading) {
     return (
       <DashboardLayout>
@@ -336,6 +379,7 @@ export default function OrdersPage() {
 
         <OrderStatsCards
           stats={stats}
+          ordersInRange={statsOrders}
           isTR={isTR}
           dateFrom={statsDateFrom}
           dateTo={statsDateTo}
@@ -347,7 +391,7 @@ export default function OrdersPage() {
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4 flex-wrap">
               <div className="flex items-center gap-2 flex-wrap">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setSelectedIds(new Set()) }}>
                   <SelectTrigger className="w-[180px] h-9 bg-white">
                     <SelectValue placeholder={isTR ? 'Durum' : 'Status'} />
                   </SelectTrigger>
@@ -359,7 +403,7 @@ export default function OrdersPage() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Select value={invoiceFilter} onValueChange={(v: 'all' | 'yes' | 'no') => setInvoiceFilter(v)}>
+                <Select value={invoiceFilter} onValueChange={(v: 'all' | 'yes' | 'no') => { setInvoiceFilter(v); setSelectedIds(new Set()) }}>
                   <SelectTrigger className="w-[160px] h-9 bg-white">
                     <SelectValue placeholder={isTR ? 'Fatura' : 'Invoice'} />
                   </SelectTrigger>
@@ -465,10 +509,31 @@ export default function OrdersPage() {
               </div>
             </div>
 
+            {someSelected && (
+              <div className="flex items-center gap-3 mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <CheckSquare className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-800">
+                  {isTR ? `${selectedIds.size} sipariş seçili` : `${selectedIds.size} order(s) selected`}
+                </span>
+                <Button size="sm" variant="destructive" onClick={handleBulkDelete}>
+                  <Trash2 className="h-3.5 w-3.5 mr-1" />
+                  {isTR ? 'Seçilenleri Sil' : 'Delete Selected'}
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setSelectedIds(new Set())}>
+                  {isTR ? 'Seçimi Temizle' : 'Clear Selection'}
+                </Button>
+              </div>
+            )}
+
             <div className="border rounded-lg overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-gray-50">
+                    <TableHead className="h-8 w-4 min-w-4 max-w-4 p-0.5 text-center align-middle">
+                      <div className="inline-flex items-center justify-center w-4 h-6">
+                        <Checkbox size="sm" checked={allVisibleSelected && filteredOrders.length > 0} onCheckedChange={toggleSelectAll} aria-label={isTR ? 'Tümünü seç' : 'Select all'} />
+                      </div>
+                    </TableHead>
                     <TableHead className="font-semibold">{isTR ? 'Siparis No' : 'Order No'}</TableHead>
                     <TableHead className="font-semibold">{isTR ? 'Musteri' : 'Customer'}</TableHead>
                     <TableHead className="font-semibold">{isTR ? 'Kaynak' : 'Source'}</TableHead>
@@ -482,7 +547,7 @@ export default function OrdersPage() {
                 <TableBody>
                   {filteredOrders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center py-12 text-gray-500">
+                      <TableCell colSpan={9} className="text-center py-12 text-gray-500">
                         {isTR ? 'Siparis bulunamadi' : 'No orders found'}
                       </TableCell>
                     </TableRow>
@@ -490,8 +555,13 @@ export default function OrdersPage() {
                     filteredOrders.map(order => (
                       <TableRow
                         key={order.id}
-                        className="cursor-pointer hover:bg-gray-50 transition-colors"
+                        className={`cursor-pointer hover:bg-gray-50 transition-colors ${selectedIds.has(order.id) ? 'bg-blue-50' : ''}`}
                       >
+                        <TableCell className="w-4 min-w-4 max-w-4 p-0.5 text-center align-middle" onClick={(e) => e.stopPropagation()}>
+                          <div className="inline-flex items-center justify-center w-4 h-6">
+                            <Checkbox size="sm" checked={selectedIds.has(order.id)} onCheckedChange={() => toggleSelect(order.id)} aria-label={isTR ? 'Seç' : 'Select'} />
+                          </div>
+                        </TableCell>
                         <TableCell>
                           <button
                             className="font-medium text-[#0A2540] hover:underline text-left"

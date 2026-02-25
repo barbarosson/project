@@ -1,8 +1,15 @@
 'use client'
 
+import { useMemo } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ShoppingCart, Clock, Package, Truck, CheckCircle2, Link2 } from 'lucide-react'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+
+interface OrderWithDate {
+  order_date?: string | null
+  created_at: string
+}
 
 interface OrderStatsProps {
   stats: {
@@ -13,6 +20,7 @@ interface OrderStatsProps {
     completed: number
     fromMarketplace: number
   }
+  ordersInRange: OrderWithDate[]
   isTR: boolean
   dateFrom: string
   dateTo: string
@@ -29,7 +37,26 @@ const BAR_COLORS = [
   'bg-blue-500',
 ]
 
-export function OrderStatsCards({ stats, isTR, dateFrom, dateTo, onDateFromChange, onDateToChange }: OrderStatsProps) {
+export function OrderStatsCards({ stats, isTR, dateFrom, dateTo, ordersInRange, onDateFromChange, onDateToChange }: OrderStatsProps) {
+  const chartData = useMemo(() => {
+    if (!dateFrom || !dateTo) return []
+    const from = new Date(dateFrom)
+    const to = new Date(dateTo)
+    const days: { date: string; count: number; label: string }[] = []
+    const dayKey = (d: Date) => d.toISOString().slice(0, 10)
+    const orderDate = (o: OrderWithDate) => o.order_date || o.created_at
+    for (let d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) {
+      const key = dayKey(d)
+      const count = ordersInRange.filter((o) => orderDate(o) && dayKey(new Date(orderDate(o))) === key).length
+      days.push({
+        date: key,
+        count,
+        label: d.toLocaleDateString(isTR ? 'tr-TR' : 'en-US', { day: 'numeric', month: 'short' }),
+      })
+    }
+    return days
+  }, [dateFrom, dateTo, ordersInRange, isTR])
+
   const items = [
     { key: 'total', label: isTR ? 'Toplam' : 'Total', value: stats.total, icon: ShoppingCart },
     { key: 'pending', label: isTR ? 'Beklemede' : 'Pending', value: stats.pending, icon: Clock },
@@ -93,6 +120,27 @@ export function OrderStatsCards({ stats, isTR, dateFrom, dateTo, onDateFromChang
           )
         })}
       </div>
+      {chartData.length > 0 && (
+        <div className="mt-4 pt-4 border-t">
+          <p className="text-xs text-muted-foreground mb-2">
+            {isTR ? 'Seçilen zaman diliminde günlük sipariş adedi' : 'Daily order count in selected period'}
+          </p>
+          <div className="h-[140px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
+                <XAxis dataKey="label" tick={{ fontSize: 10 }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 10 }} width={24} />
+                <Tooltip
+                  formatter={(value: number) => [value, isTR ? 'Sipariş' : 'Orders']}
+                  labelFormatter={(_, payload) => payload?.[0]?.payload?.date}
+                  contentStyle={{ fontSize: 12 }}
+                />
+                <Bar dataKey="count" fill="#0A2540" radius={[2, 2, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
