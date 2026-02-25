@@ -46,6 +46,7 @@ interface EInvoiceDetail {
     grand_total: number;
     customers: {
       name: string;
+      company_title?: string;
     };
   };
 }
