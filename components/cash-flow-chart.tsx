@@ -3,15 +3,14 @@
 import { useMemo } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
-  Cell
+  ResponsiveContainer
 } from 'recharts'
 import { useLanguage } from '@/contexts/language-context'
 import { useCurrency } from '@/hooks/use-currency'
@@ -32,17 +31,13 @@ export function CashFlowChart({ data, periodLabel }: CashFlowChartProps) {
   const { formatCurrency } = useCurrency()
   const isTR = language === 'tr'
 
-  const chartData = useMemo(
-    () =>
-      data.map((d) => ({
-        ...d,
-        net: d.income - d.expenses
-      })),
-    [data]
-  )
-
-  const profitLabel = isTR ? 'Kar' : 'Profit'
-  const lossLabel = isTR ? 'Zarar' : 'Loss'
+  const { totalNet, netLabel } = useMemo(() => {
+    const totalIncome = data.reduce((s, d) => s + d.income, 0)
+    const totalExpenses = data.reduce((s, d) => s + d.expenses, 0)
+    const net = totalIncome - totalExpenses
+    const label = isTR ? (net >= 0 ? 'Kar' : 'Zarar') : (net >= 0 ? 'Profit' : 'Loss')
+    return { totalNet: net, netLabel: label }
+  }, [data, isTR])
 
   return (
     <Card>
@@ -55,49 +50,69 @@ export function CashFlowChart({ data, periodLabel }: CashFlowChartProps) {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-[350px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis
-                dataKey="month"
-                stroke="#6b7280"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
+        <div className="space-y-3">
+          <div className="flex items-center justify-end gap-4 text-sm font-medium">
+            <span className={totalNet >= 0 ? 'text-green-600' : 'text-red-600'}>
+              {netLabel}: {formatCurrency(Math.abs(totalNet))}
+            </span>
+          </div>
+          <div className="h-[320px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis
+                  dataKey="month"
+                  stroke="#6b7280"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                />
+                <YAxis
+                  stroke="#6b7280"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(value) => formatCurrency(value)}
+                />
+                <Tooltip
+                  content={({ active, payload }) => {
+                    if (!active || !payload?.length) return null
+                    const p = payload[0].payload
+                    const net = (p?.income ?? 0) - (p?.expenses ?? 0)
+                    return (
+                      <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm text-sm">
+                        <div className="font-medium text-gray-700 mb-2">{p?.month}</div>
+                        <div className="text-[#00D4AA]">{t.dashboard.cashFlowIncome}: {formatCurrency(p?.income ?? 0)}</div>
+                        <div className="text-[#E74C3C]">{t.dashboard.cashFlowExpenses}: {formatCurrency(p?.expenses ?? 0)}</div>
+                        <div className={net >= 0 ? 'text-green-600 font-medium mt-1' : 'text-red-600 font-medium mt-1'}>
+                          {isTR ? (net >= 0 ? 'Kar' : 'Zarar') : (net >= 0 ? 'Profit' : 'Loss')}: {formatCurrency(Math.abs(net))}
+                        </div>
+                      </div>
+                    )
+                  }}
+                />
+              <Legend wrapperStyle={{ paddingTop: '12px' }} />
+              <Line
+                type="monotone"
+                dataKey="income"
+                stroke="#00D4AA"
+                strokeWidth={3}
+                dot={{ fill: '#00D4AA', r: 4 }}
+                activeDot={{ r: 6 }}
+                name={t.dashboard.cashFlowIncome}
               />
-              <YAxis
-                stroke="#6b7280"
-                fontSize={12}
-                tickLine={false}
-                axisLine={false}
-                tickFormatter={(value) => formatCurrency(value)}
+              <Line
+                type="monotone"
+                dataKey="expenses"
+                stroke="#E74C3C"
+                strokeWidth={3}
+                dot={{ fill: '#E74C3C', r: 4 }}
+                activeDot={{ r: 6 }}
+                name={t.dashboard.cashFlowExpenses}
               />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: 'white',
-                  border: '1px solid #e5e7eb',
-                  borderRadius: '8px'
-                }}
-                formatter={(value: number, name: string) => {
-                  if (name === (isTR ? 'Kar / Zarar' : 'Profit / Loss')) {
-                    const label = Number(value) >= 0 ? profitLabel : lossLabel
-                    return [formatCurrency(Math.abs(Number(value))), label]
-                  }
-                  return [formatCurrency(value), name]
-                }}
-                labelFormatter={(_, payload) => payload?.[0]?.payload?.month ?? ''}
-              />
-              <Legend wrapperStyle={{ paddingTop: '20px' }} />
-              <Bar dataKey="income" name={t.dashboard.cashFlowIncome} fill="#00D4AA" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="expenses" name={t.dashboard.cashFlowExpenses} fill="#E74C3C" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="net" name={isTR ? 'Kar / Zarar' : 'Profit / Loss'} radius={[4, 4, 0, 0]} maxBarSize={24}>
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.net >= 0 ? '#22c55e' : '#ef4444'} />
-                ))}
-              </Bar>
-            </BarChart>
+            </LineChart>
           </ResponsiveContainer>
+          </div>
         </div>
       </CardContent>
     </Card>

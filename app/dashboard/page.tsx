@@ -7,7 +7,8 @@ import { MetricCard } from '@/components/metric-card'
 import { CashFlowChart } from '@/components/cash-flow-chart'
 import { RecentActivity } from '@/components/recent-activity'
 import { ProductTour } from '@/components/product-tour'
-import { DollarSign, AlertCircle, Users, Package, TrendingUp, TrendingDown, Calendar, Wallet } from 'lucide-react'
+import { DollarSign, AlertCircle, Users, Package, TrendingUp, TrendingDown, Calendar, Wallet, FileDown } from 'lucide-react'
+import * as XLSX from 'xlsx'
 import { supabase } from '@/lib/supabase'
 import { useTenant } from '@/contexts/tenant-context'
 import { useCurrency } from '@/hooks/use-currency'
@@ -256,7 +257,10 @@ export default function Dashboard() {
         .reduce((sum: number, i: any) => sum + (Number(i.remaining_amount) || Number(i.total) || 0), 0)
 
       const lowStockAlerts = products.filter(
-        (item: any) => item.stock_quantity <= item.min_stock_level
+        (p: any) =>
+          p.min_stock_level != null &&
+          p.min_stock_level !== '' &&
+          Number(p.stock_quantity) <= Number(p.min_stock_level)
       ).length
 
       setMetrics({
@@ -539,6 +543,92 @@ export default function Dashboard() {
     }
   }
 
+  function exportDetailToExcel() {
+    if (!detailModal) return
+    const isTR = language === 'tr'
+    const dateStr = `${format(dateRange.from, 'yyyy-MM-dd')}_${format(dateRange.to, 'yyyy-MM-dd')}`
+    let data: string[][] = []
+    let fileName = 'export.xlsx'
+
+    if (detailModal === 'cashOnHand') {
+      data = [
+        [isTR ? 'Hesap' : 'Account', isTR ? 'Bakiye' : 'Balance'],
+        ...detailAccounts.map((acc: any) => [
+          acc.name || (isTR ? 'Hesap' : 'Account'),
+          String(Number(acc.current_balance) || 0)
+        ])
+      ]
+      fileName = isTR ? `hesaplar_${dateStr}.xlsx` : `accounts_${dateStr}.xlsx`
+    } else if (detailModal === 'income') {
+      data = [
+        [isTR ? 'Tahsil edilen faturalar' : 'Collected invoices', '', ''],
+        [isTR ? 'Fatura no' : 'Invoice', isTR ? 'Ödeme tarihi' : 'Payment date', isTR ? 'Tutar' : 'Amount'],
+        ...detailCollectedInvoices.map((i: any) => [
+          i.invoice_number || '',
+          i.payment_date ? format(new Date(i.payment_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-',
+          String(Number(i.total) || Number(i.amount) || 0)
+        ]),
+        [],
+        [isTR ? 'Fatura ile eşlenmemiş tahsilatlar' : 'Unmatched collections', '', ''],
+        [isTR ? 'Tarih' : 'Date', isTR ? 'Açıklama' : 'Description', isTR ? 'Tutar' : 'Amount'],
+        ...detailUnmatchedIncome.map((tx: any) => [
+          tx.transaction_date ? format(new Date(tx.transaction_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-',
+          tx.description || '-',
+          String(Number(tx.amount) || 0)
+        ])
+      ]
+      fileName = isTR ? `gelir_${dateStr}.xlsx` : `income_${dateStr}.xlsx`
+    } else if (detailModal === 'invoicing') {
+      data = [
+        [isTR ? 'Fatura no' : 'Invoice', isTR ? 'Kesim tarihi' : 'Issue date', isTR ? 'Durum' : 'Status', isTR ? 'Tutar' : 'Amount'],
+        ...detailPeriodInvoices.map((i: any) => [
+          i.invoice_number || '',
+          i.issue_date ? format(new Date(i.issue_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-',
+          i.status || '',
+          String(Number(i.total) || Number(i.amount) || 0)
+        ])
+      ]
+      fileName = isTR ? `faturalama_${dateStr}.xlsx` : `invoicing_${dateStr}.xlsx`
+    } else if (detailModal === 'expenses') {
+      data = [
+        [isTR ? 'Masraflar' : 'Expenses', '', ''],
+        [isTR ? 'Tarih' : 'Date', isTR ? 'Açıklama' : 'Description', isTR ? 'Tutar' : 'Amount'],
+        ...detailPeriodExpenses.map((e: any) => [
+          e.expense_date ? format(new Date(e.expense_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-',
+          e.description || e.category || '-',
+          String(Number(e.amount) || 0)
+        ]),
+        [],
+        [isTR ? 'İşlem giderleri' : 'Transaction expenses', '', ''],
+        [isTR ? 'Tarih' : 'Date', isTR ? 'Açıklama' : 'Description', isTR ? 'Tutar' : 'Amount'],
+        ...detailPeriodTxExpenses.map((tx: any) => [
+          tx.transaction_date ? format(new Date(tx.transaction_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-',
+          tx.description || '-',
+          String(Number(tx.amount) || 0)
+        ])
+      ]
+      fileName = isTR ? `giderler_${dateStr}.xlsx` : `expenses_${dateStr}.xlsx`
+    } else if (detailModal === 'customers') {
+      data = [
+        [isTR ? 'Müşteri' : 'Customer', 'Email'],
+        ...detailActiveCustomers.map((c: any) => [c.name || c.company_title || '-', c.email || '-'])
+      ]
+      fileName = isTR ? `musteriler_${dateStr}.xlsx` : `customers_${dateStr}.xlsx`
+    } else if (detailModal === 'lowStock') {
+      data = [
+        [isTR ? 'Ürün' : 'Product', isTR ? 'Stok' : 'Stock', isTR ? 'Min. stok' : 'Min stock'],
+        ...detailLowStockProducts.map((p: any) => [p.name || '-', String(p.stock_quantity ?? ''), String(p.min_stock_level ?? '')])
+      ]
+      fileName = isTR ? `dusuk_stok_${dateStr}.xlsx` : `low_stock_${dateStr}.xlsx`
+    }
+
+    if (data.length === 0) return
+    const ws = XLSX.utils.aoa_to_sheet(data)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, isTR ? 'Liste' : 'Sheet1')
+    XLSX.writeFile(wb, fileName)
+  }
+
   function getRelativeTime(date: Date): string {
     const now = new Date()
     const diffMs = now.getTime() - date.getTime()
@@ -711,22 +801,30 @@ export default function Dashboard() {
         <Dialog open={detailModal !== null} onOpenChange={(open) => !open && setDetailModal(null)}>
           <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
             <DialogHeader>
-              <DialogTitle>
-                {detailModal === 'cashOnHand' && t.dashboard.cashOnHand}
-                {detailModal === 'income' && t.dashboard.cashFlowIncome}
-                {detailModal === 'invoicing' && t.dashboard.invoicing}
-                {detailModal === 'expenses' && t.dashboard.cashFlowExpenses}
-                {detailModal === 'customers' && t.dashboard.activeCustomers}
-                {detailModal === 'lowStock' && t.dashboard.lowStockAlerts}
-              </DialogTitle>
-              <DialogDescription>
-                {detailModal === 'cashOnHand' && t.dashboard.allAccounts}
-                {detailModal === 'income' && (language === 'tr' ? 'Tahsil edilen faturalar ve fatura ile eşlenmemiş tahsilatlar' : 'Collected invoices and unmatched collections')}
-                {detailModal === 'invoicing' && (language === 'tr' ? 'Dönemde kesilen faturalar' : 'Invoices issued in period')}
-                {detailModal === 'expenses' && (language === 'tr' ? 'Dönemde yapılan ödemeler (masraflar + işlem giderleri)' : 'Payments in period (expenses + transaction expenses)')}
-                {detailModal === 'customers' && t.dashboard.activeAccounts}
-                {detailModal === 'lowStock' && t.dashboard.requiresAttention}
-              </DialogDescription>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <DialogTitle>
+                    {detailModal === 'cashOnHand' && t.dashboard.cashOnHand}
+                    {detailModal === 'income' && t.dashboard.cashFlowIncome}
+                    {detailModal === 'invoicing' && t.dashboard.invoicing}
+                    {detailModal === 'expenses' && t.dashboard.cashFlowExpenses}
+                    {detailModal === 'customers' && t.dashboard.activeCustomers}
+                    {detailModal === 'lowStock' && t.dashboard.lowStockAlerts}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {detailModal === 'cashOnHand' && t.dashboard.allAccounts}
+                    {detailModal === 'income' && (language === 'tr' ? 'Tahsil edilen faturalar ve fatura ile eşlenmemiş tahsilatlar' : 'Collected invoices and unmatched collections')}
+                    {detailModal === 'invoicing' && (language === 'tr' ? 'Dönemde kesilen faturalar' : 'Invoices issued in period')}
+                    {detailModal === 'expenses' && (language === 'tr' ? 'Dönemde yapılan ödemeler (masraflar + işlem giderleri)' : 'Payments in period (expenses + transaction expenses)')}
+                    {detailModal === 'customers' && t.dashboard.activeAccounts}
+                    {detailModal === 'lowStock' && t.dashboard.requiresAttention}
+                  </DialogDescription>
+                </div>
+                <Button variant="outline" size="sm" className="flex-shrink-0 gap-2" onClick={exportDetailToExcel}>
+                  <FileDown className="h-4 w-4" />
+                  {language === 'tr' ? 'Excel ile dışa aktar' : 'Export to Excel'}
+                </Button>
+              </div>
             </DialogHeader>
             <div className="overflow-auto flex-1 -mx-6 px-6">
               {detailModal === 'cashOnHand' && (
