@@ -46,12 +46,12 @@ const DialogContent = React.forwardRef<
       {children}
       <DialogPrimitive.Close
         className={cn(
-          'absolute right-3 top-3 inline-flex items-center justify-center rounded-md border px-2 py-1.5 text-xs font-medium',
+          'absolute right-2 top-2 inline-flex items-center justify-center rounded border px-1.5 py-0.5 text-[10px] font-medium',
           'bg-white border-[#0A2540]/20 text-[#0A2540] hover:bg-[#0A2540]/5',
           'ring-offset-background transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none'
         )}
       >
-        <ArrowLeft className="h-3.5 w-3.5 mr-1.5" />
+        <ArrowLeft className="h-3 w-3 mr-1" />
         <span>Geri Dön</span>
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
@@ -65,7 +65,7 @@ const DialogHeader = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      'flex flex-col space-y-1.5 text-center sm:text-left',
+      'flex flex-col space-y-1.5 text-center sm:text-left pr-24',
       className
     )}
     {...props}

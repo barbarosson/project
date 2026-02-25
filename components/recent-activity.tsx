@@ -9,8 +9,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectTrigger,
-  SelectValue
+  SelectTrigger
 } from '@/components/ui/select'
 
 interface Activity {
@@ -77,12 +76,12 @@ export function RecentActivity({ activities, limit = 5, onLimitChange }: RecentA
                 value={String(limit)}
                 onValueChange={(v) => onLimitChange(Number(v))}
               >
-                <SelectTrigger className="w-[72px] h-9">
-                  <SelectValue />
+                <SelectTrigger className="w-[72px] h-10 rounded-md text-sm font-medium bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 hover:text-gray-900 px-4 py-2 inline-flex items-center justify-center">
+                  <span>...</span>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white text-gray-900">
                   {ACTIVITY_LIMIT_OPTIONS.map((n) => (
-                    <SelectItem key={n} value={String(n)}>
+                    <SelectItem key={n} value={String(n)} className="text-gray-900">
                       {n}
                     </SelectItem>
                   ))}

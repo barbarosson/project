@@ -671,8 +671,8 @@ export default function Dashboard() {
                 {format(dateRange.from, 'MMM dd', { locale: dateLocale })} - {format(dateRange.to, 'MMM dd, yyyy', { locale: dateLocale })}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <div className="p-4 space-y-4">
+            <PopoverContent className="w-auto p-0 max-w-[min(380px,95vw)]" align="end">
+              <div className="p-4 space-y-4 max-w-[380px] overflow-hidden">
                 <div>
                   <p className="text-sm font-medium mb-2">{t.dashboard.from}</p>
                   <CalendarComponent
@@ -801,8 +801,8 @@ export default function Dashboard() {
         <Dialog open={detailModal !== null} onOpenChange={(open) => !open && setDetailModal(null)}>
           <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
             <DialogHeader>
-              <div className="flex items-start justify-between gap-4">
-                <div>
+              <div className="flex items-start w-full gap-4">
+                <div className="flex-shrink-0 min-w-0">
                   <DialogTitle>
                     {detailModal === 'cashOnHand' && t.dashboard.cashOnHand}
                     {detailModal === 'income' && t.dashboard.cashFlowIncome}
@@ -820,10 +820,13 @@ export default function Dashboard() {
                     {detailModal === 'lowStock' && t.dashboard.requiresAttention}
                   </DialogDescription>
                 </div>
-                <Button variant="outline" size="sm" className="flex-shrink-0 gap-2" onClick={exportDetailToExcel}>
-                  <FileDown className="h-4 w-4" />
-                  {language === 'tr' ? 'Excel ile dışa aktar' : 'Export to Excel'}
-                </Button>
+                <div className="flex-1 flex justify-center items-center min-w-0">
+                  <Button variant="outline" size="sm" className="flex-shrink-0 gap-2" onClick={exportDetailToExcel}>
+                    <FileDown className="h-4 w-4" />
+                    {language === 'tr' ? 'Excel ile dışa aktar' : 'Export to Excel'}
+                  </Button>
+                </div>
+                <div className="w-24 flex-shrink-0" aria-hidden />
               </div>
             </DialogHeader>
             <div className="overflow-auto flex-1 -mx-6 px-6">
