@@ -19,6 +19,21 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar'
 import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns'
 import { tr, enUS } from 'date-fns/locale'
 import { LoadingSpinner } from '@/components/loading-spinner'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from '@/components/ui/dialog'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table'
 
 interface DashboardMetrics {
   totalRevenue: number
@@ -90,6 +105,15 @@ export default function Dashboard() {
   const [activityLimit, setActivityLimit] = useState(5)
   const [loading, setLoading] = useState(true)
   const [showProductTour, setShowProductTour] = useState(false)
+  const [detailModal, setDetailModal] = useState<null | 'cashOnHand' | 'income' | 'invoicing' | 'expenses' | 'customers' | 'lowStock'>(null)
+  const [detailAccounts, setDetailAccounts] = useState<any[]>([])
+  const [detailCollectedInvoices, setDetailCollectedInvoices] = useState<any[]>([])
+  const [detailUnmatchedIncome, setDetailUnmatchedIncome] = useState<any[]>([])
+  const [detailPeriodInvoices, setDetailPeriodInvoices] = useState<any[]>([])
+  const [detailPeriodExpenses, setDetailPeriodExpenses] = useState<any[]>([])
+  const [detailPeriodTxExpenses, setDetailPeriodTxExpenses] = useState<any[]>([])
+  const [detailActiveCustomers, setDetailActiveCustomers] = useState<any[]>([])
+  const [detailLowStockProducts, setDetailLowStockProducts] = useState<any[]>([])
 
   const chartStartMonth = format(dateRange.from, 'yyyy-MM')
   const chartEndMonth = format(dateRange.to, 'yyyy-MM')
@@ -150,12 +174,12 @@ export default function Dashboard() {
 
       const fetchWithTimeout = Promise.race([
         Promise.all([
-          supabase.from('customers').select('id, name, email, status, created_at').eq('tenant_id', tenantId),
+          supabase.from('customers').select('id, name, email, company_title, status, created_at').eq('tenant_id', tenantId),
           supabase.from('invoices').select('id, invoice_number, amount, total, paid_amount, remaining_amount, status, issue_date, payment_date, created_at').eq('tenant_id', tenantId),
           supabase.from('products').select('id, name, stock_quantity, min_stock_level, created_at').eq('tenant_id', tenantId),
           supabase.from('expenses').select('id, description, amount, expense_date, category, created_at').eq('tenant_id', tenantId),
-          supabase.from('accounts').select('current_balance, is_active').eq('tenant_id', tenantId).eq('is_active', true),
-          supabase.from('transactions').select('id, amount, transaction_type, transaction_date').eq('tenant_id', tenantId)
+          supabase.from('accounts').select('id, name, current_balance, is_active').eq('tenant_id', tenantId).eq('is_active', true),
+          supabase.from('transactions').select('id, amount, transaction_type, transaction_date, reference_type, reference_id, description').eq('tenant_id', tenantId)
         ]),
         new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Fetch timeout')), FETCH_TIMEOUT)
@@ -250,6 +274,32 @@ export default function Dashboard() {
         collectedCash,
         invoicedTotal
       })
+
+      const collectedInvoicesList = allInvoices.filter((i: any) => {
+        if (i.status !== 'paid' || !i.payment_date) return false
+        const paymentDate = new Date(i.payment_date)
+        return paymentDate >= dateRange.from && paymentDate <= dateRange.to
+      })
+      const unmatchedIncomeList = allTransactions.filter((tx: any) => {
+        if (tx.transaction_type !== 'income' || !tx.transaction_date) return false
+        const txDate = new Date(tx.transaction_date).getTime()
+        if (txDate < rangeStart || txDate > rangeEnd) return false
+        return tx.reference_type !== 'invoice' || !tx.reference_id
+      })
+      const periodTxExpensesList = allTransactions.filter((tx: any) => {
+        if (tx.transaction_type !== 'expense' || !tx.transaction_date) return false
+        const txDate = new Date(tx.transaction_date).getTime()
+        return txDate >= rangeStart && txDate <= rangeEnd
+      })
+
+      setDetailAccounts(accounts)
+      setDetailCollectedInvoices(collectedInvoicesList)
+      setDetailUnmatchedIncome(unmatchedIncomeList)
+      setDetailPeriodInvoices(filteredInvoices)
+      setDetailPeriodExpenses(filteredExpenses)
+      setDetailPeriodTxExpenses(periodTxExpensesList)
+      setDetailActiveCustomers(customers.filter((c: any) => c.status === 'active'))
+      setDetailLowStockProducts(products.filter((p: any) => p.min_stock_level != null && Number(p.stock_quantity) <= Number(p.min_stock_level)))
 
       setCashFlowSourceInvoices(allInvoices)
       setCashFlowSourceExpenses(allExpenses)
@@ -595,20 +645,20 @@ export default function Dashboard() {
             icon={Wallet}
             iconColor="bg-green-600"
             clickable
-            onClick={() => router.push('/finance/accounts')}
+            onClick={() => setDetailModal('cashOnHand')}
           />
           <MetricCard
             title={t.dashboard.cashFlowIncome}
-            value={formatCurrency(metrics.collectedCash)}
+            value={formatCurrency(metrics.collectedCash + detailUnmatchedIncome.reduce((s, tx) => s + (Number(tx.amount) || 0), 0))}
             change={language === 'tr'
-              ? 'Dönemde tahsil edilen (ödeme tarihi dönem içindeki paid faturalar)'
-              : 'Collected in period (paid invoices with payment date in range)'
+              ? 'Tahsil edilen faturalar + fatura ile eşlenmemiş tahsilatlar'
+              : 'Collected invoices + unmatched collections'
             }
             changeType="positive"
             icon={TrendingUp}
             iconColor="bg-[#00D4AA]"
             clickable
-            onClick={() => router.push('/finance/transactions')}
+            onClick={() => setDetailModal('income')}
           />
           <MetricCard
             title={t.dashboard.invoicing}
@@ -621,20 +671,20 @@ export default function Dashboard() {
             icon={DollarSign}
             iconColor="bg-emerald-500"
             clickable
-            onClick={() => router.push('/invoices')}
+            onClick={() => setDetailModal('invoicing')}
           />
           <MetricCard
             title={t.dashboard.cashFlowExpenses}
             value={formatCurrency(metrics.periodExpenses)}
             change={language === 'tr'
-              ? `Seçilen dönem: ${format(dateRange.from, 'dd MMM', { locale: dateLocale })} - ${format(dateRange.to, 'dd MMM yyyy', { locale: dateLocale })}`
-              : `Selected period: ${format(dateRange.from, 'MMM dd', { locale: dateLocale })} - ${format(dateRange.to, 'MMM dd, yyyy', { locale: dateLocale })}`
+              ? 'Dönemde yapılan ödemeler (masraflar + işlem giderleri)'
+              : 'Payments in period (expenses + transaction expenses)'
             }
             changeType="neutral"
             icon={TrendingDown}
             iconColor="bg-red-500"
             clickable
-            onClick={() => router.push('/expenses')}
+            onClick={() => setDetailModal('expenses')}
           />
           <MetricCard
             title={t.dashboard.activeCustomers}
@@ -644,7 +694,7 @@ export default function Dashboard() {
             icon={Users}
             iconColor="bg-blue-500"
             clickable
-            onClick={() => router.push('/customers')}
+            onClick={() => setDetailModal('customers')}
           />
           <MetricCard
             title={t.dashboard.lowStockAlerts}
@@ -654,9 +704,228 @@ export default function Dashboard() {
             icon={Package}
             iconColor="bg-red-500"
             clickable
-            onClick={() => router.push('/inventory')}
+            onClick={() => setDetailModal('lowStock')}
           />
         </div>
+
+        <Dialog open={detailModal !== null} onOpenChange={(open) => !open && setDetailModal(null)}>
+          <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
+            <DialogHeader>
+              <DialogTitle>
+                {detailModal === 'cashOnHand' && t.dashboard.cashOnHand}
+                {detailModal === 'income' && t.dashboard.cashFlowIncome}
+                {detailModal === 'invoicing' && t.dashboard.invoicing}
+                {detailModal === 'expenses' && t.dashboard.cashFlowExpenses}
+                {detailModal === 'customers' && t.dashboard.activeCustomers}
+                {detailModal === 'lowStock' && t.dashboard.lowStockAlerts}
+              </DialogTitle>
+              <DialogDescription>
+                {detailModal === 'cashOnHand' && t.dashboard.allAccounts}
+                {detailModal === 'income' && (language === 'tr' ? 'Tahsil edilen faturalar ve fatura ile eşlenmemiş tahsilatlar' : 'Collected invoices and unmatched collections')}
+                {detailModal === 'invoicing' && (language === 'tr' ? 'Dönemde kesilen faturalar' : 'Invoices issued in period')}
+                {detailModal === 'expenses' && (language === 'tr' ? 'Dönemde yapılan ödemeler (masraflar + işlem giderleri)' : 'Payments in period (expenses + transaction expenses)')}
+                {detailModal === 'customers' && t.dashboard.activeAccounts}
+                {detailModal === 'lowStock' && t.dashboard.requiresAttention}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="overflow-auto flex-1 -mx-6 px-6">
+              {detailModal === 'cashOnHand' && (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{language === 'tr' ? 'Hesap' : 'Account'}</TableHead>
+                      <TableHead className="text-right">{language === 'tr' ? 'Bakiye' : 'Balance'}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {detailAccounts.map((acc: any) => (
+                      <TableRow key={acc.id}>
+                        <TableCell>{acc.name || (language === 'tr' ? 'Hesap' : 'Account')}</TableCell>
+                        <TableCell className="text-right font-medium">{formatCurrency(Number(acc.current_balance) || 0)}</TableCell>
+                      </TableRow>
+                    ))}
+                    {detailAccounts.length === 0 && (
+                      <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              )}
+              {detailModal === 'income' && (
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="font-medium mb-2">{language === 'tr' ? 'Tahsil edilen faturalar' : 'Collected invoices'}</h4>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{language === 'tr' ? 'Fatura no' : 'Invoice'}</TableHead>
+                          <TableHead>{language === 'tr' ? 'Ödeme tarihi' : 'Payment date'}</TableHead>
+                          <TableHead className="text-right">{language === 'tr' ? 'Tutar' : 'Amount'}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {detailCollectedInvoices.map((i: any) => (
+                          <TableRow key={i.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push(`/invoices/${i.id}`)}>
+                            <TableCell>{i.invoice_number}</TableCell>
+                            <TableCell>{i.payment_date ? format(new Date(i.payment_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
+                            <TableCell className="text-right font-medium">{formatCurrency(Number(i.total) || Number(i.amount) || 0)}</TableCell>
+                          </TableRow>
+                        ))}
+                        {detailCollectedInvoices.length === 0 && (
+                          <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2">{language === 'tr' ? 'Fatura ile eşlenmemiş tahsilatlar' : 'Unmatched collections'}</h4>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{language === 'tr' ? 'Tarih' : 'Date'}</TableHead>
+                          <TableHead>{language === 'tr' ? 'Açıklama' : 'Description'}</TableHead>
+                          <TableHead className="text-right">{language === 'tr' ? 'Tutar' : 'Amount'}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {detailUnmatchedIncome.map((tx: any) => (
+                          <TableRow key={tx.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push('/finance/transactions')}>
+                            <TableCell>{tx.transaction_date ? format(new Date(tx.transaction_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
+                            <TableCell>{tx.description || '-'}</TableCell>
+                            <TableCell className="text-right font-medium">{formatCurrency(Number(tx.amount) || 0)}</TableCell>
+                          </TableRow>
+                        ))}
+                        {detailUnmatchedIncome.length === 0 && (
+                          <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
+              {detailModal === 'invoicing' && (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{language === 'tr' ? 'Fatura no' : 'Invoice'}</TableHead>
+                      <TableHead>{language === 'tr' ? 'Kesim tarihi' : 'Issue date'}</TableHead>
+                      <TableHead>{language === 'tr' ? 'Durum' : 'Status'}</TableHead>
+                      <TableHead className="text-right">{language === 'tr' ? 'Tutar' : 'Amount'}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {detailPeriodInvoices.map((i: any) => (
+                      <TableRow key={i.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push(`/invoices/${i.id}`)}>
+                        <TableCell>{i.invoice_number}</TableCell>
+                        <TableCell>{i.issue_date ? format(new Date(i.issue_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
+                        <TableCell>{i.status}</TableCell>
+                        <TableCell className="text-right font-medium">{formatCurrency(Number(i.total) || Number(i.amount) || 0)}</TableCell>
+                      </TableRow>
+                    ))}
+                    {detailPeriodInvoices.length === 0 && (
+                      <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              )}
+              {detailModal === 'expenses' && (
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="font-medium mb-2">{language === 'tr' ? 'Masraflar' : 'Expenses'}</h4>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{language === 'tr' ? 'Tarih' : 'Date'}</TableHead>
+                          <TableHead>{language === 'tr' ? 'Açıklama' : 'Description'}</TableHead>
+                          <TableHead className="text-right">{language === 'tr' ? 'Tutar' : 'Amount'}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {detailPeriodExpenses.map((e: any) => (
+                          <TableRow key={e.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push('/expenses')}>
+                            <TableCell>{e.expense_date ? format(new Date(e.expense_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
+                            <TableCell>{e.description || e.category || '-'}</TableCell>
+                            <TableCell className="text-right font-medium">{formatCurrency(Number(e.amount) || 0)}</TableCell>
+                          </TableRow>
+                        ))}
+                        {detailPeriodExpenses.length === 0 && (
+                          <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                  <div>
+                    <h4 className="font-medium mb-2">{language === 'tr' ? 'İşlem giderleri' : 'Transaction expenses'}</h4>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{language === 'tr' ? 'Tarih' : 'Date'}</TableHead>
+                          <TableHead>{language === 'tr' ? 'Açıklama' : 'Description'}</TableHead>
+                          <TableHead className="text-right">{language === 'tr' ? 'Tutar' : 'Amount'}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {detailPeriodTxExpenses.map((tx: any) => (
+                          <TableRow key={tx.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push('/finance/transactions')}>
+                            <TableCell>{tx.transaction_date ? format(new Date(tx.transaction_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
+                            <TableCell>{tx.description || '-'}</TableCell>
+                            <TableCell className="text-right font-medium">{formatCurrency(Number(tx.amount) || 0)}</TableCell>
+                          </TableRow>
+                        ))}
+                        {detailPeriodTxExpenses.length === 0 && (
+                          <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
+              {detailModal === 'customers' && (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{language === 'tr' ? 'Müşteri' : 'Customer'}</TableHead>
+                      <TableHead>Email</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {detailActiveCustomers.map((c: any) => (
+                      <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push('/customers')}>
+                        <TableCell>{c.name || c.company_title || '-'}</TableCell>
+                        <TableCell>{c.email || '-'}</TableCell>
+                      </TableRow>
+                    ))}
+                    {detailActiveCustomers.length === 0 && (
+                      <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              )}
+              {detailModal === 'lowStock' && (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{language === 'tr' ? 'Ürün' : 'Product'}</TableHead>
+                      <TableHead className="text-right">{language === 'tr' ? 'Stok' : 'Stock'}</TableHead>
+                      <TableHead className="text-right">{language === 'tr' ? 'Min. stok' : 'Min stock'}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {detailLowStockProducts.map((p: any) => (
+                      <TableRow key={p.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push('/inventory')}>
+                        <TableCell>{p.name}</TableCell>
+                        <TableCell className="text-right">{p.stock_quantity}</TableCell>
+                        <TableCell className="text-right">{p.min_stock_level}</TableCell>
+                      </TableRow>
+                    ))}
+                    {detailLowStockProducts.length === 0 && (
+                      <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
