@@ -441,7 +441,7 @@ export default function CustomersPage() {
             </Button>
             <Button
               onClick={() => setIsAddDialogOpen(true)}
-              className="bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-[var(--color-primary)] hover:text-[var(--color-primary)]"
+              className="bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-[var(--color-text)] hover:text-[var(--color-text)]"
             >
               <Plus className="mr-2 h-4 w-4" />
               {t.customers.addCustomer}
