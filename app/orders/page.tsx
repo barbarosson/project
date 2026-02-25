@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, useRef } from 'react'
+import { usePathname } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -63,6 +64,7 @@ interface Order {
 const STATUS_FILTERS = ['all', 'pending', 'confirmed', 'processing', 'shipped', 'delivered', 'completed', 'cancelled']
 
 export default function OrdersPage() {
+  const pathname = usePathname()
   const { tenantId, loading: tenantLoading } = useTenant()
   const { language } = useLanguage()
   const { defaultRateType } = useCurrency()
@@ -109,7 +111,7 @@ export default function OrdersPage() {
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      const list = data || []
+      const list = (data || []) as Order[]
       const pending = pendingCreatedOrderRef.current
       if (pending && !list.some((o: Order) => o.id === pending.id)) {
         setOrders([pending, ...list])
@@ -117,16 +119,29 @@ export default function OrdersPage() {
         setOrders(list)
       }
       pendingCreatedOrderRef.current = null
-    } catch (error) {
-      console.error('Error fetching orders:', error)
+    } catch (err: unknown) {
+      console.error('Error fetching orders:', err)
+      setOrders([])
+      const msg = err instanceof Error ? err.message : String(err)
+      toast.error(isTR ? `Siparişler yüklenemedi: ${msg}` : `Failed to load orders: ${msg}`)
     } finally {
       setLoading(false)
     }
-  }, [tenantId])
+  }, [tenantId, isTR])
 
+  // Sayfa her açıldığında veya menüden geri gelindiğinde listeyi yenile
+  const isOrdersPage = pathname === '/orders'
   useEffect(() => {
-    if (!tenantLoading && tenantId) fetchOrders()
-  }, [tenantId, tenantLoading, fetchOrders])
+    if (!tenantLoading && tenantId && isOrdersPage) fetchOrders()
+  }, [tenantId, tenantLoading, fetchOrders, isOrdersPage])
+
+  // Sekmeye geri dönüldüğünde listeyi yenile (güncel veri için)
+  useEffect(() => {
+    if (!tenantId || !isOrdersPage) return
+    const onVisible = () => { fetchOrders() }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [tenantId, isOrdersPage, fetchOrders])
 
   const hasNonTryOrders = orders.some(o => o.currency && o.currency !== 'TRY')
   useEffect(() => {
