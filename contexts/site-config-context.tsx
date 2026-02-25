@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
+import { subscribeMultiTable } from '@/lib/realtime-utils';
 
 export interface Banner {
   id: string;
@@ -281,20 +282,12 @@ export function SiteConfigProvider({ children }: { children: ReactNode }) {
 
     loadData();
 
-    const configChannel = supabase
-      .channel('site_config_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'site_config' }, fetchConfig)
-      .subscribe();
-
-    const bannersChannel = supabase
-      .channel('banners_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'banners' }, fetchBanners)
-      .subscribe();
-
-    const menusChannel = supabase
-      .channel('menus_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'navigation_menus' }, fetchMenus)
-      .subscribe();
+    // Tek channel ile 3 tablo (Realtime performans: daha az list_changes yükü)
+    const siteCmsChannel = subscribeMultiTable(supabase, 'site_cms_realtime', [
+      { table: 'site_config', event: '*', callback: fetchConfig },
+      { table: 'banners', event: '*', callback: fetchBanners },
+      { table: 'navigation_menus', event: '*', callback: fetchMenus },
+    ]);
 
     const checkInterval = setInterval(() => {
       if (menus.length === 0 && !loading) {
@@ -304,9 +297,7 @@ export function SiteConfigProvider({ children }: { children: ReactNode }) {
 
     return () => {
       clearInterval(checkInterval);
-      supabase.removeChannel(configChannel);
-      supabase.removeChannel(bannersChannel);
-      supabase.removeChannel(menusChannel);
+      supabase.removeChannel(siteCmsChannel);
     };
   }, [initialized, menus.length, loading]);
 

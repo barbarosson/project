@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import { withDebounce } from '@/lib/realtime-utils'
 
 export interface UIStyle {
   id: string
@@ -38,11 +39,11 @@ export function useUIStyles() {
   useEffect(() => {
     fetchUIStyles()
 
+    // Debounce refetch: sık UPDATE (örn. slider) tek seferde yansır, Realtime yükü azalır
+    const debouncedRefetch = withDebounce(fetchUIStyles, 300)
     const stylesSubscription = supabase
       .channel('ui_styles_changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'ui_styles' }, () => {
-        fetchUIStyles()
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ui_styles' }, debouncedRefetch)
       .subscribe()
 
     return () => {
