@@ -3,8 +3,18 @@
 import { useMemo } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ShoppingCart, Clock, Package, Truck, CheckCircle2, Link2 } from 'lucide-react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { ShoppingCart, Clock, Package, Truck, CheckCircle2, Link2, CalendarIcon } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+
+function formatDateToDDMMYYYY(iso: string): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  const day = d.getDate()
+  const month = d.getMonth() + 1
+  const year = d.getFullYear()
+  return `${String(day).padStart(2, '0')}.${String(month).padStart(2, '0')}.${year}`
+}
 
 interface OrderWithDate {
   order_date?: string | null
@@ -42,19 +52,38 @@ export function OrderStatsCards({ stats, isTR, dateFrom, dateTo, ordersInRange, 
     if (!dateFrom || !dateTo) return []
     const from = new Date(dateFrom)
     const to = new Date(dateTo)
-    const days: { date: string; count: number; label: string }[] = []
-    const dayKey = (d: Date) => d.toISOString().slice(0, 10)
     const orderDate = (o: OrderWithDate) => o.order_date || o.created_at
-    for (let d = new Date(from); d <= to; d.setDate(d.getDate() + 1)) {
-      const key = dayKey(d)
-      const count = ordersInRange.filter((o) => orderDate(o) && dayKey(new Date(orderDate(o))) === key).length
-      days.push({
-        date: key,
-        count,
-        label: d.toLocaleDateString(isTR ? 'tr-TR' : 'en-US', { day: 'numeric', month: 'short' }),
-      })
+    const getWeekStart = (d: Date) => {
+      const x = new Date(d)
+      const day = x.getDay()
+      const diff = day === 0 ? -6 : 1 - day
+      x.setDate(x.getDate() + diff)
+      x.setHours(0, 0, 0, 0)
+      return x
     }
-    return days
+    const weekKey = (d: Date) => getWeekStart(d).toISOString().slice(0, 10)
+    const weeks = new Map<string, number>()
+    ordersInRange.forEach((o) => {
+      const raw = orderDate(o)
+      if (!raw) return
+      const key = weekKey(new Date(raw))
+      weeks.set(key, (weeks.get(key) ?? 0) + 1)
+    })
+    const result: { date: string; count: number; label: string; weekStart: string }[] = []
+    let cursor = new Date(getWeekStart(from))
+    const endWeek = getWeekStart(to)
+    while (cursor <= endWeek) {
+      const key = cursor.toISOString().slice(0, 10)
+      const count = weeks.get(key) ?? 0
+      const next = new Date(cursor)
+      next.setDate(next.getDate() + 6)
+      const label = isTR
+        ? `${cursor.getDate()} ${cursor.toLocaleDateString('tr-TR', { month: 'short' })}`
+        : `${cursor.toLocaleDateString('en-US', { month: 'short' })} ${cursor.getDate()}`
+      result.push({ date: key, count, label, weekStart: key })
+      cursor.setDate(cursor.getDate() + 7)
+    }
+    return result
   }, [dateFrom, dateTo, ordersInRange, isTR])
 
   const items = [
@@ -79,21 +108,47 @@ export function OrderStatsCards({ stats, isTR, dateFrom, dateTo, ordersInRange, 
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-1">
             <Label className="text-[10px] whitespace-nowrap">{isTR ? 'Başlangıç' : 'From'}</Label>
-            <Input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => onDateFromChange(e.target.value)}
-              className="h-7 w-[115px] text-[11px]"
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="flex h-7 w-[115px] items-center justify-between gap-1 rounded-md border border-input bg-background px-2 text-[11px] ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <span className="truncate">{formatDateToDDMMYYYY(dateFrom) || (isTR ? 'Tarih seç' : 'Pick date')}</span>
+                  <CalendarIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-2" align="start">
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => onDateFromChange(e.target.value)}
+                  className="h-8 w-full rounded border border-input bg-background px-2 text-xs"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
           <div className="flex items-center gap-1">
             <Label className="text-[10px] whitespace-nowrap">{isTR ? 'Bitiş' : 'To'}</Label>
-            <Input
-              type="date"
-              value={dateTo}
-              onChange={(e) => onDateToChange(e.target.value)}
-              className="h-7 w-[115px] text-[11px]"
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="flex h-7 w-[115px] items-center justify-between gap-1 rounded-md border border-input bg-background px-2 text-[11px] ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <span className="truncate">{formatDateToDDMMYYYY(dateTo) || (isTR ? 'Tarih seç' : 'Pick date')}</span>
+                  <CalendarIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-2" align="start">
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => onDateToChange(e.target.value)}
+                  className="h-8 w-full rounded border border-input bg-background px-2 text-xs"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
       </div>
@@ -126,7 +181,7 @@ export function OrderStatsCards({ stats, isTR, dateFrom, dateTo, ordersInRange, 
         {chartData.length > 0 && (
           <div className="flex-1 min-w-0 border-t lg:border-t-0 lg:border-l pt-3 lg:pt-0 lg:pl-3">
             <p className="text-[10px] text-muted-foreground mb-1">
-              {isTR ? 'Seçilen zaman diliminde günlük sipariş adedi' : 'Daily order count in selected period'}
+              {isTR ? 'Seçilen zaman diliminde haftalık sipariş adedi' : 'Weekly order count in selected period'}
             </p>
             <div className="h-[100px] w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -135,7 +190,14 @@ export function OrderStatsCards({ stats, isTR, dateFrom, dateTo, ordersInRange, 
                   <YAxis allowDecimals={false} tick={{ fontSize: 9 }} width={20} />
                   <Tooltip
                     formatter={(value: number) => [value, isTR ? 'Sipariş' : 'Orders']}
-                    labelFormatter={(_, payload) => payload?.[0]?.payload?.date}
+                    labelFormatter={(_, payload) => {
+                      const p = payload?.[0]?.payload
+                      if (!p?.weekStart) return ''
+                      const start = new Date(p.weekStart)
+                      const end = new Date(start)
+                      end.setDate(end.getDate() + 6)
+                      return `${start.toLocaleDateString(isTR ? 'tr-TR' : 'en-US')} - ${end.toLocaleDateString(isTR ? 'tr-TR' : 'en-US')}`
+                    }}
                     contentStyle={{ fontSize: 11 }}
                   />
                   <Bar dataKey="count" fill="#0A2540" radius={[2, 2, 0, 0]} />
