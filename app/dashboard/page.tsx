@@ -79,6 +79,7 @@ export default function Dashboard() {
   })
   const [cashFlowSourceInvoices, setCashFlowSourceInvoices] = useState<any[]>([])
   const [cashFlowSourceExpenses, setCashFlowSourceExpenses] = useState<any[]>([])
+  const [cashFlowSourceTransactions, setCashFlowSourceTransactions] = useState<any[]>([])
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [showProductTour, setShowProductTour] = useState(false)
@@ -91,8 +92,22 @@ export default function Dashboard() {
 
   const cashFlowData = useMemo(
     () =>
-      calculateCashFlow(cashFlowSourceInvoices, cashFlowSourceExpenses, language, cashFlowStartMonth, cashFlowEndMonth),
-    [cashFlowSourceInvoices, cashFlowSourceExpenses, language, cashFlowStartMonth, cashFlowEndMonth]
+      calculateCashFlow(
+        cashFlowSourceInvoices,
+        cashFlowSourceExpenses,
+        cashFlowSourceTransactions,
+        language,
+        cashFlowStartMonth,
+        cashFlowEndMonth
+      ),
+    [
+      cashFlowSourceInvoices,
+      cashFlowSourceExpenses,
+      cashFlowSourceTransactions,
+      language,
+      cashFlowStartMonth,
+      cashFlowEndMonth
+    ]
   )
 
   useEffect(() => {
@@ -135,20 +150,22 @@ export default function Dashboard() {
           supabase.from('invoices').select('id, invoice_number, amount, total, paid_amount, remaining_amount, status, issue_date, payment_date, created_at').eq('tenant_id', tenantId),
           supabase.from('products').select('id, name, stock_quantity, min_stock_level, created_at').eq('tenant_id', tenantId),
           supabase.from('expenses').select('id, description, amount, expense_date, category, created_at').eq('tenant_id', tenantId),
-          supabase.from('accounts').select('current_balance, is_active').eq('tenant_id', tenantId).eq('is_active', true)
+          supabase.from('accounts').select('current_balance, is_active').eq('tenant_id', tenantId).eq('is_active', true),
+          supabase.from('transactions').select('id, amount, transaction_type, transaction_date').eq('tenant_id', tenantId)
         ]),
         new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Fetch timeout')), FETCH_TIMEOUT)
         )
       ])
 
-      const [customersRes, invoicesRes, productsRes, expensesRes, accountsRes] = await fetchWithTimeout as any[]
+      const [customersRes, invoicesRes, productsRes, expensesRes, accountsRes, transactionsRes] = await fetchWithTimeout as any[]
 
-      const customers = customersRes.data || []
-      const allInvoices = invoicesRes.data || []
-      const products = productsRes.data || []
-      const allExpenses = expensesRes.data || []
-      const accounts = accountsRes.data || []
+      const customers = customersRes?.data || []
+      const allInvoices = invoicesRes?.data || []
+      const products = productsRes?.data || []
+      const allExpenses = expensesRes?.data || []
+      const accounts = accountsRes?.data || []
+      const allTransactions = Array.isArray(transactionsRes?.data) ? transactionsRes.data : []
 
       const filteredInvoices = allInvoices.filter((i: any) => {
         const issueDate = new Date(i.issue_date)
@@ -210,6 +227,7 @@ export default function Dashboard() {
 
       setCashFlowSourceInvoices(allInvoices)
       setCashFlowSourceExpenses(allExpenses)
+      setCashFlowSourceTransactions(allTransactions)
 
       const recentActivities = await generateActivities(tenantId)
       setActivities(recentActivities)
@@ -224,6 +242,7 @@ export default function Dashboard() {
   function calculateCashFlow(
     invoices: any[],
     expenses: any[],
+    transactions: any[],
     lang: 'tr' | 'en' = 'tr',
     startMonth?: string,
     endMonth?: string
@@ -231,7 +250,8 @@ export default function Dashboard() {
     const monthlyData: { [key: string]: { income: number; expenses: number } } = {}
     const locale = lang === 'tr' ? 'tr-TR' : 'en-US'
 
-    invoices
+    // Gelir: ödenmiş faturalar (tahsilat)
+    ;(invoices || [])
       .filter((inv: any) => inv.status === 'paid')
       .forEach((invoice: any) => {
         const relevantDate = invoice.payment_date ? new Date(invoice.payment_date) : new Date(invoice.issue_date)
@@ -241,10 +261,11 @@ export default function Dashboard() {
           monthlyData[monthKey] = { income: 0, expenses: 0 }
         }
 
-        monthlyData[monthKey].income += Number(invoice.total) || 0
+        monthlyData[monthKey].income += Number(invoice.total) || Number(invoice.amount) || 0
       })
 
-    expenses
+    // Gider: masraflar tablosu
+    ;(expenses || [])
       .filter((expense: any) => expense.expense_date)
       .forEach((expense: any) => {
         const date = new Date(expense.expense_date)
@@ -255,6 +276,25 @@ export default function Dashboard() {
         }
 
         monthlyData[monthKey].expenses += Number(expense.amount) || 0
+      })
+
+    // Gelir/Gider: Tahsilat ve Ödeme İşlemleri (transactions)
+    ;(transactions || [])
+      .filter((tx: any) => tx.transaction_date && (tx.transaction_type === 'income' || tx.transaction_type === 'expense'))
+      .forEach((tx: any) => {
+        const date = new Date(tx.transaction_date)
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+
+        if (!monthlyData[monthKey]) {
+          monthlyData[monthKey] = { income: 0, expenses: 0 }
+        }
+
+        const amount = Number(tx.amount) || 0
+        if (tx.transaction_type === 'income') {
+          monthlyData[monthKey].income += amount
+        } else {
+          monthlyData[monthKey].expenses += amount
+        }
       })
 
     const now = new Date()
