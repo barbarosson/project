@@ -24,7 +24,7 @@ interface LocalInvoice {
   total: number
   issue_date: string
   status: string
-  customers: { name: string } | null
+  customers: { name: string; company_title?: string } | null
 }
 
 interface InvoiceLineItem {
@@ -55,7 +55,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
     try {
       const { data, error } = await supabase
         .from('invoices')
-        .select('id, invoice_number, customer_id, total, issue_date, status, customers(name)')
+        .select('id, invoice_number, customer_id, total, issue_date, status, customers(name, company_title)')
         .eq('tenant_id', tenantId)
         .in('status', ['sent', 'approved', 'paid', 'partially_paid'])
         .order('created_at', { ascending: false })
