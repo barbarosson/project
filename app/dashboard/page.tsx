@@ -177,17 +177,18 @@ export default function Dashboard() {
         Promise.all([
           supabase.from('customers').select('id, name, email, company_title, status, created_at').eq('tenant_id', tenantId),
           supabase.from('invoices').select('id, invoice_number, amount, total, paid_amount, remaining_amount, status, issue_date, payment_date, created_at').eq('tenant_id', tenantId),
-          supabase.from('products').select('id, name, stock_quantity, min_stock_level, created_at').eq('tenant_id', tenantId),
+          supabase.from('products').select('id, name, current_stock, stock_quantity, min_stock_level, created_at').eq('tenant_id', tenantId),
           supabase.from('expenses').select('id, description, amount, expense_date, category, created_at').eq('tenant_id', tenantId),
           supabase.from('accounts').select('id, name, current_balance, is_active').eq('tenant_id', tenantId).eq('is_active', true),
-          supabase.from('transactions').select('id, amount, transaction_type, transaction_date, reference_type, reference_id, description').eq('tenant_id', tenantId)
+          supabase.from('transactions').select('id, amount, transaction_type, transaction_date, reference_type, reference_id, description').eq('tenant_id', tenantId),
+          supabase.from('warehouse_inventory_summary').select('product_id, product_name, critical_level, warehouse_quantity').eq('tenant_id', tenantId).then(r => r).catch(() => ({ data: [] }))
         ]),
         new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Fetch timeout')), FETCH_TIMEOUT)
         )
       ])
 
-      const [customersRes, invoicesRes, productsRes, expensesRes, accountsRes, transactionsRes] = await fetchWithTimeout as any[]
+      const [customersRes, invoicesRes, productsRes, expensesRes, accountsRes, transactionsRes, warehouseSummaryRes] = await fetchWithTimeout as any[]
 
       const customers = customersRes?.data || []
       const allInvoices = invoicesRes?.data || []
@@ -256,12 +257,40 @@ export default function Dashboard() {
         .filter((i: any) => ['sent', 'overdue'].includes(i.status))
         .reduce((sum: number, i: any) => sum + (Number(i.remaining_amount) || Number(i.total) || 0), 0)
 
-      const lowStockAlerts = products.filter(
-        (p: any) =>
-          p.min_stock_level != null &&
-          p.min_stock_level !== '' &&
-          Number(p.stock_quantity) <= Number(p.min_stock_level)
-      ).length
+      // Güncel stok: depo toplamı (warehouse_inventory_summary); depo toplamı 0 ise products.current_stock kullan
+      const warehouseRows = Array.isArray(warehouseSummaryRes?.data) ? warehouseSummaryRes.data : []
+      const currentStockByProduct: Record<string, number> = {}
+      const productMeta: Record<string, { name: string; min_stock_level: number | null }> = {}
+      for (const row of warehouseRows) {
+        const id = row.product_id
+        if (id) {
+          currentStockByProduct[id] = (currentStockByProduct[id] || 0) + Number(row.warehouse_quantity || 0)
+          if (!productMeta[id]) productMeta[id] = { name: row.product_name, min_stock_level: row.critical_level ?? row.min_stock_level ?? null }
+        }
+      }
+      for (const p of products) {
+        const id = p?.id
+        if (!id) continue
+        const warehouseSum = currentStockByProduct[id] ?? 0
+        const productStock = Number(p.current_stock ?? p.stock_quantity) || 0
+        if (warehouseSum === 0 && productStock > 0) currentStockByProduct[id] = productStock
+        if (!productMeta[id]) productMeta[id] = { name: p.name, min_stock_level: p.min_stock_level ?? null }
+      }
+      const useWarehouseStock = Object.keys(currentStockByProduct).length > 0
+      const lowStockAlerts = useWarehouseStock
+        ? Object.entries(currentStockByProduct).filter(
+            ([id]) => {
+              const meta = productMeta[id]
+              const min = meta?.min_stock_level
+              return min != null && Number(currentStockByProduct[id]) <= Number(min)
+            }
+          ).length
+        : products.filter(
+            (p: any) =>
+              p.min_stock_level != null &&
+              p.min_stock_level !== '' &&
+              Number(p.current_stock ?? p.stock_quantity) <= Number(p.min_stock_level)
+          ).length
 
       setMetrics({
         totalRevenue,
@@ -303,7 +332,22 @@ export default function Dashboard() {
       setDetailPeriodExpenses(filteredExpenses)
       setDetailPeriodTxExpenses(periodTxExpensesList)
       setDetailActiveCustomers(customers.filter((c: any) => c.status === 'active'))
-      setDetailLowStockProducts(products.filter((p: any) => p.min_stock_level != null && Number(p.stock_quantity) <= Number(p.min_stock_level)))
+      setDetailLowStockProducts(
+        useWarehouseStock
+          ? Object.entries(currentStockByProduct)
+              .filter(([id]) => {
+                const meta = productMeta[id]
+                const min = meta?.min_stock_level
+                return min != null && Number(currentStockByProduct[id]) <= Number(min)
+              })
+              .map(([id]) => ({
+                id,
+                name: productMeta[id]?.name ?? '-',
+                stock_quantity: currentStockByProduct[id],
+                min_stock_level: productMeta[id]?.min_stock_level ?? null
+              }))
+          : products.filter((p: any) => p.min_stock_level != null && Number(p.current_stock ?? p.stock_quantity) <= Number(p.min_stock_level))
+      )
 
       setCashFlowSourceInvoices(allInvoices)
       setCashFlowSourceExpenses(allExpenses)
@@ -413,7 +457,7 @@ export default function Dashboard() {
     const activities: Activity[] = []
 
     try {
-      const [invoicesRes, customersRes, productsRes, transactionsRes, ordersRes] = await Promise.all([
+      const [invoicesRes, customersRes, productsRes, warehouseSummaryRes, transactionsRes, ordersRes] = await Promise.all([
         supabase
           .from('invoices')
           .select('id, invoice_number, amount, total, status, created_at, updated_at')
@@ -428,10 +472,15 @@ export default function Dashboard() {
           .limit(maxLimit),
         supabase
           .from('products')
-          .select('id, name, stock_quantity, min_stock_level')
+          .select('id, name, current_stock, stock_quantity, min_stock_level')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
           .limit(50),
+        supabase
+          .from('warehouse_inventory_summary')
+          .select('product_id, product_name, critical_level, warehouse_quantity')
+          .eq('tenant_id', tenantId)
+          .then(r => r.data || []).catch(() => []),
         supabase
           .from('transactions')
           .select('id, amount, transaction_type, description, transaction_date, created_at')
@@ -451,11 +500,40 @@ export default function Dashboard() {
       const recentInvoices = invoicesRes.data || []
       const recentCustomers = customersRes.data || []
       const allProducts = productsRes.data || []
+      const warehouseRows = Array.isArray(warehouseSummaryRes) ? warehouseSummaryRes : []
       const recentTransactions = Array.isArray(transactionsRes) ? transactionsRes : []
       const recentOrders = Array.isArray(ordersRes) ? ordersRes : []
-      const lowStockProducts = allProducts
-        .filter((p: any) => p.min_stock_level != null && Number(p.stock_quantity) <= Number(p.min_stock_level))
-        .slice(0, 3)
+
+      const currentStockByProduct: Record<string, number> = {}
+      const productMeta: Record<string, { name: string; min_stock_level: number | null }> = {}
+      for (const row of warehouseRows) {
+        const id = row.product_id
+        if (id) {
+          currentStockByProduct[id] = (currentStockByProduct[id] || 0) + Number(row.warehouse_quantity || 0)
+          if (!productMeta[id]) productMeta[id] = { name: row.product_name, min_stock_level: row.critical_level ?? row.min_stock_level ?? null }
+        }
+      }
+      for (const p of allProducts) {
+        const id = p?.id
+        if (!id) continue
+        const warehouseSum = currentStockByProduct[id] ?? 0
+        const productStock = Number(p.current_stock ?? p.stock_quantity) || 0
+        if (warehouseSum === 0 && productStock > 0) currentStockByProduct[id] = productStock
+        if (!productMeta[id]) productMeta[id] = { name: p.name, min_stock_level: p.min_stock_level ?? null }
+      }
+      const useWarehouseStock = Object.keys(currentStockByProduct).length > 0
+      const lowStockProducts = useWarehouseStock
+        ? Object.entries(currentStockByProduct)
+            .filter(([id]) => {
+              const meta = productMeta[id]
+              const min = meta?.min_stock_level
+              return min != null && Number(currentStockByProduct[id]) <= Number(min)
+            })
+            .slice(0, 3)
+            .map(([id]) => ({ id, name: productMeta[id]?.name ?? '-', stock_quantity: currentStockByProduct[id], min_stock_level: productMeta[id]?.min_stock_level }))
+        : allProducts
+            .filter((p: any) => p.min_stock_level != null && Number(p.current_stock ?? p.stock_quantity) <= Number(p.min_stock_level))
+            .slice(0, 3)
 
       const allActivities: Array<Activity & { timestamp: Date }> = []
 
@@ -611,7 +689,7 @@ export default function Dashboard() {
     } else if (detailModal === 'customers') {
       data = [
         [isTR ? 'Müşteri' : 'Customer', 'Email'],
-        ...detailActiveCustomers.map((c: any) => [c.name || c.company_title || '-', c.email || '-'])
+        ...detailActiveCustomers.map((c: any) => [c.company_title || c.name || '-', c.email || '-'])
       ]
       fileName = isTR ? `musteriler_${dateStr}.xlsx` : `customers_${dateStr}.xlsx`
     } else if (detailModal === 'lowStock') {
@@ -991,7 +1069,7 @@ export default function Dashboard() {
                   <TableBody>
                     {detailActiveCustomers.map((c: any) => (
                       <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push('/customers')}>
-                        <TableCell>{c.name || c.company_title || '-'}</TableCell>
+                        <TableCell>{c.company_title || c.name || '-'}</TableCell>
                         <TableCell>{c.email || '-'}</TableCell>
                       </TableRow>
                     ))}

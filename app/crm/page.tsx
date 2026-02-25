@@ -173,6 +173,7 @@ export default function CRMDashboard() {
 
   const filteredCustomers = customers.filter(customer => {
     const matchesSearch = !searchQuery ||
+      customer.company_title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       customer.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       customer.email?.toLowerCase().includes(searchQuery.toLowerCase());
 
@@ -303,7 +304,7 @@ export default function CRMDashboard() {
                     className="bg-red-500/20 border-red-500/30 text-red-300 cursor-pointer hover:bg-red-500/30"
                     onClick={() => setSelectedCustomer(customer)}
                   >
-                    {customer.name} (%{((customer.churn_probability || 0) * 100).toFixed(0)})
+                    {customer.company_title || customer.name} (%{((customer.churn_probability || 0) * 100).toFixed(0)})
                   </Badge>
                 ))}
               </div>
@@ -352,7 +353,7 @@ export default function CRMDashboard() {
                 <div className="flex items-start justify-between">
                   <div>
                     <CardTitle className="text-white text-lg mb-2">
-                      {customer.name}
+                      {customer.company_title || customer.name}
                     </CardTitle>
                     <Badge
                       variant="outline"

@@ -551,7 +551,7 @@ export default function InvoicesPage() {
           customerId={payingInvoice.customer_id}
           totalAmount={payingInvoice.amount}
           paidAmount={payingInvoice.paid_amount || 0}
-          currency="USD"
+          currency={payingInvoice.currency || 'TRY'}
           onSuccess={() => {
             fetchInvoices()
             setPayingInvoice(null)

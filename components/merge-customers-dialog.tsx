@@ -219,7 +219,7 @@ export function MergeCustomersDialog({
                 <SelectContent className="max-h-[300px]">
                   {customers.map((customer) => (
                     <SelectItem key={customer.id} value={customer.id}>
-                      {customer.company_title} - {customer.name}
+                      {customer.company_title || customer.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

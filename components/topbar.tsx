@@ -80,9 +80,9 @@ export function Topbar({ onMenuClick }: TopbarProps) {
     const [customersRes, invoicesRes, productsRes] = await Promise.all([
       supabase
         .from('customers')
-        .select('id, name, email, phone')
+        .select('id, name, company_title, email, phone')
         .eq('tenant_id', tenantId)
-        .or(`name.ilike.%${query}%,email.ilike.%${query}%`)
+        .or(`name.ilike.%${query}%,company_title.ilike.%${query}%,email.ilike.%${query}%`)
         .limit(5),
       supabase
         .from('invoices')
@@ -313,7 +313,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                 <CommandItem key={customer.id} onSelect={() => handleSelect('customer', customer.id)} className="cursor-pointer">
                   <UsersIcon className="mr-2 h-4 w-4" />
                   <div className="flex flex-col">
-                    <span>{customer.name}</span>
+                    <span>{customer.company_title || customer.name}</span>
                     <span className="text-xs text-gray-500">{customer.email}</span>
                   </div>
                 </CommandItem>

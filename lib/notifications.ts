@@ -61,7 +61,7 @@ export async function checkOverdueInvoices(tenantId: string) {
     for (const invoice of overdueInvoices || []) {
       const { data: customer } = await supabase
         .from('customers')
-        .select('name')
+        .select('name, company_title')
         .eq('id', invoice.customer_id)
         .single()
 
@@ -78,12 +78,12 @@ export async function checkOverdueInvoices(tenantId: string) {
           tenantId,
           type: 'invoice_overdue',
           title: 'Overdue Invoice',
-          message: `Invoice ${invoice.invoice_number} from ${customer?.name || 'customer'} is overdue`,
+          message: `Invoice ${invoice.invoice_number} from ${customer?.company_title || customer?.name || 'customer'} is overdue`,
           link: `/invoices/${invoice.id}`,
           metadata: {
             invoice_id: invoice.id,
             invoice_number: invoice.invoice_number,
-            customer_name: customer?.name
+            customer_name: customer?.company_title || customer?.name
           }
         })
       }

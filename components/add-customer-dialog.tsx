@@ -42,9 +42,10 @@ import { useCurrency } from '@/contexts/currency-context'
 import { CURRENCY_LIST, getCurrencyLabel } from '@/lib/currencies'
 import {
   validateTaxNumber,
+  validateVKN,
+  validateTCKN,
   validateTurkishIBAN,
-  formatIBAN,
-  getTaxIdType
+  formatIBAN
 } from '@/lib/turkish-validations'
 import { createOpeningBalanceInvoice as createOpeningBalanceInvoiceLib } from '@/lib/customer-opening-balance'
 import {
@@ -131,14 +132,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
     }
   }, [formData.city])
 
-  useEffect(() => {
-    if (formData.tax_number) {
-      const type = getTaxIdType(formData.tax_number)
-      if (type !== 'INVALID') {
-        setFormData(prev => ({ ...prev, tax_id_type: type }))
-      }
-    }
-  }, [formData.tax_number])
+  // Cari tipi (tüzel/gerçek kişi) kullanıcı seçimine göre belirlenir; vergi no ile otomatik değiştirilmez
 
   useEffect(() => {
     if (isOpen && tenantId) {
@@ -164,6 +158,10 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
+    if (!formData.tax_id_type) {
+      newErrors.tax_id_type = language === 'tr' ? 'Cari tipi seçin (Tüzel veya gerçek kişi)' : 'Please select account type (legal entity or natural person)'
+    }
+
     if (!formData.company_title.trim()) {
       newErrors.company_title = t.validation.companyTitleRequired
     }
@@ -172,10 +170,23 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
       newErrors.name = t.validation.contactNameRequired
     }
 
-    if (!formData.tax_number.trim()) {
-      newErrors.tax_number = 'Vergi/Kimlik numarası gereklidir'
+    const taxNum = formData.tax_number.trim()
+    if (!taxNum) {
+      newErrors.tax_number = language === 'tr' ? 'Vergi/Kimlik numarası gereklidir' : 'Tax/ID number is required'
+    } else if (formData.tax_id_type === 'VKN') {
+      if (taxNum.replace(/\D/g, '').length !== 10) {
+        newErrors.tax_number = language === 'tr' ? 'Tüzel kişi için VKN 10 haneli olmalıdır' : 'VKN must be 10 digits for legal entity'
+      } else if (!validateVKN(taxNum.replace(/\D/g, ''))) {
+        newErrors.tax_number = language === 'tr' ? 'Geçersiz VKN. Lütfen kontrol edin.' : 'Invalid VKN. Please check.'
+      }
+    } else if (formData.tax_id_type === 'TCKN') {
+      if (taxNum.replace(/\D/g, '').length !== 11) {
+        newErrors.tax_number = language === 'tr' ? 'Gerçek kişi için TCKN 11 haneli olmalıdır' : 'TCKN must be 11 digits for natural person'
+      } else if (!validateTCKN(taxNum.replace(/\D/g, ''))) {
+        newErrors.tax_number = language === 'tr' ? 'Geçersiz TCKN. Lütfen kontrol edin.' : 'Invalid TCKN. Please check.'
+      }
     } else if (!validateTaxNumber(formData.tax_number)) {
-      newErrors.tax_number = 'Geçersiz VKN veya TCKN. Lütfen kontrol edin.'
+      newErrors.tax_number = language === 'tr' ? 'Geçersiz VKN veya TCKN. Lütfen kontrol edin.' : 'Invalid VKN or TCKN. Please check.'
     }
 
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -478,6 +489,25 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
             </TabsList>
 
             <TabsContent value="basic" className="space-y-4 mt-4">
+            <div className="space-y-2">
+              <Label htmlFor="customer_type">{t.customers.customerType} <span className="text-red-500">*</span></Label>
+              <Select
+                value={formData.tax_id_type || ''}
+                onValueChange={(value: 'VKN' | 'TCKN') => setFormData({ ...formData, tax_id_type: value })}
+              >
+                <SelectTrigger id="customer_type" data-field="add-customer-type">
+                  <SelectValue placeholder={language === 'tr' ? 'Tüzel veya gerçek kişi seçin' : 'Select legal entity or natural person'} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="VKN">{t.customers.legalEntity}</SelectItem>
+                  <SelectItem value="TCKN">{t.customers.naturalPerson}</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.tax_id_type && (
+                <p className="text-xs text-red-500">{errors.tax_id_type}</p>
+              )}
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="company_title">
@@ -719,19 +749,6 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
               )}
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <div className="space-y-0.5">
-                <Label htmlFor="e_invoice">{t.customers.eInvoiceIntegration}</Label>
-                <p className="text-xs text-gray-500">
-                  {t.customers.enableEInvoice}
-                </p>
-              </div>
-              <Switch
-                id="e_invoice"
-                checked={formData.e_invoice_enabled}
-                onCheckedChange={(checked) => setFormData({ ...formData, e_invoice_enabled: checked })}
-              />
-            </div>
           </TabsContent>
 
           <TabsContent value="address" className="space-y-4 mt-4">
@@ -1027,7 +1044,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
             <Button
               type="submit"
               disabled={loading}
-              className="bg-[#00D4AA] hover:bg-[#00B894]"
+              className="bg-[#00D4AA] hover:bg-[#00B894] text-[var(--color-primary)]"
             >
               {loading ? t.common.adding : t.customers.addCustomer}
             </Button>

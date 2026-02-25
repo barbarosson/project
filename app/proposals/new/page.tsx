@@ -294,7 +294,7 @@ export default function NewProposalPage() {
                   <SelectContent>
                     {customers.map((customer) => (
                       <SelectItem key={customer.id} value={customer.id}>
-                        {customer.name} - {customer.company_title}
+                        {customer.company_title || customer.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

@@ -127,10 +127,13 @@
   }
 
   html {
+    color: rgba(37, 211, 102, 1);
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-size: 16px;
+    border-width: 1px;
+    border-color: var(--border-radius);
   }
 
   body {

@@ -426,6 +426,7 @@ export default function CustomersPage() {
             <Button
               variant="outline"
               onClick={() => setIsMergeDialogOpen(true)}
+              className="font-semibold text-gray-900 hover:text-gray-900"
             >
               <GitMerge className="mr-2 h-4 w-4" />
               Cari Birleştir
@@ -433,13 +434,14 @@ export default function CustomersPage() {
             <Button
               variant="outline"
               onClick={() => setIsCsvImportOpen(true)}
+              className="font-semibold text-gray-900 hover:text-gray-900"
             >
               <Upload className="mr-2 h-4 w-4" />
               {t.common.csvImport}
             </Button>
             <Button
               onClick={() => setIsAddDialogOpen(true)}
-              className="bg-[#00D4AA] hover:bg-[#00B894]"
+              className="bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-[var(--color-primary)] hover:text-[var(--color-primary)]"
             >
               <Plus className="mr-2 h-4 w-4" />
               {t.customers.addCustomer}

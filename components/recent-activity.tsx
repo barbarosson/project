@@ -5,13 +5,6 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { useLanguage } from '@/contexts/language-context'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger
-} from '@/components/ui/select'
-
 interface Activity {
   id: string
   type: 'payment' | 'customer' | 'inventory' | 'invoice'
@@ -21,8 +14,6 @@ interface Activity {
   status?: 'success' | 'warning' | 'info'
   link?: string
 }
-
-const ACTIVITY_LIMIT_OPTIONS = [5, 10, 20, 50] as const
 
 interface RecentActivityProps {
   activities: Activity[]
@@ -64,31 +55,9 @@ export function RecentActivity({ activities, limit = 5, onLimitChange }: RecentA
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <CardTitle>{t.dashboard.recentActivity}</CardTitle>
-            <CardDescription>{t.dashboard.recentActivityDescription}</CardDescription>
-          </div>
-          {onLimitChange && (
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <span className="text-sm text-muted-foreground whitespace-nowrap">{t.dashboard.showLastActivities}</span>
-              <Select
-                value={String(limit)}
-                onValueChange={(v) => onLimitChange(Number(v))}
-              >
-                <SelectTrigger className="w-[72px] h-10 rounded-md text-sm font-medium bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 hover:text-gray-900 px-4 py-2 inline-flex items-center justify-center">
-                  <span>...</span>
-                </SelectTrigger>
-                <SelectContent className="bg-white text-gray-900">
-                  {ACTIVITY_LIMIT_OPTIONS.map((n) => (
-                    <SelectItem key={n} value={String(n)} className="text-gray-900">
-                      {n}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+        <div>
+          <CardTitle>{t.dashboard.recentActivity}</CardTitle>
+          <CardDescription>{t.dashboard.recentActivityDescription}</CardDescription>
         </div>
       </CardHeader>
       <CardContent>

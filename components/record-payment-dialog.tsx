@@ -94,12 +94,14 @@ export function RecordPaymentDialog({
         .select('*')
         .eq('tenant_id', tenantId)
         .eq('is_active', true)
-        .eq('currency', currency)
         .order('name')
 
       if (error) throw error
 
-      const matchingAccounts = data || []
+      const currencyUpper = (currency || 'TRY').toUpperCase()
+      const matchingAccounts = (data || []).filter(
+        (a: Account) => (a.currency || '').toUpperCase() === currencyUpper
+      )
       setAccounts(matchingAccounts)
 
       if (matchingAccounts.length > 0) {

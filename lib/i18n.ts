@@ -260,6 +260,9 @@ export const translations = {
       typeCustomer: 'Customer',
       typeVendor: 'Vendor',
       typeBoth: 'Both',
+      customerType: 'Account type (legal entity / natural person)',
+      legalEntity: 'Legal entity (VKN)',
+      naturalPerson: 'Natural person (TCKN)',
     },
     inventory: {
       title: 'Inventory Management',
@@ -1403,6 +1406,9 @@ export const translations = {
       typeCustomer: 'Müşteri',
       typeVendor: 'Tedarikçi',
       typeBoth: 'Her İkisi',
+      customerType: 'Cari tipi',
+      legalEntity: 'Tüzel kişi (VKN)',
+      naturalPerson: 'Gerçek kişi (TCKN)',
     },
     inventory: {
       title: 'Envanter Yönetimi',

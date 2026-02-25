@@ -147,7 +147,7 @@ export async function analyzeInvoices(tenantId: string, formatCurrency: (n: numb
 
   const debtorMap = new Map<string, { name: string; amount: number }>()
   overdueInvoices.forEach(i => {
-    const name = (i.customers as any)?.name || 'Unknown'
+    const name = (i.customers as any)?.company_title || (i.customers as any)?.name || 'Unknown'
     const existing = debtorMap.get(name) || { name, amount: 0 }
     existing.amount += Number(i.remaining_amount || i.amount || 0)
     debtorMap.set(name, existing)
@@ -322,7 +322,7 @@ export async function analyzeExpenses(tenantId: string, formatCurrency: (n: numb
 export async function analyzeCustomers(tenantId: string, formatCurrency: (n: number) => string): Promise<CustomerAnalysis> {
   const { data: customers } = await supabase
     .from('customers')
-    .select('id, name, status, total_revenue, created_at')
+    .select('id, name, company_title, status, total_revenue, created_at')
     .eq('tenant_id', tenantId)
 
   const { data: invoices } = await supabase
@@ -356,7 +356,7 @@ export async function analyzeCustomers(tenantId: string, formatCurrency: (n: num
   const topCustomers = [...allCustomers]
     .sort((a, b) => Number(b.total_revenue || 0) - Number(a.total_revenue || 0))
     .slice(0, 5)
-    .map(c => ({ name: c.name, revenue: Number(c.total_revenue || 0) }))
+    .map(c => ({ name: (c as any).company_title || c.name, revenue: Number(c.total_revenue || 0) }))
 
   const churnRisk = activeCustomers > 0 ? Math.round((atRiskCustomers / activeCustomers) * 100) : 0
 

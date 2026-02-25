@@ -120,6 +120,7 @@ export default function ProjectsPage() {
       return (
         p.name.toLowerCase().includes(q) ||
         p.code?.toLowerCase().includes(q) ||
+        p.customers?.company_title?.toLowerCase().includes(q) ||
         p.customers?.name?.toLowerCase().includes(q) ||
         p.customers?.company_title?.toLowerCase().includes(q) ||
         p.manager_name?.toLowerCase().includes(q)

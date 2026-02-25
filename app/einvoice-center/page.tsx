@@ -381,7 +381,7 @@ export default function EInvoiceCenterPage() {
                             </Badge>
                           </div>
                           <p className="text-xs text-slate-400">
-                            {invoice.invoices?.customers?.name}
+                            {invoice.invoices?.customers?.company_title || invoice.invoices?.customers?.name}
                           </p>
                           {invoice.gib_uuid && (
                             <p className="text-[10px] text-slate-500 uppercase tracking-tighter mt-1">

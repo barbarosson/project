@@ -192,7 +192,7 @@ export default function LiveSupportManagementPage() {
     try {
       const { data, error } = await supabase
         .from('customers')
-        .select('id, name, email')
+        .select('id, name, company_title, email')
         .eq('tenant_id', tenantId)
         .order('name', { ascending: true })
         .limit(100)
@@ -217,7 +217,7 @@ export default function LiveSupportManagementPage() {
       }
       const customer = customers.find(c => c.id === selectedCustomer)
       if (!customer) return
-      userName = customer.name
+      userName = customer.company_title || customer.name
       userEmail = customer.email || ''
     } else {
       if (!newChatName.trim()) {
@@ -463,7 +463,7 @@ export default function LiveSupportManagementPage() {
                         <SelectContent>
                           {customers.map((customer) => (
                             <SelectItem key={customer.id} value={customer.id}>
-                              {customer.name} {customer.email ? `(${customer.email})` : ''}
+                              {customer.company_title || customer.name} {customer.email ? `(${customer.email})` : ''}
                             </SelectItem>
                           ))}
                         </SelectContent>

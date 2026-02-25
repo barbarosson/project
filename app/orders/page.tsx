@@ -198,6 +198,7 @@ export default function OrdersPage() {
       const q = searchQuery.toLowerCase()
       return (
         o.order_number.toLowerCase().includes(q) ||
+        o.customers?.company_title?.toLowerCase().includes(q) ||
         o.customers?.name?.toLowerCase().includes(q) ||
         o.customers?.company_title?.toLowerCase().includes(q) ||
         o.source_id?.toLowerCase().includes(q)

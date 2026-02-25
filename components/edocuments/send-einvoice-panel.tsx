@@ -118,7 +118,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
           sender_vkn: settings?.company_vkn || '',
           sender_title: settings?.company_title || '',
           receiver_vkn: customer?.tax_number || '',
-          receiver_title: customer?.name || '',
+          receiver_title: customer?.company_title || customer?.name || '',
           issue_date: invoice.issue_date || new Date().toISOString().split('T')[0],
           invoice_type: invoiceType,
           currency: 'TRY',
@@ -140,7 +140,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
         SenderVkn: settings?.company_vkn || '',
         SenderTitle: settings?.company_title || '',
         ReceiverVkn: customer?.tax_number || '',
-        ReceiverTitle: customer?.name || '',
+        ReceiverTitle: customer?.company_title || customer?.name || '',
         ReceiverAddress: customer?.address || '',
         ReceiverCity: customer?.city || '',
         ReceiverCountry: customer?.country || 'Türkiye',
@@ -227,7 +227,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
                   ) : (
                     invoices.map(inv => (
                       <SelectItem key={inv.id} value={inv.id}>
-                        {inv.invoice_number} - {inv.customers?.name || 'N/A'} ({formatCurrency(inv.total, 'TRY')})
+                        {inv.invoice_number} - {inv.customers?.company_title || inv.customers?.name || 'N/A'} ({formatCurrency(inv.total, 'TRY')})
                       </SelectItem>
                     ))
                   )}
@@ -304,7 +304,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
               <div className="grid grid-cols-3 gap-4 text-sm">
                 <div>
                   <p className="text-xs text-muted-foreground">{isTr ? 'Müşteri' : 'Customer'}</p>
-                  <p className="font-medium">{selectedInvoice.customers?.name || '-'}</p>
+                  <p className="font-medium">{selectedInvoice.customers?.company_title || selectedInvoice.customers?.name || '-'}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">{isTr ? 'Tarih' : 'Date'}</p>
