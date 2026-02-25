@@ -68,79 +68,83 @@ export function OrderStatsCards({ stats, isTR, dateFrom, dateTo, ordersInRange, 
   const maxVal = Math.max(1, ...items.map((i) => i.value))
 
   return (
-    <div className="rounded-lg border bg-card p-4">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+    <div className="rounded-lg border bg-card p-3">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
-          <ShoppingCart className="h-4 w-4 text-[#0A2540]" />
-          <span className="text-sm font-medium text-[#0A2540]">
+          <ShoppingCart className="h-3.5 w-3.5 text-[#0A2540]" />
+          <span className="text-xs font-medium text-[#0A2540]">
             {isTR ? 'Sipariş özeti' : 'Order summary'}
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1.5">
-            <Label className="text-xs whitespace-nowrap">{isTR ? 'Başlangıç' : 'From'}</Label>
+          <div className="flex items-center gap-1">
+            <Label className="text-[10px] whitespace-nowrap">{isTR ? 'Başlangıç' : 'From'}</Label>
             <Input
               type="date"
               value={dateFrom}
               onChange={(e) => onDateFromChange(e.target.value)}
-              className="h-8 w-[130px] text-xs"
+              className="h-7 w-[115px] text-[11px]"
             />
           </div>
-          <div className="flex items-center gap-1.5">
-            <Label className="text-xs whitespace-nowrap">{isTR ? 'Bitiş' : 'To'}</Label>
+          <div className="flex items-center gap-1">
+            <Label className="text-[10px] whitespace-nowrap">{isTR ? 'Bitiş' : 'To'}</Label>
             <Input
               type="date"
               value={dateTo}
               onChange={(e) => onDateToChange(e.target.value)}
-              className="h-8 w-[130px] text-xs"
+              className="h-7 w-[115px] text-[11px]"
             />
           </div>
         </div>
       </div>
-      <div className="space-y-2.5">
-        {items.map((item, idx) => {
-          const Icon = item.icon
-          const pct = maxVal > 0 ? (item.value / maxVal) * 100 : 0
-          return (
-            <div key={item.key} className="flex items-center gap-3">
-              <div className="flex items-center gap-1.5 min-w-[100px] sm:min-w-[110px]">
-                <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                <span className="text-xs text-muted-foreground truncate">{item.label}</span>
-              </div>
-              <div className="flex-1 flex items-center gap-2 min-w-0">
-                <div className="flex-1 h-5 rounded bg-muted/50 overflow-hidden min-w-[60px]">
-                  <div
-                    className={`h-full rounded ${BAR_COLORS[idx]} transition-all duration-300`}
-                    style={{ width: `${Math.max(0, pct)}%` }}
-                  />
+      <div className="flex flex-col lg:flex-row gap-3 lg:gap-4">
+        {/* Sol: özet çubukları (tarih aralığına göre filtrelenmiş) */}
+        <div className="space-y-1.5 min-w-0 lg:min-w-[200px] lg:max-w-[240px]">
+          {items.map((item, idx) => {
+            const Icon = item.icon
+            const pct = maxVal > 0 ? (item.value / maxVal) * 100 : 0
+            return (
+              <div key={item.key} className="flex items-center gap-2">
+                <div className="flex items-center gap-1 min-w-[72px] shrink-0">
+                  <Icon className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-[10px] text-muted-foreground truncate">{item.label}</span>
                 </div>
-                <span className="text-xs font-medium tabular-nums w-6 text-right shrink-0">{item.value}</span>
+                <div className="flex-1 flex items-center gap-1.5 min-w-0">
+                  <div className="flex-1 h-3.5 rounded bg-muted/50 overflow-hidden min-w-[40px]">
+                    <div
+                      className={`h-full rounded ${BAR_COLORS[idx]} transition-all duration-300`}
+                      style={{ width: `${Math.max(0, pct)}%` }}
+                    />
+                  </div>
+                  <span className="text-[10px] font-medium tabular-nums w-4 text-right shrink-0">{item.value}</span>
+                </div>
               </div>
-            </div>
-          )
-        })}
-      </div>
-      {chartData.length > 0 && (
-        <div className="mt-4 pt-4 border-t">
-          <p className="text-xs text-muted-foreground mb-2">
-            {isTR ? 'Seçilen zaman diliminde günlük sipariş adedi' : 'Daily order count in selected period'}
-          </p>
-          <div className="h-[140px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 4, right: 4, left: 4, bottom: 0 }}>
-                <XAxis dataKey="label" tick={{ fontSize: 10 }} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 10 }} width={24} />
-                <Tooltip
-                  formatter={(value: number) => [value, isTR ? 'Sipariş' : 'Orders']}
-                  labelFormatter={(_, payload) => payload?.[0]?.payload?.date}
-                  contentStyle={{ fontSize: 12 }}
-                />
-                <Bar dataKey="count" fill="#0A2540" radius={[2, 2, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+            )
+          })}
         </div>
-      )}
+        {/* Sağ: seçilen tarih aralığında günlük sipariş grafiği */}
+        {chartData.length > 0 && (
+          <div className="flex-1 min-w-0 border-t lg:border-t-0 lg:border-l pt-3 lg:pt-0 lg:pl-3">
+            <p className="text-[10px] text-muted-foreground mb-1">
+              {isTR ? 'Seçilen zaman diliminde günlük sipariş adedi' : 'Daily order count in selected period'}
+            </p>
+            <div className="h-[100px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 2, right: 2, left: 2, bottom: 0 }}>
+                  <XAxis dataKey="label" tick={{ fontSize: 9 }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 9 }} width={20} />
+                  <Tooltip
+                    formatter={(value: number) => [value, isTR ? 'Sipariş' : 'Orders']}
+                    labelFormatter={(_, payload) => payload?.[0]?.payload?.date}
+                    contentStyle={{ fontSize: 11 }}
+                  />
+                  <Bar dataKey="count" fill="#0A2540" radius={[2, 2, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
