@@ -5,6 +5,13 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { useLanguage } from '@/contexts/language-context'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
 
 interface Activity {
   id: string
@@ -16,8 +23,12 @@ interface Activity {
   link?: string
 }
 
+const ACTIVITY_LIMIT_OPTIONS = [5, 10, 20, 50] as const
+
 interface RecentActivityProps {
   activities: Activity[]
+  limit?: number
+  onLimitChange?: (n: number) => void
 }
 
 const activityColors = {
@@ -33,7 +44,7 @@ const statusColors = {
   info: 'bg-blue-500'
 }
 
-export function RecentActivity({ activities }: RecentActivityProps) {
+export function RecentActivity({ activities, limit = 5, onLimitChange }: RecentActivityProps) {
   const router = useRouter()
   const { t } = useLanguage()
 
@@ -54,8 +65,32 @@ export function RecentActivity({ activities }: RecentActivityProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{t.dashboard.recentActivity}</CardTitle>
-        <CardDescription>{t.dashboard.recentActivityDescription}</CardDescription>
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <CardTitle>{t.dashboard.recentActivity}</CardTitle>
+            <CardDescription>{t.dashboard.recentActivityDescription}</CardDescription>
+          </div>
+          {onLimitChange && (
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="text-sm text-muted-foreground whitespace-nowrap">{t.dashboard.showLastActivities}</span>
+              <Select
+                value={String(limit)}
+                onValueChange={(v) => onLimitChange(Number(v))}
+              >
+                <SelectTrigger className="w-[72px] h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ACTIVITY_LIMIT_OPTIONS.map((n) => (
+                    <SelectItem key={n} value={String(n)}>
+                      {n}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

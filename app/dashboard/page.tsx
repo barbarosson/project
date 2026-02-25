@@ -25,12 +25,15 @@ interface DashboardMetrics {
   draftRevenue: number
   confirmedRevenue: number
   totalExpenses: number
+  periodIncome: number
+  periodExpenses: number
   netProfit: number
   pendingPayments: number
   activeCustomers: number
   lowStockAlerts: number
   cashOnHand: number
   collectedCash: number
+  invoicedTotal: number
 }
 
 interface DateRange {
@@ -70,25 +73,26 @@ export default function Dashboard() {
     draftRevenue: 0,
     confirmedRevenue: 0,
     totalExpenses: 0,
+    periodIncome: 0,
+    periodExpenses: 0,
     netProfit: 0,
     pendingPayments: 0,
     activeCustomers: 0,
     lowStockAlerts: 0,
     cashOnHand: 0,
-    collectedCash: 0
+    collectedCash: 0,
+    invoicedTotal: 0
   })
   const [cashFlowSourceInvoices, setCashFlowSourceInvoices] = useState<any[]>([])
   const [cashFlowSourceExpenses, setCashFlowSourceExpenses] = useState<any[]>([])
   const [cashFlowSourceTransactions, setCashFlowSourceTransactions] = useState<any[]>([])
   const [activities, setActivities] = useState<Activity[]>([])
+  const [activityLimit, setActivityLimit] = useState(5)
   const [loading, setLoading] = useState(true)
   const [showProductTour, setShowProductTour] = useState(false)
 
-  const now = new Date()
-  const defaultCashFlowEnd = format(now, 'yyyy-MM')
-  const defaultCashFlowStart = format(subMonths(now, 5), 'yyyy-MM')
-  const [cashFlowStartMonth, setCashFlowStartMonth] = useState(defaultCashFlowStart)
-  const [cashFlowEndMonth, setCashFlowEndMonth] = useState(defaultCashFlowEnd)
+  const chartStartMonth = format(dateRange.from, 'yyyy-MM')
+  const chartEndMonth = format(dateRange.to, 'yyyy-MM')
 
   const cashFlowData = useMemo(
     () =>
@@ -97,16 +101,16 @@ export default function Dashboard() {
         cashFlowSourceExpenses,
         cashFlowSourceTransactions,
         language,
-        cashFlowStartMonth,
-        cashFlowEndMonth
+        chartStartMonth,
+        chartEndMonth
       ),
     [
       cashFlowSourceInvoices,
       cashFlowSourceExpenses,
       cashFlowSourceTransactions,
       language,
-      cashFlowStartMonth,
-      cashFlowEndMonth
+      chartStartMonth,
+      chartEndMonth
     ]
   )
 
@@ -198,7 +202,26 @@ export default function Dashboard() {
       const totalExpenses = filteredExpenses
         .reduce((sum: number, e: any) => sum + (Number(e.amount) || 0), 0)
 
-      const netProfit = confirmedRevenue - totalExpenses
+      const rangeStart = dateRange.from.getTime()
+      const rangeEnd = dateRange.to.getTime()
+      const inRange = (d: string | Date) => {
+        const t = new Date(d).getTime()
+        return t >= rangeStart && t <= rangeEnd
+      }
+      const transactionIncome = allTransactions
+        .filter((tx: any) => tx.transaction_type === 'income' && tx.transaction_date && inRange(tx.transaction_date))
+        .reduce((sum: number, tx: any) => sum + (Number(tx.amount) || 0), 0)
+      const transactionExpense = allTransactions
+        .filter((tx: any) => tx.transaction_type === 'expense' && tx.transaction_date && inRange(tx.transaction_date))
+        .reduce((sum: number, tx: any) => sum + (Number(tx.amount) || 0), 0)
+      const periodIncome = collectedCash + transactionIncome
+      const periodExpenses = totalExpenses + transactionExpense
+      const netProfit = periodIncome - periodExpenses
+
+      const invoicedTotal = filteredInvoices.reduce(
+        (sum: number, i: any) => sum + (Number(i.total) || Number(i.amount) || 0),
+        0
+      )
 
       const cashOnHand = accounts.reduce((sum: number, acc: any) => sum + (Number(acc.current_balance) || 0), 0)
 
@@ -217,19 +240,22 @@ export default function Dashboard() {
         draftRevenue,
         confirmedRevenue,
         totalExpenses,
+        periodIncome,
+        periodExpenses,
         netProfit,
         pendingPayments,
         activeCustomers,
         lowStockAlerts,
         cashOnHand,
-        collectedCash
+        collectedCash,
+        invoicedTotal
       })
 
       setCashFlowSourceInvoices(allInvoices)
       setCashFlowSourceExpenses(allExpenses)
       setCashFlowSourceTransactions(allTransactions)
 
-      const recentActivities = await generateActivities(tenantId)
+      const recentActivities = await generateActivities(tenantId, 50)
       setActivities(recentActivities)
 
       setLoading(false)
@@ -329,7 +355,7 @@ export default function Dashboard() {
     return result
   }
 
-  async function generateActivities(tenantId: string): Promise<Activity[]> {
+  async function generateActivities(tenantId: string, maxLimit: number = 50): Promise<Activity[]> {
     const activities: Activity[] = []
 
     try {
@@ -339,13 +365,13 @@ export default function Dashboard() {
           .select('id, invoice_number, amount, total, status, created_at, updated_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
-          .limit(10),
+          .limit(maxLimit),
         supabase
           .from('customers')
           .select('id, name, company_title, created_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
-          .limit(10),
+          .limit(maxLimit),
         supabase
           .from('products')
           .select('id, name, stock_quantity, min_stock_level')
@@ -357,14 +383,14 @@ export default function Dashboard() {
           .select('id, amount, transaction_type, description, transaction_date, created_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
-          .limit(10)
+          .limit(maxLimit)
           .then(r => r.data || []).catch(() => []),
         supabase
           .from('orders')
           .select('id, order_number, total, status, created_at')
           .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false })
-          .limit(5)
+          .limit(maxLimit)
           .then(r => r.data || []).catch(() => [])
       ])
 
@@ -456,7 +482,7 @@ export default function Dashboard() {
 
       allActivities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
 
-      return allActivities.slice(0, 10).map(({ timestamp, ...activity }) => activity)
+      return allActivities.slice(0, maxLimit).map(({ timestamp, ...activity }) => activity)
     } catch (error) {
       console.error('Error generating activities:', error)
       return []
@@ -572,32 +598,38 @@ export default function Dashboard() {
             onClick={() => router.push('/finance/accounts')}
           />
           <MetricCard
-            title={t.dashboard.totalRevenue}
-            value={formatCurrency(metrics.totalRevenue)}
-            change={metrics.draftRevenue > 0
-              ? `${t.dashboard.confirmed || 'Confirmed'}: ${formatCurrency(metrics.confirmedRevenue)} | ${t.dashboard.draft || 'Draft'}: ${formatCurrency(metrics.draftRevenue)}`
-              : `${format(dateRange.from, 'MMM dd', { locale: dateLocale })} - ${format(dateRange.to, 'MMM dd', { locale: dateLocale })}`
+            title={t.dashboard.cashFlowIncome}
+            value={formatCurrency(metrics.collectedCash)}
+            change={language === 'tr'
+              ? 'Dönemde tahsil edilen (ödeme tarihi dönem içindeki paid faturalar)'
+              : 'Collected in period (paid invoices with payment date in range)'
             }
             changeType="positive"
             icon={TrendingUp}
             iconColor="bg-[#00D4AA]"
             clickable
-            onClick={() => router.push('/invoices')}
-          />
-          <MetricCard
-            title={t.dashboard.collectedCash}
-            value={formatCurrency(metrics.collectedCash)}
-            change={t.dashboard.totalCollected}
-            changeType="positive"
-            icon={DollarSign}
-            iconColor="bg-emerald-500"
-            clickable
             onClick={() => router.push('/finance/transactions')}
           />
           <MetricCard
-            title={t.dashboard.totalExpenses}
-            value={formatCurrency(metrics.totalExpenses)}
-            change={`${format(dateRange.from, 'MMM dd', { locale: dateLocale })} - ${format(dateRange.to, 'MMM dd', { locale: dateLocale })}`}
+            title={t.dashboard.invoicing}
+            value={formatCurrency(metrics.invoicedTotal)}
+            change={language === 'tr'
+              ? `Dönemde kesilen faturalar: ${format(dateRange.from, 'dd MMM', { locale: dateLocale })} - ${format(dateRange.to, 'dd MMM yyyy', { locale: dateLocale })}`
+              : `Invoiced in period: ${format(dateRange.from, 'MMM dd', { locale: dateLocale })} - ${format(dateRange.to, 'MMM dd, yyyy', { locale: dateLocale })}`
+            }
+            changeType="neutral"
+            icon={DollarSign}
+            iconColor="bg-emerald-500"
+            clickable
+            onClick={() => router.push('/invoices')}
+          />
+          <MetricCard
+            title={t.dashboard.cashFlowExpenses}
+            value={formatCurrency(metrics.periodExpenses)}
+            change={language === 'tr'
+              ? `Seçilen dönem: ${format(dateRange.from, 'dd MMM', { locale: dateLocale })} - ${format(dateRange.to, 'dd MMM yyyy', { locale: dateLocale })}`
+              : `Selected period: ${format(dateRange.from, 'MMM dd', { locale: dateLocale })} - ${format(dateRange.to, 'MMM dd, yyyy', { locale: dateLocale })}`
+            }
             changeType="neutral"
             icon={TrendingDown}
             iconColor="bg-red-500"
@@ -628,26 +660,20 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
-            <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-card p-4">
-              <label className="text-sm font-medium text-[#0A2540]">{t.dashboard.cashFlowStartMonth}</label>
-              <input
-                type="month"
-                value={cashFlowStartMonth}
-                onChange={(e) => setCashFlowStartMonth(e.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
-              />
-              <label className="text-sm font-medium text-[#0A2540]">{t.dashboard.cashFlowEndMonth}</label>
-              <input
-                type="month"
-                value={cashFlowEndMonth}
-                onChange={(e) => setCashFlowEndMonth(e.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
-              />
-            </div>
-            <CashFlowChart data={cashFlowData} />
+            <CashFlowChart
+              data={cashFlowData}
+              periodLabel={language === 'tr'
+                ? `${format(dateRange.from, 'dd MMM', { locale: dateLocale })} - ${format(dateRange.to, 'dd MMM yyyy', { locale: dateLocale })}`
+                : `${format(dateRange.from, 'MMM dd', { locale: dateLocale })} - ${format(dateRange.to, 'MMM dd, yyyy', { locale: dateLocale })}`
+              }
+            />
           </div>
           <div>
-            <RecentActivity activities={activities} />
+            <RecentActivity
+              activities={activities.slice(0, activityLimit)}
+              limit={activityLimit}
+              onLimitChange={setActivityLimit}
+            />
           </div>
         </div>
       </div>

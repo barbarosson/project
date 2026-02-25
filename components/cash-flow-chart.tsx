@@ -22,9 +22,10 @@ interface CashFlowData {
 
 interface CashFlowChartProps {
   data: CashFlowData[]
+  periodLabel?: string
 }
 
-export function CashFlowChart({ data }: CashFlowChartProps) {
+export function CashFlowChart({ data, periodLabel }: CashFlowChartProps) {
   const { t } = useLanguage()
   const { formatCurrency } = useCurrency()
 
@@ -32,7 +33,11 @@ export function CashFlowChart({ data }: CashFlowChartProps) {
     <Card>
       <CardHeader>
         <CardTitle>{t.dashboard.cashFlow}</CardTitle>
-        <CardDescription>{t.dashboard.cashFlowChartDescription}</CardDescription>
+        <CardDescription>
+          {periodLabel
+            ? `${t.dashboard.cashFlowChartDescription} (${periodLabel})`
+            : t.dashboard.cashFlowChartDescription}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="h-[350px] w-full">
