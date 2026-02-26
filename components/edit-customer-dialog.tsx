@@ -57,6 +57,9 @@ interface Customer {
   balance: number
   status: string
   e_invoice_enabled: boolean
+  branch_type?: string | null
+  branch_code?: string | null
+  parent_customer_id?: string | null
 }
 
 interface EditCustomerDialogProps {

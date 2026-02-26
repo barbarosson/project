@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -52,6 +52,8 @@ interface Customer {
   status: string
   e_invoice_enabled: boolean
   total_revenue: number
+  branch_type?: string | null
+  parent_customer_id?: string | null
 }
 
 interface CustomerSegment {
@@ -84,6 +86,8 @@ export default function CustomersPage() {
   const [isCsvImportOpen, setIsCsvImportOpen] = useState(false)
   const [isSubBranchesSheetOpen, setIsSubBranchesSheetOpen] = useState(false)
   const [selectedCustomerForBranches, setSelectedCustomerForBranches] = useState<string | null>(null)
+  const [addSubCustomerParentId, setAddSubCustomerParentId] = useState<string | null>(null)
+  const [addSubCustomerParentData, setAddSubCustomerParentData] = useState<Record<string, unknown> | null>(null)
 
   useEffect(() => {
     if (!tenantLoading && tenantId) {
@@ -159,14 +163,19 @@ export default function CustomersPage() {
       }
 
       setCustomerSegments(segments)
-      setFilteredCustomers(customersData)
     } catch (error) {
       console.error('Error calculating segments:', error)
     }
   }
 
+  // Sadece ana cariler listelenir; alt şubeler ana carinin "Şube ve Alt Cariler" bölümünde gösterilir
+  const mainCustomers = useMemo(
+    () => customers.filter((c) => c.branch_type === 'main' || !c.parent_customer_id),
+    [customers]
+  )
+
   function filterCustomers() {
-    let filtered = customers
+    let filtered = mainCustomers
 
     if (segmentFilter !== 'all') {
       const segmentCustomerIds = customerSegments
@@ -437,7 +446,7 @@ export default function CustomersPage() {
               className="font-semibold text-gray-900 hover:text-gray-900"
             >
               <Upload className="mr-2 h-4 w-4" />
-              {t.common.csvImport}
+              Toplu aktarım
             </Button>
             <Button
               onClick={() => setIsAddDialogOpen(true)}
@@ -566,7 +575,7 @@ export default function CustomersPage() {
                 />
               </div>
               <div className="text-sm text-gray-500">
-                {t.customers.customersOfTotal.replace('{filtered}', filteredCustomers.length.toString()).replace('{total}', customers.length.toString())}
+                {t.customers.customersOfTotal.replace('{filtered}', filteredCustomers.length.toString()).replace('{total}', mainCustomers.length.toString())}
               </div>
             </div>
 
@@ -708,8 +717,14 @@ export default function CustomersPage() {
 
       <AddCustomerDialog
         isOpen={isAddDialogOpen}
-        onClose={() => setIsAddDialogOpen(false)}
+        onClose={() => {
+          setIsAddDialogOpen(false)
+          setAddSubCustomerParentId(null)
+          setAddSubCustomerParentData(null)
+        }}
         onSuccess={fetchCustomers}
+        initialParentCustomerId={addSubCustomerParentId}
+        initialParentData={addSubCustomerParentData}
       />
 
       <EditCustomerDialog
@@ -756,6 +771,13 @@ export default function CustomersPage() {
         onClose={() => {
           setIsSubBranchesSheetOpen(false)
           setSelectedCustomerForBranches(null)
+        }}
+        onAddSubCustomer={(parentId, parentData) => {
+          setAddSubCustomerParentId(parentId)
+          setAddSubCustomerParentData(parentData ?? null)
+          setIsSubBranchesSheetOpen(false)
+          setSelectedCustomerForBranches(null)
+          setIsAddDialogOpen(true)
         }}
       />
 

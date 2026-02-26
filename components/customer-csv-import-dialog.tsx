@@ -34,6 +34,8 @@ const FIELD_LABELS: Record<string, string> = {
   name: 'Yetkili',
   account_type: 'Hesap Tipi',
   tax_office: 'Vergi Dairesi',
+  tax_number: 'Vergi No',
+  tax_id_type: 'Vergi No Tipi',
   email: 'E-posta',
   phone: 'Telefon',
   address: 'Adres',
@@ -41,7 +43,9 @@ const FIELD_LABELS: Record<string, string> = {
   district: 'İlçe',
   postal_code: 'Posta Kodu',
   country: 'Ülke',
+  currency: 'Para Birimi',
   payment_terms: 'Ödeme Vadesi',
+  payment_terms_unit: 'Vade Birimi',
   payment_terms_type: 'Vade Tipi',
   bank_name: 'Banka Adı',
   bank_account_holder: 'Hesap Sahibi',
@@ -54,6 +58,8 @@ const FIELD_LABELS: Record<string, string> = {
   notes: 'Notlar',
   e_invoice_enabled: 'E-Fatura',
   status: 'Durum',
+  branch_type: 'Cari Tipi',
+  branch_code: 'Şube/Birim Kodu',
 }
 
 const CSV_HEADERS = [
@@ -62,6 +68,7 @@ const CSV_HEADERS = [
   'account_type',
   'tax_office',
   'tax_number',
+  'tax_id_type',
   'email',
   'phone',
   'address',
@@ -69,7 +76,9 @@ const CSV_HEADERS = [
   'district',
   'postal_code',
   'country',
+  'currency',
   'payment_terms',
+  'payment_terms_unit',
   'payment_terms_type',
   'bank_name',
   'bank_account_holder',
@@ -82,6 +91,8 @@ const CSV_HEADERS = [
   'notes',
   'e_invoice_enabled',
   'status',
+  'branch_type',
+  'branch_code',
   'opening_balance',
 ] as const
 
@@ -166,6 +177,24 @@ const CSV_HEADERS_TR: Record<string, string> = {
   'devir': 'opening_balance',
   'başlangıç bakiyesi': 'opening_balance',
   'baslangic bakiyesi': 'opening_balance',
+  'vergi no tipi': 'tax_id_type',
+  'tax id type': 'tax_id_type',
+  'tax_id_type': 'tax_id_type',
+  'para birimi': 'currency',
+  'currency': 'currency',
+  'vade birimi': 'payment_terms_unit',
+  'terms unit': 'payment_terms_unit',
+  'payment_terms_unit': 'payment_terms_unit',
+  'gün': 'payment_terms_unit',
+  'ay': 'payment_terms_unit',
+  'days': 'payment_terms_unit',
+  'months': 'payment_terms_unit',
+  'cari tipi': 'branch_type',
+  'branch type': 'branch_type',
+  'branch_type': 'branch_type',
+  'şube/birim kodu': 'branch_code',
+  'branch code': 'branch_code',
+  'branch_code': 'branch_code',
 }
 
 function parseCSVLine(line: string, delimiter: string): string[] {
@@ -319,13 +348,26 @@ function mapRowToCustomer(
   const status = statusRaw === 'inactive' || statusRaw === 'pasif' ? 'inactive' : 'active'
 
   const paymentTermsStr = get('payment_terms') || '0'
-  const payment_terms = Math.max(0, parseInt(paymentTermsStr, 10) || 0)
+  let payment_terms = Math.max(0, parseInt(paymentTermsStr, 10) || 0)
+  const termsUnitRaw = (get('payment_terms_unit') || 'gün').toLowerCase()
+  const isMonths = termsUnitRaw === 'ay' || termsUnitRaw === 'months' || termsUnitRaw === 'month'
+  if (isMonths) payment_terms = payment_terms * 30
 
   let bank_iban = get('bank_iban')
   if (bank_iban) bank_iban = formatIBAN(bank_iban)
 
   const tax_number = get('tax_number')
-  const tax_id_type = tax_number ? getTaxIdType(tax_number) : null
+  const taxIdTypeCol = (get('tax_id_type') || '').toUpperCase()
+  const tax_id_type = taxIdTypeCol === 'VKN' || taxIdTypeCol === 'TCKN' ? taxIdTypeCol : (tax_number ? getTaxIdType(tax_number) : null)
+
+  const branchTypeRaw = (get('branch_type') || 'main').toLowerCase()
+  const branch_type =
+    branchTypeRaw === 'şube' || branchTypeRaw === 'branch' ? 'branch'
+    : branchTypeRaw === 'depo' || branchTypeRaw === 'warehouse' ? 'warehouse'
+    : branchTypeRaw === 'departman' || branchTypeRaw === 'department' ? 'department'
+    : branchTypeRaw === 'merkez' || branchTypeRaw === 'center' ? 'center'
+    : branchTypeRaw === 'ana cari' || branchTypeRaw === 'main' ? 'main'
+    : 'main'
 
   return {
     tenant_id: tenantId,
@@ -342,8 +384,11 @@ function mapRowToCustomer(
     district: get('district') || null,
     postal_code: get('postal_code') || null,
     country: get('country') || 'Türkiye',
+    currency: (get('currency') || 'TRY').toUpperCase() || 'TRY',
     payment_terms,
     payment_terms_type: (get('payment_terms_type') || 'net').toLowerCase() === 'eom' ? 'eom' : 'net',
+    branch_type,
+    branch_code: get('branch_code') || null,
     bank_name: get('bank_name') || null,
     bank_account_holder: get('bank_account_holder') || null,
     bank_account_number: get('bank_account_number') || null,
@@ -390,20 +435,20 @@ function mapRowToCustomer(
   }
 }
 
-// Şablon: 26 sütun sabit (parse hatası ve son satır kayması olmasın diye dizi olarak tanımlı)
-const TEMPLATE_HEADERS_TR = ['Şirket Ünvanı', 'Yetkili', 'Hesap Tipi', 'Vergi Dairesi', 'Vergi No', 'E-posta', 'Telefon', 'Adres', 'İl', 'İlçe', 'Posta Kodu', 'Ülke', 'Ödeme Vadesi', 'Vade Tipi', 'Banka Adı', 'Hesap Sahibi', 'Hesap No', 'IBAN', 'Şube', 'SWIFT', 'Web', 'Sektör', 'Notlar', 'E-Fatura', 'Durum', 'Açılış Bakiyesi']
-const TEMPLATE_HEADERS_EN = ['Company Title', 'Name', 'Account Type', 'Tax Office', 'Tax Number', 'Email', 'Phone', 'Address', 'City', 'District', 'Postal Code', 'Country', 'Payment Terms', 'Terms Type', 'Bank Name', 'Account Holder', 'Account Number', 'IBAN', 'Branch', 'SWIFT', 'Website', 'Industry', 'Notes', 'E-Invoice', 'Status', 'Opening Balance']
+// Şablon: cari kartındaki tüm alanlar (Vergi No Tipi, Para Birimi, Vade Birimi, Cari Tipi, Şube/Birim Kodu dahil)
+const TEMPLATE_HEADERS_TR = ['Şirket Ünvanı', 'Yetkili', 'Hesap Tipi', 'Vergi Dairesi', 'Vergi No', 'Vergi No Tipi', 'E-posta', 'Telefon', 'Adres', 'İl', 'İlçe', 'Posta Kodu', 'Ülke', 'Para Birimi', 'Ödeme Vadesi', 'Vade Birimi', 'Vade Tipi', 'Banka Adı', 'Hesap Sahibi', 'Hesap No', 'IBAN', 'Şube', 'SWIFT', 'Web', 'Sektör', 'Notlar', 'E-Fatura', 'Durum', 'Cari Tipi', 'Şube/Birim Kodu', 'Açılış Bakiyesi']
+const TEMPLATE_HEADERS_EN = ['Company Title', 'Name', 'Account Type', 'Tax Office', 'Tax Number', 'Tax ID Type', 'Email', 'Phone', 'Address', 'City', 'District', 'Postal Code', 'Country', 'Currency', 'Payment Terms', 'Terms Unit', 'Terms Type', 'Bank Name', 'Account Holder', 'Account Number', 'IBAN', 'Branch', 'SWIFT', 'Website', 'Industry', 'Notes', 'E-Invoice', 'Status', 'Branch Type', 'Branch Code', 'Opening Balance']
 
 const TEMPLATE_DATA_TR: string[][] = [
-  ['Örnek Müşteri A.Ş.', 'Ahmet Yılmaz', 'müşteri', 'Kadıköy VD', '1234567890', 'info@ornek.com', '05321234567', 'Örnek Mah. No:1', 'Kadıköy', '', '34000', 'Türkiye', '30', 'net', 'Ziraat Bankası', 'Örnek Şirket', '12345678', 'TR00 0000 0000 0000 0000 0000 00', '', '', 'https://ornek.com', 'Teknoloji', 'Örnek not', 'hayır', 'aktif', '5000'],
-  ['Örnek Tedarikçi Ltd.', 'Mehmet Kaya', 'tedarikçi', 'Beşiktaş VD', '9876543210', 'tedarik@ornek.com', '05329876543', 'Sanayi Cad. No:5', 'İstanbul', '', '34000', 'Türkiye', '60', 'net', 'İş Bankası', 'Tedarikçi Firma', '87654321', 'TR00 0000 0000 0000 0000 0000 01', '', '', 'https://tedarik.com', 'Üretim', 'Tedarikçi notu', 'hayır', 'aktif', '-1500'],
-  ['Örnek Her İkisi A.Ş.', 'Ayşe Demir', 'her ikisi', 'Şişli VD', '5555555555', 'info@herikisi.com', '05325555555', 'Merkez Mah.', 'İstanbul', '', '34394', 'Türkiye', '30', 'net', 'Yapı Kredi', 'Her İkisi Firma', '11223344', 'TR00 0000 0000 0000 0000 0000 02', '', '', '', 'Hem müşteri hem tedarikçi', '', 'hayır', 'aktif', '0'],
+  ['Örnek Müşteri A.Ş.', 'Ahmet Yılmaz', 'müşteri', 'Kadıköy VD', '1234567890', 'VKN', 'info@ornek.com', '05321234567', 'Örnek Mah. No:1', 'Kadıköy', '', '34000', 'Türkiye', 'TRY', '30', 'gün', 'net', 'Ziraat Bankası', 'Örnek Şirket', '12345678', 'TR00 0000 0000 0000 0000 0000 00', '', '', 'https://ornek.com', 'Teknoloji', 'Örnek not', 'hayır', 'aktif', 'ana cari', '', '5000'],
+  ['Örnek Tedarikçi Ltd.', 'Mehmet Kaya', 'tedarikçi', 'Beşiktaş VD', '9876543210', 'VKN', 'tedarik@ornek.com', '05329876543', 'Sanayi Cad. No:5', 'İstanbul', '', '34000', 'Türkiye', 'TRY', '60', 'gün', 'net', 'İş Bankası', 'Tedarikçi Firma', '87654321', 'TR00 0000 0000 0000 0000 0000 01', '', '', 'https://tedarik.com', 'Üretim', 'Tedarikçi notu', 'hayır', 'aktif', 'ana cari', '', '-1500'],
+  ['Örnek Her İkisi A.Ş.', 'Ayşe Demir', 'her ikisi', 'Şişli VD', '5555555555', 'VKN', 'info@herikisi.com', '05325555555', 'Merkez Mah.', 'İstanbul', '', '34394', 'Türkiye', 'TRY', '30', 'gün', 'net', 'Yapı Kredi', 'Her İkisi Firma', '11223344', 'TR00 0000 0000 0000 0000 0000 02', '', '', '', 'Hem müşteri hem tedarikçi', '', 'hayır', 'aktif', 'ana cari', '', '0'],
 ]
 
 const TEMPLATE_DATA_EN: string[][] = [
-  ['Example Customer Inc.', 'John Doe', 'customer', 'Downtown Tax Office', '1234567890', 'info@example.com', '+901234567890', '123 Main St', 'Istanbul', '', '34000', 'Turkey', '30', 'net', 'Bank of Example', 'Example Corp', '12345678', 'TR00 0000 0000 0000 0000 0000 00', '', '', 'https://example.com', 'Technology', 'Sample note', 'false', 'active', '5000'],
-  ['Example Vendor Ltd.', 'Jane Smith', 'vendor', 'Industrial Tax Office', '9876543210', 'vendor@example.com', '+909876543210', '456 Industrial Ave', 'Istanbul', '', '34000', 'Turkey', '60', 'net', 'Business Bank', 'Vendor Co', '87654321', 'TR00 0000 0000 0000 0000 0000 01', '', '', 'https://vendor.com', 'Manufacturing', 'Vendor note', 'false', 'active', '-1500'],
-  ['Example Both LLC', 'Alex Brown', 'both', 'Central Tax Office', '5555555555', 'info@both.com', '+905555555555', '789 Center St', 'Istanbul', '', '34394', 'Turkey', '30', 'net', 'Credit Bank', 'Both Company', '11223344', 'TR00 0000 0000 0000 0000 0000 02', '', '', '', 'Customer and vendor', '', 'false', 'active', '0'],
+  ['Example Customer Inc.', 'John Doe', 'customer', 'Downtown Tax Office', '1234567890', 'VKN', 'info@example.com', '+901234567890', '123 Main St', 'Istanbul', '', '34000', 'Turkey', 'TRY', '30', 'days', 'net', 'Bank of Example', 'Example Corp', '12345678', 'TR00 0000 0000 0000 0000 0000 00', '', '', 'https://example.com', 'Technology', 'Sample note', 'false', 'active', 'main', '', '5000'],
+  ['Example Vendor Ltd.', 'Jane Smith', 'vendor', 'Industrial Tax Office', '9876543210', 'VKN', 'vendor@example.com', '+909876543210', '456 Industrial Ave', 'Istanbul', '', '34000', 'Turkey', 'TRY', '60', 'days', 'net', 'Business Bank', 'Vendor Co', '87654321', 'TR00 0000 0000 0000 0000 0000 01', '', '', 'https://vendor.com', 'Manufacturing', 'Vendor note', 'false', 'active', 'main', '', '-1500'],
+  ['Example Both LLC', 'Alex Brown', 'both', 'Central Tax Office', '5555555555', 'VKN', 'info@both.com', '+905555555555', '789 Center St', 'Istanbul', '', '34394', 'Turkey', 'TRY', '30', 'days', 'net', 'Credit Bank', 'Both Company', '11223344', 'TR00 0000 0000 0000 0000 0000 02', '', '', '', 'Customer and vendor', '', 'false', 'active', 'main', '', '0'],
 ]
 
 const TR_HEADERS = TEMPLATE_HEADERS_TR.join(',')
@@ -903,7 +948,7 @@ export function CustomerCsvImportDialog({
         ) : (
           <>
         <DialogHeader>
-          <DialogTitle>CSV ile Cari İçe Aktar</DialogTitle>
+          <DialogTitle>Toplu aktarım</DialogTitle>
           <DialogDescription>
             {language === 'tr'
               ? 'CSV veya Excel dosyasında ilk satır sütun başlıkları olmalıdır. Excel şablonu ile sütunlar ayrı kalır; şablonu indirip doldurup yükleyebilirsiniz.'
@@ -917,10 +962,6 @@ export function CustomerCsvImportDialog({
         </DialogHeader>
         <div className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="outline" onClick={() => handleDownloadTemplate('csv')} className="flex items-center gap-2">
-              <Download className="h-4 w-4" />
-              CSV Şablonu
-            </Button>
             <Button type="button" variant="outline" onClick={() => handleDownloadTemplate('xlsx')} className="flex items-center gap-2">
               <Download className="h-4 w-4" />
               Excel Şablonu

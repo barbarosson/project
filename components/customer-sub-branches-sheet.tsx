@@ -13,7 +13,23 @@ import { Badge } from '@/components/ui/badge'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/contexts/language-context'
 import { useTenant } from '@/contexts/tenant-context'
-import { Building2, Warehouse, Users, MapPin, Plus } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Building2, Warehouse, Users, MapPin, Plus, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface SubBranch {
@@ -33,18 +49,24 @@ interface CustomerSubBranchesSheetProps {
   customerId: string | null
   isOpen: boolean
   onClose: () => void
+  /** Bu carinin alt şubesini eklemek için Cari Ekle dialog'unu açar; parentData ile ana cari bilgileri iletilir */
+  onAddSubCustomer?: (parentCustomerId: string, parentData: Record<string, unknown>) => void
 }
 
 export function CustomerSubBranchesSheet({
   customerId,
   isOpen,
   onClose,
+  onAddSubCustomer,
 }: CustomerSubBranchesSheetProps) {
   const { t } = useLanguage()
   const { tenantId } = useTenant()
   const [loading, setLoading] = useState(false)
   const [subBranches, setSubBranches] = useState<SubBranch[]>([])
   const [parentCustomer, setParentCustomer] = useState<any>(null)
+  const [editingBranch, setEditingBranch] = useState<SubBranch | null>(null)
+  const [editForm, setEditForm] = useState({ company_title: '', name: '', branch_type: 'branch', branch_code: '' })
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     if (isOpen && customerId) {
@@ -81,6 +103,7 @@ export function CustomerSubBranchesSheet({
         .eq('parent_customer_id', customerId)
         .eq('tenant_id', tenantId)
         .order('company_title')
+        .limit(500)
 
       if (error) throw error
       setSubBranches(data || [])
@@ -118,7 +141,44 @@ export function CustomerSubBranchesSheet({
     return labels[branchType] || branchType
   }
 
+  const openEditBranch = (branch: SubBranch) => {
+    setEditingBranch(branch)
+    setEditForm({
+      company_title: branch.company_title || '',
+      name: branch.name || '',
+      branch_type: branch.branch_type || 'branch',
+      branch_code: branch.branch_code || '',
+    })
+  }
+
+  const handleSaveBranch = async () => {
+    if (!editingBranch || !tenantId) return
+    setSaving(true)
+    try {
+      const { error } = await supabase
+        .from('customers')
+        .update({
+          company_title: editForm.company_title || null,
+          name: editForm.name || null,
+          branch_type: editForm.branch_type,
+          branch_code: editForm.branch_code || null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', editingBranch.id)
+        .eq('tenant_id', tenantId)
+      if (error) throw error
+      toast.success('Alt şube güncellendi')
+      setEditingBranch(null)
+      fetchSubBranches()
+    } catch (e: any) {
+      toast.error(e.message || 'Güncellenemedi')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
+    <>
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
         <SheetHeader>
@@ -157,6 +217,20 @@ export function CustomerSubBranchesSheet({
               <h4 className="font-medium text-sm text-gray-700">
                 Alt Şubeler ({subBranches.length})
               </h4>
+              {onAddSubCustomer && customerId && parentCustomer && (
+                <Button
+                  type="button"
+                  size="sm"
+                  className="gap-2 bg-[#00D4AA] hover:bg-[#00B894] text-[var(--color-text)]"
+                  onClick={() => {
+                    onAddSubCustomer(customerId, parentCustomer)
+                    onClose()
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                  Şube / Alt cari ekle
+                </Button>
+              )}
             </div>
 
             {loading ? (
@@ -211,11 +285,21 @@ export function CustomerSubBranchesSheet({
                         </div>
                       </div>
 
-                      <div className="text-right">
+                      <div className="text-right flex flex-col items-end gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="gap-1.5"
+                          onClick={() => openEditBranch(branch)}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                          Düzenle
+                        </Button>
                         <Badge variant={branch.status === 'active' ? 'default' : 'secondary'}>
                           {getBranchTypeLabel(branch.branch_type)}
                         </Badge>
-                        <div className="mt-2">
+                        <div>
                           <p className="text-sm font-medium">
                             {new Intl.NumberFormat('tr-TR', {
                               style: 'currency',
@@ -245,5 +329,65 @@ export function CustomerSubBranchesSheet({
         </div>
       </SheetContent>
     </Sheet>
+
+    <Dialog open={!!editingBranch} onOpenChange={(open) => !open && setEditingBranch(null)}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Alt şube düzenle</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="space-y-2">
+            <Label>Unvan</Label>
+            <Input
+              value={editForm.company_title}
+              onChange={(e) => setEditForm((f) => ({ ...f, company_title: e.target.value }))}
+              placeholder="Şube unvanı"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Yetkili / İletişim adı</Label>
+            <Input
+              value={editForm.name}
+              onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+              placeholder="Ad Soyad"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Cari tipi</Label>
+            <Select
+              value={editForm.branch_type}
+              onValueChange={(v) => setEditForm((f) => ({ ...f, branch_type: v }))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="branch">Şube</SelectItem>
+                <SelectItem value="warehouse">Depo</SelectItem>
+                <SelectItem value="department">Departman</SelectItem>
+                <SelectItem value="center">Merkez</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Şube/Birim kodu</Label>
+            <Input
+              value={editForm.branch_code}
+              onChange={(e) => setEditForm((f) => ({ ...f, branch_code: e.target.value }))}
+              placeholder="ŞB-01, DEP-MAR vb."
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={() => setEditingBranch(null)}>
+            İptal
+          </Button>
+          <Button type="button" onClick={handleSaveBranch} disabled={saving}>
+            {saving ? 'Kaydediliyor...' : 'Kaydet'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+    </>
   )
 }

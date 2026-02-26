@@ -63,9 +63,13 @@ interface AddCustomerDialogProps {
   isOpen: boolean
   onClose: () => void
   onSuccess: () => void
+  /** Üst cari ID (alt şube eklerken) */
+  initialParentCustomerId?: string | null
+  /** Üst cari verisi (Şube/Alt Cariler sheet'inden gelirse; form anında bu veriyle dolar) */
+  initialParentData?: Record<string, unknown> | null
 }
 
-export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDialogProps) {
+export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCustomerId, initialParentData }: AddCustomerDialogProps) {
   const { tenantId } = useTenant()
   const { t, language } = useLanguage()
   const { currency: companyCurrency } = useCurrency()
@@ -122,6 +126,73 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
       setFormData(prev => ({ ...prev, currency: companyCurrency }))
     }
   }, [isOpen, companyCurrency])
+
+  // Alt şube eklerken üst carinin bilgilerini forma doldur (veri sheet'ten gelirse anında, yoksa fetch)
+  const applyParentToForm = (parent: Record<string, unknown>, parentId: string) => {
+    const paymentTermsDays = Number(parent.payment_terms) || 0
+    const asMonths = paymentTermsDays % 30 === 0 && paymentTermsDays > 0
+    setFormData(prev => ({
+      ...prev,
+      parent_customer_id: parentId,
+      branch_type: 'branch',
+      company_title: (parent.company_title as string) ?? prev.company_title,
+      name: (parent.name as string) ?? prev.name,
+      account_type: (parent.account_type as string) ?? prev.account_type,
+      tax_office: (parent.tax_office as string) ?? '',
+      tax_number: (parent.tax_number as string) ?? '',
+      tax_id_type: (parent.tax_id_type as 'VKN' | 'TCKN') || prev.tax_id_type,
+      email: (parent.email as string) ?? '',
+      phone: (parent.phone as string) ?? '',
+      address: (parent.address as string) ?? '',
+      city: (parent.city as string) ?? '',
+      district: (parent.district as string) ?? '',
+      postal_code: (parent.postal_code as string) ?? '',
+      country: (parent.country as string) ?? 'Türkiye',
+      currency: (parent.currency as string) ?? companyCurrency ?? 'TRY',
+      payment_terms: asMonths ? paymentTermsDays / 30 : paymentTermsDays,
+      payment_terms_unit: asMonths ? 'months' : 'days',
+      payment_terms_type: (parent.payment_terms_type as string) ?? 'net',
+      bank_name: (parent.bank_name as string) ?? '',
+      bank_account_holder: (parent.bank_account_holder as string) ?? '',
+      bank_account_number: (parent.bank_account_number as string) ?? '',
+      bank_iban: (parent.bank_iban as string) ?? '',
+      bank_branch: (parent.bank_branch as string) ?? '',
+      bank_swift: (parent.bank_swift as string) ?? '',
+      website: (parent.website as string) ?? '',
+      industry: (parent.industry as string) ?? '',
+      industry_custom: '',
+      notes: (parent.notes as string) ?? '',
+      e_invoice_enabled: Boolean(parent.e_invoice_enabled),
+      status: (parent.status as string) ?? 'active',
+      opening_balance: 0,
+      branch_code: '',
+    }))
+  }
+
+  useEffect(() => {
+    if (!isOpen || !initialParentCustomerId) return
+    if (initialParentData && Object.keys(initialParentData).length > 0) {
+      applyParentToForm(initialParentData, initialParentCustomerId)
+      return
+    }
+    if (!tenantId) return
+    let cancelled = false
+    ;(async () => {
+      try {
+        const { data: parent, error } = await supabase
+          .from('customers')
+          .select('*')
+          .eq('id', initialParentCustomerId)
+          .eq('tenant_id', tenantId)
+          .single()
+        if (error || !parent || cancelled) return
+        applyParentToForm(parent as Record<string, unknown>, initialParentCustomerId)
+      } catch (e) {
+        console.error('Üst cari bilgileri yüklenemedi:', e)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [isOpen, initialParentCustomerId, initialParentData, tenantId, companyCurrency])
 
   useEffect(() => {
     if (formData.city && hasDistrictData(formData.city)) {
@@ -361,7 +432,9 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
 
       const tenant_id = userData.user.id
 
-      if (formData.tax_number && formData.tax_number.trim()) {
+      // Alt cari/şube eklerken VKN kontrolü yapma (aynı VKN ana cari ile paylaşılır)
+      const isSubCustomer = Boolean(formData.parent_customer_id)
+      if (!isSubCustomer && formData.tax_number && formData.tax_number.trim()) {
         const duplicateCheck = await checkDuplicateVKN()
 
         if (duplicateCheck.exists && duplicateCheck.customer) {
@@ -470,25 +543,25 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
 
   return (
     <>
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose() }}>
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col overflow-hidden p-6">
+        <DialogHeader className="shrink-0">
           <DialogTitle>{t.customers.addCustomer}</DialogTitle>
           <DialogDescription>
             {t.customers.customerDetails}
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit}>
-          <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <Tabs defaultValue="basic" className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <TabsList className="grid w-full grid-cols-4 shrink-0">
               <TabsTrigger value="basic">{t.customers.basicInfo}</TabsTrigger>
               <TabsTrigger value="address">{t.customers.address}</TabsTrigger>
               <TabsTrigger value="payment">{t.common.payment}</TabsTrigger>
               <TabsTrigger value="bank">{t.customers.bankInfo}</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="basic" className="space-y-4 mt-4">
+            <TabsContent value="basic" className="space-y-4 mt-4 flex-1 min-h-0 overflow-y-auto data-[state=inactive]:hidden">
             <div className="space-y-2">
               <Label htmlFor="customer_type">{t.customers.customerType} <span className="text-red-500">*</span></Label>
               <Select
@@ -721,18 +794,18 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
                 </div>
               </div>
 
-              {formData.branch_type !== 'main' && (
+              {formData.branch_type !== 'main' && !initialParentCustomerId && (
                 <div className="space-y-2">
                   <Label htmlFor="parent_customer">Bağlı Olduğu Ana Cari</Label>
                   <Select
-                    value={formData.parent_customer_id || ''}
-                    onValueChange={(value) => setFormData({ ...formData, parent_customer_id: value || null })}
+                    value={formData.parent_customer_id || '__none__'}
+                    onValueChange={(value) => setFormData({ ...formData, parent_customer_id: value === '__none__' ? null : value })}
                   >
                     <SelectTrigger id="parent_customer" data-field="add-customer-parent">
                       <SelectValue placeholder="Ana cari seçin..." />
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px]">
-                      <SelectItem value="">Ana cari yok (bağımsız)</SelectItem>
+                      <SelectItem value="__none__">Ana cari yok (bağımsız)</SelectItem>
                       {availableParentCustomers
                         .filter(c => c.branch_type === 'main')
                         .map((customer) => (
@@ -747,11 +820,16 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
                   </p>
                 </div>
               )}
+              {formData.branch_type !== 'main' && initialParentCustomerId && initialParentData && (
+                <div className="rounded-md border bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+                  Bağlı olduğu ana cari: <span className="font-medium text-foreground">{String(initialParentData.company_title ?? initialParentData.name ?? '')}</span>
+                </div>
+              )}
             </div>
 
           </TabsContent>
 
-          <TabsContent value="address" className="space-y-4 mt-4">
+          <TabsContent value="address" className="space-y-4 mt-4 flex-1 min-h-0 overflow-y-auto data-[state=inactive]:hidden">
             <div className="space-y-2">
               <Label htmlFor="address">{t.customers.streetAddress}</Label>
               <Textarea
@@ -840,7 +918,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
             </div>
           </TabsContent>
 
-          <TabsContent value="payment" className="space-y-4 mt-4">
+          <TabsContent value="payment" className="space-y-4 mt-4 flex-1 min-h-0 overflow-y-auto data-[state=inactive]:hidden">
             <div className="space-y-2">
               <Label htmlFor="currency">{language === 'tr' ? 'Para Birimi' : 'Currency'}</Label>
               <Select
@@ -947,7 +1025,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
             </div>
           </TabsContent>
 
-          <TabsContent value="bank" className="space-y-4 mt-4">
+          <TabsContent value="bank" className="space-y-4 mt-4 flex-1 min-h-0 overflow-y-auto data-[state=inactive]:hidden">
             <div className="space-y-2">
               <Label htmlFor="bank_name">{t.settings.bankName}</Label>
               <TurkishBankSelect
@@ -1032,7 +1110,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess }: AddCustomerDia
           </TabsContent>
           </Tabs>
 
-          <DialogFooter className="mt-6">
+          <DialogFooter className="mt-4 shrink-0 border-t pt-4">
             <Button
               type="button"
               variant="outline"
