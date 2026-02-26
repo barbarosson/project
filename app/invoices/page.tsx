@@ -291,7 +291,7 @@ export default function InvoicesPage() {
               className="text-[#0A192F]"
             >
               <Upload className="mr-2 h-4 w-4" />
-              {language === 'tr' ? 'CSV İçe Aktar' : 'Import CSV'}
+              {language === 'tr' ? 'Toplu aktarım' : 'Bulk import'}
             </Button>
             <Button
               onClick={() => router.push('/invoices/new')}

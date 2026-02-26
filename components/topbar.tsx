@@ -39,7 +39,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
   const { user, signOut, isAdmin } = useAuth()
   const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email?.split('@')[0] || t.nav.adminUser
   const initials = (displayName || 'AD').slice(0, 2).toUpperCase()
-  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications()
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, deleteAllNotifications } = useNotifications()
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -213,15 +213,22 @@ export function Topbar({ onMenuClick }: TopbarProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[min(24rem,calc(100vw-2rem))] max-w-96 p-0">
-                <div className="flex items-center justify-between p-4 border-b">
+                <div className="flex items-center justify-between p-4 border-b gap-2">
                   <DropdownMenuLabel className="p-0 font-semibold text-gray-900">
                     {language === 'tr' ? 'Bildirimler' : 'Notifications'}
                   </DropdownMenuLabel>
-                  {unreadCount > 0 && (
-                    <Button variant="ghost" size="sm" onClick={markAllAsRead} className="h-7 text-xs text-[#00D4AA]">
-                      {language === 'tr' ? 'Tümünü okundu işaretle' : 'Mark all read'}
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-1">
+                    {unreadCount > 0 && (
+                      <Button variant="ghost" size="sm" onClick={markAllAsRead} className="h-7 text-xs text-[#00D4AA]">
+                        {language === 'tr' ? 'Tümünü okundu işaretle' : 'Mark all read'}
+                      </Button>
+                    )}
+                    {notifications.length > 0 && (
+                      <Button variant="ghost" size="sm" onClick={deleteAllNotifications} className="h-7 text-xs text-red-600 hover:text-red-700 hover:bg-red-50">
+                        {language === 'tr' ? 'Tümünü sil' : 'Clear all'}
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <ScrollArea className="h-[400px]">
                   {notifications.length === 0 ? (

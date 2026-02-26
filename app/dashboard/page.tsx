@@ -13,11 +13,12 @@ import { supabase } from '@/lib/supabase'
 import { useTenant } from '@/contexts/tenant-context'
 import { useCurrency } from '@/hooks/use-currency'
 import { useLanguage } from '@/contexts/language-context'
+import { convertAmount, type TcmbRatesByCurrency } from '@/lib/tcmb'
 import { useAuth } from '@/contexts/auth-context'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar as CalendarComponent } from '@/components/ui/calendar'
-import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns'
+import { format, startOfMonth, endOfMonth, subMonths, subDays } from 'date-fns'
 import { tr, enUS } from 'date-fns/locale'
 import { LoadingSpinner } from '@/components/loading-spinner'
 import {
@@ -77,8 +78,9 @@ export default function Dashboard() {
   const router = useRouter()
   const { user } = useAuth()
   const { tenantId, loading: tenantLoading } = useTenant()
-  const { formatCurrency } = useCurrency()
+  const { formatCurrency, currency: companyCurrency, defaultRateType } = useCurrency()
   const { t, language } = useLanguage()
+  const [tcmbRatesByDate, setTcmbRatesByDate] = useState<Record<string, TcmbRatesByCurrency>>({})
   const dateLocale = language === 'tr' ? tr : enUS
   const [dateRange, setDateRange] = useState<DateRange>({
     from: startOfMonth(new Date()),
@@ -139,6 +141,7 @@ export default function Dashboard() {
     ]
   )
 
+  // Her girişte ve tarih/dil değişince veriyi yenile
   useEffect(() => {
     if (!tenantLoading && tenantId) {
       fetchDashboardData()
@@ -147,6 +150,16 @@ export default function Dashboard() {
       setLoading(false)
     }
   }, [tenantId, tenantLoading, dateRange, language])
+
+  // Sekme tekrar odaklandığında (ekrana her dönüşte) faturalama vb. güncellensin
+  useEffect(() => {
+    if (!tenantId) return
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') fetchDashboardData()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [tenantId, dateRange])
 
   async function checkFirstTimeUser() {
     if (!user) return
@@ -175,8 +188,8 @@ export default function Dashboard() {
 
       const fetchWithTimeout = Promise.race([
         Promise.all([
-          supabase.from('customers').select('id, name, email, company_title, status, created_at').eq('tenant_id', tenantId),
-          supabase.from('invoices').select('id, invoice_number, amount, total, paid_amount, remaining_amount, status, issue_date, payment_date, created_at').eq('tenant_id', tenantId),
+          supabase.from('customers').select('id, name, email, company_title, status, created_at, branch_type, parent_customer_id').eq('tenant_id', tenantId),
+          supabase.from('invoices').select('id, invoice_number, amount, total, paid_amount, remaining_amount, status, issue_date, payment_date, created_at, currency').eq('tenant_id', tenantId),
           supabase.from('products').select('id, name, current_stock, stock_quantity, min_stock_level, created_at').eq('tenant_id', tenantId),
           supabase.from('expenses').select('id, description, amount, expense_date, category, created_at').eq('tenant_id', tenantId),
           supabase.from('accounts').select('id, name, current_balance, is_active').eq('tenant_id', tenantId).eq('is_active', true),
@@ -207,26 +220,97 @@ export default function Dashboard() {
         return expenseDate >= dateRange.from && expenseDate <= dateRange.to
       })
 
+      const invoiceAmount = (i: any) => Number(i.amount) || Number(i.total) || 0
+      const collectedInPeriod = allInvoices.filter((i: any) => {
+        if (i.status !== 'paid' || !i.payment_date) return false
+        const paymentDate = new Date(i.payment_date)
+        return paymentDate >= dateRange.from && paymentDate <= dateRange.to
+      })
+
+      const targetCurrency = (companyCurrency || 'TRY').toUpperCase()
+      const uniqueDates = Array.from(new Set([
+        ...filteredInvoices.map((i: any) => i.issue_date && format(new Date(i.issue_date), 'yyyy-MM-dd')),
+        ...collectedInPeriod.map((i: any) => i.payment_date && format(new Date(i.payment_date), 'yyyy-MM-dd'))
+      ].filter(Boolean))) as string[]
+      const ratesByDate: Record<string, TcmbRatesByCurrency> = {}
+      const fallbackDate = format(dateRange.from, 'yyyy-MM-dd')
+      for (let d = 0; d <= 5; d++) {
+        const tryDate = d === 0 ? fallbackDate : format(subDays(new Date(fallbackDate), d), 'yyyy-MM-dd')
+        try {
+          const res = await fetch(`/api/tcmb?date=${tryDate}`)
+          if (res.ok) {
+            const data = await res.json()
+            if (data && Object.keys(data).length > 0) {
+              ratesByDate[fallbackDate] = data
+              break
+            }
+          }
+        } catch (_) {}
+      }
+      for (const dateStr of uniqueDates) {
+        if (ratesByDate[dateStr]) continue
+        for (let d = 0; d <= 5; d++) {
+          const tryDate = d === 0 ? dateStr : format(subDays(new Date(dateStr), d), 'yyyy-MM-dd')
+          try {
+            const res = await fetch(`/api/tcmb?date=${tryDate}`)
+            if (res.ok) {
+              const data = await res.json()
+              if (data && Object.keys(data).length > 0) {
+                ratesByDate[dateStr] = data
+                break
+              }
+            }
+          } catch (_) {}
+        }
+        if (!ratesByDate[dateStr] && ratesByDate[fallbackDate]) ratesByDate[dateStr] = ratesByDate[fallbackDate]
+      }
+      setTcmbRatesByDate(ratesByDate)
+
+      const getRatesForDate = (dateStr: string | null): TcmbRatesByCurrency | null =>
+        (dateStr && ratesByDate[dateStr]) || ratesByDate[fallbackDate] || null
+      const getRatesForInvoice = (i: any): TcmbRatesByCurrency | null =>
+        getRatesForDate(i.issue_date ? format(new Date(i.issue_date), 'yyyy-MM-dd') : null)
+      const getRatesForPayment = (i: any): TcmbRatesByCurrency | null =>
+        getRatesForDate(i.payment_date ? format(new Date(i.payment_date), 'yyyy-MM-dd') : null)
+
+      const convertInvoiceAmount = (i: any, amt: number, rates: TcmbRatesByCurrency | null): number => {
+        const invCurrency = ((i.currency || 'TRY') as string).toUpperCase()
+        if (invCurrency === targetCurrency) return amt
+        if (rates) {
+          const converted = convertAmount(amt, invCurrency, targetCurrency, rates, defaultRateType)
+          if (converted != null) return converted
+        }
+        return 0
+      }
+
       const draftRevenue = filteredInvoices
         .filter((i: any) => i.status === 'draft')
-        .reduce((sum: number, i: any) => sum + (Number(i.total) || 0), 0)
+        .reduce((sum: number, i: any) => sum + convertInvoiceAmount(i, invoiceAmount(i), getRatesForInvoice(i)), 0)
 
       const confirmedRevenue = filteredInvoices
         .filter((i: any) => ['sent', 'paid', 'overdue'].includes(i.status))
-        .reduce((sum: number, i: any) => sum + (Number(i.total) || 0), 0)
+        .reduce((sum: number, i: any) => sum + convertInvoiceAmount(i, invoiceAmount(i), getRatesForInvoice(i)), 0)
 
       const totalRevenue = draftRevenue + confirmedRevenue
 
-      const collectedCash = allInvoices
-        .filter((i: any) => {
-          if (i.status !== 'paid' || !i.payment_date) return false
-          const paymentDate = new Date(i.payment_date)
-          return paymentDate >= dateRange.from && paymentDate <= dateRange.to
-        })
-        .reduce((sum: number, i: any) => sum + (Number(i.total) || 0), 0)
+      const collectedCash = collectedInPeriod.reduce(
+        (sum: number, i: any) => sum + convertInvoiceAmount(i, invoiceAmount(i), getRatesForPayment(i)),
+        0
+      )
 
       const totalExpenses = filteredExpenses
         .reduce((sum: number, e: any) => sum + (Number(e.amount) || 0), 0)
+
+      const invoicedTotal = filteredInvoices.reduce(
+        (sum: number, i: any) => sum + convertInvoiceAmount(i, invoiceAmount(i), getRatesForInvoice(i)),
+        0
+      )
+
+      const pendingPaymentsInvoices = allInvoices.filter((i: any) => ['sent', 'overdue'].includes(i.status))
+      const pendingPayments = pendingPaymentsInvoices.reduce((sum: number, i: any) => {
+        const amt = Number(i.remaining_amount) ?? Number(i.amount) ?? Number(i.total) ?? 0
+        return sum + convertInvoiceAmount(i, amt, getRatesForInvoice(i))
+      }, 0)
 
       const rangeStart = dateRange.from.getTime()
       const rangeEnd = dateRange.to.getTime()
@@ -244,18 +328,10 @@ export default function Dashboard() {
       const periodExpenses = totalExpenses + transactionExpense
       const netProfit = periodIncome - periodExpenses
 
-      const invoicedTotal = filteredInvoices.reduce(
-        (sum: number, i: any) => sum + (Number(i.total) || Number(i.amount) || 0),
-        0
-      )
-
       const cashOnHand = accounts.reduce((sum: number, acc: any) => sum + (Number(acc.current_balance) || 0), 0)
 
-      const activeCustomers = customers.filter((c: any) => c.status === 'active').length
-
-      const pendingPayments = allInvoices
-        .filter((i: any) => ['sent', 'overdue'].includes(i.status))
-        .reduce((sum: number, i: any) => sum + (Number(i.remaining_amount) || Number(i.total) || 0), 0)
+      const isMainCustomer = (c: any) => c.branch_type === 'main' || c.parent_customer_id == null
+      const activeCustomers = customers.filter((c: any) => c.status === 'active' && isMainCustomer(c)).length
 
       // Güncel stok: depo toplamı (warehouse_inventory_summary); depo toplamı 0 ise products.current_stock kullan
       const warehouseRows = Array.isArray(warehouseSummaryRes?.data) ? warehouseSummaryRes.data : []
@@ -331,7 +407,7 @@ export default function Dashboard() {
       setDetailPeriodInvoices(filteredInvoices)
       setDetailPeriodExpenses(filteredExpenses)
       setDetailPeriodTxExpenses(periodTxExpensesList)
-      setDetailActiveCustomers(customers.filter((c: any) => c.status === 'active'))
+      setDetailActiveCustomers(customers.filter((c: any) => c.status === 'active' && (c.branch_type === 'main' || c.parent_customer_id == null)))
       setDetailLowStockProducts(
         useWarehouseStock
           ? Object.entries(currentStockByProduct)
@@ -807,7 +883,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
           <MetricCard
             title={t.dashboard.cashOnHand}
-            value={formatCurrency(metrics.cashOnHand)}
+            value={formatCurrency(metrics.cashOnHand, companyCurrency || undefined)}
             change={t.dashboard.allAccounts}
             changeType="positive"
             icon={Wallet}
@@ -817,7 +893,7 @@ export default function Dashboard() {
           />
           <MetricCard
             title={t.dashboard.cashFlowIncome}
-            value={formatCurrency(metrics.collectedCash + detailUnmatchedIncome.reduce((s, tx) => s + (Number(tx.amount) || 0), 0))}
+            value={formatCurrency(metrics.collectedCash + detailUnmatchedIncome.reduce((s, tx) => s + (Number(tx.amount) || 0), 0), companyCurrency || undefined)}
             change={language === 'tr'
               ? 'Tahsil edilen faturalar + fatura ile eşlenmemiş tahsilatlar'
               : 'Collected invoices + unmatched collections'
@@ -830,7 +906,7 @@ export default function Dashboard() {
           />
           <MetricCard
             title={t.dashboard.invoicing}
-            value={formatCurrency(metrics.invoicedTotal)}
+            value={formatCurrency(metrics.invoicedTotal, companyCurrency || undefined)}
             change={language === 'tr'
               ? `Dönemde kesilen faturalar: ${format(dateRange.from, 'dd MMM', { locale: dateLocale })} - ${format(dateRange.to, 'dd MMM yyyy', { locale: dateLocale })}`
               : `Invoiced in period: ${format(dateRange.from, 'MMM dd', { locale: dateLocale })} - ${format(dateRange.to, 'MMM dd, yyyy', { locale: dateLocale })}`
@@ -843,7 +919,7 @@ export default function Dashboard() {
           />
           <MetricCard
             title={t.dashboard.cashFlowExpenses}
-            value={formatCurrency(metrics.periodExpenses)}
+            value={formatCurrency(metrics.periodExpenses, companyCurrency || undefined)}
             change={language === 'tr'
               ? 'Dönemde yapılan ödemeler (masraflar + işlem giderleri)'
               : 'Payments in period (expenses + transaction expenses)'
@@ -939,18 +1015,30 @@ export default function Dashboard() {
                           <TableHead>{language === 'tr' ? 'Fatura no' : 'Invoice'}</TableHead>
                           <TableHead>{language === 'tr' ? 'Ödeme tarihi' : 'Payment date'}</TableHead>
                           <TableHead className="text-right">{language === 'tr' ? 'Tutar' : 'Amount'}</TableHead>
+                          <TableHead className="text-right">{language === 'tr' ? 'Tercih para biriminde' : 'In preferred currency'}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {detailCollectedInvoices.map((i: any) => (
-                          <TableRow key={i.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push(`/invoices/${i.id}`)}>
-                            <TableCell>{i.invoice_number}</TableCell>
-                            <TableCell>{i.payment_date ? format(new Date(i.payment_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
-                            <TableCell className="text-right font-medium">{formatCurrency(Number(i.total) || Number(i.amount) || 0)}</TableCell>
-                          </TableRow>
-                        ))}
+                        {detailCollectedInvoices.map((i: any) => {
+                          const amt = Number(i.amount) || Number(i.total) || 0
+                          const invCurrency = ((i.currency || 'TRY') as string).toUpperCase()
+                          const targetCur = (companyCurrency || 'TRY').toUpperCase()
+                          const rateDate = i.payment_date ? format(new Date(i.payment_date), 'yyyy-MM-dd') : ''
+                          const rates = rateDate ? tcmbRatesByDate[rateDate] : null
+                          const converted = invCurrency !== targetCur && rates
+                            ? convertAmount(amt, invCurrency, targetCur, rates, defaultRateType)
+                            : amt
+                          return (
+                            <TableRow key={i.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push(`/invoices/${i.id}`)}>
+                              <TableCell>{i.invoice_number}</TableCell>
+                              <TableCell>{i.payment_date ? format(new Date(i.payment_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
+                              <TableCell className="text-right font-medium">{formatCurrency(amt, invCurrency)}</TableCell>
+                              <TableCell className="text-right font-medium">{converted != null ? formatCurrency(converted, targetCur) : '–'}</TableCell>
+                            </TableRow>
+                          )
+                        })}
                         {detailCollectedInvoices.length === 0 && (
-                          <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
+                          <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
                         )}
                       </TableBody>
                     </Table>
@@ -989,19 +1077,31 @@ export default function Dashboard() {
                       <TableHead>{language === 'tr' ? 'Kesim tarihi' : 'Issue date'}</TableHead>
                       <TableHead>{language === 'tr' ? 'Durum' : 'Status'}</TableHead>
                       <TableHead className="text-right">{language === 'tr' ? 'Tutar' : 'Amount'}</TableHead>
+                      <TableHead className="text-right">{language === 'tr' ? 'Tercih para biriminde' : 'In preferred currency'}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {detailPeriodInvoices.map((i: any) => (
-                      <TableRow key={i.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push(`/invoices/${i.id}`)}>
-                        <TableCell>{i.invoice_number}</TableCell>
-                        <TableCell>{i.issue_date ? format(new Date(i.issue_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
-                        <TableCell>{i.status}</TableCell>
-                        <TableCell className="text-right font-medium">{formatCurrency(Number(i.total) || Number(i.amount) || 0)}</TableCell>
-                      </TableRow>
-                    ))}
+                    {detailPeriodInvoices.map((i: any) => {
+                      const amt = Number(i.amount) || Number(i.total) || 0
+                      const invCurrency = ((i.currency || 'TRY') as string).toUpperCase()
+                      const targetCur = (companyCurrency || 'TRY').toUpperCase()
+                      const rateDate = i.issue_date ? format(new Date(i.issue_date), 'yyyy-MM-dd') : ''
+                      const rates = rateDate ? tcmbRatesByDate[rateDate] : null
+                      const converted = invCurrency !== targetCur && rates
+                        ? convertAmount(amt, invCurrency, targetCur, rates, defaultRateType)
+                        : amt
+                      return (
+                        <TableRow key={i.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push(`/invoices/${i.id}`)}>
+                          <TableCell>{i.invoice_number}</TableCell>
+                          <TableCell>{i.issue_date ? format(new Date(i.issue_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
+                          <TableCell>{i.status}</TableCell>
+                          <TableCell className="text-right font-medium">{formatCurrency(amt, invCurrency)}</TableCell>
+                          <TableCell className="text-right font-medium">{converted != null ? formatCurrency(converted, targetCur) : '–'}</TableCell>
+                        </TableRow>
+                      )
+                    })}
                     {detailPeriodInvoices.length === 0 && (
-                      <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
+                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
                     )}
                   </TableBody>
                 </Table>

@@ -60,7 +60,7 @@ export default function InvoiceDetailPage() {
   const params = useParams()
   const invoiceId = params.id as string
   const { tenantId, loading: tenantLoading } = useTenant()
-  const { language } = useLanguage()
+  const { language, t } = useLanguage()
   const {
     formatCurrency,
     displayCurrencies,
@@ -171,12 +171,24 @@ export default function InvoiceDetailPage() {
       setEditingOverrideFor(null)
       setOverrideRate('')
       setOverrideAmount('')
-      toast.success(language === 'tr' ? 'Kur / tutar kaydedildi' : 'Rate / amount saved')
+      toast.success(t.invoices.rateOrAmountSaved)
     } catch (err: any) {
-      toast.error(err.message || (language === 'tr' ? 'Kaydedilemedi' : 'Failed to save'))
+      toast.error(err.message || t.invoices.saveFailed)
     } finally {
       setSavingOverride(false)
     }
+  }
+
+  const getStatusLabel = (status: string) => {
+    const map: Record<string, string> = {
+      draft: t.common.draft,
+      sent: t.common.sent,
+      paid: t.common.paid,
+      cancelled: t.common.cancelled,
+      overdue: t.common.overdue,
+      pending: t.common.pending
+    }
+    return map[status] || status
   }
 
   const getStatusBadge = (status: string) => {
@@ -205,10 +217,10 @@ export default function InvoiceDetailPage() {
     return (
       <DashboardLayout>
         <div className="text-center py-12">
-          <p className="text-gray-500">{language === 'tr' ? 'Fatura bulunamadı' : 'Invoice not found'}</p>
+          <p className="text-gray-500">{t.invoices.invoiceNotFound}</p>
           <Button onClick={() => router.push('/invoices')} className="mt-4" variant="outline">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            {language === 'tr' ? 'Faturalara Geri Dön' : 'Back to Invoices'}
+            {t.invoices.backToInvoices}
           </Button>
         </div>
       </DashboardLayout>
@@ -227,11 +239,11 @@ export default function InvoiceDetailPage() {
               className="shrink-0 bg-white border-[#0A2540]/20 text-[#0A2540] hover:bg-[#0A2540]/5"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              {language === 'tr' ? 'Geri Dön' : 'Back'}
+              {t.common.back}
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">{invoice.invoice_number}</h1>
-              <p className="text-gray-500 mt-1">{language === 'tr' ? 'Fatura Detayı' : 'Invoice Details'}</p>
+              <p className="text-gray-500 mt-1">{t.invoices.invoiceDetails}</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -240,7 +252,7 @@ export default function InvoiceDetailPage() {
               className="bg-[#00D4AA] hover:bg-[#00B894]"
             >
               <Eye className="mr-2 h-4 w-4" />
-              Preview E-Invoice
+              {t.invoices.previewEInvoice}
             </Button>
           </div>
         </div>
@@ -248,21 +260,21 @@ export default function InvoiceDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Invoice Information</CardTitle>
+              <CardTitle>{t.invoices.invoiceInformation}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <div className="text-sm text-gray-600">Status</div>
+                <div className="text-sm text-gray-600">{t.common.status}</div>
                 <Badge className={getStatusBadge(invoice.status)}>
-                  {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                  {getStatusLabel(invoice.status)}
                 </Badge>
               </div>
               <div>
-                <div className="text-sm text-gray-600">Issue Date</div>
+                <div className="text-sm text-gray-600">{t.invoices.issueDate}</div>
                 <div className="font-medium">{new Date(invoice.issue_date).toLocaleDateString('tr-TR')}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600">Due Date</div>
+                <div className="text-sm text-gray-600">{t.invoices.dueDate}</div>
                 <div className="font-medium">{new Date(invoice.due_date).toLocaleDateString('tr-TR')}</div>
               </div>
             </CardContent>
@@ -270,19 +282,19 @@ export default function InvoiceDetailPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Customer Information</CardTitle>
+              <CardTitle>{t.invoices.customerInformation}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div>
-                <div className="text-sm text-gray-600">Company</div>
+                <div className="text-sm text-gray-600">{t.invoices.company}</div>
                 <div className="font-medium">{invoice.customers.company_title || invoice.customers.name}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600">Tax Office</div>
+                <div className="text-sm text-gray-600">{t.customers.taxOffice}</div>
                 <div className="font-medium">{invoice.customers.tax_office || 'N/A'}</div>
               </div>
               <div>
-                <div className="text-sm text-gray-600">Tax Number</div>
+                <div className="text-sm text-gray-600">{t.customers.taxNumber}</div>
                 <div className="font-medium font-mono">{invoice.customers.tax_number || 'N/A'}</div>
               </div>
             </CardContent>
@@ -291,19 +303,19 @@ export default function InvoiceDetailPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Line Items</CardTitle>
+            <CardTitle>{t.invoices.lineItems}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-2 text-sm font-semibold">Product/Service</th>
-                    <th className="text-right p-2 text-sm font-semibold">Qty</th>
-                    <th className="text-right p-2 text-sm font-semibold">Unit Price</th>
-                    <th className="text-right p-2 text-sm font-semibold">Subtotal</th>
-                    <th className="text-right p-2 text-sm font-semibold">VAT</th>
-                    <th className="text-right p-2 text-sm font-semibold">Total</th>
+                    <th className="text-left p-2 text-sm font-semibold">{t.invoices.productService}</th>
+                    <th className="text-right p-2 text-sm font-semibold">{t.invoices.quantity}</th>
+                    <th className="text-right p-2 text-sm font-semibold">{t.invoices.unitPrice}</th>
+                    <th className="text-right p-2 text-sm font-semibold">{t.invoices.subtotal}</th>
+                    <th className="text-right p-2 text-sm font-semibold">{t.invoices.tax}</th>
+                    <th className="text-right p-2 text-sm font-semibold">{t.invoices.total}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -332,15 +344,15 @@ export default function InvoiceDetailPage() {
             <div className="mt-6 flex justify-end">
               <div className="w-80 space-y-2">
                 <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Subtotal:</span>
+                  <span className="text-gray-600">{t.invoices.subtotal}:</span>
                   <span className="font-semibold">{formatCurrency(invoice.subtotal, curr)}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Total VAT:</span>
+                  <span className="text-gray-600">{t.invoices.totalVat}:</span>
                   <span className="font-semibold">{formatCurrency(invoice.total_vat, curr)}</span>
                 </div>
                 <div className="flex justify-between py-3 bg-[#00D4AA] text-white px-4 rounded-lg">
-                  <span className="font-bold text-lg">Grand Total:</span>
+                  <span className="font-bold text-lg">{t.invoices.grandTotal}:</span>
                   <span className="font-bold text-lg">{formatCurrency(invoice.amount, curr)}</span>
                 </div>
               </div>
@@ -352,17 +364,15 @@ export default function InvoiceDetailPage() {
           <Card>
             <CardHeader>
               <CardTitle>
-                {language === 'tr' ? 'Çevrilmiş tutarlar' : 'Converted amounts'}
+                {t.invoices.convertedAmounts}
               </CardTitle>
               <p className="text-sm text-gray-500 font-normal">
-                {language === 'tr'
-                  ? `Fatura tarihi (${new Date(invoice.issue_date).toLocaleDateString('tr-TR')}) TCMB kuru (${defaultRateType}). Manuel kur veya tutar girebilirsiniz.`
-                  : `Invoice date (${new Date(invoice.issue_date).toLocaleDateString()}) TCMB rate (${defaultRateType}). You can enter manual rate or amount.`}
+                {t.invoices.convertedAmountsNote
+                  .replace('{date}', new Date(invoice.issue_date).toLocaleDateString(language === 'tr' ? 'tr-TR' : undefined))
+                  .replace('{rateType}', defaultRateType)}
                 {(!tcmbRates || Object.keys(tcmbRates).length === 0) && (
                   <span className="block mt-1 text-amber-600">
-                    {language === 'tr'
-                      ? 'TCMB kurları yüklenemedi veya bu tarih için yayım yok. Kur sütunundan manuel girebilirsiniz.'
-                      : 'TCMB rates could not be loaded for this date. You can enter the rate manually in the rate column.'}
+                    {t.invoices.tcmbRatesNotLoaded}
                   </span>
                 )}
               </p>
@@ -372,9 +382,9 @@ export default function InvoiceDetailPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b text-left text-gray-500 font-medium">
-                      <th className="py-2 pr-4">{language === 'tr' ? 'Para birimi' : 'Currency'}</th>
-                      <th className="py-2 pr-4">{language === 'tr' ? 'Kur (1 birim = TRY)' : 'Rate (1 unit = TRY)'}</th>
-                      <th className="py-2 pr-4">{language === 'tr' ? 'Çevrilmiş tutar' : 'Converted amount'}</th>
+                      <th className="py-2 pr-4">{t.invoices.currencyLabel}</th>
+                      <th className="py-2 pr-4">{t.invoices.rateLabel}</th>
+                      <th className="py-2 pr-4">{t.invoices.convertedAmount}</th>
                       <th className="py-2 w-10" />
                     </tr>
                   </thead>
@@ -420,7 +430,7 @@ export default function InvoiceDetailPage() {
                             <td className="py-2 pr-4">
                               {isEditing ? (
                                 <div className="flex items-center gap-2">
-                                  <Label className="text-xs whitespace-nowrap sr-only">{language === 'tr' ? 'Çevrilmiş tutar' : 'Converted amount'}</Label>
+                                  <Label className="text-xs whitespace-nowrap sr-only">{t.invoices.convertedAmount}</Label>
                                   <Input
                                     type="text"
                                     inputMode="decimal"
@@ -440,10 +450,10 @@ export default function InvoiceDetailPage() {
                               {isEditing ? (
                                 <>
                                   <Button size="sm" onClick={() => saveOverride(targetCurrency)} disabled={savingOverride} className="mr-1">
-                                    {language === 'tr' ? 'Kaydet' : 'Save'}
+                                    {t.common.save}
                                   </Button>
                                   <Button size="sm" variant="outline" onClick={() => { setEditingOverrideFor(null); setOverrideRate(''); setOverrideAmount('') }}>
-                                    {language === 'tr' ? 'İptal' : 'Cancel'}
+                                    {t.common.cancel}
                                   </Button>
                                 </>
                               ) : (
@@ -474,7 +484,7 @@ export default function InvoiceDetailPage() {
         {invoice.notes && (
           <Card>
             <CardHeader>
-              <CardTitle>Notes</CardTitle>
+              <CardTitle>{t.invoices.notes}</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-gray-700">{invoice.notes}</p>

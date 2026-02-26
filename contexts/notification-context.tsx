@@ -26,10 +26,14 @@ interface NotificationContextType {
   markAsRead: (notificationId: string) => Promise<void>
   markAllAsRead: () => Promise<void>
   deleteNotification: (notificationId: string) => Promise<void>
+  deleteAllNotifications: () => Promise<void>
   refreshNotifications: () => Promise<void>
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined)
+
+const NOTIFICATIONS_CLEARED_KEY = 'notifications_cleared_at'
+const SKIP_CHECKS_AFTER_CLEAR_MS = 10 * 60 * 1000 // 10 dakika – tümünü sil sonrası yeniden oluşturma
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { tenantId, loading: tenantLoading } = useTenant()
@@ -39,7 +43,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!tenantLoading && tenantId) {
       fetchNotifications()
-      runNotificationChecks(tenantId)
+      const clearedAt = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(NOTIFICATIONS_CLEARED_KEY) : null
+      const skipChecks = clearedAt && (Date.now() - parseInt(clearedAt, 10)) < SKIP_CHECKS_AFTER_CLEAR_MS
+      if (!skipChecks) {
+        runNotificationChecks(tenantId)
+      }
       const cleanup = setupRealtimeSubscription()
       return cleanup
     } else if (!tenantLoading && !tenantId) {
@@ -188,6 +196,26 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function deleteAllNotifications() {
+    if (!tenantId) return
+
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('tenant_id', tenantId)
+
+      if (error) throw error
+
+      setNotifications([])
+      if (typeof sessionStorage !== 'undefined') {
+        sessionStorage.setItem(NOTIFICATIONS_CLEARED_KEY, Date.now().toString())
+      }
+    } catch (error) {
+      console.error('Error deleting all notifications:', error)
+    }
+  }
+
   async function refreshNotifications() {
     await fetchNotifications()
   }
@@ -203,6 +231,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         markAsRead,
         markAllAsRead,
         deleteNotification,
+        deleteAllNotifications,
         refreshNotifications
       }}
     >

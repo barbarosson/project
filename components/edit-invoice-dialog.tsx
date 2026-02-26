@@ -72,6 +72,8 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
   const [isInitializing, setIsInitializing] = useState(true)
   const [formKey, setFormKey] = useState(0)
   const [customers, setCustomers] = useState<any[]>([])
+  const [subBranches, setSubBranches] = useState<{ id: string; company_title: string; name?: string; branch_code?: string }[]>([])
+  const [selectedSubBranchId, setSelectedSubBranchId] = useState<string | null>(null)
   const [products, setProducts] = useState<any[]>([])
   const [lineItems, setLineItems] = useState<LineItem[]>([])
   const [originalLineItems, setOriginalLineItems] = useState<LineItem[]>([])
@@ -114,6 +116,8 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
       setLineItems([])
       setOriginalLineItems([])
       setCustomers([])
+      setSubBranches([])
+      setSelectedSubBranchId(null)
       setProducts([])
       setIsInitializing(true)
       setFormKey(0)
@@ -134,10 +138,11 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
       lastProcessedInvoiceId.current = invoice.id
 
       try {
-        const [customersData, productsData, lineItemsData] = await Promise.all([
+        const [customersData, productsData, lineItemsData, invoiceCustomer] = await Promise.all([
           fetchCustomersData(),
           fetchProductsData(),
-          fetchLineItemsData(invoice.id)
+          fetchLineItemsData(invoice.id),
+          supabase.from('customers').select('id, parent_customer_id').eq('id', invoice.customer_id).eq('tenant_id', tenantId).single()
         ])
 
         console.log('EditInvoiceDialog - All data loaded:', {
@@ -151,10 +156,27 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
         setLineItems(lineItemsData)
         setOriginalLineItems(JSON.parse(JSON.stringify(lineItemsData)))
 
+        const mainCustomerId = (invoiceCustomer.data?.parent_customer_id as string) || invoice.customer_id || ''
+        const subId = invoiceCustomer.data?.parent_customer_id ? invoice.customer_id : null
+
+        let branchesData: { id: string; company_title: string; name?: string; branch_code?: string }[] = []
+        if (mainCustomerId) {
+          const { data: branches } = await supabase
+            .from('customers')
+            .select('id, company_title, name, branch_code')
+            .eq('parent_customer_id', mainCustomerId)
+            .eq('tenant_id', tenantId)
+            .eq('status', 'active')
+            .order('company_title')
+          branchesData = branches || []
+        }
+        setSubBranches(branchesData)
+        setSelectedSubBranchId(subId)
+
         const today = new Date().toISOString().split('T')[0]
         const issueDate = invoice.issue_date
         const initialFormData = {
-          customer_id: invoice.customer_id || '',
+          customer_id: mainCustomerId,
           issue_date: issueDate ? issueDate.split('T')[0] : today,
           due_date: invoice.due_date ? invoice.due_date.split('T')[0] : today,
           tax_rate: '20',
@@ -183,13 +205,32 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
     loadAllData()
   }, [isOpen, invoice?.id, tenantId])
 
+  useEffect(() => {
+    if (!isOpen || !formData.customer_id || !tenantId) {
+      setSubBranches([])
+      return
+    }
+    supabase
+      .from('customers')
+      .select('id, company_title, name, branch_code')
+      .eq('parent_customer_id', formData.customer_id)
+      .eq('tenant_id', tenantId)
+      .eq('status', 'active')
+      .order('company_title')
+      .then(({ data }) => setSubBranches(data || []))
+  }, [isOpen, formData.customer_id, tenantId])
+
+  const effectiveCustomerId = selectedSubBranchId || formData.customer_id
+
   async function fetchCustomersData(): Promise<any[]> {
     if (!tenantId) return []
-    console.log('EditInvoiceDialog - Fetching customers for tenant:', tenantId)
+    console.log('EditInvoiceDialog - Fetching main customers for tenant:', tenantId)
     const { data, error } = await supabase
       .from('customers')
-      .select('*')
+      .select('id, name, company_title, branch_type, parent_customer_id')
       .eq('tenant_id', tenantId)
+      .eq('status', 'active')
+      .or('branch_type.eq.main,parent_customer_id.is.null')
       .order('company_title')
     console.log('EditInvoiceDialog - Customers loaded:', data?.length, 'items, error:', error)
     return data || []
@@ -314,7 +355,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
       const { error: invoiceError } = await supabase
         .from('invoices')
         .update({
-          customer_id: formData.customer_id,
+          customer_id: effectiveCustomerId,
           issue_date: formData.issue_date,
           due_date: formData.due_date,
           subtotal,
@@ -388,14 +429,14 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
         const { data: customer } = await supabase
           .from('customers')
           .select('balance')
-          .eq('id', formData.customer_id)
+          .eq('id', effectiveCustomerId)
           .single()
 
         if (customer) {
           await supabase
             .from('customers')
             .update({ balance: (customer.balance || 0) + balanceChange })
-            .eq('id', formData.customer_id)
+            .eq('id', effectiveCustomerId)
         }
       }
 
@@ -443,7 +484,10 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
               <Label>{t.invoices.customer} *</Label>
               <Select
                 value={formData.customer_id || undefined}
-                onValueChange={(value) => setFormData({ ...formData, customer_id: value })}
+                onValueChange={(value) => {
+                  setFormData({ ...formData, customer_id: value })
+                  setSelectedSubBranchId(null)
+                }}
               >
                 <SelectTrigger data-field="edit-invoice-customer">
                   <SelectValue placeholder={t.invoices.selectCustomer} />
@@ -451,17 +495,43 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                 <SelectContent>
                   {customers.map((customer) => {
                     const title = customer.company_title || customer.name
-                    const isSub = customer.branch_type && customer.branch_type !== 'main'
-                    const branchLabels: Record<string, string> = { branch: 'Şube', warehouse: 'Depo', department: 'Departman', center: 'Merkez' }
-                    const subLabel = isSub ? (customer.branch_code ? ` (${customer.branch_code})` : ` (${branchLabels[customer.branch_type] || customer.branch_type})`) : ''
                     return (
                       <SelectItem key={customer.id} value={customer.id}>
-                        {title}{subLabel}
+                        {title}
                       </SelectItem>
                     )
                   })}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>{t.invoices.subBranch}</Label>
+              {subBranches.length > 0 ? (
+                <>
+                  <Select
+                    value={selectedSubBranchId ?? '__main__'}
+                    onValueChange={(value) => setSelectedSubBranchId(value === '__main__' ? null : value)}
+                  >
+                    <SelectTrigger data-field="edit-invoice-sub-branch">
+                      <SelectValue placeholder={t.invoices.mainCustomer} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__main__">{t.invoices.mainCustomer}</SelectItem>
+                      {subBranches.map((sub) => (
+                        <SelectItem key={sub.id} value={sub.id}>
+                          {sub.company_title || sub.name}{sub.branch_code ? ` (${sub.branch_code})` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">{t.invoices.subBranchHelp}</p>
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground py-2">
+                  {formData.customer_id ? t.invoices.noSubBranchesForCustomer : '—'}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
