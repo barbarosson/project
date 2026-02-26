@@ -73,6 +73,8 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
   const { tenantId } = useTenant()
   const { t, language } = useLanguage()
   const { currency: companyCurrency } = useCurrency()
+  /** Sheet'ten alt cari eklerken ana cari bilgileri salt okunur */
+  const isSubFromSheet = !!initialParentCustomerId
   const [loading, setLoading] = useState(false)
   const [showBalanceConfirm, setShowBalanceConfirm] = useState(false)
   const [balanceDifference, setBalanceDifference] = useState(0)
@@ -567,6 +569,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
               <Select
                 value={formData.tax_id_type || ''}
                 onValueChange={(value: 'VKN' | 'TCKN') => setFormData({ ...formData, tax_id_type: value })}
+                disabled={isSubFromSheet}
               >
                 <SelectTrigger id="customer_type" data-field="add-customer-type">
                   <SelectValue placeholder={language === 'tr' ? 'Tüzel veya gerçek kişi seçin' : 'Select legal entity or natural person'} />
@@ -592,6 +595,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                   onChange={(e) => setFormData({ ...formData, company_title: e.target.value })}
                   placeholder={t.placeholders.acmeCorporation}
                   className={errors.company_title ? 'border-red-500' : ''}
+                  readOnly={isSubFromSheet}
                 />
                 {errors.company_title && (
                   <p className="text-xs text-red-500">{errors.company_title}</p>
@@ -608,6 +612,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder={t.placeholders.johnDoe}
                   className={errors.name ? 'border-red-500' : ''}
+                  readOnly={isSubFromSheet}
                 />
                 {errors.name && (
                   <p className="text-xs text-red-500">{errors.name}</p>
@@ -620,6 +625,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
               <Select
                 value={formData.account_type}
                 onValueChange={(value) => setFormData({ ...formData, account_type: value })}
+                disabled={isSubFromSheet}
               >
                 <SelectTrigger id="account_type" data-field="add-customer-account-type">
                   <SelectValue />
@@ -640,6 +646,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                   value={formData.tax_office}
                   onChange={(e) => setFormData({ ...formData, tax_office: e.target.value })}
                   placeholder={t.placeholders.kadikoyTaxOffice}
+                  readOnly={isSubFromSheet}
                 />
               </div>
 
@@ -654,6 +661,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                   placeholder="1234567890 veya 12345678901"
                   maxLength={11}
                   className={errors.tax_number ? 'border-red-500' : ''}
+                  readOnly={isSubFromSheet}
                 />
                 {errors.tax_number && (
                   <p className="text-xs text-red-500 flex items-center gap-1">
@@ -680,6 +688,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder={t.placeholders.contactEmail}
                   className={errors.email ? 'border-red-500' : ''}
+                  readOnly={isSubFromSheet}
                 />
                 {errors.email && (
                   <p className="text-xs text-red-500">{errors.email}</p>
@@ -694,6 +703,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   placeholder={t.placeholders.phoneNumber}
                   className={errors.phone ? 'border-red-500' : ''}
+                  readOnly={isSubFromSheet}
                 />
                 {errors.phone && (
                   <p className="text-xs text-red-500">{errors.phone}</p>
@@ -709,21 +719,24 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                   value={formData.website}
                   onChange={(e) => setFormData({ ...formData, website: e.target.value })}
                   placeholder={t.placeholders.websiteUrl}
+                  readOnly={isSubFromSheet}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="industry">
                   {t.customers.industry}
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="ml-2 h-6 px-2 text-xs"
-                    onClick={() => setShowCustomIndustry(!showCustomIndustry)}
-                  >
-                    {showCustomIndustry ? 'Listeden Seç' : 'Manuel Giriş'}
-                  </Button>
+                  {!isSubFromSheet && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="ml-2 h-6 px-2 text-xs"
+                      onClick={() => setShowCustomIndustry(!showCustomIndustry)}
+                    >
+                      {showCustomIndustry ? 'Listeden Seç' : 'Manuel Giriş'}
+                    </Button>
+                  )}
                 </Label>
                 {showCustomIndustry ? (
                   <Input
@@ -731,11 +744,13 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                     value={formData.industry_custom}
                     onChange={(e) => setFormData({ ...formData, industry_custom: e.target.value })}
                     placeholder="Sektör adını yazın"
+                    readOnly={isSubFromSheet}
                   />
                 ) : (
                   <Select
                     value={formData.industry}
                     onValueChange={(value) => setFormData({ ...formData, industry: value })}
+                    disabled={isSubFromSheet}
                   >
                     <SelectTrigger id="industry" data-field="add-customer-industry">
                       <SelectValue placeholder="Sektör seçin" />
@@ -820,11 +835,6 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                   </p>
                 </div>
               )}
-              {formData.branch_type !== 'main' && initialParentCustomerId && initialParentData && (
-                <div className="rounded-md border bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
-                  Bağlı olduğu ana cari: <span className="font-medium text-foreground">{String(initialParentData.company_title ?? initialParentData.name ?? '')}</span>
-                </div>
-              )}
             </div>
 
           </TabsContent>
@@ -838,6 +848,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                 placeholder={t.placeholders.streetName}
                 rows={2}
+                readOnly={isSubFromSheet}
               />
             </div>
 
@@ -847,13 +858,14 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                 <TurkishProvinceSelect
                   value={formData.city}
                   onValueChange={(value) => setFormData({ ...formData, city: value, district: '' })}
+                  disabled={isSubFromSheet}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="district">
                   {t.customers.district}
-                  {availableDistricts.length > 0 && (
+                  {availableDistricts.length > 0 && !isSubFromSheet && (
                     <Button
                       type="button"
                       variant="ghost"
@@ -872,6 +884,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                   <Select
                     value={formData.district}
                     onValueChange={(value) => setFormData({ ...formData, district: value })}
+                    disabled={isSubFromSheet}
                   >
                     <SelectTrigger id="district" data-field="add-customer-district">
                       <SelectValue placeholder={t.placeholders.districtName} />
@@ -890,6 +903,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                     value={formData.district}
                     onChange={(e) => setFormData({ ...formData, district: e.target.value })}
                     placeholder={t.placeholders.districtName}
+                    readOnly={isSubFromSheet}
                   />
                 )}
               </div>
@@ -903,6 +917,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                   value={formData.postal_code}
                   onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })}
                   placeholder="34000"
+                  readOnly={isSubFromSheet}
                 />
               </div>
 
@@ -913,6 +928,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                   value={formData.country}
                   onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                   placeholder={t.placeholders.turkeyCountry}
+                  readOnly={isSubFromSheet}
                 />
               </div>
             </div>
@@ -924,6 +940,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
               <Select
                 value={formData.currency || 'TRY'}
                 onValueChange={(value) => setFormData({ ...formData, currency: value })}
+                disabled={isSubFromSheet}
               >
                 <SelectTrigger id="currency" data-field="add-customer-currency">
                   <SelectValue />
@@ -943,6 +960,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                 <Select
                   value={formData.payment_terms_unit}
                   onValueChange={(value: 'days' | 'months') => setFormData({ ...formData, payment_terms_unit: value })}
+                  disabled={isSubFromSheet}
                 >
                   <SelectTrigger id="payment_terms_unit" data-field="add-customer-payment-terms-unit">
                     <SelectValue />
@@ -962,6 +980,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                   value={formData.payment_terms}
                   onChange={(e) => setFormData({ ...formData, payment_terms: parseInt(e.target.value) || 0 })}
                   placeholder="30"
+                  readOnly={isSubFromSheet}
                 />
                 <p className="text-xs text-gray-500">
                   {formData.payment_terms_unit === 'months'
@@ -976,6 +995,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                 <Select
                   value={formData.payment_terms_type}
                   onValueChange={(value) => setFormData({ ...formData, payment_terms_type: value })}
+                  disabled={isSubFromSheet}
                 >
                   <SelectTrigger id="payment_terms_type" data-field="add-customer-payment-terms-type">
                     <SelectValue />
@@ -999,6 +1019,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                 value={formData.opening_balance}
                 onChange={(e) => setFormData({ ...formData, opening_balance: parseFloat(e.target.value) || 0 })}
                 placeholder="0.00"
+                readOnly={isSubFromSheet}
               />
               <p className="text-xs text-gray-500">
                 Pozitif: Alacak (Müşteri borçlu) | Negatif: Borç (Biz borçluyuz)
@@ -1021,6 +1042,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 placeholder={t.customers.internalNotesPlaceholder}
                 rows={4}
+                readOnly={isSubFromSheet}
               />
             </div>
           </TabsContent>
@@ -1031,6 +1053,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
               <TurkishBankSelect
                 value={formData.bank_name}
                 onValueChange={(value) => setFormData({ ...formData, bank_name: value })}
+                disabled={isSubFromSheet}
               />
             </div>
 
@@ -1042,6 +1065,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                   value={formData.bank_account_holder}
                   onChange={(e) => setFormData({ ...formData, bank_account_holder: e.target.value })}
                   placeholder={t.placeholders.companyOrPersonName}
+                  readOnly={isSubFromSheet}
                 />
               </div>
 
@@ -1052,6 +1076,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                   value={formData.bank_branch}
                   onChange={(e) => setFormData({ ...formData, bank_branch: e.target.value })}
                   placeholder={t.placeholders.branchNameOrCode}
+                  readOnly={isSubFromSheet}
                 />
               </div>
             </div>
@@ -1070,6 +1095,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                 placeholder="TR00 0000 0000 0000 0000 0000 00"
                 maxLength={34}
                 className={errors.bank_iban ? 'border-red-500' : ''}
+                readOnly={isSubFromSheet}
               />
               {errors.bank_iban && (
                 <p className="text-xs text-red-500 flex items-center gap-1">
@@ -1094,6 +1120,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                   value={formData.bank_account_number}
                   onChange={(e) => setFormData({ ...formData, bank_account_number: e.target.value })}
                   placeholder="0000000000"
+                  readOnly={isSubFromSheet}
                 />
               </div>
 
@@ -1104,6 +1131,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                   value={formData.bank_swift}
                   onChange={(e) => setFormData({ ...formData, bank_swift: e.target.value })}
                   placeholder={t.placeholders.swiftExample}
+                  readOnly={isSubFromSheet}
                 />
               </div>
             </div>

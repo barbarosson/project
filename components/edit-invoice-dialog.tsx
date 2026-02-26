@@ -449,11 +449,17 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                   <SelectValue placeholder={t.invoices.selectCustomer} />
                 </SelectTrigger>
                 <SelectContent>
-                  {customers.map((customer) => (
-                    <SelectItem key={customer.id} value={customer.id}>
-                      {customer.company_title}
-                    </SelectItem>
-                  ))}
+                  {customers.map((customer) => {
+                    const title = customer.company_title || customer.name
+                    const isSub = customer.branch_type && customer.branch_type !== 'main'
+                    const branchLabels: Record<string, string> = { branch: 'Şube', warehouse: 'Depo', department: 'Departman', center: 'Merkez' }
+                    const subLabel = isSub ? (customer.branch_code ? ` (${customer.branch_code})` : ` (${branchLabels[customer.branch_type] || customer.branch_type})`) : ''
+                    return (
+                      <SelectItem key={customer.id} value={customer.id}>
+                        {title}{subLabel}
+                      </SelectItem>
+                    )
+                  })}
                 </SelectContent>
               </Select>
             </div>

@@ -18,6 +18,7 @@ interface TurkishBankSelectProps {
   onValueChange: (value: string) => void
   allowCustom?: boolean
   placeholder?: string
+  disabled?: boolean
 }
 
 const depositBanks = [
@@ -100,7 +101,8 @@ export function TurkishBankSelect({
   value,
   onValueChange,
   allowCustom = true,
-  placeholder
+  placeholder,
+  disabled = false
 }: TurkishBankSelectProps) {
   const { language } = useLanguage()
   const [isCustom, setIsCustom] = useState(false)
@@ -115,24 +117,27 @@ export function TurkishBankSelect({
           value={value}
           onChange={(e) => onValueChange(e.target.value)}
           placeholder={language === 'tr' ? 'Banka adı girin' : 'Enter bank name'}
+          readOnly={disabled}
         />
-        <button
-          type="button"
-          className="text-sm text-blue-600 hover:underline"
-          onClick={() => {
-            setIsCustom(false)
-            onValueChange('')
-          }}
-        >
-          {language === 'tr' ? 'Listeden seç' : 'Select from list'}
-        </button>
+        {!disabled && (
+          <button
+            type="button"
+            className="text-sm text-blue-600 hover:underline"
+            onClick={() => {
+              setIsCustom(false)
+              onValueChange('')
+            }}
+          >
+            {language === 'tr' ? 'Listeden seç' : 'Select from list'}
+          </button>
+        )}
       </div>
     )
   }
 
   return (
     <div className="space-y-2">
-      <Select value={value} onValueChange={onValueChange}>
+      <Select value={value} onValueChange={onValueChange} disabled={disabled}>
         <SelectTrigger>
           <SelectValue placeholder={placeholder || (language === 'tr' ? 'Banka seçin' : 'Select a bank')} />
         </SelectTrigger>
@@ -168,7 +173,7 @@ export function TurkishBankSelect({
           {language === 'tr' ? 'Özel banka adı kullanılıyor' : 'Using custom bank name'}
         </div>
       )}
-      {allowCustom && (
+      {allowCustom && !disabled && (
         <button
           type="button"
           className="text-sm text-blue-600 hover:underline"

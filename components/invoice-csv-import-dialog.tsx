@@ -134,6 +134,7 @@ export function InvoiceCsvImportDialog({ isOpen, onClose, onSuccess }: InvoiceCs
         .from('customers')
         .select('id, company_title, email')
         .eq('tenant_id', tenantId)
+        .eq('status', 'active')
       const customerMap = new Map<string, string>()
       const normalize = (s: string) => s.trim().toLowerCase().replace(/\s+/g, ' ')
       customers?.forEach(c => {
@@ -282,8 +283,8 @@ export function InvoiceCsvImportDialog({ isOpen, onClose, onSuccess }: InvoiceCs
           <DialogTitle>{isTr ? 'Fatura CSV İçe Aktar' : 'Import Invoices from CSV'}</DialogTitle>
           <DialogDescription>
             {isTr
-              ? 'CSV ile toplu fatura oluşturun. İlk sütunda Cariler sayfasındaki şirket ünvanı veya e-postayı birebir yazın; sistemde kayıtlı olmayan cari ile satır aktarılmaz.'
-              : 'Create invoices in bulk from CSV. First column must exactly match a company title or email from your Customers page; rows with unknown customers are skipped.'}
+              ? 'CSV ile toplu fatura oluşturun. İlk sütunda ana cari veya alt şube ünvanı / e-postasını birebir yazın; sistemde kayıtlı olmayan cari ile satır aktarılmaz.'
+              : 'Create invoices in bulk from CSV. First column must exactly match a main or sub-branch company title or email; rows with unknown customers are skipped.'}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">

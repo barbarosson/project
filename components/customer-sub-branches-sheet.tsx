@@ -22,6 +22,8 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { cn } from '@/lib/utils'
 import {
   Select,
   SelectContent,
@@ -38,11 +40,21 @@ interface SubBranch {
   name: string
   branch_type: string
   branch_code: string
-  city: string
-  phone: string
-  email: string
+  city?: string
+  phone?: string
+  email?: string
   balance: number
   status: string
+  address?: string
+  district?: string
+  postal_code?: string
+  country?: string
+  bank_name?: string
+  bank_account_holder?: string
+  bank_account_number?: string
+  bank_iban?: string
+  bank_branch?: string
+  bank_swift?: string
 }
 
 interface CustomerSubBranchesSheetProps {
@@ -65,7 +77,24 @@ export function CustomerSubBranchesSheet({
   const [subBranches, setSubBranches] = useState<SubBranch[]>([])
   const [parentCustomer, setParentCustomer] = useState<any>(null)
   const [editingBranch, setEditingBranch] = useState<SubBranch | null>(null)
-  const [editForm, setEditForm] = useState({ company_title: '', name: '', branch_type: 'branch', branch_code: '' })
+  const [editTabValue, setEditTabValue] = useState<'genel' | 'adres' | 'banka'>('genel')
+  const [editForm, setEditForm] = useState({
+    company_title: '',
+    name: '',
+    branch_type: 'branch',
+    branch_code: '',
+    address: '',
+    city: '',
+    district: '',
+    postal_code: '',
+    country: 'Türkiye',
+    bank_name: '',
+    bank_account_holder: '',
+    bank_account_number: '',
+    bank_iban: '',
+    bank_branch: '',
+    bank_swift: '',
+  })
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -143,11 +172,23 @@ export function CustomerSubBranchesSheet({
 
   const openEditBranch = (branch: SubBranch) => {
     setEditingBranch(branch)
+    setEditTabValue('genel')
     setEditForm({
       company_title: branch.company_title || '',
       name: branch.name || '',
       branch_type: branch.branch_type || 'branch',
       branch_code: branch.branch_code || '',
+      address: branch.address || '',
+      city: branch.city || '',
+      district: branch.district || '',
+      postal_code: branch.postal_code || '',
+      country: branch.country || 'Türkiye',
+      bank_name: branch.bank_name || '',
+      bank_account_holder: branch.bank_account_holder || '',
+      bank_account_number: branch.bank_account_number || '',
+      bank_iban: branch.bank_iban || '',
+      bank_branch: branch.bank_branch || '',
+      bank_swift: branch.bank_swift || '',
     })
   }
 
@@ -162,6 +203,17 @@ export function CustomerSubBranchesSheet({
           name: editForm.name || null,
           branch_type: editForm.branch_type,
           branch_code: editForm.branch_code || null,
+          address: editForm.address || null,
+          city: editForm.city || null,
+          district: editForm.district || null,
+          postal_code: editForm.postal_code || null,
+          country: editForm.country || null,
+          bank_name: editForm.bank_name || null,
+          bank_account_holder: editForm.bank_account_holder || null,
+          bank_account_number: editForm.bank_account_number || null,
+          bank_iban: editForm.bank_iban || null,
+          bank_branch: editForm.bank_branch || null,
+          bank_swift: editForm.bank_swift || null,
           updated_at: new Date().toISOString(),
         })
         .eq('id', editingBranch.id)
@@ -258,13 +310,16 @@ export function CustomerSubBranchesSheet({
                           {getBranchIcon(branch.branch_type)}
                         </div>
                         <div className="flex-1">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <h5 className="font-medium">{branch.company_title}</h5>
                             {branch.branch_code && (
                               <Badge variant="secondary" className="text-xs">
                                 {branch.branch_code}
                               </Badge>
                             )}
+                            <Badge variant="outline" className="text-xs font-normal text-muted-foreground">
+                              {getBranchTypeLabel(branch.branch_type)}
+                            </Badge>
                           </div>
                           <p className="text-sm text-gray-600">{branch.name}</p>
 
@@ -322,7 +377,7 @@ export function CustomerSubBranchesSheet({
             <ul className="list-disc list-inside space-y-1">
               <li>Her alt şube bağımsız cari olarak işlem görebilir</li>
               <li>Üst carinin bakiyesi alt şubeleri içermez</li>
-              <li>Yeni cari eklerken "Bağlı Olduğu Ana Cari" alanından üst cari seçebilirsiniz</li>
+              <li>Şube / Alt cari ekle ile eklenen cariler otomatik bu ana cariye bağlanır</li>
               <li>Alt şubeler kendi faturaları, siparişleri ve ödemeleriyle yönetilir</li>
             </ul>
           </div>
@@ -331,51 +386,194 @@ export function CustomerSubBranchesSheet({
     </Sheet>
 
     <Dialog open={!!editingBranch} onOpenChange={(open) => !open && setEditingBranch(null)}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>Alt şube düzenle</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="space-y-2">
-            <Label>Unvan</Label>
-            <Input
-              value={editForm.company_title}
-              onChange={(e) => setEditForm((f) => ({ ...f, company_title: e.target.value }))}
-              placeholder="Şube unvanı"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Yetkili / İletişim adı</Label>
-            <Input
-              value={editForm.name}
-              onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
-              placeholder="Ad Soyad"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Cari tipi</Label>
-            <Select
-              value={editForm.branch_type}
-              onValueChange={(v) => setEditForm((f) => ({ ...f, branch_type: v }))}
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+          <div className="grid grid-cols-3 gap-1 p-1 rounded-md bg-muted shrink-0 mb-2">
+            <button
+              type="button"
+              onClick={() => setEditTabValue('genel')}
+              className={cn(
+                'rounded-sm px-3 py-2 text-sm font-medium transition-colors',
+                editTabValue === 'genel' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              )}
             >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="branch">Şube</SelectItem>
-                <SelectItem value="warehouse">Depo</SelectItem>
-                <SelectItem value="department">Departman</SelectItem>
-                <SelectItem value="center">Merkez</SelectItem>
-              </SelectContent>
-            </Select>
+              Genel
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditTabValue('adres')}
+              className={cn(
+                'rounded-sm px-3 py-2 text-sm font-medium transition-colors',
+                editTabValue === 'adres' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              Adres
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditTabValue('banka')}
+              className={cn(
+                'rounded-sm px-3 py-2 text-sm font-medium transition-colors',
+                editTabValue === 'banka' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              Banka
+            </button>
           </div>
-          <div className="space-y-2">
-            <Label>Şube/Birim kodu</Label>
-            <Input
-              value={editForm.branch_code}
-              onChange={(e) => setEditForm((f) => ({ ...f, branch_code: e.target.value }))}
-              placeholder="ŞB-01, DEP-MAR vb."
-            />
+          <div className="overflow-y-auto py-4 min-h-0 flex-1">
+            {editTabValue === 'genel' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Unvan</Label>
+                <Input
+                  value={editForm.company_title}
+                  onChange={(e) => setEditForm((f) => ({ ...f, company_title: e.target.value }))}
+                  placeholder="Şube unvanı"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Yetkili / İletişim adı</Label>
+                <Input
+                  value={editForm.name}
+                  onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+                  placeholder="Ad Soyad"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Cari tipi</Label>
+                <Select
+                  value={editForm.branch_type}
+                  onValueChange={(v) => setEditForm((f) => ({ ...f, branch_type: v }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="branch">Şube</SelectItem>
+                    <SelectItem value="warehouse">Depo</SelectItem>
+                    <SelectItem value="department">Departman</SelectItem>
+                    <SelectItem value="center">Merkez</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Şube/Birim kodu</Label>
+                <Input
+                  value={editForm.branch_code}
+                  onChange={(e) => setEditForm((f) => ({ ...f, branch_code: e.target.value }))}
+                  placeholder="ŞB-01, DEP-MAR vb."
+                />
+              </div>
+            </div>
+            )}
+            {editTabValue === 'adres' && (
+            <div className="space-y-4">
+              <p className="text-xs text-muted-foreground">Opsiyonel. Şubeye özel adres bilgileri.</p>
+              <div className="space-y-2">
+                <Label>Adres</Label>
+                <Textarea
+                  value={editForm.address}
+                  onChange={(e) => setEditForm((f) => ({ ...f, address: e.target.value }))}
+                  placeholder="Sokak, bina no"
+                  rows={2}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>İl</Label>
+                  <Input
+                    value={editForm.city}
+                    onChange={(e) => setEditForm((f) => ({ ...f, city: e.target.value }))}
+                    placeholder="İl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>İlçe</Label>
+                  <Input
+                    value={editForm.district}
+                    onChange={(e) => setEditForm((f) => ({ ...f, district: e.target.value }))}
+                    placeholder="İlçe"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Posta kodu</Label>
+                  <Input
+                    value={editForm.postal_code}
+                    onChange={(e) => setEditForm((f) => ({ ...f, postal_code: e.target.value }))}
+                    placeholder="34000"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Ülke</Label>
+                  <Input
+                    value={editForm.country}
+                    onChange={(e) => setEditForm((f) => ({ ...f, country: e.target.value }))}
+                    placeholder="Türkiye"
+                  />
+                </div>
+              </div>
+            </div>
+            )}
+            {editTabValue === 'banka' && (
+            <div className="space-y-4">
+              <p className="text-xs text-muted-foreground">Opsiyonel. Şubeye özel banka bilgileri.</p>
+              <div className="space-y-2">
+                <Label>Banka adı</Label>
+                <Input
+                  value={editForm.bank_name}
+                  onChange={(e) => setEditForm((f) => ({ ...f, bank_name: e.target.value }))}
+                  placeholder="Banka adı"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Hesap sahibi</Label>
+                <Input
+                  value={editForm.bank_account_holder}
+                  onChange={(e) => setEditForm((f) => ({ ...f, bank_account_holder: e.target.value }))}
+                  placeholder="Hesap sahibi adı"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>IBAN</Label>
+                <Input
+                  value={editForm.bank_iban}
+                  onChange={(e) => setEditForm((f) => ({ ...f, bank_iban: e.target.value.toUpperCase() }))}
+                  placeholder="TR00 0000 0000 0000 0000 0000 00"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Banka şubesi</Label>
+                <Input
+                  value={editForm.bank_branch}
+                  onChange={(e) => setEditForm((f) => ({ ...f, bank_branch: e.target.value }))}
+                  placeholder="Şube adı"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Hesap no</Label>
+                  <Input
+                    value={editForm.bank_account_number}
+                    onChange={(e) => setEditForm((f) => ({ ...f, bank_account_number: e.target.value }))}
+                    placeholder="Hesap numarası"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>SWIFT/BIC</Label>
+                  <Input
+                    value={editForm.bank_swift}
+                    onChange={(e) => setEditForm((f) => ({ ...f, bank_swift: e.target.value }))}
+                    placeholder="SWIFT kodu"
+                  />
+                </div>
+              </div>
+            </div>
+            )}
           </div>
         </div>
         <DialogFooter>

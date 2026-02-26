@@ -56,12 +56,14 @@ interface Product {
 export default function NewInvoicePage() {
   const router = useRouter()
   const { tenantId, loading: tenantLoading } = useTenant()
-  const { language } = useLanguage()
+  const { language, t } = useLanguage()
   const [customers, setCustomers] = useState<Customer[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
 
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('')
+  const [selectedSubBranchId, setSelectedSubBranchId] = useState<string | null>(null)
+  const [subBranches, setSubBranches] = useState<{ id: string; company_title: string; name?: string; payment_terms?: number; payment_terms_type?: string; branch_code?: string }[]>([])
   const [selectedProjectId, setSelectedProjectId] = useState<string>('')
   const [projectsList, setProjectsList] = useState<{ id: string; name: string; code: string }[]>([])
   const [issueDate, setIssueDate] = useState<string>(new Date().toISOString().split('T')[0])
@@ -110,7 +112,7 @@ export default function NewInvoicePage() {
 
     try {
       const [customersRes, productsRes, projectsRes] = await Promise.all([
-        supabase.from('customers').select('id, name, company_title, payment_terms, payment_terms_type').eq('tenant_id', tenantId).eq('status', 'active').order('name'),
+        supabase.from('customers').select('id, name, company_title, payment_terms, payment_terms_type').eq('tenant_id', tenantId).eq('status', 'active').or('branch_type.eq.main,parent_customer_id.is.null').order('name'),
         supabase.from('products').select('id, name, sale_price, vat_rate').eq('tenant_id', tenantId).eq('status', 'active').order('name'),
         supabase.from('projects').select('id, name, code').eq('tenant_id', tenantId).in('status', ['planning', 'active']).order('name')
       ])
@@ -124,16 +126,37 @@ export default function NewInvoicePage() {
   }
 
   useEffect(() => {
-    if (selectedCustomerId) {
-      const customer = customers.find(c => c.id === selectedCustomerId)
-      if (customer && customer.payment_terms && customer.payment_terms > 0) {
-        const issueDateObj = new Date(issueDate)
-        const dueDateObj = new Date(issueDateObj)
-        dueDateObj.setDate(dueDateObj.getDate() + customer.payment_terms)
-        setDueDate(dueDateObj.toISOString().split('T')[0])
-      }
+    if (!selectedCustomerId || !tenantId) {
+      setSubBranches([])
+      setSelectedSubBranchId(null)
+      return
     }
-  }, [selectedCustomerId, issueDate, customers])
+    supabase
+      .from('customers')
+      .select('id, company_title, name, payment_terms, payment_terms_type, branch_code')
+      .eq('parent_customer_id', selectedCustomerId)
+      .eq('tenant_id', tenantId)
+      .eq('status', 'active')
+      .order('company_title')
+      .then(({ data }) => {
+        setSubBranches(data || [])
+        setSelectedSubBranchId(null)
+      })
+  }, [selectedCustomerId, tenantId])
+
+  const effectiveCustomerId = selectedSubBranchId || selectedCustomerId
+  const effectiveCustomer = selectedSubBranchId
+    ? subBranches.find(s => s.id === selectedSubBranchId)
+    : customers.find(c => c.id === selectedCustomerId)
+
+  useEffect(() => {
+    if (effectiveCustomer && effectiveCustomer.payment_terms && effectiveCustomer.payment_terms > 0) {
+      const issueDateObj = new Date(issueDate)
+      const dueDateObj = new Date(issueDateObj)
+      dueDateObj.setDate(dueDateObj.getDate() + effectiveCustomer.payment_terms)
+      setDueDate(dueDateObj.toISOString().split('T')[0])
+    }
+  }, [effectiveCustomerId, issueDate, customers, subBranches])
 
   function calculateLineItem(item: LineItem): LineItem {
     const line_total = item.quantity * item.unit_price
@@ -202,12 +225,12 @@ export default function NewInvoicePage() {
     if (!tenantId) return
 
     if (!selectedCustomerId) {
-      toast.error('Please select a customer')
+      toast.error(t.invoices.selectCustomerRequired)
       return
     }
 
     if (lineItems.some(item => !item.product_name)) {
-      toast.error('Please fill in all product names')
+      toast.error(t.invoices.fillProductNames)
       return
     }
 
@@ -221,7 +244,7 @@ export default function NewInvoicePage() {
         .insert([
           {
             tenant_id: tenantId,
-            customer_id: selectedCustomerId,
+            customer_id: effectiveCustomerId,
             invoice_number: invoiceNumber,
             amount: grandTotal,
             subtotal: subtotal,
@@ -305,11 +328,11 @@ export default function NewInvoicePage() {
         }
       }
 
-      toast.success('Invoice created successfully!')
+      toast.success(t.invoices.invoiceCreatedSuccess)
       router.push('/invoices')
     } catch (error: any) {
       console.error('Error creating invoice:', error)
-      toast.error(error.message || 'Failed to create invoice')
+      toast.error(error.message || t.invoices.failedToCreateInvoice)
     } finally {
       setLoading(false)
     }
@@ -320,8 +343,8 @@ export default function NewInvoicePage() {
       <div className="space-y-6 max-w-6xl">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Create New Invoice</h1>
-            <p className="text-gray-500 mt-1">Build a professional invoice with line items</p>
+            <h1 className="text-3xl font-bold text-gray-900">{t.invoices.createNewInvoice}</h1>
+            <p className="text-gray-500 mt-1">{t.invoices.createNewInvoiceDesc}</p>
           </div>
           <div className="flex gap-2">
             <Button
@@ -329,7 +352,7 @@ export default function NewInvoicePage() {
               onClick={() => router.push('/invoices')}
               disabled={loading}
             >
-              Cancel
+              {t.common.cancel}
             </Button>
             <Button
               onClick={saveInvoice}
@@ -337,22 +360,22 @@ export default function NewInvoicePage() {
               className="bg-[#00D4AA] hover:bg-[#00B894]"
             >
               <Save className="mr-2 h-4 w-4" />
-              {loading ? 'Saving...' : 'Save Invoice'}
+              {loading ? t.common.adding : t.invoices.saveInvoice}
             </Button>
           </div>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Invoice Details</CardTitle>
+            <CardTitle>{t.invoices.invoiceDetails}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-4 rounded-lg border p-4 bg-muted/30">
               <div className="space-y-2" data-field="new-invoice-customer" data-testid="new-invoice-customer">
-                <Label htmlFor="customer" data-field="new-invoice-customer-label" className="cursor-text select-text">Customer *</Label>
+                <Label htmlFor="customer" data-field="new-invoice-customer-label" className="cursor-text select-text">{t.invoices.customer} *</Label>
                 <Select value={selectedCustomerId} onValueChange={setSelectedCustomerId}>
                   <SelectTrigger id="customer" data-field="new-invoice-customer" data-testid="new-invoice-customer-trigger">
-                    <SelectValue placeholder="Select customer" />
+                    <SelectValue placeholder={t.invoices.selectCustomer} />
                   </SelectTrigger>
                   <SelectContent>
                     {customers.map((customer) => (
@@ -363,7 +386,35 @@ export default function NewInvoicePage() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2" data-field="new-invoice-sub-branch">
+                <Label htmlFor="sub_branch">{t.invoices.subBranch}</Label>
+                {subBranches.length > 0 ? (
+                  <>
+                    <Select
+                      value={selectedSubBranchId || '__main__'}
+                      onValueChange={(v) => setSelectedSubBranchId(v === '__main__' ? null : v)}
+                    >
+                      <SelectTrigger id="sub_branch" data-field="new-invoice-sub-branch-trigger">
+                        <SelectValue placeholder={t.invoices.mainCustomer} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__main__">{t.invoices.mainCustomer}</SelectItem>
+                        {subBranches.map((sub) => (
+                          <SelectItem key={sub.id} value={sub.id}>
+                            {sub.company_title || sub.name}{sub.branch_code ? ` (${sub.branch_code})` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground">{t.invoices.subBranchHelp}</p>
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground py-2">{selectedCustomerId ? t.invoices.noSubBranchesForCustomer : '—'}</p>
+                )}
+              </div>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2" data-field="new-invoice-type" data-testid="new-invoice-type">
                 <Label htmlFor="invoice_type" data-field="new-invoice-type-label" className="cursor-text select-text">{language === 'tr' ? 'Fatura Tipi' : 'Invoice Type'}</Label>
                 <Select value={invoiceType} onValueChange={setInvoiceType}>
@@ -408,7 +459,7 @@ export default function NewInvoicePage() {
               </div>
 
               <div className="space-y-2" data-field="new-invoice-due-date" data-testid="new-invoice-due-date">
-                <Label htmlFor="due_date" data-field="new-invoice-due-date-label" className="cursor-text select-text">Due Date</Label>
+                <Label htmlFor="due_date" data-field="new-invoice-due-date-label" className="cursor-text select-text">{t.invoices.dueDate}</Label>
                 <Input
                   id="due_date"
                   type="date"
@@ -422,13 +473,13 @@ export default function NewInvoicePage() {
 
             {projectsList.length > 0 && (
               <div className="space-y-2">
-                <Label htmlFor="project">Project</Label>
+                <Label htmlFor="project">{t.invoices.project}</Label>
                 <Select value={selectedProjectId || 'none'} onValueChange={v => setSelectedProjectId(v === 'none' ? '' : v)}>
                   <SelectTrigger id="project" data-field="new-invoice-project">
-                    <SelectValue placeholder="Select project (optional)" />
+                    <SelectValue placeholder={t.invoices.selectProjectOptional} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No project</SelectItem>
+                    <SelectItem value="none">{t.invoices.noProject}</SelectItem>
                     {projectsList.map(p => (
                       <SelectItem key={p.id} value={p.id}>
                         {p.code ? `[${p.code}] ` : ''}{p.name}
@@ -443,14 +494,14 @@ export default function NewInvoicePage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Line Items</CardTitle>
+            <CardTitle>{t.invoices.lineItems}</CardTitle>
             <Button
               onClick={addLineItem}
               size="sm"
               className="bg-[#00D4AA] hover:bg-[#00B894]"
             >
               <Plus className="mr-2 h-4 w-4" />
-              Add Line
+              {t.invoices.addLine}
             </Button>
           </CardHeader>
           <CardContent>
@@ -458,12 +509,12 @@ export default function NewInvoicePage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b">
-                    <th className="text-left p-2 text-sm font-semibold">Product/Service</th>
-                    <th className="text-left p-2 text-sm font-semibold">Description</th>
-                    <th className="text-right p-2 text-sm font-semibold w-24">Qty</th>
-                    <th className="text-right p-2 text-sm font-semibold w-32">Unit Price</th>
+                    <th className="text-left p-2 text-sm font-semibold">{t.invoices.productService}</th>
+                    <th className="text-left p-2 text-sm font-semibold">{language === 'tr' ? 'Açıklama' : 'Description'}</th>
+                    <th className="text-right p-2 text-sm font-semibold w-24">{t.invoices.quantity}</th>
+                    <th className="text-right p-2 text-sm font-semibold w-32">{t.invoices.unitPrice}</th>
                     <th className="text-right p-2 text-sm font-semibold w-24">VAT %</th>
-                    <th className="text-right p-2 text-sm font-semibold w-32">Total</th>
+                    <th className="text-right p-2 text-sm font-semibold w-32">{t.invoices.total}</th>
                     {currency !== companyCurrency && (
                       <th className="text-right p-2 text-sm font-semibold w-32">
                         {language === 'tr' ? `Çevrilmiş (${companyCurrency})` : `Converted (${companyCurrency})`}
@@ -481,7 +532,7 @@ export default function NewInvoicePage() {
                           onValueChange={(value) => selectProduct(index, value)}
                         >
                           <SelectTrigger className="w-full" data-field={`line-item-${index}-product`}>
-                            <SelectValue placeholder="Select or type..." />
+                            <SelectValue placeholder={t.invoices.selectProduct} />
                           </SelectTrigger>
                           <SelectContent>
                             {products.map((product) => (
@@ -494,7 +545,7 @@ export default function NewInvoicePage() {
                         <Input
                           value={item.product_name}
                           onChange={(e) => updateLineItem(index, 'product_name', e.target.value)}
-                          placeholder="Or type custom name"
+                          placeholder={language === 'tr' ? 'Veya özel ad yazın' : 'Or type custom name'}
                           className="mt-1"
                           data-field={`line-item-${index}-product-name`}
                         />
@@ -503,7 +554,7 @@ export default function NewInvoicePage() {
                         <Input
                           value={item.description}
                           onChange={(e) => updateLineItem(index, 'description', e.target.value)}
-                          placeholder="Optional"
+                          placeholder={t.invoices.optional}
                           data-field={`line-item-${index}-description`}
                         />
                       </td>
@@ -577,15 +628,15 @@ export default function NewInvoicePage() {
             <div className="mt-6 flex justify-end">
               <div className="w-80 space-y-2">
                 <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Subtotal:</span>
+                  <span className="text-gray-600">{t.invoices.subtotal}:</span>
                   <span className="font-semibold">{formatCurrency(subtotal, currency)}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">Total VAT:</span>
+                  <span className="text-gray-600">{t.invoices.vatTotal}:</span>
                   <span className="font-semibold">{formatCurrency(totalVat, currency)}</span>
                 </div>
                 <div className="flex justify-between py-3 bg-[#00D4AA] text-white px-4 rounded-lg">
-                  <span className="font-bold text-lg">Grand Total:</span>
+                  <span className="font-bold text-lg">{t.invoices.grandTotal}:</span>
                   <span className="font-bold text-lg">{formatCurrency(grandTotal, currency)}</span>
                 </div>
                 {currency !== companyCurrency && (
@@ -626,13 +677,13 @@ export default function NewInvoicePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Additional Notes</CardTitle>
+            <CardTitle>{t.invoices.additionalNotes}</CardTitle>
           </CardHeader>
           <CardContent>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Add any additional notes or terms..."
+              placeholder={t.invoices.additionalNotesPlaceholder}
               rows={4}
             />
           </CardContent>

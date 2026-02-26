@@ -23,13 +23,15 @@ interface TurkishProvinceSelectProps {
   onValueChange: (value: string) => void
   allowCustom?: boolean
   placeholder?: string
+  disabled?: boolean
 }
 
 export function TurkishProvinceSelect({
   value,
   onValueChange,
   allowCustom = true,
-  placeholder = 'Select a province'
+  placeholder = 'Select a province',
+  disabled = false
 }: TurkishProvinceSelectProps) {
   const [provinces, setProvinces] = useState<TurkishProvince[]>([])
   const [loading, setLoading] = useState(true)
@@ -64,7 +66,7 @@ export function TurkishProvinceSelect({
 
   if (loading) {
     return (
-      <Select disabled>
+      <Select disabled={true}>
         <SelectTrigger>
           <SelectValue placeholder="Loading..." />
         </SelectTrigger>
@@ -79,24 +81,27 @@ export function TurkishProvinceSelect({
           value={value}
           onChange={(e) => onValueChange(e.target.value)}
           placeholder="Enter province name"
+          readOnly={disabled}
         />
-        <button
-          type="button"
-          className="text-sm text-blue-600 hover:underline"
-          onClick={() => {
-            setIsCustom(false)
-            onValueChange('')
-          }}
-        >
-          Select from list
-        </button>
+        {!disabled && (
+          <button
+            type="button"
+            className="text-sm text-blue-600 hover:underline"
+            onClick={() => {
+              setIsCustom(false)
+              onValueChange('')
+            }}
+          >
+            Select from list
+          </button>
+        )}
       </div>
     )
   }
 
   return (
     <div className="space-y-2">
-      <Select value={value} onValueChange={onValueChange}>
+      <Select value={value} onValueChange={onValueChange} disabled={disabled}>
         <SelectTrigger>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
@@ -108,7 +113,7 @@ export function TurkishProvinceSelect({
           ))}
         </SelectContent>
       </Select>
-      {allowCustom && (
+      {allowCustom && !disabled && (
         <button
           type="button"
           className="text-sm text-blue-600 hover:underline"

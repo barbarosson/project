@@ -58,14 +58,15 @@ export function BulkCreateInvoicesDialog({ isOpen, onClose, onSuccess }: BulkCre
   ])
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && tenantId) {
       fetchCustomers()
       fetchProducts()
     }
-  }, [isOpen])
+  }, [isOpen, tenantId])
 
   async function fetchCustomers() {
-    const { data } = await supabase.from('customers').select('*').eq('status', 'active').order('company_title')
+    if (!tenantId) return
+    const { data } = await supabase.from('customers').select('*').eq('tenant_id', tenantId).eq('status', 'active').order('company_title')
     setCustomers(data || [])
   }
 
@@ -318,11 +319,17 @@ export function BulkCreateInvoicesDialog({ isOpen, onClose, onSuccess }: BulkCre
                     <SelectValue placeholder="Select" />
                   </SelectTrigger>
                   <SelectContent>
-                    {customers.map((customer) => (
-                      <SelectItem key={customer.id} value={customer.id}>
-                        {customer.company_title}
-                      </SelectItem>
-                    ))}
+                    {customers.map((customer) => {
+                      const title = customer.company_title || customer.name
+                      const isSub = customer.branch_type && customer.branch_type !== 'main'
+                      const branchLabels: Record<string, string> = { branch: 'Şube', warehouse: 'Depo', department: 'Departman', center: 'Merkez' }
+                      const subLabel = isSub ? (customer.branch_code ? ` (${customer.branch_code})` : ` (${branchLabels[customer.branch_type] || customer.branch_type})`) : ''
+                      return (
+                        <SelectItem key={customer.id} value={customer.id}>
+                          {title}{subLabel}
+                        </SelectItem>
+                      )
+                    })}
                   </SelectContent>
                 </Select>
                 <Select
