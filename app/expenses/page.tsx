@@ -121,7 +121,7 @@ export default function ExpensesPage() {
 
     if (error) {
       console.error('❌ Error fetching expenses:', error)
-      toast.error('Failed to load expenses')
+      toast.error(t.expenses.loadExpensesError)
       return
     }
 
@@ -161,11 +161,11 @@ export default function ExpensesPage() {
 
       if (error) throw error
 
-      toast.success('Expense deleted successfully')
+      toast.success(t.expenses.expenseDeletedSuccess)
       fetchExpenses()
     } catch (error: any) {
       console.error('Error deleting expense:', error)
-      toast.error(error.message || 'Failed to delete expense')
+      toast.error(error.message || t.expenses.deleteExpenseError)
     } finally {
       setIsDeleteDialogOpen(false)
       setExpenseToDelete(null)
@@ -253,18 +253,18 @@ export default function ExpensesPage() {
         }
       }
 
-      toast.success('Invoice accepted and expense created')
+      toast.success(t.expenses.invoiceAcceptedSuccess)
       fetchData()
     } catch (error: any) {
       console.error('Error accepting invoice:', error)
-      toast.error(error.message || 'Failed to accept invoice')
+      toast.error(error.message || t.expenses.acceptInvoiceError)
     }
   }
 
   async function handleRejectInvoice(invoiceId: string) {
     if (!tenantId) return
 
-    const reason = prompt('Enter rejection reason:')
+    const reason = prompt(t.expenses.rejectionReasonPrompt)
     if (!reason) return
 
     try {
@@ -280,11 +280,11 @@ export default function ExpensesPage() {
 
       if (error) throw error
 
-      toast.success('Invoice rejected')
+      toast.success(t.expenses.invoiceRejectedSuccess)
       fetchPurchaseInvoices()
     } catch (error: any) {
       console.error('Error rejecting invoice:', error)
-      toast.error(error.message || 'Failed to reject invoice')
+      toast.error(error.message || t.expenses.rejectInvoiceError)
     }
   }
 
@@ -328,50 +328,50 @@ export default function ExpensesPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{t.expenses.title}</h1>
-            <p className="text-gray-500 mt-1">Track manual expenses and incoming supplier invoices</p>
+            <p className="text-gray-500 mt-1">{t.expenses.subtitle}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Manual Expenses</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">{t.expenses.manualExpenses}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">${totalManualExpenses.toLocaleString()}</div>
-              <p className="text-xs text-gray-500 mt-1">{expenses.length} expenses</p>
+              <p className="text-xs text-gray-500 mt-1">{expenses.length} {t.expenses.expenseCountLabel}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Accepted Purchases</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">{t.expenses.acceptedPurchases}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">${totalAcceptedInvoices.toLocaleString()}</div>
               <p className="text-xs text-gray-500 mt-1">
-                {purchaseInvoices.filter(inv => inv.status === 'accepted').length} invoices
+                {purchaseInvoices.filter(inv => inv.status === 'accepted').length} {t.expenses.invoiceCountLabel}
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Total Expenses</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">{t.expenses.totalExpensesCard}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">${totalExpenses.toLocaleString()}</div>
-              <p className="text-xs text-gray-500 mt-1">All expenses combined</p>
+              <p className="text-xs text-gray-500 mt-1">{t.expenses.allExpensesCombined}</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">Pending Invoices</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600">{t.expenses.pendingInvoicesCard}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{pendingInvoicesCount}</div>
-              <p className="text-xs text-gray-500 mt-1">Awaiting approval</p>
+              <p className="text-xs text-gray-500 mt-1">{t.expenses.awaitingApproval}</p>
             </CardContent>
           </Card>
         </div>
@@ -379,8 +379,8 @@ export default function ExpensesPage() {
         <Card>
           <CardHeader>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <div className="flex items-center justify-between">
-                <TabsList>
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between min-w-0">
+                <TabsList className="w-full sm:w-auto flex-shrink-0">
                   <TabsTrigger value="manual" className="flex items-center gap-2 data-[state=inactive]:text-[#0A192F]">
                     <Receipt size={16} />
                     {t.expenses.manualExpenses}
@@ -394,34 +394,34 @@ export default function ExpensesPage() {
                   </TabsTrigger>
                 </TabsList>
 
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial sm:justify-end">
+                  <div className="relative min-w-0 flex-1 sm:flex-initial" style={{ maxWidth: '100%' }}>
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 shrink-0" size={16} />
                     <Input
                       placeholder={t.common.search}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9 w-64"
+                      className="pl-9 w-full min-w-0 sm:w-52 md:w-64 max-w-full"
                     />
                   </div>
-                  <>
-                      <Button variant="outline" onClick={() => setIsExpenseImportDialogOpen(true)}>
-                        <Upload size={16} className="mr-2" />
-                        {t.expenses.bulkImport}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button variant="outline" onClick={() => setIsExpenseImportDialogOpen(true)} className="shrink-0">
+                      <Upload size={16} className="mr-2" />
+                      {t.expenses.bulkImport}
+                    </Button>
+                    {activeTab === 'manual' && (
+                      <Button onClick={() => setIsAddExpenseDialogOpen(true)} className="shrink-0">
+                        <Plus size={16} className="mr-2" />
+                        {t.expenses.addExpense}
                       </Button>
-                      {activeTab === 'manual' && (
-                        <Button onClick={() => setIsAddExpenseDialogOpen(true)}>
-                          <Plus size={16} className="mr-2" />
-                          {t.expenses.addExpense}
-                        </Button>
-                      )}
-                      {activeTab === 'incoming' && (
-                        <Button onClick={() => setIsAddPurchaseInvoiceDialogOpen(true)}>
-                          <Plus size={16} className="mr-2" />
-                          {t.expenses.addIncomingInvoice}
-                        </Button>
-                      )}
-                    </>
+                    )}
+                    {activeTab === 'incoming' && (
+                      <Button onClick={() => setIsAddPurchaseInvoiceDialogOpen(true)} className="shrink-0">
+                        <Plus size={16} className="mr-2" />
+                        {t.expenses.addIncomingInvoice}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -493,25 +493,25 @@ export default function ExpensesPage() {
                 <div className="flex flex-wrap items-center gap-3 mb-4">
                   <Select value={purchaseStatusFilter} onValueChange={setPurchaseStatusFilter}>
                     <SelectTrigger className="w-[160px] h-9">
-                      <SelectValue placeholder={language === 'tr' ? 'Durum' : 'Status'} />
+                      <SelectValue placeholder={t.expenses.status} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">{language === 'tr' ? 'Tüm Durumlar' : 'All Status'}</SelectItem>
-                      <SelectItem value="pending">{language === 'tr' ? 'Bekleyen' : 'Pending'}</SelectItem>
-                      <SelectItem value="accepted">{language === 'tr' ? 'Kabul' : 'Accepted'}</SelectItem>
-                      <SelectItem value="rejected">{language === 'tr' ? 'Red' : 'Rejected'}</SelectItem>
+                      <SelectItem value="all">{t.expenses.filterAllStatuses}</SelectItem>
+                      <SelectItem value="pending">{t.expenses.pending}</SelectItem>
+                      <SelectItem value="accepted">{t.expenses.accepted}</SelectItem>
+                      <SelectItem value="rejected">{t.expenses.rejected}</SelectItem>
                     </SelectContent>
                   </Select>
                   <Select value={purchaseTypeFilter} onValueChange={setPurchaseTypeFilter}>
                     <SelectTrigger className="w-[180px] h-9">
-                      <SelectValue placeholder={language === 'tr' ? 'Fatura Tipi' : 'Invoice Type'} />
+                      <SelectValue placeholder={t.expenses.invoiceTypeColumn} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">{language === 'tr' ? 'Tüm Tipler' : 'All Types'}</SelectItem>
-                      <SelectItem value="purchase">{language === 'tr' ? 'Alış' : 'Purchase'}</SelectItem>
-                      <SelectItem value="purchase_return">{language === 'tr' ? 'Alıştan İade' : 'Purchase Return'}</SelectItem>
-                      <SelectItem value="devir">{language === 'tr' ? 'Devir' : 'Carry Forward'}</SelectItem>
-                      <SelectItem value="devir_return">{language === 'tr' ? 'Devir İade' : 'Carry Fwd Return'}</SelectItem>
+                      <SelectItem value="all">{t.expenses.filterAllTypes}</SelectItem>
+                      <SelectItem value="purchase">{PURCHASE_TYPE_LABELS.purchase[language]}</SelectItem>
+                      <SelectItem value="purchase_return">{PURCHASE_TYPE_LABELS.purchase_return[language]}</SelectItem>
+                      <SelectItem value="devir">{PURCHASE_TYPE_LABELS.devir[language]}</SelectItem>
+                      <SelectItem value="devir_return">{PURCHASE_TYPE_LABELS.devir_return[language]}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -519,7 +519,7 @@ export default function ExpensesPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>{t.expenses.invoiceNumber}</TableHead>
-                      <TableHead>{language === 'tr' ? 'Tip' : 'Type'}</TableHead>
+                      <TableHead>{t.expenses.invoiceTypeColumn}</TableHead>
                       <TableHead>{t.expenses.supplier}</TableHead>
                       <TableHead>{t.expenses.invoiceDate}</TableHead>
                       <TableHead>{t.expenses.total}</TableHead>
@@ -624,8 +624,8 @@ export default function ExpensesPage() {
         open={isDeleteDialogOpen}
         onOpenChange={setIsDeleteDialogOpen}
         onConfirm={handleDeleteExpense}
-        title="Delete Expense"
-        description="Are you sure you want to delete this expense? This action cannot be undone."
+        title={t.expenses.deleteExpenseTitle}
+        description={t.expenses.deleteExpenseDescription}
       />
     </DashboardLayout>
   )
