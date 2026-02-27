@@ -15,7 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Search, FileText, Receipt, CheckCircle2, XCircle, Eye, Trash2, Pencil } from 'lucide-react'
+import { Plus, Search, FileText, Receipt, CheckCircle2, XCircle, Eye, Trash2, Pencil, Upload } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
 import { useTenant } from '@/contexts/tenant-context'
@@ -24,6 +24,8 @@ import { toast } from 'sonner'
 import { AddManualExpenseDialog } from '@/components/add-manual-expense-dialog'
 import { EditManualExpenseDialog } from '@/components/edit-manual-expense-dialog'
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
+import { ExpenseExcelImportDialog } from '@/components/expense-excel-import-dialog'
+import { AddManualPurchaseInvoiceDialog } from '@/components/add-manual-purchase-invoice-dialog'
 import { format } from 'date-fns'
 
 interface Expense {
@@ -76,6 +78,8 @@ export default function ExpensesPage() {
   const [purchaseTypeFilter, setPurchaseTypeFilter] = useState<string>('all')
   const [purchaseStatusFilter, setPurchaseStatusFilter] = useState<string>('all')
   const [isAddExpenseDialogOpen, setIsAddExpenseDialogOpen] = useState(false)
+  const [isAddPurchaseInvoiceDialogOpen, setIsAddPurchaseInvoiceDialogOpen] = useState(false)
+  const [isExpenseImportDialogOpen, setIsExpenseImportDialogOpen] = useState(false)
   const [isEditExpenseDialogOpen, setIsEditExpenseDialogOpen] = useState(false)
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -400,12 +404,24 @@ export default function ExpensesPage() {
                       className="pl-9 w-64"
                     />
                   </div>
-                  {activeTab === 'manual' && (
-                    <Button onClick={() => setIsAddExpenseDialogOpen(true)}>
-                      <Plus size={16} className="mr-2" />
-                      {t.expenses.addExpense}
-                    </Button>
-                  )}
+                  <>
+                      <Button variant="outline" onClick={() => setIsExpenseImportDialogOpen(true)}>
+                        <Upload size={16} className="mr-2" />
+                        {t.expenses.bulkImport}
+                      </Button>
+                      {activeTab === 'manual' && (
+                        <Button onClick={() => setIsAddExpenseDialogOpen(true)}>
+                          <Plus size={16} className="mr-2" />
+                          {t.expenses.addExpense}
+                        </Button>
+                      )}
+                      {activeTab === 'incoming' && (
+                        <Button onClick={() => setIsAddPurchaseInvoiceDialogOpen(true)}>
+                          <Plus size={16} className="mr-2" />
+                          {t.expenses.addIncomingInvoice}
+                        </Button>
+                      )}
+                    </>
                 </div>
               </div>
 
@@ -576,6 +592,18 @@ export default function ExpensesPage() {
         open={isAddExpenseDialogOpen}
         onOpenChange={setIsAddExpenseDialogOpen}
         onSuccess={fetchExpenses}
+      />
+
+      <ExpenseExcelImportDialog
+        isOpen={isExpenseImportDialogOpen}
+        onClose={() => setIsExpenseImportDialogOpen(false)}
+        onSuccess={fetchData}
+      />
+
+      <AddManualPurchaseInvoiceDialog
+        open={isAddPurchaseInvoiceDialogOpen}
+        onOpenChange={setIsAddPurchaseInvoiceDialogOpen}
+        onSuccess={fetchData}
       />
 
       <EditManualExpenseDialog

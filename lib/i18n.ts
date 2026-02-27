@@ -429,8 +429,10 @@ export const translations = {
     expenses: {
       title: 'Expenses & Purchases',
       manualExpenses: 'Manual Expenses',
-      incomingInvoices: 'Incoming E-Invoices',
+      incomingInvoices: 'Incoming Invoices',
       addExpense: 'Add Expense',
+      addIncomingInvoice: 'Add Invoice',
+      bulkImport: 'Bulk import',
       category: 'Category',
       description: 'Description',
       amount: 'Amount',
@@ -1611,8 +1613,10 @@ export const translations = {
     expenses: {
       title: 'Giderler ve Alışlar',
       manualExpenses: 'Manuel Giderler',
-      incomingInvoices: 'Gelen E-Faturalar',
+      incomingInvoices: 'Gelen Faturalar',
       addExpense: 'Gider Ekle',
+      addIncomingInvoice: 'Yeni Fatura',
+      bulkImport: 'Toplu aktarım',
       category: 'Kategori',
       description: 'Açıklama',
       amount: 'Tutar',
