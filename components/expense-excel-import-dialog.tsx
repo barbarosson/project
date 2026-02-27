@@ -10,12 +10,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { supabase } from '@/lib/supabase'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
 import { toast } from 'sonner'
-import { Upload, FileSpreadsheet, Loader2, Download, Receipt, FileText } from 'lucide-react'
+import { Upload, FileSpreadsheet, Loader2, Download } from 'lucide-react'
 import * as XLSX from 'xlsx'
 
 const VALID_CATEGORIES = ['general', 'marketing', 'personnel', 'office', 'tax', 'utilities', 'rent', 'other']
@@ -380,7 +379,7 @@ export function ExpenseExcelImportDialog({ isOpen, onClose, onSuccess }: Expense
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && handleClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-cyan-50">
         <DialogHeader>
           <DialogTitle>{isTr ? 'Toplu aktarım' : 'Bulk import'}</DialogTitle>
           <DialogDescription>
@@ -390,22 +389,28 @@ export function ExpenseExcelImportDialog({ isOpen, onClose, onSuccess }: Expense
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          <Tabs value={importType} onValueChange={(v) => { setImportType(v as 'expense' | 'invoice'); setFile(null); setReport(null); }}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="expense" className="flex items-center gap-2">
-                <Receipt className="h-4 w-4" />
-                {isTr ? 'Giderler' : 'Expenses'}
-              </TabsTrigger>
-              <TabsTrigger value="invoice" className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                {isTr ? 'Gelen Faturalar' : 'Incoming Invoices'}
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-wrap gap-2 w-full">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => { setImportType('expense'); setFile(null); setReport(null) }}
+              className={importType === 'expense' ? 'ring-2 ring-primary' : ''}
+            >
+              {isTr ? 'Giderler' : 'Expenses'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => { setImportType('invoice'); setFile(null); setReport(null) }}
+              className={importType === 'invoice' ? 'ring-2 ring-primary' : ''}
+            >
+              {isTr ? 'Faturalar' : 'Invoices'}
+            </Button>
+          </div>
+          <div className="flex flex-col gap-2">
             <Button type="button" variant="outline" onClick={downloadTemplate} className="shrink-0">
               <FileSpreadsheet className="mr-2 h-4 w-4" />
-              {isTr ? 'Excel şablonu indir' : 'Download Excel template'}
+              {isTr ? 'Excel şablonunu indir' : 'Download Excel template'}
             </Button>
             <div className="flex-1 flex items-center gap-2 min-w-0">
               <input

@@ -404,7 +404,7 @@ export function InvoiceCsvImportDialog({ isOpen, onClose, onSuccess }: InvoiceCs
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && handleClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-cyan-50">
         <DialogHeader>
           <DialogTitle>{isTr ? 'Toplu aktarım' : 'Bulk import'}</DialogTitle>
           <DialogDescription>

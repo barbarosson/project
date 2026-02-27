@@ -888,7 +888,7 @@ export function CustomerCsvImportDialog({
   return (
     <>
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className={showReportDialog && importReport ? 'sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col' : 'sm:max-w-lg'}>
+      <DialogContent className={showReportDialog && importReport ? 'sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col bg-cyan-50' : 'sm:max-w-lg bg-cyan-50'}>
         {showReportDialog && importReport ? (
           <>
             <DialogHeader>

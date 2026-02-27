@@ -443,7 +443,7 @@ export default function CustomersPage() {
             <Button
               variant="outline"
               onClick={() => setIsCsvImportOpen(true)}
-              className="font-semibold text-gray-900 hover:text-gray-900"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-white hover:bg-gray-50 h-10 px-4 py-2 text-gray-900 hover:text-gray-900 shrink-0"
             >
               <Upload className="mr-2 h-4 w-4" />
               Toplu aktarım

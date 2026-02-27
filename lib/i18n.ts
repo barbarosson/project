@@ -1634,7 +1634,7 @@ export const translations = {
     expenses: {
       title: 'Masraflar ve Alış Faturaları',
       subtitle: 'Manuel masrafları ve gelen tedarikçi faturalarını takip edin',
-      manualExpenses: 'Manuel Giderler',
+      manualExpenses: 'Masraflar',
       incomingInvoices: 'Gelen Faturalar',
       acceptedPurchases: 'Kabul Edilen Alışlar',
       totalExpensesCard: 'Toplam Masraflar',
@@ -1656,7 +1656,7 @@ export const translations = {
       rejectionReasonPrompt: 'Red nedenini girin:',
       invoiceRejectedSuccess: 'Fatura reddedildi',
       rejectInvoiceError: 'Fatura reddedilemedi',
-      addExpense: 'Gider Ekle',
+      addExpense: 'Masraf Giriş',
       addIncomingInvoice: 'Yeni Fatura',
       bulkImport: 'Toplu aktarım',
       category: 'Kategori',

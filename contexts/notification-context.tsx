@@ -33,7 +33,23 @@ interface NotificationContextType {
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined)
 
 const NOTIFICATIONS_CLEARED_KEY = 'notifications_cleared_at'
-const SKIP_CHECKS_AFTER_CLEAR_MS = 10 * 60 * 1000 // 10 dakika – tümünü sil sonrası yeniden oluşturma
+const SKIP_CHECKS_AFTER_CLEAR_MS = 24 * 60 * 60 * 1000 // 24 saat – tümünü sil sonrası aynı bildirimlerin yeniden oluşmasını engelle
+
+function getClearedAt(tenantId: string): number | null {
+  if (typeof localStorage === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(`${NOTIFICATIONS_CLEARED_KEY}_${tenantId}`)
+    return raw ? parseInt(raw, 10) : null
+  } catch {
+    return null
+  }
+}
+
+function setClearedAt(tenantId: string, value: number) {
+  try {
+    localStorage.setItem(`${NOTIFICATIONS_CLEARED_KEY}_${tenantId}`, value.toString())
+  } catch {}
+}
 
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const { tenantId, loading: tenantLoading } = useTenant()
@@ -43,8 +59,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!tenantLoading && tenantId) {
       fetchNotifications()
-      const clearedAt = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem(NOTIFICATIONS_CLEARED_KEY) : null
-      const skipChecks = clearedAt && (Date.now() - parseInt(clearedAt, 10)) < SKIP_CHECKS_AFTER_CLEAR_MS
+      const clearedAt = getClearedAt(tenantId)
+      const skipChecks = clearedAt != null && Date.now() - clearedAt < SKIP_CHECKS_AFTER_CLEAR_MS
       if (!skipChecks) {
         runNotificationChecks(tenantId)
       }
@@ -208,9 +224,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       if (error) throw error
 
       setNotifications([])
-      if (typeof sessionStorage !== 'undefined') {
-        sessionStorage.setItem(NOTIFICATIONS_CLEARED_KEY, Date.now().toString())
-      }
+      setClearedAt(tenantId, Date.now())
     } catch (error) {
       console.error('Error deleting all notifications:', error)
     }

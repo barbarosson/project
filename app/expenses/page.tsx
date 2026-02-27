@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,14 +19,16 @@ import { Plus, Search, FileText, Receipt, CheckCircle2, XCircle, Eye, Trash2, Pe
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
 import { useTenant } from '@/contexts/tenant-context'
+import { useCurrency } from '@/contexts/currency-context'
 import { useLanguage } from '@/contexts/language-context'
+import { convertAmount, type TcmbRatesByCurrency } from '@/lib/tcmb'
 import { toast } from 'sonner'
 import { AddManualExpenseDialog } from '@/components/add-manual-expense-dialog'
 import { EditManualExpenseDialog } from '@/components/edit-manual-expense-dialog'
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
 import { ExpenseExcelImportDialog } from '@/components/expense-excel-import-dialog'
 import { AddManualPurchaseInvoiceDialog } from '@/components/add-manual-purchase-invoice-dialog'
-import { format } from 'date-fns'
+import { format, subDays } from 'date-fns'
 
 interface Expense {
   id: string
@@ -37,6 +39,7 @@ interface Expense {
   payment_method: string
   receipt_url: string | null
   notes: string | null
+  currency?: string
 }
 
 interface PurchaseInvoice {
@@ -70,9 +73,11 @@ const PURCHASE_TYPE_COLORS: Record<string, string> = {
 
 export default function ExpensesPage() {
   const { tenantId, loading: tenantLoading } = useTenant()
+  const { formatCurrency, currency: preferredCurrency, defaultRateType } = useCurrency()
   const { t, language } = useLanguage()
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [purchaseInvoices, setPurchaseInvoices] = useState<PurchaseInvoice[]>([])
+  const [tcmbRatesByDate, setTcmbRatesByDate] = useState<Record<string, TcmbRatesByCurrency>>({})
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [purchaseTypeFilter, setPurchaseTypeFilter] = useState<string>('all')
@@ -86,11 +91,83 @@ export default function ExpensesPage() {
   const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('manual')
 
+  const targetCurrency = (preferredCurrency || 'TRY').toUpperCase()
+
   useEffect(() => {
     if (!tenantLoading && tenantId) {
       fetchData()
     }
   }, [tenantId, tenantLoading])
+
+  async function fetchTcmbRatesForDates(dates: string[]): Promise<Record<string, TcmbRatesByCurrency>> {
+    const fallbackDate = format(new Date(), 'yyyy-MM-dd')
+    const ratesByDate: Record<string, TcmbRatesByCurrency> = {}
+    for (let d = 0; d <= 3; d++) {
+      const tryDate = d === 0 ? fallbackDate : format(subDays(new Date(), d), 'yyyy-MM-dd')
+      try {
+        const res = await fetch(`/api/tcmb?date=${tryDate}`)
+        if (res.ok) {
+          const data = await res.json()
+          if (data && Object.keys(data).length > 0) {
+            ratesByDate[fallbackDate] = data
+            break
+          }
+        }
+      } catch (_) {}
+    }
+    for (const dateStr of dates) {
+      if (ratesByDate[dateStr]) continue
+      for (let d = 0; d <= 5; d++) {
+        const tryDate = d === 0 ? dateStr : format(subDays(new Date(dateStr), d), 'yyyy-MM-dd')
+        try {
+          const res = await fetch(`/api/tcmb?date=${tryDate}`)
+          if (res.ok) {
+            const data = await res.json()
+            if (data && Object.keys(data).length > 0) {
+              ratesByDate[dateStr] = data
+              break
+            }
+          }
+        } catch (_) {}
+      }
+      if (!ratesByDate[dateStr] && ratesByDate[fallbackDate]) ratesByDate[dateStr] = ratesByDate[fallbackDate]
+    }
+    return ratesByDate
+  }
+
+  function getRatesForDate(dateStr: string | null): TcmbRatesByCurrency | null {
+    if (!dateStr) return null
+    return tcmbRatesByDate[dateStr] ?? tcmbRatesByDate[format(new Date(), 'yyyy-MM-dd')] ?? null
+  }
+
+  function convertToPreferred(amount: number, fromCurrency: string, dateStr: string | null): number {
+    const c = (fromCurrency || 'TRY').toUpperCase()
+    if (c === targetCurrency) return amount
+    const rates = getRatesForDate(dateStr)
+    if (rates) {
+      const converted = convertAmount(amount, c, targetCurrency, rates, defaultRateType)
+      if (converted != null) return converted
+    }
+    return amount
+  }
+
+  /** Tercih edilen para biriminden farklıysa orijinal + çevrilmiş tutarı döndürür. */
+  function renderAmountWithConversion(
+    amount: number,
+    fromCurrency: string,
+    dateStr: string | null
+  ): ReactNode {
+    const from = (fromCurrency || 'TRY').toUpperCase()
+    const originalFormatted = formatCurrency(amount, from)
+    if (from === targetCurrency) return originalFormatted
+    const converted = convertToPreferred(amount, from, dateStr)
+    return (
+      <span className="inline-flex flex-col items-start">
+        <span>{originalFormatted}</span>
+        <span className="text-muted-foreground text-xs font-normal">≈ {formatCurrency(converted, targetCurrency)}</span>
+      </span>
+    )
+  }
 
   async function fetchData() {
     if (!tenantId) return
@@ -104,6 +181,15 @@ export default function ExpensesPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (expenses.length === 0 && purchaseInvoices.length === 0) return
+    const uniqueDates = Array.from(new Set([
+      ...expenses.map(e => e.expense_date ? format(new Date(e.expense_date), 'yyyy-MM-dd') : null),
+      ...purchaseInvoices.map(inv => inv.invoice_date ? format(new Date(inv.invoice_date), 'yyyy-MM-dd') : null)
+    ].filter(Boolean))) as string[]
+    fetchTcmbRatesForDates(uniqueDates).then(setTcmbRatesByDate)
+  }, [expenses.length, purchaseInvoices.length])
 
   async function fetchExpenses() {
     if (!tenantId) {
@@ -305,10 +391,22 @@ export default function ExpensesPage() {
     return true
   })
 
-  const totalManualExpenses = expenses.reduce((sum, exp) => sum + Number(exp.amount), 0)
+  const totalManualExpenses = expenses.reduce(
+    (sum, exp) => sum + convertToPreferred(Number(exp.amount), (exp as Expense).currency ?? 'TRY', exp.expense_date ? format(new Date(exp.expense_date), 'yyyy-MM-dd') : null),
+    0
+  )
   const totalAcceptedInvoices = purchaseInvoices
     .filter(inv => inv.status === 'accepted')
-    .reduce((sum, inv) => sum + Number(inv.total_amount), 0)
+    .reduce(
+      (sum, inv) =>
+        sum +
+        convertToPreferred(
+          Number(inv.total_amount),
+          'TRY',
+          inv.invoice_date ? format(new Date(inv.invoice_date), 'yyyy-MM-dd') : null
+        ),
+      0
+    )
   const totalExpenses = totalManualExpenses + totalAcceptedInvoices
   const pendingInvoicesCount = purchaseInvoices.filter(inv => inv.status === 'pending').length
 
@@ -338,7 +436,7 @@ export default function ExpensesPage() {
               <CardTitle className="text-sm font-medium text-gray-600">{t.expenses.manualExpenses}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalManualExpenses.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{formatCurrency(totalManualExpenses, targetCurrency)}</div>
               <p className="text-xs text-gray-500 mt-1">{expenses.length} {t.expenses.expenseCountLabel}</p>
             </CardContent>
           </Card>
@@ -348,7 +446,7 @@ export default function ExpensesPage() {
               <CardTitle className="text-sm font-medium text-gray-600">{t.expenses.acceptedPurchases}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalAcceptedInvoices.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{formatCurrency(totalAcceptedInvoices, targetCurrency)}</div>
               <p className="text-xs text-gray-500 mt-1">
                 {purchaseInvoices.filter(inv => inv.status === 'accepted').length} {t.expenses.invoiceCountLabel}
               </p>
@@ -360,7 +458,7 @@ export default function ExpensesPage() {
               <CardTitle className="text-sm font-medium text-gray-600">{t.expenses.totalExpensesCard}</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalExpenses.toLocaleString()}</div>
+              <div className="text-2xl font-bold">{formatCurrency(totalExpenses, targetCurrency)}</div>
               <p className="text-xs text-gray-500 mt-1">{t.expenses.allExpensesCombined}</p>
             </CardContent>
           </Card>
@@ -405,7 +503,11 @@ export default function ExpensesPage() {
                     />
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <Button variant="outline" onClick={() => setIsExpenseImportDialogOpen(true)} className="shrink-0">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsExpenseImportDialogOpen(true)}
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-white hover:bg-gray-50 h-10 px-4 py-2 text-gray-900 hover:text-gray-900 shrink-0"
+                    >
                       <Upload size={16} className="mr-2" />
                       {t.expenses.bulkImport}
                     </Button>
@@ -454,7 +556,7 @@ export default function ExpensesPage() {
                             </Badge>
                           </TableCell>
                           <TableCell>{expense.description}</TableCell>
-                          <TableCell className="font-semibold">${Number(expense.amount).toLocaleString()}</TableCell>
+                          <TableCell className="font-semibold">{renderAmountWithConversion(Number(expense.amount), (expense as Expense).currency ?? 'TRY', expense.expense_date ? format(new Date(expense.expense_date), 'yyyy-MM-dd') : null)}</TableCell>
                           <TableCell>
                             {t.expenses.paymentMethods[expense.payment_method as keyof typeof t.expenses.paymentMethods]}
                           </TableCell>
@@ -545,7 +647,7 @@ export default function ExpensesPage() {
                           </TableCell>
                           <TableCell>{invoice.supplier?.company_title || invoice.supplier?.name}</TableCell>
                           <TableCell>{format(new Date(invoice.invoice_date), 'MMM dd, yyyy')}</TableCell>
-                          <TableCell className="font-semibold">${Number(invoice.total_amount).toLocaleString()}</TableCell>
+                          <TableCell className="font-semibold">{renderAmountWithConversion(Number(invoice.total_amount), 'TRY', invoice.invoice_date ? format(new Date(invoice.invoice_date), 'yyyy-MM-dd') : null)}</TableCell>
                           <TableCell>
                             {invoice.status === 'pending' && <Badge variant="outline">{t.expenses.pending}</Badge>}
                             {invoice.status === 'accepted' && <Badge className="bg-green-500">{t.expenses.accepted}</Badge>}

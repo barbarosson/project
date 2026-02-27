@@ -51,6 +51,7 @@ interface DashboardMetrics {
   cashOnHand: number
   collectedCash: number
   invoicedTotal: number
+  convertedUnmatchedIncome: number
 }
 
 interface DateRange {
@@ -99,7 +100,8 @@ export default function Dashboard() {
     lowStockAlerts: 0,
     cashOnHand: 0,
     collectedCash: 0,
-    invoicedTotal: 0
+    invoicedTotal: 0,
+    convertedUnmatchedIncome: 0
   })
   const [cashFlowSourceInvoices, setCashFlowSourceInvoices] = useState<any[]>([])
   const [cashFlowSourceExpenses, setCashFlowSourceExpenses] = useState<any[]>([])
@@ -191,9 +193,9 @@ export default function Dashboard() {
           supabase.from('customers').select('id, name, email, company_title, status, created_at, branch_type, parent_customer_id').eq('tenant_id', tenantId),
           supabase.from('invoices').select('id, invoice_number, amount, total, paid_amount, remaining_amount, status, issue_date, payment_date, created_at, currency').eq('tenant_id', tenantId),
           supabase.from('products').select('id, name, current_stock, stock_quantity, min_stock_level, created_at').eq('tenant_id', tenantId),
-          supabase.from('expenses').select('id, description, amount, expense_date, category, created_at').eq('tenant_id', tenantId),
-          supabase.from('accounts').select('id, name, current_balance, is_active').eq('tenant_id', tenantId).eq('is_active', true),
-          supabase.from('transactions').select('id, amount, transaction_type, transaction_date, reference_type, reference_id, description').eq('tenant_id', tenantId),
+          supabase.from('expenses').select('id, description, amount, expense_date, category, created_at, currency').eq('tenant_id', tenantId),
+          supabase.from('accounts').select('id, name, current_balance, is_active, currency').eq('tenant_id', tenantId).eq('is_active', true),
+          supabase.from('transactions').select('id, amount, transaction_type, transaction_date, reference_type, reference_id, description, currency').eq('tenant_id', tenantId),
           supabase.from('warehouse_inventory_summary').select('product_id, product_name, critical_level, warehouse_quantity').eq('tenant_id', tenantId).then(r => r).catch(() => ({ data: [] }))
         ]),
         new Promise((_, reject) =>
@@ -228,9 +230,14 @@ export default function Dashboard() {
       })
 
       const targetCurrency = (companyCurrency || 'TRY').toUpperCase()
+      const incomeTxInRange = allTransactions.filter((tx: any) => tx.transaction_type === 'income' && tx.transaction_date && new Date(tx.transaction_date) >= dateRange.from && new Date(tx.transaction_date) <= dateRange.to)
+      const expenseTxInRange = allTransactions.filter((tx: any) => tx.transaction_type === 'expense' && tx.transaction_date && new Date(tx.transaction_date) >= dateRange.from && new Date(tx.transaction_date) <= dateRange.to)
       const uniqueDates = Array.from(new Set([
         ...filteredInvoices.map((i: any) => i.issue_date && format(new Date(i.issue_date), 'yyyy-MM-dd')),
-        ...collectedInPeriod.map((i: any) => i.payment_date && format(new Date(i.payment_date), 'yyyy-MM-dd'))
+        ...collectedInPeriod.map((i: any) => i.payment_date && format(new Date(i.payment_date), 'yyyy-MM-dd')),
+        ...filteredExpenses.map((e: any) => e.expense_date && format(new Date(e.expense_date), 'yyyy-MM-dd')),
+        ...incomeTxInRange.map((tx: any) => tx.transaction_date && format(new Date(tx.transaction_date), 'yyyy-MM-dd')),
+        ...expenseTxInRange.map((tx: any) => tx.transaction_date && format(new Date(tx.transaction_date), 'yyyy-MM-dd'))
       ].filter(Boolean))) as string[]
       const ratesByDate: Record<string, TcmbRatesByCurrency> = {}
       const fallbackDate = format(dateRange.from, 'yyyy-MM-dd')
@@ -282,6 +289,15 @@ export default function Dashboard() {
         }
         return 0
       }
+      const convertGenericAmount = (amt: number, currency: string, rates: TcmbRatesByCurrency | null): number => {
+        const c = (currency || 'TRY').toUpperCase()
+        if (c === targetCurrency) return amt
+        if (rates) {
+          const converted = convertAmount(amt, c, targetCurrency, rates, defaultRateType)
+          if (converted != null) return converted
+        }
+        return 0
+      }
 
       const draftRevenue = filteredInvoices
         .filter((i: any) => i.status === 'draft')
@@ -298,8 +314,10 @@ export default function Dashboard() {
         0
       )
 
-      const totalExpenses = filteredExpenses
-        .reduce((sum: number, e: any) => sum + (Number(e.amount) || 0), 0)
+      const totalExpenses = filteredExpenses.reduce(
+        (sum: number, e: any) => sum + convertGenericAmount(Number(e.amount) || 0, e.currency, getRatesForDate(e.expense_date ? format(new Date(e.expense_date), 'yyyy-MM-dd') : null)),
+        0
+      )
 
       const invoicedTotal = filteredInvoices.reduce(
         (sum: number, i: any) => sum + convertInvoiceAmount(i, invoiceAmount(i), getRatesForInvoice(i)),
@@ -318,17 +336,41 @@ export default function Dashboard() {
         const t = new Date(d).getTime()
         return t >= rangeStart && t <= rangeEnd
       }
+      const ratesFallback = getRatesForDate(null)
       const transactionIncome = allTransactions
         .filter((tx: any) => tx.transaction_type === 'income' && tx.transaction_date && inRange(tx.transaction_date))
-        .reduce((sum: number, tx: any) => sum + (Number(tx.amount) || 0), 0)
+        .reduce(
+          (sum: number, tx: any) =>
+            sum + convertGenericAmount(Number(tx.amount) || 0, tx.currency, getRatesForDate(tx.transaction_date ? format(new Date(tx.transaction_date), 'yyyy-MM-dd') : null)),
+          0
+        )
       const transactionExpense = allTransactions
         .filter((tx: any) => tx.transaction_type === 'expense' && tx.transaction_date && inRange(tx.transaction_date))
-        .reduce((sum: number, tx: any) => sum + (Number(tx.amount) || 0), 0)
+        .reduce(
+          (sum: number, tx: any) =>
+            sum + convertGenericAmount(Number(tx.amount) || 0, tx.currency, getRatesForDate(tx.transaction_date ? format(new Date(tx.transaction_date), 'yyyy-MM-dd') : null)),
+          0
+        )
       const periodIncome = collectedCash + transactionIncome
       const periodExpenses = totalExpenses + transactionExpense
       const netProfit = periodIncome - periodExpenses
 
-      const cashOnHand = accounts.reduce((sum: number, acc: any) => sum + (Number(acc.current_balance) || 0), 0)
+      const cashOnHand = accounts.reduce(
+        (sum: number, acc: any) =>
+          sum + convertGenericAmount(Number(acc.current_balance) || 0, acc.currency, ratesFallback),
+        0
+      )
+      const unmatchedIncomeTx = allTransactions.filter((tx: any) => {
+        if (tx.transaction_type !== 'income' || !tx.transaction_date) return false
+        const txDate = new Date(tx.transaction_date).getTime()
+        if (txDate < rangeStart || txDate > rangeEnd) return false
+        return tx.reference_type !== 'invoice' || !tx.reference_id
+      })
+      const convertedUnmatchedIncome = unmatchedIncomeTx.reduce(
+        (sum: number, tx: any) =>
+          sum + convertGenericAmount(Number(tx.amount) || 0, tx.currency, getRatesForDate(tx.transaction_date ? format(new Date(tx.transaction_date), 'yyyy-MM-dd') : null)),
+        0
+      )
 
       const isMainCustomer = (c: any) => c.branch_type === 'main' || c.parent_customer_id == null
       const activeCustomers = customers.filter((c: any) => c.status === 'active' && isMainCustomer(c)).length
@@ -381,7 +423,8 @@ export default function Dashboard() {
         lowStockAlerts,
         cashOnHand,
         collectedCash,
-        invoicedTotal
+        invoicedTotal,
+        convertedUnmatchedIncome
       })
 
       const collectedInvoicesList = allInvoices.filter((i: any) => {
@@ -893,7 +936,7 @@ export default function Dashboard() {
           />
           <MetricCard
             title={t.dashboard.cashFlowIncome}
-            value={formatCurrency(metrics.collectedCash + detailUnmatchedIncome.reduce((s, tx) => s + (Number(tx.amount) || 0), 0), companyCurrency || undefined)}
+            value={formatCurrency(metrics.collectedCash + metrics.convertedUnmatchedIncome, companyCurrency || undefined)}
             change={language === 'tr'
               ? 'Tahsil edilen faturalar + fatura ile eşlenmemiş tahsilatlar'
               : 'Collected invoices + unmatched collections'
