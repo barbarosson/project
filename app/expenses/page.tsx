@@ -512,13 +512,19 @@ export default function ExpensesPage() {
                       {t.expenses.bulkImport}
                     </Button>
                     {activeTab === 'manual' && (
-                      <Button onClick={() => setIsAddExpenseDialogOpen(true)} className="shrink-0">
+                      <Button
+                        onClick={() => setIsAddExpenseDialogOpen(true)}
+                        className="shrink-0 bg-[rgba(0,212,170,1)] text-[var(--color-primary)] hover:bg-[rgba(0,212,170,0.9)]"
+                      >
                         <Plus size={16} className="mr-2" />
                         {t.expenses.addExpense}
                       </Button>
                     )}
                     {activeTab === 'incoming' && (
-                      <Button onClick={() => setIsAddPurchaseInvoiceDialogOpen(true)} className="shrink-0">
+                      <Button
+                        onClick={() => setIsAddPurchaseInvoiceDialogOpen(true)}
+                        className="shrink-0 bg-[rgba(0,212,170,1)] text-contrast-body"
+                      >
                         <Plus size={16} className="mr-2" />
                         {t.expenses.addIncomingInvoice}
                       </Button>

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import {
   Table,
@@ -14,7 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Card, CardContent } from '@/components/ui/card'
-import { Plus, Loader2, Eye, MoreVertical, Edit, Trash2, Upload, AlertCircle, ShoppingCart, FileCheck2, CheckSquare } from 'lucide-react'
+import { Plus, Loader2, Eye, MoreVertical, Edit, Trash2, Upload, AlertCircle, ShoppingCart, FileCheck2, CheckSquare, Search } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
@@ -79,6 +80,7 @@ export default function InvoicesPage() {
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [typeFilter, setTypeFilter] = useState<string>('all')
+  const [searchQuery, setSearchQuery] = useState<string>('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showCsvImportDialog, setShowCsvImportDialog] = useState(false)
@@ -141,6 +143,19 @@ export default function InvoicesPage() {
       cancelled: 'bg-gray-500 text-white'
     }
     return colors[status] || 'bg-gray-400 text-white'
+  }
+
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      draft: t.common.draft,
+      sent: t.common.sent,
+      paid: t.common.paid,
+      overdue: t.common.overdue,
+      cancelled: t.common.cancelled,
+      pending: t.common.pending,
+    }
+
+    return labels[status] || status.charAt(0).toUpperCase() + status.slice(1)
   }
 
   function handleRecordPayment(invoice: any) {
@@ -223,7 +238,21 @@ export default function InvoicesPage() {
   const filteredInvoices = invoices.filter((inv) => {
     if (statusFilter !== 'all' && inv.status !== statusFilter) return false
     if (typeFilter !== 'all' && (inv.invoice_type || 'sale') !== typeFilter) return false
-    return true
+
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return true
+
+    const customerName = (inv.customers?.company_title || inv.customers?.name || '').toLowerCase()
+    const invoiceNo = (inv.invoice_number || '').toLowerCase()
+    const issueDateStr = inv.issue_date ? new Date(inv.issue_date).toLocaleDateString('tr-TR') : ''
+    const dueDateStr = inv.due_date ? new Date(inv.due_date).toLocaleDateString('tr-TR') : ''
+
+    return (
+      invoiceNo.includes(q) ||
+      customerName.includes(q) ||
+      issueDateStr.toLowerCase().includes(q) ||
+      dueDateStr.toLowerCase().includes(q)
+    )
   })
 
   const allVisibleSelected = filteredInvoices.length > 0 && filteredInvoices.every((inv) => selectedIds.has(inv.id))
@@ -295,7 +324,7 @@ export default function InvoicesPage() {
             </Button>
             <Button
               onClick={() => router.push('/invoices/new')}
-              className="bg-[#00D4AA] hover:bg-[#00B894]"
+              className="bg-[#00D4AA] hover:bg-[#00B894] text-contrast-body"
             >
               <Plus className="mr-2 h-4 w-4" />
               {t.invoices.createNewInvoice}
@@ -306,6 +335,15 @@ export default function InvoicesPage() {
         <Card>
           <CardContent className="p-6">
             <div className="flex flex-wrap items-center gap-3 mb-4">
+              <div className="relative flex-1 min-w-[200px] max-w-xs">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={language === 'tr' ? 'Fatura no, tarih veya müşteri ara' : 'Search by number, date or customer'}
+                  className="pl-9"
+                />
+              </div>
               <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setSelectedIds(new Set()) }}>
                 <SelectTrigger className="w-[160px] h-9" data-field="invoices-status-filter">
                   <SelectValue placeholder={language === 'tr' ? 'Durum' : 'Status'} />
@@ -445,7 +483,7 @@ export default function InvoicesPage() {
                         </TableCell>
                         <TableCell>
                           <Badge className={getStatusBadge(invoice.status)}>
-                            {invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                            {getStatusLabel(invoice.status)}
                           </Badge>
                         </TableCell>
                         <TableCell>

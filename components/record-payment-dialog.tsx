@@ -163,13 +163,19 @@ export function RecordPaymentDialog({
       const isFullyPaid = newRemainingAmount <= 0.01
 
       if (type === 'invoice') {
+        const updateData: any = {
+          paid_amount: newPaidAmount,
+          remaining_amount: newRemainingAmount,
+          payment_date: isFullyPaid ? formData.transaction_date : null
+        }
+
+        if (isFullyPaid) {
+          updateData.status = 'paid'
+        }
+
         const { error: invoiceError } = await supabase
           .from('invoices')
-          .update({
-            paid_amount: newPaidAmount,
-            remaining_amount: newRemainingAmount,
-            payment_date: isFullyPaid ? formData.transaction_date : null
-          })
+          .update(updateData)
           .eq('id', referenceId)
 
         if (invoiceError) throw invoiceError

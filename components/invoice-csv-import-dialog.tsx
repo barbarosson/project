@@ -414,7 +414,7 @@ export function InvoiceCsvImportDialog({ isOpen, onClose, onSuccess }: InvoiceCs
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-col gap-2">
             <Button type="button" variant="outline" onClick={downloadTemplate} className="shrink-0">
               <FileSpreadsheet className="mr-2 h-4 w-4" />
               {isTr ? 'Excel şablonu indir' : 'Download Excel template'}

@@ -1568,7 +1568,7 @@ export const translations = {
       invoiceUpdatedSuccessfully: 'Fatura başarıyla güncellendi!',
       statusSystemManaged: "'{status}' durumu sistem tarafından yönetilir ve ödeme ve vade tarihine göre otomatik güncellenir",
       actions: 'İşlemler',
-      recordPayment: 'Ödeme Kaydet',
+      recordPayment: 'Ödeme Gir',
       noInvoicesFound: 'Biraz sessiz görünüyor. Akıllı bir şeyler yapalım. İlk faturanızı yükleyin ve sihri görmek için ekleyin.',
       manageInvoicesBilling: 'Faturalarınızı ve faturalandırmayı yönetin',
       bulkCreate: 'Toplu Oluştur',
