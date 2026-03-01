@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { DashboardLayout } from '@/components/dashboard-layout'
+import { convertAmount } from '@/lib/tcmb'
+import type { TcmbRatesByCurrency } from '@/lib/tcmb'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Plus, Wallet, Building2, CreditCard, MoreVertical, Trash2, Edit, TrendingUp, TrendingDown } from 'lucide-react'
+import { Plus, Upload, Wallet, Building2, CreditCard, MoreVertical, Trash2, Edit, TrendingUp, TrendingDown, Search } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
@@ -37,6 +39,7 @@ import {
 } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { TurkishBankSelect } from '@/components/turkish-bank-select'
+import { AccountCsvImportDialog } from '@/components/account-csv-import-dialog'
 
 interface Account {
   id: string
@@ -50,6 +53,7 @@ interface Account {
   card_last_four?: string
   card_holder_name?: string
   is_active: boolean
+  closed_at?: string | null
   notes?: string
   created_at: string
   updated_at: string
@@ -57,9 +61,10 @@ interface Account {
 
 export default function AccountsPage() {
   const { tenantId } = useTenant()
-  const { t } = useLanguage()
-  const { formatCurrency } = useCurrency()
+  const { t, language } = useLanguage()
+  const { formatCurrency, currency: preferredCurrency, defaultRateType } = useCurrency()
   const [accounts, setAccounts] = useState<Account[]>([])
+  const [tcmbRates, setTcmbRates] = useState<TcmbRatesByCurrency | null>(null)
 
   const currencies = Object.keys(currencySymbols).map(code => ({
     code: code as Currency,
@@ -70,6 +75,11 @@ export default function AccountsPage() {
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [closeDialogOpen, setCloseDialogOpen] = useState(false)
+  const [closeDate, setCloseDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [viewFilter, setViewFilter] = useState<'active' | 'closed' | 'all'>('active')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [csvImportOpen, setCsvImportOpen] = useState(false)
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
 
   const [formData, setFormData] = useState({
@@ -88,23 +98,32 @@ export default function AccountsPage() {
     if (tenantId) {
       fetchAccounts()
     }
-  }, [tenantId])
+  }, [tenantId, viewFilter])
+
+  useEffect(() => {
+    const dateStr = new Date().toISOString().slice(0, 10)
+    fetch(`/api/tcmb?date=${dateStr}`)
+      .then((res) => res.ok ? res.json() : null)
+      .then((data) => data && Object.keys(data).length > 0 ? setTcmbRates(data) : setTcmbRates(null))
+      .catch(() => setTcmbRates(null))
+  }, [])
 
   async function fetchAccounts() {
     try {
       setLoading(true)
-      const { data, error } = await supabase
+      let query = supabase
         .from('accounts')
         .select('*')
         .eq('tenant_id', tenantId)
-        .eq('is_active', true)
         .order('created_at', { ascending: false })
-
+      if (viewFilter === 'active') query = query.eq('is_active', true)
+      else if (viewFilter === 'closed') query = query.eq('is_active', false)
+      const { data, error } = await query
       if (error) throw error
       setAccounts(data || [])
     } catch (error: any) {
       console.error('Error fetching accounts:', error)
-      toast.error('Failed to load accounts')
+      toast.error(t.toast.failedToLoadAccounts)
     } finally {
       setLoading(false)
     }
@@ -197,19 +216,60 @@ export default function AccountsPage() {
     }
   }
 
-  async function handleDeleteAccount() {
+  async function handleCloseAccount() {
     if (!selectedAccount) return
-
     try {
       const { error } = await supabase
         .from('accounts')
-        .update({ is_active: false })
+        .update({
+          is_active: false,
+          closed_at: closeDate ? new Date(closeDate).toISOString() : new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
         .eq('id', selectedAccount.id)
         .eq('tenant_id', tenantId)
-
       if (error) throw error
+      toast.success(t.finance.accounts.accountClosedSuccess)
+      setCloseDialogOpen(false)
+      setSelectedAccount(null)
+      setCloseDate(new Date().toISOString().slice(0, 10))
+      fetchAccounts()
+    } catch (error: any) {
+      console.error('Error closing account:', error)
+      toast.error(error.message || (language === 'tr' ? 'Hesap kapatılamadı' : 'Failed to close account'))
+    }
+  }
 
-      toast.success('Account deleted successfully')
+  async function handleReopenAccount(account: Account) {
+    try {
+      const { error } = await supabase
+        .from('accounts')
+        .update({
+          is_active: true,
+          closed_at: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', account.id)
+        .eq('tenant_id', tenantId)
+      if (error) throw error
+      toast.success(t.finance.accounts.accountReopenedSuccess)
+      fetchAccounts()
+    } catch (error: any) {
+      console.error('Error reopening account:', error)
+      toast.error(error.message || (language === 'tr' ? 'Hesap açılamadı' : 'Failed to reopen account'))
+    }
+  }
+
+  async function handleDeleteAccount() {
+    if (!selectedAccount) return
+    try {
+      const { error } = await supabase
+        .from('accounts')
+        .update({ is_active: false, updated_at: new Date().toISOString() })
+        .eq('id', selectedAccount.id)
+        .eq('tenant_id', tenantId)
+      if (error) throw error
+      toast.success(t.finance.accounts.accountClosedSuccess)
       setDeleteDialogOpen(false)
       setSelectedAccount(null)
       fetchAccounts()
@@ -240,6 +300,12 @@ export default function AccountsPage() {
     setDeleteDialogOpen(true)
   }
 
+  function openCloseDialog(account: Account) {
+    setSelectedAccount(account)
+    setCloseDate(account.closed_at ? new Date(account.closed_at).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10))
+    setCloseDialogOpen(true)
+  }
+
   function resetForm() {
     setFormData({
       name: '',
@@ -254,7 +320,41 @@ export default function AccountsPage() {
     })
   }
 
-  const totalBalance = accounts.reduce((sum, acc) => sum + Number(acc.current_balance), 0)
+  const filteredAccounts = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return accounts
+    return accounts.filter((acc) => {
+      const name = (acc.name || '').toLowerCase()
+      const bankName = (acc.bank_name || '').toLowerCase()
+      const currency = (acc.currency || '').toLowerCase()
+      const accountNumber = (acc.account_number || '').replace(/\s/g, '').toLowerCase()
+      const queryNorm = q.replace(/\s/g, '')
+      return (
+        name.includes(q) ||
+        bankName.includes(q) ||
+        currency.includes(q) ||
+        accountNumber.includes(queryNorm) ||
+        (queryNorm.length >= 4 && accountNumber.includes(queryNorm))
+      )
+    })
+  }, [accounts, searchQuery])
+
+  const activeAccounts = accounts.filter((a) => a.is_active)
+  const activeFilteredAccounts = filteredAccounts.filter((a) => a.is_active)
+  const totalBalanceInPreferred = useMemo(() => {
+    const target = (preferredCurrency || 'TRY').toUpperCase()
+    const sourceAccounts = searchQuery.trim() ? activeFilteredAccounts : activeAccounts
+    return sourceAccounts.reduce((sum, acc) => {
+      const amt = Number(acc.current_balance) || 0
+      const cur = (acc.currency || 'TRY').toUpperCase()
+      if (cur === target) return sum + amt
+      if (tcmbRates) {
+        const converted = convertAmount(amt, cur, target, tcmbRates, defaultRateType)
+        if (converted != null) return sum + converted
+      }
+      return sum
+    }, 0)
+  }, [activeAccounts, activeFilteredAccounts, searchQuery, preferredCurrency, defaultRateType, tcmbRates])
 
   return (
     <DashboardLayout>
@@ -262,12 +362,52 @@ export default function AccountsPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{t.finance.accounts.title}</h1>
-            <p className="text-gray-500 mt-1">Manage your cash and bank accounts</p>
+            <p className="text-gray-500 mt-1">{t.finance.accounts.subtitle}</p>
           </div>
+          <Button variant="outline" onClick={() => setCsvImportOpen(true)} className="shrink-0">
+            <Upload className="mr-2 h-4 w-4" />
+            {language === 'tr' ? 'Toplu aktarım' : 'Bulk import'}
+          </Button>
           <Button onClick={() => setAddDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
             {t.finance.accounts.addAccount}
           </Button>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+          <div className="flex gap-2">
+            <Button
+              variant={viewFilter === 'active' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewFilter('active')}
+            >
+              {t.finance.accounts.filterActive}
+            </Button>
+            <Button
+              variant={viewFilter === 'closed' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewFilter('closed')}
+            >
+              {t.finance.accounts.filterClosed}
+            </Button>
+            <Button
+              variant={viewFilter === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewFilter('all')}
+            >
+              {t.finance.accounts.filterAll}
+            </Button>
+          </div>
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder={t.finance.accounts.searchPlaceholder}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
         </div>
 
         {loading ? (
@@ -282,40 +422,46 @@ export default function AccountsPage() {
         ) : accounts.length === 0 ? (
           <EmptyState
             icon={Wallet}
-            title={t.finance.accounts.noAccounts}
-            description={t.finance.accounts.noAccountsDesc}
-            action={{
-              label: t.finance.accounts.addAccount,
-              onClick: () => setAddDialogOpen(true)
-            }}
+            title={viewFilter === 'active' ? t.finance.accounts.noAccounts : (language === 'tr' ? 'Kayıt yok' : 'No records')}
+            description={viewFilter === 'closed' ? (language === 'tr' ? 'Kapalı hesap bulunmuyor.' : 'No closed accounts.') : viewFilter === 'all' ? (language === 'tr' ? 'Henüz hesap eklenmemiş.' : 'No accounts yet.') : t.finance.accounts.noAccountsDesc}
+            action={viewFilter === 'active' ? { label: t.finance.accounts.addAccount, onClick: () => setAddDialogOpen(true) } : undefined}
           />
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-              <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
-                <CardHeader>
-                  <CardTitle className="text-white/90 text-sm font-medium">
-                    {t.finance.transactions.cashOnHand}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-3xl font-bold">
-                    {formatCurrency(totalBalance)}
-                  </div>
-                  <p className="text-white/80 text-sm mt-2">
-                    {accounts.length} {accounts.length === 1 ? 'account' : 'accounts'}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+            {(viewFilter === 'active' || viewFilter === 'all') && activeAccounts.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white">
+                  <CardHeader className="bg-[var(--color-success)]">
+                    <CardTitle className="text-white/90 text-sm font-medium">
+                      {t.finance.transactions.cashOnHand}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="bg-[var(--color-success)]">
+                    <div className="text-3xl font-bold">
+                      {formatCurrency(totalBalanceInPreferred)}
+                    </div>
+                    <p className="text-white/80 text-sm mt-2">
+                      {(searchQuery.trim() ? activeFilteredAccounts.length : activeAccounts.length)} {(searchQuery.trim() ? activeFilteredAccounts.length : activeAccounts.length) === 1 ? t.finance.accounts.account : t.finance.accounts.accounts}
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {accounts.map((account) => {
+              {filteredAccounts.length === 0 ? (
+                <div className="col-span-full py-12 text-center text-muted-foreground">
+                  {language === 'tr' ? 'Arama kriterlerine uygun hesap bulunamadı.' : 'No accounts match your search.'}
+                </div>
+              ) : (
+              <>
+              {filteredAccounts.map((account) => {
                 const balanceChange = Number(account.current_balance) - Number(account.opening_balance)
                 const isPositive = balanceChange >= 0
+                const isClosed = !account.is_active
 
                 return (
-                  <Card key={account.id} className="hover:shadow-lg transition-shadow">
+                  <Card key={account.id} className={`hover:shadow-lg transition-shadow ${isClosed ? 'opacity-85 border-amber-200 bg-amber-50/30' : ''}`}>
                     <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                       <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-lg ${
@@ -335,9 +481,21 @@ export default function AccountsPage() {
                         </div>
                         <div>
                           <CardTitle className="text-base font-semibold">{account.name}</CardTitle>
+                          {isClosed && (
+                            <p className="text-xs text-amber-700 font-medium mt-0.5">
+                              {t.finance.accounts.filterClosed}
+                              {account.closed_at && (
+                                <span className="text-amber-600 ml-1">
+                                  · {t.finance.accounts.closedAt}: {new Date(account.closed_at).toLocaleDateString(language === 'tr' ? 'tr-TR' : 'en-GB')}
+                                </span>
+                              )}
+                            </p>
+                          )}
+                          {!isClosed && (
                           <p className="text-xs text-gray-500">
                             {account.type === 'cash' ? t.finance.accounts.cash : account.type === 'credit_card' ? 'Credit Card' : t.finance.accounts.bank}
                           </p>
+                          )}
                         </div>
                       </div>
                       <DropdownMenu>
@@ -351,13 +509,17 @@ export default function AccountsPage() {
                             <Edit className="mr-2 h-4 w-4" />
                             {t.common.edit}
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => openDeleteDialog(account)}
-                            className="text-red-600"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            {t.common.delete}
-                          </DropdownMenuItem>
+                          {isClosed ? (
+                            <DropdownMenuItem onClick={() => handleReopenAccount(account)}>
+                              <TrendingUp className="mr-2 h-4 w-4" />
+                              {t.finance.accounts.reopenAccount}
+                            </DropdownMenuItem>
+                          ) : (
+                            <DropdownMenuItem onClick={() => openCloseDialog(account)}>
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              {t.finance.accounts.closeAccount}
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </CardHeader>
@@ -392,7 +554,7 @@ export default function AccountsPage() {
                             </span>
                           </div>
                           <div className="flex items-center justify-between text-xs mt-1">
-                            <span className="text-gray-500">Change</span>
+                            <span className="text-gray-500">{t.finance.accounts.balanceChange}</span>
                             <span className={`flex items-center gap-1 font-medium ${
                               isPositive ? 'text-green-600' : 'text-red-600'
                             }`}>
@@ -410,13 +572,15 @@ export default function AccountsPage() {
                   </Card>
                 )
               })}
+              </>
+              )}
             </div>
           </>
         )}
       </div>
 
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] bg-cyan-50">
           <DialogHeader>
             <DialogTitle>{t.finance.accounts.addAccount}</DialogTitle>
             <DialogDescription>Create a new cash or bank account to track your finances.</DialogDescription>
@@ -554,7 +718,7 @@ export default function AccountsPage() {
       </Dialog>
 
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] bg-cyan-50">
           <DialogHeader>
             <DialogTitle>{t.finance.accounts.editAccount}</DialogTitle>
             <DialogDescription>Update account information.</DialogDescription>
@@ -676,12 +840,42 @@ export default function AccountsPage() {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={closeDialogOpen} onOpenChange={(open) => { if (!open) { setCloseDialogOpen(false); setSelectedAccount(null) } }}>
+        <DialogContent className="sm:max-w-lg bg-cyan-50">
+          <DialogHeader>
+            <DialogTitle>{t.finance.accounts.confirmCloseAccount}</DialogTitle>
+            <DialogDescription>
+              {t.finance.accounts.closeAccountDescription}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="close-date">{t.finance.accounts.activeEndDate}</Label>
+              <Input
+                id="close-date"
+                type="date"
+                value={closeDate}
+                onChange={(e) => setCloseDate(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setCloseDialogOpen(false); setSelectedAccount(null) }}>
+              {t.common.cancel}
+            </Button>
+            <Button variant="destructive" onClick={handleCloseAccount}>
+              {t.finance.accounts.closeAccount}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t.common.confirmDelete}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this account? This action cannot be undone.
+              {language === 'tr' ? 'Bu hesabı kapatmak istediğinize emin misiniz? Hesap listeden çıkarılır.' : 'Are you sure you want to close this account? It will be removed from the active list.'}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -694,6 +888,12 @@ export default function AccountsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AccountCsvImportDialog
+        isOpen={csvImportOpen}
+        onClose={() => setCsvImportOpen(false)}
+        onSuccess={fetchAccounts}
+      />
     </DashboardLayout>
   )
 }

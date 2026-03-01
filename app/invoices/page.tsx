@@ -174,12 +174,22 @@ export default function InvoicesPage() {
   }
 
   function handleDelete(invoice: any) {
+    if (Number(invoice.paid_amount ?? 0) > 0.01) {
+      toast.error(t.invoices.cannotDeleteInvoiceWithPayments)
+      return
+    }
     setDeletingInvoice(invoice)
     setShowDeleteDialog(true)
   }
 
   async function confirmDelete() {
     if (!deletingInvoice || !tenantId) return
+    if (Number(deletingInvoice.paid_amount ?? 0) > 0.01) {
+      toast.error(t.invoices.cannotDeleteInvoiceWithPayments)
+      setShowDeleteDialog(false)
+      setDeletingInvoice(null)
+      return
+    }
 
     try {
       const { data: customer } = await supabase
@@ -281,18 +291,41 @@ export default function InvoicesPage() {
 
   async function handleBulkDelete() {
     if (!tenantId || selectedIds.size === 0) return
-    const confirmed = window.confirm(
-      language === 'tr'
-        ? `${selectedIds.size} fatura silinecek. Emin misiniz?`
-        : `Delete ${selectedIds.size} invoice(s). Are you sure?`
-    )
-    if (!confirmed) return
+    const toDelete = filteredInvoices.filter((inv) => selectedIds.has(inv.id))
+    const withPayments = toDelete.filter((inv) => Number(inv.paid_amount ?? 0) > 0.01)
+    const withoutPayments = toDelete.filter((inv) => Number(inv.paid_amount ?? 0) <= 0.01)
+    if (withPayments.length > 0 && withoutPayments.length === 0) {
+      toast.error(t.invoices.cannotDeleteInvoiceWithPayments)
+      return
+    }
+    if (withPayments.length > 0) {
+      const ok = window.confirm(
+        language === 'tr'
+          ? `${withPayments.length} faturada ödeme kaydı var, silinemez. Sadece ${withoutPayments.length} fatura silinecek. Devam?`
+          : `${withPayments.length} invoice(s) have payment(s) and cannot be deleted. Only ${withoutPayments.length} will be deleted. Continue?`
+      )
+      if (!ok) return
+    } else {
+      const confirmed = window.confirm(
+        language === 'tr'
+          ? `${withoutPayments.length} fatura silinecek. Emin misiniz?`
+          : `Delete ${withoutPayments.length} invoice(s). Are you sure?`
+      )
+      if (!confirmed) return
+    }
     try {
-      for (const id of Array.from(selectedIds)) {
-        await supabase.from('invoice_line_items').delete().eq('invoice_id', id).eq('tenant_id', tenantId)
-        await supabase.from('invoices').delete().eq('id', id).eq('tenant_id', tenantId)
+      let deleted = 0
+      for (const inv of withoutPayments) {
+        await supabase.from('invoice_line_items').delete().eq('invoice_id', inv.id).eq('tenant_id', tenantId)
+        await supabase.from('invoices').delete().eq('id', inv.id).eq('tenant_id', tenantId)
+        deleted++
       }
-      toast.success(language === 'tr' ? `${selectedIds.size} fatura silindi` : `${selectedIds.size} invoice(s) deleted`)
+      if (deleted > 0) {
+        toast.success(language === 'tr' ? `${deleted} fatura silindi` : `${deleted} invoice(s) deleted`)
+      }
+      if (withPayments.length > 0) {
+        toast.info(language === 'tr' ? `${withPayments.length} fatura ödemesi olduğu için silinemedi` : `${withPayments.length} invoice(s) not deleted (have payments)`)
+      }
       setSelectedIds(new Set())
       fetchInvoices()
     } catch (err: any) {
@@ -382,7 +415,7 @@ export default function InvoicesPage() {
                 <span className="text-sm font-medium text-blue-800">
                   {language === 'tr' ? `${selectedIds.size} fatura seçili` : `${selectedIds.size} invoice(s) selected`}
                 </span>
-                <Button size="sm" variant="destructive" onClick={handleBulkDelete}>
+                <Button size="sm" variant="destructive" className="text-[#0A2540]" onClick={handleBulkDelete}>
                   <Trash2 className="h-3.5 w-3.5 mr-1" />
                   {language === 'tr' ? 'Seçilenleri Sil' : 'Delete Selected'}
                 </Button>
@@ -487,12 +520,15 @@ export default function InvoicesPage() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <Badge className={getStatusBadge(invoice.status)}>
+                          <Badge
+                            className={`${getStatusBadge(invoice.status)} ${invoice.status === 'paid' ? 'cursor-pointer hover:opacity-90' : ''}`}
+                            onClick={invoice.status === 'paid' ? () => router.push(`/finance/transactions?reference_type=invoice&reference_id=${invoice.id}`) : undefined}
+                          >
                             {getStatusLabel(invoice.status)}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-1">
+                          <div className="flex flex-wrap items-center gap-1">
                             {invoice.order_id && (
                               <Badge variant="outline" className="text-[10px] bg-teal-50 text-teal-700 border-teal-200 cursor-pointer"
                                 onClick={() => router.push('/orders')}
@@ -513,20 +549,6 @@ export default function InvoicesPage() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            {invoice.status !== 'paid' &&
-                              invoice.status !== 'cancelled' &&
-                              invoice.status !== 'draft' &&
-                              Number(invoice.remaining_amount ?? 0) > 0.01 && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="border-green-200 text-green-700 hover:bg-green-50"
-                                  onClick={() => handleRecordPayment(invoice)}
-                                >
-                                  <DollarSign className="h-4 w-4 mr-1" />
-                                  {t.invoices.recordPayment}
-                                </Button>
-                              )}
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button
@@ -542,6 +564,15 @@ export default function InvoicesPage() {
                                   <Eye className="h-4 w-4 mr-2" />
                                   {t.invoices.view}
                                 </DropdownMenuItem>
+                                {invoice.status !== 'paid' &&
+                                  invoice.status !== 'cancelled' &&
+                                  invoice.status !== 'draft' &&
+                                  Number(invoice.remaining_amount ?? 0) > 0.01 && (
+                                    <DropdownMenuItem onClick={() => handleRecordPayment(invoice)} className="text-green-600">
+                                      <DollarSign className="h-4 w-4 mr-2" />
+                                      {t.invoices.recordPayment}
+                                    </DropdownMenuItem>
+                                  )}
                                 <DropdownMenuItem onClick={() => handleEdit(invoice)}>
                                   <Edit className="h-4 w-4 mr-2" />
                                   {t.invoices.edit}
@@ -549,6 +580,8 @@ export default function InvoicesPage() {
                                 <DropdownMenuItem
                                   onClick={() => handleDelete(invoice)}
                                   className="text-red-600"
+                                  disabled={Number(invoice.paid_amount ?? 0) > 0.01}
+                                  title={Number(invoice.paid_amount ?? 0) > 0.01 ? t.invoices.cannotDeleteInvoiceWithPayments : undefined}
                                 >
                                   <Trash2 className="h-4 w-4 mr-2" />
                                   {t.invoices.delete}

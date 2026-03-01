@@ -516,7 +516,7 @@ export default function OrdersPage() {
                 <span className="text-sm font-medium text-blue-800">
                   {isTR ? `${selectedIds.size} sipariş seçili` : `${selectedIds.size} order(s) selected`}
                 </span>
-                <Button size="sm" variant="destructive" onClick={handleBulkDelete}>
+                <Button size="sm" variant="destructive" className="text-[#0A2540]" onClick={handleBulkDelete}>
                   <Trash2 className="h-3.5 w-3.5 mr-1" />
                   {isTR ? 'Seçilenleri Sil' : 'Delete Selected'}
                 </Button>
