@@ -464,7 +464,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-cyan-50">
         <DialogHeader>
           <DialogTitle>{t.invoices.editInvoice}</DialogTitle>
           <DialogDescription>

@@ -177,13 +177,23 @@ export function RecordPaymentDialog({
           .from('invoices')
           .update(updateData)
           .eq('id', referenceId)
+          .eq('tenant_id', tenantId)
 
         if (invoiceError) throw invoiceError
 
         if (customerId) {
-          const { data: cust } = await supabase.from('customers').select('balance').eq('id', customerId).maybeSingle()
+          const { data: cust } = await supabase
+            .from('customers')
+            .select('balance')
+            .eq('id', customerId)
+            .eq('tenant_id', tenantId)
+            .maybeSingle()
           const newBalance = Number(cust?.balance ?? 0) - amount
-          await supabase.from('customers').update({ balance: newBalance }).eq('id', customerId)
+          await supabase
+            .from('customers')
+            .update({ balance: newBalance })
+            .eq('id', customerId)
+            .eq('tenant_id', tenantId)
         }
       } else if (type === 'expense') {
         const { error: expenseError } = await supabase
@@ -194,6 +204,7 @@ export function RecordPaymentDialog({
             status: isFullyPaid ? 'paid' : 'pending'
           })
           .eq('id', referenceId)
+          .eq('tenant_id', tenantId)
 
         if (expenseError) throw expenseError
       }
@@ -225,7 +236,7 @@ export function RecordPaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto bg-cyan-50">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5 text-green-600" />
@@ -330,7 +341,7 @@ export function RecordPaymentDialog({
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder={`${type === 'invoice' ? t.finance.transactions.collection : t.finance.transactions.payment} for ${type}`}
+                placeholder={type === 'invoice' ? t.finance.transactions.descriptionPlaceholderInvoice : t.finance.transactions.descriptionPlaceholderExpense}
               />
             </div>
 

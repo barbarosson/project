@@ -41,6 +41,7 @@ interface Invoice {
   invoice_number: string
   customer_id: string
   amount: number
+  total?: number
   subtotal: number
   total_vat: number
   paid_amount: number
@@ -115,7 +116,11 @@ export default function InvoicesPage() {
       const invoicesWithDefaults = data?.map(inv => {
         const paidAmount = inv.paid_amount || 0
         const totalAmount = inv.total || inv.amount || 0
-        const remainingAmount = inv.status === 'paid' ? 0 : (inv.remaining_amount ?? (totalAmount - paidAmount))
+        const derivedRemaining = Math.max(0, totalAmount - paidAmount)
+        const remainingAmount =
+          inv.status === 'paid'
+            ? 0
+            : Math.max(derivedRemaining, inv.remaining_amount ?? derivedRemaining)
 
         return {
           ...inv,
@@ -468,7 +473,7 @@ export default function InvoicesPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="font-semibold text-gray-900">
-                            {formatCurrency(Number(invoice.amount || 0), invoice.currency || 'TRY')}
+                            {formatCurrency(Number(invoice.total ?? invoice.amount ?? 0), invoice.currency || 'TRY')}
                           </div>
                           {invoice.paid_amount > 0 && invoice.status !== 'draft' && (
                             <div className="text-xs text-green-600">
@@ -507,36 +512,50 @@ export default function InvoicesPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="bg-slate-100 hover:bg-slate-200 text-slate-800">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => router.push(`/invoices/${invoice.id}`)}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                {t.invoices.view}
-                              </DropdownMenuItem>
-                              {invoice.status !== 'paid' && invoice.status !== 'cancelled' && Number(invoice.remaining_amount || 0) > 0.01 && (
-                                <DropdownMenuItem onClick={() => handleRecordPayment(invoice)} className="text-green-600">
-                                  <DollarSign className="h-4 w-4 mr-2" />
+                          <div className="flex items-center gap-2">
+                            {invoice.status !== 'paid' &&
+                              invoice.status !== 'cancelled' &&
+                              invoice.status !== 'draft' &&
+                              Number(invoice.remaining_amount ?? 0) > 0.01 && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="border-green-200 text-green-700 hover:bg-green-50"
+                                  onClick={() => handleRecordPayment(invoice)}
+                                >
+                                  <DollarSign className="h-4 w-4 mr-1" />
                                   {t.invoices.recordPayment}
-                                </DropdownMenuItem>
+                                </Button>
                               )}
-                              <DropdownMenuItem onClick={() => handleEdit(invoice)}>
-                                <Edit className="h-4 w-4 mr-2" />
-                                {t.invoices.edit}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleDelete(invoice)}
-                                className="text-red-600"
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                {t.invoices.delete}
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="bg-slate-100 hover:bg-slate-200 text-slate-800"
+                                >
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => router.push(`/invoices/${invoice.id}`)}>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  {t.invoices.view}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleEdit(invoice)}>
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  {t.invoices.edit}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleDelete(invoice)}
+                                  className="text-red-600"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  {t.invoices.delete}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
@@ -587,8 +606,8 @@ export default function InvoicesPage() {
           type="invoice"
           referenceId={payingInvoice.id}
           customerId={payingInvoice.customer_id}
-          totalAmount={payingInvoice.amount}
-          paidAmount={payingInvoice.paid_amount || 0}
+          totalAmount={Number(payingInvoice.total ?? payingInvoice.amount ?? 0)}
+          paidAmount={Number(payingInvoice.paid_amount ?? 0)}
           currency={payingInvoice.currency || 'TRY'}
           onSuccess={() => {
             fetchInvoices()
