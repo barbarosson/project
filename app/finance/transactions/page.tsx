@@ -144,7 +144,7 @@ export default function TransactionsPage() {
         await supabase.from('transactions').delete().eq('id', id).eq('tenant_id', tenantId)
       }
 
-      const invoiceIds = [...new Set(invoicePayments.map((p) => p.reference_id))]
+      const invoiceIds = Array.from(new Set(invoicePayments.map((p) => p.reference_id)))
       for (const invId of invoiceIds) {
         const totalAmount = invoicePayments.filter((p) => p.reference_id === invId).reduce((sum, p) => sum + p.amount, 0)
         const { data: inv } = await supabase
@@ -172,7 +172,7 @@ export default function TransactionsPage() {
         }
       }
 
-      const expenseIds = [...new Set(expensePayments.map((p) => p.reference_id))]
+      const expenseIds = Array.from(new Set(expensePayments.map((p) => p.reference_id)))
       for (const expId of expenseIds) {
         const totalAmount = expensePayments.filter((p) => p.reference_id === expId).reduce((sum, p) => sum + p.amount, 0)
         const { data: exp } = await supabase
