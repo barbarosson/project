@@ -200,9 +200,10 @@ export default function InvoicesPage() {
         .single()
 
       if (customer) {
+        const invTotal = Number(deletingInvoice.total ?? deletingInvoice.amount ?? 0)
         await supabase
           .from('customers')
-          .update({ balance: (customer.balance || 0) - deletingInvoice.amount })
+          .update({ balance: Math.max(0, (customer.balance || 0) - invTotal) })
           .eq('id', deletingInvoice.customer_id)
           .eq('tenant_id', tenantId)
       }
@@ -314,6 +315,15 @@ export default function InvoicesPage() {
       if (!confirmed) return
     }
     try {
+      const balanceDeltas: Record<string, number> = {}
+      for (const inv of withoutPayments) {
+        const amt = Number(inv.total ?? inv.amount ?? 0)
+        if (inv.customer_id && amt > 0) balanceDeltas[inv.customer_id] = (balanceDeltas[inv.customer_id] ?? 0) + amt
+      }
+      for (const [customerId, subtract] of Object.entries(balanceDeltas)) {
+        const { data: cust } = await supabase.from('customers').select('balance').eq('id', customerId).eq('tenant_id', tenantId).single()
+        if (cust) await supabase.from('customers').update({ balance: Math.max(0, Number(cust.balance ?? 0) - subtract) }).eq('id', customerId).eq('tenant_id', tenantId)
+      }
       let deleted = 0
       for (const inv of withoutPayments) {
         await supabase.from('invoice_line_items').delete().eq('invoice_id', inv.id).eq('tenant_id', tenantId)

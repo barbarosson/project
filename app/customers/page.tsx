@@ -129,12 +129,13 @@ export default function CustomersPage() {
       for (const customer of customersData) {
         const { data: invoices } = await supabase
           .from('invoices')
-          .select('amount, created_at')
+          .select('amount, total, created_at')
           .eq('customer_id', customer.id)
           .eq('tenant_id', tenantId)
+          .in('status', ['sent', 'overdue', 'paid', 'partially_paid'])
           .order('created_at', { ascending: false })
 
-        const totalSpent = invoices?.reduce((sum, inv) => sum + Number(inv.amount), 0) || 0
+        const totalSpent = invoices?.reduce((sum, inv) => sum + Number(inv.total ?? inv.amount ?? 0), 0) || 0
         const purchaseCount = invoices?.length || 0
         const lastPurchase = invoices?.[0]?.created_at || null
         const daysSinceLastPurchase = lastPurchase
@@ -217,11 +218,12 @@ export default function CustomersPage() {
     }
   }
 
+  const mainCustomerIds = useMemo(() => new Set(mainCustomers.map((c) => c.id)), [mainCustomers])
   const segmentCounts = {
-    champions: customerSegments.filter(s => s.segment === 'champion').length,
-    atRisk: customerSegments.filter(s => s.segment === 'at_risk').length,
-    newLeads: customerSegments.filter(s => s.segment === 'new_lead').length,
-    regular: customerSegments.filter(s => s.segment === 'regular').length
+    champions: customerSegments.filter((s) => s.segment === 'champion' && mainCustomerIds.has(s.customer_id)).length,
+    atRisk: customerSegments.filter((s) => s.segment === 'at_risk' && mainCustomerIds.has(s.customer_id)).length,
+    newLeads: customerSegments.filter((s) => s.segment === 'new_lead' && mainCustomerIds.has(s.customer_id)).length,
+    regular: customerSegments.filter((s) => s.segment === 'regular' && mainCustomerIds.has(s.customer_id)).length
   }
 
   function handleRowClick(customer: Customer, e: React.MouseEvent) {

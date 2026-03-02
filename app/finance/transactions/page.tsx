@@ -198,6 +198,17 @@ export default function TransactionsPage() {
             .eq('tenant_id', tenantId)
         }
       }
+      const customerBalanceDeltas: Record<string, number> = {}
+      for (const t of toDelete) {
+        if (t.reference_type === 'invoice' && t.transaction_type === 'income' && t.customer_id) {
+          const amt = Number(t.amount) || 0
+          if (amt > 0) customerBalanceDeltas[t.customer_id] = (customerBalanceDeltas[t.customer_id] ?? 0) + amt
+        }
+      }
+      for (const [customerId, addBack] of Object.entries(customerBalanceDeltas)) {
+        const { data: cust } = await supabase.from('customers').select('balance').eq('id', customerId).eq('tenant_id', tenantId).single()
+        if (cust) await supabase.from('customers').update({ balance: Number(cust.balance ?? 0) + addBack }).eq('id', customerId).eq('tenant_id', tenantId)
+      }
 
       toast.success(language === 'tr' ? `${selectedIds.size} işlem silindi` : `${selectedIds.size} transaction(s) deleted`)
       setSelectedIds(new Set())
@@ -390,6 +401,12 @@ export default function TransactionsPage() {
             .eq('tenant_id', tenantId)
         }
       }
+      if (transaction.reference_type === 'invoice' && transaction.transaction_type === 'income' && amount > 0 && transaction.customer_id) {
+        const { data: cust } = await supabase.from('customers').select('balance').eq('id', transaction.customer_id).eq('tenant_id', tenantId).single()
+        if (cust) {
+          await supabase.from('customers').update({ balance: Number(cust.balance ?? 0) + amount }).eq('id', transaction.customer_id).eq('tenant_id', tenantId)
+        }
+      }
 
       toast.success(language === 'tr' ? 'Tahsilat silindi.' : 'Transaction deleted.')
       fetchTransactions()
@@ -415,12 +432,32 @@ export default function TransactionsPage() {
     if (!matchTransaction || !matchInvoiceId || !tenantId) return
     setMatchLoading(true)
     try {
+      const { data: inv } = await supabase.from('invoices').select('id, total, amount, paid_amount, customer_id').eq('id', matchInvoiceId).eq('tenant_id', tenantId).single()
+      const customerId = inv?.customer_id ?? null
       const { error } = await supabase
         .from('transactions')
-        .update({ reference_type: 'invoice', reference_id: matchInvoiceId })
+        .update({ reference_type: 'invoice', reference_id: matchInvoiceId, customer_id: customerId })
         .eq('id', matchTransaction.id)
         .eq('tenant_id', tenantId)
       if (error) throw error
+      const amount = Number(matchTransaction.amount) || 0
+      if (amount > 0 && inv) {
+          const total = Number(inv.total ?? inv.amount ?? 0)
+          const currentPaid = Number(inv.paid_amount ?? 0)
+          const newPaid = currentPaid + amount
+          const newRemaining = total - newPaid
+          const isFullyPaid = newRemaining <= 0.01
+          await supabase.from('invoices').update({
+            paid_amount: newPaid,
+            remaining_amount: newRemaining,
+            status: isFullyPaid ? 'paid' : 'overdue',
+            ...(isFullyPaid ? {} : { payment_date: null })
+          }).eq('id', matchInvoiceId).eq('tenant_id', tenantId)
+          if (inv.customer_id) {
+            const { data: cust } = await supabase.from('customers').select('balance').eq('id', inv.customer_id).eq('tenant_id', tenantId).single()
+            if (cust) await supabase.from('customers').update({ balance: Number(cust.balance ?? 0) - amount }).eq('id', inv.customer_id).eq('tenant_id', tenantId)
+          }
+      }
       toast.success(language === 'tr' ? 'İşlem faturayla eşlendi.' : 'Transaction matched with invoice.')
       setMatchTransaction(null)
       setMatchInvoiceId('')

@@ -147,19 +147,7 @@ export function AddTransactionDialog({
 
       if (transactionError) throw transactionError
 
-      const account = accounts.find(a => a.id === formData.account_id)
-      if (account) {
-        const balanceChange = formData.transaction_type === 'income' ? transactionAmount : -transactionAmount
-        const newBalance = Number(account.current_balance) + balanceChange
-
-        const { error: accountError } = await supabase
-          .from('accounts')
-          .update({ current_balance: newBalance })
-          .eq('id', formData.account_id)
-          .eq('tenant_id', tenantId)
-
-        if (accountError) throw accountError
-      }
+      // Hesap bakiyesi transactions tablosu üzerindeki trigger (update_account_balance) ile güncellenir
 
       toast.success('Transaction added successfully!')
       onSuccess()
