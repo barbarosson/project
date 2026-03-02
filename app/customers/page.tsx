@@ -15,7 +15,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Card, CardContent } from '@/components/ui/card'
-import { Plus, Search, Loader2, TrendingUp, AlertTriangle, Sparkles, Users, Edit2, Trash2, Upload, GitMerge, Building2 } from 'lucide-react'
+import { Plus, Search, Loader2, TrendingUp, AlertTriangle, Sparkles, Users, Edit2, Trash2, Upload, GitMerge, Building2, MoreVertical } from 'lucide-react'
 import { CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { supabase } from '@/lib/supabase'
@@ -437,7 +437,7 @@ export default function CustomersPage() {
             <Button
               variant="outline"
               onClick={() => setIsMergeDialogOpen(true)}
-              className="bg-red-600 hover:bg-red-700 font-semibold text-[#0A2540] hover:text-[#0A2540]"
+              className="bg-red-600 hover:bg-red-700 font-semibold text-contrast-body"
             >
               <GitMerge className="mr-2 h-4 w-4" />
               Cari Birleştir
@@ -445,14 +445,14 @@ export default function CustomersPage() {
             <Button
               variant="outline"
               onClick={() => setIsCsvImportOpen(true)}
-              className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-white hover:bg-gray-50 h-10 px-4 py-2 text-[#0A2540] hover:text-[#0A2540] shrink-0"
+              className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-white hover:bg-gray-50 h-10 px-4 py-2 text-contrast-body shrink-0"
             >
               <Upload className="mr-2 h-4 w-4" />
               Toplu aktarım
             </Button>
             <Button
               onClick={() => setIsAddDialogOpen(true)}
-              className="bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-[#0A2540] hover:text-[#0A2540]"
+              className="bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
             >
               <Plus className="mr-2 h-4 w-4" />
               {t.customers.addCustomer}
@@ -674,13 +674,14 @@ export default function CustomersPage() {
                             <span className="text-sm text-gray-400">—</span>
                           )}
                         </TableCell>
-                        <TableCell onClick={(e) => e.stopPropagation()}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm" className="bg-slate-100 hover:bg-slate-200 text-slate-800">
-                                {t.common.actions}
-                              </Button>
-                            </DropdownMenuTrigger>
+                        <TableCell className="align-middle" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center gap-2">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="bg-slate-100 hover:bg-slate-200 text-slate-800" aria-label={t.common.actions}>
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem onClick={(e: any) => handleEdit(customer, e)}>
                                 <Edit2 className="h-4 w-4 mr-2" />
@@ -706,6 +707,7 @@ export default function CustomersPage() {
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))

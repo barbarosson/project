@@ -701,17 +701,18 @@ export default function TransactionsPage() {
                               {isIncome ? '+' : '-'} {transaction.currency} {Number(transaction.amount).toLocaleString()}
                             </div>
                           </TableCell>
-                          <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="bg-slate-100 hover:bg-slate-200 text-slate-800"
-                                >
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
+                          <TableCell className="align-middle">
+                            <div className="flex items-center gap-2">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="bg-slate-100 hover:bg-slate-200 text-slate-800"
+                                  >
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem
                                   onClick={() => handleDelete(transaction)}
@@ -734,6 +735,7 @@ export default function TransactionsPage() {
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
+                            </div>
                           </TableCell>
                         </TableRow>
                       )
