@@ -40,6 +40,7 @@ interface Expense {
   receipt_url: string | null
   notes: string | null
   currency?: string
+  customer_id?: string | null
 }
 
 interface PurchaseInvoice {
@@ -239,6 +240,13 @@ export default function ExpensesPage() {
     if (!expenseToDelete || !tenantId) return
 
     try {
+      const { data: exp } = await supabase
+        .from('expenses')
+        .select('customer_id, amount')
+        .eq('id', expenseToDelete)
+        .eq('tenant_id', tenantId)
+        .single()
+
       const { error } = await supabase
         .from('expenses')
         .delete()
@@ -246,6 +254,13 @@ export default function ExpensesPage() {
         .eq('tenant_id', tenantId)
 
       if (error) throw error
+
+      if (exp?.customer_id && Number(exp.amount) > 0) {
+        const { data: cust } = await supabase.from('customers').select('balance').eq('id', exp.customer_id).eq('tenant_id', tenantId).single()
+        if (cust) {
+          await supabase.from('customers').update({ balance: Math.max(0, Number(cust.balance ?? 0) - Number(exp.amount)) }).eq('id', exp.customer_id).eq('tenant_id', tenantId)
+        }
+      }
 
       toast.success(t.expenses.expenseDeletedSuccess)
       fetchExpenses()
@@ -282,6 +297,13 @@ export default function ExpensesPage() {
         .eq('tenant_id', tenantId)
 
       if (updateError) throw updateError
+
+      if (invoice.supplier_id && Number(invoice.total_amount) > 0) {
+        const { data: supplier } = await supabase.from('customers').select('balance').eq('id', invoice.supplier_id).eq('tenant_id', tenantId).single()
+        if (supplier) {
+          await supabase.from('customers').update({ balance: Number(supplier.balance ?? 0) - Number(invoice.total_amount) }).eq('id', invoice.supplier_id).eq('tenant_id', tenantId)
+        }
+      }
 
       const { error: expenseError } = await supabase
         .from('expenses')
@@ -354,6 +376,14 @@ export default function ExpensesPage() {
     if (!reason) return
 
     try {
+      const { data: inv } = await supabase.from('purchase_invoices').select('supplier_id, total_amount, status').eq('id', invoiceId).eq('tenant_id', tenantId).single()
+      if (inv?.status === 'accepted' && inv.supplier_id && Number(inv.total_amount) > 0) {
+        const { data: supplier } = await supabase.from('customers').select('balance').eq('id', inv.supplier_id).eq('tenant_id', tenantId).single()
+        if (supplier) {
+          await supabase.from('customers').update({ balance: Number(supplier.balance ?? 0) + Number(inv.total_amount) }).eq('id', inv.supplier_id).eq('tenant_id', tenantId)
+        }
+      }
+
       const { error } = await supabase
         .from('purchase_invoices')
         .update({

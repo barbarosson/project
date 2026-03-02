@@ -37,6 +37,7 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
   const [autoFilledFields, setAutoFilledFields] = useState<Set<string>>(new Set())
   const [accounts, setAccounts] = useState<Account[]>([])
   const [projectsList, setProjectsList] = useState<{ id: string; name: string; code: string }[]>([])
+  const [customersList, setCustomersList] = useState<{ id: string; company_title: string | null; name: string }[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     category: 'general',
@@ -47,6 +48,7 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
     currency: 'TRY',
     account_id: '',
     project_id: '',
+    customer_id: '',
     tax_rate: '20',
     notes: ''
   })
@@ -61,6 +63,12 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
         .in('status', ['planning', 'active'])
         .order('name')
         .then(({ data }) => setProjectsList(data || []))
+      supabase
+        .from('customers')
+        .select('id, company_title, name')
+        .eq('tenant_id', tenantId)
+        .order('company_title')
+        .then(({ data }) => setCustomersList(data || []))
     }
   }, [open, tenantId])
 
@@ -116,11 +124,34 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
         insertData.project_id = formData.project_id
       }
 
+      if (formData.customer_id) {
+        insertData.customer_id = formData.customer_id
+      }
+
       const { error } = await supabase
         .from('expenses')
         .insert(insertData)
 
       if (error) throw error
+
+      if (formData.customer_id) {
+        const amount = parseFloat(formData.amount)
+        if (amount > 0) {
+          const { data: cust } = await supabase
+            .from('customers')
+            .select('balance')
+            .eq('id', formData.customer_id)
+            .eq('tenant_id', tenantId)
+            .single()
+          if (cust) {
+            await supabase
+              .from('customers')
+              .update({ balance: Number(cust.balance ?? 0) + amount })
+              .eq('id', formData.customer_id)
+              .eq('tenant_id', tenantId)
+          }
+        }
+      }
 
       toast.success('Expense added successfully')
       onSuccess()
@@ -144,6 +175,7 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
       currency: 'TRY',
       account_id: '',
       project_id: '',
+      customer_id: '',
       tax_rate: '20',
       notes: ''
     })
@@ -627,6 +659,28 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
                   {projectsList.map(p => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.code ? `[${p.code}] ` : ''}{p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {customersList.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="customer_id">{language === 'tr' ? 'Cariye yansıt (bakiye artar)' : 'Link to customer (adds to balance)'}</Label>
+              <Select
+                value={formData.customer_id || 'none'}
+                onValueChange={v => setFormData({ ...formData, customer_id: v === 'none' ? '' : v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={language === 'tr' ? 'Cari secin (opsiyonel)' : 'Select customer (optional)'} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{language === 'tr' ? 'Yok' : 'None'}</SelectItem>
+                  {customersList.map(c => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.company_title || c.name || c.id}
                     </SelectItem>
                   ))}
                 </SelectContent>

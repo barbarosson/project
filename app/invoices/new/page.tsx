@@ -283,6 +283,22 @@ export default function NewInvoicePage() {
 
       if (lineItemsError) throw lineItemsError
 
+      if (effectiveCustomerId && grandTotal > 0) {
+        const { data: customer } = await supabase
+          .from('customers')
+          .select('balance')
+          .eq('id', effectiveCustomerId)
+          .eq('tenant_id', tenantId)
+          .single()
+        if (customer) {
+          await supabase
+            .from('customers')
+            .update({ balance: Number(customer.balance ?? 0) + grandTotal })
+            .eq('id', effectiveCustomerId)
+            .eq('tenant_id', tenantId)
+        }
+      }
+
       for (const item of lineItems) {
         if (item.product_id) {
           const { data: product } = await supabase
