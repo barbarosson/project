@@ -14,8 +14,21 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Checkbox } from '@/components/ui/checkbox'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Search, FileText, Receipt, CheckCircle2, XCircle, Eye, Trash2, Pencil, Upload } from 'lucide-react'
+import { Plus, Search, FileText, Receipt, CheckCircle2, XCircle, Eye, Trash2, Pencil, Upload, MoreVertical } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
 import { useTenant } from '@/contexts/tenant-context'
@@ -90,6 +103,14 @@ export default function ExpensesPage() {
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null)
+  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [expenseToView, setExpenseToView] = useState<Expense | null>(null)
+  const [selectedPurchaseIds, setSelectedPurchaseIds] = useState<Set<string>>(new Set())
+  const [purchaseToView, setPurchaseToView] = useState<PurchaseInvoice | null>(null)
+  const [isBulkDeletePurchaseDialogOpen, setIsBulkDeletePurchaseDialogOpen] = useState(false)
+  const [isDeletePurchaseDialogOpen, setIsDeletePurchaseDialogOpen] = useState(false)
+  const [purchaseToDelete, setPurchaseToDelete] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState('manual')
 
   const targetCurrency = (preferredCurrency || 'TRY').toUpperCase()
@@ -273,6 +294,127 @@ export default function ExpensesPage() {
     }
   }
 
+  function toggleSelectAll() {
+    if (selectedIds.size === filteredExpenses.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(filteredExpenses.map(e => e.id)))
+    }
+  }
+
+  function toggleSelect(id: string) {
+    const next = new Set(selectedIds)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    setSelectedIds(next)
+  }
+
+  async function handleBulkDelete() {
+    if (!tenantId || selectedIds.size === 0) return
+    try {
+      for (const id of selectedIds) {
+        const exp = expenses.find(e => e.id === id)
+        if (!exp) continue
+        const { error } = await supabase
+          .from('expenses')
+          .delete()
+          .eq('id', id)
+          .eq('tenant_id', tenantId)
+        if (error) throw error
+        if (exp.customer_id && Number(exp.amount) > 0) {
+          const { data: cust } = await supabase.from('customers').select('balance').eq('id', exp.customer_id).eq('tenant_id', tenantId).single()
+          if (cust) {
+            await supabase.from('customers').update({ balance: Math.max(0, Number(cust.balance ?? 0) - Number(exp.amount)) }).eq('id', exp.customer_id).eq('tenant_id', tenantId)
+          }
+        }
+      }
+      toast.success(t.expenses.expenseDeletedSuccess)
+      setSelectedIds(new Set())
+      fetchExpenses()
+    } catch (error: any) {
+      toast.error(error.message || t.expenses.deleteExpenseError)
+    } finally {
+      setIsBulkDeleteDialogOpen(false)
+    }
+  }
+
+  const filteredInvoices = purchaseInvoices.filter((invoice) => {
+    if (purchaseStatusFilter !== 'all' && invoice.status !== purchaseStatusFilter) return false
+    if (purchaseTypeFilter !== 'all' && (invoice.invoice_type || 'purchase') !== purchaseTypeFilter) return false
+    const q = searchQuery.toLowerCase()
+    if (q && !(
+      invoice.invoice_number.toLowerCase().includes(q) ||
+      invoice.supplier?.company_title?.toLowerCase().includes(q) ||
+      invoice.supplier?.name?.toLowerCase().includes(q)
+    )) return false
+    return true
+  })
+
+  function toggleSelectAllPurchase() {
+    if (selectedPurchaseIds.size === filteredInvoices.length) {
+      setSelectedPurchaseIds(new Set())
+    } else {
+      setSelectedPurchaseIds(new Set(filteredInvoices.map(inv => inv.id)))
+    }
+  }
+
+  function toggleSelectPurchase(id: string) {
+    const next = new Set(selectedPurchaseIds)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    setSelectedPurchaseIds(next)
+  }
+
+  async function handleDeletePurchaseInvoice(invoiceId: string) {
+    if (!tenantId) return
+    const inv = purchaseInvoices.find(i => i.id === invoiceId)
+    if (!inv) return
+    try {
+      if (inv.status === 'accepted' && inv.supplier_id && Number(inv.total_amount) > 0) {
+        const { data: supplier } = await supabase.from('customers').select('balance').eq('id', inv.supplier_id).eq('tenant_id', tenantId).single()
+        if (supplier) {
+          await supabase.from('customers').update({ balance: Number(supplier.balance ?? 0) + Number(inv.total_amount) }).eq('id', inv.supplier_id).eq('tenant_id', tenantId)
+        }
+      }
+      await supabase.from('purchase_invoice_line_items').delete().eq('purchase_invoice_id', invoiceId).eq('tenant_id', tenantId)
+      const { error } = await supabase.from('purchase_invoices').delete().eq('id', invoiceId).eq('tenant_id', tenantId)
+      if (error) throw error
+      toast.success(language === 'tr' ? 'Alış faturası silindi.' : 'Purchase invoice deleted.')
+      fetchData()
+    } catch (error: any) {
+      toast.error(error.message || (language === 'tr' ? 'Silme hatası.' : 'Delete failed.'))
+    } finally {
+      setIsDeletePurchaseDialogOpen(false)
+      setPurchaseToDelete(null)
+    }
+  }
+
+  async function handleBulkDeletePurchase() {
+    if (!tenantId || selectedPurchaseIds.size === 0) return
+    try {
+      for (const id of selectedPurchaseIds) {
+        const inv = purchaseInvoices.find(i => i.id === id)
+        if (!inv) continue
+        if (inv.status === 'accepted' && inv.supplier_id && Number(inv.total_amount) > 0) {
+          const { data: supplier } = await supabase.from('customers').select('balance').eq('id', inv.supplier_id).eq('tenant_id', tenantId).single()
+          if (supplier) {
+            await supabase.from('customers').update({ balance: Number(supplier.balance ?? 0) + Number(inv.total_amount) }).eq('id', inv.supplier_id).eq('tenant_id', tenantId)
+          }
+        }
+        await supabase.from('purchase_invoice_line_items').delete().eq('purchase_invoice_id', id).eq('tenant_id', tenantId)
+        const { error } = await supabase.from('purchase_invoices').delete().eq('id', id).eq('tenant_id', tenantId)
+        if (error) throw error
+      }
+      toast.success(language === 'tr' ? 'Alış faturaları silindi.' : 'Purchase invoices deleted.')
+      setSelectedPurchaseIds(new Set())
+      fetchData()
+    } catch (error: any) {
+      toast.error(error.message || (language === 'tr' ? 'Toplu silme hatası.' : 'Bulk delete failed.'))
+    } finally {
+      setIsBulkDeletePurchaseDialogOpen(false)
+    }
+  }
+
   async function handleAcceptInvoice(invoiceId: string) {
     if (!tenantId) return
 
@@ -409,18 +551,6 @@ export default function ExpensesPage() {
     expense.category.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const filteredInvoices = purchaseInvoices.filter((invoice) => {
-    if (purchaseStatusFilter !== 'all' && invoice.status !== purchaseStatusFilter) return false
-    if (purchaseTypeFilter !== 'all' && (invoice.invoice_type || 'purchase') !== purchaseTypeFilter) return false
-    const q = searchQuery.toLowerCase()
-    if (q && !(
-      invoice.invoice_number.toLowerCase().includes(q) ||
-      invoice.supplier?.company_title?.toLowerCase().includes(q) ||
-      invoice.supplier?.name?.toLowerCase().includes(q)
-    )) return false
-    return true
-  })
-
   const totalManualExpenses = expenses.reduce(
     (sum, exp) => sum + convertToPreferred(Number(exp.amount), (exp as Expense).currency ?? 'TRY', exp.expense_date ? format(new Date(exp.expense_date), 'yyyy-MM-dd') : null),
     0
@@ -536,7 +666,7 @@ export default function ExpensesPage() {
                     <Button
                       variant="outline"
                       onClick={() => setIsExpenseImportDialogOpen(true)}
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-white hover:bg-gray-50 h-10 px-4 py-2 text-gray-900 hover:text-gray-900 shrink-0"
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-white hover:bg-gray-50 h-10 px-4 py-2 text-contrast-body shrink-0"
                     >
                       <Upload size={16} className="mr-2" />
                       {t.expenses.bulkImport}
@@ -544,7 +674,7 @@ export default function ExpensesPage() {
                     {activeTab === 'manual' && (
                       <Button
                         onClick={() => setIsAddExpenseDialogOpen(true)}
-                        className="shrink-0 bg-[rgba(0,212,170,1)] text-[var(--color-primary)] hover:bg-[rgba(0,212,170,0.9)]"
+                        className="shrink-0 bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
                       >
                         <Plus size={16} className="mr-2" />
                         {t.expenses.addExpense}
@@ -553,7 +683,7 @@ export default function ExpensesPage() {
                     {activeTab === 'incoming' && (
                       <Button
                         onClick={() => setIsAddPurchaseInvoiceDialogOpen(true)}
-                        className="shrink-0 bg-[rgba(0,212,170,1)] text-contrast-body"
+                        className="shrink-0 bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
                       >
                         <Plus size={16} className="mr-2" />
                         {t.expenses.addIncomingInvoice}
@@ -564,27 +694,66 @@ export default function ExpensesPage() {
               </div>
 
               <TabsContent value="manual" className="mt-6">
+                {selectedIds.size > 0 && (
+                  <div className="flex items-center gap-3 px-4 py-3 mb-4 rounded-lg bg-blue-50 border border-blue-200">
+                    <span className="text-sm font-medium text-blue-800">
+                      {selectedIds.size} {t.common.selected}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="text-[var(--color-info)] bg-white hover:bg-gray-100"
+                      onClick={() => setIsBulkDeleteDialogOpen(true)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      {t.common.bulkDelete}
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setSelectedIds(new Set())}>
+                      {language === 'tr' ? 'Seçimi temizle' : 'Clear selection'}
+                    </Button>
+                  </div>
+                )}
                 <Table>
                   <TableHeader>
-                    <TableRow>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="h-8 w-4 min-w-4 max-w-4 p-0.5 text-center align-middle">
+                        <div className="inline-flex items-center justify-center w-4 h-6">
+                          <Checkbox
+                            size="sm"
+                            checked={filteredExpenses.length > 0 && selectedIds.size === filteredExpenses.length}
+                            onCheckedChange={toggleSelectAll}
+                            aria-label={t.common.selectAll}
+                          />
+                        </div>
+                      </TableHead>
                       <TableHead>{t.expenses.expenseDate}</TableHead>
                       <TableHead>{t.expenses.category}</TableHead>
                       <TableHead>{t.expenses.description}</TableHead>
                       <TableHead>{t.expenses.amount}</TableHead>
                       <TableHead>{t.expenses.paymentMethod}</TableHead>
-                      <TableHead className="text-right">{t.common.actions}</TableHead>
+                      <TableHead className="w-[60px]">{t.common.actions}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredExpenses.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                        <TableCell colSpan={7} className="text-center py-8 text-gray-500">
                           {t.common.noData}
                         </TableCell>
                       </TableRow>
                     ) : (
                       filteredExpenses.map((expense) => (
-                        <TableRow key={expense.id}>
+                        <TableRow key={expense.id} className={selectedIds.has(expense.id) ? 'bg-blue-50' : ''}>
+                          <TableCell className="w-4 min-w-4 max-w-4 p-0.5 text-center align-middle">
+                            <div className="inline-flex items-center justify-center w-4 h-6">
+                              <Checkbox
+                                size="sm"
+                                checked={selectedIds.has(expense.id)}
+                                onCheckedChange={() => toggleSelect(expense.id)}
+                                aria-label={t.common.select}
+                              />
+                            </div>
+                          </TableCell>
                           <TableCell>{format(new Date(expense.expense_date), 'MMM dd, yyyy')}</TableCell>
                           <TableCell>
                             <Badge variant="outline">
@@ -596,28 +765,32 @@ export default function ExpensesPage() {
                           <TableCell>
                             {t.expenses.paymentMethods[expense.payment_method as keyof typeof t.expenses.paymentMethods]}
                           </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setExpenseToEdit(expense)
-                                  setIsEditExpenseDialogOpen(true)
-                                }}
-                              >
-                                <Pencil size={16} />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setExpenseToDelete(expense.id)
-                                  setIsDeleteDialogOpen(true)
-                                }}
-                              >
-                                <Trash2 size={16} className="text-red-500" />
-                              </Button>
+                          <TableCell className="align-middle">
+                            <div className="flex items-center gap-2">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="bg-slate-100 hover:bg-slate-200 text-slate-800" aria-label={t.common.actions}>
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => { setExpenseToView(expense) }}>
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    {t.common.view}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => { setExpenseToEdit(expense); setIsEditExpenseDialogOpen(true) }}>
+                                    <Pencil className="h-4 w-4 mr-2" />
+                                    {t.common.edit}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => { setExpenseToDelete(expense.id); setIsDeleteDialogOpen(true) }}
+                                    className="text-red-600"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    {t.common.delete}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -653,28 +826,67 @@ export default function ExpensesPage() {
                     </SelectContent>
                   </Select>
                 </div>
+                {selectedPurchaseIds.size > 0 && (
+                  <div className="flex items-center gap-3 px-4 py-3 mb-4 rounded-lg bg-blue-50 border border-blue-200">
+                    <span className="text-sm font-medium text-blue-800">
+                      {selectedPurchaseIds.size} {t.common.selected}
+                    </span>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="text-[var(--color-info)] bg-white hover:bg-gray-100"
+                      onClick={() => setIsBulkDeletePurchaseDialogOpen(true)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      {t.common.bulkDelete}
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setSelectedPurchaseIds(new Set())}>
+                      {language === 'tr' ? 'Seçimi temizle' : 'Clear selection'}
+                    </Button>
+                  </div>
+                )}
                 <Table>
                   <TableHeader>
-                    <TableRow>
+                    <TableRow className="bg-gray-50">
+                      <TableHead className="h-8 w-4 min-w-4 max-w-4 p-0.5 text-center align-middle">
+                        <div className="inline-flex items-center justify-center w-4 h-6">
+                          <Checkbox
+                            size="sm"
+                            checked={filteredInvoices.length > 0 && selectedPurchaseIds.size === filteredInvoices.length}
+                            onCheckedChange={toggleSelectAllPurchase}
+                            aria-label={t.common.selectAll}
+                          />
+                        </div>
+                      </TableHead>
                       <TableHead>{t.expenses.invoiceNumber}</TableHead>
                       <TableHead>{t.expenses.invoiceTypeColumn}</TableHead>
                       <TableHead>{t.expenses.supplier}</TableHead>
                       <TableHead>{t.expenses.invoiceDate}</TableHead>
                       <TableHead>{t.expenses.total}</TableHead>
                       <TableHead>{t.common.status}</TableHead>
-                      <TableHead className="text-right">{t.common.actions}</TableHead>
+                      <TableHead className="w-[60px]">{t.common.actions}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredInvoices.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                        <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                           {t.common.noData}
                         </TableCell>
                       </TableRow>
                     ) : (
                       filteredInvoices.map((invoice) => (
-                        <TableRow key={invoice.id}>
+                        <TableRow key={invoice.id} className={selectedPurchaseIds.has(invoice.id) ? 'bg-blue-50' : ''}>
+                          <TableCell className="w-4 min-w-4 max-w-4 p-0.5 text-center align-middle">
+                            <div className="inline-flex items-center justify-center w-4 h-6">
+                              <Checkbox
+                                size="sm"
+                                checked={selectedPurchaseIds.has(invoice.id)}
+                                onCheckedChange={() => toggleSelectPurchase(invoice.id)}
+                                aria-label={t.common.select}
+                              />
+                            </div>
+                          </TableCell>
                           <TableCell className="font-medium">{invoice.invoice_number}</TableCell>
                           <TableCell>
                             <Badge className={PURCHASE_TYPE_COLORS[invoice.invoice_type || 'purchase'] || 'bg-gray-100 text-gray-800'} variant="secondary">
@@ -689,30 +901,40 @@ export default function ExpensesPage() {
                             {invoice.status === 'accepted' && <Badge className="bg-green-500">{t.expenses.accepted}</Badge>}
                             {invoice.status === 'rejected' && <Badge variant="destructive">{t.expenses.rejected}</Badge>}
                           </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex items-center justify-end gap-2">
-                              {invoice.status === 'pending' && (
-                                <>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleAcceptInvoice(invoice.id)}
-                                    className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                                  >
-                                    <CheckCircle2 size={16} className="mr-1" />
-                                    {t.common.accepted}
+                          <TableCell className="align-middle">
+                            <div className="flex items-center gap-2">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="bg-slate-100 hover:bg-slate-200 text-slate-800" aria-label={t.common.actions}>
+                                    <MoreVertical className="h-4 w-4" />
                                   </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleRejectInvoice(invoice.id)}
-                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => setPurchaseToView(invoice)}>
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    {t.common.view}
+                                  </DropdownMenuItem>
+                                  {invoice.status === 'pending' && (
+                                    <>
+                                      <DropdownMenuItem onClick={() => handleAcceptInvoice(invoice.id)} className="text-green-600">
+                                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                                        {t.common.accepted}
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem onClick={() => handleRejectInvoice(invoice.id)} className="text-red-600">
+                                        <XCircle className="h-4 w-4 mr-2" />
+                                        {t.common.rejected}
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                  <DropdownMenuItem
+                                    onClick={() => { setPurchaseToDelete(invoice.id); setIsDeletePurchaseDialogOpen(true) }}
+                                    className="text-red-600"
                                   >
-                                    <XCircle size={16} className="mr-1" />
-                                    {t.common.rejected}
-                                  </Button>
-                                </>
-                              )}
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    {t.common.delete}
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -765,6 +987,120 @@ export default function ExpensesPage() {
         title={t.expenses.deleteExpenseTitle}
         description={t.expenses.deleteExpenseDescription}
       />
+
+      <ConfirmDeleteDialog
+        open={isBulkDeleteDialogOpen}
+        onOpenChange={setIsBulkDeleteDialogOpen}
+        onConfirm={handleBulkDelete}
+        itemCount={selectedIds.size}
+        title={t.expenses.deleteExpenseTitle}
+        description={language === 'tr' ? `${selectedIds.size} masrafı silmek istediğinize emin misiniz?` : `Are you sure you want to delete ${selectedIds.size} expense(s)?`}
+      />
+
+      <Dialog open={!!expenseToView} onOpenChange={(open) => !open && setExpenseToView(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t.common.view} - {t.expenses.manualExpenses}</DialogTitle>
+          </DialogHeader>
+          {expenseToView && (
+            <div className="grid gap-3 text-sm">
+              <div>
+                <span className="font-medium text-gray-500">{t.expenses.expenseDate}</span>
+                <p>{format(new Date(expenseToView.expense_date), 'dd MMM yyyy')}</p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-500">{t.expenses.category}</span>
+                <p>{t.expenses.categories[expenseToView.category as keyof typeof t.expenses.categories]}</p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-500">{t.expenses.description}</span>
+                <p>{expenseToView.description}</p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-500">{t.expenses.amount}</span>
+                <p className="font-semibold">{renderAmountWithConversion(Number(expenseToView.amount), expenseToView.currency ?? 'TRY', format(new Date(expenseToView.expense_date), 'yyyy-MM-dd'))}</p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-500">{t.expenses.paymentMethod}</span>
+                <p>{t.expenses.paymentMethods[expenseToView.payment_method as keyof typeof t.expenses.paymentMethods]}</p>
+              </div>
+              {expenseToView.notes && (
+                <div>
+                  <span className="font-medium text-gray-500">{t.common.notes}</span>
+                  <p>{expenseToView.notes}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <ConfirmDeleteDialog
+        open={isDeletePurchaseDialogOpen}
+        onOpenChange={setIsDeletePurchaseDialogOpen}
+        onConfirm={() => purchaseToDelete && handleDeletePurchaseInvoice(purchaseToDelete)}
+        title={language === 'tr' ? 'Alış faturasını sil' : 'Delete purchase invoice'}
+        description={language === 'tr' ? 'Bu alış faturasını silmek istediğinize emin misiniz?' : 'Are you sure you want to delete this purchase invoice?'}
+      />
+
+      <ConfirmDeleteDialog
+        open={isBulkDeletePurchaseDialogOpen}
+        onOpenChange={setIsBulkDeletePurchaseDialogOpen}
+        onConfirm={handleBulkDeletePurchase}
+        itemCount={selectedPurchaseIds.size}
+        title={language === 'tr' ? 'Alış faturalarını sil' : 'Delete purchase invoices'}
+        description={language === 'tr' ? `${selectedPurchaseIds.size} alış faturasını silmek istediğinize emin misiniz?` : `Are you sure you want to delete ${selectedPurchaseIds.size} purchase invoice(s)?`}
+      />
+
+      <Dialog open={!!purchaseToView} onOpenChange={(open) => !open && setPurchaseToView(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t.common.view} - {t.expenses.incomingInvoices}</DialogTitle>
+          </DialogHeader>
+          {purchaseToView && (
+            <div className="grid gap-3 text-sm">
+              <div>
+                <span className="font-medium text-gray-500">{t.expenses.invoiceNumber}</span>
+                <p className="font-medium">{purchaseToView.invoice_number}</p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-500">{t.expenses.invoiceTypeColumn}</span>
+                <p>
+                  <Badge className={PURCHASE_TYPE_COLORS[purchaseToView.invoice_type || 'purchase'] || 'bg-gray-100 text-gray-800'} variant="secondary">
+                    {PURCHASE_TYPE_LABELS[purchaseToView.invoice_type || 'purchase']?.[language] || (purchaseToView.invoice_type || 'purchase')}
+                  </Badge>
+                </p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-500">{t.expenses.supplier}</span>
+                <p>{purchaseToView.supplier?.company_title || purchaseToView.supplier?.name}</p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-500">{t.expenses.invoiceDate}</span>
+                <p>{format(new Date(purchaseToView.invoice_date), 'dd MMM yyyy')}</p>
+              </div>
+              {purchaseToView.due_date && (
+                <div>
+                  <span className="font-medium text-gray-500">{language === 'tr' ? 'Vade tarihi' : 'Due date'}</span>
+                  <p>{format(new Date(purchaseToView.due_date), 'dd MMM yyyy')}</p>
+                </div>
+              )}
+              <div>
+                <span className="font-medium text-gray-500">{t.expenses.total}</span>
+                <p className="font-semibold">{renderAmountWithConversion(Number(purchaseToView.total_amount), 'TRY', format(new Date(purchaseToView.invoice_date), 'yyyy-MM-dd'))}</p>
+              </div>
+              <div>
+                <span className="font-medium text-gray-500">{t.common.status}</span>
+                <p>
+                  {purchaseToView.status === 'pending' && <Badge variant="outline">{t.expenses.pending}</Badge>}
+                  {purchaseToView.status === 'accepted' && <Badge className="bg-green-500">{t.expenses.accepted}</Badge>}
+                  {purchaseToView.status === 'rejected' && <Badge variant="destructive">{t.expenses.rejected}</Badge>}
+                </p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   )
 }
