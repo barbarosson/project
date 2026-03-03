@@ -99,12 +99,12 @@ export function EditManualExpenseDialog({ expense, open, onOpenChange, onSuccess
     e.preventDefault()
 
     if (!tenantId || !expense) {
-      toast.error('No tenant ID or expense available')
+      toast.error(t.common.noData)
       return
     }
 
     if (!formData.description || !formData.amount) {
-      toast.error('Please fill in all required fields')
+      toast.error(t.expenses.fillRequiredFields)
       return
     }
 
@@ -137,12 +137,12 @@ export function EditManualExpenseDialog({ expense, open, onOpenChange, onSuccess
 
       if (error) throw error
 
-      toast.success('Expense updated successfully')
+      toast.success(t.expenses.expenseUpdatedSuccess)
       onSuccess()
       onOpenChange(false)
     } catch (error: any) {
       console.error('Error updating expense:', error)
-      toast.error(error.message || 'Failed to update expense')
+      toast.error(error.message || t.expenses.updateExpenseError)
     } finally {
       setLoading(false)
     }
@@ -150,11 +150,11 @@ export function EditManualExpenseDialog({ expense, open, onOpenChange, onSuccess
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto bg-blue-50 border-blue-200">
         <DialogHeader>
-          <DialogTitle>Edit Expense</DialogTitle>
+          <DialogTitle>{t.expenses.editExpense}</DialogTitle>
           <DialogDescription>
-            Update expense information
+            {t.expenses.editExpenseDescription}
           </DialogDescription>
         </DialogHeader>
 
@@ -282,7 +282,7 @@ export function EditManualExpenseDialog({ expense, open, onOpenChange, onSuccess
           {(formData.payment_method === 'bank_transfer' || formData.payment_method === 'credit_card') && (
             <div className="space-y-2">
               <Label htmlFor="account_id">
-                {formData.payment_method === 'bank_transfer' ? t.finance.accounts.bankName : 'Kredi Kartı'} *
+                {formData.payment_method === 'bank_transfer' ? t.finance.accounts.bankName : t.expenses.paymentMethods.credit_card} *
               </Label>
               <Select
                 value={formData.account_id}
@@ -304,7 +304,7 @@ export function EditManualExpenseDialog({ expense, open, onOpenChange, onSuccess
               </Select>
               {accounts.filter(acc => acc.type === 'bank' && acc.currency === formData.currency).length === 0 && (
                 <p className="text-xs text-amber-600 mt-1">
-                  {formData.currency} para birimi ile eşleşen banka hesabı bulunamadı. Lütfen Finans {">"} Hesaplar sayfasından {formData.currency} hesabı ekleyin.
+                  {t.expenses.noMatchingAccount.replace('{currency}', formData.currency)}
                 </p>
               )}
             </div>
@@ -316,7 +316,7 @@ export function EditManualExpenseDialog({ expense, open, onOpenChange, onSuccess
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Additional notes (optional)"
+              placeholder={t.expenses.notesPlaceholder}
               rows={3}
             />
           </div>

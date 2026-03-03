@@ -85,6 +85,7 @@ const FEATURE_TO_ROUTE_MAP: Record<string, FeatureCode[]> = {
   '/customers': ['customers'],
   '/products': ['products'],
   '/inventory': ['products'],
+  '/stocks': ['products'],
   '/invoices': ['invoices'],
   '/expenses': ['expenses'],
   '/finance': ['finance'],

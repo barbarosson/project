@@ -3,7 +3,7 @@ import { Metadata } from 'next'
 const defaultMetadata = {
   title: 'MODULUS - Smart ERP & CRM Suite',
   description: 'Professional SaaS-based modular ERP and CRM application for modern businesses. Streamline operations, boost productivity, and drive growth.',
-  ogImage: '/logo_slogan_ingilizce.png',
+  ogImage: '/icon-512.png',
 }
 
 export async function getPageMetadata(slug: string): Promise<Metadata> {

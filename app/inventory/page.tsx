@@ -33,6 +33,7 @@ interface Product {
   category: string
   unit: string
   current_stock: number
+  stock_quantity?: number
   critical_level: number
   purchase_price: number
   sale_price: number
@@ -421,7 +422,7 @@ export default function InventoryPage() {
                         className="text-right"
                         onClick={() => handleProductClick(product)}
                       >
-                        {Number(product.current_stock).toFixed(0)}
+                        {Number(product.current_stock ?? product.stock_quantity ?? 0).toFixed(0)}
                       </TableCell>
                       <TableCell
                         className="text-right"

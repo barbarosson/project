@@ -46,9 +46,9 @@ export const metadata: Metadata = {
     description: 'Professional SaaS-based modular ERP and CRM application for modern businesses.',
     images: [
       {
-        url: '/logo_slogan_ingilizce.png',
-        width: 1200,
-        height: 630,
+        url: '/icon-512.png',
+        width: 512,
+        height: 512,
         alt: 'MODULUS - Smart ERP & CRM Suite',
       },
     ],
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'MODULUS - Smart ERP & CRM Suite',
     description: 'Professional SaaS-based modular ERP and CRM application for modern businesses.',
-    images: ['/logo_slogan_ingilizce.png'],
+    images: ['/icon-512.png'],
   },
   robots: {
     index: true,

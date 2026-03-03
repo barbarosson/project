@@ -174,6 +174,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     }
   }
 
+  // Dil desteği: label_tr / label_en varsa kullan, yoksa label
+  const menuLabel = (m: { label?: string; label_tr?: string | null; label_en?: string | null }) =>
+    language === 'tr' ? (m.label_tr || m.label || '') : (m.label_en || m.label || '')
+
   // Build hierarchical menu structure from database
   const buildMenuHierarchy = () => {
     // Get parent menus (no parent_id)
@@ -186,7 +190,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       const menuItem: any = {
         id: parent.id,
-        title: parent.label,
+        title: menuLabel(parent),
         icon: Icon,
         order: parent.order_index
       }
@@ -200,7 +204,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         menuItem.key = parent.id
         menuItem.subItems = children.map(child => ({
           id: child.id,
-          title: child.label,
+          title: menuLabel(child),
           href: child.slug,
           icon: iconMap[child.icon || 'Package'] || Package,
           order: child.order_index

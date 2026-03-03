@@ -92,12 +92,12 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
     e.preventDefault()
 
     if (!tenantId) {
-      toast.error('No tenant ID available')
+      toast.error(t.common.noData)
       return
     }
 
     if (!formData.description || !formData.amount) {
-      toast.error('Please fill in all required fields')
+      toast.error(t.expenses.fillRequiredFields)
       return
     }
 
@@ -153,13 +153,13 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
         }
       }
 
-      toast.success('Expense added successfully')
+      toast.success(t.expenses.expenseAddedSuccess)
       onSuccess()
       onOpenChange(false)
       resetForm()
     } catch (error: any) {
       console.error('Error adding expense:', error)
-      toast.error(error.message || 'Failed to add expense')
+      toast.error(error.message || t.expenses.addExpenseError)
     } finally {
       setLoading(false)
     }
@@ -185,12 +185,12 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
 
   async function handleImageUpload(file: File) {
     if (!isImageFile(file)) {
-      toast.error(language === 'tr' ? 'Lütfen geçerli bir resim dosyası seçin (JPG, PNG)' : 'Please select a valid image file (JPG, PNG)')
+      toast.error(t.expenses.invalidImageFile)
       return
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error(language === 'tr' ? 'Dosya boyutu 5MB\'dan küçük olmalıdır' : 'File size must be less than 5MB')
+      toast.error(t.expenses.fileSizeLimit)
       return
     }
 
@@ -359,11 +359,11 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto bg-blue-50 border-blue-200">
         <DialogHeader>
           <DialogTitle>{t.expenses.addExpense}</DialogTitle>
           <DialogDescription>
-            Add a new manual expense entry
+            {t.expenses.addExpenseDescription}
           </DialogDescription>
         </DialogHeader>
 
@@ -373,13 +373,13 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
               <div className="flex items-center gap-2">
                 <Scan className="h-5 w-5 text-blue-600" />
                 <span className="font-medium text-sm text-blue-900">
-                  {language === 'tr' ? 'Yapay Zeka ile Fiş Tara' : 'AI-Powered Receipt Scanner'}
+                  {t.expenses.aiReceiptScan}
                 </span>
               </div>
               {ocrScanned && (
                 <div className="flex items-center gap-1 text-green-600 text-xs">
                   <CheckCircle2 className="h-4 w-4" />
-                  <span>{language === 'tr' ? 'Tarandı' : 'Scanned'}</span>
+                  <span>{t.expenses.receiptScanned}</span>
                 </div>
               )}
             </div>
@@ -405,12 +405,12 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
                 {ocrLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {language === 'tr' ? 'Taranıyor...' : 'Scanning...'}
+                    {t.expenses.scanning}
                   </>
                 ) : (
                   <>
                     <Upload className="mr-2 h-4 w-4" />
-                    {language === 'tr' ? 'Fiş Yükle' : 'Upload Receipt'}
+                    {t.expenses.uploadReceipt}
                   </>
                 )}
               </Button>
@@ -434,18 +434,14 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
             {ocrLoading && (
               <div className="mt-3 flex items-center gap-2 text-xs text-blue-700">
                 <Loader2 className="h-3 w-3 animate-spin" />
-                <span>{language === 'tr' ? 'AI fişinizi analiz ediyor...' : 'AI is analyzing your receipt...'}</span>
+                <span>{t.expenses.aiAnalyzingReceipt}</span>
               </div>
             )}
 
             {ocrScanned && (
               <div className="mt-3 flex items-start gap-2 text-xs text-amber-700 bg-amber-50 p-2 rounded">
                 <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span>
-                  {language === 'tr'
-                    ? 'Mavi vurgulanan alanlar AI tarafından dolduruldu. Lütfen kontrol edin.'
-                    : 'Fields highlighted in blue were auto-filled by AI. Please verify.'}
-                </span>
+                <span>{t.expenses.aiFilledFieldsNote}</span>
               </div>
             )}
           </div>

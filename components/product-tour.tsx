@@ -119,7 +119,7 @@ export function ProductTour({ open, onClose }: ProductTourProps) {
       <DialogContent
         id="product-tour-dialog"
         data-product-tour="dialog"
-        className="max-w-[380px] max-h-[min(80vh,480px)] overflow-x-hidden overflow-y-auto p-0 gap-0"
+        className="max-w-[380px] max-h-[min(80vh,480px)] overflow-x-hidden overflow-y-auto p-0 gap-0 !bg-sky-50 border-sky-200"
       >
         <div className="relative min-w-0">
           <div className="absolute top-0 left-0 right-0 h-0.5 bg-gray-200 rounded-full overflow-hidden">
@@ -163,68 +163,32 @@ export function ProductTour({ open, onClose }: ProductTourProps) {
                 </CardContent>
               </Card>
 
-              <div className="flex items-center justify-between pt-1 gap-1" data-product-tour-nav>
+              <div className="flex items-center justify-center gap-2 pt-1" data-product-tour-nav>
                 <Button
                   id="product-tour-prev"
                   data-product-tour="prev"
                   variant="outline"
                   size="sm"
-                  className="h-6 min-w-0 text-[10px] gap-0.5 px-2 shrink-0"
+                  className="h-8 text-[11px] gap-1.5 px-3 flex-1 max-w-[140px]"
                   onClick={handlePrevious}
                   disabled={currentStep === 0}
                 >
-                  <ArrowLeft className="h-3 w-3 shrink-0" />
+                  <ArrowLeft className="h-3.5 w-3.5 shrink-0" />
                   {language === 'tr' ? 'Geri' : 'Prev'}
                 </Button>
-
-                <div className="flex items-center gap-1 shrink-0" role="tablist" aria-label={language === 'tr' ? 'Adımlar' : 'Steps'}>
-                  {steps.map((_, index) => (
-                    <button
-                      key={index}
-                      id={`product-tour-step-${index}`}
-                      data-product-tour={`step-${index}`}
-                      role="tab"
-                      aria-selected={index === currentStep}
-                      onClick={() => setCurrentStep(index)}
-                      className={`rounded-full transition-all shrink-0 ${
-                        index === currentStep ? 'bg-[#00D4AA]' : 'bg-gray-300 hover:bg-gray-400'
-                      }`}
-                      style={{
-                        width: index === currentStep ? 8 : 6,
-                        height: index === currentStep ? 8 : 6,
-                        minWidth: 8,
-                        minHeight: 8,
-                      }}
-                    />
-                  ))}
-                </div>
-
                 <Button
                   id="product-tour-next"
                   data-product-tour="next"
                   size="sm"
-                  className="h-6 min-w-0 text-[10px] bg-[#00D4AA] hover:bg-[#00B894] gap-0.5 px-2 shrink-0"
+                  className="h-8 text-[11px] bg-[#00D4AA] hover:bg-[#00B894] gap-1.5 px-3 flex-1 max-w-[140px]"
                   onClick={handleNext}
                 >
                   {currentStep === steps.length - 1
                     ? (language === 'tr' ? 'Başla' : 'Start')
                     : (language === 'tr' ? 'İleri' : 'Next')}
-                  <ArrowRight className="h-3 w-3 shrink-0" />
+                  <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                 </Button>
               </div>
-
-              {currentStep < steps.length - 1 && (
-                <Button
-                  id="product-tour-skip"
-                  data-product-tour="skip"
-                  variant="ghost"
-                  size="sm"
-                  onClick={onClose}
-                  className="text-gray-600 hover:text-gray-800 text-[9px] h-5 px-2 mt-0.5 border border-gray-200 hover:bg-gray-100"
-                >
-                  {language === 'tr' ? 'Turu Atla' : 'Skip'}
-                </Button>
-              )}
             </div>
           </div>
         </div>

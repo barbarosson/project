@@ -10,13 +10,31 @@ import { supabase } from '@/lib/supabase'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
 import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Plus, Trash2, FileText } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 
 interface Supplier {
   id: string
   company_title: string | null
   name: string | null
   email: string | null
+}
+
+interface Product {
+  id: string
+  name: string
+  sku?: string
+  purchase_price: number
+  vat_rate?: number
+}
+
+interface LineItem {
+  id: string
+  product_id: string | null
+  description: string
+  quantity: string
+  unit_price: string
+  vat_rate: number
 }
 
 interface AddManualPurchaseInvoiceDialogProps {
@@ -32,6 +50,15 @@ const PURCHASE_TYPES = [
   { value: 'devir_return', tr: 'Devir İade', en: 'Carry Fwd Return' },
 ] as const
 
+const VAT_RATES = [
+  { value: 0, label: '0%' },
+  { value: 1, label: '1%' },
+  { value: 8, label: '8%' },
+  { value: 10, label: '10%' },
+  { value: 18, label: '18%' },
+  { value: 20, label: '20%' },
+] as const
+
 export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }: AddManualPurchaseInvoiceDialogProps) {
   const { tenantId } = useTenant()
   const { t, language } = useLanguage()
@@ -42,15 +69,38 @@ export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }
     invoice_number: '',
     invoice_date: new Date().toISOString().split('T')[0],
     due_date: '',
-    total_amount: '',
     invoice_type: 'purchase' as string,
   })
+
+  const [lineItems, setLineItems] = useState<LineItem[]>([
+    { id: crypto.randomUUID(), product_id: null, description: '', quantity: '1', unit_price: '', vat_rate: 18 },
+  ])
+  const [products, setProducts] = useState<Product[]>([])
+  const [showEInvoiceImport, setShowEInvoiceImport] = useState(false)
+  const [eInvoiceXml, setEInvoiceXml] = useState('')
 
   useEffect(() => {
     if (open && tenantId) {
       fetchSuppliers()
+      fetchProducts()
     }
   }, [open, tenantId])
+
+  async function fetchProducts() {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, sku, purchase_price, vat_rate')
+        .eq('tenant_id', tenantId)
+        .eq('status', 'active')
+        .order('name')
+      if (error) throw error
+      setProducts(data || [])
+    } catch (e) {
+      console.error(e)
+      setProducts([])
+    }
+  }
 
   async function fetchSuppliers() {
     try {
@@ -79,38 +129,190 @@ export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }
     }
   }
 
+  function addLine() {
+    setLineItems((prev) => [...prev, { id: crypto.randomUUID(), product_id: null, description: '', quantity: '1', unit_price: '', vat_rate: 18 }])
+  }
+
+  function removeLine(id: string) {
+    setLineItems((prev) => (prev.length > 1 ? prev.filter((l) => l.id !== id) : prev))
+  }
+
+  function updateLine(id: string, field: keyof LineItem, value: string | number | null) {
+    setLineItems((prev) => prev.map((l) => (l.id === id ? { ...l, [field]: value } : l)))
+  }
+
+  function selectProductForLine(lineId: string, productId: string | null) {
+    if (!productId) {
+      updateLine(lineId, 'product_id', null)
+      updateLine(lineId, 'description', '')
+      updateLine(lineId, 'unit_price', '')
+      return
+    }
+    const p = products.find((x) => x.id === productId)
+    if (!p) return
+    updateLine(lineId, 'product_id', productId)
+    updateLine(lineId, 'description', p.name)
+    updateLine(lineId, 'unit_price', String(p.purchase_price ?? 0))
+    if (p.vat_rate != null) updateLine(lineId, 'vat_rate', Number(p.vat_rate))
+  }
+
+  function computeLineValues(line: LineItem) {
+    const qty = parseFloat(line.quantity.replace(',', '.')) || 0
+    const price = parseFloat(line.unit_price.replace(',', '.')) || 0
+    const subtotal = Math.round(qty * price * 100) / 100
+    const taxAmount = Math.round(subtotal * (line.vat_rate / 100) * 100) / 100
+    const total = Math.round((subtotal + taxAmount) * 100) / 100
+    return { subtotal, taxAmount, total }
+  }
+
+  function computeTotals() {
+    let subtotal = 0
+    let taxAmount = 0
+    let total = 0
+    lineItems.forEach((line) => {
+      const v = computeLineValues(line)
+      subtotal += v.subtotal
+      taxAmount += v.taxAmount
+      total += v.total
+    })
+    return { subtotal: Math.round(subtotal * 100) / 100, taxAmount: Math.round(taxAmount * 100) / 100, total: Math.round(total * 100) / 100 }
+  }
+
+  function tryImportFromEInvoice() {
+    const xml = eInvoiceXml.trim()
+    if (!xml) {
+      toast.error(language === 'tr' ? 'XML yapıştırın veya dosya yükleyin.' : 'Paste XML or upload file.')
+      return
+    }
+    try {
+      const parser = new DOMParser()
+      const doc = parser.parseFromString(xml, 'text/xml')
+      const lines: LineItem[] = []
+      const invLines = doc.querySelectorAll('InvoiceLine, [id*="InvoiceLine"], cac\\:InvoiceLine, *[local-name()="InvoiceLine"]')
+      if (invLines.length === 0) {
+        const noteEls = doc.querySelectorAll('Note, cbc\\:Note, *[local-name()="Note"]')
+        const qtyEls = doc.querySelectorAll('InvoicedQuantity, cbc\\:InvoicedQuantity, *[local-name()="InvoicedQuantity"]')
+        const amountEls = doc.querySelectorAll('LineExtensionAmount, cbc\\:LineExtensionAmount, *[local-name()="LineExtensionAmount"]')
+        const maxLen = Math.max(noteEls.length, qtyEls.length, amountEls.length, 1)
+        for (let i = 0; i < maxLen; i++) {
+          const desc = noteEls[i]?.textContent?.trim() || ''
+          const qty = qtyEls[i]?.textContent?.trim() || '1'
+          const amount = amountEls[i]?.textContent?.trim() || '0'
+          const numQty = parseFloat(qty.replace(',', '.')) || 1
+          const lineAmount = parseFloat(amount.replace(',', '.')) || 0
+          const unitPrice = numQty > 0 ? lineAmount / numQty : 0
+          lines.push({
+            id: crypto.randomUUID(),
+            product_id: null,
+            description: desc,
+            quantity: qty,
+            unit_price: unitPrice.toFixed(2),
+            vat_rate: 18,
+          })
+        }
+      } else {
+        invLines.forEach((el) => {
+          const desc = el.querySelector('Note, cbc\\:Note, *[local-name()="Note"], Item\\:Description, *[local-name()="Description"]')?.textContent?.trim() || ''
+          const qtyEl = el.querySelector('InvoicedQuantity, cbc\\:InvoicedQuantity, *[local-name()="InvoicedQuantity"]')
+          const amtEl = el.querySelector('LineExtensionAmount, cbc\\:LineExtensionAmount, *[local-name()="LineExtensionAmount"]')
+          const qty = qtyEl?.textContent?.trim() || '1'
+          const amount = amtEl?.textContent?.trim() || '0'
+          const numQty = parseFloat(qty.replace(',', '.')) || 1
+          const lineAmount = parseFloat(amount.replace(',', '.')) || 0
+          const unitPrice = numQty > 0 ? lineAmount / numQty : 0
+          lines.push({
+            id: crypto.randomUUID(),
+            product_id: null,
+            description: desc,
+            quantity: qty,
+            unit_price: unitPrice.toFixed(2),
+            vat_rate: 18,
+          })
+        })
+      }
+      if (lines.length > 0) {
+        setLineItems(lines)
+        setShowEInvoiceImport(false)
+        setEInvoiceXml('')
+        toast.success(language === 'tr' ? `${lines.length} satır içe aktarıldı.` : `${lines.length} line(s) imported.`)
+      } else {
+        toast.info(t.expenses.importFromEInvoiceSoon)
+      }
+    } catch {
+      toast.info(t.expenses.importFromEInvoiceSoon)
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!tenantId) {
-      toast.error(language === 'tr' ? 'Kiracı bilgisi yok' : 'No tenant ID available')
+      toast.error(t.common.noData)
       return
     }
-    if (!formData.supplier_id || !formData.invoice_number || !formData.invoice_date || !formData.total_amount) {
-      toast.error(language === 'tr' ? 'Tedarikçi, fatura no, tarih ve toplam tutar zorunludur' : 'Supplier, invoice number, date and total are required')
+    if (!formData.supplier_id || !formData.invoice_number || !formData.invoice_date) {
+      toast.error(t.expenses.requiredFieldsIncoming)
       return
     }
-    const total = parseFloat(formData.total_amount.replace(',', '.'))
-    if (isNaN(total) || total <= 0) {
-      toast.error(language === 'tr' ? 'Geçerli bir toplam tutar girin' : 'Enter a valid total amount')
+    const validLines = lineItems.filter((l) => {
+      const qty = parseFloat(l.quantity.replace(',', '.'))
+      const price = parseFloat(l.unit_price.replace(',', '.'))
+      return l.description.trim() !== '' && !isNaN(qty) && qty > 0 && !isNaN(price) && price >= 0
+    })
+    if (validLines.length === 0) {
+      toast.error(t.expenses.atLeastOneLine)
+      return
+    }
+    let subtotal = 0
+    let taxAmount = 0
+    let totalAmount = 0
+    validLines.forEach((line) => {
+      const v = computeLineValues(line)
+      subtotal += v.subtotal
+      taxAmount += v.taxAmount
+      totalAmount += v.total
+    })
+    subtotal = Math.round(subtotal * 100) / 100
+    taxAmount = Math.round(taxAmount * 100) / 100
+    totalAmount = Math.round(totalAmount * 100) / 100
+    if (totalAmount <= 0) {
+      toast.error(t.expenses.validTotalAmount)
       return
     }
     setLoading(true)
     try {
       const dueDate = formData.due_date || formData.invoice_date
-      const { error } = await supabase.from('purchase_invoices').insert({
-        tenant_id: tenantId,
-        supplier_id: formData.supplier_id,
-        invoice_number: formData.invoice_number.trim(),
-        invoice_date: formData.invoice_date,
-        due_date: dueDate || null,
-        subtotal: total,
-        tax_amount: 0,
-        total_amount: total,
-        status: 'pending',
-        invoice_type: formData.invoice_type || 'purchase',
-      })
-      if (error) throw error
-      toast.success(language === 'tr' ? 'Fatura eklendi' : 'Invoice added')
+      const { data: inserted, error: invError } = await supabase
+        .from('purchase_invoices')
+        .insert({
+          tenant_id: tenantId,
+          supplier_id: formData.supplier_id,
+          invoice_number: formData.invoice_number.trim(),
+          invoice_date: formData.invoice_date,
+          due_date: dueDate || null,
+          subtotal,
+          tax_amount: taxAmount,
+          total_amount: totalAmount,
+          status: 'pending',
+          invoice_type: formData.invoice_type || 'purchase',
+        })
+        .select('id')
+        .single()
+      if (invError || !inserted) throw invError || new Error('Insert failed')
+      for (const line of validLines) {
+        const { subtotal: lineSub, taxAmount: lineTax, total: lineTotal } = computeLineValues(line)
+        await supabase.from('purchase_invoice_line_items').insert({
+          tenant_id: tenantId,
+          purchase_invoice_id: inserted.id,
+          product_id: line.product_id || null,
+          description: line.description.trim(),
+          quantity: parseFloat(line.quantity.replace(',', '.')),
+          unit_price: parseFloat(line.unit_price.replace(',', '.')),
+          tax_rate: line.vat_rate,
+          tax_amount: lineTax,
+          total: lineTotal,
+        })
+      }
+      toast.success(t.expenses.invoiceAdded)
       onSuccess()
       onOpenChange(false)
       setFormData({
@@ -118,12 +320,12 @@ export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }
         invoice_number: '',
         invoice_date: new Date().toISOString().split('T')[0],
         due_date: '',
-        total_amount: '',
         invoice_type: 'purchase',
       })
+      setLineItems([{ id: crypto.randomUUID(), product_id: null, description: '', quantity: '1', unit_price: '', vat_rate: 18 }])
     } catch (err: any) {
       console.error(err)
-      toast.error(err?.message || (language === 'tr' ? 'Fatura eklenemedi' : 'Failed to add invoice'))
+      toast.error(err?.message || t.expenses.invoiceAddFailed)
     } finally {
       setLoading(false)
     }
@@ -133,11 +335,11 @@ export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-blue-50 border-blue-200">
         <DialogHeader>
-          <DialogTitle>{isTr ? 'Gelen fatura ekle' : 'Add incoming invoice'}</DialogTitle>
+          <DialogTitle>{t.expenses.addIncomingInvoiceTitle}</DialogTitle>
           <DialogDescription>
-            {isTr ? 'Manuel gelen (tedarikçi) fatura girin.' : 'Enter a manual incoming (supplier) invoice.'}
+            {t.expenses.addIncomingInvoiceDescription}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -149,11 +351,11 @@ export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }
               required
             >
               <SelectTrigger>
-                <SelectValue placeholder={isTr ? 'Tedarikçi seçin' : 'Select supplier'} />
+                <SelectValue placeholder={t.expenses.selectSupplier} />
               </SelectTrigger>
               <SelectContent>
                 {suppliers.length === 0 && (
-                  <div className="px-2 py-1.5 text-sm text-muted-foreground">{isTr ? 'Tedarikçi yok (Cari ekranından vendor/both ekleyin)' : 'No suppliers (Add vendor/both from Customers)'}</div>
+                  <div className="px-2 py-1.5 text-sm text-muted-foreground">{t.expenses.noSuppliersHint}</div>
                 )}
                 {suppliers.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
@@ -168,7 +370,7 @@ export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }
             <Input
               value={formData.invoice_number}
               onChange={(e) => setFormData({ ...formData, invoice_number: e.target.value })}
-              placeholder="e.g. GFS-2025-001"
+              placeholder={t.expenses.invoiceNumberPlaceholder}
               required
             />
           </div>
@@ -191,19 +393,136 @@ export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }
               />
             </div>
           </div>
+
           <div className="space-y-2">
-            <Label>{t.expenses.total} *</Label>
-            <Input
-              type="text"
-              inputMode="decimal"
-              value={formData.total_amount}
-              onChange={(e) => setFormData({ ...formData, total_amount: e.target.value })}
-              placeholder="0.00"
-              required
-            />
+            <div className="flex items-center justify-between gap-2">
+              <Label>{t.expenses.lineItems}</Label>
+              <Button type="button" variant="outline" size="sm" onClick={() => setShowEInvoiceImport((v) => !v)} className="text-xs">
+                <FileText className="h-3.5 w-3.5 mr-1" />
+                {t.expenses.importFromEInvoice}
+              </Button>
+            </div>
+            {showEInvoiceImport && (
+              <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-3 space-y-2">
+                <p className="text-xs text-muted-foreground">{t.expenses.pasteEInvoiceXml}</p>
+                <Textarea
+                  value={eInvoiceXml}
+                  onChange={(e) => setEInvoiceXml(e.target.value)}
+                  placeholder="XML..."
+                  rows={4}
+                  className="font-mono text-xs"
+                />
+                <Button type="button" size="sm" onClick={tryImportFromEInvoice}>
+                  {language === 'tr' ? 'İçe aktar' : 'Import'}
+                </Button>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              {lineItems.map((line) => {
+                const { total: lineTotal } = computeLineValues(line)
+                return (
+                  <div key={line.id} className="rounded-lg border border-gray-200 bg-white p-3 space-y-2">
+                    <div className="flex justify-between items-center gap-2">
+                      <Label className="text-xs">{t.expenses.selectProductOrService}</Label>
+                      <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-red-500 hover:text-red-700" onClick={() => removeLine(line.id)} title={t.expenses.deleteLine}>
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    <Select
+                      value={line.product_id || 'manual'}
+                      onValueChange={(v) => selectProductForLine(line.id, v === 'manual' ? null : v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={t.expenses.selectProductOrService} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="manual">{t.expenses.manualEntry}</SelectItem>
+                        {products.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>
+                            {p.name}{p.sku ? ` (${p.sku})` : ''} — {Number(p.purchase_price || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <div>
+                      <Label className="text-xs">{t.expenses.lineDescription}</Label>
+                      <Textarea
+                        value={line.description}
+                        onChange={(e) => updateLine(line.id, 'description', e.target.value)}
+                        placeholder={t.expenses.lineDescription}
+                        rows={2}
+                        className="text-sm mt-1"
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs">{t.expenses.quantity}</Label>
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          value={line.quantity}
+                          onChange={(e) => updateLine(line.id, 'quantity', e.target.value)}
+                          placeholder="1"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">{t.expenses.unitPrice}</Label>
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          value={line.unit_price}
+                          onChange={(e) => updateLine(line.id, 'unit_price', e.target.value)}
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">{t.expenses.vatRate}</Label>
+                        <Select value={String(line.vat_rate)} onValueChange={(v) => updateLine(line.id, 'vat_rate', Number(v))}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {VAT_RATES.map((r) => (
+                              <SelectItem key={r.value} value={String(r.value)}>{r.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <p className="text-xs font-medium text-right">{t.expenses.lineTotal}: {lineTotal.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</p>
+                  </div>
+                )
+              })}
+              <Button type="button" variant="outline" size="sm" onClick={addLine} className="w-full">
+                <Plus className="h-4 w-4 mr-2" />
+                {t.expenses.addLine}
+              </Button>
+            </div>
+
+            {(() => {
+              const { subtotal, taxAmount, total } = computeTotals()
+              return (
+                <div className="rounded-lg border border-blue-200 bg-blue-50/30 p-3 space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span>{t.expenses.subtotal}</span>
+                    <span className="font-medium">{subtotal.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>{t.expenses.totalVat}</span>
+                    <span className="font-medium">{taxAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</span>
+                  </div>
+                  <div className="flex justify-between font-semibold pt-1 border-t">
+                    <span>{t.expenses.grandTotal}</span>
+                    <span>{total.toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺</span>
+                  </div>
+                </div>
+              )
+            })()}
           </div>
+
           <div className="space-y-2">
-            <Label>{isTr ? 'Fatura tipi' : 'Invoice type'}</Label>
+            <Label>{t.expenses.invoiceType}</Label>
             <Select
               value={formData.invoice_type}
               onValueChange={(v) => setFormData({ ...formData, invoice_type: v })}

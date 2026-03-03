@@ -8,13 +8,13 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       title: 'Modulus ERP',
       description: 'Complete business management solution',
-      images: ['/logo_slogan_ingilizce.png'],
+      images: ['/icon-512.png'],
     },
     twitter: {
       card: 'summary_large_image',
       title: 'Modulus ERP',
       description: 'Complete business management solution',
-      images: ['/logo_slogan_ingilizce.png'],
+      images: ['/icon-512.png'],
     },
   };
 }

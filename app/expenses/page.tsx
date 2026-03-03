@@ -461,46 +461,78 @@ export default function ExpensesPage() {
 
       if (expenseError) throw expenseError
 
+      let stockUpdatedCount = 0
       if (lineItems && lineItems.length > 0) {
+        let productsByName: { id: string; name: string }[] | null = null
+        async function resolveProductId(item: (typeof lineItems)[0]): Promise<string | null> {
+          if (item.product_id) return item.product_id
+          const desc = (item.description && typeof item.description === 'string') ? item.description.trim() : ''
+          if (!desc) return null
+          if (!productsByName) {
+            const { data: list } = await supabase.from('products').select('id, name').eq('tenant_id', tenantId).eq('status', 'active')
+            productsByName = (list || []).map((p: { id: string; name: string }) => ({ id: p.id, name: (p.name || '').trim().toLowerCase() }))
+          }
+          const descLower = desc.toLowerCase()
+          const exact = productsByName.filter((p) => p.name === descLower)
+          if (exact.length === 1) return exact[0].id
+          const partial = productsByName.filter((p) => p.name && descLower.includes(p.name))
+          return partial.length === 1 ? partial[0].id : null
+        }
         for (const item of lineItems) {
-          if (item.product_id) {
+          let productId = item.product_id
+          if (!productId) {
+            productId = await resolveProductId(item)
+            if (productId && item.id) {
+              await supabase.from('purchase_invoice_line_items').update({ product_id: productId }).eq('id', item.id).eq('tenant_id', tenantId)
+            }
+          }
+          if (productId) {
             const { data: product } = await supabase
               .from('products')
-              .select('current_stock, purchase_price')
-              .eq('id', item.product_id)
+              .select('current_stock, stock_quantity, purchase_price')
+              .eq('id', productId)
               .eq('tenant_id', tenantId)
               .single()
 
             if (product) {
-              const updateData: any = {
-                current_stock: Number(product.current_stock || 0) + Number(item.quantity),
-                updated_at: new Date().toISOString()
+              const newStock = Number(product.current_stock ?? product.stock_quantity ?? 0) + Number(item.quantity)
+              const updateData: Record<string, unknown> = {
+                current_stock: newStock,
+                stock_quantity: newStock
               }
 
               if (item.unit_price && Number(item.unit_price) > 0) {
                 updateData.purchase_price = Number(item.unit_price)
               }
 
-              await supabase
+              const { error: updateErr } = await supabase
                 .from('products')
                 .update(updateData)
-                .eq('id', item.product_id)
+                .eq('id', productId)
                 .eq('tenant_id', tenantId)
 
-              await supabase
-                .from('stock_movements')
-                .insert({
-                  tenant_id: tenantId,
-                  product_id: item.product_id,
-                  movement_type: 'purchase',
-                  quantity: item.quantity,
-                  reference_type: 'purchase_invoice',
-                  reference_id: invoiceId,
-                  notes: `Stock increased from purchase invoice ${invoice.invoice_number}${item.unit_price ? ` at $${Number(item.unit_price).toFixed(2)} per unit` : ''}`
-                })
+              if (!updateErr) {
+                stockUpdatedCount += 1
+                await supabase
+                  .from('stock_movements')
+                  .insert({
+                    tenant_id: tenantId,
+                    product_id: productId,
+                    movement_type: 'in',
+                    quantity: item.quantity,
+                    unit_cost: item.unit_price ? Number(item.unit_price) : 0,
+                    reason: `Purchase invoice ${invoice.invoice_number}`,
+                    reference_type: 'purchase_invoice',
+                    reference_id: invoiceId,
+                    notes: item.unit_price ? `Unit price: ${Number(item.unit_price).toFixed(2)}` : undefined
+                  })
+              }
             }
           }
         }
+      }
+      if (lineItems?.length && stockUpdatedCount === 0) {
+        toast.warning(t.expenses.stockNoProductMatchWarning)
       }
 
       toast.success(t.expenses.invoiceAcceptedSuccess)
@@ -998,7 +1030,7 @@ export default function ExpensesPage() {
       />
 
       <Dialog open={!!expenseToView} onOpenChange={(open) => !open && setExpenseToView(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-blue-50 border-blue-200">
           <DialogHeader>
             <DialogTitle>{t.common.view} - {t.expenses.manualExpenses}</DialogTitle>
           </DialogHeader>
@@ -1053,7 +1085,7 @@ export default function ExpensesPage() {
       />
 
       <Dialog open={!!purchaseToView} onOpenChange={(open) => !open && setPurchaseToView(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md bg-blue-50 border-blue-200">
           <DialogHeader>
             <DialogTitle>{t.common.view} - {t.expenses.incomingInvoices}</DialogTitle>
           </DialogHeader>
@@ -1081,7 +1113,7 @@ export default function ExpensesPage() {
               </div>
               {purchaseToView.due_date && (
                 <div>
-                  <span className="font-medium text-gray-500">{language === 'tr' ? 'Vade tarihi' : 'Due date'}</span>
+                  <span className="font-medium text-gray-500">{t.expenses.dueDate}</span>
                   <p>{format(new Date(purchaseToView.due_date), 'dd MMM yyyy')}</p>
                 </div>
               )}
