@@ -415,27 +415,28 @@ export function LiveChatWidget({ onClose, embedded = false }: LiveChatWidgetProp
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 h-16 w-16 rounded-full z-50 flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 shadow-[0_4px_24px_rgba(125,211,252,0.4)] hover:shadow-[0_6px_32px_rgba(125,211,252,0.5)]"
+          className="fixed bottom-5 right-5 h-12 w-12 rounded-full z-50 flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_2px_12px_rgba(125,211,252,0.25)] hover:shadow-[0_4px_16px_rgba(125,211,252,0.35)] border border-[#7DD3FC]/30"
           style={{
-            background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)',
+            background: 'linear-gradient(135deg, rgba(15,23,42,0.75) 0%, rgba(30,58,95,0.75) 100%)',
             color: '#7DD3FC',
+            backdropFilter: 'blur(8px)',
           }}
         >
           <span className="inline-flex" style={{ color: '#7DD3FC' }}>
-            <MessageCircle className="h-7 w-7" stroke="#7DD3FC" />
+            <MessageCircle className="h-5 w-5" stroke="#7DD3FC" />
           </span>
           {isOnline && (
-            <span className="absolute -top-1 -right-1 flex h-4 w-4">
+            <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#7DD3FC] opacity-75" />
-              <span className="relative inline-flex rounded-full h-4 w-4 bg-[#7DD3FC] border-2 border-white" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-[#7DD3FC] border-2 border-white" />
             </span>
           )}
         </button>
       )}
 
       {isOpen && (
-        <div className="fixed bottom-6 right-6 w-[380px] h-[560px] shadow-2xl rounded-2xl overflow-hidden z-50 bg-white flex-none">
-          <Card className="h-full flex flex-col rounded-2xl bg-white flex-none" style={{ borderColor: '#E6EBF1' }}>
+        <div className="fixed bottom-5 right-5 w-[340px] h-[480px] shadow-xl rounded-2xl overflow-hidden z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm flex-none border border-[#7DD3FC]/20">
+          <Card className="h-full flex flex-col rounded-2xl bg-transparent border-0 shadow-none flex-none">
             <div className="px-4 py-4 flex-none" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%)' }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -463,7 +464,7 @@ export function LiveChatWidget({ onClose, embedded = false }: LiveChatWidgetProp
                 </button>
               </div>
             </div>
-            <CardContent className="flex-1 flex flex-col p-0 bg-white overflow-hidden">
+            <CardContent className="flex-1 flex flex-col p-0 bg-white/95 dark:bg-gray-900/95 overflow-hidden">
               {!isOnline ? renderOfflineState() : !chatStarted ? renderChatForm() : renderMessages()}
             </CardContent>
           </Card>

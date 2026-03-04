@@ -53,6 +53,7 @@ interface Invoice {
   due_date: string
   created_at: string
   order_id?: string | null
+  staff_id?: string | null
   customers: {
     name: string
     company_title: string

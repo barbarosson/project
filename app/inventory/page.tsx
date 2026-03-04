@@ -25,6 +25,7 @@ import {
 import { toast } from 'sonner'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
+import { useCurrency } from '@/contexts/currency-context'
 
 interface Product {
   id: string
@@ -54,6 +55,7 @@ interface AIInsight {
 export default function InventoryPage() {
   const { tenantId, loading: tenantLoading } = useTenant()
   const { language, t } = useLanguage()
+  const { formatCurrency, currency: companyCurrency } = useCurrency()
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
@@ -244,7 +246,7 @@ export default function InventoryPage() {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Inventory Management</h1>
+          <h1 className="text-3xl font-bold text-[#0A2540]">{t.inventory.title}</h1>
           <p className="text-[#475569] mt-1">
             {t.inventory.trackStockLevels}
           </p>
@@ -276,24 +278,20 @@ export default function InventoryPage() {
                 <ShoppingCart className="h-5 w-5 text-blue-600 mt-1" />
                 <div className="flex-1">
                   <CardTitle className="text-blue-900">
-                    {language === 'tr'
-                      ? `${pendingOrderCount} Aktif Siparis Stok Seviyelerini Etkiliyor`
-                      : `${pendingOrderCount} Active Orders Affecting Stock`}
+                    {t.inventory.activeOrdersTitle.replace('{count}', String(pendingOrderCount))}
                   </CardTitle>
                   <CardDescription className="text-blue-700 mt-1">
-                    {language === 'tr'
-                      ? `${pendingOrderCount} adet aktif siparis stok seviyelerinizi etkileyebilir.`
-                      : `${pendingOrderCount} active orders may affect your stock levels. Confirm or ship orders to auto-deduct stock.`}
+                    {t.inventory.activeOrdersDesc.replace('{count}', String(pendingOrderCount))}
                   </CardDescription>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                  className="border border-input bg-white hover:bg-gray-50 font-semibold text-contrast-body shrink-0"
                   onClick={() => window.location.href = '/orders'}
                 >
                   <Link2 className="h-3.5 w-3.5 mr-1" />
-                  {language === 'tr' ? 'Siparislere Git' : 'View Orders'}
+                  {t.inventory.viewOrders}
                 </Button>
               </div>
             </CardHeader>
@@ -334,7 +332,7 @@ export default function InventoryPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                ${aiInsight?.totalValue.toFixed(2) || '0.00'}
+                {formatCurrency(aiInsight?.totalValue ?? 0, companyCurrency || 'TRY')}
               </div>
               <p className="text-xs text-[#475569] mt-1">
                 {t.inventory.totalStockValue}
@@ -355,7 +353,7 @@ export default function InventoryPage() {
                 <XAxis dataKey="name" angle={-45} textAnchor="end" height={80} />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="sold" fill="#3b82f6" />
+                <Bar dataKey="sold" name={t.inventory.totalSold} fill="#3b82f6" />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -371,7 +369,7 @@ export default function InventoryPage() {
                 </CardDescription>
               </div>
               <div className="flex gap-2">
-                <Button onClick={() => setShowBulkAddDialog(true)} variant="outline" className="text-[#0A192F]">
+                <Button onClick={() => setShowBulkAddDialog(true)} variant="outline" className="border border-input bg-white hover:bg-gray-50 font-semibold text-contrast-body">
                   <Upload className="h-4 w-4 mr-2" />
                   {t.inventory.bulkAdd}
                 </Button>
@@ -393,9 +391,9 @@ export default function InventoryPage() {
                     <TableHead>{t.inventory.sku}</TableHead>
                     <TableHead>{t.inventory.category}</TableHead>
                     <TableHead className="text-right">{t.inventory.currentStock}</TableHead>
-                    <TableHead className="text-right">Avg Cost</TableHead>
+                    <TableHead className="text-right">{t.inventory.avgCost}</TableHead>
                     <TableHead className="text-right">{t.inventory.salePrice}</TableHead>
-                    <TableHead className="text-center">{language === 'tr' ? 'Siparisler' : 'Orders'}</TableHead>
+                    <TableHead className="text-center">{t.inventory.orders}</TableHead>
                     <TableHead>{t.common.status}</TableHead>
                     <TableHead className="text-right">{t.common.actions}</TableHead>
                   </TableRow>
@@ -429,14 +427,14 @@ export default function InventoryPage() {
                         onClick={() => handleProductClick(product)}
                       >
                         <span className="text-[#475569] text-sm">
-                          ${Number(product.average_cost || 0).toFixed(2)}
+                          {formatCurrency(Number(product.average_cost || 0), companyCurrency || 'TRY')}
                         </span>
                       </TableCell>
                       <TableCell
                         className="text-right"
                         onClick={() => handleProductClick(product)}
                       >
-                        ${Number(product.sale_price).toFixed(2)}
+                        {formatCurrency(Number(product.sale_price), companyCurrency || 'TRY')}
                       </TableCell>
                       <TableCell className="text-center" onClick={() => handleProductClick(product)}>
                         {linkedOrderCounts[product.id] ? (

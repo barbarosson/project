@@ -14,6 +14,7 @@ import { convertAmount } from '@/lib/tcmb'
 import type { TcmbRatesByCurrency } from '@/lib/tcmb'
 import { EmptyState } from '@/components/empty-state'
 import { AddTransactionDialog } from '@/components/add-transaction-dialog'
+import { AdvancePaymentDialog } from '@/components/advance-payment-dialog'
 import { TransactionExcelImportDialog } from '@/components/transaction-excel-import-dialog'
 import {
   Table,
@@ -89,6 +90,7 @@ export default function TransactionsPage() {
   const [matchLoading, setMatchLoading] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isTransactionImportOpen, setIsTransactionImportOpen] = useState(false)
+  const [isAdvancePaymentOpen, setIsAdvancePaymentOpen] = useState(false)
   const [summary, setSummary] = useState({
     totalIncome: 0,
     totalExpense: 0,
@@ -487,6 +489,10 @@ export default function TransactionsPage() {
               <Upload className="mr-2 h-4 w-4" />
               {language === 'tr' ? 'Toplu aktarım' : 'Bulk import'}
             </Button>
+            <Button variant="outline" onClick={() => setIsAdvancePaymentOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              {t.hr.advancePayment}
+            </Button>
             <Button onClick={() => setAddDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
               {t.finance.transactions.addTransaction}
@@ -750,6 +756,15 @@ export default function TransactionsPage() {
         <AddTransactionDialog
           open={addDialogOpen}
           onOpenChange={setAddDialogOpen}
+          onSuccess={() => {
+            fetchTransactions()
+            fetchSummary()
+          }}
+        />
+
+        <AdvancePaymentDialog
+          open={isAdvancePaymentOpen}
+          onOpenChange={setIsAdvancePaymentOpen}
           onSuccess={() => {
             fetchTransactions()
             fetchSummary()

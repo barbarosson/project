@@ -41,6 +41,7 @@ interface Invoice {
   invoice_type?: string
   currency?: string
   notes: string
+  staff_id?: string | null
 }
 
 interface EditInvoiceDialogProps {
@@ -85,8 +86,10 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
     status: 'draft',
     invoice_type: 'sale',
     currency: 'TRY',
-    notes: ''
+    notes: '',
+    staff_id: '',
   })
+  const [staffList, setStaffList] = useState<{ id: string; name: string; last_name?: string | null; department?: string | null; position?: string | null }[]>([])
 
   const lastProcessedInvoiceId = useRef<string | null>(null)
   const dataLoadStarted = useRef(false)
@@ -111,7 +114,8 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
         status: 'draft',
         invoice_type: 'sale',
         currency: 'TRY',
-        notes: ''
+        notes: '',
+        staff_id: '',
       })
       setLineItems([])
       setOriginalLineItems([])
@@ -138,11 +142,16 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
       lastProcessedInvoiceId.current = invoice.id
 
       try {
-        const [customersData, productsData, lineItemsData, invoiceCustomer] = await Promise.all([
+        const [customersData, productsData, lineItemsData, invoiceCustomer, staffData] = await Promise.all([
           fetchCustomersData(),
           fetchProductsData(),
           fetchLineItemsData(invoice.id),
-          supabase.from('customers').select('id, parent_customer_id').eq('id', invoice.customer_id).eq('tenant_id', tenantId).single()
+          supabase.from('customers').select('id, parent_customer_id').eq('id', invoice.customer_id).eq('tenant_id', tenantId).single(),
+          supabase
+            .from('staff')
+            .select('id, name, last_name, department, position')
+            .eq('tenant_id', String(tenantId))
+            .order('name'),
         ])
 
         console.log('EditInvoiceDialog - All data loaded:', {
@@ -155,6 +164,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
         setProducts(productsData)
         setLineItems(lineItemsData)
         setOriginalLineItems(JSON.parse(JSON.stringify(lineItemsData)))
+        setStaffList(staffData?.data || [])
 
         const mainCustomerId = (invoiceCustomer.data?.parent_customer_id as string) || invoice.customer_id || ''
         const subId = invoiceCustomer.data?.parent_customer_id ? invoice.customer_id : null
@@ -183,7 +193,8 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
           status: invoice.status || 'draft',
           invoice_type: invoice.invoice_type || 'sale',
           currency: invoice.currency || 'TRY',
-          notes: invoice.notes || ''
+          notes: invoice.notes || '',
+          staff_id: invoice.staff_id || '',
         }
 
         console.log('EditInvoiceDialog - Setting initial form data:', initialFormData)
@@ -365,6 +376,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
           invoice_type: formData.invoice_type,
           currency: formData.currency || 'TRY',
           notes: formData.notes,
+          staff_id: formData.staff_id || null,
           tenant_id: tenantId,
           updated_at: new Date().toISOString(),
         })
@@ -591,6 +603,32 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                   {t.invoices.statusSystemManaged.replace('{status}', formData.status)}
                 </p>
               )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label>{t.hr.selectStaff}</Label>
+              <Select
+                value={formData.staff_id || 'none'}
+                onValueChange={(value) => setFormData({ ...formData, staff_id: value === 'none' ? '' : value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t.hr.selectStaff} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{language === 'tr' ? 'Yok' : 'None'}</SelectItem>
+                  {staffList.map((s) => {
+                    const fullName = [s.name, s.last_name].filter(Boolean).join(' ')
+                    return (
+                      <SelectItem key={s.id} value={s.id}>
+                        {fullName || s.name}
+                        {s.department || s.position ? ` — ${[s.department, s.position].filter(Boolean).join(', ')}` : ''}
+                      </SelectItem>
+                    )
+                  })}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

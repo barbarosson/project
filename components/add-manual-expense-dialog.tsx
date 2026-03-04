@@ -38,6 +38,7 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
   const [accounts, setAccounts] = useState<Account[]>([])
   const [projectsList, setProjectsList] = useState<{ id: string; name: string; code: string }[]>([])
   const [customersList, setCustomersList] = useState<{ id: string; company_title: string | null; name: string }[]>([])
+  const [staffList, setStaffList] = useState<{ id: string; name: string; last_name?: string | null; department: string | null; position: string | null }[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     category: 'general',
@@ -49,6 +50,7 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
     account_id: '',
     project_id: '',
     customer_id: '',
+    staff_id: '',
     tax_rate: '20',
     notes: ''
   })
@@ -69,6 +71,13 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
         .eq('tenant_id', tenantId)
         .order('company_title')
         .then(({ data }) => setCustomersList(data || []))
+      supabase
+        .from('staff')
+        .select('id, name, department, position')
+        .eq('tenant_id', String(tenantId))
+        .eq('status', 'active')
+        .order('name')
+        .then(({ data }) => setStaffList(data || []))
     }
   }, [open, tenantId])
 
@@ -128,6 +137,10 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
         insertData.customer_id = formData.customer_id
       }
 
+      if (formData.staff_id) {
+        insertData.staff_id = formData.staff_id
+      }
+
       const { error } = await supabase
         .from('expenses')
         .insert(insertData)
@@ -176,6 +189,7 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
       account_id: '',
       project_id: '',
       customer_id: '',
+      staff_id: '',
       tax_rate: '20',
       notes: ''
     })
@@ -474,6 +488,32 @@ export function AddManualExpenseDialog({ open, onOpenChange, onSuccess }: AddMan
               </SelectContent>
             </Select>
           </div>
+
+          {staffList.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="staff_id">{t.expenses.staff}</Label>
+              <Select
+                value={formData.staff_id || 'none'}
+                onValueChange={(v) => setFormData({ ...formData, staff_id: v === 'none' ? '' : v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t.expenses.selectStaffOptional} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{language === 'tr' ? 'Yok' : 'None'}</SelectItem>
+                  {staffList.map((s) => {
+                    const fullName = [s.name, s.last_name].filter(Boolean).join(' ')
+                    return (
+                      <SelectItem key={s.id} value={s.id}>
+                        {fullName || s.name}
+                        {s.department || s.position ? ` — ${[s.department, s.position].filter(Boolean).join(', ')}` : ''}
+                      </SelectItem>
+                    )
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="description">{t.expenses.description} *</Label>

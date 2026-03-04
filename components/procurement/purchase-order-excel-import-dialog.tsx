@@ -288,7 +288,7 @@ export function PurchaseOrderExcelImportDialog({
             variant="outline"
             onClick={downloadTemplate}
             disabled={loading}
-            className="border-gray-300"
+            className="border border-input bg-white hover:bg-gray-50 font-semibold text-contrast-body"
           >
             <Download className="h-4 w-4 mr-2" />
             {t.common.downloadTemplate}
@@ -304,7 +304,7 @@ export function PurchaseOrderExcelImportDialog({
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={uploading}
-            className="bg-[#00D4AA] hover:bg-[#00B894] text-white"
+            className="bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
           >
             {uploading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Upload className="h-4 w-4 mr-2" />}
             {uploading ? "Yükleniyor..." : t.common.import}

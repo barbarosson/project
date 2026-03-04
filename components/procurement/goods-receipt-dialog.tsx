@@ -261,13 +261,13 @@ export function GoodsReceiptDialog({
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)} className="border-gray-300">
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="border border-input bg-white hover:bg-gray-50 font-semibold text-contrast-body">
               {g.cancel}
             </Button>
             <Button
               onClick={handleReceiveGoods}
               disabled={loading}
-              className="bg-[#00D4AA] hover:bg-[#00B894] text-white"
+              className="bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
             >
               {loading ? (g?.processing ?? "İşleniyor...") : (g?.confirmReceipt ?? "Mal Kabulü Onayla")}
             </Button>

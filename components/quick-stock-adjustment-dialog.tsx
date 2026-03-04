@@ -10,6 +10,7 @@ import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { Plus, Minus } from 'lucide-react'
 import { useTenant } from '@/contexts/tenant-context'
+import { useLanguage } from '@/contexts/language-context'
 
 interface Product {
   id: string
@@ -33,6 +34,7 @@ export function QuickStockAdjustmentDialog({
   onComplete
 }: QuickStockAdjustmentDialogProps) {
   const { tenantId } = useTenant()
+  const { t } = useLanguage()
   const [adjustmentType, setAdjustmentType] = useState<'add' | 'subtract'>('add')
   const [quantity, setQuantity] = useState('')
   const [unitCost, setUnitCost] = useState(product.purchase_price?.toString() || '')
@@ -42,12 +44,12 @@ export function QuickStockAdjustmentDialog({
 
   async function handleSubmit() {
     if (!quantity || Number(quantity) <= 0) {
-      toast.error('Please enter a valid quantity')
+      toast.error(t.inventory.quantityRequired)
       return
     }
 
     if (!reason.trim()) {
-      toast.error('Please provide a reason for the adjustment')
+      toast.error(t.inventory.reasonRequired)
       return
     }
 
@@ -60,7 +62,7 @@ export function QuickStockAdjustmentDialog({
         : Number(product.current_stock) - adjustmentAmount
 
       if (newStock < 0) {
-        toast.error('Adjustment would result in negative stock')
+        toast.error(t.inventory.negativeStockError)
         setLoading(false)
         return
       }
@@ -82,7 +84,7 @@ export function QuickStockAdjustmentDialog({
 
       if (updateError) throw updateError
 
-      if (!tenantId) throw new Error('No tenant ID available')
+      if (!tenantId) throw new Error(t.inventory.authRequired)
 
       const { error: movementError } = await supabase
         .from('stock_movements')
@@ -99,14 +101,14 @@ export function QuickStockAdjustmentDialog({
 
       if (movementError) throw movementError
 
-      toast.success('Stock adjusted successfully')
+      toast.success(t.inventory.stockAdjustedSuccess)
       setQuantity('')
       setReason('')
       setNotes('')
       onComplete()
     } catch (error: any) {
       console.error('Error adjusting stock:', error)
-      toast.error(error.message || 'Failed to adjust stock')
+      toast.error(error.message || t.inventory.failedToAdjustStock)
     } finally {
       setLoading(false)
     }
@@ -116,22 +118,22 @@ export function QuickStockAdjustmentDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Quick Stock Adjustment</DialogTitle>
+          <DialogTitle>{t.inventory.adjustmentTitle}</DialogTitle>
           <DialogDescription>
-            Adjust inventory for {product.name}
+            {t.inventory.adjustmentDesc.replace('{name}', product.name)}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="bg-muted p-3 rounded-lg">
-            <div className="text-sm text-muted-foreground">Current Stock</div>
+            <div className="text-sm text-muted-foreground">{t.inventory.currentStock}</div>
             <div className="text-xl font-bold mt-1">
-              {Number(product.current_stock).toFixed(0)} units
+              {Number(product.current_stock).toFixed(0)} {t.inventory.units}
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label>Adjustment Type</Label>
+            <Label>{t.inventory.adjustmentType}</Label>
             <div className="flex gap-2">
               <Button
                 type="button"
@@ -140,7 +142,7 @@ export function QuickStockAdjustmentDialog({
                 onClick={() => setAdjustmentType('add')}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Add Stock
+                {t.inventory.addStock}
               </Button>
               <Button
                 type="button"
@@ -149,26 +151,26 @@ export function QuickStockAdjustmentDialog({
                 onClick={() => setAdjustmentType('subtract')}
               >
                 <Minus className="h-4 w-4 mr-2" />
-                Subtract Stock
+                {t.inventory.removeStock}
               </Button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="quantity">Quantity</Label>
+            <Label htmlFor="quantity">{t.common.quantity}</Label>
             <Input
               id="quantity"
               type="number"
               min="1"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              placeholder="Enter quantity"
+              placeholder={t.inventory.enterQuantity}
             />
           </div>
 
           {adjustmentType === 'add' && (
             <div className="space-y-2">
-              <Label htmlFor="unitCost">Unit Cost (Purchase Price)</Label>
+              <Label htmlFor="unitCost">{t.inventory.unitCostLabel}</Label>
               <Input
                 id="unitCost"
                 type="number"
@@ -176,33 +178,33 @@ export function QuickStockAdjustmentDialog({
                 step="0.01"
                 value={unitCost}
                 onChange={(e) => setUnitCost(e.target.value)}
-                placeholder="Enter cost per unit"
+                placeholder={t.inventory.enterCostPerUnit}
               />
               {quantity && unitCost && (
                 <p className="text-xs text-muted-foreground">
-                  Total cost: {(Number(quantity) * Number(unitCost)).toFixed(2)}
+                  {t.inventory.totalCostLabel}: {(Number(quantity) * Number(unitCost)).toFixed(2)}
                 </p>
               )}
             </div>
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="reason">Reason *</Label>
+            <Label htmlFor="reason">{t.inventory.reason} *</Label>
             <Input
               id="reason"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="e.g., Damaged goods, Stock count correction"
+              placeholder={t.inventory.reasonPlaceholder}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes (Optional)</Label>
+            <Label htmlFor="notes">{t.inventory.notesOptional}</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Additional details..."
+              placeholder={t.inventory.notesPlaceholder}
               rows={3}
             />
           </div>
@@ -210,12 +212,12 @@ export function QuickStockAdjustmentDialog({
           {quantity && (
             <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
               <div className="text-sm text-blue-900">
-                New stock will be:{' '}
+                {t.inventory.newStockWillBe}:{' '}
                 <span className="font-bold">
                   {adjustmentType === 'add'
                     ? Number(product.current_stock) + Number(quantity)
                     : Number(product.current_stock) - Number(quantity)
-                  } units
+                  } {t.inventory.units}
                 </span>
               </div>
             </div>
@@ -228,10 +230,10 @@ export function QuickStockAdjustmentDialog({
             onClick={() => onOpenChange(false)}
             disabled={loading}
           >
-            Cancel
+            {t.common.cancel}
           </Button>
           <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? 'Processing...' : 'Confirm Adjustment'}
+            {loading ? t.inventory.processing : t.inventory.confirmAdjustment}
           </Button>
         </DialogFooter>
       </DialogContent>

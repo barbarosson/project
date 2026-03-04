@@ -5,7 +5,6 @@ import { DashboardLayout } from "@/components/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import {
   Package,
@@ -13,7 +12,6 @@ import {
   Search,
   TruckIcon,
   FileText,
-  Users,
   CheckCircle2,
   Clock,
   XCircle,
@@ -228,11 +226,11 @@ export default function ProcurementPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-[#0A2540] flex items-center gap-3">
             <TruckIcon className="h-8 w-8 text-[#00D4AA]" />
             {t.procurement.title}
           </h1>
-          <p className="text-gray-500 mt-1">{t.procurement.subtitle}</p>
+          <p className="text-[#0A2540]/80 mt-1">{t.procurement.subtitle}</p>
         </div>
         <Button
           onClick={() => setCreatePOOpen(true)}
@@ -250,19 +248,7 @@ export default function ProcurementPage() {
         <UpcomingDeliveriesList orders={orders} t={t.procurement} />
       </div>
 
-      <Tabs defaultValue="orders" className="space-y-4">
-        <TabsList className="bg-muted">
-          <TabsTrigger value="orders" className="data-[state=active]:bg-[#00D4AA] data-[state=active]:text-white">
-            <Package className="h-4 w-4 mr-2" />
-            {t.procurement.purchaseOrders}
-          </TabsTrigger>
-          <TabsTrigger value="suppliers" className="data-[state=active]:bg-[#00D4AA] data-[state=active]:text-white">
-            <Users className="h-4 w-4 mr-2" />
-            {t.procurement.suppliers}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="orders" className="space-y-4">
+      <div className="space-y-4">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -272,7 +258,7 @@ export default function ProcurementPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setExcelImportOpen(true)}
-                    className="border-gray-300 bg-white hover:bg-gray-50"
+                    className="border border-input bg-white hover:bg-gray-50 font-semibold text-contrast-body shrink-0"
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     {t.procurement.bulkImport}
@@ -331,7 +317,7 @@ export default function ProcurementPage() {
                             <Button
                               size="sm"
                               onClick={() => handleReceiveGoods(order)}
-                              className="bg-[#00D4AA] hover:bg-[#00B894] text-white"
+                              className="bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
                             >
                               <CheckCircle2 className="h-4 w-4 mr-1" />
                               {t.procurement.receive}
@@ -408,73 +394,7 @@ export default function ProcurementPage() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="suppliers" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-gray-900">{t.procurement.suppliers}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {suppliers.map((supplier) => (
-                  <div
-                    key={supplier.id}
-                    className="p-4 border rounded-lg hover:border-[#00D4AA]/50 transition-colors bg-card"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold text-gray-900">{supplier.name}</h4>
-                          <Badge
-                            variant="outline"
-                            className={
-                              supplier.status === "active"
-                                ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20"
-                                : "bg-red-500/10 text-red-700 border-red-500/20"
-                            }
-                          >
-                            {supplier.status}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-gray-500">{supplier.category}</p>
-                      </div>
-
-                      <div className="text-right">
-                        <div className="flex items-center gap-1 mb-1">
-                          {[...Array(5)].map((_, i) => (
-                            <span
-                              key={i}
-                              className={`text-lg ${
-                                i < supplier.reliability_rating
-                                  ? "text-amber-500"
-                                  : "text-gray-300"
-                              }`}
-                            >
-                              ★
-                            </span>
-                          ))}
-                        </div>
-                        <p className="text-xs text-gray-500">
-                          {supplier.total_orders_count} {t.procurement.ordersCount} •{" "}
-                          {supplier.total_spent.toFixed(0)} TRY
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {suppliers.length === 0 && (
-                  <div className="text-center py-12 text-muted-foreground">
-                    <Users className="h-16 w-16 mx-auto mb-3 opacity-50" />
-                    <p>{t.procurement.noSuppliersFound}</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      </div>
 
       <CreatePurchaseOrderDialog
         open={createPOOpen}

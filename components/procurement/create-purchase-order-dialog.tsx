@@ -446,7 +446,7 @@ export function CreatePurchaseOrderDialog({
               <Button
                 onClick={() => setStep(2)}
                 disabled={!formData.supplier_id}
-                className="bg-[#00D4AA] hover:bg-[#00B894] text-white"
+                className="bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
               >
                 {t.procurement.nextAddItems}
               </Button>
@@ -461,7 +461,7 @@ export function CreatePurchaseOrderDialog({
               <Button
                 size="sm"
                 onClick={addItem}
-                className="bg-[#00D4AA] hover:bg-[#00B894] text-white"
+                className="bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
               >
                 <Plus className="h-4 w-4 mr-1" />
                 {t.procurement.addItem}
@@ -622,7 +622,7 @@ export function CreatePurchaseOrderDialog({
                 <Button
                   onClick={handleSubmit}
                   disabled={loading || items.length === 0}
-                  className="bg-[#00D4AA] hover:bg-[#00B894] text-white"
+                  className="bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
                 >
                   {loading ? t.procurement.creating : t.procurement.createPurchaseOrder}
                 </Button>

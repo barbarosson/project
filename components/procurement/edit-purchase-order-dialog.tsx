@@ -141,7 +141,7 @@ export function EditPurchaseOrderDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t.common.cancel}
             </Button>
-            <Button type="submit" className="bg-[#00D4AA] hover:bg-[#00B894] text-white" disabled={loading}>
+            <Button type="submit" className="bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body" disabled={loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : t.common.save}
             </Button>
           </div>

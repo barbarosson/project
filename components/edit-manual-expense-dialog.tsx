@@ -29,6 +29,7 @@ interface Expense {
   payment_method: string
   currency?: string
   account_id?: string
+  staff_id?: string | null
   tax_rate?: number
   notes: string | null
 }
@@ -45,6 +46,7 @@ export function EditManualExpenseDialog({ expense, open, onOpenChange, onSuccess
   const { t } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [accounts, setAccounts] = useState<Account[]>([])
+  const [staffList, setStaffList] = useState<{ id: string; name: string; department: string | null; position: string | null }[]>([])
   const [formData, setFormData] = useState({
     category: 'general',
     description: '',
@@ -53,6 +55,7 @@ export function EditManualExpenseDialog({ expense, open, onOpenChange, onSuccess
     payment_method: 'cash',
     currency: 'TRY',
     account_id: '',
+    staff_id: '',
     tax_rate: '20',
     notes: ''
   })
@@ -60,6 +63,13 @@ export function EditManualExpenseDialog({ expense, open, onOpenChange, onSuccess
   useEffect(() => {
     if (open && tenantId) {
       fetchAccounts()
+      supabase
+        .from('staff')
+        .select('id, name, department, position')
+        .eq('tenant_id', String(tenantId))
+        .eq('status', 'active')
+        .order('name')
+        .then(({ data }) => setStaffList(data || []))
     }
   }, [open, tenantId])
 
@@ -73,6 +83,7 @@ export function EditManualExpenseDialog({ expense, open, onOpenChange, onSuccess
         payment_method: expense.payment_method || 'cash',
         currency: expense.currency || 'TRY',
         account_id: expense.account_id || '',
+        staff_id: expense.staff_id || '',
         tax_rate: expense.tax_rate?.toString() || '20',
         notes: expense.notes || ''
       })
@@ -129,6 +140,8 @@ export function EditManualExpenseDialog({ expense, open, onOpenChange, onSuccess
         updateData.account_id = null
       }
 
+      updateData.staff_id = formData.staff_id || null
+
       const { error } = await supabase
         .from('expenses')
         .update(updateData)
@@ -180,6 +193,29 @@ export function EditManualExpenseDialog({ expense, open, onOpenChange, onSuccess
               </SelectContent>
             </Select>
           </div>
+
+          {staffList.length > 0 && (
+            <div className="space-y-2">
+              <Label htmlFor="staff_id">{t.expenses.staff}</Label>
+              <Select
+                value={formData.staff_id || 'none'}
+                onValueChange={(v) => setFormData({ ...formData, staff_id: v === 'none' ? '' : v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t.expenses.selectStaffOptional} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t.expenses.noStaff}</SelectItem>
+                  {staffList.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
+                      {s.department || s.position ? ` — ${[s.department, s.position].filter(Boolean).join(', ')}` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="description">{t.expenses.description} *</Label>

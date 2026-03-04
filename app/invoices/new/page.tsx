@@ -72,6 +72,8 @@ export default function NewInvoicePage() {
   )
   const [notes, setNotes] = useState<string>('')
   const [invoiceType, setInvoiceType] = useState<string>('sale')
+  const [staffId, setStaffId] = useState<string>('')
+  const [staffList, setStaffList] = useState<{ id: string; name: string; last_name?: string | null; department?: string | null; position?: string | null }[]>([])
   const { currency: companyCurrency, formatCurrency, displayCurrencies, defaultRateType } = useCurrency()
   const [currency, setCurrency] = useState<string>('TRY')
   const [tcmbRates, setTcmbRates] = useState<TcmbRatesByCurrency | null>(null)
@@ -111,15 +113,17 @@ export default function NewInvoicePage() {
     if (!tenantId) return
 
     try {
-      const [customersRes, productsRes, projectsRes] = await Promise.all([
+      const [customersRes, productsRes, projectsRes, staffRes] = await Promise.all([
         supabase.from('customers').select('id, name, company_title, payment_terms, payment_terms_type').eq('tenant_id', tenantId).eq('status', 'active').or('branch_type.eq.main,parent_customer_id.is.null').order('name'),
         supabase.from('products').select('id, name, sale_price, vat_rate').eq('tenant_id', tenantId).eq('status', 'active').order('name'),
-        supabase.from('projects').select('id, name, code').eq('tenant_id', tenantId).in('status', ['planning', 'active']).order('name')
+        supabase.from('projects').select('id, name, code').eq('tenant_id', tenantId).in('status', ['planning', 'active']).order('name'),
+        supabase.from('staff').select('id, name, last_name, department, position').eq('tenant_id', tenantId).eq('status', 'active').order('name')
       ])
 
       setCustomers(customersRes.data || [])
       setProducts(productsRes.data || [])
       setProjectsList(projectsRes.data || [])
+      setStaffList(staffRes.data || [])
     } catch (error) {
       console.error('Error fetching data:', error)
     }
@@ -255,7 +259,8 @@ export default function NewInvoicePage() {
             issue_date: issueDate,
             due_date: dueDate,
             notes: notes,
-            project_id: selectedProjectId || null
+            project_id: selectedProjectId || null,
+            staff_id: staffId || null
           }
         ])
         .select()
@@ -484,6 +489,27 @@ export default function NewInvoicePage() {
                   data-field="new-invoice-due-date"
                   data-testid="new-invoice-due-date-input"
                 />
+              </div>
+
+              <div className="space-y-2" data-field="new-invoice-staff">
+                <Label htmlFor="staff">{t.hr.selectStaff}</Label>
+                <Select value={staffId || 'none'} onValueChange={(v) => setStaffId(v === 'none' ? '' : v)}>
+                  <SelectTrigger id="staff" data-field="new-invoice-staff-trigger">
+                    <SelectValue placeholder={t.hr.selectStaff} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{language === 'tr' ? 'Yok' : 'None'}</SelectItem>
+                    {staffList.map((s) => {
+                      const fullName = [s.name, s.last_name].filter(Boolean).join(' ') || s.name
+                      return (
+                        <SelectItem key={s.id} value={s.id}>
+                          {fullName}{s.department || s.position ? ` — ${[s.department, s.position].filter(Boolean).join(', ')}` : ''}
+                        </SelectItem>
+                      )
+                    })}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">{language === 'tr' ? 'İsteğe bağlı. Seçilen personel performansına yansır.' : 'Optional. Affects staff performance.'}</p>
               </div>
             </div>
 

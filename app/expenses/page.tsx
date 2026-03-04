@@ -54,6 +54,7 @@ interface Expense {
   notes: string | null
   currency?: string
   customer_id?: string | null
+  staff_id?: string | null
 }
 
 interface PurchaseInvoice {
