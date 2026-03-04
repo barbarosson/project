@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, AlertCircle, TrendingUp } from "lucide-react";
+import { Plus, Trash2, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useTenant } from "@/hooks/use-tenant";
+import { useTenant } from "@/contexts/tenant-context";
+import { useLanguage } from "@/contexts/language-context";
 import { supabase } from "@/lib/supabase";
 import type { Supplier, PurchaseOrderItem } from "@/lib/procurement-types";
 
@@ -39,10 +40,12 @@ export function CreatePurchaseOrderDialog({
 }: CreatePurchaseOrderDialogProps) {
   const { toast } = useToast();
   const { tenantId: currentTenant } = useTenant();
+  const { t } = useLanguage();
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [vendorCustomers, setVendorCustomers] = useState<{ id: string; name: string }[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [branches, setBranches] = useState<any[]>([]);
   const [projects, setProjects] = useState<any[]>([]);
@@ -74,8 +77,21 @@ export function CreatePurchaseOrderDialog({
       .from("suppliers")
       .select("*")
       .eq("tenant_id", currentTenant)
-      .eq("status", "active")
       .order("name");
+
+    const { data: customersData } = await supabase
+      .from("customers")
+      .select("id, company_title, name")
+      .eq("tenant_id", currentTenant)
+      .in("account_type", ["vendor", "both"])
+      .order("company_title");
+
+    setVendorCustomers(
+      (customersData || []).map((c) => ({
+        id: c.id,
+        name: (c.company_title || c.name || "").trim() || "—",
+      }))
+    );
 
     const { data: productsData } = await supabase
       .from("products")
@@ -164,11 +180,28 @@ export function CreatePurchaseOrderDialog({
     return { subtotal, tax, total };
   };
 
+  const resolveSupplierId = async (): Promise<string> => {
+    const raw = formData.supplier_id;
+    if (raw.startsWith("customer:")) {
+      const customerId = raw.replace("customer:", "");
+      const customer = vendorCustomers.find((c) => c.id === customerId);
+      if (!customer) throw new Error("Customer not found");
+      const { data: newSupplierId, error: rpcErr } = await supabase.rpc(
+        "create_supplier_from_customer",
+        { p_tenant_id: currentTenant, p_name: customer.name }
+      );
+      if (rpcErr) throw rpcErr;
+      if (!newSupplierId) throw new Error("Failed to create supplier");
+      return newSupplierId as string;
+    }
+    return raw.replace("supplier:", "");
+  };
+
   const handleSubmit = async () => {
     if (!currentTenant || items.length === 0) {
       toast({
         title: "Error",
-        description: "Please add at least one item to the purchase order",
+        description: t.procurement.addOneItemError,
         variant: "destructive",
       });
       return;
@@ -177,6 +210,7 @@ export function CreatePurchaseOrderDialog({
     setLoading(true);
 
     try {
+      const supplierId = await resolveSupplierId();
       const { subtotal, tax, total } = calculateTotals();
 
       const { data: poNumberData } = await supabase.rpc("generate_po_number", {
@@ -188,7 +222,7 @@ export function CreatePurchaseOrderDialog({
         .insert({
           tenant_id: currentTenant,
           po_number: poNumberData,
-          supplier_id: formData.supplier_id,
+          supplier_id: supplierId,
           branch_id: formData.branch_id || null,
           project_id: formData.project_id || null,
           expected_delivery_date: formData.expected_delivery_date || null,
@@ -225,17 +259,18 @@ export function CreatePurchaseOrderDialog({
 
       toast({
         title: "Success",
-        description: `Purchase order ${poNumberData} created successfully`,
+        description: t.procurement.createSuccess.replace("{poNumber}", String(poNumberData)),
       });
 
       onSuccess();
       onOpenChange(false);
       resetForm();
     } catch (error: any) {
+      const msg = error?.message || error?.error_description || error?.details || t.procurement.createError;
       console.error("Error creating PO:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to create purchase order",
+        description: msg,
         variant: "destructive",
       });
     } finally {
@@ -263,12 +298,12 @@ export function CreatePurchaseOrderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-700">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-card border shadow-lg">
         <DialogHeader>
-          <DialogTitle className="text-white flex items-center gap-2">
-            <span className="text-cyan-400">◆</span> Create Purchase Order
-            <Badge variant="outline" className="ml-auto">
-              Step {step} of 2
+          <DialogTitle className="text-gray-900 flex items-center gap-2">
+            <span className="text-[#00D4AA]">◆</span> {t.procurement.createPurchaseOrder}
+            <Badge variant="outline" className="ml-auto bg-muted">
+              {t.procurement.stepOf.replace("{step}", String(step))}
             </Badge>
           </DialogTitle>
         </DialogHeader>
@@ -277,50 +312,74 @@ export function CreatePurchaseOrderDialog({
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="text-slate-300">Supplier *</Label>
+                <Label className="text-gray-700">{t.procurement.supplierRequired}</Label>
                 <Select
-                  value={formData.supplier_id}
+                  value={formData.supplier_id || undefined}
                   onValueChange={(value) =>
                     setFormData({ ...formData, supplier_id: value })
                   }
                 >
-                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                    <SelectValue placeholder="Select supplier" />
+                  <SelectTrigger className="bg-background border text-gray-900">
+                    <SelectValue placeholder={t.procurement.selectSupplier} />
                   </SelectTrigger>
-                  <SelectContent>
-                    {suppliers.map((supplier) => (
-                      <SelectItem key={supplier.id} value={supplier.id}>
-                        {supplier.name}
-                      </SelectItem>
-                    ))}
+                  <SelectContent className="z-[100]" position="popper">
+                    {suppliers.length > 0 && (
+                      <SelectGroup>
+                        <SelectLabel className="text-muted-foreground font-normal text-xs">
+                          {t.procurement.suppliers}
+                        </SelectLabel>
+                        {suppliers.map((supplier) => (
+                          <SelectItem key={`s-${supplier.id}`} value={`supplier:${supplier.id}`}>
+                            {supplier.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    )}
+                    {vendorCustomers.length > 0 && (
+                      <SelectGroup>
+                        <SelectLabel className="text-muted-foreground font-normal text-xs">
+                          {t.procurement.suppliersFromCariler ?? "Cariler (Tedarikçi)"}
+                        </SelectLabel>
+                        {vendorCustomers.map((c) => (
+                          <SelectItem key={`c-${c.id}`} value={`customer:${c.id}`}>
+                            {c.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    )}
+                    {suppliers.length === 0 && vendorCustomers.length === 0 && (
+                      <div className="px-2 py-3 text-sm text-muted-foreground">
+                        {t.procurement.noSuppliersHint}
+                      </div>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-slate-300">Expected Delivery</Label>
+                <Label className="text-gray-700">{t.procurement.expectedDelivery}</Label>
                 <Input
                   type="date"
                   value={formData.expected_delivery_date}
                   onChange={(e) =>
                     setFormData({ ...formData, expected_delivery_date: e.target.value })
                   }
-                  className="bg-slate-800 border-slate-700 text-white"
+                  className="bg-background border text-gray-900"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-slate-300">Branch</Label>
+                <Label className="text-gray-700">{t.procurement.branch}</Label>
                 <Select
                   value={formData.branch_id}
                   onValueChange={(value) =>
                     setFormData({ ...formData, branch_id: value })
                   }
                 >
-                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                    <SelectValue placeholder="Select branch (optional)" />
+                  <SelectTrigger className="bg-background border text-gray-900">
+                    <SelectValue placeholder={t.procurement.selectBranchOptional} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[100]" position="popper">
                     {branches.map((branch) => (
                       <SelectItem key={branch.id} value={branch.id}>
                         {branch.name}
@@ -331,17 +390,17 @@ export function CreatePurchaseOrderDialog({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-slate-300">Project</Label>
+                <Label className="text-gray-700">{t.procurement.project}</Label>
                 <Select
                   value={formData.project_id}
                   onValueChange={(value) =>
                     setFormData({ ...formData, project_id: value })
                   }
                 >
-                  <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                    <SelectValue placeholder="Select project (optional)" />
+                  <SelectTrigger className="bg-background border text-gray-900">
+                    <SelectValue placeholder={t.procurement.selectProjectOptional} />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[100]" position="popper">
                     {projects.map((project) => (
                       <SelectItem key={project.id} value={project.id}>
                         {project.name}
@@ -353,26 +412,26 @@ export function CreatePurchaseOrderDialog({
             </div>
 
             <div className="space-y-2">
-              <Label className="text-slate-300">Payment Terms</Label>
+              <Label className="text-gray-700">{t.procurement.paymentTerms}</Label>
               <Input
                 value={formData.payment_terms}
                 onChange={(e) =>
                   setFormData({ ...formData, payment_terms: e.target.value })
                 }
-                placeholder="e.g., Net 30, Net 60, Cash on Delivery"
-                className="bg-slate-800 border-slate-700 text-white"
+                placeholder={t.procurement.paymentTermsPlaceholder}
+                className="bg-background border text-gray-900"
               />
             </div>
 
             <div className="space-y-2">
-              <Label className="text-slate-300">Notes</Label>
+              <Label className="text-gray-700">{t.procurement.notes}</Label>
               <Textarea
                 value={formData.notes}
                 onChange={(e) =>
                   setFormData({ ...formData, notes: e.target.value })
                 }
-                placeholder="Additional notes..."
-                className="bg-slate-800 border-slate-700 text-white"
+                placeholder={t.procurement.notesPlaceholder}
+                className="bg-background border text-gray-900"
                 rows={3}
               />
             </div>
@@ -381,16 +440,15 @@ export function CreatePurchaseOrderDialog({
               <Button
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="border-slate-700"
               >
-                Cancel
+                {t.common.cancel}
               </Button>
               <Button
                 onClick={() => setStep(2)}
                 disabled={!formData.supplier_id}
-                className="bg-cyan-600 hover:bg-cyan-700"
+                className="bg-[#00D4AA] hover:bg-[#00B894] text-white"
               >
-                Next: Add Items
+                {t.procurement.nextAddItems}
               </Button>
             </div>
           </div>
@@ -399,14 +457,14 @@ export function CreatePurchaseOrderDialog({
         {step === 2 && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white">Order Items</h3>
+              <h3 className="text-lg font-semibold text-gray-900">{t.procurement.orderItems}</h3>
               <Button
                 size="sm"
                 onClick={addItem}
-                className="bg-cyan-600 hover:bg-cyan-700"
+                className="bg-[#00D4AA] hover:bg-[#00B894] text-white"
               >
                 <Plus className="h-4 w-4 mr-1" />
-                Add Item
+                {t.procurement.addItem}
               </Button>
             </div>
 
@@ -414,19 +472,19 @@ export function CreatePurchaseOrderDialog({
               {items.map((item, index) => (
                 <div
                   key={index}
-                  className="p-4 bg-slate-800/50 border border-slate-700 rounded-lg"
+                  className="p-4 border rounded-lg bg-muted/30"
                 >
                   <div className="grid grid-cols-6 gap-3">
                     <div className="col-span-2">
-                      <Label className="text-slate-300 text-xs">Product</Label>
+                      <Label className="text-gray-700 text-xs">{t.procurement.product}</Label>
                       <Select
                         value={item.product_id}
                         onValueChange={(value) => updateItem(index, "product_id", value)}
                       >
-                        <SelectTrigger className="bg-slate-900 border-slate-600 text-white h-8">
-                          <SelectValue placeholder="Select" />
+                        <SelectTrigger className="bg-background border text-gray-900 h-8">
+                          <SelectValue placeholder={t.procurement.product} />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-[100]" position="popper">
                           {products.map((product) => (
                             <SelectItem key={product.id} value={product.id}>
                               {product.name}
@@ -437,42 +495,42 @@ export function CreatePurchaseOrderDialog({
                     </div>
 
                     <div>
-                      <Label className="text-slate-300 text-xs">Quantity</Label>
+                      <Label className="text-gray-700 text-xs">{t.procurement.quantity}</Label>
                       <Input
                         type="number"
                         value={item.quantity}
                         onChange={(e) =>
                           updateItem(index, "quantity", parseFloat(e.target.value) || 0)
                         }
-                        className="bg-slate-900 border-slate-600 text-white h-8"
+                        className="bg-background border text-gray-900 h-8"
                         min="0"
                         step="0.01"
                       />
                     </div>
 
                     <div>
-                      <Label className="text-slate-300 text-xs">Unit Price</Label>
+                      <Label className="text-gray-700 text-xs">{t.procurement.unitPrice}</Label>
                       <Input
                         type="number"
                         value={item.unit_price}
                         onChange={(e) =>
                           updateItem(index, "unit_price", parseFloat(e.target.value) || 0)
                         }
-                        className="bg-slate-900 border-slate-600 text-white h-8"
+                        className="bg-background border text-gray-900 h-8"
                         min="0"
                         step="0.01"
                       />
                     </div>
 
                     <div>
-                      <Label className="text-slate-300 text-xs">Tax %</Label>
+                      <Label className="text-gray-700 text-xs">{t.procurement.taxPercent}</Label>
                       <Input
                         type="number"
                         value={item.tax_percent}
                         onChange={(e) =>
                           updateItem(index, "tax_percent", parseFloat(e.target.value) || 0)
                         }
-                        className="bg-slate-900 border-slate-600 text-white h-8"
+                        className="bg-background border text-gray-900 h-8"
                         min="0"
                         step="1"
                       />
@@ -480,8 +538,8 @@ export function CreatePurchaseOrderDialog({
 
                     <div className="flex items-end gap-2">
                       <div className="flex-1">
-                        <Label className="text-slate-300 text-xs">Total</Label>
-                        <div className="h-8 flex items-center text-sm font-semibold text-cyan-400">
+                        <Label className="text-gray-700 text-xs">{t.procurement.total}</Label>
+                        <div className="h-8 flex items-center text-sm font-semibold text-[#00D4AA]">
                           {item.line_total.toFixed(2)}
                         </div>
                       </div>
@@ -489,7 +547,7 @@ export function CreatePurchaseOrderDialog({
                         size="sm"
                         variant="ghost"
                         onClick={() => removeItem(index)}
-                        className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -499,50 +557,50 @@ export function CreatePurchaseOrderDialog({
               ))}
 
               {items.length === 0 && (
-                <div className="text-center py-8 text-slate-400">
+                <div className="text-center py-8 text-muted-foreground">
                   <AlertCircle className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                  <p>No items added yet</p>
+                  <p>{t.procurement.noItemsYet}</p>
                 </div>
               )}
             </div>
 
-            <div className="border-t border-slate-700 pt-4 space-y-2">
-              <div className="flex justify-between text-slate-300">
-                <span>Subtotal:</span>
+            <div className="border-t pt-4 space-y-2">
+              <div className="flex justify-between text-gray-700">
+                <span>{t.procurement.subtotal}:</span>
                 <span className="font-semibold">{totals.subtotal.toFixed(2)} TRY</span>
               </div>
-              <div className="flex justify-between text-slate-300">
-                <span>Tax:</span>
+              <div className="flex justify-between text-gray-700">
+                <span>{t.procurement.tax}:</span>
                 <span className="font-semibold">{totals.tax.toFixed(2)} TRY</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-slate-300">Shipping:</span>
+                <span className="text-gray-700">{t.procurement.shipping}:</span>
                 <Input
                   type="number"
                   value={formData.shipping_cost}
                   onChange={(e) =>
                     setFormData({ ...formData, shipping_cost: parseFloat(e.target.value) || 0 })
                   }
-                  className="w-32 bg-slate-800 border-slate-700 text-white h-8 text-right"
+                  className="w-32 bg-background border text-gray-900 h-8 text-right"
                   min="0"
                   step="0.01"
                 />
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-slate-300">Discount:</span>
+                <span className="text-gray-700">{t.procurement.discount}:</span>
                 <Input
                   type="number"
                   value={formData.discount_amount}
                   onChange={(e) =>
                     setFormData({ ...formData, discount_amount: parseFloat(e.target.value) || 0 })
                   }
-                  className="w-32 bg-slate-800 border-slate-700 text-white h-8 text-right"
+                  className="w-32 bg-background border text-gray-900 h-8 text-right"
                   min="0"
                   step="0.01"
                 />
               </div>
-              <div className="flex justify-between text-xl font-bold text-cyan-400 pt-2 border-t border-slate-700">
-                <span>Total:</span>
+              <div className="flex justify-between text-xl font-bold text-[#00D4AA] pt-2 border-t">
+                <span>{t.procurement.total}:</span>
                 <span>{totals.total.toFixed(2)} TRY</span>
               </div>
             </div>
@@ -551,24 +609,22 @@ export function CreatePurchaseOrderDialog({
               <Button
                 variant="outline"
                 onClick={() => setStep(1)}
-                className="border-slate-700"
               >
-                Back
+                {t.procurement.back}
               </Button>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
                   onClick={() => onOpenChange(false)}
-                  className="border-slate-700"
                 >
-                  Cancel
+                  {t.common.cancel}
                 </Button>
                 <Button
                   onClick={handleSubmit}
                   disabled={loading || items.length === 0}
-                  className="bg-cyan-600 hover:bg-cyan-700"
+                  className="bg-[#00D4AA] hover:bg-[#00B894] text-white"
                 >
-                  {loading ? "Creating..." : "Create Purchase Order"}
+                  {loading ? t.procurement.creating : t.procurement.createPurchaseOrder}
                 </Button>
               </div>
             </div>

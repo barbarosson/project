@@ -31,39 +31,39 @@ export function AIInsightsPanel({ insights, onActionClick }: AIInsightsPanelProp
     switch (severity) {
       case 'critical':
         return {
-          badge: 'bg-red-500/10 text-red-400 border-red-500/20',
-          icon: 'text-red-400',
-          border: 'border-red-500/30'
+          badge: 'bg-red-50 text-red-700 border-red-200',
+          icon: 'text-red-600',
+          border: 'border-red-200'
         };
       case 'warning':
         return {
-          badge: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-          icon: 'text-amber-400',
-          border: 'border-amber-500/30'
+          badge: 'bg-amber-50 text-amber-700 border-amber-200',
+          icon: 'text-amber-600',
+          border: 'border-amber-200'
         };
       case 'info':
         return {
-          badge: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-          icon: 'text-cyan-400',
-          border: 'border-cyan-500/30'
+          badge: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+          icon: 'text-cyan-600',
+          border: 'border-cyan-200'
         };
     }
   };
 
   if (insights.length === 0) {
     return (
-      <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-sm">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <span className="text-cyan-400">◆</span> AI Insights
-            <Badge variant="outline" className="ml-auto text-emerald-400 border-emerald-400/30">
+          <CardTitle className="text-gray-900 flex items-center gap-2">
+            <span className="text-[#00D4AA]">◆</span> AI Insights
+            <Badge variant="outline" className="ml-auto text-emerald-600 border-emerald-200">
               All Clear
             </Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col items-center justify-center h-32 text-slate-400">
-            <ShieldCheck className="h-12 w-12 mb-2 text-emerald-400" />
+          <div className="flex flex-col items-center justify-center h-32 text-gray-500">
+            <ShieldCheck className="h-12 w-12 mb-2 text-emerald-500" />
             <p className="text-sm">No issues detected</p>
           </div>
         </CardContent>
@@ -72,12 +72,12 @@ export function AIInsightsPanel({ insights, onActionClick }: AIInsightsPanelProp
   }
 
   return (
-    <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-sm">
+    <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-white flex items-center gap-2">
-            <span className="text-cyan-400">◆</span> AI Insights
-            <Badge variant="outline" className="text-amber-400 border-amber-400/30">
+          <CardTitle className="text-gray-900 flex items-center gap-2">
+            <span className="text-[#00D4AA]">◆</span> AI Insights
+            <Badge variant="outline" className="text-amber-600 border-amber-200">
               {insights.length} Alert{insights.length !== 1 ? 's' : ''}
             </Badge>
           </CardTitle>
@@ -92,7 +92,7 @@ export function AIInsightsPanel({ insights, onActionClick }: AIInsightsPanelProp
             return (
               <div
                 key={index}
-                className={`p-4 rounded-lg bg-slate-800/50 border ${colors.border} hover:bg-slate-800/70 transition-colors`}
+                className={`p-4 rounded-lg border bg-card ${colors.border} hover:border-[#00D4AA]/50 transition-colors`}
               >
                 <div className="flex items-start gap-3">
                   <div className={`p-2 rounded-lg ${colors.badge}`}>
@@ -101,7 +101,7 @@ export function AIInsightsPanel({ insights, onActionClick }: AIInsightsPanelProp
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-semibold text-white">{insight.title}</h4>
+                      <h4 className="font-semibold text-gray-900">{insight.title}</h4>
                       <Badge
                         variant="outline"
                         className={`text-xs ${colors.badge}`}
@@ -109,7 +109,7 @@ export function AIInsightsPanel({ insights, onActionClick }: AIInsightsPanelProp
                         {insight.severity}
                       </Badge>
                     </div>
-                    <p className="text-sm text-slate-400 mb-3">
+                    <p className="text-sm text-gray-500 mb-3">
                       {insight.description}
                     </p>
 
@@ -117,7 +117,7 @@ export function AIInsightsPanel({ insights, onActionClick }: AIInsightsPanelProp
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10"
+                        className="border-[#00D4AA]/50 text-[#00D4AA] hover:bg-[#00D4AA]/10"
                         onClick={() => onActionClick?.(insight)}
                       >
                         {insight.action}

@@ -6,11 +6,18 @@ import { Truck, Calendar, Package } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import type { PurchaseOrder } from "@/lib/procurement-types";
 
+type ProcurementT = {
+  upcomingDeliveriesTitle: string;
+  noUpcomingDeliveries: string;
+  unknownSupplier: string;
+};
+
 interface UpcomingDeliveriesListProps {
   orders: PurchaseOrder[];
+  t?: ProcurementT;
 }
 
-export function UpcomingDeliveriesList({ orders }: UpcomingDeliveriesListProps) {
+export function UpcomingDeliveriesList({ orders, t }: UpcomingDeliveriesListProps) {
   const upcomingOrders = orders
     .filter(po =>
       (po.status === 'ordered' || po.status === 'approved') &&
@@ -24,23 +31,27 @@ export function UpcomingDeliveriesList({ orders }: UpcomingDeliveriesListProps) 
 
   const getUrgencyColor = (deliveryDate: string) => {
     const daysUntil = differenceInDays(new Date(deliveryDate), new Date());
-    if (daysUntil < 0) return "bg-red-500/10 text-red-400 border-red-500/20";
-    if (daysUntil <= 3) return "bg-amber-500/10 text-amber-400 border-amber-500/20";
-    return "bg-cyan-500/10 text-cyan-400 border-cyan-500/20";
+    if (daysUntil < 0) return "bg-red-500/10 text-red-600 border-red-200";
+    if (daysUntil <= 3) return "bg-amber-500/10 text-amber-600 border-amber-200";
+    return "bg-cyan-500/10 text-cyan-600 border-cyan-200";
   };
+
+  const title = t?.upcomingDeliveriesTitle ?? "Upcoming Deliveries";
+  const emptyText = t?.noUpcomingDeliveries ?? "No upcoming deliveries";
+  const unknownSupplier = t?.unknownSupplier ?? "Unknown Supplier";
 
   if (upcomingOrders.length === 0) {
     return (
-      <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-sm">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
-            <Truck className="h-5 w-5 text-cyan-400" />
-            Upcoming Deliveries
+          <CardTitle className="text-gray-900 flex items-center gap-2">
+            <Truck className="h-5 w-5 text-[#00D4AA]" />
+            {title}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center h-32 text-slate-400">
-            No upcoming deliveries
+          <div className="flex items-center justify-center h-32 text-gray-500">
+            {emptyText}
           </div>
         </CardContent>
       </Card>
@@ -48,11 +59,11 @@ export function UpcomingDeliveriesList({ orders }: UpcomingDeliveriesListProps) 
   }
 
   return (
-    <Card className="border-slate-700 bg-slate-900/50 backdrop-blur-sm">
+    <Card>
       <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
-          <Truck className="h-5 w-5 text-cyan-400" />
-          Upcoming Deliveries
+        <CardTitle className="text-gray-900 flex items-center gap-2">
+          <Truck className="h-5 w-5 text-[#00D4AA]" />
+          {title}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -66,33 +77,33 @@ export function UpcomingDeliveriesList({ orders }: UpcomingDeliveriesListProps) 
             return (
               <div
                 key={order.id}
-                className="flex items-center justify-between p-3 rounded-lg bg-slate-800/50 border border-slate-700 hover:border-cyan-500/30 transition-colors"
+                className="flex items-center justify-between p-3 rounded-lg border bg-card hover:border-[#00D4AA]/50 transition-colors"
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <Package className="h-4 w-4 text-slate-400" />
-                    <span className="font-medium text-white">{order.po_number}</span>
+                    <Package className="h-4 w-4 text-gray-500" />
+                    <span className="font-medium text-gray-900">{order.po_number}</span>
                     <Badge variant="outline" className="text-xs">
                       {order.status}
                     </Badge>
                   </div>
-                  <p className="text-sm text-slate-400">
-                    {order.supplier?.name || 'Unknown Supplier'}
+                  <p className="text-sm text-gray-500">
+                    {order.supplier?.name || unknownSupplier}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <div className="flex items-center gap-1 text-sm text-slate-300">
+                    <div className="flex items-center gap-1 text-sm text-gray-600">
                       <Calendar className="h-3 w-3" />
                       {format(new Date(order.expected_delivery_date!), 'MMM dd')}
                     </div>
                     <p className={`text-xs ${
                       daysUntil < 0
-                        ? 'text-red-400'
+                        ? 'text-red-600'
                         : daysUntil <= 3
-                        ? 'text-amber-400'
-                        : 'text-cyan-400'
+                        ? 'text-amber-600'
+                        : 'text-[#00D4AA]'
                     }`}>
                       {daysUntil < 0
                         ? `${Math.abs(daysUntil)} days late`
@@ -106,10 +117,10 @@ export function UpcomingDeliveriesList({ orders }: UpcomingDeliveriesListProps) 
                   <div
                     className={`w-3 h-3 rounded-full ${
                       daysUntil < 0
-                        ? 'bg-red-400 animate-pulse'
+                        ? 'bg-red-500 animate-pulse'
                         : daysUntil <= 3
-                        ? 'bg-amber-400'
-                        : 'bg-cyan-400'
+                        ? 'bg-amber-500'
+                        : 'bg-[#00D4AA]'
                     }`}
                   />
                 </div>
