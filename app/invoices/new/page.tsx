@@ -372,13 +372,14 @@ export default function NewInvoicePage() {
               variant="outline"
               onClick={() => router.push('/invoices')}
               disabled={loading}
+              className="font-semibold text-contrast-body"
             >
               {t.common.cancel}
             </Button>
             <Button
               onClick={saveInvoice}
               disabled={loading}
-              className="bg-[#00D4AA] hover:bg-[#00B894]"
+              className="bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
             >
               <Save className="mr-2 h-4 w-4" />
               {loading ? t.common.adding : t.invoices.saveInvoice}
@@ -540,7 +541,7 @@ export default function NewInvoicePage() {
             <Button
               onClick={addLineItem}
               size="sm"
-              className="bg-[#00D4AA] hover:bg-[#00B894]"
+              className="bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
             >
               <Plus className="mr-2 h-4 w-4" />
               {t.invoices.addLine}

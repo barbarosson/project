@@ -18,7 +18,7 @@ import { useAuth } from '@/contexts/auth-context'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar as CalendarComponent } from '@/components/ui/calendar'
-import { format, startOfMonth, endOfMonth, subMonths, subDays } from 'date-fns'
+import { format, startOfMonth, endOfMonth, startOfDay, endOfDay, subMonths, subDays } from 'date-fns'
 import { tr, enUS } from 'date-fns/locale'
 import { LoadingSpinner } from '@/components/loading-spinner'
 import {
@@ -120,8 +120,10 @@ export default function Dashboard() {
   const [detailActiveCustomers, setDetailActiveCustomers] = useState<any[]>([])
   const [detailLowStockProducts, setDetailLowStockProducts] = useState<any[]>([])
 
-  const chartStartMonth = format(dateRange.from, 'yyyy-MM')
-  const chartEndMonth = format(dateRange.to, 'yyyy-MM')
+  const safeFrom = dateRange?.from ?? startOfMonth(new Date())
+  const safeTo = dateRange?.to ?? endOfMonth(new Date())
+  const chartStartMonth = format(safeFrom, 'yyyy-MM')
+  const chartEndMonth = format(safeTo, 'yyyy-MM')
 
   const cashFlowData = useMemo(
     () =>
@@ -185,8 +187,10 @@ export default function Dashboard() {
 
     try {
       const FETCH_TIMEOUT = 10000
-      const startDate = format(dateRange.from, 'yyyy-MM-dd')
-      const endDate = format(dateRange.to, 'yyyy-MM-dd')
+      const rangeFrom = startOfDay(dateRange?.from ?? startOfMonth(new Date()))
+      const rangeTo = endOfDay(dateRange?.to ?? endOfMonth(new Date()))
+      const startDate = format(rangeFrom, 'yyyy-MM-dd')
+      const endDate = format(rangeTo, 'yyyy-MM-dd')
 
       const fetchWithTimeout = Promise.race([
         Promise.all([
@@ -213,25 +217,35 @@ export default function Dashboard() {
       const allTransactions = Array.isArray(transactionsRes?.data) ? transactionsRes.data : []
 
       const filteredInvoices = allInvoices.filter((i: any) => {
-        const issueDate = new Date(i.issue_date)
-        return issueDate >= dateRange.from && issueDate <= dateRange.to
+        if (!i.issue_date) return false
+        const issueDate = new Date(i.issue_date).getTime()
+        return issueDate >= rangeFrom.getTime() && issueDate <= rangeTo.getTime()
       })
 
       const filteredExpenses = allExpenses.filter((e: any) => {
-        const expenseDate = new Date(e.expense_date)
-        return expenseDate >= dateRange.from && expenseDate <= dateRange.to
+        if (!e.expense_date) return false
+        const expenseDate = new Date(e.expense_date).getTime()
+        return expenseDate >= rangeFrom.getTime() && expenseDate <= rangeTo.getTime()
       })
 
       const invoiceAmount = (i: any) => Number(i.amount) || Number(i.total) || 0
       const collectedInPeriod = allInvoices.filter((i: any) => {
         if (i.status !== 'paid' || !i.payment_date) return false
-        const paymentDate = new Date(i.payment_date)
-        return paymentDate >= dateRange.from && paymentDate <= dateRange.to
+        const paymentDate = new Date(i.payment_date).getTime()
+        return paymentDate >= rangeFrom.getTime() && paymentDate <= rangeTo.getTime()
       })
 
       const targetCurrency = (companyCurrency || 'TRY').toUpperCase()
-      const incomeTxInRange = allTransactions.filter((tx: any) => tx.transaction_type === 'income' && tx.transaction_date && new Date(tx.transaction_date) >= dateRange.from && new Date(tx.transaction_date) <= dateRange.to)
-      const expenseTxInRange = allTransactions.filter((tx: any) => tx.transaction_type === 'expense' && tx.transaction_date && new Date(tx.transaction_date) >= dateRange.from && new Date(tx.transaction_date) <= dateRange.to)
+      const incomeTxInRange = allTransactions.filter((tx: any) => {
+        if (tx.transaction_type !== 'income' || !tx.transaction_date) return false
+        const t = new Date(tx.transaction_date).getTime()
+        return t >= rangeFrom.getTime() && t <= rangeTo.getTime()
+      })
+      const expenseTxInRange = allTransactions.filter((tx: any) => {
+        if (tx.transaction_type !== 'expense' || !tx.transaction_date) return false
+        const t = new Date(tx.transaction_date).getTime()
+        return t >= rangeFrom.getTime() && t <= rangeTo.getTime()
+      })
       const uniqueDates = Array.from(new Set([
         ...filteredInvoices.map((i: any) => i.issue_date && format(new Date(i.issue_date), 'yyyy-MM-dd')),
         ...collectedInPeriod.map((i: any) => i.payment_date && format(new Date(i.payment_date), 'yyyy-MM-dd')),
@@ -240,7 +254,7 @@ export default function Dashboard() {
         ...expenseTxInRange.map((tx: any) => tx.transaction_date && format(new Date(tx.transaction_date), 'yyyy-MM-dd'))
       ].filter(Boolean))) as string[]
       const ratesByDate: Record<string, TcmbRatesByCurrency> = {}
-      const fallbackDate = format(dateRange.from, 'yyyy-MM-dd')
+      const fallbackDate = format(rangeFrom, 'yyyy-MM-dd')
       for (let d = 0; d <= 5; d++) {
         const tryDate = d === 0 ? fallbackDate : format(subDays(new Date(fallbackDate), d), 'yyyy-MM-dd')
         try {
@@ -330,8 +344,8 @@ export default function Dashboard() {
         return sum + convertInvoiceAmount(i, amt, getRatesForInvoice(i))
       }, 0)
 
-      const rangeStart = dateRange.from.getTime()
-      const rangeEnd = dateRange.to.getTime()
+      const rangeStart = rangeFrom.getTime()
+      const rangeEnd = rangeTo.getTime()
       const inRange = (d: string | Date) => {
         const t = new Date(d).getTime()
         return t >= rangeStart && t <= rangeEnd
@@ -429,8 +443,8 @@ export default function Dashboard() {
 
       const collectedInvoicesList = allInvoices.filter((i: any) => {
         if (i.status !== 'paid' || !i.payment_date) return false
-        const paymentDate = new Date(i.payment_date)
-        return paymentDate >= dateRange.from && paymentDate <= dateRange.to
+        const paymentDate = new Date(i.payment_date).getTime()
+        return paymentDate >= rangeStart && paymentDate <= rangeEnd
       })
       const unmatchedIncomeList = allTransactions.filter((tx: any) => {
         if (tx.transaction_type !== 'income' || !tx.transaction_date) return false
@@ -475,9 +489,9 @@ export default function Dashboard() {
       const recentActivities = await generateActivities(tenantId, 50)
       setActivities(recentActivities)
 
-      setLoading(false)
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
+    } finally {
       setLoading(false)
     }
   }
@@ -743,7 +757,7 @@ export default function Dashboard() {
   function exportDetailToExcel() {
     if (!detailModal) return
     const isTR = language === 'tr'
-    const dateStr = `${format(dateRange.from, 'yyyy-MM-dd')}_${format(dateRange.to, 'yyyy-MM-dd')}`
+    const dateStr = `${format(safeFrom, 'yyyy-MM-dd')}_${format(safeTo, 'yyyy-MM-dd')}`
     let data: string[][] = []
     let fileName = 'export.xlsx'
 
@@ -865,7 +879,7 @@ export default function Dashboard() {
             <PopoverTrigger asChild>
               <Button variant="outline" className="gap-2 !text-gray-900 !bg-white border-gray-300 hover:!bg-gray-50">
                 <Calendar className="h-4 w-4" />
-                {format(dateRange.from, 'MMM dd', { locale: dateLocale })} - {format(dateRange.to, 'MMM dd, yyyy', { locale: dateLocale })}
+                {format(safeFrom, 'MMM dd', { locale: dateLocale })} - {format(safeTo, 'MMM dd, yyyy', { locale: dateLocale })}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0 max-w-[min(380px,95vw)]" align="end">
@@ -874,8 +888,15 @@ export default function Dashboard() {
                   <p className="text-sm font-medium mb-2">{t.dashboard.from}</p>
                   <CalendarComponent
                     mode="single"
-                    selected={dateRange.from}
-                    onSelect={(date) => date && setDateRange({ ...dateRange, from: date })}
+                    selected={safeFrom}
+                    onSelect={(date) => {
+                      if (!date) return
+                      setDateRange((prev) => {
+                        const from = startOfDay(date)
+                        const to = prev.to < from ? endOfDay(from) : prev.to
+                        return { from, to }
+                      })
+                    }}
                     locale={dateLocale}
                     initialFocus
                   />
@@ -884,8 +905,15 @@ export default function Dashboard() {
                   <p className="text-sm font-medium mb-2">{t.dashboard.to}</p>
                   <CalendarComponent
                     mode="single"
-                    selected={dateRange.to}
-                    onSelect={(date) => date && setDateRange({ ...dateRange, to: date })}
+                    selected={safeTo}
+                    onSelect={(date) => {
+                      if (!date) return
+                      setDateRange((prev) => {
+                        const to = endOfDay(date)
+                        const from = prev.from > to ? startOfDay(to) : prev.from
+                        return { from, to }
+                      })
+                    }}
                     locale={dateLocale}
                   />
                 </div>
@@ -927,7 +955,7 @@ export default function Dashboard() {
           <MetricCard
             title={t.dashboard.cashOnHand}
             value={formatCurrency(metrics.cashOnHand, companyCurrency || undefined)}
-            change={t.dashboard.allAccounts}
+            change={language === 'tr' ? 'Güncel bakiye. ' + t.dashboard.allAccounts : 'Current balance. ' + t.dashboard.allAccounts}
             changeType="positive"
             icon={Wallet}
             iconColor="bg-green-600"
@@ -938,8 +966,8 @@ export default function Dashboard() {
             title={t.dashboard.cashFlowIncome}
             value={formatCurrency(metrics.collectedCash + metrics.convertedUnmatchedIncome, companyCurrency || undefined)}
             change={language === 'tr'
-              ? 'Tahsil edilen faturalar + fatura ile eşlenmemiş tahsilatlar'
-              : 'Collected invoices + unmatched collections'
+              ? `Dönemde: ${format(safeFrom, 'dd MMM', { locale: dateLocale })} - ${format(safeTo, 'dd MMM yyyy', { locale: dateLocale })}. Tahsil edilen faturalar + eşlenmemiş tahsilatlar`
+              : `Period: ${format(safeFrom, 'MMM dd', { locale: dateLocale })} - ${format(safeTo, 'MMM dd, yyyy', { locale: dateLocale })}. Collected invoices + unmatched collections`
             }
             changeType="positive"
             icon={TrendingUp}
@@ -951,8 +979,8 @@ export default function Dashboard() {
             title={t.dashboard.invoicing}
             value={formatCurrency(metrics.invoicedTotal, companyCurrency || undefined)}
             change={language === 'tr'
-              ? `Dönemde kesilen faturalar: ${format(dateRange.from, 'dd MMM', { locale: dateLocale })} - ${format(dateRange.to, 'dd MMM yyyy', { locale: dateLocale })}`
-              : `Invoiced in period: ${format(dateRange.from, 'MMM dd', { locale: dateLocale })} - ${format(dateRange.to, 'MMM dd, yyyy', { locale: dateLocale })}`
+              ? `Dönemde kesilen faturalar: ${format(safeFrom, 'dd MMM', { locale: dateLocale })} - ${format(safeTo, 'dd MMM yyyy', { locale: dateLocale })}`
+              : `Invoiced in period: ${format(safeFrom, 'MMM dd', { locale: dateLocale })} - ${format(safeTo, 'MMM dd, yyyy', { locale: dateLocale })}`
             }
             changeType="neutral"
             icon={DollarSign}
@@ -964,8 +992,8 @@ export default function Dashboard() {
             title={t.dashboard.cashFlowExpenses}
             value={formatCurrency(metrics.periodExpenses, companyCurrency || undefined)}
             change={language === 'tr'
-              ? 'Dönemde yapılan ödemeler (masraflar + işlem giderleri)'
-              : 'Payments in period (expenses + transaction expenses)'
+              ? `Dönemde: ${format(safeFrom, 'dd MMM', { locale: dateLocale })} - ${format(safeTo, 'dd MMM yyyy', { locale: dateLocale })}. Ödemeler (masraflar + işlem giderleri)`
+              : `Period: ${format(safeFrom, 'MMM dd', { locale: dateLocale })} - ${format(safeTo, 'MMM dd, yyyy', { locale: dateLocale })}. Payments (expenses + transaction expenses)`
             }
             changeType="neutral"
             icon={TrendingDown}
@@ -1254,8 +1282,8 @@ export default function Dashboard() {
             <CashFlowChart
               data={cashFlowData}
               periodLabel={language === 'tr'
-                ? `${format(dateRange.from, 'dd MMM', { locale: dateLocale })} - ${format(dateRange.to, 'dd MMM yyyy', { locale: dateLocale })}`
-                : `${format(dateRange.from, 'MMM dd', { locale: dateLocale })} - ${format(dateRange.to, 'MMM dd, yyyy', { locale: dateLocale })}`
+                ? `${format(safeFrom, 'dd MMM', { locale: dateLocale })} - ${format(safeTo, 'dd MMM yyyy', { locale: dateLocale })}`
+                : `${format(safeFrom, 'MMM dd', { locale: dateLocale })} - ${format(safeTo, 'MMM dd, yyyy', { locale: dateLocale })}`
               }
             />
           </div>

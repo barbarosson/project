@@ -546,7 +546,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
   return (
     <>
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose() }}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col overflow-hidden p-6">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col overflow-hidden p-6 !bg-sky-50 border border-sky-200">
         <DialogHeader className="shrink-0">
           <DialogTitle>{t.customers.addCustomer}</DialogTitle>
           <DialogDescription>
@@ -555,15 +555,15 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <Tabs defaultValue="basic" className="flex flex-col flex-1 min-h-0 overflow-hidden">
-            <TabsList className="grid w-full grid-cols-4 shrink-0">
+          <Tabs defaultValue="basic" className="flex flex-col flex-1 min-h-0 overflow-hidden gap-4">
+            <TabsList className="grid w-full grid-cols-4 shrink-0 h-auto min-h-10">
               <TabsTrigger value="basic">{t.customers.basicInfo}</TabsTrigger>
               <TabsTrigger value="address">{t.customers.address}</TabsTrigger>
               <TabsTrigger value="payment">{t.common.payment}</TabsTrigger>
               <TabsTrigger value="bank">{t.customers.bankInfo}</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="basic" className="space-y-4 mt-4 flex-1 min-h-0 overflow-y-auto data-[state=inactive]:hidden">
+            <TabsContent value="basic" className="space-y-4 pt-0 mt-0 flex-1 min-h-0 overflow-y-auto data-[state=inactive]:hidden">
             <div className="space-y-2">
               <Label htmlFor="customer_type">{t.customers.customerType} <span className="text-red-500">*</span></Label>
               <Select
@@ -839,7 +839,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
 
           </TabsContent>
 
-          <TabsContent value="address" className="space-y-4 mt-4 flex-1 min-h-0 overflow-y-auto data-[state=inactive]:hidden">
+          <TabsContent value="address" className="space-y-4 pt-0 mt-0 flex-1 min-h-0 overflow-y-auto data-[state=inactive]:hidden">
             <div className="space-y-2">
               <Label htmlFor="address">{t.customers.streetAddress}</Label>
               <Textarea
@@ -934,7 +934,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
             </div>
           </TabsContent>
 
-          <TabsContent value="payment" className="space-y-4 mt-4 flex-1 min-h-0 overflow-y-auto data-[state=inactive]:hidden">
+          <TabsContent value="payment" className="space-y-4 pt-0 mt-0 flex-1 min-h-0 overflow-y-auto data-[state=inactive]:hidden">
             <div className="space-y-2">
               <Label htmlFor="currency">{language === 'tr' ? 'Para Birimi' : 'Currency'}</Label>
               <Select
@@ -1047,7 +1047,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
             </div>
           </TabsContent>
 
-          <TabsContent value="bank" className="space-y-4 mt-4 flex-1 min-h-0 overflow-y-auto data-[state=inactive]:hidden">
+          <TabsContent value="bank" className="space-y-4 pt-0 mt-0 flex-1 min-h-0 overflow-y-auto data-[state=inactive]:hidden">
             <div className="space-y-2">
               <Label htmlFor="bank_name">{t.settings.bankName}</Label>
               <TurkishBankSelect
@@ -1144,13 +1144,14 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
               variant="outline"
               onClick={handleClose}
               disabled={loading}
+              className="font-semibold text-contrast-body"
             >
               {t.common.cancel}
             </Button>
             <Button
               type="submit"
               disabled={loading}
-              className="bg-[#00D4AA] hover:bg-[#00B894] text-[var(--color-primary)]"
+              className="bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
             >
               {loading ? t.common.adding : t.customers.addCustomer}
             </Button>
