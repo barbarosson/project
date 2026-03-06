@@ -97,6 +97,10 @@ export default function ExpensesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [purchaseTypeFilter, setPurchaseTypeFilter] = useState<string>('all')
   const [purchaseStatusFilter, setPurchaseStatusFilter] = useState<string>('all')
+  const [expenseDateFrom, setExpenseDateFrom] = useState<string>('')
+  const [expenseDateTo, setExpenseDateTo] = useState<string>('')
+  const [purchaseDateFrom, setPurchaseDateFrom] = useState<string>('')
+  const [purchaseDateTo, setPurchaseDateTo] = useState<string>('')
   const [isAddExpenseDialogOpen, setIsAddExpenseDialogOpen] = useState(false)
   const [isAddPurchaseInvoiceDialogOpen, setIsAddPurchaseInvoiceDialogOpen] = useState(false)
   const [isExpenseImportDialogOpen, setIsExpenseImportDialogOpen] = useState(false)
@@ -109,6 +113,8 @@ export default function ExpensesPage() {
   const [expenseToView, setExpenseToView] = useState<Expense | null>(null)
   const [selectedPurchaseIds, setSelectedPurchaseIds] = useState<Set<string>>(new Set())
   const [purchaseToView, setPurchaseToView] = useState<PurchaseInvoice | null>(null)
+  const [purchaseToEdit, setPurchaseToEdit] = useState<PurchaseInvoice | null>(null)
+  const [isEditPurchaseInvoiceOpen, setIsEditPurchaseInvoiceOpen] = useState(false)
   const [isBulkDeletePurchaseDialogOpen, setIsBulkDeletePurchaseDialogOpen] = useState(false)
   const [isDeletePurchaseDialogOpen, setIsDeletePurchaseDialogOpen] = useState(false)
   const [purchaseToDelete, setPurchaseToDelete] = useState<string | null>(null)
@@ -342,6 +348,11 @@ export default function ExpensesPage() {
   const filteredInvoices = purchaseInvoices.filter((invoice) => {
     if (purchaseStatusFilter !== 'all' && invoice.status !== purchaseStatusFilter) return false
     if (purchaseTypeFilter !== 'all' && (invoice.invoice_type || 'purchase') !== purchaseTypeFilter) return false
+    if (purchaseDateFrom || purchaseDateTo) {
+      const d = invoice.invoice_date ? new Date(invoice.invoice_date).toISOString().slice(0, 10) : ''
+      if (purchaseDateFrom && d < purchaseDateFrom) return false
+      if (purchaseDateTo && d > purchaseDateTo) return false
+    }
     const q = searchQuery.toLowerCase()
     if (q && !(
       invoice.invoice_number.toLowerCase().includes(q) ||
@@ -465,7 +476,7 @@ export default function ExpensesPage() {
       let stockUpdatedCount = 0
       if (lineItems && lineItems.length > 0) {
         let productsByName: { id: string; name: string }[] | null = null
-        async function resolveProductId(item: (typeof lineItems)[0]): Promise<string | null> {
+        const resolveProductId = async (item: (typeof lineItems)[0]): Promise<string | null> => {
           if (item.product_id) return item.product_id
           const desc = (item.description && typeof item.description === 'string') ? item.description.trim() : ''
           if (!desc) return null
@@ -474,9 +485,10 @@ export default function ExpensesPage() {
             productsByName = (list || []).map((p: { id: string; name: string }) => ({ id: p.id, name: (p.name || '').trim().toLowerCase() }))
           }
           const descLower = desc.toLowerCase()
-          const exact = productsByName.filter((p) => p.name === descLower)
+          const products = productsByName ?? []
+          const exact = products.filter((p) => p.name === descLower)
           if (exact.length === 1) return exact[0].id
-          const partial = productsByName.filter((p) => p.name && descLower.includes(p.name))
+          const partial = products.filter((p) => p.name && descLower.includes(p.name))
           return partial.length === 1 ? partial[0].id : null
         }
         for (const item of lineItems) {
@@ -579,10 +591,17 @@ export default function ExpensesPage() {
     }
   }
 
-  const filteredExpenses = expenses.filter(expense =>
-    expense.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    expense.category.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredExpenses = expenses.filter((expense) => {
+    if (expenseDateFrom || expenseDateTo) {
+      const d = expense.expense_date ? new Date(expense.expense_date).toISOString().slice(0, 10) : ''
+      if (expenseDateFrom && d < expenseDateFrom) return false
+      if (expenseDateTo && d > expenseDateTo) return false
+    }
+    return (
+      expense.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      expense.category.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  })
 
   const totalManualExpenses = expenses.reduce(
     (sum, exp) => sum + convertToPreferred(Number(exp.amount), (exp as Expense).currency ?? 'TRY', exp.expense_date ? format(new Date(exp.expense_date), 'yyyy-MM-dd') : null),
@@ -727,6 +746,23 @@ export default function ExpensesPage() {
               </div>
 
               <TabsContent value="manual" className="mt-6">
+                <div className="flex flex-wrap items-center gap-3 mb-4">
+                  <Input
+                    type="date"
+                    value={expenseDateFrom}
+                    onChange={(e) => setExpenseDateFrom(e.target.value)}
+                    className="w-[150px] h-9"
+                    aria-label={language === 'tr' ? 'Başlangıç tarihi' : 'Start date'}
+                  />
+                  <span className="text-gray-400 text-sm">–</span>
+                  <Input
+                    type="date"
+                    value={expenseDateTo}
+                    onChange={(e) => setExpenseDateTo(e.target.value)}
+                    className="w-[150px] h-9"
+                    aria-label={language === 'tr' ? 'Bitiş tarihi' : 'End date'}
+                  />
+                </div>
                 {selectedIds.size > 0 && (
                   <div className="flex items-center gap-3 px-4 py-3 mb-4 rounded-lg bg-blue-50 border border-blue-200">
                     <span className="text-sm font-medium text-blue-800">
@@ -858,6 +894,21 @@ export default function ExpensesPage() {
                       <SelectItem value="devir_return">{PURCHASE_TYPE_LABELS.devir_return[language]}</SelectItem>
                     </SelectContent>
                   </Select>
+                  <Input
+                    type="date"
+                    value={purchaseDateFrom}
+                    onChange={(e) => setPurchaseDateFrom(e.target.value)}
+                    className="w-[150px] h-9"
+                    aria-label={language === 'tr' ? 'Başlangıç tarihi' : 'Start date'}
+                  />
+                  <span className="text-gray-400 text-sm">–</span>
+                  <Input
+                    type="date"
+                    value={purchaseDateTo}
+                    onChange={(e) => setPurchaseDateTo(e.target.value)}
+                    className="w-[150px] h-9"
+                    aria-label={language === 'tr' ? 'Bitiş tarihi' : 'End date'}
+                  />
                 </div>
                 {selectedPurchaseIds.size > 0 && (
                   <div className="flex items-center gap-3 px-4 py-3 mb-4 rounded-lg bg-blue-50 border border-blue-200">
@@ -947,6 +998,15 @@ export default function ExpensesPage() {
                                     <Eye className="h-4 w-4 mr-2" />
                                     {t.common.view}
                                   </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setPurchaseToEdit(invoice)
+                                      setIsEditPurchaseInvoiceOpen(true)
+                                    }}
+                                  >
+                                    <Pencil className="h-4 w-4 mr-2" />
+                                    {t.common.edit}
+                                  </DropdownMenuItem>
                                   {invoice.status === 'pending' && (
                                     <>
                                       <DropdownMenuItem onClick={() => handleAcceptInvoice(invoice.id)} className="text-green-600">
@@ -997,6 +1057,16 @@ export default function ExpensesPage() {
         open={isAddPurchaseInvoiceDialogOpen}
         onOpenChange={setIsAddPurchaseInvoiceDialogOpen}
         onSuccess={fetchData}
+      />
+      <AddManualPurchaseInvoiceDialog
+        open={isEditPurchaseInvoiceOpen}
+        onOpenChange={(open) => {
+          if (!open) setPurchaseToEdit(null)
+          setIsEditPurchaseInvoiceOpen(open)
+        }}
+        onSuccess={fetchData}
+        mode="edit"
+        initialInvoice={purchaseToEdit ?? undefined}
       />
 
       <EditManualExpenseDialog

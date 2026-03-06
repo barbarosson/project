@@ -37,10 +37,22 @@ interface LineItem {
   vat_rate: number
 }
 
+interface PurchaseInvoiceToEdit {
+  id: string
+  supplier_id: string
+  invoice_number: string
+  invoice_date: string
+  due_date: string | null
+  invoice_type: string | null
+  status?: string | null
+}
+
 interface AddManualPurchaseInvoiceDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess: () => void
+  mode?: 'add' | 'edit'
+  initialInvoice?: PurchaseInvoiceToEdit | null
 }
 
 const PURCHASE_TYPES = [
@@ -50,16 +62,28 @@ const PURCHASE_TYPES = [
   { value: 'devir_return', tr: 'Devir İade', en: 'Carry Fwd Return' },
 ] as const
 
+const DEFAULT_VAT_RATE = 20
+const ALLOWED_VAT_RATE_VALUES = [0, 1, 10, 20] as const
+
+function normalizeVatRate(value: unknown): number {
+  const n = Number(value)
+  return (ALLOWED_VAT_RATE_VALUES as readonly number[]).includes(n) ? n : DEFAULT_VAT_RATE
+}
+
 const VAT_RATES = [
   { value: 0, label: '0%' },
   { value: 1, label: '1%' },
-  { value: 8, label: '8%' },
   { value: 10, label: '10%' },
-  { value: 18, label: '18%' },
   { value: 20, label: '20%' },
 ] as const
 
-export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }: AddManualPurchaseInvoiceDialogProps) {
+export function AddManualPurchaseInvoiceDialog({
+  open,
+  onOpenChange,
+  onSuccess,
+  mode = 'add',
+  initialInvoice = null,
+}: AddManualPurchaseInvoiceDialogProps) {
   const { tenantId } = useTenant()
   const { t, language } = useLanguage()
   const [loading, setLoading] = useState(false)
@@ -73,7 +97,7 @@ export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }
   })
 
   const [lineItems, setLineItems] = useState<LineItem[]>([
-    { id: crypto.randomUUID(), product_id: null, description: '', quantity: '1', unit_price: '', vat_rate: 18 },
+    { id: crypto.randomUUID(), product_id: null, description: '', quantity: '1', unit_price: '', vat_rate: DEFAULT_VAT_RATE },
   ])
   const [products, setProducts] = useState<Product[]>([])
   const [showEInvoiceImport, setShowEInvoiceImport] = useState(false)
@@ -85,6 +109,51 @@ export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }
       fetchProducts()
     }
   }, [open, tenantId])
+
+  useEffect(() => {
+    if (!open || !tenantId) return
+    if (mode !== 'edit' || !initialInvoice?.id) return
+
+    setFormData({
+      supplier_id: initialInvoice.supplier_id || '',
+      invoice_number: initialInvoice.invoice_number || '',
+      invoice_date: initialInvoice.invoice_date || new Date().toISOString().split('T')[0],
+      due_date: initialInvoice.due_date || '',
+      invoice_type: (initialInvoice.invoice_type || 'purchase') as string,
+    })
+
+    ;(async () => {
+      try {
+        const { data, error } = await supabase
+          .from('purchase_invoice_line_items')
+          .select('id, product_id, description, quantity, unit_price, tax_rate')
+          .eq('tenant_id', tenantId)
+          .eq('purchase_invoice_id', initialInvoice.id)
+          .order('id', { ascending: true })
+        if (error) throw error
+
+        const rows = Array.isArray(data) ? data : []
+        if (rows.length === 0) {
+          setLineItems([{ id: crypto.randomUUID(), product_id: null, description: '', quantity: '1', unit_price: '', vat_rate: DEFAULT_VAT_RATE }])
+          return
+        }
+
+        setLineItems(
+          rows.map((r: any) => ({
+            id: crypto.randomUUID(),
+            product_id: r.product_id ?? null,
+            description: String(r.description ?? ''),
+            quantity: String(r.quantity ?? '1'),
+            unit_price: String(r.unit_price ?? ''),
+            vat_rate: normalizeVatRate(r.tax_rate),
+          }))
+        )
+      } catch (e) {
+        console.error(e)
+        setLineItems([{ id: crypto.randomUUID(), product_id: null, description: '', quantity: '1', unit_price: '', vat_rate: DEFAULT_VAT_RATE }])
+      }
+    })()
+  }, [open, tenantId, mode, initialInvoice?.id])
 
   async function fetchProducts() {
     try {
@@ -130,7 +199,7 @@ export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }
   }
 
   function addLine() {
-    setLineItems((prev) => [...prev, { id: crypto.randomUUID(), product_id: null, description: '', quantity: '1', unit_price: '', vat_rate: 18 }])
+    setLineItems((prev) => [...prev, { id: crypto.randomUUID(), product_id: null, description: '', quantity: '1', unit_price: '', vat_rate: DEFAULT_VAT_RATE }])
   }
 
   function removeLine(id: string) {
@@ -153,7 +222,7 @@ export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }
     updateLine(lineId, 'product_id', productId)
     updateLine(lineId, 'description', p.name)
     updateLine(lineId, 'unit_price', String(p.purchase_price ?? 0))
-    if (p.vat_rate != null) updateLine(lineId, 'vat_rate', Number(p.vat_rate))
+    if (p.vat_rate != null) updateLine(lineId, 'vat_rate', normalizeVatRate(p.vat_rate))
   }
 
   function computeLineValues(line: LineItem) {
@@ -207,7 +276,7 @@ export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }
             description: desc,
             quantity: qty,
             unit_price: unitPrice.toFixed(2),
-            vat_rate: 18,
+            vat_rate: DEFAULT_VAT_RATE,
           })
         }
       } else {
@@ -226,7 +295,7 @@ export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }
             description: desc,
             quantity: qty,
             unit_price: unitPrice.toFixed(2),
-            vat_rate: 18,
+            vat_rate: DEFAULT_VAT_RATE,
           })
         })
       }
@@ -281,38 +350,82 @@ export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }
     setLoading(true)
     try {
       const dueDate = formData.due_date || formData.invoice_date
-      const { data: inserted, error: invError } = await supabase
-        .from('purchase_invoices')
-        .insert({
-          tenant_id: tenantId,
-          supplier_id: formData.supplier_id,
-          invoice_number: formData.invoice_number.trim(),
-          invoice_date: formData.invoice_date,
-          due_date: dueDate || null,
-          subtotal,
-          tax_amount: taxAmount,
-          total_amount: totalAmount,
-          status: 'pending',
-          invoice_type: formData.invoice_type || 'purchase',
-        })
-        .select('id')
-        .single()
-      if (invError || !inserted) throw invError || new Error('Insert failed')
-      for (const line of validLines) {
-        const { subtotal: lineSub, taxAmount: lineTax, total: lineTotal } = computeLineValues(line)
-        await supabase.from('purchase_invoice_line_items').insert({
-          tenant_id: tenantId,
-          purchase_invoice_id: inserted.id,
-          product_id: line.product_id || null,
-          description: line.description.trim(),
-          quantity: parseFloat(line.quantity.replace(',', '.')),
-          unit_price: parseFloat(line.unit_price.replace(',', '.')),
-          tax_rate: line.vat_rate,
-          tax_amount: lineTax,
-          total: lineTotal,
-        })
+      const isEdit = mode === 'edit' && !!initialInvoice?.id
+
+      if (isEdit && initialInvoice?.id) {
+        const { error: updError } = await supabase
+          .from('purchase_invoices')
+          .update({
+            supplier_id: formData.supplier_id,
+            invoice_number: formData.invoice_number.trim(),
+            invoice_date: formData.invoice_date,
+            due_date: dueDate || null,
+            subtotal,
+            tax_amount: taxAmount,
+            total_amount: totalAmount,
+            invoice_type: formData.invoice_type || 'purchase',
+          })
+          .eq('tenant_id', tenantId)
+          .eq('id', initialInvoice.id)
+        if (updError) throw updError
+
+        const { error: delErr } = await supabase
+          .from('purchase_invoice_line_items')
+          .delete()
+          .eq('tenant_id', tenantId)
+          .eq('purchase_invoice_id', initialInvoice.id)
+        if (delErr) throw delErr
+
+        for (const line of validLines) {
+          const { taxAmount: lineTax, total: lineTotal } = computeLineValues(line)
+          const { error: insErr } = await supabase.from('purchase_invoice_line_items').insert({
+            tenant_id: tenantId,
+            purchase_invoice_id: initialInvoice.id,
+            product_id: line.product_id || null,
+            description: line.description.trim(),
+            quantity: parseFloat(line.quantity.replace(',', '.')),
+            unit_price: parseFloat(line.unit_price.replace(',', '.')),
+            tax_rate: line.vat_rate,
+            tax_amount: lineTax,
+            total: lineTotal,
+          })
+          if (insErr) throw insErr
+        }
+        toast.success(language === 'tr' ? 'Fatura güncellendi.' : 'Invoice updated.')
+      } else {
+        const { data: inserted, error: invError } = await supabase
+          .from('purchase_invoices')
+          .insert({
+            tenant_id: tenantId,
+            supplier_id: formData.supplier_id,
+            invoice_number: formData.invoice_number.trim(),
+            invoice_date: formData.invoice_date,
+            due_date: dueDate || null,
+            subtotal,
+            tax_amount: taxAmount,
+            total_amount: totalAmount,
+            status: 'pending',
+            invoice_type: formData.invoice_type || 'purchase',
+          })
+          .select('id')
+          .single()
+        if (invError || !inserted) throw invError || new Error('Insert failed')
+        for (const line of validLines) {
+          const { taxAmount: lineTax, total: lineTotal } = computeLineValues(line)
+          await supabase.from('purchase_invoice_line_items').insert({
+            tenant_id: tenantId,
+            purchase_invoice_id: inserted.id,
+            product_id: line.product_id || null,
+            description: line.description.trim(),
+            quantity: parseFloat(line.quantity.replace(',', '.')),
+            unit_price: parseFloat(line.unit_price.replace(',', '.')),
+            tax_rate: line.vat_rate,
+            tax_amount: lineTax,
+            total: lineTotal,
+          })
+        }
+        toast.success(t.expenses.invoiceAdded)
       }
-      toast.success(t.expenses.invoiceAdded)
       onSuccess()
       onOpenChange(false)
       setFormData({
@@ -322,7 +435,7 @@ export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }
         due_date: '',
         invoice_type: 'purchase',
       })
-      setLineItems([{ id: crypto.randomUUID(), product_id: null, description: '', quantity: '1', unit_price: '', vat_rate: 18 }])
+      setLineItems([{ id: crypto.randomUUID(), product_id: null, description: '', quantity: '1', unit_price: '', vat_rate: DEFAULT_VAT_RATE }])
     } catch (err: any) {
       console.error(err)
       toast.error(err?.message || t.expenses.invoiceAddFailed)
@@ -337,9 +450,15 @@ export function AddManualPurchaseInvoiceDialog({ open, onOpenChange, onSuccess }
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-blue-50 border-blue-200">
         <DialogHeader>
-          <DialogTitle>{t.expenses.addIncomingInvoiceTitle}</DialogTitle>
+          <DialogTitle>
+            {mode === 'edit'
+              ? (language === 'tr' ? 'Gelen fatura düzenle' : 'Edit incoming invoice')
+              : t.expenses.addIncomingInvoiceTitle}
+          </DialogTitle>
           <DialogDescription>
-            {t.expenses.addIncomingInvoiceDescription}
+            {mode === 'edit'
+              ? (language === 'tr' ? 'Fatura bilgilerini ve satırlarını güncelleyin.' : 'Update invoice details and line items.')
+              : t.expenses.addIncomingInvoiceDescription}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">

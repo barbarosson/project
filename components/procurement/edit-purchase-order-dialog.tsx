@@ -113,7 +113,7 @@ export function EditPurchaseOrderDialog({
               <SelectContent>
                 {STATUS_OPTIONS.map((opt) => (
                   <SelectItem key={opt.value} value={opt.value}>
-                    {(t.procurement as Record<string, string>)[opt.labelKey] ?? opt.labelKey}
+                    {((t.procurement as unknown) as Record<string, string>)[opt.labelKey] ?? opt.labelKey}
                   </SelectItem>
                 ))}
               </SelectContent>

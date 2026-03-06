@@ -78,7 +78,7 @@ export function PurchaseOrderDetailSheet({
               variant="outline"
               className={statusColors[purchaseOrder.status] || "bg-gray-100 text-gray-700"}
             >
-              {(t.procurement as Record<string, string>)[purchaseOrder.status] ?? purchaseOrder.status}
+              {((t.procurement as unknown) as Record<string, string>)[purchaseOrder.status] ?? purchaseOrder.status}
             </Badge>
             <span className="text-sm text-gray-500">
               {purchaseOrder.supplier?.name || t.procurement.unknownSupplier}

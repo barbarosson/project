@@ -160,13 +160,13 @@ export default function HRAIPage() {
   )
 
   const activeStaff = staff.filter(s => s.status === 'active').length
-  const highPerformers = staff.filter(s => s.performance_score >= 80).length
+  const highPerformers = staff.filter(s => (s.performance_score ?? 0) >= 80).length
   const atRiskStaff = staff.filter(s => s.burnout_risk === 'high' || s.churn_risk === 'high').length
   const avgPerformance = staff.length > 0
     ? staff.reduce((sum, s) => sum + (s.performance_score || 0), 0) / staff.length
     : 0
 
-  const getRiskBadge = (risk: string) => {
+  const getRiskBadge = (risk?: string) => {
     switch (risk) {
       case 'high':
         return <Badge variant="destructive">{t.hr.riskHigh}</Badge>
@@ -179,12 +179,12 @@ export default function HRAIPage() {
     }
   }
 
-  const getStatusLabel = (status: string) => {
+  const getStatusLabel = (status?: string) => {
     switch (status) {
       case 'active': return t.hr.statusActive
       case 'inactive': return t.hr.statusInactive
       case 'on_leave': return t.hr.statusOnLeave
-      default: return status
+      default: return status ?? '-'
     }
   }
 
@@ -458,14 +458,14 @@ export default function HRAIPage() {
                               <div
                                 className={cn(
                                   "h-full",
-                                  member.performance_score >= 80 && "bg-green-500",
-                                  member.performance_score >= 60 && member.performance_score < 80 && "bg-blue-500",
-                                  member.performance_score < 60 && "bg-amber-500"
+                                  (member.performance_score ?? 0) >= 80 && "bg-green-500",
+                                  (member.performance_score ?? 0) >= 60 && (member.performance_score ?? 0) < 80 && "bg-blue-500",
+                                  (member.performance_score ?? 0) < 60 && "bg-amber-500"
                                 )}
-                                style={{ width: `${member.performance_score}%` }}
+                                style={{ width: `${member.performance_score ?? 0}%` }}
                               />
                             </div>
-                            <span className="text-sm">{member.performance_score}%</span>
+                            <span className="text-sm">{member.performance_score ?? 0}%</span>
                           </div>
                         </td>
                         <td className="p-3">{getRiskBadge(member.burnout_risk)}</td>

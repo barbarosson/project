@@ -15,18 +15,18 @@ import {
   Clock,
   FileText,
   Activity,
-  TrendingUp,
   AlertTriangle,
   Loader2,
   RefreshCw,
   Ban,
-  Eye
+  Eye,
+  Settings2
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { useTenant } from '@/hooks/use-tenant';
-import { useAuth } from '@/hooks/use-auth';
-import { toast } from 'sonner';
+import { useTenant } from '@/contexts/tenant-context';
 import { useLanguage } from '@/contexts/language-context';
+import { toast } from 'sonner';
+import { EdocumentSettings } from '@/components/edocuments/edocument-settings';
 
 interface EInvoiceDetail {
   id: string;
@@ -53,8 +53,8 @@ interface EInvoiceDetail {
 
 export default function EInvoiceCenterPage() {
   const { tenantId } = useTenant();
-  const { user } = useAuth();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
+  const tr = t.edocuments;
   const [invoices, setInvoices] = useState<EInvoiceDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
@@ -264,91 +264,113 @@ export default function EInvoiceCenterPage() {
 
   return (
     <DashboardLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 p-6">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+      <div className="min-h-screen bg-[#0A2540]/5 overflow-x-hidden">
+        <div className="p-3 lg:p-5 text-[#0A2540] min-w-0 overflow-x-hidden text-[15px] space-y-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-                <ShieldCheck className="text-[#7DD3FC]" size={40} />
-                e-Fatura & e-Arşiv Merkezi
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                <ShieldCheck className="text-[#00D4AA]" size={32} />
+                {language === 'tr' ? 'e-Fatura & e-Arşiv Merkezi' : 'E-Invoice & E-Archive Center'}
               </h1>
-              <p className="text-slate-400">
-                GİB uyumlu elektronik fatura yönetimi
+              <p className="text-gray-500 mt-1">
+                {language === 'tr' ? 'GİB uyumlu elektronik fatura yönetimi' : 'GIB-compliant electronic invoice management'}
               </p>
             </div>
-
-            <Button
-              onClick={loadInvoices}
-              variant="outline"
-              disabled={loading}
-              className="border-[#7DD3FC]/30 text-[#7DD3FC] hover:bg-[#7DD3FC]/10"
-            >
-              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-              Yenile
-            </Button>
           </div>
-        </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-slate-900/40 border-[#7DD3FC]/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-300">Toplam Fatura</CardTitle>
-              <FileText className="h-4 w-4 text-slate-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{stats.total}</div>
-              <p className="text-xs text-slate-500">Sistem kaydı</p>
-            </CardContent>
-          </Card>
+          <Tabs defaultValue="invoices" className="space-y-6">
+            <TabsList className="bg-[#0A2540]/10 border border-[#0A2540]/20">
+              <TabsTrigger value="setup" className="data-[state=active]:bg-[#00D4AA] data-[state=active]:text-[#0A2540] font-semibold text-contrast-body">
+                <Settings2 className="h-4 w-4 mr-2" />
+                {language === 'tr' ? 'Kurulum' : 'Setup'}
+              </TabsTrigger>
+              <TabsTrigger value="invoices" className="data-[state=active]:bg-[#00D4AA] data-[state=active]:text-[#0A2540] font-semibold text-contrast-body">
+                <FileText className="h-4 w-4 mr-2" />
+                {language === 'tr' ? 'Fatura Listesi' : 'Invoice List'}
+              </TabsTrigger>
+            </TabsList>
 
-          <Card className="bg-slate-900/40 border-green-500/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-300">GİB Onaylı</CardTitle>
-              <ShieldCheck className="h-4 w-4 text-green-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-400">{stats.approved}</div>
-              <p className="text-xs text-slate-500">Resmi faturalar</p>
-            </CardContent>
-          </Card>
+            <TabsContent value="setup" className="mt-0">
+              {tenantId && (
+                <EdocumentSettings
+                  tenantId={tenantId}
+                  language={language}
+                  translations={tr}
+                  onSaved={() => {}}
+                />
+              )}
+            </TabsContent>
 
-          <Card className="bg-slate-900/40 border-yellow-500/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-300">Bekleyen</CardTitle>
-              <Clock className="h-4 w-4 text-yellow-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-yellow-400">{stats.pending}</div>
-              <p className="text-xs text-slate-500">İşlem gerekiyor</p>
-            </CardContent>
-          </Card>
+            <TabsContent value="invoices" className="mt-0 space-y-6">
+              <div className="flex justify-end">
+                <Button
+                  onClick={loadInvoices}
+                  variant="outline"
+                  disabled={loading}
+                  className="font-semibold text-contrast-body border-gray-300 bg-white hover:bg-gray-50"
+                >
+                  <RefreshCw size={16} className={loading ? 'animate-spin mr-2' : 'mr-2'} />
+                  {language === 'tr' ? 'Yenile' : 'Refresh'}
+                </Button>
+              </div>
 
-          <Card className="bg-slate-900/40 border-red-500/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-300">Hata/Red</CardTitle>
-              <AlertOctagon className="h-4 w-4 text-red-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-red-400">{stats.errors}</div>
-              <p className="text-xs text-slate-500">Dikkat gerekiyor</p>
-            </CardContent>
-          </Card>
-        </div>
+              {/* Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card className="border border-gray-200 bg-card shadow-sm">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-700">{language === 'tr' ? 'Toplam Fatura' : 'Total Invoices'}</CardTitle>
+                    <FileText className="h-4 w-4 text-gray-500" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
+                    <p className="text-xs text-gray-500">{language === 'tr' ? 'Sistem kaydı' : 'System records'}</p>
+                  </CardContent>
+                </Card>
+                <Card className="border border-gray-200 bg-card shadow-sm">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-700">{language === 'tr' ? 'GİB Onaylı' : 'GIB Approved'}</CardTitle>
+                    <ShieldCheck className="h-4 w-4 text-green-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-700">{stats.approved}</div>
+                    <p className="text-xs text-gray-500">{language === 'tr' ? 'Resmi faturalar' : 'Official invoices'}</p>
+                  </CardContent>
+                </Card>
+                <Card className="border border-gray-200 bg-card shadow-sm">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-700">{language === 'tr' ? 'Bekleyen' : 'Pending'}</CardTitle>
+                    <Clock className="h-4 w-4 text-amber-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-amber-700">{stats.pending}</div>
+                    <p className="text-xs text-gray-500">{language === 'tr' ? 'İşlem gerekiyor' : 'Action required'}</p>
+                  </CardContent>
+                </Card>
+                <Card className="border border-gray-200 bg-card shadow-sm">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-gray-700">{language === 'tr' ? 'Hata/Red' : 'Error/Rejected'}</CardTitle>
+                    <AlertOctagon className="h-4 w-4 text-red-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-red-700">{stats.errors}</div>
+                    <p className="text-xs text-gray-500">{language === 'tr' ? 'Dikkat gerekiyor' : 'Attention needed'}</p>
+                  </CardContent>
+                </Card>
+              </div>
 
-        {/* Invoice List */}
-        <Card className="bg-slate-900/40 border-[#7DD3FC]/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-white">
-              <Activity className="text-[#7DD3FC]" />
-              Fatura Listesi
-            </CardTitle>
-            <CardDescription className="text-slate-400">
-              {invoices.length} fatura • Durum bazlı görünüm
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+              {/* Invoice List */}
+              <Card className="border border-gray-200 bg-card shadow-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-gray-900">
+                    <Activity className="text-[#00D4AA]" />
+                    {language === 'tr' ? 'Fatura Listesi' : 'Invoice List'}
+                  </CardTitle>
+                  <CardDescription className="text-gray-500">
+                    {invoices.length} {language === 'tr' ? 'fatura • Durum bazlı görünüm' : 'invoices • Status view'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
             {loading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="animate-spin h-8 w-8 text-[#7DD3FC]" />
@@ -534,7 +556,10 @@ export default function EInvoiceCenterPage() {
             )}
           </CardContent>
         </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </DashboardLayout>
-  );
+  )
 }

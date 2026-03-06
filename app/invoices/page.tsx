@@ -83,6 +83,8 @@ export default function InvoicesPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState<string>('')
+  const [dateFrom, setDateFrom] = useState<string>('')
+  const [dateTo, setDateTo] = useState<string>('')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showCsvImportDialog, setShowCsvImportDialog] = useState(false)
@@ -256,6 +258,12 @@ export default function InvoicesPage() {
     if (statusFilter !== 'all' && inv.status !== statusFilter) return false
     if (typeFilter !== 'all' && (inv.invoice_type || 'sale') !== typeFilter) return false
 
+    if (dateFrom || dateTo) {
+      const issueDate = inv.issue_date ? new Date(inv.issue_date).toISOString().slice(0, 10) : ''
+      if (dateFrom && issueDate < dateFrom) return false
+      if (dateTo && issueDate > dateTo) return false
+    }
+
     const q = searchQuery.trim().toLowerCase()
     if (!q) return true
 
@@ -418,6 +426,23 @@ export default function InvoicesPage() {
                   <SelectItem value="devir_return">{language === 'tr' ? 'Devir İade' : 'Carry Fwd Return'}</SelectItem>
                 </SelectContent>
               </Select>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => { setDateFrom(e.target.value); setSelectedIds(new Set()) }}
+                  className="w-[150px] h-9"
+                  aria-label={language === 'tr' ? 'Başlangıç tarihi' : 'Start date'}
+                />
+                <span className="text-gray-400 text-sm">–</span>
+                <Input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => { setDateTo(e.target.value); setSelectedIds(new Set()) }}
+                  className="w-[150px] h-9"
+                  aria-label={language === 'tr' ? 'Bitiş tarihi' : 'End date'}
+                />
+              </div>
             </div>
             {/* Toplu işlem çubuğu */}
             {someSelected && (

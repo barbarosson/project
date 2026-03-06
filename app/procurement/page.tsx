@@ -311,7 +311,7 @@ export default function ProcurementPage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className={getStatusColor(order.status)}>
-                            {(t.procurement as Record<string, string>)[order.status] ?? order.status}
+                            {((t.procurement as unknown) as Record<string, string>)[order.status] ?? order.status}
                           </Badge>
                           {(order.status === "approved" || order.status === "ordered") && (
                             <Button
