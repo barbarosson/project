@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Dialog,
   DialogContent,
@@ -20,13 +21,14 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
+import { getInvoiceHtml } from '@/lib/nes-api'
 import { toast } from 'sonner'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
 import { useCurrency } from '@/contexts/currency-context'
 import { CURRENCY_LIST, getCurrencyLabel } from '@/lib/currencies'
 import { convertAmount, getRateForType, type TcmbRatesByCurrency } from '@/lib/tcmb'
-import { Plus, Trash2, Loader2 } from 'lucide-react'
+import { Plus, Trash2, Loader2, Send, FileText, FileCheck2 } from 'lucide-react'
 
 interface Invoice {
   id: string
@@ -65,6 +67,7 @@ interface LineItem {
 }
 
 export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditInvoiceDialogProps) {
+  const router = useRouter()
   const { tenantId } = useTenant()
   const { t, language } = useLanguage()
   const { formatCurrency, displayCurrencies, defaultRateType } = useCurrency()
@@ -90,6 +93,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
     staff_id: '',
   })
   const [staffList, setStaffList] = useState<{ id: string; name: string; last_name?: string | null; department?: string | null; position?: string | null }[]>([])
+  const [edocForInvoice, setEdocForInvoice] = useState<{ ettn: string; status: string; document_type: string } | null>(null)
 
   const lastProcessedInvoiceId = useRef<string | null>(null)
   const dataLoadStarted = useRef(false)
@@ -102,6 +106,27 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
         .catch(() => setTcmbRates({}))
     } else if (!isOpen) setTcmbRates(null)
   }, [isOpen, formData.issue_date])
+
+  useEffect(() => {
+    if (!isOpen || !tenantId || !invoice?.id) {
+      setEdocForInvoice(null)
+      return
+    }
+    let cancelled = false
+    supabase
+      .from('edocuments')
+      .select('ettn, status, document_type')
+      .eq('tenant_id', tenantId)
+      .eq('local_invoice_id', invoice.id)
+      .eq('direction', 'outgoing')
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled && data) setEdocForInvoice(data)
+        else if (!cancelled) setEdocForInvoice(null)
+      })
+    return () => { cancelled = true }
+  }, [isOpen, tenantId, invoice?.id])
 
   useEffect(() => {
     if (!isOpen) {
@@ -800,6 +825,55 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                 </div>
               )}
           </div>
+
+          {invoice?.id && (
+            <div className="border-t pt-4 space-y-2">
+              <div className="text-sm font-medium text-muted-foreground">{t.invoices.edocSection}</div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push(`/einvoice-center?tab=send&invoice_id=${invoice.id}`)}
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  {t.invoices.sendEInvoice}
+                </Button>
+                {edocForInvoice?.ettn && (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        if (!tenantId || !edocForInvoice?.ettn) return
+                        try {
+                          const raw = await getInvoiceHtml(tenantId, edocForInvoice.ettn, 'outgoing')
+                          const html = typeof raw === 'string' ? raw : (raw && typeof raw === 'object' && 'content' in raw ? (raw as { content: string }).content : '')
+                          if (html?.trim()) {
+                            const w = window.open('', '_blank')
+                            if (w) { w.document.write(html); w.document.close() }
+                          } else toast.error(language === 'tr' ? 'PDF alınamadı' : 'Failed to load PDF')
+                        } catch (e: any) {
+                          toast.error(e?.message || (language === 'tr' ? 'PDF açılamadı' : 'Failed to open PDF'))
+                        }
+                      }}
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      {t.invoices.viewInvoicePdf}
+                    </Button>
+                    <span className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium bg-muted">
+                      <FileCheck2 className="h-3.5 w-3.5" />
+                      {edocForInvoice.document_type === 'earsiv' ? (language === 'tr' ? 'E-Arşiv' : 'E-Archive') : (language === 'tr' ? 'E-Fatura' : 'E-Invoice')}: {edocForInvoice.status}
+                    </span>
+                  </>
+                )}
+                {!edocForInvoice && (
+                  <span className="text-xs text-muted-foreground">{t.invoices.noEdocForInvoice}</span>
+                )}
+              </div>
+            </div>
+          )}
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose} disabled={loading}>

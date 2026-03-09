@@ -73,9 +73,7 @@ export function TaxpayerCheck({ tenantId, language, translations: t }: TaxpayerC
           <div>
             <CardTitle className="text-lg">{t.checkTaxpayer}</CardTitle>
             <CardDescription>
-              {language === 'tr'
-                ? 'Bir firma/kişinin e-fatura mükellefi olup olmadığını sorgulayın'
-                : 'Check if a company/person is registered as e-invoice taxpayer'}
+              {t.checkTaxpayerDesc}
             </CardDescription>
           </div>
         </div>
@@ -85,7 +83,7 @@ export function TaxpayerCheck({ tenantId, language, translations: t }: TaxpayerC
           <Input
             value={vkn}
             onChange={(e) => setVkn(e.target.value)}
-            placeholder={language === 'tr' ? 'VKN veya TCKN girin' : 'Enter VKN or TCKN'}
+            placeholder={t.vknPlaceholder}
             maxLength={11}
             className="max-w-xs"
             onKeyDown={(e) => e.key === 'Enter' && handleCheck()}
@@ -103,7 +101,7 @@ export function TaxpayerCheck({ tenantId, language, translations: t }: TaxpayerC
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-green-600" />
                   <span className="font-medium text-green-700">
-                    {language === 'tr' ? 'E-Fatura Mükellefi' : 'E-Invoice Registered'}
+                    {t.efaturaRegistered}
                   </span>
                   <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
                     {result.type || 'Active'}
@@ -112,19 +110,19 @@ export function TaxpayerCheck({ tenantId, language, translations: t }: TaxpayerC
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                   {result.title && (
                     <div>
-                      <p className="text-xs text-muted-foreground">{language === 'tr' ? 'Unvan' : 'Title'}</p>
+                      <p className="text-xs text-muted-foreground">{t.titleLabel}</p>
                       <p className="font-medium">{result.title}</p>
                     </div>
                   )}
                   {result.alias && (
                     <div>
-                      <p className="text-xs text-muted-foreground">{language === 'tr' ? 'Etiket' : 'Alias'}</p>
+                      <p className="text-xs text-muted-foreground">{t.aliasLabel}</p>
                       <p className="font-medium">{result.alias}</p>
                     </div>
                   )}
                   {result.registerDate && (
                     <div>
-                      <p className="text-xs text-muted-foreground">{language === 'tr' ? 'Kayıt Tarihi' : 'Register Date'}</p>
+                      <p className="text-xs text-muted-foreground">{t.registerDateLabel}</p>
                       <p className="font-medium">{new Date(result.registerDate).toLocaleDateString(language === 'tr' ? 'tr-TR' : 'en-US')}</p>
                     </div>
                   )}
@@ -134,7 +132,7 @@ export function TaxpayerCheck({ tenantId, language, translations: t }: TaxpayerC
               <div className="flex items-center gap-2">
                 <XCircle className="h-5 w-5 text-red-500" />
                 <span className="text-red-600 font-medium">
-                  {language === 'tr' ? 'E-Fatura mükellefi değil' : 'Not an e-invoice taxpayer'}
+                  {t.notEfaturaTaxpayer}
                 </span>
               </div>
             )}

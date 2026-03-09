@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
 import {
   ShieldCheck,
   Send,
@@ -14,7 +16,8 @@ import {
   RefreshCw,
   Eye,
   Settings2,
-  Search
+  Search,
+  FilterX
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useTenant } from '@/contexts/tenant-context';
@@ -28,6 +31,9 @@ import { SendEInvoicePanel } from '@/components/edocuments/send-einvoice-panel';
 type EdocSetup = { efatura_enabled: boolean; earsiv_enabled: boolean } | null;
 
 export default function EInvoiceCenterPage() {
+  const searchParams = useSearchParams();
+  const tabFromUrl = searchParams.get('tab');
+  const invoiceIdFromUrl = searchParams.get('invoice_id');
   const { tenantId } = useTenant();
   const { language, t } = useLanguage();
   const tr = t.edocuments;
@@ -36,13 +42,23 @@ export default function EInvoiceCenterPage() {
   const [viewingDocId, setViewingDocId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('pending');
   const [edocSetup, setEdocSetup] = useState<EdocSetup>(null);
-  const [mainTabValue, setMainTabValue] = useState('invoices');
+  const [mainTabValue, setMainTabValue] = useState(tabFromUrl === 'send' ? 'send' : 'invoices');
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
+  const [filterTitle, setFilterTitle] = useState('');
+  const [filterAmount, setFilterAmount] = useState('');
+  const [filterNumber, setFilterNumber] = useState('');
+  const [appliedDateFrom, setAppliedDateFrom] = useState('');
+  const [appliedDateTo, setAppliedDateTo] = useState('');
+  const [appliedTitle, setAppliedTitle] = useState('');
+  const [appliedAmount, setAppliedAmount] = useState('');
+  const [appliedNumber, setAppliedNumber] = useState('');
 
   useEffect(() => {
     if (tenantId && mainTabValue === 'invoices') {
       loadInvoices();
     }
-  }, [tenantId, activeTab, mainTabValue]);
+  }, [tenantId, activeTab, mainTabValue, appliedDateFrom, appliedDateTo, appliedTitle, appliedAmount, appliedNumber]);
 
   const loadEdocSetup = useCallback(() => {
     if (!tenantId) return;
@@ -64,19 +80,29 @@ export default function EInvoiceCenterPage() {
     if (!tenantId) return;
     setLoading(true);
     try {
-      const result = await supabase
+      let query = supabase
         .from('edocuments')
         .select('id, invoice_number, ettn, status, receiver_title, grand_total, issue_date, document_type, created_at')
         .eq('tenant_id', tenantId)
         .eq('direction', 'outgoing')
-        .order('created_at', { ascending: false })
-        .limit(100);
+        .neq('status', 'draft');
+
+      if (appliedDateFrom) query = query.gte('issue_date', appliedDateFrom);
+      if (appliedDateTo) query = query.lte('issue_date', appliedDateTo);
+      const titleTrim = appliedTitle.trim();
+      if (titleTrim) query = query.ilike('receiver_title', `%${titleTrim}%`);
+      const numberTrim = appliedNumber.trim();
+      if (numberTrim) query = query.ilike('invoice_number', `%${numberTrim}%`);
+      const amountNum = appliedAmount.trim() !== '' ? Number(appliedAmount) : NaN;
+      if (!Number.isNaN(amountNum)) query = query.gte('grand_total', amountNum);
+
+      const result = await query.order('created_at', { ascending: false }).limit(200);
 
       if (result.error) throw result.error;
       setOutgoingDocs(result.data ?? []);
     } catch (e: any) {
       console.error('Edocuments load error:', e);
-      toast.error('Faturalar yüklenirken hata oluştu');
+      toast.error(tr.loadError);
       setOutgoingDocs([]);
     } finally {
       setLoading(false);
@@ -93,21 +119,21 @@ export default function EInvoiceCenterPage() {
 
   const handleViewXml = async (ettn: string | null) => {
     if (!tenantId || !ettn) {
-      toast.error(language === 'tr' ? 'ETTN bulunamadı' : 'ETTN not found');
+      toast.error(tr.ettNotFound);
       return;
     }
     setViewingDocId(ettn);
     try {
       const raw = await getInvoiceXml(tenantId, ettn, 'outgoing');
       const xml = getContentString(raw);
-      if (!xml.trim()) throw new Error(language === 'tr' ? 'XML içeriği boş' : 'Empty XML response');
+      if (!xml.trim()) throw new Error(tr.xmlEmpty);
       const w = window.open('', '_blank');
       if (w) {
         w.document.write(`<pre style="padding:1rem;font-size:12px;white-space:pre-wrap;word-break:break-all;">${escapeHtml(xml)}</pre>`);
         w.document.close();
       }
     } catch (e: any) {
-      toast.error(e?.message || (language === 'tr' ? 'XML alınamadı' : 'Failed to load XML'));
+      toast.error(e?.message || tr.xmlFailed);
     } finally {
       setViewingDocId(null);
     }
@@ -115,21 +141,21 @@ export default function EInvoiceCenterPage() {
 
   const handleViewHtml = async (ettn: string | null) => {
     if (!tenantId || !ettn) {
-      toast.error(language === 'tr' ? 'ETTN bulunamadı' : 'ETTN not found');
+      toast.error(tr.ettNotFound);
       return;
     }
     setViewingDocId(ettn);
     try {
       const raw = await getInvoiceHtml(tenantId, ettn, 'outgoing');
       const html = getContentString(raw);
-      if (!html.trim()) throw new Error(language === 'tr' ? 'Görüntü içeriği boş' : 'Empty view response');
+      if (!html.trim()) throw new Error(tr.viewEmpty);
       const w = window.open('', '_blank');
       if (w) {
         w.document.write(html);
         w.document.close();
       }
     } catch (e: any) {
-      toast.error(e?.message || (language === 'tr' ? 'Görüntü alınamadı' : 'Failed to load view'));
+      toast.error(e?.message || tr.viewFailed);
     } finally {
       setViewingDocId(null);
     }
@@ -152,10 +178,10 @@ export default function EInvoiceCenterPage() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
                 <ShieldCheck className="text-[#00D4AA]" size={32} />
-                {language === 'tr' ? 'e-Fatura & e-Arşiv Merkezi' : 'E-Invoice & E-Archive Center'}
+                {tr.centerTitle}
               </h1>
               <p className="text-gray-500 mt-1">
-                {language === 'tr' ? 'GİB uyumlu elektronik fatura yönetimi' : 'GIB-compliant electronic invoice management'}
+                {tr.centerSubtitle}
               </p>
             </div>
           </div>
@@ -164,11 +190,11 @@ export default function EInvoiceCenterPage() {
             <TabsList className="h-8 p-0.5 bg-[#0A2540]/10 border border-[#0A2540]/20">
               <TabsTrigger value="setup" className="h-7 px-2.5 py-0 text-xs data-[state=active]:bg-[#00D4AA] data-[state=active]:text-[#0A2540] font-medium text-contrast-body">
                 <Settings2 className="h-3.5 w-3.5 mr-1.5" />
-                {language === 'tr' ? 'Kurulum' : 'Setup'}
+                {tr.setup}
               </TabsTrigger>
               <TabsTrigger value="invoices" className="h-7 px-2.5 py-0 text-xs data-[state=active]:bg-[#00D4AA] data-[state=active]:text-[#0A2540] font-medium text-contrast-body">
                 <FileText className="h-3.5 w-3.5 mr-1.5" />
-                {language === 'tr' ? 'Fatura Listesi' : 'Invoice List'}
+                {tr.invoiceList}
               </TabsTrigger>
               {(edocSetup === null || edocSetup.efatura_enabled) && (
                 <TabsTrigger value="taxpayer" className="h-7 px-2.5 py-0 text-xs data-[state=active]:bg-[#00D4AA] data-[state=active]:text-[#0A2540] font-medium text-contrast-body">
@@ -206,6 +232,8 @@ export default function EInvoiceCenterPage() {
                 <SendEInvoicePanel
                   tenantId={tenantId}
                   language={language}
+                  translations={tr}
+                  initialSelectedInvoiceId={invoiceIdFromUrl ?? undefined}
                   onSwitchToSetup={() => setMainTabValue('setup')}
                   onSent={loadInvoices}
                 />
@@ -213,26 +241,113 @@ export default function EInvoiceCenterPage() {
             </TabsContent>
 
             <TabsContent value="invoices" className="mt-0 space-y-6">
-              <div className="flex justify-end">
-                <Button
-                  onClick={loadInvoices}
-                  variant="outline"
-                  disabled={loading}
-                  className="font-semibold text-contrast-body border-gray-300 bg-white hover:bg-gray-50"
-                >
-                  <RefreshCw size={16} className={loading ? 'animate-spin mr-2' : 'mr-2'} />
-                  {language === 'tr' ? 'Yenile' : 'Refresh'}
-                </Button>
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-wrap items-end gap-3 p-4 rounded-lg border border-gray-200 bg-gray-50/50">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-gray-600">{tr.filterDateFrom}</label>
+                      <Input
+                        type="date"
+                        value={filterDateFrom}
+                        onChange={(e) => setFilterDateFrom(e.target.value)}
+                        className="h-9 w-[140px]"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-gray-600">{tr.filterDateTo}</label>
+                      <Input
+                        type="date"
+                        value={filterDateTo}
+                        onChange={(e) => setFilterDateTo(e.target.value)}
+                        className="h-9 w-[140px]"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-gray-600">{tr.filterNumber}</label>
+                      <Input
+                        placeholder={tr.filterNumber}
+                        value={filterNumber}
+                        onChange={(e) => setFilterNumber(e.target.value)}
+                        className="h-9 w-[140px]"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-gray-600">{tr.filterTitle}</label>
+                      <Input
+                        placeholder={tr.filterTitle}
+                        value={filterTitle}
+                        onChange={(e) => setFilterTitle(e.target.value)}
+                        className="h-9 w-[160px]"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-xs font-medium text-gray-600">{tr.filterAmount}</label>
+                      <Input
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        placeholder="0"
+                        value={filterAmount}
+                        onChange={(e) => setFilterAmount(e.target.value)}
+                        className="h-9 w-[120px]"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      onClick={() => {
+                        setAppliedDateFrom(filterDateFrom);
+                        setAppliedDateTo(filterDateTo);
+                        setAppliedTitle(filterTitle);
+                        setAppliedAmount(filterAmount);
+                        setAppliedNumber(filterNumber);
+                      }}
+                      disabled={loading}
+                      className="bg-[#0A2540] hover:bg-[#1e3a5f]"
+                    >
+                      {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Search className="h-4 w-4 mr-2" />}
+                      {tr.searchFilters}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setFilterDateFrom('');
+                        setFilterDateTo('');
+                        setFilterTitle('');
+                        setFilterAmount('');
+                        setFilterNumber('');
+                        setAppliedDateFrom('');
+                        setAppliedDateTo('');
+                        setAppliedTitle('');
+                        setAppliedAmount('');
+                        setAppliedNumber('');
+                      }}
+                      className="font-semibold text-contrast-body border-gray-300 bg-white hover:bg-gray-50"
+                    >
+                      <FilterX className="h-4 w-4 mr-2" />
+                      {tr.clearFilters}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={loadInvoices}
+                      disabled={loading}
+                      className="font-semibold text-contrast-body border-gray-300 bg-white hover:bg-gray-50"
+                    >
+                      <RefreshCw size={16} className={loading ? 'animate-spin mr-2' : 'mr-2'} />
+                      {tr.refresh}
+                    </Button>
+                  </div>
+                </div>
               </div>
 
               <Card className="border border-gray-200 bg-card shadow-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-gray-900">
                     <Send className="text-[#00D4AA]" />
-                    {language === 'tr' ? 'Gönderilen e-Faturalar' : 'Sent e-Invoices'}
+                    {tr.sentEInvoices}
                   </CardTitle>
                   <CardDescription className="text-gray-500">
-                    {language === 'tr' ? 'NES üzerinden gönderilen e-fatura ve e-arşiv faturalar' : 'E-invoices and e-archive sent via NES'}
+                    {tr.sentEInvoicesDesc}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -243,9 +358,9 @@ export default function EInvoiceCenterPage() {
                   ) : outgoingDocs.length === 0 ? (
                     <div className="text-center py-12">
                       <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                      <p className="text-gray-500">{language === 'tr' ? 'Henüz gönderilen fatura yok' : 'No sent invoices yet'}</p>
+                      <p className="text-gray-500">{tr.noSentInvoices}</p>
                       <p className="text-sm text-gray-400 mt-2">
-                        {language === 'tr' ? '"Fatura Gönder" sekmesinden fatura gönderebilirsiniz' : 'You can send invoices from the "Send Invoice" tab'}
+                        {tr.noSentInvoicesDesc}
                       </p>
                     </div>
                   ) : (
@@ -264,7 +379,7 @@ export default function EInvoiceCenterPage() {
                           </div>
                           <div className="flex items-center gap-3 flex-wrap">
                             <Badge variant="outline">
-                              {doc.document_type === 'earsiv' ? (language === 'tr' ? 'e-Arşiv' : 'E-Archive') : (language === 'tr' ? 'e-Fatura' : 'E-Invoice')}
+                              {doc.document_type === 'earsiv' ? tr.earsiv : tr.efatura}
                             </Badge>
                             <span className="text-sm font-semibold text-gray-900">₺{(doc.grand_total ?? 0).toLocaleString('tr-TR')}</span>
                             <span className="text-xs text-gray-500">{doc.status}</span>
@@ -288,7 +403,7 @@ export default function EInvoiceCenterPage() {
                                   onClick={() => handleViewHtml(doc.ettn)}
                                 >
                                   {viewingDocId === doc.ettn ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
-                                  {language === 'tr' ? 'Görüntüle (PDF)' : 'View (PDF)'}
+                                  {tr.viewPdf}
                                 </Button>
                               </>
                             )}

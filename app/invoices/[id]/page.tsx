@@ -8,8 +8,9 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ArrowLeft, Eye, Loader2, Pencil } from 'lucide-react'
+import { ArrowLeft, Eye, Loader2, Pencil, Send, FileText, FileCheck2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { getInvoiceHtml } from '@/lib/nes-api'
 import { EInvoicePreview } from '@/components/e-invoice-preview'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -77,12 +78,34 @@ export default function InvoiceDetailPage() {
   const [overrideRate, setOverrideRate] = useState('')
   const [overrideAmount, setOverrideAmount] = useState('')
   const [savingOverride, setSavingOverride] = useState(false)
+  const [edocForInvoice, setEdocForInvoice] = useState<{ ettn: string; status: string; document_type: string } | null>(null)
 
   useEffect(() => {
     if (!tenantLoading && tenantId && invoiceId) {
       fetchInvoiceDetails()
     }
   }, [tenantId, tenantLoading, invoiceId])
+
+  useEffect(() => {
+    if (!tenantId || !invoiceId) {
+      setEdocForInvoice(null)
+      return
+    }
+    let cancelled = false
+    supabase
+      .from('edocuments')
+      .select('ettn, status, document_type')
+      .eq('tenant_id', tenantId)
+      .eq('local_invoice_id', invoiceId)
+      .eq('direction', 'outgoing')
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled && data) setEdocForInvoice(data)
+        else if (!cancelled) setEdocForInvoice(null)
+      })
+    return () => { cancelled = true }
+  }, [tenantId, invoiceId])
 
   useEffect(() => {
     if (!invoice?.issue_date) return
@@ -246,7 +269,7 @@ export default function InvoiceDetailPage() {
               <p className="text-gray-500 mt-1">{t.invoices.invoiceDetails}</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               onClick={() => setShowEInvoice(true)}
               className="bg-[#00D4AA] hover:bg-[#00B894]"
@@ -254,6 +277,40 @@ export default function InvoiceDetailPage() {
               <Eye className="mr-2 h-4 w-4" />
               {t.invoices.previewEInvoice}
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => router.push(`/einvoice-center?tab=send&invoice_id=${invoice.id}`)}
+            >
+              <Send className="mr-2 h-4 w-4" />
+              {t.invoices.sendEInvoice}
+            </Button>
+            {edocForInvoice?.ettn && (
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  if (!tenantId || !edocForInvoice?.ettn) return
+                  try {
+                    const raw = await getInvoiceHtml(tenantId, edocForInvoice.ettn, 'outgoing')
+                    const html = typeof raw === 'string' ? raw : (raw && typeof raw === 'object' && 'content' in raw ? (raw as { content: string }).content : '')
+                    if (html?.trim()) {
+                      const w = window.open('', '_blank')
+                      if (w) { w.document.write(html); w.document.close() }
+                    } else toast.error(language === 'tr' ? 'PDF alınamadı' : 'Failed to load PDF')
+                  } catch (e: any) {
+                    toast.error(e?.message || (language === 'tr' ? 'PDF açılamadı' : 'Failed to open PDF'))
+                  }
+                }}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                {t.invoices.viewInvoicePdf}
+              </Button>
+            )}
+            {edocForInvoice && (
+              <span className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium bg-muted border">
+                <FileCheck2 className="h-4 w-4" />
+                {edocForInvoice.document_type === 'earsiv' ? (language === 'tr' ? 'E-Arşiv' : 'E-Archive') : (language === 'tr' ? 'E-Fatura' : 'E-Invoice')}: {edocForInvoice.status}
+              </span>
+            )}
           </div>
         </div>
 

@@ -15,10 +15,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Card, CardContent } from '@/components/ui/card'
-import { Plus, Loader2, Eye, MoreVertical, Edit, Trash2, Upload, AlertCircle, ShoppingCart, FileCheck2, CheckSquare, Search } from 'lucide-react'
+import { Plus, Loader2, Eye, MoreVertical, Edit, Trash2, Upload, AlertCircle, ShoppingCart, FileCheck2, CheckSquare, Search, Send, FileText } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
+import { getInvoiceHtml } from '@/lib/nes-api'
 import { Toaster } from '@/components/ui/sonner'
 import {
   DropdownMenu,
@@ -183,6 +184,64 @@ export default function InvoicesPage() {
     }
     setDeletingInvoice(invoice)
     setShowDeleteDialog(true)
+  }
+
+  function handleSendEInvoice(invoice: any) {
+    router.push(`/einvoice-center?tab=send&invoice_id=${invoice.id}`)
+  }
+
+  async function handleViewInvoicePdf(invoice: any) {
+    if (!tenantId) return
+    try {
+      const { data: edoc } = await supabase
+        .from('edocuments')
+        .select('ettn')
+        .eq('tenant_id', tenantId)
+        .eq('local_invoice_id', invoice.id)
+        .eq('direction', 'outgoing')
+        .neq('status', 'draft')
+        .limit(1)
+        .maybeSingle()
+      if (!edoc?.ettn) {
+        toast.error(t.invoices.noEdocForInvoice)
+        return
+      }
+      const raw = await getInvoiceHtml(tenantId, edoc.ettn, 'outgoing')
+      const html = typeof raw === 'string' ? raw : (raw && typeof raw === 'object' && 'content' in raw ? (raw as { content: string }).content : '')
+      if (!html?.trim()) {
+        toast.error('PDF içeriği alınamadı')
+        return
+      }
+      const w = window.open('', '_blank')
+      if (w) {
+        w.document.write(html)
+        w.document.close()
+      }
+    } catch (e: any) {
+      toast.error(e?.message || 'PDF açılamadı')
+    }
+  }
+
+  async function handleViewEdocStatus(invoice: any) {
+    if (!tenantId) return
+    try {
+      const { data: edoc } = await supabase
+        .from('edocuments')
+        .select('ettn, status, document_type')
+        .eq('tenant_id', tenantId)
+        .eq('local_invoice_id', invoice.id)
+        .eq('direction', 'outgoing')
+        .limit(1)
+        .maybeSingle()
+      if (!edoc) {
+        toast.info(t.invoices.noEdocForInvoice)
+        return
+      }
+      const typeLabel = edoc.document_type === 'earsiv' ? (language === 'tr' ? 'E-Arşiv' : 'E-Archive') : (language === 'tr' ? 'E-Fatura' : 'E-Invoice')
+      toast.info(`${typeLabel}: ${edoc.status}${edoc.ettn ? ` (ETTN: ${edoc.ettn.slice(0, 12)}…)` : ''}`)
+    } catch (e: any) {
+      toast.error(e?.message || 'Durum alınamadı')
+    }
   }
 
   async function confirmDelete() {
@@ -612,6 +671,18 @@ export default function InvoicesPage() {
                                 <DropdownMenuItem onClick={() => handleEdit(invoice)}>
                                   <Edit className="h-4 w-4 mr-2" />
                                   {t.invoices.edit}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleSendEInvoice(invoice)}>
+                                  <Send className="h-4 w-4 mr-2" />
+                                  {t.invoices.sendEInvoice}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleViewInvoicePdf(invoice)}>
+                                  <FileText className="h-4 w-4 mr-2" />
+                                  {t.invoices.viewInvoicePdf}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleViewEdocStatus(invoice)}>
+                                  <FileCheck2 className="h-4 w-4 mr-2" />
+                                  {t.invoices.viewEdocStatus}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() => handleDelete(invoice)}

@@ -117,7 +117,7 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
         setSettings(data)
       }
 
-      toast.success(language === 'tr' ? 'Ayarlar kaydedildi' : 'Settings saved')
+      toast.success(t.settingsSaved)
       onSaved?.()
     } catch (error: any) {
       toast.error(error.message || 'Failed to save settings')
@@ -203,12 +203,12 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <Label>{language === 'tr' ? 'API Anahtarı' : 'API Key'}</Label>
+              <Label>{t.apiKeyLabel}</Label>
               <Input
                 type="password"
                 value={settings.api_key}
                 onChange={(e) => updateField('api_key', e.target.value)}
-                placeholder={language === 'tr' ? 'NES Portal\'dan üretilen API anahtarı' : 'API key generated from NES Portal'}
+                placeholder={t.apiKeyPlaceholder}
                 className="font-mono"
               />
               <p className="text-[11px] text-muted-foreground">
@@ -219,7 +219,7 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <Label>{language === 'tr' ? 'Gönderici etiketi (SenderAlias)' : 'Sender alias (SenderAlias)'}</Label>
+              <Label>{t.senderAliasLabel}</Label>
               <Input
                 value={settings.sender_alias ?? ''}
                 onChange={(e) => updateField('sender_alias', e.target.value)}
@@ -269,9 +269,9 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
               <Building2 className="h-5 w-5 text-[#B8E6FF]" />
             </div>
             <div>
-              <CardTitle className="text-lg">{language === 'tr' ? 'Firma Bilgileri' : 'Company Information'}</CardTitle>
+              <CardTitle className="text-lg">{t.companyInfo}</CardTitle>
               <CardDescription>
-                {language === 'tr' ? 'E-belge gönderiminde kullanılacak firma bilgileri' : 'Company details used in e-document submissions'}
+                {t.companyInfoDesc}
               </CardDescription>
             </div>
           </div>
@@ -283,7 +283,7 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
               <Input
                 value={settings.company_vkn}
                 onChange={(e) => updateField('company_vkn', e.target.value.trim())}
-                placeholder={language === 'tr' ? 'Örn: 1234567801 (NES test)' : 'e.g. 1234567801 (NES test)'}
+                placeholder={t.companyVknPlaceholder}
                 maxLength={11}
               />
               <p className="text-xs text-muted-foreground">
@@ -298,12 +298,12 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
               <Input
                 value={settings.company_title}
                 onChange={(e) => updateField('company_title', e.target.value)}
-                placeholder={language === 'tr' ? 'Firma unvanı' : 'Company legal title'}
+                placeholder={t.companyTitlePlaceholder}
               />
             </div>
 
             <div className="space-y-2">
-              <Label>{language === 'tr' ? 'Fatura Seri Öneki' : 'Invoice Series Prefix'}</Label>
+              <Label>{t.seriesPrefixLabel}</Label>
               <Input
                 value={settings.default_series}
                 onChange={(e) => updateField('default_series', e.target.value)}
@@ -322,9 +322,9 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
               <Shield className="h-5 w-5 text-[#B8E6FF]" />
             </div>
             <div>
-              <CardTitle className="text-lg">{language === 'tr' ? 'Modül Ayarları' : 'Module Settings'}</CardTitle>
+              <CardTitle className="text-lg">{t.moduleSettings}</CardTitle>
               <CardDescription>
-                {language === 'tr' ? 'Firma e-belge türünü seçin; isteğe bağlı diğer modülleri açın' : 'Choose company e-document type; optionally enable other modules'}
+                {t.moduleSettingsDesc}
               </CardDescription>
             </div>
           </div>
@@ -332,8 +332,8 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between p-3 border rounded-lg">
             <div>
-              <p className="font-medium text-sm">{language === 'tr' ? 'Entegrasyonu Etkinleştir' : 'Enable Integration'}</p>
-              <p className="text-xs text-muted-foreground">{language === 'tr' ? 'Ana aç/kapa' : 'Master toggle'}</p>
+              <p className="font-medium text-sm">{t.enableIntegration}</p>
+              <p className="text-xs text-muted-foreground">{t.masterToggle}</p>
             </div>
             <Switch checked={settings.is_active} onCheckedChange={(v) => updateField('is_active', v)} />
           </div>
@@ -377,10 +377,10 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3">
             {[
-              { key: 'edespatch_enabled' as const, label: t.edespatch, desc: language === 'tr' ? 'E-irsaliye gönder/al' : 'Send/receive e-waybills' },
-              { key: 'esmm_enabled' as const, label: t.esmm, desc: language === 'tr' ? 'Serbest meslek makbuzu' : 'Freelancer receipt' },
-              { key: 'emm_enabled' as const, label: t.emm, desc: language === 'tr' ? 'Müstahsil makbuzu' : 'Producer receipt' },
-              { key: 'ebook_enabled' as const, label: t.ebook, desc: language === 'tr' ? 'Elektronik defter' : 'Electronic ledger' },
+              { key: 'edespatch_enabled' as const, label: t.edespatch, desc: t.edespatchDesc },
+              { key: 'esmm_enabled' as const, label: t.esmm, desc: t.esmmDesc },
+              { key: 'emm_enabled' as const, label: t.emm, desc: t.emmDesc },
+              { key: 'ebook_enabled' as const, label: t.ebook, desc: t.ebookDesc },
             ].map(({ key, label, desc }) => (
               <div key={key} className="flex items-center justify-between p-3 border rounded-lg bg-gray-50/50">
                 <div>
@@ -401,7 +401,7 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
       <div className="flex justify-end">
         <Button onClick={handleSave} disabled={saving} className="bg-[#0A2540] hover:bg-[#1e3a5f]">
           {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-          {language === 'tr' ? 'Ayarları Kaydet' : 'Save Settings'}
+          {t.saveSettings}
         </Button>
       </div>
     </div>
