@@ -20,6 +20,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
 import { getInvoiceHtml } from '@/lib/nes-api'
+import { sendEInvoiceFromInvoiceId } from '@/lib/send-einvoice-from-invoice'
 import { Toaster } from '@/components/ui/sonner'
 import {
   DropdownMenu,
@@ -94,6 +95,7 @@ export default function InvoicesPage() {
   const [editingInvoice, setEditingInvoice] = useState<any>(null)
   const [deletingInvoice, setDeletingInvoice] = useState<any>(null)
   const [payingInvoice, setPayingInvoice] = useState<any>(null)
+  const [sendingEInvoiceId, setSendingEInvoiceId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!tenantLoading && tenantId) {
@@ -186,8 +188,22 @@ export default function InvoicesPage() {
     setShowDeleteDialog(true)
   }
 
-  function handleSendEInvoice(invoice: any) {
-    router.push(`/einvoice-center?tab=send&invoice_id=${invoice.id}`)
+  async function handleSendEInvoice(invoice: any) {
+    if (!tenantId || invoice.status === 'sent') return
+    setSendingEInvoiceId(invoice.id)
+    try {
+      const result = await sendEInvoiceFromInvoiceId(tenantId, invoice.id)
+      if (result.success) {
+        toast.success(language === 'tr' ? 'E-Fatura gönderildi.' : 'E-Invoice sent.')
+        fetchInvoices()
+      } else {
+        toast.error(result.error)
+      }
+    } catch (e: any) {
+      toast.error(e?.message || (language === 'tr' ? 'Gönderim başarısız' : 'Send failed'))
+    } finally {
+      setSendingEInvoiceId(null)
+    }
   }
 
   async function handleViewInvoicePdf(invoice: any) {
@@ -672,10 +688,19 @@ export default function InvoicesPage() {
                                   <Edit className="h-4 w-4 mr-2" />
                                   {t.invoices.edit}
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleSendEInvoice(invoice)}>
-                                  <Send className="h-4 w-4 mr-2" />
-                                  {t.invoices.sendEInvoice}
-                                </DropdownMenuItem>
+                                {invoice.status !== 'sent' && (
+                                  <DropdownMenuItem
+                                    onClick={() => handleSendEInvoice(invoice)}
+                                    disabled={!!sendingEInvoiceId}
+                                  >
+                                    {sendingEInvoiceId === invoice.id ? (
+                                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    ) : (
+                                      <Send className="h-4 w-4 mr-2" />
+                                    )}
+                                    {t.invoices.sendEInvoice}
+                                  </DropdownMenuItem>
+                                )}
                                 <DropdownMenuItem onClick={() => handleViewInvoicePdf(invoice)}>
                                   <FileText className="h-4 w-4 mr-2" />
                                   {t.invoices.viewInvoicePdf}

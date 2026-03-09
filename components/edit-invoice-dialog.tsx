@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
 import {
   Dialog,
   DialogContent,
@@ -22,6 +21,7 @@ import {
 } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
 import { getInvoiceHtml } from '@/lib/nes-api'
+import { sendEInvoiceFromInvoiceId } from '@/lib/send-einvoice-from-invoice'
 import { toast } from 'sonner'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
@@ -67,7 +67,6 @@ interface LineItem {
 }
 
 export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditInvoiceDialogProps) {
-  const router = useRouter()
   const { tenantId } = useTenant()
   const { t, language } = useLanguage()
   const { formatCurrency, displayCurrencies, defaultRateType } = useCurrency()
@@ -94,6 +93,8 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
   })
   const [staffList, setStaffList] = useState<{ id: string; name: string; last_name?: string | null; department?: string | null; position?: string | null }[]>([])
   const [edocForInvoice, setEdocForInvoice] = useState<{ ettn: string; status: string; document_type: string } | null>(null)
+  const [sendingEInvoice, setSendingEInvoice] = useState(false)
+  const [edocRefresh, setEdocRefresh] = useState(0)
 
   const lastProcessedInvoiceId = useRef<string | null>(null)
   const dataLoadStarted = useRef(false)
@@ -126,7 +127,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
         else if (!cancelled) setEdocForInvoice(null)
       })
     return () => { cancelled = true }
-  }, [isOpen, tenantId, invoice?.id])
+  }, [isOpen, tenantId, invoice?.id, edocRefresh])
 
   useEffect(() => {
     if (!isOpen) {
@@ -830,15 +831,36 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
             <div className="border-t pt-4 space-y-2">
               <div className="text-sm font-medium text-muted-foreground">{t.invoices.edocSection}</div>
               <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push(`/einvoice-center?tab=send&invoice_id=${invoice.id}`)}
-                >
-                  <Send className="h-4 w-4 mr-2" />
-                  {t.invoices.sendEInvoice}
-                </Button>
+                {formData.status !== 'sent' && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={sendingEInvoice}
+                    onClick={async () => {
+                      if (!tenantId || sendingEInvoice) return
+                      setSendingEInvoice(true)
+                      try {
+                        const result = await sendEInvoiceFromInvoiceId(tenantId, invoice.id)
+                        if (result.success) {
+                          toast.success(language === 'tr' ? 'E-Fatura gönderildi.' : 'E-Invoice sent.')
+                          setFormData((prev) => ({ ...prev, status: 'sent' }))
+                          onSuccess()
+                          setEdocRefresh((r) => r + 1)
+                        } else {
+                          toast.error(result.error)
+                        }
+                      } catch (e: any) {
+                        toast.error(e?.message || (language === 'tr' ? 'Gönderim başarısız' : 'Send failed'))
+                      } finally {
+                        setSendingEInvoice(false)
+                      }
+                    }}
+                  >
+                    {sendingEInvoice ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                    {t.invoices.sendEInvoice}
+                  </Button>
+                )}
                 {edocForInvoice?.ettn && (
                   <>
                     <Button

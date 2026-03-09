@@ -382,7 +382,7 @@ export default function EInvoiceCenterPage() {
                               {doc.document_type === 'earsiv' ? tr.earsiv : tr.efatura}
                             </Badge>
                             <span className="text-sm font-semibold text-gray-900">₺{(doc.grand_total ?? 0).toLocaleString('tr-TR')}</span>
-                            <span className="text-xs text-gray-500">{doc.status}</span>
+                            <span className="text-xs text-gray-500">{(tr as Record<string, string>)[doc.status] ?? doc.status}</span>
                             {doc.ettn && (
                               <>
                                 <Button
