@@ -94,6 +94,57 @@ export async function importIncomingEdocumentToPurchase(
     ]
   }
 
+  const docSubtotal = Number(edoc.subtotal ?? 0)
+  const docTaxTotal = Number(edoc.tax_total ?? 0)
+  const docGrandTotal = Number(edoc.grand_total ?? 0)
+  let sumLineNet = lines.reduce((s, l) => s + l.quantity * l.unit_price, 0)
+  let sumLineTax = lines.reduce((s, l) => s + l.tax_amount, 0)
+  let sumLineTotal = lines.reduce((s, l) => s + l.total, 0)
+
+  if (sumLineNet <= 0 && lines.length > 0 && (docSubtotal > 0 || docGrandTotal > 0)) {
+    const totalQty = lines.reduce((s, l) => s + l.quantity, 0) || 1
+    const netToUse = docSubtotal > 0 ? docSubtotal : Math.max(0, docGrandTotal - docTaxTotal)
+    const taxToUse = docTaxTotal > 0 ? docTaxTotal : Math.max(0, docGrandTotal - netToUse)
+    lines = lines.map((l) => {
+      const ratio = totalQty > 0 ? l.quantity / totalQty : 1 / lines.length
+      const lineNet = Math.round(ratio * netToUse * 100) / 100
+      const unitPrice = l.quantity > 0 ? Math.round((lineNet / l.quantity) * 100) / 100 : 0
+      const taxAmount = Math.round(ratio * taxToUse * 100) / 100
+      const total = Math.round((lineNet + taxAmount) * 100) / 100
+      const taxRate = lineNet > 0 && taxAmount > 0 ? Math.round((taxAmount / lineNet) * 10000) / 100 : 18
+      return {
+        ...l,
+        unit_price: unitPrice,
+        tax_amount: taxAmount,
+        total,
+        tax_rate: taxRate,
+      }
+    })
+    sumLineNet = lines.reduce((s, l) => s + l.quantity * l.unit_price, 0)
+    sumLineTax = lines.reduce((s, l) => s + l.tax_amount, 0)
+    sumLineTotal = lines.reduce((s, l) => s + l.total, 0)
+  }
+
+  const totalsMismatch =
+    docGrandTotal > 0 &&
+    (sumLineTotal <= 0 || Math.abs(sumLineTotal - docGrandTotal) > 0.02)
+  if (totalsMismatch && sumLineNet > 0 && lines.length > 0) {
+    const taxToDistribute = docTaxTotal > 0 ? docTaxTotal : Math.max(0, docGrandTotal - sumLineNet)
+    lines = lines.map((l) => {
+      const lineNet = l.quantity * l.unit_price
+      const ratio = sumLineNet > 0 ? lineNet / sumLineNet : 1 / lines.length
+      const taxAmount = Math.round(ratio * taxToDistribute * 100) / 100
+      const total = Math.round((lineNet + taxAmount) * 100) / 100
+      const taxRate = lineNet > 0 && taxAmount > 0 ? Math.round((taxAmount / lineNet) * 10000) / 100 : l.tax_rate
+      return {
+        ...l,
+        tax_amount: taxAmount,
+        total,
+        tax_rate: taxRate,
+      }
+    })
+  }
+
   const senderVkn = (edoc.sender_vkn ?? '').toString().trim()
   const senderTitle = (edoc.sender_title ?? '').toString().trim() || 'Bilinmeyen tedarikçi'
 
@@ -173,7 +224,6 @@ export async function importIncomingEdocumentToPurchase(
       total_amount: Math.round(totalAmount * 100) / 100,
       status: 'pending',
       invoice_type: 'purchase',
-      edocument_id: edoc.id,
     })
     .select('id')
     .single()

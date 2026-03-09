@@ -29,7 +29,6 @@ const PROCESS_COMPLETED_STATUSES = new Set([
   'cancelled',
   'envelopeisrejected',
   'envelopeiscancelled',
-  'accepted', // already accepted/final
 ])
 
 /**
