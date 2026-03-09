@@ -139,11 +139,11 @@ export default function EdocumentsPage() {
         TaxInclusiveAmount?: string | number
       }
       const res = raw as InvoicesResponse | undefined
-      const invoiceList: InvoiceListItem[] = Array.isArray(res?.Result?.InvoiceList)
-        ? (res.Result.InvoiceList as InvoiceListItem[])
-        : Array.isArray(res?.InvoiceList)
-          ? (res.InvoiceList as InvoiceListItem[])
-          : []
+      const fromResult = res?.Result?.InvoiceList
+      const fromList = res?.InvoiceList
+      const invoiceList: InvoiceListItem[] =
+        Array.isArray(fromResult) ? (fromResult as InvoiceListItem[])
+          : Array.isArray(fromList) ? (fromList as InvoiceListItem[]) : []
       let imported = 0
 
       for (const inv of invoiceList) {
