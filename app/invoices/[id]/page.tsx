@@ -12,6 +12,7 @@ import { ArrowLeft, Eye, Loader2, Pencil, Send, FileText, FileCheck2 } from 'luc
 import { supabase } from '@/lib/supabase'
 import { getInvoiceHtml } from '@/lib/nes-api'
 import { sendEInvoiceFromInvoiceId } from '@/lib/send-einvoice-from-invoice'
+import { getEdocStatusLabel } from '@/lib/edocument-status'
 import { EInvoicePreview } from '@/components/e-invoice-preview'
 import { Toaster } from '@/components/ui/sonner'
 import { toast } from 'sonner'
@@ -331,7 +332,7 @@ export default function InvoiceDetailPage() {
             {edocForInvoice && (
               <span className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium bg-muted border">
                 <FileCheck2 className="h-4 w-4" />
-                {edocForInvoice.document_type === 'earsiv' ? (language === 'tr' ? 'E-Arşiv' : 'E-Archive') : (language === 'tr' ? 'E-Fatura' : 'E-Invoice')}: {edocForInvoice.status}
+                {edocForInvoice.document_type === 'earsiv' ? (language === 'tr' ? 'E-Arşiv' : 'E-Archive') : (language === 'tr' ? 'E-Fatura' : 'E-Invoice')}: {getEdocStatusLabel(edocForInvoice.status, t.edocuments as Record<string, string>)}
               </span>
             )}
           </div>

@@ -35,6 +35,7 @@ import { RecordPaymentDialog } from '@/components/record-payment-dialog'
 import { toast } from 'sonner'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
+import { getEdocStatusLabel } from '@/lib/edocument-status'
 import { useCurrency } from '@/contexts/currency-context'
 import { DollarSign } from 'lucide-react'
 
@@ -254,7 +255,7 @@ export default function InvoicesPage() {
         return
       }
       const typeLabel = edoc.document_type === 'earsiv' ? (language === 'tr' ? 'E-Arşiv' : 'E-Archive') : (language === 'tr' ? 'E-Fatura' : 'E-Invoice')
-      toast.info(`${typeLabel}: ${edoc.status}${edoc.ettn ? ` (ETTN: ${edoc.ettn.slice(0, 12)}…)` : ''}`)
+      toast.info(`${typeLabel}: ${getEdocStatusLabel(edoc.status, t.edocuments as Record<string, string>)}${edoc.ettn ? ` (ETTN: ${edoc.ettn.slice(0, 12)}…)` : ''}`)
     } catch (e: any) {
       toast.error(e?.message || 'Durum alınamadı')
     }

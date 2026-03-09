@@ -11,6 +11,8 @@ import {
   ArrowRight, Loader2, Link2
 } from 'lucide-react'
 import { getOrderLinkedData, createInvoiceFromOrder, updateOrderStatus } from '@/lib/module-integration'
+import { getEdocStatusLabel } from '@/lib/edocument-status'
+import { useLanguage } from '@/contexts/language-context'
 import { toast } from 'sonner'
 
 interface OrderDetailSheetProps {
@@ -25,6 +27,7 @@ interface OrderDetailSheetProps {
 const STATUS_FLOW = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'completed']
 
 export function OrderDetailSheet({ orderId, tenantId, open, onOpenChange, onRefresh, isTR }: OrderDetailSheetProps) {
+  const { t } = useLanguage()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -274,7 +277,7 @@ export function OrderDetailSheet({ orderId, tenantId, open, onOpenChange, onRefr
                         <div className="flex items-center gap-2">
                           {edocuments.map((doc: any) => (
                             <Badge key={doc.id} variant="outline" className="text-xs">
-                              {doc.document_type} - {doc.status}
+                              {doc.document_type} - {getEdocStatusLabel(doc.status, t.edocuments as Record<string, string>)}
                             </Badge>
                           ))}
                         </div>

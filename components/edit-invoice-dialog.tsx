@@ -22,6 +22,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import { getInvoiceHtml } from '@/lib/nes-api'
 import { sendEInvoiceFromInvoiceId } from '@/lib/send-einvoice-from-invoice'
+import { getEdocStatusLabel } from '@/lib/edocument-status'
 import { toast } from 'sonner'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
@@ -886,7 +887,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                     </Button>
                     <span className="inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium bg-muted">
                       <FileCheck2 className="h-3.5 w-3.5" />
-                      {edocForInvoice.document_type === 'earsiv' ? (language === 'tr' ? 'E-Arşiv' : 'E-Archive') : (language === 'tr' ? 'E-Fatura' : 'E-Invoice')}: {edocForInvoice.status}
+                      {edocForInvoice.document_type === 'earsiv' ? (language === 'tr' ? 'E-Arşiv' : 'E-Archive') : (language === 'tr' ? 'E-Fatura' : 'E-Invoice')}: {getEdocStatusLabel(edocForInvoice.status, t.edocuments as Record<string, string>)}
                     </span>
                   </>
                 )}

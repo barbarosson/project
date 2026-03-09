@@ -13,6 +13,7 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { supabase } from '@/lib/supabase'
+import { getEdocStatusLabel } from '@/lib/edocument-status'
 import { toast } from 'sonner'
 import {
   Loader2, Search, MoreVertical, Eye, FileText, Download, ArrowUpRight, ArrowDownLeft,
@@ -121,18 +122,7 @@ export function EdocumentList({ tenantId, language, translations: t, onViewDocum
     return map[type] || type
   }
 
-  const statusLabel = (status: string) => {
-    const map: Record<string, string> = {
-      draft: t.draft,
-      queued: t.queued,
-      sent: t.sent,
-      delivered: t.delivered,
-      accepted: t.accepted,
-      rejected: t.rejected,
-      cancelled: t.cancelled,
-    }
-    return map[status] || status
-  }
+  const statusLabel = (status: string) => getEdocStatusLabel(status, t)
 
   const formatCurrency = (amount: number, currency: string) => {
     const symbols: Record<string, string> = { TRY: '₺', USD: '$', EUR: '€', GBP: '£' }
