@@ -857,7 +857,8 @@ Deno.serve(async (req: Request) => {
         const path = direction === "incoming"
           ? `/v1/incoming/invoices/${uuid}/xml`
           : `/v1/outgoing/invoices/${uuid}/xml`;
-        result = await nesRequestText(einvoiceBase, nesToken, "GET", path, 15000);
+        const textRes = await nesRequestText(einvoiceBase, nesToken, "GET", path, 15000);
+        result = textRes.content;
         break;
       }
 
@@ -870,7 +871,8 @@ Deno.serve(async (req: Request) => {
         const path = direction === "incoming"
           ? `/v1/incoming/invoices/${uuid}/html`
           : `/v1/outgoing/invoices/${uuid}/html`;
-        result = await nesRequestText(einvoiceBase, nesToken, "GET", path, 15000);
+        const textRes = await nesRequestText(einvoiceBase, nesToken, "GET", path, 15000);
+        result = textRes.content;
         break;
       }
 

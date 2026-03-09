@@ -83,6 +83,14 @@ export default function EInvoiceCenterPage() {
     }
   };
 
+  const getContentString = (raw: unknown): string => {
+    if (typeof raw === 'string') return raw;
+    if (raw && typeof raw === 'object' && 'content' in raw && typeof (raw as { content: unknown }).content === 'string') {
+      return (raw as { content: string }).content;
+    }
+    return '';
+  };
+
   const handleViewXml = async (ettn: string | null) => {
     if (!tenantId || !ettn) {
       toast.error(language === 'tr' ? 'ETTN bulunamadı' : 'ETTN not found');
@@ -90,8 +98,9 @@ export default function EInvoiceCenterPage() {
     }
     setViewingDocId(ettn);
     try {
-      const xml = await getInvoiceXml(tenantId, ettn, 'outgoing') as string;
-      if (typeof xml !== 'string') throw new Error('Invalid response');
+      const raw = await getInvoiceXml(tenantId, ettn, 'outgoing');
+      const xml = getContentString(raw);
+      if (!xml.trim()) throw new Error(language === 'tr' ? 'XML içeriği boş' : 'Empty XML response');
       const w = window.open('', '_blank');
       if (w) {
         w.document.write(`<pre style="padding:1rem;font-size:12px;white-space:pre-wrap;word-break:break-all;">${escapeHtml(xml)}</pre>`);
@@ -111,8 +120,9 @@ export default function EInvoiceCenterPage() {
     }
     setViewingDocId(ettn);
     try {
-      const html = await getInvoiceHtml(tenantId, ettn, 'outgoing') as string;
-      if (typeof html !== 'string') throw new Error('Invalid response');
+      const raw = await getInvoiceHtml(tenantId, ettn, 'outgoing');
+      const html = getContentString(raw);
+      if (!html.trim()) throw new Error(language === 'tr' ? 'Görüntü içeriği boş' : 'Empty view response');
       const w = window.open('', '_blank');
       if (w) {
         w.document.write(html);
