@@ -15,6 +15,8 @@ import {
 interface SendEInvoicePanelProps {
   tenantId: string
   language: 'en' | 'tr'
+  onSwitchToSetup?: () => void
+  onSent?: () => void
 }
 
 interface LocalInvoice {
@@ -36,9 +38,9 @@ interface InvoiceLineItem {
   amount: number
 }
 
-type EdocModuleFlags = { efatura_enabled: boolean; earsiv_enabled: boolean }
+type EdocModuleFlags = { efatura_enabled: boolean; earsiv_enabled: boolean; sender_alias?: string }
 
-export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps) {
+export function SendEInvoicePanel({ tenantId, language, onSwitchToSetup, onSent }: SendEInvoicePanelProps) {
   const [invoices, setInvoices] = useState<LocalInvoice[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string>('')
@@ -57,7 +59,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
     let cancelled = false
     supabase
       .from('edocument_settings')
-      .select('efatura_enabled, earsiv_enabled')
+      .select('efatura_enabled, earsiv_enabled, sender_alias')
       .eq('tenant_id', tenantId)
       .maybeSingle()
       .then(({ data }) => {
@@ -65,6 +67,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
         setModuleFlags({
           efatura_enabled: !!data.efatura_enabled,
           earsiv_enabled: !!data.earsiv_enabled,
+          sender_alias: data.sender_alias ?? '',
         })
       })
     return () => { cancelled = true }
@@ -85,7 +88,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
         .from('invoices')
         .select('id, invoice_number, customer_id, total, issue_date, status, customers(name, company_title)')
         .eq('tenant_id', tenantId)
-        .in('status', ['sent', 'approved', 'paid', 'partially_paid'])
+        .in('status', ['sent', 'paid', 'overdue'])
         .order('created_at', { ascending: false })
         .limit(50)
 
@@ -121,7 +124,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
 
       const { data: settings } = await supabase
         .from('edocument_settings')
-        .select('company_vkn, company_title, default_series')
+        .select('company_vkn, company_title, default_series, sender_alias')
         .eq('tenant_id', tenantId)
         .maybeSingle()
 
@@ -160,11 +163,21 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
 
       if (insertError) throw insertError
 
+      if (docType === 'efatura' && !settings?.sender_alias?.trim()) {
+        toast.error(isTr
+          ? 'E-Fatura göndermek için Kurulum sekmesinde "Gönderici etiketi (SenderAlias)" alanını doldurup kaydedin (örn: urn:mail:defaultgb@nes.com.tr).'
+          : 'To send e-invoice, fill "Sender alias (SenderAlias)" in the Setup tab and save (e.g. urn:mail:defaultgb@nes.com.tr).')
+        setSending(false)
+        return
+      }
+
       const nesInvoiceData = {
         InvoiceNumber: invoice.invoice_number,
+        InvoiceId: invoice.invoice_number,
         IssueDate: invoice.issue_date || new Date().toISOString().split('T')[0],
         InvoiceType: invoiceType,
         Currency: 'TRY',
+        DefaultSeries: settings?.default_series || 'INV',
         SenderVkn: settings?.company_vkn || '',
         SenderTitle: settings?.company_title || '',
         ReceiverVkn: customer?.tax_number || '',
@@ -189,7 +202,9 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
       }
 
       if (docType === 'efatura') {
-        await sendInvoice(tenantId, nesInvoiceData, edoc?.id, sendAsDraft)
+        await sendInvoice(tenantId, nesInvoiceData, edoc?.id, sendAsDraft, {
+          ...(settings?.sender_alias && { sender_alias: settings.sender_alias }),
+        })
       } else {
         await sendEArchive(tenantId, nesInvoiceData, edoc?.id)
       }
@@ -200,6 +215,7 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
       )
       setSelectedInvoiceId('')
       loadInvoices()
+      onSent?.()
     } catch (error: any) {
       toast.error(error.message || (isTr ? 'Gönderim başarısız' : 'Send failed'))
     } finally {
@@ -238,6 +254,32 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
           </div>
         </CardHeader>
         <CardContent className="space-y-5">
+          {docType === 'efatura' && moduleFlags && !moduleFlags.sender_alias?.trim() && (
+            <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800 p-4 text-amber-800 dark:text-amber-200">
+              <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">
+                  {isTr ? 'E-Fatura göndermek için Gönderici etiketi gerekli' : 'Sender alias required to send e-invoice'}
+                </p>
+                <p className="text-sm mt-1 opacity-90">
+                  {isTr
+                    ? 'Kurulum sekmesinde "Gönderici etiketi (SenderAlias)" alanını doldurup kaydedin. Örnek: urn:mail:defaultgb@nes.com.tr'
+                    : 'Fill "Sender alias (SenderAlias)" in the Setup tab and save. Example: urn:mail:defaultgb@nes.com.tr'}
+                </p>
+                {onSwitchToSetup && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-3 border-amber-300 hover:bg-amber-100 dark:border-amber-700 dark:hover:bg-amber-900/50"
+                    onClick={onSwitchToSetup}
+                  >
+                    {isTr ? 'Kuruluma git' : 'Go to Setup'}
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">

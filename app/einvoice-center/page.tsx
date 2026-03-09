@@ -9,16 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   ShieldCheck,
   Send,
-  AlertOctagon,
-  CheckCircle,
-  XCircle,
-  Clock,
   FileText,
-  Activity,
-  AlertTriangle,
   Loader2,
   RefreshCw,
-  Ban,
   Eye,
   Settings2,
   Search
@@ -27,32 +20,10 @@ import { supabase } from '@/lib/supabase';
 import { useTenant } from '@/contexts/tenant-context';
 import { useLanguage } from '@/contexts/language-context';
 import { toast } from 'sonner';
+import { getInvoiceXml, getInvoiceHtml } from '@/lib/nes-api';
 import { EdocumentSettings } from '@/components/edocuments/edocument-settings';
 import { TaxpayerCheck } from '@/components/edocuments/taxpayer-check';
 import { SendEInvoicePanel } from '@/components/edocuments/send-einvoice-panel';
-
-interface EInvoiceDetail {
-  id: string;
-  invoice_id: string;
-  gib_uuid: string;
-  ettn: string;
-  invoice_type: string;
-  status: string;
-  sent_at: string;
-  response_message: string;
-  gib_error_detail: string;
-  ai_validation_score: number;
-  tax_anomaly_detected: boolean;
-  invoices: {
-    invoice_no: string;
-    invoice_date: string;
-    grand_total: number;
-    customers: {
-      name: string;
-      company_title?: string;
-    };
-  };
-}
 
 type EdocSetup = { efatura_enabled: boolean; earsiv_enabled: boolean } | null;
 
@@ -60,18 +31,18 @@ export default function EInvoiceCenterPage() {
   const { tenantId } = useTenant();
   const { language, t } = useLanguage();
   const tr = t.edocuments;
-  const [invoices, setInvoices] = useState<EInvoiceDetail[]>([]);
+  const [outgoingDocs, setOutgoingDocs] = useState<Array<{ id: string; invoice_number: string | null; ettn: string | null; status: string; receiver_title: string | null; grand_total: number; issue_date: string; document_type: string; created_at: string }>>([]);
   const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState<string | null>(null);
-  const [selectedInvoice, setSelectedInvoice] = useState<EInvoiceDetail | null>(null);
+  const [viewingDocId, setViewingDocId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('pending');
   const [edocSetup, setEdocSetup] = useState<EdocSetup>(null);
+  const [mainTabValue, setMainTabValue] = useState('invoices');
 
   useEffect(() => {
-    if (tenantId) {
+    if (tenantId && mainTabValue === 'invoices') {
       loadInvoices();
     }
-  }, [tenantId, activeTab]);
+  }, [tenantId, activeTab, mainTabValue]);
 
   const loadEdocSetup = useCallback(() => {
     if (!tenantId) return;
@@ -90,199 +61,77 @@ export default function EInvoiceCenterPage() {
   }, [loadEdocSetup]);
 
   const loadInvoices = async () => {
+    if (!tenantId) return;
+    setLoading(true);
     try {
-      setLoading(true);
+      const result = await supabase
+        .from('edocuments')
+        .select('id, invoice_number, ettn, status, receiver_title, grand_total, issue_date, document_type, created_at')
+        .eq('tenant_id', tenantId)
+        .eq('direction', 'outgoing')
+        .order('created_at', { ascending: false })
+        .limit(100);
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/einvoice-processor`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            action: 'get_pending',
-            tenant_id: tenantId
-          })
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to load invoices');
-      }
-
-      const result = await response.json();
-      setInvoices(result.invoices || []);
-    } catch (error: any) {
-      console.error('Error loading invoices:', error);
+      if (result.error) throw result.error;
+      setOutgoingDocs(result.data ?? []);
+    } catch (e: any) {
+      console.error('Edocuments load error:', e);
       toast.error('Faturalar yüklenirken hata oluştu');
+      setOutgoingDocs([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const validateInvoice = async (invoiceId: string) => {
+  const handleViewXml = async (ettn: string | null) => {
+    if (!tenantId || !ettn) {
+      toast.error(language === 'tr' ? 'ETTN bulunamadı' : 'ETTN not found');
+      return;
+    }
+    setViewingDocId(ettn);
     try {
-      setProcessing(invoiceId);
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/einvoice-processor`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            action: 'validate_invoice',
-            invoice_id: invoiceId
-          })
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Validation failed');
+      const xml = await getInvoiceXml(tenantId, ettn, 'outgoing') as string;
+      if (typeof xml !== 'string') throw new Error('Invalid response');
+      const w = window.open('', '_blank');
+      if (w) {
+        w.document.write(`<pre style="padding:1rem;font-size:12px;white-space:pre-wrap;word-break:break-all;">${escapeHtml(xml)}</pre>`);
+        w.document.close();
       }
-
-      const result = await response.json();
-
-      if (result.is_compliant) {
-        toast.success('Fatura doğrulandı! GİB\'e gönderilebilir.');
-      } else {
-        toast.warning(`${result.issues.length} sorun tespit edildi`, {
-          description: 'Detaylar için faturayı inceleyin'
-        });
-      }
-
-      await loadInvoices();
-    } catch (error: any) {
-      console.error('Error validating invoice:', error);
-      toast.error('Doğrulama sırasında hata oluştu');
+    } catch (e: any) {
+      toast.error(e?.message || (language === 'tr' ? 'XML alınamadı' : 'Failed to load XML'));
     } finally {
-      setProcessing(null);
+      setViewingDocId(null);
     }
   };
 
-  const sendToGIB = async (invoiceId: string) => {
+  const handleViewHtml = async (ettn: string | null) => {
+    if (!tenantId || !ettn) {
+      toast.error(language === 'tr' ? 'ETTN bulunamadı' : 'ETTN not found');
+      return;
+    }
+    setViewingDocId(ettn);
     try {
-      setProcessing(invoiceId);
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/einvoice-processor`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            action: 'send_to_gib',
-            invoice_id: invoiceId
-          })
-        }
-      );
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to send');
+      const html = await getInvoiceHtml(tenantId, ettn, 'outgoing') as string;
+      if (typeof html !== 'string') throw new Error('Invalid response');
+      const w = window.open('', '_blank');
+      if (w) {
+        w.document.write(html);
+        w.document.close();
       }
-
-      const result = await response.json();
-      toast.success('Fatura GİB\'e gönderildi ve onaylandı!', {
-        description: `UUID: ${result.gib_uuid}`
-      });
-
-      await loadInvoices();
-    } catch (error: any) {
-      console.error('Error sending to GİB:', error);
-      toast.error('GİB\'e gönderme sırasında hata oluştu', {
-        description: error.message
-      });
+    } catch (e: any) {
+      toast.error(e?.message || (language === 'tr' ? 'Görüntü alınamadı' : 'Failed to load view'));
     } finally {
-      setProcessing(null);
+      setViewingDocId(null);
     }
   };
 
-  const cancelInvoice = async (invoiceId: string) => {
-    try {
-      setProcessing(invoiceId);
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/einvoice-processor`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            action: 'cancel_invoice',
-            invoice_id: invoiceId,
-            reason: 'Manuel iptal'
-          })
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Cancellation failed');
-      }
-
-      toast.info('Fatura iptal edildi');
-      await loadInvoices();
-    } catch (error: any) {
-      console.error('Error cancelling invoice:', error);
-      toast.error('İptal işlemi sırasında hata oluştu');
-    } finally {
-      setProcessing(null);
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'approved': return 'bg-green-500/20 text-green-400 border-green-500/30';
-      case 'draft': return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
-      case 'validated': return 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30';
-      case 'sending': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      case 'error': return 'bg-red-500/20 text-red-400 border-red-500/30';
-      case 'rejected': return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
-      case 'cancelled': return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
-      default: return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'approved': return <ShieldCheck className="text-green-400" size={18} />;
-      case 'draft': return <FileText className="text-slate-400" size={18} />;
-      case 'validated': return <CheckCircle className="text-cyan-400" size={18} />;
-      case 'sending': return <Send className="text-yellow-400" size={18} />;
-      case 'error': return <AlertOctagon className="text-red-400" size={18} />;
-      case 'rejected': return <XCircle className="text-orange-400" size={18} />;
-      case 'cancelled': return <Ban className="text-gray-400" size={18} />;
-      default: return <Clock className="text-slate-400" size={18} />;
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    const statusMap: Record<string, string> = {
-      draft: 'Taslak',
-      validated: 'Doğrulandı',
-      sending: 'Gönderiliyor',
-      approved: 'GİB Onaylı',
-      rejected: 'Reddedildi',
-      error: 'Hata',
-      cancelled: 'İptal'
-    };
-    return statusMap[status] || status;
-  };
-
-  const stats = {
-    total: invoices.length,
-    approved: invoices.filter(i => i.status === 'approved').length,
-    pending: invoices.filter(i => ['draft', 'validated', 'sending'].includes(i.status)).length,
-    errors: invoices.filter(i => ['error', 'rejected'].includes(i.status)).length,
-  };
+  function escapeHtml(s: string) {
+    return s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
 
   return (
     <DashboardLayout>
@@ -301,7 +150,7 @@ export default function EInvoiceCenterPage() {
             </div>
           </div>
 
-          <Tabs defaultValue="invoices" className="space-y-6">
+          <Tabs value={mainTabValue} onValueChange={setMainTabValue} className="space-y-6">
             <TabsList className="h-8 p-0.5 bg-[#0A2540]/10 border border-[#0A2540]/20">
               <TabsTrigger value="setup" className="h-7 px-2.5 py-0 text-xs data-[state=active]:bg-[#00D4AA] data-[state=active]:text-[#0A2540] font-medium text-contrast-body">
                 <Settings2 className="h-3.5 w-3.5 mr-1.5" />
@@ -344,7 +193,12 @@ export default function EInvoiceCenterPage() {
 
             <TabsContent value="send" className="mt-0">
               {tenantId && (
-                <SendEInvoicePanel tenantId={tenantId} language={language} />
+                <SendEInvoicePanel
+                  tenantId={tenantId}
+                  language={language}
+                  onSwitchToSetup={() => setMainTabValue('setup')}
+                  onSent={loadInvoices}
+                />
               )}
             </TabsContent>
 
@@ -361,247 +215,81 @@ export default function EInvoiceCenterPage() {
                 </Button>
               </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="border border-gray-200 bg-card shadow-sm">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-700">{language === 'tr' ? 'Toplam Fatura' : 'Total Invoices'}</CardTitle>
-                    <FileText className="h-4 w-4 text-gray-500" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-gray-900">{stats.total}</div>
-                    <p className="text-xs text-gray-500">{language === 'tr' ? 'Sistem kaydı' : 'System records'}</p>
-                  </CardContent>
-                </Card>
-                <Card className="border border-gray-200 bg-card shadow-sm">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-700">{language === 'tr' ? 'GİB Onaylı' : 'GIB Approved'}</CardTitle>
-                    <ShieldCheck className="h-4 w-4 text-green-600" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-green-700">{stats.approved}</div>
-                    <p className="text-xs text-gray-500">{language === 'tr' ? 'Resmi faturalar' : 'Official invoices'}</p>
-                  </CardContent>
-                </Card>
-                <Card className="border border-gray-200 bg-card shadow-sm">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-700">{language === 'tr' ? 'Bekleyen' : 'Pending'}</CardTitle>
-                    <Clock className="h-4 w-4 text-amber-600" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-amber-700">{stats.pending}</div>
-                    <p className="text-xs text-gray-500">{language === 'tr' ? 'İşlem gerekiyor' : 'Action required'}</p>
-                  </CardContent>
-                </Card>
-                <Card className="border border-gray-200 bg-card shadow-sm">
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-gray-700">{language === 'tr' ? 'Hata/Red' : 'Error/Rejected'}</CardTitle>
-                    <AlertOctagon className="h-4 w-4 text-red-600" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-red-700">{stats.errors}</div>
-                    <p className="text-xs text-gray-500">{language === 'tr' ? 'Dikkat gerekiyor' : 'Attention needed'}</p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Invoice List */}
               <Card className="border border-gray-200 bg-card shadow-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-gray-900">
-                    <Activity className="text-[#00D4AA]" />
-                    {language === 'tr' ? 'Fatura Listesi' : 'Invoice List'}
+                    <Send className="text-[#00D4AA]" />
+                    {language === 'tr' ? 'Gönderilen e-Faturalar' : 'Sent e-Invoices'}
                   </CardTitle>
                   <CardDescription className="text-gray-500">
-                    {invoices.length} {language === 'tr' ? 'fatura • Durum bazlı görünüm' : 'invoices • Status view'}
+                    {language === 'tr' ? 'NES üzerinden gönderilen e-fatura ve e-arşiv faturalar' : 'E-invoices and e-archive sent via NES'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-            {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="animate-spin h-8 w-8 text-[#7DD3FC]" />
-              </div>
-            ) : invoices.length === 0 ? (
-              <div className="text-center py-12">
-                <FileText className="mx-auto h-12 w-12 text-slate-600 mb-4" />
-                <p className="text-slate-400">Henüz e-fatura kaydı yok</p>
-                <p className="text-sm text-slate-500 mt-2">
-                  Yeni fatura oluşturmak için Faturalar modülünü kullanın
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {invoices.map((invoice) => (
-                  <div
-                    key={invoice.id}
-                    className={`rounded-xl border-2 p-6 transition-all hover:shadow-lg ${getStatusColor(invoice.status)}`}
-                  >
-                    {/* Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg bg-slate-800/50`}>
-                          {getStatusIcon(invoice.status)}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2 mb-1">
-                            <p className="text-white font-bold">{invoice.invoices?.invoice_no}</p>
-                            <Badge variant="outline" className="text-[10px]">
-                              {invoice.invoice_type === 'e-invoice' ? 'e-Fatura' : 'e-Arşiv'}
+                  {loading ? (
+                    <div className="flex justify-center py-12">
+                      <Loader2 className="animate-spin h-8 w-8 text-[#00D4AA]" />
+                    </div>
+                  ) : outgoingDocs.length === 0 ? (
+                    <div className="text-center py-12">
+                      <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                      <p className="text-gray-500">{language === 'tr' ? 'Henüz gönderilen fatura yok' : 'No sent invoices yet'}</p>
+                      <p className="text-sm text-gray-400 mt-2">
+                        {language === 'tr' ? '"Fatura Gönder" sekmesinden fatura gönderebilirsiniz' : 'You can send invoices from the "Send Invoice" tab'}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {outgoingDocs.map((doc) => (
+                        <div
+                          key={doc.id}
+                          className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50/50 p-4"
+                        >
+                          <div className="min-w-0">
+                            <p className="font-medium text-gray-900">{doc.invoice_number || doc.id.slice(0, 8)}</p>
+                            <p className="text-sm text-gray-500 truncate">{doc.receiver_title || '—'}</p>
+                            {doc.ettn && (
+                              <p className="text-xs text-gray-400 mt-1 truncate">ETTN: {doc.ettn}</p>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 flex-wrap">
+                            <Badge variant="outline">
+                              {doc.document_type === 'earsiv' ? (language === 'tr' ? 'e-Arşiv' : 'E-Archive') : (language === 'tr' ? 'e-Fatura' : 'E-Invoice')}
                             </Badge>
+                            <span className="text-sm font-semibold text-gray-900">₺{(doc.grand_total ?? 0).toLocaleString('tr-TR')}</span>
+                            <span className="text-xs text-gray-500">{doc.status}</span>
+                            {doc.ettn && (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs"
+                                  disabled={viewingDocId === doc.ettn}
+                                  onClick={() => handleViewXml(doc.ettn)}
+                                >
+                                  {viewingDocId === doc.ettn ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5 mr-1" />}
+                                  XML
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs"
+                                  disabled={viewingDocId === doc.ettn}
+                                  onClick={() => handleViewHtml(doc.ettn)}
+                                >
+                                  {viewingDocId === doc.ettn ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
+                                  {language === 'tr' ? 'Görüntüle (PDF)' : 'View (PDF)'}
+                                </Button>
+                              </>
+                            )}
                           </div>
-                          <p className="text-xs text-slate-400">
-                            {invoice.invoices?.customers?.company_title || invoice.invoices?.customers?.name}
-                          </p>
-                          {invoice.gib_uuid && (
-                            <p className="text-[10px] text-slate-500 uppercase tracking-tighter mt-1">
-                              UUID: {invoice.gib_uuid.substring(0, 8)}...
-                            </p>
-                          )}
                         </div>
-                      </div>
-
-                      <div className="text-right">
-                        <Badge className={`uppercase text-xs px-2 py-1 ${getStatusColor(invoice.status)}`}>
-                          {getStatusText(invoice.status)}
-                        </Badge>
-                        <p className="text-white font-bold text-lg mt-1">
-                          ₺{invoice.invoices?.grand_total?.toLocaleString('tr-TR') || 0}
-                        </p>
-                      </div>
+                      ))}
                     </div>
+                  )}
+                </CardContent>
+              </Card>
 
-                    {/* AI Validation */}
-                    {invoice.ai_validation_score !== null && (
-                      <div className="mb-4 p-3 bg-slate-800/30 rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs text-slate-400">AI Uyumluluk Skoru</span>
-                          <span className={`text-xs font-bold ${
-                            invoice.ai_validation_score >= 0.85 ? 'text-green-400' : 'text-orange-400'
-                          }`}>
-                            %{(invoice.ai_validation_score * 100).toFixed(0)}
-                          </span>
-                        </div>
-                        <div className="w-full bg-slate-700 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full ${
-                              invoice.ai_validation_score >= 0.85 ? 'bg-green-500' : 'bg-orange-500'
-                            }`}
-                            style={{ width: `${invoice.ai_validation_score * 100}%` }}
-                          />
-                        </div>
-                        {invoice.tax_anomaly_detected && (
-                          <div className="flex items-center gap-2 mt-2">
-                            <AlertTriangle size={14} className="text-yellow-400" />
-                            <span className="text-xs text-yellow-400">Vergi anomalisi tespit edildi</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Error Message */}
-                    {invoice.gib_error_detail && (
-                      <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
-                        <p className="text-xs text-red-400 flex items-center gap-2">
-                          <AlertOctagon size={14} />
-                          {invoice.gib_error_detail}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Success Message */}
-                    {invoice.response_message && invoice.status === 'approved' && (
-                      <div className="mb-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                        <p className="text-xs text-green-400 flex items-center gap-2">
-                          <CheckCircle size={14} />
-                          {invoice.response_message}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-3">
-                      {invoice.status === 'draft' && (
-                        <Button
-                          onClick={() => validateInvoice(invoice.invoice_id)}
-                          disabled={processing === invoice.invoice_id}
-                          size="sm"
-                          className="bg-[#7DD3FC] hover:bg-cyan-400 text-slate-900"
-                        >
-                          {processing === invoice.invoice_id ? (
-                            <>
-                              <Loader2 size={14} className="animate-spin" />
-                              Doğrulanıyor...
-                            </>
-                          ) : (
-                            <>
-                              <CheckCircle size={14} />
-                              Doğrula
-                            </>
-                          )}
-                        </Button>
-                      )}
-
-                      {invoice.status === 'validated' && (
-                        <Button
-                          onClick={() => sendToGIB(invoice.invoice_id)}
-                          disabled={processing === invoice.invoice_id}
-                          size="sm"
-                          className="bg-green-500 hover:bg-green-600 text-white"
-                        >
-                          {processing === invoice.invoice_id ? (
-                            <>
-                              <Loader2 size={14} className="animate-spin" />
-                              Gönderiliyor...
-                            </>
-                          ) : (
-                            <>
-                              <Send size={14} />
-                              GİB'e Gönder
-                            </>
-                          )}
-                        </Button>
-                      )}
-
-                      {invoice.status === 'approved' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-green-500/30 text-green-400"
-                          disabled
-                        >
-                          <ShieldCheck size={14} />
-                          Onaylandı
-                        </Button>
-                      )}
-
-                      {['draft', 'validated', 'error'].includes(invoice.status) && (
-                        <Button
-                          onClick={() => cancelInvoice(invoice.invoice_id)}
-                          disabled={processing === invoice.invoice_id}
-                          size="sm"
-                          variant="outline"
-                          className="border-red-500/30 text-red-400 hover:bg-red-500/10"
-                        >
-                          <Ban size={14} />
-                          İptal
-                        </Button>
-                      )}
-
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-slate-600 text-slate-400"
-                      >
-                        <Eye size={14} />
-                        Detay
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
             </TabsContent>
           </Tabs>
         </div>

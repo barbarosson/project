@@ -62,6 +62,122 @@ function friendlyError(err: unknown): { message: string; status: number } {
 
 const EINVOICE_API_BASE = "/einvoice";
 
+function escapeXml(s: string): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;");
+}
+
+function buildUblTrFromInvoiceData(data: Record<string, unknown>): string {
+  // GIB: Fatura numarasi 16 karakter: 3 seri + 4 yil + 9 sira. 03.10.2025 itibariyle 'GIB' serisi kullanilamaz.
+  const rawId = String(data.InvoiceNumber ?? data.InvoiceId ?? "").trim();
+  const digitsOnly = rawId.replace(/\D/g, "");
+  const year = new Date().getFullYear().toString();
+  let series = String(data.DefaultSeries ?? "INV").slice(0, 3).toUpperCase().replace(/[^A-Z]/g, "I") || "INV";
+  if (series === "GIB") series = "INV";
+  const seriesPart = (series + "INV").slice(0, 3);
+  const seqNum = digitsOnly.length >= 1 ? digitsOnly.slice(-9) : String(Date.now()).slice(-9);
+  const sequencePart = seqNum.padStart(9, "0");
+  const docId = escapeXml(seriesPart + year + sequencePart);
+  const issueDate = escapeXml(String(data.IssueDate ?? new Date().toISOString().split("T")[0]));
+  const invoiceType = escapeXml(String(data.InvoiceType ?? "SATIS"));
+  const currency = escapeXml(String(data.Currency ?? "TRY"));
+  const senderDigits = String(data.SenderVkn ?? "").replace(/\D/g, "");
+  const senderScheme = senderDigits.length === 11 ? "TCKN" : "VKN";
+  const senderId = senderDigits.length === 11 ? senderDigits : (senderDigits.length === 10 ? senderDigits : senderDigits.padStart(10, "0").slice(-10));
+  const senderVkn = escapeXml(senderId);
+  const senderTitle = escapeXml(String(data.SenderTitle ?? ""));
+  const receiverDigits = String(data.ReceiverVkn ?? "").replace(/\D/g, "");
+  const receiverScheme = receiverDigits.length === 11 ? "TCKN" : "VKN";
+  const receiverId = receiverDigits.length === 11 ? receiverDigits : (receiverDigits.length === 10 ? receiverDigits : receiverDigits.padStart(10, "0").slice(-10));
+  const receiverVkn = escapeXml(receiverId);
+  const receiverTitle = escapeXml(String(data.ReceiverTitle ?? ""));
+  const receiverCity = escapeXml(String(data.ReceiverCity ?? ""));
+  const receiverCountry = escapeXml(String(data.ReceiverCountry ?? "Türkiye"));
+  const taxExclusive = Number(data.TaxExclusiveAmount ?? data.SubTotal ?? 0);
+  const taxAmount = Number(data.TaxAmount ?? data.TaxTotal ?? 0);
+  const payable = Number(data.PayableAmount ?? data.GrandTotal ?? data.TaxInclusiveAmount ?? 0);
+  let lines = (Array.isArray(data.Lines) ? data.Lines : []) as Array<Record<string, unknown>>;
+  if (lines.length === 0 && (payable > 0 || taxExclusive > 0)) {
+    lines = [{ Name: "Hizmet", Quantity: 1, UnitPrice: taxExclusive || payable, LineTotal: taxExclusive || payable }];
+  }
+
+  const lineXml = lines
+    .map((line, idx) => {
+      const lineNum = idx + 1;
+      const qty = Number(line.Quantity ?? 1);
+      const unitPrice = Number(line.UnitPrice ?? 0);
+      const lineTotal = Number(line.LineTotal ?? line.Amount ?? qty * unitPrice);
+      const desc = escapeXml(String(line.Name ?? line.Description ?? ""));
+      const rawUnit = String(line.UnitCode ?? "C62").toUpperCase();
+      const unitCode = escapeXml(rawUnit === "ADET" ? "C62" : rawUnit || "C62");
+      return `<cac:InvoiceLine>
+        <cbc:ID>${lineNum}</cbc:ID>
+        <cbc:InvoicedQuantity unitCode="${unitCode}">${qty}</cbc:InvoicedQuantity>
+        <cbc:LineExtensionAmount currencyID="${currency}">${lineTotal.toFixed(2)}</cbc:LineExtensionAmount>
+        <cac:Item><cbc:Name>${desc}</cbc:Name></cac:Item>
+        <cac:Price><cbc:PriceAmount currencyID="${currency}">${unitPrice.toFixed(2)}</cbc:PriceAmount></cac:Price>
+      </cac:InvoiceLine>`;
+    })
+    .join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+  xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+  xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2"
+  xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2">
+  <ext:UBLExtensions>
+    <ext:UBLExtension>
+      <ext:ExtensionContent/>
+    </ext:UBLExtension>
+  </ext:UBLExtensions>
+  <cbc:UBLVersionID>2.1</cbc:UBLVersionID>
+  <cbc:CustomizationID>TR1.2</cbc:CustomizationID>
+  <cbc:ProfileID>TEMELFATURA</cbc:ProfileID>
+  <cbc:ID>${docId}</cbc:ID>
+  <cbc:CopyIndicator>false</cbc:CopyIndicator>
+  <cbc:IssueDate>${issueDate}</cbc:IssueDate>
+  <cbc:InvoiceTypeCode>${invoiceType}</cbc:InvoiceTypeCode>
+  <cbc:DocumentCurrencyCode>${currency}</cbc:DocumentCurrencyCode>
+  <cbc:TaxCurrencyCode>${currency}</cbc:TaxCurrencyCode>
+  <cbc:LineCountNumeric>${lines.length}</cbc:LineCountNumeric>
+  <cac:AccountingSupplierParty>
+    <cac:Party>
+      <cac:PartyIdentification><cbc:ID schemeID="${senderScheme}">${senderVkn}</cbc:ID></cac:PartyIdentification>
+      <cac:PartyName><cbc:Name>${senderTitle}</cbc:Name></cac:PartyName>
+      <cac:PostalAddress><cbc:StreetName></cbc:StreetName><cbc:BuildingNumber></cbc:BuildingNumber><cbc:CitySubdivisionName></cbc:CitySubdivisionName><cbc:CityName></cbc:CityName><cac:Country><cbc:IdentificationCode>TR</cbc:IdentificationCode><cbc:Name>Türkiye</cbc:Name></cac:Country></cac:PostalAddress>
+      ${senderScheme === "TCKN" ? `<cac:Person><cbc:FirstName>Ad</cbc:FirstName><cbc:FamilyName>${senderTitle || "Kisi"}</cbc:FamilyName></cac:Person>` : ""}
+    </cac:Party>
+  </cac:AccountingSupplierParty>
+  <cac:AccountingCustomerParty>
+    <cac:Party>
+      <cac:PartyIdentification><cbc:ID schemeID="${receiverScheme}">${receiverVkn}</cbc:ID></cac:PartyIdentification>
+      <cac:PartyName><cbc:Name>${receiverTitle}</cbc:Name></cac:PartyName>
+      <cac:PostalAddress><cbc:StreetName></cbc:StreetName><cbc:BuildingNumber></cbc:BuildingNumber><cbc:CitySubdivisionName></cbc:CitySubdivisionName><cbc:CityName>${receiverCity}</cbc:CityName><cac:Country><cbc:IdentificationCode>TR</cbc:IdentificationCode><cbc:Name>Türkiye</cbc:Name></cac:Country></cac:PostalAddress>
+      ${receiverScheme === "TCKN" ? `<cac:Person><cbc:FirstName>Ad</cbc:FirstName><cbc:FamilyName>${receiverTitle || "Kisi"}</cbc:FamilyName></cac:Person>` : ""}
+    </cac:Party>
+  </cac:AccountingCustomerParty>
+  <cac:TaxTotal>
+    <cbc:TaxAmount currencyID="${currency}">${taxAmount.toFixed(2)}</cbc:TaxAmount>
+    <cac:TaxSubtotal>
+      <cbc:TaxableAmount currencyID="${currency}">${taxExclusive.toFixed(2)}</cbc:TaxableAmount>
+      <cbc:TaxAmount currencyID="${currency}">${taxAmount.toFixed(2)}</cbc:TaxAmount>
+      <cac:TaxCategory><cbc:TaxExemptionReasonCode>VAT</cbc:TaxExemptionReasonCode><cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme></cac:TaxCategory>
+    </cac:TaxSubtotal>
+  </cac:TaxTotal>
+  <cac:LegalMonetaryTotal>
+    <cbc:LineExtensionAmount currencyID="${currency}">${taxExclusive.toFixed(2)}</cbc:LineExtensionAmount>
+    <cbc:TaxExclusiveAmount currencyID="${currency}">${taxExclusive.toFixed(2)}</cbc:TaxExclusiveAmount>
+    <cbc:TaxInclusiveAmount currencyID="${currency}">${payable.toFixed(2)}</cbc:TaxInclusiveAmount>
+    <cbc:PayableAmount currencyID="${currency}">${payable.toFixed(2)}</cbc:PayableAmount>
+  </cac:LegalMonetaryTotal>
+${lineXml}
+</Invoice>`;
+}
+
 function buildQueryString(params: Record<string, string | number | boolean | undefined>): string {
   const search = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
@@ -492,19 +608,122 @@ Deno.serve(async (req: Request) => {
           if (result === undefined && lastErr) {
             const msg = String(lastErr);
             const is404 = msg.includes("404") || msg.includes("Not Found") || msg.includes("default backend");
-            if (is404) {
+            if (is404 && senderAlias) {
+              try {
+                const extractVknFromObj = (o: unknown): string => {
+                  if (o == null || typeof o !== "object") return "";
+                  const obj = o as Record<string, unknown>;
+                  const keys = ["partyIdentification", "PartyIdentification", "identifier", "Identifier", "vkn", "Vkn", "taxNumber", "TaxNumber", "senderVkn", "SenderVkn", "supplierVkn", "SupplierVkn"];
+                  for (const k of keys) {
+                    const v = obj[k];
+                    if (typeof v === "string") {
+                      const digits = v.replace(/\D/g, "");
+                      if (digits.length === 10 || digits.length === 11) return digits;
+                    }
+                    if (v != null && typeof v === "object" && !Array.isArray(v)) {
+                      const inner = v as Record<string, unknown>;
+                      const idVal = inner.id ?? inner.ID ?? inner.value ?? inner.Value;
+                      if (typeof idVal === "string") {
+                        const digits = idVal.replace(/\D/g, "");
+                        if (digits.length === 10 || digits.length === 11) return digits;
+                      }
+                    }
+                  }
+                  return "";
+                };
+                let senderVknFromNes = "";
+                try {
+                  const outgoing = await nesRequest(
+                    einvoiceBase,
+                    nesToken,
+                    "GET",
+                    "/v1/outgoing/invoices",
+                    undefined,
+                    8000,
+                    { pageSize: 1, page: 1 }
+                  ) as Record<string, unknown>;
+                  const list = (outgoing?.data ?? outgoing?.Data ?? outgoing?.items ?? outgoing?.Items ?? outgoing?.result) as unknown[] | undefined;
+                  const first = Array.isArray(list) && list.length > 0 ? list[0] : null;
+                  if (first && typeof first === "object") {
+                    const rec = first as Record<string, unknown>;
+                    const party = rec.accountingSupplierParty ?? rec.AccountingSupplierParty ?? rec.supplierParty ?? rec.SupplierParty ?? rec.senderParty ?? rec.SenderParty;
+                    senderVknFromNes = extractVknFromObj(party) || extractVknFromObj(rec);
+                  }
+                } catch (_) {}
+                if (!senderVknFromNes) {
+                  for (const path of ["/v1/account", "/v1/profile", "/v1/users/me", "/v1/aliases"]) {
+                    try {
+                      const acc = await nesRequest(einvoiceBase, nesToken, "GET", path, undefined, 5000) as Record<string, unknown>;
+                      const v = extractVknFromObj(acc) || (typeof acc?.vkn === "string" ? acc.vkn : null) || (typeof acc?.identifier === "string" ? acc.identifier : null);
+                      if (typeof v === "string" && /^\d{10,11}$/.test(v.replace(/\D/g, ""))) {
+                        senderVknFromNes = v.replace(/\D/g, "").slice(0, 11);
+                        break;
+                      }
+                    } catch (_) { /* ignore */ }
+                  }
+                }
+                const { data: freshRow } = await serviceClient
+                  .from("edocument_settings")
+                  .select("company_vkn, company_title")
+                  .eq("tenant_id", tenant_id)
+                  .maybeSingle();
+                const settingsVkn = String((freshRow as { company_vkn?: string } | null)?.company_vkn ?? (settings as { company_vkn?: string }).company_vkn ?? "").trim().replace(/\D/g, "");
+                const settingsTitle = String((freshRow as { company_title?: string } | null)?.company_title ?? (settings as { company_title?: string }).company_title ?? "").trim();
+                const fromRequest = String((invoiceData as Record<string, unknown>)?.SenderVkn ?? "").trim().replace(/\D/g, "");
+                const requestVknValid = fromRequest.length === 10 || fromRequest.length === 11;
+                // Oncelik: 1) Istekte gonderilen (Kurulum'da gorunen), 2) DB'den taze okunan, 3) NES'ten
+                const effectiveSenderVkn = (requestVknValid ? fromRequest : settingsVkn.length >= 10 ? settingsVkn : senderVknFromNes.length >= 10 ? senderVknFromNes : "") || "";
+                if (!effectiveSenderVkn) {
+                  return jsonResponse(
+                    {
+                      success: false,
+                      error:
+                        "Kurulumda 'Firma VKN' doldurulmali ve NES hesabinizdaki (API anahtari/Gonderici etiketi) firma VKN ile ayni olmali. " +
+                        "Test ortami icin NES test kurum VKN (ornegin 1234567801) girin.",
+                    },
+                    400
+                  );
+                }
+                const dataForUbl = { ...(invoiceData as Record<string, unknown>) };
+                dataForUbl.SenderVkn = effectiveSenderVkn.length === 11 ? effectiveSenderVkn : effectiveSenderVkn.slice(0, 10);
+                dataForUbl.SenderTitle = settingsTitle || "Firma";
+                const ublXml = buildUblTrFromInvoiceData(dataForUbl);
+                const form = new FormData();
+                form.set("SenderAlias", senderAlias);
+                form.set("File", new Blob([ublXml], { type: "application/xml" }), "invoice.xml");
+                form.set("IsDirectSend", params.draft ? "false" : "true");
+                form.set("PreviewType", "None");
+                form.set("SourceApp", "project-bolt");
+                form.set("AutoSaveCompany", "false");
+                if (params.receiver_alias) form.set("ReceiverAlias", String(params.receiver_alias));
+                result = await nesRequest(einvoiceBase, nesToken, "POST", "/v1/uploads/document", form, 30000);
+              } catch (ublErr: unknown) {
+                const ublMsg = ublErr instanceof Error ? ublErr.message : String(ublErr);
+                const isVknMismatch = /VKN\/TCKN|UYUSMUYOR|gonderen kullanici/i.test(ublMsg);
+                return jsonResponse(
+                  {
+                    success: false,
+                    error: isVknMismatch
+                      ? "Belge gonderici VKN, NES hesabinizdaki firma ile uyusmuyor. Kurulumda 'Firma VKN' alanina, NES portalinda giris yaptiginiz firmanin VKN numarasini yazin (test icin ornek: 1234567801 veya 1234567802) ve kaydedin."
+                      : "E-Fatura gonderimi bu API adresinde bulunamadi (404). UBL-TR XML ile otomatik deneme de basarisiz: " + ublMsg + ". Kurulumda Gonderici etiketi (SenderAlias) dolu olmali.",
+                  },
+                  isVknMismatch ? 400 : 502
+                );
+              }
+            } else if (is404) {
               return jsonResponse(
                 {
                   success: false,
                   error:
                     "E-Fatura gonderimi bu API adresinde bulunamadi (404). " +
-                    "Test ortami (apitest.nes.com.tr) yalnizca UBL-TR XML yuklemesini destekliyor olabilir. " +
-                    "Form ile JSON gonderimi icin NES ile v2 API yolunu dogrulayin veya UBL XML ile gonderin.",
+                    "Kurulumda Gonderici etiketi (SenderAlias) girin; form verisi UBL-TR XMLe cevrilip v1 yuklemesi denenir. " +
+                    "Veya NES ile v2 API yolunu dogrulayin.",
                 },
                 404
               );
+            } else {
+              throw lastErr;
             }
-            throw lastErr;
           }
         } else {
           return jsonResponse(

@@ -90,13 +90,16 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
   async function handleSave() {
     setSaving(true)
     try {
+      const toSave = {
+        ...settings,
+        company_vkn: String(settings.company_vkn ?? '').trim(),
+        company_title: String(settings.company_title ?? '').trim(),
+        updated_at: new Date().toISOString(),
+      }
       if (settings.id) {
         const { error } = await supabase
           .from('edocument_settings')
-          .update({
-            ...settings,
-            updated_at: new Date().toISOString(),
-          })
+          .update(toSave)
           .eq('id', settings.id)
 
         if (error) throw error
@@ -104,7 +107,7 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
         const { data, error } = await supabase
           .from('edocument_settings')
           .insert({
-            ...settings,
+            ...toSave,
             tenant_id: tenantId,
           })
           .select()
@@ -279,10 +282,15 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
               <Label>{t.companyVkn}</Label>
               <Input
                 value={settings.company_vkn}
-                onChange={(e) => updateField('company_vkn', e.target.value)}
-                placeholder="1234567890"
+                onChange={(e) => updateField('company_vkn', e.target.value.trim())}
+                placeholder={language === 'tr' ? 'Örn: 1234567801 (NES test)' : 'e.g. 1234567801 (NES test)'}
                 maxLength={11}
               />
+              <p className="text-xs text-muted-foreground">
+                {language === 'tr'
+                  ? 'API anahtarı ve Gönderici etiketinin bağlı olduğu firmanın VKN\'si olmalı. NES test: Kurum 01 = 1234567801, Kurum 02 = 1234567802.'
+                  : 'Must be the VKN of the company that owns the API Key and Sender Alias. NES test: Org 01 = 1234567801, Org 02 = 1234567802.'}
+              </p>
             </div>
 
             <div className="space-y-2">
