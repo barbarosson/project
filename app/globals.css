@@ -494,3 +494,35 @@ button[role="checkbox"][data-size="sm"] {
 .animate-fade-in-delay-2 {
   animation: fade-in 0.8s ease-out 0.4s both;
 }
+
+/* E-Invoice center: XML/PDF icon buttons – accent color, white icons. Size via inline style (18x18). */
+button.edoc-icon-btn {
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  border: 0 solid transparent;
+  background-color: var(--accent-color);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+button.edoc-icon-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+button.edoc-icon-btn:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+.edoc-icon-btn svg {
+  stroke: #ffffff;
+  color: #ffffff;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+.edoc-icon-btn:disabled svg {
+  stroke: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.6);
+}

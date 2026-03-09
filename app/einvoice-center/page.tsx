@@ -28,8 +28,8 @@ import { supabase } from '@/lib/supabase';
 import { useTenant } from '@/contexts/tenant-context';
 import { useLanguage } from '@/contexts/language-context';
 import { toast } from 'sonner';
-import { getInvoiceXml, getInvoiceHtml, getIncomingInvoices, getOutgoingInvoices } from '@/lib/nes-api';
-import { getEdocStatusLabel } from '@/lib/edocument-status';
+import { getInvoiceXml, getInvoiceHtml, getIncomingInvoices, getOutgoingInvoices, getAccountInfo } from '@/lib/nes-api';
+import { getEdocStatusLabel, isEdocProcessCompleted } from '@/lib/edocument-status';
 import { importIncomingEdocumentToPurchase } from '@/lib/import-incoming-edocument';
 import { useRouter } from 'next/navigation';
 import { EdocumentSettings } from '@/components/edocuments/edocument-settings';
@@ -53,6 +53,13 @@ type EdocRow = {
   created_at: string;
   local_purchase_invoice_id?: string | null;
 };
+
+function formatEdocDate(isoDate: string | null | undefined, lang: string): string {
+  if (!isoDate) return '—';
+  const d = new Date(isoDate + 'T12:00:00');
+  if (isNaN(d.getTime())) return isoDate;
+  return lang === 'tr' ? d.toLocaleDateString('tr-TR') : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+}
 
 const GIB_STATUS_FILTER_OPTIONS: { value: string; i18nKey: string }[] = [
   { value: 'all', i18nKey: 'filterStatusAll' },
@@ -100,6 +107,8 @@ export default function EInvoiceCenterPage() {
   const [appliedStatus, setAppliedStatus] = useState('all');
   const [syncing, setSyncing] = useState<'incoming' | 'outgoing' | null>(null);
   const [importingEdocId, setImportingEdocId] = useState<string | null>(null);
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [creditLoading, setCreditLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -124,21 +133,40 @@ export default function EInvoiceCenterPage() {
     loadEdocSetup();
   }, [loadEdocSetup]);
 
+  useEffect(() => {
+    if (!tenantId) return;
+    let cancelled = false;
+    setCreditLoading(true);
+    getAccountInfo(tenantId)
+      .then((data: { Result?: { RemainingCredit?: number }; RemainingCredit?: number }) => {
+        if (cancelled) return;
+        const credits = data?.Result?.RemainingCredit ?? data?.RemainingCredit;
+        setCreditBalance(typeof credits === 'number' ? credits : null);
+      })
+      .catch(() => {
+        if (!cancelled) setCreditBalance(null);
+      })
+      .finally(() => {
+        if (!cancelled) setCreditLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [tenantId]);
+
   const loadInvoices = async () => {
     if (!tenantId) return;
     setLoading(true);
     try {
       const direction = listSubTab;
+      const baseCols = 'id, invoice_number, ettn, status, receiver_title, sender_title, receiver_vkn, sender_vkn, grand_total, issue_date, document_type, created_at';
       let query = supabase
         .from('edocuments')
-        .select('id, invoice_number, ettn, status, receiver_title, sender_title, receiver_vkn, sender_vkn, grand_total, issue_date, document_type, created_at, local_purchase_invoice_id')
+        .select(`${baseCols}, local_purchase_invoice_id`)
         .eq('tenant_id', tenantId)
         .eq('direction', direction);
 
       if (direction === 'outgoing') {
         query = query.neq('status', 'draft');
       }
-
       if (appliedDateFrom) query = query.gte('issue_date', appliedDateFrom);
       if (appliedDateTo) query = query.lte('issue_date', appliedDateTo);
       const titleTrim = appliedTitle.trim();
@@ -150,20 +178,42 @@ export default function EInvoiceCenterPage() {
       if (numberTrim) query = query.ilike('invoice_number', `%${numberTrim}%`);
       const amountNum = appliedAmount.trim() !== '' ? Number(appliedAmount) : NaN;
       if (!Number.isNaN(amountNum)) query = query.gte('grand_total', amountNum);
-
       if (direction === 'outgoing') {
         const vknTrim = appliedVkn.trim();
         if (vknTrim) query = query.ilike('receiver_vkn', `%${vknTrim}%`);
-        if (appliedStatus && appliedStatus !== 'all') query = query.eq('status', appliedStatus);
       }
+      if (appliedStatus && appliedStatus !== 'all') query = query.eq('status', appliedStatus);
 
-      const result = await query.order('created_at', { ascending: false }).limit(200);
+      let result = await query.order('created_at', { ascending: false }).limit(200);
 
-      if (result.error) throw result.error;
+      if (result.error) {
+        const errMsg = result.error.message ?? '';
+        const missingCol = errMsg.includes('local_purchase_invoice_id') || result.error.code === '42703';
+        if (missingCol) {
+          query = supabase
+            .from('edocuments')
+            .select(baseCols)
+            .eq('tenant_id', tenantId)
+            .eq('direction', direction);
+          if (direction === 'outgoing') query = query.neq('status', 'draft');
+          if (appliedDateFrom) query = query.gte('issue_date', appliedDateFrom);
+          if (appliedDateTo) query = query.lte('issue_date', appliedDateTo);
+          if (titleTrim) {
+            if (direction === 'outgoing') query = query.ilike('receiver_title', `%${titleTrim}%`);
+            else query = query.ilike('sender_title', `%${titleTrim}%`);
+          }
+          if (numberTrim) query = query.ilike('invoice_number', `%${numberTrim}%`);
+          if (!Number.isNaN(amountNum)) query = query.gte('grand_total', amountNum);
+          if (direction === 'outgoing' && appliedVkn.trim()) query = query.ilike('receiver_vkn', `%${appliedVkn.trim()}%`);
+          if (appliedStatus && appliedStatus !== 'all') query = query.eq('status', appliedStatus);
+          result = await query.order('created_at', { ascending: false }).limit(200);
+        }
+        if (result.error) throw result.error;
+      }
       const rows = (result.data ?? []) as EdocRow[];
       if (direction === 'incoming') setIncomingDocs(rows);
       else setOutgoingDocs(rows);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error('Edocuments load error:', e);
       toast.error(tr.loadError);
       if (listSubTab === 'incoming') setIncomingDocs([]);
@@ -366,6 +416,19 @@ export default function EInvoiceCenterPage() {
                 {tr.centerSubtitle}
               </p>
             </div>
+            <div className="flex items-center gap-3">
+              {creditLoading ? (
+                <span className="text-sm text-gray-500 flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {language === 'tr' ? 'Kontör yükleniyor...' : 'Loading balance...'}
+                </span>
+              ) : creditBalance !== null ? (
+                <div className="rounded-lg border border-[#0A2540]/20 bg-[#0A2540]/5 px-4 py-2">
+                  <span className="text-xs font-medium text-gray-600">{tr.remainingCredits}</span>
+                  <p className="text-lg font-semibold text-[#0A2540]">{creditBalance.toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US')}</p>
+                </div>
+              ) : null}
+            </div>
           </div>
 
           <Tabs value={mainTabValue} onValueChange={setMainTabValue} className="space-y-6">
@@ -440,21 +503,11 @@ export default function EInvoiceCenterPage() {
                     variant="outline"
                     size="sm"
                     disabled={!!syncing}
-                    onClick={() => handleSyncInvoices('incoming')}
+                    onClick={() => handleSyncInvoices(listSubTab)}
                     className="font-medium"
                   >
-                    {syncing === 'incoming' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-                    {tr.syncIncomingButton}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={!!syncing}
-                    onClick={() => handleSyncInvoices('outgoing')}
-                    className="font-medium"
-                  >
-                    {syncing === 'outgoing' ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-                    {tr.syncOutgoingButton}
+                    {syncing === listSubTab ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                    {tr.syncButton}
                   </Button>
                 </div>
 
@@ -510,33 +563,31 @@ export default function EInvoiceCenterPage() {
                         />
                       </div>
                       {listSubTab === 'outgoing' && (
-                        <>
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-gray-600">{tr.filterVknTckn}</label>
-                            <Input
-                              placeholder="VKN / TCKN"
-                              value={filterVkn}
-                              onChange={(e) => setFilterVkn(e.target.value)}
-                              className="h-9 w-[130px]"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-gray-600">{tr.filterStatus}</label>
-                            <Select value={filterStatus} onValueChange={setFilterStatus}>
-                              <SelectTrigger className="h-9 w-[180px]">
-                                <SelectValue placeholder={tr.filterStatusAll} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {GIB_STATUS_FILTER_OPTIONS.map((opt) => (
-                                  <SelectItem key={opt.value} value={opt.value}>
-                                    {(tr as Record<string, string>)[opt.i18nKey] ?? opt.i18nKey}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </>
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-gray-600">{tr.filterVknTckn}</label>
+                          <Input
+                            placeholder="VKN / TCKN"
+                            value={filterVkn}
+                            onChange={(e) => setFilterVkn(e.target.value)}
+                            className="h-9 w-[130px]"
+                          />
+                        </div>
                       )}
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-gray-600">{tr.filterStatus}</label>
+                        <Select value={filterStatus} onValueChange={setFilterStatus}>
+                          <SelectTrigger className="h-9 w-[180px]">
+                            <SelectValue placeholder={tr.filterStatusAll} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GIB_STATUS_FILTER_OPTIONS.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value}>
+                                {(tr as Record<string, string>)[opt.i18nKey] ?? opt.i18nKey}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
@@ -547,7 +598,7 @@ export default function EInvoiceCenterPage() {
                           setAppliedAmount(filterAmount);
                           setAppliedNumber(filterNumber);
                           setAppliedVkn(listSubTab === 'outgoing' ? filterVkn : '');
-                          setAppliedStatus(listSubTab === 'outgoing' ? filterStatus : '');
+                          setAppliedStatus(filterStatus);
                         }}
                         disabled={loading}
                         className="bg-[#0A2540] hover:bg-[#1e3a5f]"
@@ -614,58 +665,74 @@ export default function EInvoiceCenterPage() {
                           <p className="text-sm text-gray-400 mt-2">{tr.noIncomingInvoicesDesc}</p>
                         </div>
                       ) : (
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                           {incomingDocs.map((doc) => (
                             <div
                               key={doc.id}
-                              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50/50 p-4"
+                              className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-center rounded-lg border border-gray-200 bg-white p-3 shadow-sm min-w-0"
                             >
-                              <div className="min-w-0">
-                                <p className="font-medium text-gray-900">{doc.invoice_number || doc.id.slice(0, 8)}</p>
-                                <p className="text-sm text-gray-500 truncate">{doc.sender_title || '—'}</p>
-                                {doc.sender_vkn && <p className="text-xs text-gray-400 mt-1">VKN: {doc.sender_vkn}</p>}
-                                {doc.ettn && <p className="text-xs text-gray-400 truncate">ETTN: {doc.ettn}</p>}
+                              <div className="min-w-0 grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-1">
+                                <div className="min-w-0">
+                                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{tr.invoiceNumber}</p>
+                                  <p className="text-xs font-semibold text-gray-900 truncate" title={doc.invoice_number ?? undefined}>{doc.invoice_number || doc.id.slice(0, 8)}</p>
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{tr.issueDate}</p>
+                                  <p className="text-xs text-gray-900">{formatEdocDate(doc.issue_date, language)}</p>
+                                </div>
+                                <div className="min-w-0 col-span-2 sm:col-span-1">
+                                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{tr.senderTitle}</p>
+                                  <p className="text-xs text-gray-900 truncate" title={doc.sender_title ?? undefined}>{doc.sender_title || '—'}</p>
+                                  {doc.sender_vkn && <p className="text-[11px] text-gray-400">VKN: {doc.sender_vkn}</p>}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{tr.grandTotal}</p>
+                                  <p className="text-sm font-semibold text-[#0A2540]">₺{(doc.grand_total ?? 0).toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-3 flex-wrap">
+                              <div className="flex items-center gap-1.5 flex-wrap justify-end min-w-0">
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">{doc.document_type === 'earsiv' ? tr.earsiv : tr.efatura}</Badge>
+                                <Badge variant="secondary" className="text-[10px] font-normal px-1.5 py-0">{getEdocStatusLabel(doc.status, tr as Record<string, string>)}</Badge>
                                 {doc.local_purchase_invoice_id ? (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-xs"
-                                    onClick={() => router.push('/expenses')}
-                                  >
-                                    <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                                  <Button variant="outline" size="sm" className="h-7 min-h-7 px-2 text-[11px]" onClick={() => router.push('/expenses')} title={tr.goToPurchaseInvoice}>
+                                    <ExternalLink className="h-3 w-3 mr-1" />
                                     {tr.goToPurchaseInvoice}
                                   </Button>
                                 ) : (
                                   <Button
                                     variant="default"
                                     size="sm"
-                                    className="text-xs bg-[#0A2540] hover:bg-[#1e3a5f]"
-                                    disabled={!!importingEdocId}
+                                    className="h-7 min-h-7 px-2 text-[11px] bg-[#0A2540] hover:bg-[#1e3a5f]"
+                                    disabled={!!importingEdocId || isEdocProcessCompleted(doc.status)}
                                     onClick={() => handleImportToPurchase(doc)}
+                                    title={tr.importToPurchaseButton}
                                   >
-                                    {importingEdocId === doc.id ? (
-                                      <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
-                                    ) : (
-                                      <Download className="h-3.5 w-3.5 mr-1" />
-                                    )}
+                                    {importingEdocId === doc.id ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Download className="h-3 w-3 mr-1" />}
                                     {tr.importToPurchaseButton}
                                   </Button>
                                 )}
-                                <Badge variant="outline">{doc.document_type === 'earsiv' ? tr.earsiv : tr.efatura}</Badge>
-                                <span className="text-sm font-semibold text-gray-900">₺{(doc.grand_total ?? 0).toLocaleString('tr-TR')}</span>
-                                <span className="text-xs text-gray-500">{getEdocStatusLabel(doc.status, tr as Record<string, string>)}</span>
                                 {doc.ettn && (
                                   <>
-                                    <Button variant="outline" size="sm" className="text-xs" disabled={viewingDocId === doc.ettn} onClick={() => handleViewXml(doc.ettn, 'incoming')}>
-                                      {viewingDocId === doc.ettn ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5 mr-1" />}
-                                      XML
-                                    </Button>
-                                    <Button variant="outline" size="sm" className="text-xs" disabled={viewingDocId === doc.ettn} onClick={() => handleViewHtml(doc.ettn, 'incoming')}>
-                                      {viewingDocId === doc.ettn ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
-                                      {tr.viewPdf}
-                                    </Button>
+                                    <button
+                                      type="button"
+                                      disabled={viewingDocId === doc.ettn}
+                                      onClick={() => handleViewXml(doc.ettn, 'incoming')}
+                                      title="XML"
+                                      className="edoc-icon-btn"
+                                      style={{ width: 18, height: 18, minWidth: 18, minHeight: 18, padding: 0 }}
+                                    >
+                                      {viewingDocId === doc.ettn ? <Loader2 className="h-2 w-2 animate-spin" /> : <FileText className="h-2 w-2" />}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      disabled={viewingDocId === doc.ettn}
+                                      onClick={() => handleViewHtml(doc.ettn, 'incoming')}
+                                      title={tr.viewPdf}
+                                      className="edoc-icon-btn"
+                                      style={{ width: 18, height: 18, minWidth: 18, minHeight: 18, padding: 0 }}
+                                    >
+                                      {viewingDocId === doc.ettn ? <Loader2 className="h-8 w-8 animate-spin" /> : <Eye className="h-8 w-8" />}
+                                    </button>
                                   </>
                                 )}
                               </div>
@@ -700,32 +767,56 @@ export default function EInvoiceCenterPage() {
                           <p className="text-sm text-gray-400 mt-2">{tr.noSentInvoicesDesc}</p>
                         </div>
                       ) : (
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                           {outgoingDocs.map((doc) => (
                             <div
                               key={doc.id}
-                              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50/50 p-4"
+                              className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-center rounded-lg border border-gray-200 bg-white p-3 shadow-sm min-w-0"
                             >
-                              <div className="min-w-0">
-                                <p className="font-medium text-gray-900">{doc.invoice_number || doc.id.slice(0, 8)}</p>
-                                <p className="text-sm text-gray-500 truncate">{doc.receiver_title || '—'}</p>
-                                {doc.receiver_vkn && <p className="text-xs text-gray-400 mt-1">VKN: {doc.receiver_vkn}</p>}
-                                {doc.ettn && <p className="text-xs text-gray-400 mt-1 truncate">ETTN: {doc.ettn}</p>}
+                              <div className="min-w-0 grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-1">
+                                <div className="min-w-0">
+                                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{tr.invoiceNumber}</p>
+                                  <p className="text-xs font-semibold text-gray-900 truncate" title={doc.invoice_number ?? undefined}>{doc.invoice_number || doc.id.slice(0, 8)}</p>
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{tr.issueDate}</p>
+                                  <p className="text-xs text-gray-900">{formatEdocDate(doc.issue_date, language)}</p>
+                                </div>
+                                <div className="min-w-0 col-span-2 sm:col-span-1">
+                                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{tr.receiverTitle}</p>
+                                  <p className="text-xs text-gray-900 truncate" title={doc.receiver_title ?? undefined}>{doc.receiver_title || '—'}</p>
+                                  {doc.receiver_vkn && <p className="text-[11px] text-gray-400">VKN: {doc.receiver_vkn}</p>}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{tr.grandTotal}</p>
+                                  <p className="text-sm font-semibold text-[#0A2540]">₺{(doc.grand_total ?? 0).toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-3 flex-wrap">
-                                <Badge variant="outline">{doc.document_type === 'earsiv' ? tr.earsiv : tr.efatura}</Badge>
-                                <span className="text-sm font-semibold text-gray-900">₺{(doc.grand_total ?? 0).toLocaleString('tr-TR')}</span>
-                                <span className="text-xs text-gray-500">{getEdocStatusLabel(doc.status, tr as Record<string, string>)}</span>
+                              <div className="flex items-center gap-1.5 flex-wrap justify-end min-w-0">
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">{doc.document_type === 'earsiv' ? tr.earsiv : tr.efatura}</Badge>
+                                <Badge variant="secondary" className="text-[10px] font-normal px-1.5 py-0">{getEdocStatusLabel(doc.status, tr as Record<string, string>)}</Badge>
                                 {doc.ettn && (
                                   <>
-                                    <Button variant="outline" size="sm" className="text-xs" disabled={viewingDocId === doc.ettn} onClick={() => handleViewXml(doc.ettn, 'outgoing')}>
-                                      {viewingDocId === doc.ettn ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileText className="h-3.5 w-3.5 mr-1" />}
-                                      XML
-                                    </Button>
-                                    <Button variant="outline" size="sm" className="text-xs" disabled={viewingDocId === doc.ettn} onClick={() => handleViewHtml(doc.ettn, 'outgoing')}>
-                                      {viewingDocId === doc.ettn ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Eye className="h-3.5 w-3.5 mr-1" />}
-                                      {tr.viewPdf}
-                                    </Button>
+                                    <button
+                                      type="button"
+                                      disabled={viewingDocId === doc.ettn}
+                                      onClick={() => handleViewXml(doc.ettn, 'outgoing')}
+                                      title="XML"
+                                      className="edoc-icon-btn"
+                                      style={{ width: 18, height: 18, minWidth: 18, minHeight: 18, padding: 0 }}
+                                    >
+                                      {viewingDocId === doc.ettn ? <Loader2 className="h-2 w-2 animate-spin" /> : <FileText className="h-2 w-2" />}
+                                    </button>
+                                    <button
+                                      type="button"
+                                      disabled={viewingDocId === doc.ettn}
+                                      onClick={() => handleViewHtml(doc.ettn, 'outgoing')}
+                                      title={tr.viewPdf}
+                                      className="edoc-icon-btn"
+                                      style={{ width: 18, height: 18, minWidth: 18, minHeight: 18, padding: 0 }}
+                                    >
+                                      {viewingDocId === doc.ettn ? <Loader2 className="h-8 w-8 animate-spin" /> : <Eye className="h-8 w-8" />}
+                                    </button>
                                   </>
                                 )}
                               </div>

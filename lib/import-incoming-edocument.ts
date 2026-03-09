@@ -25,17 +25,31 @@ export async function importIncomingEdocumentToPurchase(
   tenantId: string,
   edocumentId: string
 ): Promise<ImportIncomingResult> {
-  const { data: edoc, error: edocErr } = await supabase
+  const baseCols =
+    'id, ettn, invoice_number, sender_vkn, sender_title, subtotal, tax_total, grand_total, issue_date, currency, direction'
+  let result = await supabase
     .from('edocuments')
-    .select(
-      'id, ettn, invoice_number, sender_vkn, sender_title, subtotal, tax_total, grand_total, issue_date, currency, local_purchase_invoice_id, direction'
-    )
+    .select(`${baseCols}, local_purchase_invoice_id`)
     .eq('id', edocumentId)
     .eq('tenant_id', tenantId)
     .single()
 
-  if (edocErr || !edoc) {
-    return { success: false, error: edocErr?.message || 'E-belge bulunamadı.' }
+  if (result.error) {
+    const msg = result.error.message ?? ''
+    const missingCol = msg.includes('local_purchase_invoice_id') || result.error.code === '42703'
+    if (missingCol) {
+      result = await supabase
+        .from('edocuments')
+        .select(baseCols)
+        .eq('id', edocumentId)
+        .eq('tenant_id', tenantId)
+        .single()
+    }
+  }
+
+  const edoc = result.data as (typeof result.data) & { local_purchase_invoice_id?: string | null }
+  if (result.error || !edoc) {
+    return { success: false, error: result.error?.message || 'E-belge bulunamadı.' }
   }
   if (edoc.direction !== 'incoming') {
     return { success: false, error: 'Sadece gelen faturalar içe aktarılabilir.' }
@@ -191,7 +205,7 @@ export async function importIncomingEdocumentToPurchase(
     })
   }
 
-  await supabase
+  const { error: updateErr } = await supabase
     .from('edocuments')
     .update({
       local_purchase_invoice_id: purchaseInvoiceId,
@@ -200,6 +214,14 @@ export async function importIncomingEdocumentToPurchase(
     })
     .eq('id', edocumentId)
     .eq('tenant_id', tenantId)
+
+  if (updateErr) {
+    const msg = updateErr.message ?? ''
+    const missingCol = msg.includes('local_purchase_invoice_id') || updateErr.code === '42703'
+    if (!missingCol) {
+      return { success: false, error: `E-belge güncellenemedi: ${updateErr.message}` }
+    }
+  }
 
   return { success: true, purchaseInvoiceId }
 }

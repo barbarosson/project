@@ -22,6 +22,27 @@ export function getEdocStatusI18nKey(status: string): string {
   return GIB_STATUS_TO_KEY[normalized] ?? (normalized.length > 20 ? 'statusProcessing' : normalized)
 }
 
+/** Statuses where the process is considered completed/final; import button should be disabled for incoming. */
+const PROCESS_COMPLETED_STATUSES = new Set([
+  'none',
+  'rejected',
+  'cancelled',
+  'envelopeisrejected',
+  'envelopeiscancelled',
+  'accepted', // already accepted/final
+])
+
+/**
+ * Returns true when the e-document status indicates a completed/final process.
+ * Use to disable "İçeri aktar" for incoming invoices in these states.
+ */
+export function isEdocProcessCompleted(status: string | null | undefined): boolean {
+  if (status == null || typeof status !== 'string') return false
+  const s = status.trim()
+  if (s === '') return false
+  return PROCESS_COMPLETED_STATUSES.has(s.toLowerCase())
+}
+
 /**
  * Returns a human-readable label for e-document status.
  * Pass the edocuments slice of your i18n object (e.g. t.edocuments).

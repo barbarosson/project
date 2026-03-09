@@ -12,6 +12,7 @@ import { useLanguage } from '@/contexts/language-context'
 import { toast } from 'sonner'
 import { Loader2, Plus, Trash2, FileText } from 'lucide-react'
 import { Textarea } from '@/components/ui/textarea'
+import { parseUblInvoiceLines } from '@/lib/parse-ubl-invoice'
 
 interface Supplier {
   id: string
@@ -254,51 +255,15 @@ export function AddManualPurchaseInvoiceDialog({
       return
     }
     try {
-      const parser = new DOMParser()
-      const doc = parser.parseFromString(xml, 'text/xml')
-      const lines: LineItem[] = []
-      const invLines = doc.querySelectorAll('InvoiceLine, [id*="InvoiceLine"], cac\\:InvoiceLine, *[local-name()="InvoiceLine"]')
-      if (invLines.length === 0) {
-        const noteEls = doc.querySelectorAll('Note, cbc\\:Note, *[local-name()="Note"]')
-        const qtyEls = doc.querySelectorAll('InvoicedQuantity, cbc\\:InvoicedQuantity, *[local-name()="InvoicedQuantity"]')
-        const amountEls = doc.querySelectorAll('LineExtensionAmount, cbc\\:LineExtensionAmount, *[local-name()="LineExtensionAmount"]')
-        const maxLen = Math.max(noteEls.length, qtyEls.length, amountEls.length, 1)
-        for (let i = 0; i < maxLen; i++) {
-          const desc = noteEls[i]?.textContent?.trim() || ''
-          const qty = qtyEls[i]?.textContent?.trim() || '1'
-          const amount = amountEls[i]?.textContent?.trim() || '0'
-          const numQty = parseFloat(qty.replace(',', '.')) || 1
-          const lineAmount = parseFloat(amount.replace(',', '.')) || 0
-          const unitPrice = numQty > 0 ? lineAmount / numQty : 0
-          lines.push({
-            id: crypto.randomUUID(),
-            product_id: null,
-            description: desc,
-            quantity: qty,
-            unit_price: unitPrice.toFixed(2),
-            vat_rate: DEFAULT_VAT_RATE,
-          })
-        }
-      } else {
-        invLines.forEach((el) => {
-          const desc = el.querySelector('Note, cbc\\:Note, *[local-name()="Note"], Item\\:Description, *[local-name()="Description"]')?.textContent?.trim() || ''
-          const qtyEl = el.querySelector('InvoicedQuantity, cbc\\:InvoicedQuantity, *[local-name()="InvoicedQuantity"]')
-          const amtEl = el.querySelector('LineExtensionAmount, cbc\\:LineExtensionAmount, *[local-name()="LineExtensionAmount"]')
-          const qty = qtyEl?.textContent?.trim() || '1'
-          const amount = amtEl?.textContent?.trim() || '0'
-          const numQty = parseFloat(qty.replace(',', '.')) || 1
-          const lineAmount = parseFloat(amount.replace(',', '.')) || 0
-          const unitPrice = numQty > 0 ? lineAmount / numQty : 0
-          lines.push({
-            id: crypto.randomUUID(),
-            product_id: null,
-            description: desc,
-            quantity: qty,
-            unit_price: unitPrice.toFixed(2),
-            vat_rate: DEFAULT_VAT_RATE,
-          })
-        })
-      }
+      const parsed = parseUblInvoiceLines(xml)
+      const lines: LineItem[] = parsed.map((p) => ({
+        id: crypto.randomUUID(),
+        product_id: null,
+        description: p.description,
+        quantity: String(p.quantity),
+        unit_price: p.unit_price.toFixed(2),
+        vat_rate: p.tax_rate ?? DEFAULT_VAT_RATE,
+      }))
       if (lines.length > 0) {
         setLineItems(lines)
         setShowEInvoiceImport(false)
