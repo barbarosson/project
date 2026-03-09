@@ -111,12 +111,43 @@ export default function EdocumentsPage() {
         : await getOutgoingInvoices(tenantId, beginDate, endDate)
 
       type InvoicesResponse = { Result?: { InvoiceList?: unknown[] }; InvoiceList?: unknown[] }
+      type InvoiceListItem = {
+        Ettn?: string
+        UUID?: string
+        Id?: string
+        InvoiceNumber?: string
+        InvoiceId?: string
+        Status?: string
+        SenderVkn?: string
+        SenderIdentifier?: string
+        SenderTitle?: string
+        SenderName?: string
+        ReceiverVkn?: string
+        ReceiverIdentifier?: string
+        ReceiverTitle?: string
+        ReceiverName?: string
+        IssueDate?: string
+        InvoiceDate?: string
+        InvoiceType?: string
+        Currency?: string
+        SubTotal?: string | number
+        TaxExclusiveAmount?: string | number
+        TaxTotal?: string | number
+        TaxAmount?: string | number
+        GrandTotal?: string | number
+        PayableAmount?: string | number
+        TaxInclusiveAmount?: string | number
+      }
       const res = raw as InvoicesResponse | undefined
-      const invoiceList = res?.Result?.InvoiceList ?? res?.InvoiceList ?? []
+      const invoiceList: InvoiceListItem[] = Array.isArray(res?.Result?.InvoiceList)
+        ? (res.Result.InvoiceList as InvoiceListItem[])
+        : Array.isArray(res?.InvoiceList)
+          ? (res.InvoiceList as InvoiceListItem[])
+          : []
       let imported = 0
 
       for (const inv of invoiceList) {
-        const ettn = inv.Ettn || inv.UUID || inv.Id
+        const ettn = inv.Ettn ?? inv.UUID ?? inv.Id
         if (!ettn) continue
 
         const { data: existing } = await supabase
