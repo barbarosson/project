@@ -57,8 +57,19 @@ export async function testNesConnection(tenantId: string) {
   return callNesEdocument('test_connection', tenantId)
 }
 
-export async function checkTaxpayer(tenantId: string, vkn: string) {
-  return callNesEdocument('check_taxpayer', tenantId, { vkn })
+export type TaxpayerResponse = {
+  Result?: {
+    CustomerList?: Array<{
+      Title?: string
+      Alias?: string
+      Type?: string
+      RegisterDate?: string
+    }>
+  }
+}
+
+export async function checkTaxpayer(tenantId: string, vkn: string): Promise<TaxpayerResponse> {
+  return callNesEdocument('check_taxpayer', tenantId, { vkn }) as Promise<TaxpayerResponse>
 }
 
 export async function sendInvoice(
