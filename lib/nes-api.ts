@@ -126,8 +126,20 @@ export async function sendEmm(tenantId: string, voucherData: Record<string, unkn
   return callNesEdocument('send_emm', tenantId, { voucher_data: voucherData, edocument_id: edocumentId })
 }
 
-export async function getAccountInfo(tenantId: string) {
-  return callNesEdocument('get_account_info', tenantId)
+export type AccountInfoResponse = {
+  Result?: {
+    RemainingCredit?: number
+    Credit?: number
+    Balance?: number
+    TotalMonthlyUnits?: number
+  }
+  RemainingCredit?: number
+  Credit?: number
+  Balance?: number
+}
+
+export async function getAccountInfo(tenantId: string): Promise<AccountInfoResponse> {
+  return callNesEdocument('get_account_info', tenantId) as Promise<AccountInfoResponse>
 }
 
 export async function getTemplates(tenantId: string) {
