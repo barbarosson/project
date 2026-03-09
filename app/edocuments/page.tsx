@@ -172,9 +172,9 @@ export default function EdocumentsPage() {
             issue_date: inv.IssueDate || inv.InvoiceDate || new Date().toISOString().split('T')[0],
             invoice_type: inv.InvoiceType || 'SATIS',
             currency: inv.Currency || 'TRY',
-            subtotal: parseFloat(inv.SubTotal || inv.TaxExclusiveAmount || '0'),
-            tax_total: parseFloat(inv.TaxTotal || inv.TaxAmount || '0'),
-            grand_total: parseFloat(inv.GrandTotal || inv.PayableAmount || inv.TaxInclusiveAmount || '0'),
+            subtotal: Number(inv.SubTotal ?? inv.TaxExclusiveAmount ?? 0),
+            tax_total: Number(inv.TaxTotal ?? inv.TaxAmount ?? 0),
+            grand_total: Number(inv.GrandTotal ?? inv.PayableAmount ?? inv.TaxInclusiveAmount ?? 0),
             nes_response: inv,
           })
           imported++
