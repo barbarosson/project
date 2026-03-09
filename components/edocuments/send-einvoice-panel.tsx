@@ -36,6 +36,8 @@ interface InvoiceLineItem {
   amount: number
 }
 
+type EdocModuleFlags = { efatura_enabled: boolean; earsiv_enabled: boolean }
+
 export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps) {
   const [invoices, setInvoices] = useState<LocalInvoice[]>([])
   const [loading, setLoading] = useState(true)
@@ -44,11 +46,37 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
   const [docType, setDocType] = useState<'efatura' | 'earsiv'>('efatura')
   const [invoiceType, setInvoiceType] = useState('SATIS')
   const [sendAsDraft, setSendAsDraft] = useState(false)
+  const [moduleFlags, setModuleFlags] = useState<EdocModuleFlags | null>(null)
   const isTr = language === 'tr'
 
   useEffect(() => {
     loadInvoices()
   }, [tenantId])
+
+  useEffect(() => {
+    let cancelled = false
+    supabase
+      .from('edocument_settings')
+      .select('efatura_enabled, earsiv_enabled')
+      .eq('tenant_id', tenantId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled || !data) return
+        setModuleFlags({
+          efatura_enabled: !!data.efatura_enabled,
+          earsiv_enabled: !!data.earsiv_enabled,
+        })
+      })
+    return () => { cancelled = true }
+  }, [tenantId])
+
+  useEffect(() => {
+    if (!moduleFlags) return
+    const { efatura_enabled, earsiv_enabled } = moduleFlags
+    if (earsiv_enabled && !efatura_enabled) setDocType('earsiv')
+    else if (efatura_enabled && !earsiv_enabled) setDocType('efatura')
+    else if (efatura_enabled && earsiv_enabled) setDocType('efatura')
+  }, [moduleFlags])
 
   async function loadInvoices() {
     setLoading(true)
@@ -239,15 +267,32 @@ export function SendEInvoicePanel({ tenantId, language }: SendEInvoicePanelProps
               <label className="text-sm font-medium">
                 {isTr ? 'Belge Türü' : 'Document Type'}
               </label>
-              <Select value={docType} onValueChange={(v) => setDocType(v as 'efatura' | 'earsiv')}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="efatura">{isTr ? 'E-Fatura' : 'E-Invoice'}</SelectItem>
-                  <SelectItem value="earsiv">{isTr ? 'E-Arşiv' : 'E-Archive'}</SelectItem>
-                </SelectContent>
-              </Select>
+              {moduleFlags && moduleFlags.efatura_enabled && moduleFlags.earsiv_enabled ? (
+                <Select value={docType} onValueChange={(v) => setDocType(v as 'efatura' | 'earsiv')}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="efatura">{isTr ? 'E-Fatura' : 'E-Invoice'}</SelectItem>
+                    <SelectItem value="earsiv">{isTr ? 'E-Arşiv' : 'E-Archive'}</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : moduleFlags ? (
+                <div className="flex h-10 items-center rounded-md border border-input bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+                  {docType === 'efatura' ? (isTr ? 'E-Fatura' : 'E-Invoice') : (isTr ? 'E-Arşiv' : 'E-Archive')}
+                  {isTr ? ' (Kuruluma göre)' : ' (per setup)'}
+                </div>
+              ) : (
+                <Select value={docType} onValueChange={(v) => setDocType(v as 'efatura' | 'earsiv')}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="efatura">{isTr ? 'E-Fatura' : 'E-Invoice'}</SelectItem>
+                    <SelectItem value="earsiv">{isTr ? 'E-Arşiv' : 'E-Archive'}</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             <div className="space-y-2">

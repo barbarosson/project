@@ -25,6 +25,7 @@ interface SettingsData {
   provider: string
   api_base_url: string
   api_key: string
+  sender_alias: string
   username: string
   password_encrypted: string
   is_active: boolean
@@ -43,6 +44,7 @@ const defaultSettings: SettingsData = {
   provider: 'nes_bilgi',
   api_base_url: '',
   api_key: '',
+  sender_alias: '',
   username: '',
   password_encrypted: '',
   is_active: false,
@@ -183,10 +185,17 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
               <Input
                 value={settings.api_base_url}
                 onChange={(e) => updateField('api_base_url', e.target.value)}
-                placeholder="https://api.nesbilgi.com.tr"
+                placeholder="https://apitest.nes.com.tr"
               />
               <p className="text-[11px] text-muted-foreground">
-                {language === 'tr' ? 'NES Bilgi tarafından verilen API adresi' : 'API base URL provided by NES Bilgi'}
+                {language === 'tr'
+                  ? 'Dokümantasyon adresi DEĞİL; NES\'in verdiği API adresi. Test: https://apitest.nes.com.tr'
+                  : 'Not the docs URL; use the API base URL from NES. Test: https://apitest.nes.com.tr'}
+              </p>
+              <p className="text-[11px] text-amber-700 dark:text-amber-400 mt-1">
+                {language === 'tr'
+                  ? 'Bağlantı kurulamıyorsa: NES bazen sunucu IP kısıtlaması uygular. Supabase kullandığınız için NES\'e (entegrasyon@nesbilgi.com.tr) cloud sunucu IP\'lerinizi iletip erişim açılmasını isteyin.'
+                  : 'If connection fails: NES may whitelist IPs. Ask NES (entegrasyon@nesbilgi.com.tr) to allow your Supabase/cloud server IPs.'}
               </p>
             </div>
 
@@ -203,6 +212,20 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
                 {language === 'tr'
                   ? 'NES Portal üzerinden üretilen Persisted Access Token. Örnek: 9EE05B6564525810C86A32646DB46A26...'
                   : 'Persisted Access Token generated from NES Portal. Example: 9EE05B6564525810C86A32646DB46A26...'}
+              </p>
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label>{language === 'tr' ? 'Gönderici etiketi (SenderAlias)' : 'Sender alias (SenderAlias)'}</Label>
+              <Input
+                value={settings.sender_alias ?? ''}
+                onChange={(e) => updateField('sender_alias', e.target.value)}
+                placeholder="urn:mail:defaultgb@nes.com.tr"
+              />
+              <p className="text-[11px] text-muted-foreground">
+                {language === 'tr'
+                  ? 'E-Fatura belge yüklemede kullanılır. NES portalında tanımlı gönderici etiketinizi girin.'
+                  : 'Used when uploading e-invoice documents. Enter your sender alias from NES portal.'}
               </p>
             </div>
           </div>
@@ -293,7 +316,7 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
             <div>
               <CardTitle className="text-lg">{language === 'tr' ? 'Modül Ayarları' : 'Module Settings'}</CardTitle>
               <CardDescription>
-                {language === 'tr' ? 'Aktif modülleri seçin' : 'Select active modules'}
+                {language === 'tr' ? 'Firma e-belge türünü seçin; isteğe bağlı diğer modülleri açın' : 'Choose company e-document type; optionally enable other modules'}
               </CardDescription>
             </div>
           </div>
@@ -307,10 +330,45 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
             <Switch checked={settings.is_active} onCheckedChange={(v) => updateField('is_active', v)} />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">{t.companyEdocType}</Label>
+            <p className="text-[11px] text-muted-foreground">
+              {language === 'tr'
+                ? 'Firma ya E-Fatura ya E-Arşiv kullanıcısı olabilir; veya her ikisini birden kullanabilir.'
+                : 'Company can use E-Invoice only, E-Archive only, or both.'}
+            </p>
+            <Select
+              value={
+                settings.efatura_enabled && settings.earsiv_enabled
+                  ? 'both'
+                  : settings.earsiv_enabled
+                    ? 'earsiv'
+                    : 'efatura'
+              }
+              onValueChange={(v: 'efatura' | 'earsiv' | 'both') => {
+                if (v === 'efatura') {
+                  setSettings(prev => ({ ...prev, efatura_enabled: true, earsiv_enabled: false }))
+                } else if (v === 'earsiv') {
+                  setSettings(prev => ({ ...prev, efatura_enabled: false, earsiv_enabled: true }))
+                } else {
+                  setSettings(prev => ({ ...prev, efatura_enabled: true, earsiv_enabled: true }))
+                }
+              }}
+              disabled={!settings.is_active}
+            >
+              <SelectTrigger className="max-w-md">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="efatura">{t.companyEdocTypeEfatura}</SelectItem>
+                <SelectItem value="earsiv">{t.companyEdocTypeEarsiv}</SelectItem>
+                <SelectItem value="both">{t.companyEdocTypeBoth}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3">
             {[
-              { key: 'efatura_enabled' as const, label: t.efatura, desc: language === 'tr' ? 'Elektronik fatura gönder/al' : 'Send/receive e-invoices' },
-              { key: 'earsiv_enabled' as const, label: t.earsiv, desc: language === 'tr' ? 'E-arşiv fatura oluştur' : 'Create e-archive invoices' },
               { key: 'edespatch_enabled' as const, label: t.edespatch, desc: language === 'tr' ? 'E-irsaliye gönder/al' : 'Send/receive e-waybills' },
               { key: 'esmm_enabled' as const, label: t.esmm, desc: language === 'tr' ? 'Serbest meslek makbuzu' : 'Freelancer receipt' },
               { key: 'emm_enabled' as const, label: t.emm, desc: language === 'tr' ? 'Müstahsil makbuzu' : 'Producer receipt' },

@@ -58,7 +58,7 @@ export function EditProductionDialog({ open, onOpenChange, tenantId, order, onSu
 
   async function handleSubmit() {
     if (!formData.product_name.trim()) {
-      toast.error(isTR ? 'Urun adi zorunludur' : 'Product name is required')
+      toast.error(isTR ? 'Ürün adı zorunludur' : 'Product name is required')
       return
     }
 
@@ -85,7 +85,7 @@ export function EditProductionDialog({ open, onOpenChange, tenantId, order, onSu
         .eq('tenant_id', tenantId)
 
       if (error) throw error
-      toast.success(isTR ? 'Uretim emri guncellendi' : 'Production order updated')
+      toast.success(isTR ? 'Üretim emri güncellendi' : 'Production order updated')
       onSuccess()
       onOpenChange(false)
     } catch (error: any) {
@@ -97,17 +97,17 @@ export function EditProductionDialog({ open, onOpenChange, tenantId, order, onSu
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6 !bg-sky-50 border border-sky-200">
         <DialogHeader>
           <DialogTitle>
-            {isTR ? 'Uretim Emrini Duzenle' : 'Edit Production Order'}
+            {isTR ? 'Üretim Emrini Düzenle' : 'Edit Production Order'}
             {order?.order_number && <span className="ml-2 text-sm font-normal text-muted-foreground">({order.order_number})</span>}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div>
-            <Label>{isTR ? 'Urun Adi' : 'Product Name'} *</Label>
+            <Label>{isTR ? 'Ürün Adı' : 'Product Name'} *</Label>
             <Input
               value={formData.product_name}
               onChange={e => setFormData({ ...formData, product_name: e.target.value })}
@@ -125,7 +125,7 @@ export function EditProductionDialog({ open, onOpenChange, tenantId, order, onSu
               />
             </div>
             <div>
-              <Label>{isTR ? 'Uretilen Miktar' : 'Produced Qty'}</Label>
+              <Label>{isTR ? 'Üretilen Miktar' : 'Produced Qty'}</Label>
               <Input
                 type="number"
                 value={formData.quantity_produced}
@@ -152,22 +152,22 @@ export function EditProductionDialog({ open, onOpenChange, tenantId, order, onSu
               <Select value={formData.status} onValueChange={v => setFormData({ ...formData, status: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="planned">{isTR ? 'Planli' : 'Planned'}</SelectItem>
-                  <SelectItem value="in_progress">{isTR ? 'Uretimde' : 'In Progress'}</SelectItem>
+                  <SelectItem value="planned">{isTR ? 'Planlı' : 'Planned'}</SelectItem>
+                  <SelectItem value="in_progress">{isTR ? 'Üretimde' : 'In Progress'}</SelectItem>
                   <SelectItem value="qc_phase">{isTR ? 'Kalite Kontrol' : 'QC Phase'}</SelectItem>
-                  <SelectItem value="completed">{isTR ? 'Tamamlandi' : 'Completed'}</SelectItem>
-                  <SelectItem value="cancelled">{isTR ? 'Iptal' : 'Cancelled'}</SelectItem>
+                  <SelectItem value="completed">{isTR ? 'Tamamlandı' : 'Completed'}</SelectItem>
+                  <SelectItem value="cancelled">{isTR ? 'İptal' : 'Cancelled'}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>{isTR ? 'Oncelik' : 'Priority'}</Label>
+              <Label>{isTR ? 'Öncelik' : 'Priority'}</Label>
               <Select value={formData.priority} onValueChange={v => setFormData({ ...formData, priority: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">{isTR ? 'Dusuk' : 'Low'}</SelectItem>
+                  <SelectItem value="low">{isTR ? 'Düşük' : 'Low'}</SelectItem>
                   <SelectItem value="medium">{isTR ? 'Orta' : 'Medium'}</SelectItem>
-                  <SelectItem value="high">{isTR ? 'Yuksek' : 'High'}</SelectItem>
+                  <SelectItem value="high">{isTR ? 'Yüksek' : 'High'}</SelectItem>
                   <SelectItem value="critical">{isTR ? 'Kritik' : 'Critical'}</SelectItem>
                 </SelectContent>
               </Select>
@@ -187,7 +187,7 @@ export function EditProductionDialog({ open, onOpenChange, tenantId, order, onSu
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>{isTR ? 'Planlanan Baslangic' : 'Planned Start'}</Label>
+              <Label>{isTR ? 'Planlanan Başlangıç' : 'Planned Start'}</Label>
               <Input
                 type="date"
                 value={formData.planned_start_date}
@@ -195,7 +195,7 @@ export function EditProductionDialog({ open, onOpenChange, tenantId, order, onSu
               />
             </div>
             <div>
-              <Label>{isTR ? 'Planlanan Bitis' : 'Planned End'}</Label>
+              <Label>{isTR ? 'Planlanan Bitiş' : 'Planned End'}</Label>
               <Input
                 type="date"
                 value={formData.planned_end_date}
@@ -206,7 +206,7 @@ export function EditProductionDialog({ open, onOpenChange, tenantId, order, onSu
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>{isTR ? 'Gercek Baslangic' : 'Actual Start'}</Label>
+              <Label>{isTR ? 'Gerçek Başlangıç' : 'Actual Start'}</Label>
               <Input
                 type="date"
                 value={formData.actual_start_date}
@@ -214,7 +214,7 @@ export function EditProductionDialog({ open, onOpenChange, tenantId, order, onSu
               />
             </div>
             <div>
-              <Label>{isTR ? 'Gercek Bitis' : 'Actual End'}</Label>
+              <Label>{isTR ? 'Gerçek Bitiş' : 'Actual End'}</Label>
               <Input
                 type="date"
                 value={formData.actual_end_date}
@@ -234,7 +234,7 @@ export function EditProductionDialog({ open, onOpenChange, tenantId, order, onSu
 
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              {isTR ? 'Iptal' : 'Cancel'}
+              {isTR ? 'İptal' : 'Cancel'}
             </Button>
             <Button onClick={handleSubmit} disabled={saving} className="bg-[#0A2540] hover:bg-[#1e3a5f]">
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}

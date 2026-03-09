@@ -55,6 +55,8 @@ export default function ProcurementPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const [createPOOpen, setCreatePOOpen] = useState(false);
   const [goodsReceiptOpen, setGoodsReceiptOpen] = useState(false);
@@ -153,7 +155,10 @@ export default function ProcurementPage() {
       order.po_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.supplier?.name?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const orderDate = order.order_date ? order.order_date.slice(0, 10) : "";
+    const matchesDateFrom = !dateFrom || orderDate >= dateFrom;
+    const matchesDateTo = !dateTo || orderDate <= dateTo;
+    return matchesSearch && matchesStatus && matchesDateFrom && matchesDateTo;
   });
 
   const handleReceiveGoods = (order: PurchaseOrder) => {
@@ -250,10 +255,10 @@ export default function ProcurementPage() {
 
       <div className="space-y-4">
           <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-gray-900">{t.procurement.purchaseOrders}</CardTitle>
-                <div className="flex items-center gap-2">
+            <CardHeader className="pb-4">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <CardTitle className="text-gray-900 text-xl sm:text-2xl shrink-0">{t.procurement.purchaseOrders}</CardTitle>
                   <Button
                     variant="outline"
                     size="sm"
@@ -263,19 +268,21 @@ export default function ProcurementPage() {
                     <Upload className="h-4 w-4 mr-2" />
                     {t.procurement.bulkImport}
                   </Button>
-                  <div className="relative">
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="relative shrink-0">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
                       placeholder={t.procurement.searchOrders}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-10 w-64"
+                      className="pl-10 w-full min-w-[180px] max-w-[16rem]"
                     />
                   </div>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="border rounded-md px-3 py-2 text-sm bg-background"
+                    className="border rounded-md px-3 py-2 text-sm bg-background min-w-[8rem] shrink-0"
                   >
                     <option value="all">{t.procurement.allStatus}</option>
                     <option value="draft">{t.procurement.draft}</option>
@@ -284,6 +291,23 @@ export default function ProcurementPage() {
                     <option value="received">{t.procurement.received}</option>
                     <option value="cancelled">{t.procurement.cancelled}</option>
                   </select>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Input
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => setDateFrom(e.target.value)}
+                      className="w-[10.5rem] min-w-0"
+                      aria-label={t.procurement.startDate}
+                    />
+                    <span className="text-muted-foreground text-sm">–</span>
+                    <Input
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => setDateTo(e.target.value)}
+                      className="w-[10.5rem] min-w-0"
+                      aria-label={t.procurement.endDate}
+                    />
+                  </div>
                 </div>
               </div>
             </CardHeader>

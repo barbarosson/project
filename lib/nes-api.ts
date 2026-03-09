@@ -1,25 +1,18 @@
 import { supabase } from './supabase'
 
-const getHeaders = async () => {
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session?.access_token) {
-    const { data: refreshData } = await supabase.auth.refreshSession()
-    if (!refreshData.session) throw new Error('Not authenticated')
-    return {
-      'Authorization': `Bearer ${refreshData.session.access_token}`,
-      'Content-Type': 'application/json',
-      'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-    }
-  }
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const { data: refreshData } = await supabase.auth.refreshSession()
+  const token = refreshData.session?.access_token
+  if (!token) throw new Error('Oturum gecersiz. Cikis yapip tekrar giris yapin.')
   return {
-    'Authorization': `Bearer ${session.access_token}`,
+    'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json',
     'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
   }
 }
 
-async function callNesEdocument(action: string, tenantId: string, params: Record<string, unknown> = {}) {
-  const headers = await getHeaders()
+async function callNesEdocument(action: string, tenantId: string, params: Record<string, unknown> = {}, retryOn401 = true): Promise<unknown> {
+  const headers = await getAuthHeaders()
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 
   let response: Response
@@ -40,8 +33,22 @@ async function callNesEdocument(action: string, tenantId: string, params: Record
     throw new Error(`NES API beklenmeyen yanit (HTTP ${response.status})`)
   }
 
+  const isAuthError = response.status === 401 || /invalid jwt|invalid token|unauthorized/i.test(String(data?.error ?? data?.message ?? ''))
+
+  if (isAuthError && retryOn401) {
+    await supabase.auth.refreshSession()
+    return callNesEdocument(action, tenantId, params, false)
+  }
+
   if (!data.success) {
-    throw new Error(data.error || 'NES API hatasi')
+    const raw =
+      (typeof data.error === 'string' ? data.error
+      : (data.message ?? data.err ?? (data.details ? String(data.details) : null)))
+      || `NES API hatasi (HTTP ${response.status})`
+    if (isAuthError) {
+      throw new Error(raw)
+    }
+    throw new Error(raw)
   }
   return data.data
 }
@@ -54,8 +61,21 @@ export async function checkTaxpayer(tenantId: string, vkn: string) {
   return callNesEdocument('check_taxpayer', tenantId, { vkn })
 }
 
-export async function sendInvoice(tenantId: string, invoiceData: Record<string, unknown>, edocumentId?: string, draft = false) {
-  return callNesEdocument('send_invoice', tenantId, { invoice_data: invoiceData, edocument_id: edocumentId, draft })
+export async function sendInvoice(
+  tenantId: string,
+  invoiceData: Record<string, unknown>,
+  edocumentId?: string,
+  draft = false,
+  options?: { sender_alias?: string; ubl_xml?: string; receiver_alias?: string }
+) {
+  return callNesEdocument('send_invoice', tenantId, {
+    invoice_data: invoiceData,
+    edocument_id: edocumentId,
+    draft,
+    ...(options?.ubl_xml && { ubl_xml: options.ubl_xml }),
+    ...(options?.sender_alias && { sender_alias: options.sender_alias }),
+    ...(options?.receiver_alias && { receiver_alias: options.receiver_alias }),
+  })
 }
 
 export async function sendEArchive(tenantId: string, invoiceData: Record<string, unknown>, edocumentId?: string) {

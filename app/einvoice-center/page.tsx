@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,13 +20,16 @@ import {
   RefreshCw,
   Ban,
   Eye,
-  Settings2
+  Settings2,
+  Search
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useTenant } from '@/contexts/tenant-context';
 import { useLanguage } from '@/contexts/language-context';
 import { toast } from 'sonner';
 import { EdocumentSettings } from '@/components/edocuments/edocument-settings';
+import { TaxpayerCheck } from '@/components/edocuments/taxpayer-check';
+import { SendEInvoicePanel } from '@/components/edocuments/send-einvoice-panel';
 
 interface EInvoiceDetail {
   id: string;
@@ -51,6 +54,8 @@ interface EInvoiceDetail {
   };
 }
 
+type EdocSetup = { efatura_enabled: boolean; earsiv_enabled: boolean } | null;
+
 export default function EInvoiceCenterPage() {
   const { tenantId } = useTenant();
   const { language, t } = useLanguage();
@@ -60,12 +65,29 @@ export default function EInvoiceCenterPage() {
   const [processing, setProcessing] = useState<string | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<EInvoiceDetail | null>(null);
   const [activeTab, setActiveTab] = useState('pending');
+  const [edocSetup, setEdocSetup] = useState<EdocSetup>(null);
 
   useEffect(() => {
     if (tenantId) {
       loadInvoices();
     }
   }, [tenantId, activeTab]);
+
+  const loadEdocSetup = useCallback(() => {
+    if (!tenantId) return;
+    supabase
+      .from('edocument_settings')
+      .select('efatura_enabled, earsiv_enabled')
+      .eq('tenant_id', tenantId)
+      .maybeSingle()
+      .then(({ data }) => {
+        setEdocSetup(data ? { efatura_enabled: !!data.efatura_enabled, earsiv_enabled: !!data.earsiv_enabled } : null);
+      });
+  }, [tenantId]);
+
+  useEffect(() => {
+    loadEdocSetup();
+  }, [loadEdocSetup]);
 
   const loadInvoices = async () => {
     try {
@@ -280,14 +302,24 @@ export default function EInvoiceCenterPage() {
           </div>
 
           <Tabs defaultValue="invoices" className="space-y-6">
-            <TabsList className="bg-[#0A2540]/10 border border-[#0A2540]/20">
-              <TabsTrigger value="setup" className="data-[state=active]:bg-[#00D4AA] data-[state=active]:text-[#0A2540] font-semibold text-contrast-body">
-                <Settings2 className="h-4 w-4 mr-2" />
+            <TabsList className="h-8 p-0.5 bg-[#0A2540]/10 border border-[#0A2540]/20">
+              <TabsTrigger value="setup" className="h-7 px-2.5 py-0 text-xs data-[state=active]:bg-[#00D4AA] data-[state=active]:text-[#0A2540] font-medium text-contrast-body">
+                <Settings2 className="h-3.5 w-3.5 mr-1.5" />
                 {language === 'tr' ? 'Kurulum' : 'Setup'}
               </TabsTrigger>
-              <TabsTrigger value="invoices" className="data-[state=active]:bg-[#00D4AA] data-[state=active]:text-[#0A2540] font-semibold text-contrast-body">
-                <FileText className="h-4 w-4 mr-2" />
+              <TabsTrigger value="invoices" className="h-7 px-2.5 py-0 text-xs data-[state=active]:bg-[#00D4AA] data-[state=active]:text-[#0A2540] font-medium text-contrast-body">
+                <FileText className="h-3.5 w-3.5 mr-1.5" />
                 {language === 'tr' ? 'Fatura Listesi' : 'Invoice List'}
+              </TabsTrigger>
+              {(edocSetup === null || edocSetup.efatura_enabled) && (
+                <TabsTrigger value="taxpayer" className="h-7 px-2.5 py-0 text-xs data-[state=active]:bg-[#00D4AA] data-[state=active]:text-[#0A2540] font-medium text-contrast-body">
+                  <Search className="h-3.5 w-3.5 mr-1.5" />
+                  {tr.checkTaxpayer}
+                </TabsTrigger>
+              )}
+              <TabsTrigger value="send" className="h-7 px-2.5 py-0 text-xs data-[state=active]:bg-[#00D4AA] data-[state=active]:text-[#0A2540] font-medium text-contrast-body">
+                <Send className="h-3.5 w-3.5 mr-1.5" />
+                {tr.sendInvoice}
               </TabsTrigger>
             </TabsList>
 
@@ -297,8 +329,22 @@ export default function EInvoiceCenterPage() {
                   tenantId={tenantId}
                   language={language}
                   translations={tr}
-                  onSaved={() => {}}
+                  onSaved={loadEdocSetup}
                 />
+              )}
+            </TabsContent>
+
+            {(edocSetup === null || edocSetup.efatura_enabled) && (
+              <TabsContent value="taxpayer" className="mt-0">
+                {tenantId && (
+                  <TaxpayerCheck tenantId={tenantId} language={language} translations={tr} />
+                )}
+              </TabsContent>
+            )}
+
+            <TabsContent value="send" className="mt-0">
+              {tenantId && (
+                <SendEInvoicePanel tenantId={tenantId} language={language} />
               )}
             </TabsContent>
 

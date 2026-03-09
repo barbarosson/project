@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS edocument_settings (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id text NOT NULL,
   provider text NOT NULL DEFAULT 'nes_bilgi',
-  api_base_url text NOT NULL DEFAULT 'https://apitest.nesbilgi.com.tr',
+  api_base_url text NOT NULL DEFAULT 'https://apitest.nes.com.tr',
   username text NOT NULL DEFAULT '',
   password_encrypted text NOT NULL DEFAULT '',
   is_active boolean DEFAULT false,

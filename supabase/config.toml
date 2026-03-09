@@ -1,0 +1,7 @@
+# Supabase local/config - https://supabase.com/docs/guides/cli/config
+
+# NES e-document Edge Function: JWT is validated inside the function (getUser(jwt)).
+# Gateway verification is disabled to avoid "Invalid JWT" when client token format
+# differs from gateway expectations; auth is still enforced in the function.
+[functions.nes-edocument]
+verify_jwt = false
