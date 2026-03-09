@@ -106,11 +106,13 @@ export default function EdocumentsPage() {
       const beginDate = thirtyDaysAgo.toISOString().split('T')[0]
       const endDate = now.toISOString().split('T')[0]
 
-      const result = direction === 'incoming'
+      const raw = direction === 'incoming'
         ? await getIncomingInvoices(tenantId, beginDate, endDate)
         : await getOutgoingInvoices(tenantId, beginDate, endDate)
 
-      const invoiceList = result?.Result?.InvoiceList || result?.InvoiceList || []
+      type InvoicesResponse = { Result?: { InvoiceList?: unknown[] }; InvoiceList?: unknown[] }
+      const res = raw as InvoicesResponse | undefined
+      const invoiceList = res?.Result?.InvoiceList ?? res?.InvoiceList ?? []
       let imported = 0
 
       for (const inv of invoiceList) {
