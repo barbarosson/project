@@ -103,7 +103,7 @@ const FEATURE_TO_ROUTE_MAP: Record<string, FeatureCode[]> = {
   '/branches': ['branches'],
   '/accounting-ai': ['accounting_ai'],
   '/trend-agent': ['trend_agent'],
-  '/edocuments': ['einvoice'],
+  '/einvoice-center': ['einvoice'],
 };
 
 const PLAN_FEATURES: Record<PlanName, FeatureCode[]> = {

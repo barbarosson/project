@@ -16,6 +16,7 @@ import {
   Loader2,
   RefreshCw,
   Eye,
+  MoreVertical,
   Settings2,
   Search,
   FilterX,
@@ -35,6 +36,14 @@ import { useRouter } from 'next/navigation';
 import { EdocumentSettings } from '@/components/edocuments/edocument-settings';
 import { TaxpayerCheck } from '@/components/edocuments/taxpayer-check';
 import { SendEInvoicePanel } from '@/components/edocuments/send-einvoice-panel';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 type EdocSetup = { efatura_enabled: boolean; earsiv_enabled: boolean } | null;
 
@@ -43,6 +52,7 @@ type EdocRow = {
   invoice_number: string | null;
   ettn: string | null;
   status: string;
+  transferred?: boolean | null;
   receiver_title: string | null;
   sender_title: string | null;
   receiver_vkn: string | null;
@@ -157,7 +167,7 @@ export default function EInvoiceCenterPage() {
     setLoading(true);
     try {
       const direction = listSubTab;
-      const baseCols = 'id, invoice_number, ettn, status, receiver_title, sender_title, receiver_vkn, sender_vkn, grand_total, issue_date, document_type, created_at';
+      const baseCols = 'id, invoice_number, ettn, status, transferred, receiver_title, sender_title, receiver_vkn, sender_vkn, grand_total, issue_date, document_type, created_at';
       let query = supabase
         .from('edocuments')
         .select(`${baseCols}, local_purchase_invoice_id`)
@@ -188,11 +198,14 @@ export default function EInvoiceCenterPage() {
 
       if (result.error) {
         const errMsg = result.error.message ?? '';
-        const missingCol = errMsg.includes('local_purchase_invoice_id') || result.error.code === '42703';
+        const missingCol =
+          errMsg.includes('local_purchase_invoice_id') ||
+          errMsg.includes('transferred') ||
+          result.error.code === '42703';
         if (missingCol) {
           query = supabase
             .from('edocuments')
-            .select(baseCols)
+            .select(baseCols.replace(', transferred', ''))
             .eq('tenant_id', tenantId)
             .eq('direction', direction);
           if (direction === 'outgoing') query = query.neq('status', 'draft');
@@ -211,8 +224,47 @@ export default function EInvoiceCenterPage() {
         if (result.error) throw result.error;
       }
       const rows = (result.data ?? []) as EdocRow[];
-      if (direction === 'incoming') setIncomingDocs(rows);
-      else setOutgoingDocs(rows);
+      if (direction === 'incoming') {
+        // Backfill imported state for older records where edocuments.transferred/local_purchase_invoice_id
+        // may not exist or wasn't written: if a purchase_invoice with same invoice_number exists, treat as imported.
+        const invoiceNumbers = Array.from(
+          new Set(
+            rows
+              .map((r) => (r.invoice_number ?? '').trim())
+              .filter((n) => n.length > 0)
+          )
+        )
+        if (invoiceNumbers.length > 0) {
+          const { data: purchaseMatches } = await supabase
+            .from('purchase_invoices')
+            .select('id, invoice_number')
+            .eq('tenant_id', tenantId)
+            .in('invoice_number', invoiceNumbers)
+
+          const byNumber = new Map<string, string>()
+          for (const p of (purchaseMatches ?? []) as Array<{ id: string; invoice_number: string | null }>) {
+            const key = (p.invoice_number ?? '').trim()
+            if (key) byNumber.set(key, p.id)
+          }
+
+          const patched = rows.map((r) => {
+            const key = (r.invoice_number ?? '').trim()
+            const matchId = key ? byNumber.get(key) : undefined
+            if (!matchId) return r
+            return {
+              ...r,
+              local_purchase_invoice_id: r.local_purchase_invoice_id ?? matchId,
+              transferred: true,
+              status: 'transferred',
+            }
+          })
+          setIncomingDocs(patched)
+        } else {
+          setIncomingDocs(rows)
+        }
+      } else {
+        setOutgoingDocs(rows)
+      }
     } catch (e: unknown) {
       console.error('Edocuments load error:', e);
       toast.error(tr.loadError);
@@ -692,18 +744,32 @@ export default function EInvoiceCenterPage() {
                               </div>
                               <div className="flex items-center gap-1.5 flex-wrap justify-end min-w-0">
                                 <Badge variant="outline" className="text-[10px] px-1.5 py-0">{doc.document_type === 'earsiv' ? tr.earsiv : tr.efatura}</Badge>
-                                <Badge variant="secondary" className="text-[10px] font-normal px-1.5 py-0">{getEdocStatusLabel(doc.status, tr as Record<string, string>)}</Badge>
+                                <Badge variant="secondary" className="text-[10px] font-normal px-1.5 py-0">
+                                  {doc.local_purchase_invoice_id || doc.transferred || doc.status === 'transferred'
+                                    ? tr.alreadyImported
+                                    : getEdocStatusLabel(doc.status, tr as Record<string, string>)}
+                                </Badge>
                                 {doc.local_purchase_invoice_id ? (
                                   <Button variant="outline" size="sm" className="h-7 min-h-7 px-2 text-[11px]" onClick={() => router.push('/expenses')} title={tr.goToPurchaseInvoice}>
                                     <ExternalLink className="h-3 w-3 mr-1" />
                                     {tr.goToPurchaseInvoice}
+                                  </Button>
+                                ) : doc.transferred || doc.status === 'transferred' ? (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 min-h-7 px-2 text-[11px]"
+                                    disabled
+                                    title={tr.alreadyImported}
+                                  >
+                                    {tr.alreadyImported}
                                   </Button>
                                 ) : (
                                   <Button
                                     variant="default"
                                     size="sm"
                                     className="h-7 min-h-7 px-2 text-[11px] bg-[#0A2540] hover:bg-[#1e3a5f]"
-                                    disabled={!!importingEdocId || isEdocProcessCompleted(doc.status)}
+                                    disabled={!!importingEdocId || doc.transferred || doc.status === 'transferred' || isEdocProcessCompleted(doc.status)}
                                     onClick={() => handleImportToPurchase(doc)}
                                     title={tr.importToPurchaseButton}
                                   >
@@ -711,30 +777,38 @@ export default function EInvoiceCenterPage() {
                                     {tr.importToPurchaseButton}
                                   </Button>
                                 )}
-                                {doc.ettn && (
-                                  <>
-                                    <button
-                                      type="button"
-                                      disabled={viewingDocId === doc.ettn}
-                                      onClick={() => handleViewXml(doc.ettn, 'incoming')}
-                                      title="XML"
-                                      className="edoc-icon-btn"
-                                      style={{ width: 18, height: 18, minWidth: 18, minHeight: 18, padding: 0 }}
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 text-[#0A2540] hover:bg-gray-100"
+                                      title={language === 'tr' ? 'İşlemler' : 'Actions'}
+                                      aria-label={language === 'tr' ? 'İşlemler' : 'Actions'}
                                     >
-                                      {viewingDocId === doc.ettn ? <Loader2 className="h-2 w-2 animate-spin" /> : <FileText className="h-2 w-2" />}
-                                    </button>
-                                    <button
-                                      type="button"
-                                      disabled={viewingDocId === doc.ettn}
-                                      onClick={() => handleViewHtml(doc.ettn, 'incoming')}
-                                      title={tr.viewPdf}
-                                      className="edoc-icon-btn"
-                                      style={{ width: 18, height: 18, minWidth: 18, minHeight: 18, padding: 0 }}
+                                      <MoreVertical className="h-4 w-4" />
+                                      <span className="ml-1 text-base leading-none select-none">⋮</span>
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>{language === 'tr' ? 'İşlemler' : 'Actions'}</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                      disabled={!doc.ettn || viewingDocId === doc.ettn}
+                                      onClick={(e) => { e.stopPropagation(); handleViewXml(doc.ettn, 'incoming'); }}
                                     >
-                                      {viewingDocId === doc.ettn ? <Loader2 className="h-8 w-8 animate-spin" /> : <Eye className="h-8 w-8" />}
-                                    </button>
-                                  </>
-                                )}
+                                      <FileText className="mr-2 h-4 w-4" />
+                                      {language === 'tr' ? 'XML Göster' : 'View XML'}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      disabled={!doc.ettn || viewingDocId === doc.ettn}
+                                      onClick={(e) => { e.stopPropagation(); handleViewHtml(doc.ettn, 'incoming'); }}
+                                    >
+                                      <Eye className="mr-2 h-4 w-4" />
+                                      {language === 'tr' ? 'PDF Göster' : 'View PDF'}
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                             </div>
                           ))}
@@ -795,30 +869,38 @@ export default function EInvoiceCenterPage() {
                               <div className="flex items-center gap-1.5 flex-wrap justify-end min-w-0">
                                 <Badge variant="outline" className="text-[10px] px-1.5 py-0">{doc.document_type === 'earsiv' ? tr.earsiv : tr.efatura}</Badge>
                                 <Badge variant="secondary" className="text-[10px] font-normal px-1.5 py-0">{getEdocStatusLabel(doc.status, tr as Record<string, string>)}</Badge>
-                                {doc.ettn && (
-                                  <>
-                                    <button
-                                      type="button"
-                                      disabled={viewingDocId === doc.ettn}
-                                      onClick={() => handleViewXml(doc.ettn, 'outgoing')}
-                                      title="XML"
-                                      className="edoc-icon-btn"
-                                      style={{ width: 18, height: 18, minWidth: 18, minHeight: 18, padding: 0 }}
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-7 w-7 text-[#0A2540] hover:bg-gray-100"
+                                      title={language === 'tr' ? 'İşlemler' : 'Actions'}
+                                      aria-label={language === 'tr' ? 'İşlemler' : 'Actions'}
                                     >
-                                      {viewingDocId === doc.ettn ? <Loader2 className="h-2 w-2 animate-spin" /> : <FileText className="h-2 w-2" />}
-                                    </button>
-                                    <button
-                                      type="button"
-                                      disabled={viewingDocId === doc.ettn}
-                                      onClick={() => handleViewHtml(doc.ettn, 'outgoing')}
-                                      title={tr.viewPdf}
-                                      className="edoc-icon-btn"
-                                      style={{ width: 18, height: 18, minWidth: 18, minHeight: 18, padding: 0 }}
+                                      <MoreVertical className="h-4 w-4" />
+                                      <span className="ml-1 text-base leading-none select-none">⋮</span>
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>{language === 'tr' ? 'İşlemler' : 'Actions'}</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                      disabled={!doc.ettn || viewingDocId === doc.ettn}
+                                      onClick={(e) => { e.stopPropagation(); handleViewXml(doc.ettn, 'outgoing'); }}
                                     >
-                                      {viewingDocId === doc.ettn ? <Loader2 className="h-8 w-8 animate-spin" /> : <Eye className="h-8 w-8" />}
-                                    </button>
-                                  </>
-                                )}
+                                      <FileText className="mr-2 h-4 w-4" />
+                                      {language === 'tr' ? 'XML Göster' : 'View XML'}
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      disabled={!doc.ettn || viewingDocId === doc.ettn}
+                                      onClick={(e) => { e.stopPropagation(); handleViewHtml(doc.ettn, 'outgoing'); }}
+                                    >
+                                      <Eye className="mr-2 h-4 w-4" />
+                                      {language === 'tr' ? 'PDF Göster' : 'View PDF'}
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                             </div>
                           ))}

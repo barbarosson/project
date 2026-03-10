@@ -651,7 +651,7 @@ export default function InvoicesPage() {
                             )}
                             {invoice.status === 'paid' && (
                               <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200 cursor-pointer"
-                                onClick={() => router.push('/edocuments')}
+                                onClick={() => router.push('/einvoice-center')}
                               >
                                 <FileCheck2 className="h-2.5 w-2.5 mr-0.5" />
                                 {language === 'tr' ? 'E-Belge' : 'E-Doc'}

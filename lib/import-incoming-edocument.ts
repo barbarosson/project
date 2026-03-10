@@ -54,6 +54,9 @@ export async function importIncomingEdocumentToPurchase(
   if (edoc.direction !== 'incoming') {
     return { success: false, error: 'Sadece gelen faturalar içe aktarılabilir.' }
   }
+  if ((edoc as { status?: string | null }).status?.toLowerCase?.() === 'transferred') {
+    return { success: false, error: 'Bu fatura zaten içeri aktarılmış.' }
+  }
   if (edoc.local_purchase_invoice_id) {
     return {
       success: false,
@@ -260,6 +263,7 @@ export async function importIncomingEdocumentToPurchase(
     .update({
       local_purchase_invoice_id: purchaseInvoiceId,
       transferred: true,
+      status: 'transferred',
       updated_at: new Date().toISOString(),
     })
     .eq('id', edocumentId)
