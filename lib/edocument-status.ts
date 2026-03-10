@@ -3,6 +3,7 @@
  * so the UI shows human-readable labels instead of raw API values.
  */
 const GIB_STATUS_TO_KEY: Record<string, string> = {
+  none: 'statusNotSpecified',
   envelopeiswaitingtobesendedtoreceiverbygib: 'statusWaitingToBeSentByGib',
   envelopeiswaitingtobesenttoreceiverbygib: 'statusWaitingToBeSentByGib',
   envelopeissenttoreceiverbygib: 'statusSentToReceiverByGib',
@@ -24,7 +25,6 @@ export function getEdocStatusI18nKey(status: string): string {
 
 /** Statuses where the process is considered completed/final; import button should be disabled for incoming. */
 const PROCESS_COMPLETED_STATUSES = new Set([
-  'none',
   'rejected',
   'cancelled',
   'envelopeisrejected',
