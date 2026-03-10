@@ -64,20 +64,29 @@ export function parseUblInvoiceLines(xml: string): ParsedUblLine[] {
   const doc = parser.parseFromString(xml, 'text/xml')
   const invLines = getElementsByLocalName(doc, 'InvoiceLine')
   const regexFallback = extractAmountsFromXml(xml)
+  // UBL-TR: first LineExtensionAmount is often document subtotal; rest are per line. Skip first when we have one per line + doc.
   const lineAmounts =
     invLines.length > 0 && regexFallback.amounts.length === invLines.length + 1
       ? regexFallback.amounts.slice(1)
-      : regexFallback.amounts
+      : invLines.length === 0 && regexFallback.amounts.length > 1
+        ? regexFallback.amounts.slice(1)
+        : regexFallback.amounts
   const lineQuantities =
     invLines.length > 0 && regexFallback.quantities.length === invLines.length + 1
       ? regexFallback.quantities.slice(1)
-      : regexFallback.quantities
+      : invLines.length === 0 && regexFallback.quantities.length > 1
+        ? regexFallback.quantities.slice(1)
+        : regexFallback.quantities
   const useRegexAmounts = lineAmounts.length > 0 && lineAmounts.some((a) => a > 0)
   if (invLines.length === 0) {
     const noteEls = getElementsByLocalName(doc, 'Note')
     const qtyEls = getElementsByLocalName(doc, 'InvoicedQuantity')
     const amountEls = getElementsByLocalName(doc, 'LineExtensionAmount')
-    const maxLen = Math.max(noteEls.length, qtyEls.length, amountEls.length, lineAmounts.length, 1)
+    // One line per line-level amount; if we only have doc subtotal (1 amount), create exactly one line.
+    const maxLen =
+      lineAmounts.length >= 1
+        ? lineAmounts.length
+        : Math.max(noteEls.length, qtyEls.length, amountEls.length, 1)
     for (let i = 0; i < maxLen; i++) {
       const desc = noteEls[i]?.textContent?.trim() || ''
       const qtyStr = qtyEls[i]?.textContent?.trim() || '1'
@@ -134,7 +143,7 @@ export function parseUblInvoiceLines(xml: string): ParsedUblLine[] {
     lines.push({
       description: description || 'Kalem',
       quantity: numQty,
-      unit_price: Math.round(unitPrice * 100) / 100,
+      unit_price: unitPrice,
       tax_rate: taxRate,
       tax_amount: Math.round(taxAmount * 100) / 100,
       total,

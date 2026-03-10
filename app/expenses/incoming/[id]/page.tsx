@@ -7,12 +7,30 @@ import { DashboardLayout } from '@/components/dashboard-layout'
 import { AddManualPurchaseInvoiceDialog } from '@/components/add-manual-purchase-invoice-dialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { ArrowLeft, Pencil } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useTenant } from '@/contexts/tenant-context'
 import { useCurrency } from '@/contexts/currency-context'
 import { useLanguage } from '@/contexts/language-context'
 import { toast } from 'sonner'
+
+interface LineItemRow {
+  id: string
+  description: string | null
+  quantity: number
+  unit_price: number
+  tax_rate: number
+  tax_amount: number
+  total: number
+}
 
 interface PurchaseInvoiceRow {
   id: string
@@ -21,6 +39,8 @@ interface PurchaseInvoiceRow {
   invoice_date: string
   due_date: string | null
   total_amount: number
+  subtotal?: number
+  tax_amount?: number
   status: 'pending' | 'accepted' | 'rejected'
   invoice_type: string
   supplier: { company_title: string; name: string } | null
@@ -50,6 +70,7 @@ export default function IncomingInvoiceDetailPage() {
   const { t, language } = useLanguage()
 
   const [invoice, setInvoice] = useState<PurchaseInvoiceRow | null>(null)
+  const [lineItems, setLineItems] = useState<LineItemRow[]>([])
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
 
@@ -61,28 +82,40 @@ export default function IncomingInvoiceDetailPage() {
     }
     let cancelled = false
     ;(async () => {
-      const { data, error } = await supabase
-        .from('purchase_invoices')
-        .select(`
-          id,
-          supplier_id,
-          invoice_number,
-          invoice_date,
-          due_date,
-          total_amount,
-          status,
-          invoice_type,
-          supplier:customers!purchase_invoices_supplier_id_fkey(company_title, name)
-        `)
-        .eq('tenant_id', tenantId)
-        .eq('id', id)
-        .single()
+      const [invRes, linesRes] = await Promise.all([
+        supabase
+          .from('purchase_invoices')
+          .select(`
+            id,
+            supplier_id,
+            invoice_number,
+            invoice_date,
+            due_date,
+            subtotal,
+            tax_amount,
+            total_amount,
+            status,
+            invoice_type,
+            supplier:customers!purchase_invoices_supplier_id_fkey(company_title, name)
+          `)
+          .eq('tenant_id', tenantId)
+          .eq('id', id)
+          .single(),
+        supabase
+          .from('purchase_invoice_line_items')
+          .select('id, description, quantity, unit_price, tax_rate, tax_amount, total')
+          .eq('tenant_id', tenantId)
+          .eq('purchase_invoice_id', id)
+          .order('id', { ascending: true }),
+      ])
       if (cancelled) return
-      if (error || !data) {
+      if (invRes.error || !invRes.data) {
         setNotFound(true)
         setInvoice(null)
+        setLineItems([])
       } else {
-        setInvoice(data as PurchaseInvoiceRow)
+        setInvoice(invRes.data as PurchaseInvoiceRow)
+        setLineItems((linesRes.data ?? []) as LineItemRow[])
       }
       setLoading(false)
     })()
@@ -153,6 +186,14 @@ export default function IncomingInvoiceDetailPage() {
     )
   }
 
+  const subtotal = invoice.subtotal ?? lineItems.reduce((s, l) => s + l.quantity * l.unit_price, 0)
+  const taxTotal = invoice.tax_amount ?? lineItems.reduce((s, l) => s + Number(l.tax_amount ?? 0), 0)
+  const grandTotal = Number(invoice.total_amount)
+
+  const formatUnitPrice = (value: number) =>
+    Number(value).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 8 })
+  const formatTotal = (value: number) => formatCurrency(value)
+
   return (
     <DashboardLayout>
       <div className="w-full max-w-[1600px] mx-auto space-y-6 px-2 sm:px-4">
@@ -175,17 +216,30 @@ export default function IncomingInvoiceDetailPage() {
             {t.common.edit}
           </Button>
         </div>
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm max-w-lg">
-          <h2 className="text-lg font-semibold text-[#0A2540] mb-4">
+        <div className="w-full max-w-6xl mx-auto space-y-6 rounded-xl border border-gray-200 bg-white p-6 sm:p-8 lg:p-10 shadow-md">
+          <h2 className="text-lg font-semibold leading-none tracking-tight uppercase text-[#0A2540]">
             {t.common.view} – {t.expenses.incomingInvoices}
           </h2>
-          <div className="grid gap-3 text-sm">
-            <div>
-              <span className="font-medium text-gray-500">{t.expenses.invoiceNumber}</span>
-              <p className="font-medium">{invoice.invoice_number}</p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div className="space-y-1">
+              <span className="font-medium text-gray-500 block">{t.expenses.supplier}</span>
+              <p className="font-medium text-[#0A2540]">{invoice.supplier?.company_title || invoice.supplier?.name || '–'}</p>
             </div>
-            <div>
-              <span className="font-medium text-gray-500">{t.expenses.invoiceTypeColumn}</span>
+            <div className="space-y-1">
+              <span className="font-medium text-gray-500 block">{t.expenses.invoiceNumber}</span>
+              <p className="font-medium text-[#0A2540]">{invoice.invoice_number}</p>
+            </div>
+            <div className="space-y-1">
+              <span className="font-medium text-gray-500 block">{t.expenses.invoiceDate}</span>
+              <p>{format(new Date(invoice.invoice_date), 'dd MMM yyyy')}</p>
+            </div>
+            <div className="space-y-1">
+              <span className="font-medium text-gray-500 block">{t.expenses.dueDate}</span>
+              <p>{invoice.due_date ? format(new Date(invoice.due_date), 'dd MMM yyyy') : '–'}</p>
+            </div>
+            <div className="space-y-1">
+              <span className="font-medium text-gray-500 block">{t.expenses.invoiceTypeColumn}</span>
               <p>
                 <Badge
                   className={PURCHASE_TYPE_COLORS[invoice.invoice_type || 'purchase'] || 'bg-gray-100 text-gray-800'}
@@ -195,31 +249,68 @@ export default function IncomingInvoiceDetailPage() {
                 </Badge>
               </p>
             </div>
-            <div>
-              <span className="font-medium text-gray-500">{t.expenses.supplier}</span>
-              <p>{invoice.supplier?.company_title || invoice.supplier?.name || '–'}</p>
-            </div>
-            <div>
-              <span className="font-medium text-gray-500">{t.expenses.invoiceDate}</span>
-              <p>{format(new Date(invoice.invoice_date), 'dd MMM yyyy')}</p>
-            </div>
-            {invoice.due_date && (
-              <div>
-                <span className="font-medium text-gray-500">{t.expenses.dueDate}</span>
-                <p>{format(new Date(invoice.due_date), 'dd MMM yyyy')}</p>
-              </div>
-            )}
-            <div>
-              <span className="font-medium text-gray-500">{t.expenses.total}</span>
-              <p className="font-semibold">{formatCurrency(Number(invoice.total_amount), 'TRY')}</p>
-            </div>
-            <div>
-              <span className="font-medium text-gray-500">{t.common.status}</span>
+            <div className="space-y-1">
+              <span className="font-medium text-gray-500 block">{t.common.status}</span>
               <p>
                 {invoice.status === 'pending' && <Badge variant="outline">{t.expenses.pending}</Badge>}
                 {invoice.status === 'accepted' && <Badge className="bg-green-500">{t.expenses.accepted}</Badge>}
                 {invoice.status === 'rejected' && <Badge variant="destructive">{t.expenses.rejected}</Badge>}
               </p>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold text-[#0A2540] mb-3">{t.expenses.lineItems}</h3>
+            <div className="rounded-lg border border-gray-200 overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50">
+                    <TableHead className="text-xs font-medium text-gray-600">#</TableHead>
+                    <TableHead className="text-xs font-medium text-gray-600">{t.expenses.lineDescription}</TableHead>
+                    <TableHead className="text-xs font-medium text-gray-600 text-right">{t.expenses.quantity}</TableHead>
+                    <TableHead className="text-xs font-medium text-gray-600 text-right">{t.expenses.unitPrice}</TableHead>
+                    <TableHead className="text-xs font-medium text-gray-600 text-right">{language === 'tr' ? 'KDV %' : 'VAT %'}</TableHead>
+                    <TableHead className="text-xs font-medium text-gray-600 text-right">{language === 'tr' ? 'KDV Tutarı' : 'VAT Amount'}</TableHead>
+                    <TableHead className="text-xs font-medium text-gray-600 text-right">{t.expenses.lineTotal}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {lineItems.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center text-gray-500 py-4 text-sm">
+                        {language === 'tr' ? 'Satır yok.' : 'No line items.'}
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    lineItems.map((line, idx) => (
+                      <TableRow key={line.id}>
+                        <TableCell className="text-sm">{idx + 1}</TableCell>
+                        <TableCell className="text-sm">{line.description || '–'}</TableCell>
+                        <TableCell className="text-sm text-right">{Number(line.quantity)}</TableCell>
+                        <TableCell className="text-sm text-right">{formatUnitPrice(Number(line.unit_price))} ₺</TableCell>
+                        <TableCell className="text-sm text-right">%{Number(line.tax_rate ?? 0)}</TableCell>
+                        <TableCell className="text-sm text-right">{formatTotal(Number(line.tax_amount ?? 0))}</TableCell>
+                        <TableCell className="text-sm text-right font-medium">{formatTotal(Number(line.total ?? 0))}</TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-blue-200 bg-blue-50/30 p-4 space-y-2 text-sm max-w-md ml-auto">
+            <div className="flex justify-between">
+              <span className="text-gray-600">{t.expenses.subtotal}</span>
+              <span className="font-medium">{formatTotal(Number(subtotal))}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">{t.expenses.totalVat}</span>
+              <span className="font-medium">{formatTotal(Number(taxTotal))}</span>
+            </div>
+            <div className="flex justify-between font-semibold pt-2 border-t border-blue-200">
+              <span>{t.expenses.grandTotal}</span>
+              <span>{formatTotal(grandTotal)}</span>
             </div>
           </div>
         </div>

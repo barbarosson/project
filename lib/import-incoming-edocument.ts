@@ -111,7 +111,7 @@ export async function importIncomingEdocumentToPurchase(
     lines = lines.map((l) => {
       const ratio = totalQty > 0 ? l.quantity / totalQty : 1 / lines.length
       const lineNet = Math.round(ratio * netToUse * 100) / 100
-      const unitPrice = l.quantity > 0 ? Math.round((lineNet / l.quantity) * 100) / 100 : 0
+      const unitPrice = l.quantity > 0 ? lineNet / l.quantity : 0
       const taxAmount = Math.round(ratio * taxToUse * 100) / 100
       const total = Math.round((lineNet + taxAmount) * 100) / 100
       const taxRate = lineNet > 0 && taxAmount > 0 ? Math.round((taxAmount / lineNet) * 10000) / 100 : 18
@@ -234,20 +234,33 @@ export async function importIncomingEdocumentToPurchase(
       const fixedTax = Math.round(ratio * taxToUse * 100) / 100
       total = Math.round((fixedNet + fixedTax) * 100) / 100
       tax = fixedTax
-      const unitPrice = l.quantity > 0 ? Math.round((fixedNet / l.quantity) * 100) / 100 : 0
+      const unitPrice = l.quantity > 0 ? fixedNet / l.quantity : 0
       return { ...l, unit_price: unitPrice, tax_amount: tax, total }
     }
 
     return { ...l, tax_amount: Math.round(tax * 100) / 100, total: Math.round(total * 100) / 100 }
   })
 
-  // If header total from edoc differs significantly from line totals (e.g. 2x),
-  // scale all lines so that their sum exactly matches the document total.
+  // If header total from edoc differs significantly from line totals, scale lines to match.
+  // Do NOT scale when: single line and total already matches (avoid breaking correct 1-line invoices),
+  // or when difference may be tevkifat (withholding) - grand_total can be tax_inclusive minus withholding.
   const currentTotal = normalizedLines.reduce((s, l) => s + (Number(l.total) || 0), 0)
-  if (docGrandTotal > 0 && currentTotal > 0 && Math.abs(currentTotal - docGrandTotal) > 0.02) {
+  const singleLineAndClose =
+    normalizedLines.length === 1 &&
+    docGrandTotal > 0 &&
+    currentTotal > 0 &&
+    Math.abs(currentTotal - docGrandTotal) <= Math.max(0.02, docGrandTotal * 0.01)
+  const possibleTevkifat = docGrandTotal > 0 && currentTotal > docGrandTotal && currentTotal <= docGrandTotal * 1.15
+  if (
+    docGrandTotal > 0 &&
+    currentTotal > 0 &&
+    Math.abs(currentTotal - docGrandTotal) > 0.02 &&
+    !singleLineAndClose &&
+    !(normalizedLines.length === 1 && possibleTevkifat)
+  ) {
     const factor = docGrandTotal / currentTotal
     normalizedLines = normalizedLines.map((l) => {
-      const unitPrice = Math.round(l.unit_price * factor * 100) / 100
+      const unitPrice = l.unit_price * factor
       const tax = Math.round(Number(l.tax_amount ?? 0) * factor * 100) / 100
       const net = unitPrice * l.quantity
       const total = Math.round((net + tax) * 100) / 100
@@ -301,7 +314,7 @@ export async function importIncomingEdocumentToPurchase(
       purchase_invoice_id: purchaseInvoiceId,
       description: line.description || 'Kalem',
       quantity: line.quantity,
-      unit_price: Math.round(line.unit_price * 100) / 100,
+      unit_price: Number(line.unit_price),
       tax_rate: line.tax_rate,
       tax_amount: Math.round(lineTax * 100) / 100,
       total: Math.round(lineTotalWithTax * 100) / 100,
