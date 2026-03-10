@@ -275,7 +275,7 @@ export async function importIncomingEdocumentToPurchase(
       subtotal: Math.round(subtotal * 100) / 100,
       tax_amount: Math.round(taxAmount * 100) / 100,
       total_amount: Math.round(totalAmount * 100) / 100,
-      status: 'pending',
+      status: 'accepted',
       invoice_type: 'purchase',
     })
     .select('id')

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, type ReactNode } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -41,7 +41,6 @@ import { AddManualExpenseDialog } from '@/components/add-manual-expense-dialog'
 import { EditManualExpenseDialog } from '@/components/edit-manual-expense-dialog'
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
 import { ExpenseExcelImportDialog } from '@/components/expense-excel-import-dialog'
-import { AddManualPurchaseInvoiceDialog } from '@/components/add-manual-purchase-invoice-dialog'
 import { format, subDays } from 'date-fns'
 
 interface Expense {
@@ -88,6 +87,7 @@ const PURCHASE_TYPE_COLORS: Record<string, string> = {
 }
 
 export default function ExpensesPage() {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const purchaseFromUrl = searchParams.get('purchase_invoice_id')
   const { tenantId, loading: tenantLoading } = useTenant()
@@ -105,7 +105,6 @@ export default function ExpensesPage() {
   const [purchaseDateFrom, setPurchaseDateFrom] = useState<string>('')
   const [purchaseDateTo, setPurchaseDateTo] = useState<string>('')
   const [isAddExpenseDialogOpen, setIsAddExpenseDialogOpen] = useState(false)
-  const [isAddPurchaseInvoiceDialogOpen, setIsAddPurchaseInvoiceDialogOpen] = useState(false)
   const [isExpenseImportDialogOpen, setIsExpenseImportDialogOpen] = useState(false)
   const [isEditExpenseDialogOpen, setIsEditExpenseDialogOpen] = useState(false)
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null)
@@ -115,9 +114,6 @@ export default function ExpensesPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [expenseToView, setExpenseToView] = useState<Expense | null>(null)
   const [selectedPurchaseIds, setSelectedPurchaseIds] = useState<Set<string>>(new Set())
-  const [purchaseToView, setPurchaseToView] = useState<PurchaseInvoice | null>(null)
-  const [purchaseToEdit, setPurchaseToEdit] = useState<PurchaseInvoice | null>(null)
-  const [isEditPurchaseInvoiceOpen, setIsEditPurchaseInvoiceOpen] = useState(false)
   const [isBulkDeletePurchaseDialogOpen, setIsBulkDeletePurchaseDialogOpen] = useState(false)
   const [isDeletePurchaseDialogOpen, setIsDeletePurchaseDialogOpen] = useState(false)
   const [purchaseToDelete, setPurchaseToDelete] = useState<string | null>(null)
@@ -132,14 +128,13 @@ export default function ExpensesPage() {
   }, [tenantId, tenantLoading])
 
   // When navigated from E-Invoice Center with a specific purchase invoice id,
-  // switch to incoming tab and open the purchase invoice view dialog.
+  // go to the incoming invoice detail page.
   useEffect(() => {
     if (!purchaseFromUrl || !purchaseInvoices.length) return
     const inv = purchaseInvoices.find((i) => i.id === purchaseFromUrl)
     if (!inv) return
-    setActiveTab('incoming')
-    setPurchaseToView(inv)
-  }, [purchaseFromUrl, purchaseInvoices])
+    router.replace(`/expenses/incoming/${purchaseFromUrl}`)
+  }, [purchaseFromUrl, purchaseInvoices, router])
 
   async function fetchTcmbRatesForDates(dates: string[]): Promise<Record<string, TcmbRatesByCurrency>> {
     const fallbackDate = format(new Date(), 'yyyy-MM-dd')
@@ -747,7 +742,7 @@ export default function ExpensesPage() {
                     )}
                     {activeTab === 'incoming' && (
                       <Button
-                        onClick={() => setIsAddPurchaseInvoiceDialogOpen(true)}
+                        onClick={() => router.push('/expenses/incoming/new')}
                         className="shrink-0 bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
                       >
                         <Plus size={16} className="mr-2" />
@@ -1007,16 +1002,11 @@ export default function ExpensesPage() {
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => setPurchaseToView(invoice)}>
+                                  <DropdownMenuItem onClick={() => router.push(`/expenses/incoming/${invoice.id}`)}>
                                     <Eye className="h-4 w-4 mr-2" />
                                     {t.common.view}
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      setPurchaseToEdit(invoice)
-                                      setIsEditPurchaseInvoiceOpen(true)
-                                    }}
-                                  >
+                                  <DropdownMenuItem onClick={() => router.push(`/expenses/incoming/${invoice.id}?mode=edit`)}>
                                     <Pencil className="h-4 w-4 mr-2" />
                                     {t.common.edit}
                                   </DropdownMenuItem>
@@ -1064,22 +1054,6 @@ export default function ExpensesPage() {
         isOpen={isExpenseImportDialogOpen}
         onClose={() => setIsExpenseImportDialogOpen(false)}
         onSuccess={fetchData}
-      />
-
-      <AddManualPurchaseInvoiceDialog
-        open={isAddPurchaseInvoiceDialogOpen}
-        onOpenChange={setIsAddPurchaseInvoiceDialogOpen}
-        onSuccess={fetchData}
-      />
-      <AddManualPurchaseInvoiceDialog
-        open={isEditPurchaseInvoiceOpen}
-        onOpenChange={(open) => {
-          if (!open) setPurchaseToEdit(null)
-          setIsEditPurchaseInvoiceOpen(open)
-        }}
-        onSuccess={fetchData}
-        mode="edit"
-        initialInvoice={purchaseToEdit ?? undefined}
       />
 
       <EditManualExpenseDialog
@@ -1168,55 +1142,6 @@ export default function ExpensesPage() {
         description={language === 'tr' ? `${selectedPurchaseIds.size} alış faturasını silmek istediğinize emin misiniz?` : `Are you sure you want to delete ${selectedPurchaseIds.size} purchase invoice(s)?`}
       />
 
-      <Dialog open={!!purchaseToView} onOpenChange={(open) => !open && setPurchaseToView(null)}>
-        <DialogContent className="max-w-md bg-blue-50 border-blue-200">
-          <DialogHeader>
-            <DialogTitle>{t.common.view} - {t.expenses.incomingInvoices}</DialogTitle>
-          </DialogHeader>
-          {purchaseToView && (
-            <div className="grid gap-3 text-sm">
-              <div>
-                <span className="font-medium text-gray-500">{t.expenses.invoiceNumber}</span>
-                <p className="font-medium">{purchaseToView.invoice_number}</p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-500">{t.expenses.invoiceTypeColumn}</span>
-                <p>
-                  <Badge className={PURCHASE_TYPE_COLORS[purchaseToView.invoice_type || 'purchase'] || 'bg-gray-100 text-gray-800'} variant="secondary">
-                    {PURCHASE_TYPE_LABELS[purchaseToView.invoice_type || 'purchase']?.[language] || (purchaseToView.invoice_type || 'purchase')}
-                  </Badge>
-                </p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-500">{t.expenses.supplier}</span>
-                <p>{purchaseToView.supplier?.company_title || purchaseToView.supplier?.name}</p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-500">{t.expenses.invoiceDate}</span>
-                <p>{format(new Date(purchaseToView.invoice_date), 'dd MMM yyyy')}</p>
-              </div>
-              {purchaseToView.due_date && (
-                <div>
-                  <span className="font-medium text-gray-500">{t.expenses.dueDate}</span>
-                  <p>{format(new Date(purchaseToView.due_date), 'dd MMM yyyy')}</p>
-                </div>
-              )}
-              <div>
-                <span className="font-medium text-gray-500">{t.expenses.total}</span>
-                <p className="font-semibold">{renderAmountWithConversion(Number(purchaseToView.total_amount), 'TRY', format(new Date(purchaseToView.invoice_date), 'yyyy-MM-dd'))}</p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-500">{t.common.status}</span>
-                <p>
-                  {purchaseToView.status === 'pending' && <Badge variant="outline">{t.expenses.pending}</Badge>}
-                  {purchaseToView.status === 'accepted' && <Badge className="bg-green-500">{t.expenses.accepted}</Badge>}
-                  {purchaseToView.status === 'rejected' && <Badge variant="destructive">{t.expenses.rejected}</Badge>}
-                </p>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </DashboardLayout>
   )
 }

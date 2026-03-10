@@ -54,6 +54,8 @@ interface AddManualPurchaseInvoiceDialogProps {
   onSuccess: () => void
   mode?: 'add' | 'edit'
   initialInvoice?: PurchaseInvoiceToEdit | null
+  /** When true, render as full page content (no dialog wrapper). Cancel button calls onOpenChange(false). */
+  asPage?: boolean
 }
 
 const PURCHASE_TYPES = [
@@ -84,8 +86,10 @@ export function AddManualPurchaseInvoiceDialog({
   onSuccess,
   mode = 'add',
   initialInvoice = null,
+  asPage = false,
 }: AddManualPurchaseInvoiceDialogProps) {
   const { tenantId } = useTenant()
+  const effectiveOpen = asPage ? true : open
   const { t, language } = useLanguage()
   const [loading, setLoading] = useState(false)
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
@@ -105,14 +109,14 @@ export function AddManualPurchaseInvoiceDialog({
   const [eInvoiceXml, setEInvoiceXml] = useState('')
 
   useEffect(() => {
-    if (open && tenantId) {
+    if (effectiveOpen && tenantId) {
       fetchSuppliers()
       fetchProducts()
     }
-  }, [open, tenantId])
+  }, [effectiveOpen, tenantId])
 
   useEffect(() => {
-    if (!open || !tenantId) return
+    if (!effectiveOpen || !tenantId) return
     if (mode !== 'edit' || !initialInvoice?.id) return
 
     setFormData({
@@ -154,7 +158,7 @@ export function AddManualPurchaseInvoiceDialog({
         setLineItems([{ id: crypto.randomUUID(), product_id: null, description: '', quantity: '1', unit_price: '', vat_rate: DEFAULT_VAT_RATE }])
       }
     })()
-  }, [open, tenantId, mode, initialInvoice?.id])
+  }, [effectiveOpen, tenantId, mode, initialInvoice?.id])
 
   async function fetchProducts() {
     try {
@@ -392,7 +396,7 @@ export function AddManualPurchaseInvoiceDialog({
         toast.success(t.expenses.invoiceAdded)
       }
       onSuccess()
-      onOpenChange(false)
+      if (!asPage) onOpenChange(false)
       setFormData({
         supplier_id: '',
         invoice_number: '',
@@ -411,54 +415,63 @@ export function AddManualPurchaseInvoiceDialog({
 
   const isTr = language === 'tr'
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-blue-50 border-blue-200">
-        <DialogHeader>
-          <DialogTitle>
-            {mode === 'edit'
-              ? (language === 'tr' ? 'Gelen fatura düzenle' : 'Edit incoming invoice')
-              : t.expenses.addIncomingInvoiceTitle}
-          </DialogTitle>
-          <DialogDescription>
-            {mode === 'edit'
-              ? (language === 'tr' ? 'Fatura bilgilerini ve satırlarını güncelleyin.' : 'Update invoice details and line items.')
-              : t.expenses.addIncomingInvoiceDescription}
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label>{t.expenses.supplier} *</Label>
-            <Select
-              value={formData.supplier_id}
-              onValueChange={(v) => setFormData({ ...formData, supplier_id: v })}
-              required
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={t.expenses.selectSupplier} />
-              </SelectTrigger>
-              <SelectContent>
-                {suppliers.length === 0 && (
-                  <div className="px-2 py-1.5 text-sm text-muted-foreground">{t.expenses.noSuppliersHint}</div>
-                )}
-                {suppliers.map((s) => (
-                  <SelectItem key={s.id} value={s.id}>
-                    {s.company_title || s.name || s.email || s.id}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+  const title = mode === 'edit'
+    ? (language === 'tr' ? 'Gelen fatura düzenle' : 'Edit incoming invoice')
+    : t.expenses.addIncomingInvoiceTitle
+  const description = mode === 'edit'
+    ? (language === 'tr' ? 'Fatura bilgilerini ve satırlarını güncelleyin.' : 'Update invoice details and line items.')
+    : t.expenses.addIncomingInvoiceDescription
+
+  const headerFragment = asPage ? (
+    <div className="space-y-1.5 pb-4">
+      <h2 className="text-lg font-semibold leading-none tracking-tight uppercase">{title}</h2>
+      <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+  ) : (
+    <DialogHeader>
+      <DialogTitle>{title}</DialogTitle>
+      <DialogDescription>{description}</DialogDescription>
+    </DialogHeader>
+  )
+
+  const content = (
+    <>
+      {headerFragment}
+      <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>{t.expenses.supplier} *</Label>
+              <Select
+                value={formData.supplier_id}
+                onValueChange={(v) => setFormData({ ...formData, supplier_id: v })}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={t.expenses.selectSupplier} />
+                </SelectTrigger>
+                <SelectContent>
+                  {suppliers.length === 0 && (
+                    <div className="px-2 py-1.5 text-sm text-muted-foreground">{t.expenses.noSuppliersHint}</div>
+                  )}
+                  {suppliers.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.company_title || s.name || s.email || s.id}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>{t.expenses.invoiceNumber} *</Label>
+              <Input
+                value={formData.invoice_number}
+                onChange={(e) => setFormData({ ...formData, invoice_number: e.target.value })}
+                placeholder={t.expenses.invoiceNumberPlaceholder}
+                required
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label>{t.expenses.invoiceNumber} *</Label>
-            <Input
-              value={formData.invoice_number}
-              onChange={(e) => setFormData({ ...formData, invoice_number: e.target.value })}
-              placeholder={t.expenses.invoiceNumberPlaceholder}
-              required
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>{t.expenses.invoiceDate} *</Label>
               <Input
@@ -633,6 +646,21 @@ export function AddManualPurchaseInvoiceDialog({
             </Button>
           </DialogFooter>
         </form>
+    </>
+  )
+
+  if (asPage) {
+    return (
+      <div className="w-full max-w-6xl mx-auto space-y-6 rounded-xl border border-blue-200 bg-blue-50/80 p-6 sm:p-8 lg:p-10 shadow-md min-h-[60vh]">
+        {content}
+      </div>
+    )
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-blue-50 border-blue-200">
+        {content}
       </DialogContent>
     </Dialog>
   )

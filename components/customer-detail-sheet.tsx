@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import {
   Sheet,
   SheetContent,
@@ -13,6 +14,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Mail, Phone, MapPin, Building2, FileText, DollarSign, Globe, CreditCard, Calendar, StickyNote } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
 import { useCurrency } from '@/contexts/currency-context'
+import { useTenant } from '@/contexts/tenant-context'
+import { supabase } from '@/lib/supabase'
 
 interface Customer {
   id: string
@@ -51,6 +54,7 @@ interface Transaction {
   description: string
   amount: number
   type: 'debit' | 'credit'
+  sortKey: string
 }
 
 interface CustomerDetailSheetProps {
@@ -60,17 +64,73 @@ interface CustomerDetailSheetProps {
 }
 
 export function CustomerDetailSheet({ customer, isOpen, onClose }: CustomerDetailSheetProps) {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const { formatCurrency } = useCurrency()
-  if (!customer) return null
+  const { tenantId } = useTenant()
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [transactionsLoading, setTransactionsLoading] = useState(false)
 
-  const mockTransactions: Transaction[] = [
-    { id: '1', date: '2026-01-20', description: 'Invoice #INV-1001', amount: 5000, type: 'debit' },
-    { id: '2', date: '2026-01-18', description: 'Payment Received', amount: 3000, type: 'credit' },
-    { id: '3', date: '2026-01-15', description: 'Invoice #INV-0998', amount: 2500, type: 'debit' },
-    { id: '4', date: '2026-01-10', description: 'Payment Received', amount: 2500, type: 'credit' },
-    { id: '5', date: '2026-01-05', description: 'Invoice #INV-0992', amount: 4000, type: 'debit' },
-  ]
+  useEffect(() => {
+    if (!isOpen || !customer?.id || !tenantId) {
+      setTransactions([])
+      return
+    }
+    let cancelled = false
+    setTransactionsLoading(true)
+    ;(async () => {
+      try {
+        const [invRes, txRes] = await Promise.all([
+          supabase
+            .from('invoices')
+            .select('id, invoice_number, issue_date, total, amount')
+            .eq('tenant_id', tenantId)
+            .eq('customer_id', customer.id)
+            .order('issue_date', { ascending: false })
+            .limit(30),
+          supabase
+            .from('transactions')
+            .select('id, amount, transaction_date, description, reference_type')
+            .eq('tenant_id', tenantId)
+            .eq('customer_id', customer.id)
+            .eq('transaction_type', 'income')
+            .order('transaction_date', { ascending: false })
+            .limit(30),
+        ])
+        if (cancelled) return
+
+        const invRows = (invRes.data ?? []) as { id: string; invoice_number: string; issue_date: string; total?: number; amount?: number }[]
+        const txRows = (txRes.data ?? []) as { id: string; amount: number; transaction_date: string; description: string | null; reference_type?: string }[]
+
+        const list: Transaction[] = [
+          ...invRows.map((row) => ({
+            id: `inv-${row.id}`,
+            date: row.issue_date,
+            description: `${language === 'tr' ? 'Fatura' : 'Invoice'} #${row.invoice_number}`,
+            amount: Number(row.total ?? row.amount ?? 0),
+            type: 'debit' as const,
+            sortKey: `${row.issue_date}T00`,
+          })),
+          ...txRows.map((row) => ({
+            id: `tx-${row.id}`,
+            date: row.transaction_date,
+            description: row.description?.trim() || (language === 'tr' ? 'Tahsilat' : 'Payment received'),
+            amount: Number(row.amount ?? 0),
+            type: 'credit' as const,
+            sortKey: `${row.transaction_date}T01`,
+          })),
+        ]
+        list.sort((a, b) => (b.sortKey > a.sortKey ? 1 : -1))
+        setTransactions(list.slice(0, 25))
+      } catch (_) {
+        if (!cancelled) setTransactions([])
+      } finally {
+        if (!cancelled) setTransactionsLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [isOpen, customer?.id, tenantId, language])
+
+  if (!customer) return null
 
   const getAccountTypeColor = (type: string) => {
     switch (type) {
@@ -307,25 +367,39 @@ export function CustomerDetailSheet({ customer, isOpen, onClose }: CustomerDetai
           <Separator />
 
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Recent Transactions</h3>
-            <div className="space-y-2">
-              {mockTransactions.map((transaction) => (
-                <div
-                  key={transaction.id}
-                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-900">{transaction.description}</div>
-                    <div className="text-xs text-gray-500 mt-1">{transaction.date}</div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+              {language === 'tr' ? 'Son hareketler' : 'Recent Transactions'}
+            </h3>
+            {transactionsLoading ? (
+              <div className="text-sm text-gray-500 py-4">{language === 'tr' ? 'Yükleniyor...' : 'Loading...'}</div>
+            ) : transactions.length === 0 ? (
+              <div className="text-sm text-gray-500 py-4">{language === 'tr' ? 'Bu caride henüz hareket yok.' : 'No transactions for this customer yet.'}</div>
+            ) : (
+              <div className="space-y-2">
+                {transactions.map((transaction) => (
+                  <div
+                    key={transaction.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-gray-900 truncate">{transaction.description}</div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {new Date(transaction.date).toLocaleDateString(language === 'tr' ? 'tr-TR' : 'en-GB', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                        })}
+                      </div>
+                    </div>
+                    <div className={`text-sm font-semibold shrink-0 ml-2 ${
+                      transaction.type === 'credit' ? 'text-[#00D4AA]' : 'text-gray-900'
+                    }`}>
+                      {transaction.type === 'credit' ? '+' : '-'}{formatCurrency(transaction.amount)}
+                    </div>
                   </div>
-                  <div className={`text-sm font-semibold ${
-                    transaction.type === 'credit' ? 'text-[#00D4AA]' : 'text-gray-900'
-                  }`}>
-                    {transaction.type === 'credit' ? '+' : ''}{transaction.type === 'debit' ? '-' : ''}${transaction.amount.toLocaleString()}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </SheetContent>
