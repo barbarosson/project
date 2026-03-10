@@ -210,9 +210,59 @@ export async function importIncomingEdocumentToPurchase(
   const invoiceNumber = (edoc.invoice_number ?? `E-${edoc.ettn.slice(0, 8)}`).trim()
   const issueDate = (edoc.issue_date ?? new Date().toISOString().split('T')[0]).toString()
 
-  const subtotal = lines.reduce((s, l) => s + (l.quantity * l.unit_price), 0)
-  const taxAmount = lines.reduce((s, l) => s + l.tax_amount, 0)
-  const totalAmount = lines.reduce((s, l) => s + l.total, 0)
+  // Normalize line totals to avoid double-tax cases:
+  // some providers may send tax-inclusive amounts in LineExtensionAmount/total.
+  let normalizedLines = lines.map((l) => {
+    const lineNet = l.quantity * l.unit_price
+    let tax = Number(l.tax_amount ?? 0)
+    let total = Number(l.total ?? 0)
+
+    // If XML-provided total disagrees with net+tax, trust total and derive tax from it.
+    if (total > 0 && Math.abs(total - (lineNet + tax)) > 0.02) {
+      tax = Math.max(0, Math.round((total - lineNet) * 100) / 100)
+    } else if (total <= 0) {
+      total = Math.round((lineNet + tax) * 100) / 100
+    }
+
+    // If we ended up with an obviously wrong "double" total, fall back to document totals proportionally.
+    if (docGrandTotal > 0 && total > docGrandTotal * 1.5) {
+      const netToUse = docSubtotal > 0 ? docSubtotal : Math.max(0, docGrandTotal - docTaxTotal)
+      const taxToUse = docTaxTotal > 0 ? docTaxTotal : Math.max(0, docGrandTotal - netToUse)
+      const sumNet = lines.reduce((s, x) => s + x.quantity * x.unit_price, 0) || 1
+      const ratio = (lineNet / sumNet) || 0
+      const fixedNet = Math.round(ratio * netToUse * 100) / 100
+      const fixedTax = Math.round(ratio * taxToUse * 100) / 100
+      total = Math.round((fixedNet + fixedTax) * 100) / 100
+      tax = fixedTax
+      const unitPrice = l.quantity > 0 ? Math.round((fixedNet / l.quantity) * 100) / 100 : 0
+      return { ...l, unit_price: unitPrice, tax_amount: tax, total }
+    }
+
+    return { ...l, tax_amount: Math.round(tax * 100) / 100, total: Math.round(total * 100) / 100 }
+  })
+
+  // If header total from edoc differs significantly from line totals (e.g. 2x),
+  // scale all lines so that their sum exactly matches the document total.
+  const currentTotal = normalizedLines.reduce((s, l) => s + (Number(l.total) || 0), 0)
+  if (docGrandTotal > 0 && currentTotal > 0 && Math.abs(currentTotal - docGrandTotal) > 0.02) {
+    const factor = docGrandTotal / currentTotal
+    normalizedLines = normalizedLines.map((l) => {
+      const unitPrice = Math.round(l.unit_price * factor * 100) / 100
+      const tax = Math.round(Number(l.tax_amount ?? 0) * factor * 100) / 100
+      const net = unitPrice * l.quantity
+      const total = Math.round((net + tax) * 100) / 100
+      return {
+        ...l,
+        unit_price: unitPrice,
+        tax_amount: tax,
+        total,
+      }
+    })
+  }
+
+  const subtotal = normalizedLines.reduce((s, l) => s + (l.quantity * l.unit_price), 0)
+  const taxAmount = normalizedLines.reduce((s, l) => s + (Number(l.tax_amount) || 0), 0)
+  const totalAmount = normalizedLines.reduce((s, l) => s + (Number(l.total) || 0), 0)
 
   const { data: newInv, error: invErr } = await supabase
     .from('purchase_invoices')
@@ -242,10 +292,10 @@ export async function importIncomingEdocumentToPurchase(
     return { success: false, error: 'Alış faturası kaydı oluşturuldu ancak id alınamadı.' }
   }
 
-  for (const line of lines) {
+  for (const line of normalizedLines) {
     const lineTotal = line.quantity * line.unit_price
-    const lineTax = line.tax_amount
-    const lineTotalWithTax = lineTotal + lineTax
+    const lineTax = Number(line.tax_amount ?? 0)
+    const lineTotalWithTax = Number(line.total ?? (lineTotal + lineTax))
     await supabase.from('purchase_invoice_line_items').insert({
       tenant_id: tenantId,
       purchase_invoice_id: purchaseInvoiceId,

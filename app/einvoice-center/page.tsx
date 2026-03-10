@@ -379,11 +379,11 @@ export default function EInvoiceCenterPage() {
       if (result.success) {
         toast.success(language === 'tr' ? 'Alış faturası oluşturuldu.' : 'Purchase invoice created.');
         loadInvoices();
-      } else if (result.alreadyImported && 'purchaseInvoiceId' in result) {
+      } else if ('alreadyImported' in result && result.alreadyImported) {
         toast.info(language === 'tr' ? 'Zaten aktarılmış.' : 'Already imported.');
         loadInvoices();
       } else {
-        toast.error(result.error);
+        toast.error('error' in result ? result.error : '');
       }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
@@ -750,7 +750,13 @@ export default function EInvoiceCenterPage() {
                                     : getEdocStatusLabel(doc.status, tr as Record<string, string>)}
                                 </Badge>
                                 {doc.local_purchase_invoice_id ? (
-                                  <Button variant="outline" size="sm" className="h-7 min-h-7 px-2 text-[11px]" onClick={() => router.push('/expenses')} title={tr.goToPurchaseInvoice}>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-7 min-h-7 px-2 text-[11px]"
+                                    onClick={() => router.push(`/expenses?purchase_invoice_id=${doc.local_purchase_invoice_id}`)}
+                                    title={tr.goToPurchaseInvoice}
+                                  >
                                     <ExternalLink className="h-3 w-3 mr-1" />
                                     {tr.goToPurchaseInvoice}
                                   </Button>

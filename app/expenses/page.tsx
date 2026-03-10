@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, type ReactNode } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -87,6 +88,8 @@ const PURCHASE_TYPE_COLORS: Record<string, string> = {
 }
 
 export default function ExpensesPage() {
+  const searchParams = useSearchParams()
+  const purchaseFromUrl = searchParams.get('purchase_invoice_id')
   const { tenantId, loading: tenantLoading } = useTenant()
   const { formatCurrency, currency: preferredCurrency, defaultRateType } = useCurrency()
   const { t, language } = useLanguage()
@@ -127,6 +130,16 @@ export default function ExpensesPage() {
       fetchData()
     }
   }, [tenantId, tenantLoading])
+
+  // When navigated from E-Invoice Center with a specific purchase invoice id,
+  // switch to incoming tab and open the purchase invoice view dialog.
+  useEffect(() => {
+    if (!purchaseFromUrl || !purchaseInvoices.length) return
+    const inv = purchaseInvoices.find((i) => i.id === purchaseFromUrl)
+    if (!inv) return
+    setActiveTab('incoming')
+    setPurchaseToView(inv)
+  }, [purchaseFromUrl, purchaseInvoices])
 
   async function fetchTcmbRatesForDates(dates: string[]): Promise<Record<string, TcmbRatesByCurrency>> {
     const fallbackDate = format(new Date(), 'yyyy-MM-dd')
