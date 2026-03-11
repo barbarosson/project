@@ -100,7 +100,17 @@ function buildUblTrFromInvoiceData(data: Record<string, unknown>): string {
   const taxExclusive = Number(data.TaxExclusiveAmount ?? data.SubTotal ?? 0);
   const taxAmount = Number(data.TaxAmount ?? data.TaxTotal ?? 0);
   const withholdingAmount = Number(data.WithholdingAmount ?? data.TevkifatAmount ?? 0);
-  const withholdingReasonCode = escapeXml(String(data.WithholdingReasonCode ?? "9015").trim()) || "9015";
+  // UBL-TR Tevkifat: GIB schematron kod-yuzde uyumu ister. Percent = gercek yuzde: 2/10->20, 5/10->50, 7/10->70, 9/10->90.
+  const TEVKIFAT_CODE_TO_PERCENT: Record<string, number> = {
+    "601": 20, "602": 90, "603": 50, "604": 50, "605": 50, "606": 90, "607": 90, "608": 90, "609": 50, "610": 90,
+    "611": 90, "612": 70, "613": 70, "614": 50, "615": 50, "616": 50, "617": 50, "618": 50, "619": 50, "620": 50,
+    "621": 90, "622": 90, "623": 50,
+  };
+  const rawCode = String(data.WithholdingTaxTypeCode ?? data.WithholdingReasonCode ?? "").trim();
+  const codeMatch = rawCode.match(/^60[1-9]$|^61\d$|^62[0-3]$/);
+  const tevkifatCodeNum = codeMatch ? codeMatch[0] : "602";
+  const tevkifatTaxTypeCode = escapeXml(tevkifatCodeNum);
+  const percentValue = TEVKIFAT_CODE_TO_PERCENT[tevkifatCodeNum] ?? 90;
   const taxInclusive = Number(data.TaxInclusiveAmount ?? 0) || taxExclusive + taxAmount;
   const payable = withholdingAmount > 0
     ? Math.round((taxInclusive - withholdingAmount) * 100) / 100
@@ -176,9 +186,10 @@ function buildUblTrFromInvoiceData(data: Record<string, unknown>): string {
   ${withholdingAmount > 0 ? `<cac:WithholdingTaxTotal>
     <cbc:TaxAmount currencyID="${currency}">${withholdingAmount.toFixed(2)}</cbc:TaxAmount>
     <cac:TaxSubtotal>
-      <cac:TaxCategory><cbc:TaxExemptionReasonCode>${withholdingReasonCode}</cbc:TaxExemptionReasonCode><cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme></cac:TaxCategory>
-      <cbc:TaxableAmount currencyID="${currency}">${taxExclusive.toFixed(2)}</cbc:TaxableAmount>
+      <cbc:TaxableAmount currencyID="${currency}">${taxAmount.toFixed(2)}</cbc:TaxableAmount>
       <cbc:TaxAmount currencyID="${currency}">${withholdingAmount.toFixed(2)}</cbc:TaxAmount>
+      <cbc:Percent>${percentValue}</cbc:Percent>
+      <cac:TaxCategory><cac:TaxScheme><cbc:TaxTypeCode>${tevkifatTaxTypeCode}</cbc:TaxTypeCode></cac:TaxScheme></cac:TaxCategory>
     </cac:TaxSubtotal>
   </cac:WithholdingTaxTotal>` : ""}
   <cac:LegalMonetaryTotal>
