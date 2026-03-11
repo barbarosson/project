@@ -62,6 +62,42 @@ function friendlyError(err: unknown): { message: string; status: number } {
 
 const EINVOICE_API_BASE = "/einvoice";
 
+/** Şirket bilgilerindeki logo URL'ini alır ve indirip FormData'ya eklenebilecek Blob döner. */
+async function fetchCompanyLogoBlob(
+  serviceClient: ReturnType<typeof createClient>,
+  tenant_id: string
+): Promise<{ blob: Blob; filename: string } | null> {
+  const { data: row } = await serviceClient
+    .from("company_settings")
+    .select("logo_url")
+    .eq("tenant_id", tenant_id)
+    .maybeSingle();
+  const logoUrl = (row as { logo_url?: string | null } | null)?.logo_url?.trim();
+  if (!logoUrl || (!logoUrl.startsWith("http://") && !logoUrl.startsWith("https://"))) return null;
+  try {
+    const res = await fetch(logoUrl, { redirect: "follow" });
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    if (!blob.size || !blob.type.startsWith("image/")) return null;
+    const ext = blob.type.includes("png") ? "png" : blob.type.includes("jpeg") || blob.type.includes("jpg") ? "jpg" : "png";
+    return { blob, filename: `logo.${ext}` };
+  } catch {
+    return null;
+  }
+}
+
+/** NES belge yükleme formuna şirket logosunu ekler (varsa). */
+async function attachCompanyLogoToForm(
+  form: FormData,
+  serviceClient: ReturnType<typeof createClient>,
+  tenant_id: string
+): Promise<void> {
+  const logo = await fetchCompanyLogoBlob(serviceClient, tenant_id);
+  if (logo) {
+    form.set("Logo", logo.blob, logo.filename);
+  }
+}
+
 function escapeXml(s: string): string {
   return String(s ?? "")
     .replace(/&/g, "&amp;")
@@ -100,14 +136,14 @@ function buildUblTrFromInvoiceData(data: Record<string, unknown>): string {
   const taxExclusive = Number(data.TaxExclusiveAmount ?? data.SubTotal ?? 0);
   const taxAmount = Number(data.TaxAmount ?? data.TaxTotal ?? 0);
   const withholdingAmount = Number(data.WithholdingAmount ?? data.TevkifatAmount ?? 0);
-  // UBL-TR Tevkifat: GIB schematron kod-yuzde uyumu ister. Percent = gercek yuzde: 2/10->20, 5/10->50, 7/10->70, 9/10->90.
+  // UBL-TR Tevkifat: GIB schematron kod-yüzde uyumu. 2025 tevkifat kodları (edonustur.com referansı).
   const TEVKIFAT_CODE_TO_PERCENT: Record<string, number> = {
-    "601": 20, "602": 90, "603": 50, "604": 50, "605": 50, "606": 90, "607": 90, "608": 90, "609": 50, "610": 90,
-    "611": 90, "612": 70, "613": 70, "614": 50, "615": 50, "616": 50, "617": 50, "618": 50, "619": 50, "620": 50,
-    "621": 90, "622": 90, "623": 50,
+    "601": 40, "602": 90, "603": 70, "604": 50, "605": 50, "606": 90, "607": 90, "608": 90, "609": 70, "610": 90,
+    "611": 90, "612": 90, "613": 90, "614": 50, "615": 70, "616": 50, "617": 70, "618": 70, "619": 70, "620": 70,
+    "621": 90, "622": 90, "623": 50, "624": 20, "625": 30, "626": 20, "627": 50,
   };
   const rawCode = String(data.WithholdingTaxTypeCode ?? data.WithholdingReasonCode ?? "").trim();
-  const codeMatch = rawCode.match(/^60[1-9]$|^61\d$|^62[0-3]$/);
+  const codeMatch = rawCode.match(/^60[1-9]$|^61\d$|^62[0-7]$/);
   const tevkifatCodeNum = codeMatch ? codeMatch[0] : "602";
   const tevkifatTaxTypeCode = escapeXml(tevkifatCodeNum);
   const percentValue = TEVKIFAT_CODE_TO_PERCENT[tevkifatCodeNum] ?? 90;
@@ -647,6 +683,7 @@ Deno.serve(async (req: Request) => {
           form.set("SourceApp", "project-bolt");
           form.set("AutoSaveCompany", "false");
           if (params.receiver_alias) form.set("ReceiverAlias", String(params.receiver_alias));
+          await attachCompanyLogoToForm(form, serviceClient, tenant_id);
           result = await nesRequest(einvoiceBase, nesToken, "POST", "/v1/uploads/document", form, 30000);
         } else if (invoiceData && typeof invoiceData === "object") {
           const payload = { ...invoiceData, DraftFlag: params.draft ? 1 : 0 };
@@ -755,6 +792,7 @@ Deno.serve(async (req: Request) => {
                 form.set("SourceApp", "project-bolt");
                 form.set("AutoSaveCompany", "false");
                 if (params.receiver_alias) form.set("ReceiverAlias", String(params.receiver_alias));
+                await attachCompanyLogoToForm(form, serviceClient, tenant_id);
                 result = await nesRequest(einvoiceBase, nesToken, "POST", "/v1/uploads/document", form, 30000);
               } catch (ublErr: unknown) {
                 const ublMsg = ublErr instanceof Error ? ublErr.message : String(ublErr);
@@ -794,6 +832,7 @@ Deno.serve(async (req: Request) => {
         if (params.edocument_id) {
           const res = result as Record<string, unknown> | null;
           const uuid = (res?.uuid ?? res?.id ?? res?.Ettn ?? res?.ettn) as string | undefined;
+          const docNumber = (res?.documentNumber ?? res?.DocumentNumber ?? res?.invoiceNumber ?? res?.InvoiceNumber ?? res?.DocumentNo) as string | undefined;
           let status = params.draft ? "draft" : "queued";
           if (!params.draft && res && typeof res === "object") {
             const raw = (res.RecordStatus ?? res.recordStatus ?? res.Status ?? res.status) as string | undefined;
@@ -801,15 +840,35 @@ Deno.serve(async (req: Request) => {
               status = raw.trim().toLowerCase();
             }
           }
+          const updatePayload: Record<string, unknown> = {
+            status,
+            ettn: uuid ?? undefined,
+            nes_response: result,
+            updated_at: new Date().toISOString(),
+          };
+          if (typeof docNumber === "string" && docNumber.trim()) {
+            updatePayload.invoice_number = docNumber.trim();
+          }
           await serviceClient
             .from("edocuments")
-            .update({
-              status,
-              ettn: uuid ?? undefined,
-              nes_response: result,
-              updated_at: new Date().toISOString(),
-            })
+            .update(updatePayload)
             .eq("id", params.edocument_id);
+
+          if (typeof docNumber === "string" && docNumber.trim()) {
+            const { data: edocRow } = await serviceClient
+              .from("edocuments")
+              .select("local_invoice_id")
+              .eq("id", params.edocument_id)
+              .single();
+            const localInvoiceId = (edocRow as { local_invoice_id?: string } | null)?.local_invoice_id;
+            if (localInvoiceId) {
+              await serviceClient
+                .from("invoices")
+                .update({ invoice_number: docNumber.trim(), updated_at: new Date().toISOString() })
+                .eq("id", localInvoiceId)
+                .eq("tenant_id", tenant_id);
+            }
+          }
 
           await serviceClient.from("edocument_activity_log").insert({
             tenant_id,
@@ -845,6 +904,7 @@ Deno.serve(async (req: Request) => {
         form.set("SourceApp", "project-bolt");
         form.set("AutoSaveCompany", "false");
         if (params.receiver_alias) form.set("ReceiverAlias", String(params.receiver_alias));
+        await attachCompanyLogoToForm(form, serviceClient, tenant_id);
         result = await nesRequest(einvoiceBase, nesToken, "POST", "/v1/uploads/document", form, 30000);
         break;
       }

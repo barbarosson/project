@@ -15,12 +15,14 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Card, CardContent } from '@/components/ui/card'
-import { Plus, Loader2, Eye, MoreVertical, Edit, Trash2, Upload, AlertCircle, ShoppingCart, FileCheck2, CheckSquare, Search, Send, FileText } from 'lucide-react'
+import { Plus, Loader2, Eye, MoreVertical, Edit, Trash2, Upload, AlertCircle, ShoppingCart, FileCheck2, CheckSquare, Search, Send, FileText, Copy } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
 import { getInvoiceHtml } from '@/lib/nes-api'
 import { sendEInvoiceFromInvoiceId } from '@/lib/send-einvoice-from-invoice'
+import { copyInvoice } from '@/lib/copy-invoice'
+import { TevkifatReasonSendDialog } from '@/components/edocuments/tevkifat-reason-send-dialog'
 import { Toaster } from '@/components/ui/sonner'
 import {
   DropdownMenu,
@@ -38,6 +40,7 @@ import { useLanguage } from '@/contexts/language-context'
 import { getEdocStatusLabel } from '@/lib/edocument-status'
 import { useCurrency } from '@/contexts/currency-context'
 import { DollarSign } from 'lucide-react'
+import { getInvoiceXml } from '@/lib/nes-api'
 
 interface Invoice {
   id: string
@@ -57,6 +60,7 @@ interface Invoice {
   created_at: string
   order_id?: string | null
   staff_id?: string | null
+  withholding_amount?: number
   customers: {
     name: string
     company_title: string
@@ -97,6 +101,9 @@ export default function InvoicesPage() {
   const [deletingInvoice, setDeletingInvoice] = useState<any>(null)
   const [payingInvoice, setPayingInvoice] = useState<any>(null)
   const [sendingEInvoiceId, setSendingEInvoiceId] = useState<string | null>(null)
+  const [copyingInvoiceId, setCopyingInvoiceId] = useState<string | null>(null)
+  const [invoiceToSendTevkifat, setInvoiceToSendTevkifat] = useState<Invoice | null>(null)
+  const [invoiceEdocs, setInvoiceEdocs] = useState<Record<string, { ettn: string; status: string; document_type: string }>>({})
 
   useEffect(() => {
     if (!tenantLoading && tenantId) {
@@ -139,6 +146,30 @@ export default function InvoicesPage() {
       if (error) throw error
 
       setInvoices(invoicesWithDefaults || [])
+
+      const ids = (invoicesWithDefaults || []).map((inv: Invoice) => inv.id).filter(Boolean)
+      if (ids.length > 0) {
+        const { data: edocs } = await supabase
+          .from('edocuments')
+          .select('local_invoice_id, ettn, status, document_type')
+          .eq('tenant_id', tenantId)
+          .eq('direction', 'outgoing')
+          .in('local_invoice_id', ids)
+        const map: Record<string, { ettn: string; status: string; document_type: string }> = {}
+        for (const row of edocs || []) {
+          const lid = (row as { local_invoice_id?: string }).local_invoice_id
+          if (lid && (row as { ettn?: string }).ettn) {
+            map[lid] = {
+              ettn: (row as { ettn: string }).ettn,
+              status: (row as { status: string }).status ?? '',
+              document_type: (row as { document_type?: string }).document_type ?? 'efatura',
+            }
+          }
+        }
+        setInvoiceEdocs(map)
+      } else {
+        setInvoiceEdocs({})
+      }
     } catch (error) {
       console.error('Error fetching invoices:', error)
     } finally {
@@ -180,6 +211,24 @@ export default function InvoicesPage() {
     setShowEditDialog(true)
   }
 
+  async function handleCopyInvoice(invoice: any) {
+    if (!tenantId || copyingInvoiceId) return
+    setCopyingInvoiceId(invoice.id)
+    try {
+      const result = await copyInvoice(tenantId, invoice.id)
+      if (result.success) {
+        toast.success(language === 'tr' ? 'Fatura kopyalandı.' : 'Invoice copied.')
+        await router.push(`/invoices/${result.newInvoiceId}`)
+      } else {
+        toast.error(result.error)
+      }
+    } catch (e: any) {
+      toast.error(e?.message || (language === 'tr' ? 'Kopyalama başarısız' : 'Copy failed'))
+    } finally {
+      setCopyingInvoiceId(null)
+    }
+  }
+
   function handleDelete(invoice: any) {
     if (Number(invoice.paid_amount ?? 0) > 0.01) {
       toast.error(t.invoices.cannotDeleteInvoiceWithPayments)
@@ -191,6 +240,11 @@ export default function InvoicesPage() {
 
   async function handleSendEInvoice(invoice: any) {
     if (!tenantId || invoice.status === 'sent') return
+    const wh = Number(invoice.withholding_amount ?? 0)
+    if (wh > 0) {
+      setInvoiceToSendTevkifat(invoice)
+      return
+    }
     setSendingEInvoiceId(invoice.id)
     try {
       const result = await sendEInvoiceFromInvoiceId(tenantId, invoice.id)
@@ -640,22 +694,70 @@ export default function InvoicesPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex flex-wrap items-center gap-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
                             {invoice.order_id && (
                               <Badge variant="outline" className="text-[10px] bg-teal-50 text-teal-700 border-teal-200 cursor-pointer"
-                                onClick={() => router.push('/orders')}
+                                onClick={(e) => { e.stopPropagation(); router.push('/orders'); }}
                               >
                                 <ShoppingCart className="h-2.5 w-2.5 mr-0.5" />
-                                {language === 'tr' ? 'Siparis' : 'Order'}
+                                {language === 'tr' ? 'Sipariş' : 'Order'}
                               </Badge>
                             )}
-                            {invoice.status === 'paid' && (
-                              <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200 cursor-pointer"
-                                onClick={() => router.push('/einvoice-center')}
-                              >
-                                <FileCheck2 className="h-2.5 w-2.5 mr-0.5" />
-                                {language === 'tr' ? 'E-Belge' : 'E-Doc'}
-                              </Badge>
+                            {invoiceEdocs[invoice.id] && (
+                              <>
+                                <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200 cursor-pointer"
+                                  onClick={(e) => { e.stopPropagation(); router.push('/einvoice-center?tab=outgoing'); }}
+                                  title={language === 'tr' ? 'E-Fatura merkezi' : 'E-Invoice center'}
+                                >
+                                  <FileCheck2 className="h-2.5 w-2.5 mr-0.5" />
+                                  {language === 'tr' ? 'E-Fatura' : 'E-Invoice'}
+                                </Badge>
+                                <button
+                                  type="button"
+                                  className="text-[10px] text-blue-600 hover:underline font-medium"
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    const edoc = invoiceEdocs[invoice.id];
+                                    if (!tenantId || !edoc?.ettn) return;
+                                    try {
+                                      const raw = await getInvoiceXml(tenantId, edoc.ettn, 'outgoing');
+                                      const xml = typeof raw === 'string' ? raw : (raw && typeof raw === 'object' && 'content' in raw ? (raw as { content: string }).content : '');
+                                      if (xml?.trim()) {
+                                        const w = window.open('', '_blank');
+                                        if (w) {
+                                          w.document.write(`<pre style="padding:1rem;font-size:12px;white-space:pre-wrap;word-break:break-all;">${xml.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`);
+                                          w.document.close();
+                                        }
+                                      } else toast.error(language === 'tr' ? 'XML alınamadı' : 'XML not found');
+                                    } catch (err: any) {
+                                      toast.error(err?.message || (language === 'tr' ? 'XML açılamadı' : 'Failed to open XML'));
+                                    }
+                                  }}
+                                >
+                                  XML
+                                </button>
+                                <button
+                                  type="button"
+                                  className="text-[10px] text-blue-600 hover:underline font-medium"
+                                  onClick={async (e) => {
+                                    e.stopPropagation();
+                                    const edoc = invoiceEdocs[invoice.id];
+                                    if (!tenantId || !edoc?.ettn) return;
+                                    try {
+                                      const raw = await getInvoiceHtml(tenantId, edoc.ettn, 'outgoing');
+                                      const html = typeof raw === 'string' ? raw : (raw && typeof raw === 'object' && 'content' in raw ? (raw as { content: string }).content : '');
+                                      if (html?.trim()) {
+                                        const w = window.open('', '_blank');
+                                        if (w) { w.document.write(html); w.document.close(); }
+                                      } else toast.error(language === 'tr' ? 'PDF alınamadı' : 'PDF not found');
+                                    } catch (err: any) {
+                                      toast.error(err?.message || (language === 'tr' ? 'PDF açılamadı' : 'Failed to open PDF'));
+                                    }
+                                  }}
+                                >
+                                  PDF
+                                </button>
+                              </>
                             )}
                           </div>
                         </TableCell>
@@ -675,6 +777,17 @@ export default function InvoicesPage() {
                                 <DropdownMenuItem onClick={() => router.push(`/invoices/${invoice.id}`)}>
                                   <Eye className="h-4 w-4 mr-2" />
                                   {t.invoices.view}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleCopyInvoice(invoice)}
+                                  disabled={!!copyingInvoiceId}
+                                >
+                                  {copyingInvoiceId === invoice.id ? (
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  ) : (
+                                    <Copy className="h-4 w-4 mr-2" />
+                                  )}
+                                  {language === 'tr' ? 'Kopyala' : 'Copy'}
                                 </DropdownMenuItem>
                                 {invoice.status !== 'paid' &&
                                   invoice.status !== 'cancelled' &&
@@ -779,6 +892,22 @@ export default function InvoicesPage() {
             fetchInvoices()
             setPayingInvoice(null)
           }}
+        />
+      )}
+
+      {invoiceToSendTevkifat && (
+        <TevkifatReasonSendDialog
+          open={!!invoiceToSendTevkifat}
+          onOpenChange={(open) => { if (!open) setInvoiceToSendTevkifat(null) }}
+          tenantId={tenantId ?? ''}
+          invoiceId={invoiceToSendTevkifat.id}
+          language={language}
+          onSent={() => {
+            toast.success(language === 'tr' ? 'E-Fatura gönderildi.' : 'E-Invoice sent.')
+            fetchInvoices()
+            setInvoiceToSendTevkifat(null)
+          }}
+          onError={(msg) => { toast.error(msg); setInvoiceToSendTevkifat(null) }}
         />
       )}
 

@@ -8,10 +8,12 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ArrowLeft, Eye, Loader2, Pencil, Send, FileText, FileCheck2 } from 'lucide-react'
+import { ArrowLeft, Eye, Loader2, Pencil, Send, FileText, FileCheck2, Copy } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { getInvoiceHtml } from '@/lib/nes-api'
 import { sendEInvoiceFromInvoiceId } from '@/lib/send-einvoice-from-invoice'
+import { copyInvoice } from '@/lib/copy-invoice'
+import { TevkifatReasonSendDialog } from '@/components/edocuments/tevkifat-reason-send-dialog'
 import { getEdocStatusLabel } from '@/lib/edocument-status'
 import { EInvoicePreview } from '@/components/e-invoice-preview'
 import { Toaster } from '@/components/ui/sonner'
@@ -47,6 +49,7 @@ interface Invoice {
   issue_date: string
   due_date: string
   notes: string
+  withholding_amount?: number
   exchange_rate_overrides?: Record<string, ExchangeRateOverride>
   customers: {
     id: string
@@ -82,7 +85,9 @@ export default function InvoiceDetailPage() {
   const [savingOverride, setSavingOverride] = useState(false)
   const [edocForInvoice, setEdocForInvoice] = useState<{ ettn: string; status: string; document_type: string } | null>(null)
   const [sendingEInvoice, setSendingEInvoice] = useState(false)
+  const [showTevkifatSendDialog, setShowTevkifatSendDialog] = useState(false)
   const [edocRefresh, setEdocRefresh] = useState(0)
+  const [copying, setCopying] = useState(false)
 
   useEffect(() => {
     if (!tenantLoading && tenantId && invoiceId) {
@@ -281,12 +286,41 @@ export default function InvoiceDetailPage() {
               <Eye className="mr-2 h-4 w-4" />
               {t.invoices.previewEInvoice}
             </Button>
+            <Button
+              variant="outline"
+              disabled={copying}
+              onClick={async () => {
+                if (!tenantId || copying) return
+                setCopying(true)
+                try {
+                  const result = await copyInvoice(tenantId, invoice.id)
+                  if (result.success) {
+                    toast.success(language === 'tr' ? 'Fatura kopyalandı.' : 'Invoice copied.')
+                    await router.push(`/invoices/${result.newInvoiceId}`)
+                  } else {
+                    toast.error(result.error)
+                  }
+                } catch (e: any) {
+                  toast.error(e?.message || (language === 'tr' ? 'Kopyalama başarısız' : 'Copy failed'))
+                } finally {
+                  setCopying(false)
+                }
+              }}
+            >
+              {copying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Copy className="mr-2 h-4 w-4" />}
+              {language === 'tr' ? 'Kopyala' : 'Copy'}
+            </Button>
             {invoice.status !== 'sent' && (
               <Button
                 variant="outline"
                 disabled={sendingEInvoice}
                 onClick={async () => {
                   if (!tenantId || sendingEInvoice) return
+                  const wh = Number(invoice.withholding_amount ?? 0)
+                  if (wh > 0) {
+                    setShowTevkifatSendDialog(true)
+                    return
+                  }
                   setSendingEInvoice(true)
                   try {
                     const result = await sendEInvoiceFromInvoiceId(tenantId, invoice.id)
@@ -581,6 +615,22 @@ export default function InvoiceDetailPage() {
           invoice={invoice}
           customer={invoice.customers}
           lineItems={lineItems}
+        />
+      )}
+
+      {invoice && (
+        <TevkifatReasonSendDialog
+          open={showTevkifatSendDialog}
+          onOpenChange={setShowTevkifatSendDialog}
+          tenantId={tenantId ?? ''}
+          invoiceId={invoice.id}
+          language={language}
+          onSent={() => {
+            toast.success(language === 'tr' ? 'E-Fatura gönderildi.' : 'E-Invoice sent.')
+            fetchInvoiceDetails()
+            setEdocRefresh((r) => r + 1)
+          }}
+          onError={(msg) => toast.error(msg)}
         />
       )}
 

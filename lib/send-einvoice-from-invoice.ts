@@ -8,12 +8,15 @@ export type SendEInvoiceResult = { success: boolean; error?: string }
  * Uses edocument_settings to determine docType (efatura vs earsiv). Sends immediately (no draft).
  * On success, sets invoice status to 'sent'.
  */
+export type SendEInvoiceOptions = { sendAsDraft?: boolean; withholdingReasonCode?: string }
+
 export async function sendEInvoiceFromInvoiceId(
   tenantId: string,
   invoiceId: string,
-  _options?: { sendAsDraft?: boolean }
+  options?: SendEInvoiceOptions
 ): Promise<SendEInvoiceResult> {
-  const sendAsDraft = false
+  const sendAsDraft = options?.sendAsDraft ?? false
+  const explicitWithholdingReason = options?.withholdingReasonCode?.trim()
 
   try {
     const { data: existing } = await supabase
@@ -156,15 +159,24 @@ export async function sendEInvoiceFromInvoiceId(
         WithholdingAmount: withholdingAmount,
         TevkifatAmount: withholdingAmount,
         WithholdingReasonCode:
-          (lineItems as Array<{ withholding_reason_code?: string | null }>).find((l) => l.withholding_reason_code)?.withholding_reason_code || '9015',
+          explicitWithholdingReason
+            || (lineItems as Array<{ withholding_reason_code?: string | null }>).find((l) => l.withholding_reason_code)?.withholding_reason_code
+            || '9015',
+        WithholdingTaxTypeCode:
+          (lineItems as Array<{ withholding_ratio?: string | null }>).find((l) =>
+            l.withholding_ratio && /^60[1-9]$|^61\d$|^62[0-7]$/.test(String(l.withholding_ratio))
+          )?.withholding_ratio ?? undefined,
       }),
       Notes: invoice.notes || '',
       Lines: lines,
     }
 
+    const receiverAlias = (customer as { efatura_receiver_alias?: string | null } | null)?.efatura_receiver_alias?.trim()
+
     if (docType === 'efatura') {
       await sendInvoice(tenantId, nesInvoiceData, edoc?.id, sendAsDraft, {
         ...(settings?.sender_alias && { sender_alias: settings.sender_alias }),
+        ...(receiverAlias && { receiver_alias: receiverAlias }),
       })
     } else {
       await sendEArchive(tenantId, nesInvoiceData, edoc?.id)

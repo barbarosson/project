@@ -23,6 +23,7 @@ import { supabase } from '@/lib/supabase'
 import { getInvoiceHtml } from '@/lib/nes-api'
 import { sendEInvoiceFromInvoiceId } from '@/lib/send-einvoice-from-invoice'
 import { getEdocStatusLabel } from '@/lib/edocument-status'
+import { TevkifatReasonSendDialog } from '@/components/edocuments/tevkifat-reason-send-dialog'
 import { toast } from 'sonner'
 import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
@@ -97,6 +98,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
   const [staffList, setStaffList] = useState<{ id: string; name: string; last_name?: string | null; department?: string | null; position?: string | null }[]>([])
   const [edocForInvoice, setEdocForInvoice] = useState<{ ettn: string; status: string; document_type: string } | null>(null)
   const [sendingEInvoice, setSendingEInvoice] = useState(false)
+  const [showTevkifatSendDialog, setShowTevkifatSendDialog] = useState(false)
   const [edocRefresh, setEdocRefresh] = useState(0)
 
   const lastProcessedInvoiceId = useRef<string | null>(null)
@@ -863,7 +865,12 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                     size="sm"
                     disabled={sendingEInvoice}
                     onClick={async () => {
-                      if (!tenantId || sendingEInvoice) return
+                      if (!tenantId || sendingEInvoice || !invoice) return
+                      const wh = Number(invoice.withholding_amount ?? formData.withholding_amount ?? 0)
+                      if (wh > 0) {
+                        setShowTevkifatSendDialog(true)
+                        return
+                      }
                       setSendingEInvoice(true)
                       try {
                         const result = await sendEInvoiceFromInvoiceId(tenantId, invoice.id)
@@ -934,6 +941,11 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                     toast.error(language === 'tr' ? 'E-Fatura bulunamadı.' : 'Invoice not found.')
                     return
                   }
+                  const wh = Number(invoice.withholding_amount ?? formData.withholding_amount ?? 0)
+                  if (wh > 0) {
+                    setShowTevkifatSendDialog(true)
+                    return
+                  }
                   setSendingEInvoice(true)
                   try {
                     const result = await sendEInvoiceFromInvoiceId(tenantId, invoice.id)
@@ -967,6 +979,22 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
         </form>
         )}
       </DialogContent>
+      {invoice && (
+        <TevkifatReasonSendDialog
+          open={showTevkifatSendDialog}
+          onOpenChange={setShowTevkifatSendDialog}
+          tenantId={tenantId ?? ''}
+          invoiceId={invoice.id}
+          language={language}
+          onSent={() => {
+            toast.success(language === 'tr' ? 'E-Fatura gönderildi.' : 'E-Invoice sent.')
+            setFormData((prev) => ({ ...prev, status: 'sent' }))
+            onSuccess()
+            setEdocRefresh((r) => r + 1)
+          }}
+          onError={(msg) => toast.error(msg)}
+        />
+      )}
     </Dialog>
   )
 }

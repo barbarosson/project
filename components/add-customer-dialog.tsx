@@ -108,6 +108,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
     industry_custom: '',
     notes: '',
     e_invoice_enabled: false,
+    efatura_receiver_alias: '',
     status: 'active',
     opening_balance: 0,
     parent_customer_id: null as string | null,
@@ -165,6 +166,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
       industry_custom: '',
       notes: (parent.notes as string) ?? '',
       e_invoice_enabled: Boolean(parent.e_invoice_enabled),
+      efatura_receiver_alias: (parent.efatura_receiver_alias as string) ?? '',
       status: (parent.status as string) ?? 'active',
       opening_balance: 0,
       branch_code: '',
@@ -315,6 +317,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
     industry: 'Sektör',
     notes: 'Notlar',
     e_invoice_enabled: 'E-Fatura',
+    efatura_receiver_alias: 'Alıcı etiket (e-fatura)',
     status: 'Durum',
   }
 
@@ -350,6 +353,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
       ['industry', newIndustry],
       ['notes', formData.notes],
       ['e_invoice_enabled', formData.e_invoice_enabled],
+      ['efatura_receiver_alias', formData.efatura_receiver_alias || ''],
       ['status', formData.status],
     ]
     for (const [key, newVal] of pairs) {
@@ -396,6 +400,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
         industry: showCustomIndustry ? formData.industry_custom : formData.industry || null,
         notes: formData.notes || null,
         e_invoice_enabled: formData.e_invoice_enabled,
+        efatura_receiver_alias: formData.efatura_receiver_alias || null,
         status: formData.status,
       }
       const { error } = await supabase
@@ -530,6 +535,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
       industry_custom: '',
       notes: '',
       e_invoice_enabled: false,
+      efatura_receiver_alias: '',
       status: 'active',
       opening_balance: 0,
       parent_customer_id: null,
@@ -765,6 +771,24 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
                   </Select>
                 )}
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="efatura_receiver_alias">
+                {language === 'tr' ? 'Alıcı etiket (e-fatura)' : 'Receiver alias (e-invoice)'}
+              </Label>
+              <Input
+                id="efatura_receiver_alias"
+                value={formData.efatura_receiver_alias}
+                onChange={(e) => setFormData({ ...formData, efatura_receiver_alias: e.target.value })}
+                placeholder={language === 'tr' ? 'örn. urn:mail:alici@...' : 'e.g. urn:mail:...'}
+                readOnly={isSubFromSheet}
+              />
+              <p className="text-xs text-muted-foreground">
+                {language === 'tr'
+                  ? "E-fatura gönderiminde portala gidecek alıcı etiketi. NES/GIB'de alıcı için tanımlı etiket (boş bırakılırsa portanda manuel güncellenir)."
+                  : 'Receiver alias sent to the e-invoice portal. Leave empty to update manually in the portal.'}
+              </p>
             </div>
 
             <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">

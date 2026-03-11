@@ -253,6 +253,9 @@ export function SendEInvoicePanel({ tenantId, language, translations: tr, initia
           WithholdingAmount: effectiveWithholding,
           TevkifatAmount: effectiveWithholding,
           WithholdingReasonCode: withholdingReasonCode || '9015',
+          WithholdingTaxTypeCode: (lineItems as Array<{ withholding_ratio?: string | null }>).find((l) =>
+            l.withholding_ratio && /^60[1-9]$|^61\d$|^62[0-7]$/.test(String(l.withholding_ratio))
+          )?.withholding_ratio ?? undefined,
         }),
         PayableAmount: payableAmount,
         Notes: invoice.notes || '',
@@ -276,9 +279,12 @@ export function SendEInvoicePanel({ tenantId, language, translations: tr, initia
         })),
       }
 
+      const receiverAlias = customer?.efatura_receiver_alias?.trim()
+
       if (docType === 'efatura') {
         await sendInvoice(tenantId, nesInvoiceData, edoc?.id, sendAsDraft, {
           ...(settings?.sender_alias && { sender_alias: settings.sender_alias }),
+          ...(receiverAlias && { receiver_alias: receiverAlias }),
         })
       } else {
         await sendEArchive(tenantId, nesInvoiceData, edoc?.id)

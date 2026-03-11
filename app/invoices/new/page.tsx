@@ -15,9 +15,10 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Trash2, Save, Eye, Send, Loader2 } from 'lucide-react'
+import { Plus, Trash2, Save, Eye, Send, Loader2, Search, X, Info, ChevronDown, ChevronUp } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { sendEInvoiceFromInvoiceId } from '@/lib/send-einvoice-from-invoice'
+import { TevkifatReasonSendDialog } from '@/components/edocuments/tevkifat-reason-send-dialog'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 import { useTenant } from '@/contexts/tenant-context'
@@ -25,13 +26,23 @@ import { useLanguage } from '@/contexts/language-context'
 import { useCurrency } from '@/contexts/currency-context'
 import { CURRENCY_LIST, getCurrencyLabel } from '@/lib/currencies'
 import { convertAmount, getRateForType, type TcmbRatesByCurrency } from '@/lib/tcmb'
-import { EXPORT_CODES } from '@/lib/invoice-line-codes'
+import { EXPORT_CODES, TEVKIFAT_CODES, TEVKIFAT_RATIOS, getTevkifatPercent, getTevkifatCodesByRatio, getTevkifatRatioFromCode } from '@/lib/invoice-line-codes'
+
+const LINE_UNITS = [
+  { value: 'adet', labelTr: 'Adet', labelEn: 'Piece' },
+  { value: 'kg', labelTr: 'Kg', labelEn: 'Kg' },
+  { value: 'm', labelTr: 'm', labelEn: 'm' },
+  { value: 'm2', labelTr: 'm²', labelEn: 'm²' },
+  { value: 'saat', labelTr: 'Saat', labelEn: 'Hour' },
+  { value: 'gün', labelTr: 'Gün', labelEn: 'Day' },
+]
 
 interface LineItem {
   id: string
   product_name: string
   description: string
   quantity: number
+  unit: string
   unit_price: number
   vat_rate: number
   line_total: number
@@ -91,7 +102,11 @@ export default function NewInvoicePage() {
   const [currency, setCurrency] = useState<string>('TRY')
   const [tcmbRates, setTcmbRates] = useState<TcmbRatesByCurrency | null>(null)
   const [globalWithholdingRatio, setGlobalWithholdingRatio] = useState<string>('none')
+  const [globalTevkifatRatioFilter, setGlobalTevkifatRatioFilter] = useState<string | null>(null)
+  const [ratioFilterByLine, setRatioFilterByLine] = useState<Record<number, string | null>>({})
   const [sendingEInvoice, setSendingEInvoice] = useState(false)
+  const [pendingTevkifatSendInvoiceId, setPendingTevkifatSendInvoiceId] = useState<string | null>(null)
+  const [expandedExtraLineIndex, setExpandedExtraLineIndex] = useState<number | null>(0)
 
   const [lineItems, setLineItems] = useState<LineItem[]>([
     {
@@ -99,6 +114,7 @@ export default function NewInvoicePage() {
       product_name: '',
       description: '',
       quantity: 1,
+      unit: 'adet',
       unit_price: 0,
       vat_rate: 20,
       line_total: 0,
@@ -207,14 +223,11 @@ export default function NewInvoicePage() {
     total_with_vat = Math.round((total_with_vat + otvAmount + oivAmount + accomVal) * 100) / 100
 
     let withholding_amount = 0
-    const ratio = item.withholding_ratio
-    if (ratio && ratio !== 'none' && vat_amount > 0) {
-      const [numStr, denStr] = ratio.split('/')
-      const num = parseFloat(numStr || '')
-      const den = parseFloat(denStr || '')
-      if (num > 0 && den > 0) {
-        const fraction = num / den
-        withholding_amount = Math.round(vat_amount * fraction * 100) / 100
+    const ratioOrCode = item.withholding_ratio
+    if (ratioOrCode && ratioOrCode !== 'none' && vat_amount > 0) {
+      const percent = getTevkifatPercent(ratioOrCode)
+      if (percent > 0) {
+        withholding_amount = Math.round(vat_amount * (percent / 100) * 100) / 100
       }
     }
 
@@ -242,6 +255,7 @@ export default function NewInvoicePage() {
         product_name: '',
         description: '',
         quantity: 1,
+        unit: 'adet',
         unit_price: 0,
         vat_rate: 20,
         line_total: 0,
@@ -356,6 +370,7 @@ export default function NewInvoicePage() {
         accommodation_tax: item.accommodation_tax ?? 0,
         export_code: item.export_code || null,
         withholding_reason_code: item.withholding_reason_code || null,
+        withholding_ratio: item.withholding_ratio || null,
       }))
 
       const { error: lineItemsError } = await supabase
@@ -426,6 +441,11 @@ export default function NewInvoicePage() {
       }
 
       if (andSendEInvoice) {
+        if (totalWithholding > 0) {
+          setPendingTevkifatSendInvoiceId(invoice.id)
+          toast.success(t.invoices.invoiceCreatedSuccess)
+          return
+        }
         const result = await sendEInvoiceFromInvoiceId(tenantId, invoice.id)
         if (result.success) {
           toast.success(language === 'tr' ? 'Fatura kaydedildi ve e-fatura gönderildi.' : 'Invoice saved and e-invoice sent.')
@@ -631,85 +651,96 @@ export default function NewInvoicePage() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>{t.invoices.lineItems}</CardTitle>
-            <Button
-              onClick={addLineItem}
-              size="sm"
-              className="bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              {t.invoices.addLine}
-            </Button>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-gray-900">
+              {language === 'tr' ? 'Hizmet ve Ürünler' : 'Services and Products'}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex justify-end mb-3 gap-2 items-center">
+            <div className="flex flex-wrap justify-end mb-4 gap-3 items-center">
               <span className="text-sm text-gray-600">
-                {language === 'tr' ? 'Tevkifat oranı (tüm satırlar)' : 'Withholding ratio (all lines)'}
+                {language === 'tr' ? 'Tevkifat (tüm satırlar)' : 'Withholding (all lines)'}
               </span>
-              <Select
-                value={globalWithholdingRatio}
-                onValueChange={(value) => {
-                  setGlobalWithholdingRatio(value)
-                  setLineItems((prev) =>
-                    prev.map((li) =>
-                      calculateLineItem({
-                        ...li,
-                        withholding_ratio: value === 'none' ? null : value,
-                      })
+              <div className="flex items-center gap-2">
+                <Label className="text-xs text-gray-600">{language === 'tr' ? 'Oran' : 'Ratio'}</Label>
+                <Select
+                  value={globalTevkifatRatioFilter ?? 'none'}
+                  onValueChange={(value) => {
+                    const v = value === 'none' ? null : value
+                    setGlobalTevkifatRatioFilter(v)
+                    if (v && globalWithholdingRatio !== 'none') {
+                      const codeRatio = getTevkifatRatioFromCode(globalWithholdingRatio)
+                      if (codeRatio !== v) {
+                        setGlobalWithholdingRatio('none')
+                        setLineItems((prev) => prev.map((li) => calculateLineItem({ ...li, withholding_ratio: null })))
+                      }
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-24 border border-gray-300 rounded-md bg-white h-9 text-sm">
+                    <SelectValue placeholder={language === 'tr' ? 'Oran' : 'Ratio'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{language === 'tr' ? 'Yok' : 'None'}</SelectItem>
+                    {TEVKIFAT_RATIOS.map((r) => (
+                      <SelectItem key={r} value={r}>{r}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <Label className="text-xs text-gray-600">{language === 'tr' ? 'Tevkifat nedeni' : 'Reason'}</Label>
+                <Select
+                  value={globalWithholdingRatio}
+                  onValueChange={(value) => {
+                    setGlobalWithholdingRatio(value)
+                    setLineItems((prev) =>
+                      prev.map((li) =>
+                        calculateLineItem({
+                          ...li,
+                          withholding_ratio: value === 'none' ? null : value,
+                        })
+                      )
                     )
-                  )
-                }}
-              >
-                <SelectTrigger className="w-40">
-                  <SelectValue placeholder={language === 'tr' ? 'Seçin' : 'Select'} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{language === 'tr' ? 'Tevkifat yok' : 'No withholding'}</SelectItem>
-                  <SelectItem value="9/10">9/10</SelectItem>
-                  <SelectItem value="7/10">7/10</SelectItem>
-                  <SelectItem value="5/10">5/10</SelectItem>
-                  <SelectItem value="4/10">4/10</SelectItem>
-                  <SelectItem value="3/10">3/10</SelectItem>
-                  <SelectItem value="2/10">2/10</SelectItem>
-                </SelectContent>
-              </Select>
+                    if (value !== 'none') setGlobalTevkifatRatioFilter(getTevkifatRatioFromCode(value))
+                  }}
+                >
+                  <SelectTrigger className="w-56 border border-gray-300 rounded-md bg-white h-9 text-sm">
+                    <SelectValue placeholder={globalTevkifatRatioFilter ? (language === 'tr' ? 'Neden seçin' : 'Select reason') : (language === 'tr' ? 'Önce oran seçin' : 'Select ratio first')} />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[280px]">
+                    <SelectItem value="none">{language === 'tr' ? 'Tevkifat yok' : 'No withholding'}</SelectItem>
+                    {getTevkifatCodesByRatio(globalTevkifatRatioFilter).map((tc) => (
+                      <SelectItem key={tc.code} value={tc.code}>
+                        {tc.code} – {language === 'tr' ? tc.labelTr : tc.labelEn}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-2 text-sm font-semibold">{t.invoices.productService}</th>
-                    <th className="text-left p-2 text-sm font-semibold">{language === 'tr' ? 'Açıklama' : 'Description'}</th>
-                    <th className="text-right p-2 text-sm font-semibold w-24">{t.invoices.quantity}</th>
-                    <th className="text-right p-2 text-sm font-semibold w-32">{t.invoices.unitPrice}</th>
-                    <th className="text-right p-2 text-sm font-semibold w-24">VAT %</th>
-                    <th className="text-right p-2 text-sm font-semibold w-28">
-                      {language === 'tr' ? 'Tevkifat' : 'Withholding'}
-                    </th>
-                    <th className="text-right p-2 text-sm font-semibold w-24">{language === 'tr' ? 'İndirim' : 'Discount'}</th>
-                    <th className="text-right p-2 text-sm font-semibold w-20">ÖTV</th>
-                    <th className="text-right p-2 text-sm font-semibold w-20">ÖİV</th>
-                    <th className="text-right p-2 text-sm font-semibold w-20">{language === 'tr' ? 'Konaklama' : 'Accom.'}</th>
-                    <th className="text-right p-2 text-sm font-semibold w-36">{language === 'tr' ? 'İhraç kodu' : 'Export code'}</th>
-                    <th className="text-right p-2 text-sm font-semibold w-32">{t.invoices.total}</th>
-                    {currency !== companyCurrency && (
-                      <th className="text-right p-2 text-sm font-semibold w-32">
-                        {language === 'tr' ? `Çevrilmiş (${companyCurrency})` : `Converted (${companyCurrency})`}
-                      </th>
-                    )}
-                    <th className="w-12"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lineItems.map((item, index) => (
-                    <tr key={item.id} className="border-b">
-                      <td className="p-2">
+
+            <div className="space-y-6">
+              {lineItems.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="rounded-xl border-2 border-gray-200 bg-white p-5 shadow-sm"
+                >
+                  <div className="grid grid-cols-1 xl:grid-cols-[1fr_1.3fr] gap-6 xl:gap-8">
+                    {/* Sol: Hizmet/Ürün + Açıklama */}
+                    <div className="space-y-4 rounded-lg border border-gray-200 bg-gray-50/50 p-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold text-gray-800">
+                          {language === 'tr' ? 'Hizmet / Ürün' : 'Service / Product'} *
+                        </Label>
                         <Select
                           value={item.product_id || ''}
                           onValueChange={(value) => selectProduct(index, value)}
                         >
-                          <SelectTrigger className="w-full" data-field={`line-item-${index}-product`}>
+                          <SelectTrigger
+                            className="border-2 border-gray-300 rounded-md bg-white px-3 py-2 text-gray-900 font-medium h-10 focus-visible:ring-2 focus-visible:ring-[#0A2540]/20"
+                            data-field={`line-item-${index}-product`}
+                          >
                             <SelectValue placeholder={t.invoices.selectProduct} />
                           </SelectTrigger>
                           <SelectContent>
@@ -724,183 +755,334 @@ export default function NewInvoicePage() {
                           value={item.product_name}
                           onChange={(e) => updateLineItem(index, 'product_name', e.target.value)}
                           placeholder={language === 'tr' ? 'Veya özel ad yazın' : 'Or type custom name'}
-                          className="mt-1"
+                          className="border-2 border-gray-300 rounded-md bg-white px-3 py-2 text-gray-900 font-medium h-10 focus-visible:ring-2 focus-visible:ring-[#0A2540]/20"
                           data-field={`line-item-${index}-product-name`}
                         />
-                      </td>
-                      <td className="p-2">
-                        <Input
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-semibold text-gray-800">
+                          {language === 'tr' ? 'Açıklama' : 'Description'}
+                        </Label>
+                        <Textarea
                           value={item.description}
                           onChange={(e) => updateLineItem(index, 'description', e.target.value)}
                           placeholder={t.invoices.optional}
+                          className="min-h-[80px] border-2 border-gray-300 rounded-md bg-white px-3 py-2 text-gray-900 font-medium resize-none focus-visible:ring-2 focus-visible:ring-[#0A2540]/20"
                           data-field={`line-item-${index}-description`}
                         />
-                      </td>
-                      <td className="p-2">
-                        <Input
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                          min="0"
-                          step="0.01"
-                          className="text-right"
-                          data-field={`line-item-${index}-quantity`}
-                        />
-                      </td>
-                      <td className="p-2">
-                        <Input
-                          type="number"
-                          value={item.unit_price}
-                          onChange={(e) => updateLineItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
-                          min="0"
-                          step="0.01"
-                          className="text-right"
-                          data-field={`line-item-${index}-unit-price`}
-                        />
-                      </td>
-                      <td className="p-2">
-                        <Select
-                          value={item.vat_rate.toString()}
-                          onValueChange={(value) => updateLineItem(index, 'vat_rate', parseFloat(value))}
-                        >
-                          <SelectTrigger data-field={`line-item-${index}-vat`}>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="0">0%</SelectItem>
-                            <SelectItem value="1">1%</SelectItem>
-                            <SelectItem value="10">10%</SelectItem>
-                            <SelectItem value="20">20%</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </td>
-                      <td className="p-2">
-                        <Select
-                          value={item.withholding_ratio || 'none'}
-                          onValueChange={(value) =>
-                            updateLineItem(index, 'withholding_ratio', value === 'none' ? null : value)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={language === 'tr' ? 'Yok' : 'None'} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">{language === 'tr' ? 'Yok' : 'None'}</SelectItem>
-                            <SelectItem value="9/10">9/10</SelectItem>
-                            <SelectItem value="7/10">7/10</SelectItem>
-                            <SelectItem value="5/10">5/10</SelectItem>
-                            <SelectItem value="4/10">4/10</SelectItem>
-                            <SelectItem value="3/10">3/10</SelectItem>
-                            <SelectItem value="2/10">2/10</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </td>
-                      <td className="p-2">
-                        <div className="flex gap-0.5 items-center justify-end">
-                          <Input
-                            type="number"
-                            min={0}
-                            step={0.01}
-                            className="w-16 text-right h-8 text-sm"
-                            value={item.discount ? item.discount : ''}
-                            onChange={(e) => updateLineItem(index, 'discount', parseFloat(e.target.value) || 0)}
-                          />
-                          <Select
-                            value={item.discount_type || 'percent'}
-                            onValueChange={(v) => updateLineItem(index, 'discount_type', v as 'percent' | 'amount')}
-                          >
-                            <SelectTrigger className="w-12 h-8 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="percent">%</SelectItem>
-                              <SelectItem value="amount">₺</SelectItem>
-                            </SelectContent>
-                          </Select>
+                      </div>
+                    </div>
+
+                    {/* Sağ: Üst satır (Miktar, Birim, Fiyat, KDV, Toplam) + ek alanlar açılır */}
+                    <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50/50 p-4">
+                      <div className="overflow-x-auto">
+                        <div className="grid grid-cols-2 lg:grid-cols-[minmax(5rem,1fr)_minmax(5.5rem,1fr)_minmax(7rem,1.4fr)_minmax(5rem,1fr)_minmax(6.5rem,1fr)_auto] gap-x-4 gap-y-3 items-end min-w-0">
+                          <div className="space-y-1 min-w-0">
+                            <Label className="text-xs font-semibold text-gray-700 block">
+                              {language === 'tr' ? 'Miktar' : 'Quantity'}
+                            </Label>
+                            <div className="relative min-w-0">
+                              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
+                              <Input
+                                type="number"
+                                value={item.quantity}
+                                onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
+                                min="0"
+                                step="0.01"
+                                className="pl-8 border-2 border-gray-300 rounded-md bg-white h-10 text-right text-gray-900 font-medium focus-visible:ring-2 focus-visible:ring-[#0A2540]/20 w-full min-w-0 max-w-full"
+                                data-field={`line-item-${index}-quantity`}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-1 min-w-0">
+                            <Label className="text-xs font-semibold text-gray-700 block">
+                              {language === 'tr' ? 'Birim' : 'Unit'}
+                            </Label>
+                            <Select
+                              value={item.unit || 'adet'}
+                              onValueChange={(v) => updateLineItem(index, 'unit', v)}
+                            >
+                              <SelectTrigger className="border-2 border-gray-300 rounded-md bg-white h-10 px-2 text-gray-900 font-medium focus-visible:ring-2 focus-visible:ring-[#0A2540]/20 w-full min-w-0 max-w-full">
+                                <SelectValue placeholder={language === 'tr' ? 'Birim' : 'Unit'}>
+                                  {(() => {
+                                    const u = LINE_UNITS.find((x) => x.value === (item.unit || 'adet'))
+                                    return u ? (language === 'tr' ? u.labelTr : u.labelEn) : (item.unit || 'adet')
+                                  })()}
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                {LINE_UNITS.map((u) => (
+                                  <SelectItem key={u.value} value={u.value}>
+                                    {language === 'tr' ? u.labelTr : u.labelEn}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1 min-w-0">
+                            <Label className="text-xs font-semibold text-gray-700 block">
+                              {t.invoices.unitPrice}
+                            </Label>
+                            <div className="flex border-2 border-gray-300 rounded-md bg-white overflow-hidden min-w-0">
+                              <span className="flex items-center px-2 text-gray-600 text-sm font-medium bg-gray-100 border-r border-gray-300 shrink-0">
+                                {currency === 'TRY' ? '₺' : currency}
+                              </span>
+                              <Input
+                                type="number"
+                                value={item.unit_price}
+                                onChange={(e) => updateLineItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
+                                min="0"
+                                step="0.01"
+                                className="border-0 rounded-none h-10 text-right text-gray-900 font-medium flex-1 min-w-0 w-12 focus-visible:ring-0"
+                                data-field={`line-item-${index}-unit-price`}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-1 min-w-0">
+                            <Label className="text-xs font-semibold text-gray-700 block">KDV</Label>
+                            <Select
+                              value={item.vat_rate.toString()}
+                              onValueChange={(value) => updateLineItem(index, 'vat_rate', parseFloat(value))}
+                            >
+                              <SelectTrigger className="border-2 border-gray-300 rounded-md bg-white h-10 px-2 text-gray-900 font-medium focus-visible:ring-2 focus-visible:ring-[#0A2540]/20 w-full min-w-0 max-w-full" data-field={`line-item-${index}-vat`}>
+                                <SelectValue placeholder="KDV">
+                                  %{item.vat_rate}
+                                </SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="0">%0</SelectItem>
+                                <SelectItem value="1">%1</SelectItem>
+                                <SelectItem value="10">%10</SelectItem>
+                                <SelectItem value="20">%20</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1 min-w-0">
+                            <Label className="text-xs font-semibold text-gray-700 block">{t.invoices.total}</Label>
+                            <div className="flex border-2 border-gray-300 rounded-md bg-gray-100 overflow-hidden min-w-0">
+                              <span className="flex items-center px-2 text-gray-600 text-sm font-medium border-r border-gray-300 shrink-0">
+                                {currency === 'TRY' ? '₺' : currency}
+                              </span>
+                              <span className="text-right text-gray-900 font-semibold py-2 px-2 flex-1 min-w-0 text-sm truncate">
+                                {formatCurrency(item.total_with_vat, currency)}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex justify-end">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon"
+                              className="rounded-full h-10 w-10 border-2 border-gray-300 text-gray-600 hover:bg-red-50 hover:border-red-300 hover:text-red-600 shrink-0"
+                              onClick={() => removeLineItem(index)}
+                              disabled={lineItems.length === 1}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
-                      </td>
-                      <td className="p-2">
-                        <div className="flex gap-0.5 items-center justify-end">
-                          <Input
-                            type="number"
-                            min={0}
-                            step={0.01}
-                            className="w-14 text-right h-8 text-sm"
-                            value={item.otv ? item.otv : ''}
-                            onChange={(e) => updateLineItem(index, 'otv', parseFloat(e.target.value) || 0)}
-                          />
-                          <span className="text-xs text-muted-foreground">%</span>
-                        </div>
-                      </td>
-                      <td className="p-2">
-                        <div className="flex gap-0.5 items-center justify-end">
-                          <Input
-                            type="number"
-                            min={0}
-                            step={0.01}
-                            className="w-14 text-right h-8 text-sm"
-                            value={item.oiv ? item.oiv : ''}
-                            onChange={(e) => updateLineItem(index, 'oiv', parseFloat(e.target.value) || 0)}
-                          />
-                          <span className="text-xs text-muted-foreground">%</span>
-                        </div>
-                      </td>
-                      <td className="p-2">
-                        <Input
-                          type="number"
-                          min={0}
-                          step={0.01}
-                          className="w-16 text-right h-8 text-sm"
-                          value={item.accommodation_tax ? item.accommodation_tax : ''}
-                          onChange={(e) => updateLineItem(index, 'accommodation_tax', parseFloat(e.target.value) || 0)}
-                        />
-                      </td>
-                      <td className="p-2">
-                        <Select
-                          value={item.export_code || 'none'}
-                          onValueChange={(value) => updateLineItem(index, 'export_code', value === 'none' ? null : value)}
+                      </div>
+
+                      {/* Ek alanlar: ilk satırda varsayılan açık; tıklayınca açılır/kapanır */}
+                      <div className="border-t border-gray-200 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setExpandedExtraLineIndex((prev) => (prev === index ? null : index))}
+                          className="flex items-center gap-2 w-full text-left py-1.5 px-2 rounded-md hover:bg-gray-200/60 text-gray-700 text-sm font-medium"
                         >
-                          <SelectTrigger className="h-8 text-xs min-w-0">
-                            <SelectValue placeholder={language === 'tr' ? 'Seçin' : 'Select'} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">—</SelectItem>
-                            {EXPORT_CODES.map((c) => (
-                              <SelectItem key={c.code} value={c.code}>
-                                {c.code} – {language === 'tr' ? c.labelTr : c.labelEn}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </td>
-                      <td className="p-2 text-right font-semibold">
-                        {formatCurrency(item.total_with_vat, currency)}
-                      </td>
-                      {currency !== companyCurrency && (
-                        <td className="p-2 text-right text-muted-foreground text-sm">
-                          {tcmbRates
-                            ? (() => {
-                                const conv = convertAmount(item.total_with_vat, currency, companyCurrency, tcmbRates, defaultRateType)
-                                return conv != null ? formatCurrency(conv, companyCurrency) : '–'
-                              })()
-                            : '–'}
-                        </td>
-                      )}
-                      <td className="p-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeLineItem(index)}
-                          disabled={lineItems.length === 1}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                          {expandedExtraLineIndex === index ? (
+                            <ChevronUp className="h-4 w-4 shrink-0" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4 shrink-0" />
+                          )}
+                          <span>{language === 'tr' ? 'Ek alanlar' : 'Extra fields'}</span>
+                          <span className="text-gray-500 font-normal text-xs">
+                            ({language === 'tr' ? 'İndirim' : 'Disc'}, {language === 'tr' ? 'Tevkifat' : 'Withh'}, ÖTV, ÖİV, {language === 'tr' ? 'Konaklama' : 'Accom'}, {language === 'tr' ? 'İhraç' : 'Export'})
+                          </span>
+                          {(item.discount !== 0 || item.withholding_ratio || (item.otv ?? 0) !== 0 || (item.oiv ?? 0) !== 0 || (item.accommodation_tax ?? 0) !== 0 || item.export_code) && (
+                            <span className="ml-1 size-1.5 rounded-full bg-[#0A2540]/40" title={language === 'tr' ? 'Dolu' : 'Filled'} />
+                          )}
+                        </button>
+                        {expandedExtraLineIndex === index && (
+                          <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            <p className="col-span-full text-xs text-gray-600 mb-0.5">
+                              {language === 'tr' ? 'İndirim, tevkifat, ÖTV, ÖİV, konaklama vergisi ve ihraç kodu.' : 'Discount, withholding, SCT, SIT, accommodation tax and export code.'}
+                            </p>
+                            <div className="rounded border border-gray-200 bg-white p-2 space-y-1">
+                              <Label className="text-xs font-semibold text-gray-800">{language === 'tr' ? 'İndirim' : 'Discount'}</Label>
+                              <div className="flex items-center gap-1">
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  step={0.01}
+                                  className="flex-1 border border-gray-300 rounded h-8 text-right text-gray-900 text-sm min-w-0"
+                                  value={item.discount ? item.discount : ''}
+                                  onChange={(e) => updateLineItem(index, 'discount', parseFloat(e.target.value) || 0)}
+                                />
+                                <Select
+                                  value={item.discount_type || 'percent'}
+                                  onValueChange={(v) => updateLineItem(index, 'discount_type', v as 'percent' | 'amount')}
+                                >
+                                  <SelectTrigger className="w-11 border border-gray-300 rounded h-8 px-1 text-gray-900 text-sm shrink-0">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="percent">%</SelectItem>
+                                    <SelectItem value="amount">₺</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-gray-500 hover:text-gray-700" onClick={() => updateLineItem(index, 'discount', 0)}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="rounded border border-gray-200 bg-white p-2 space-y-1">
+                              <Label className="text-xs font-semibold text-gray-800">{language === 'tr' ? 'Tevkifat oranı' : 'Withholding ratio'}</Label>
+                              <Select
+                                value={ratioFilterByLine[index] ?? getTevkifatRatioFromCode(item.withholding_ratio) ?? 'none'}
+                                onValueChange={(v) => {
+                                  const ratio = v === 'none' ? null : v
+                                  setRatioFilterByLine((prev) => ({ ...prev, [index]: ratio }))
+                                  if (ratio && item.withholding_ratio) {
+                                    const codeRatio = getTevkifatRatioFromCode(item.withholding_ratio)
+                                    if (codeRatio !== ratio) updateLineItem(index, 'withholding_ratio', null)
+                                  }
+                                }}
+                              >
+                                <SelectTrigger className="border border-gray-300 rounded h-8 text-gray-900 text-sm w-full">
+                                  <SelectValue placeholder={language === 'tr' ? 'Oran' : 'Ratio'} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="none">{language === 'tr' ? 'Yok' : 'None'}</SelectItem>
+                                  {TEVKIFAT_RATIOS.map((r) => (
+                                    <SelectItem key={r} value={r}>{r}</SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="rounded border border-gray-200 bg-white p-2 space-y-1">
+                              <Label className="text-xs font-semibold text-gray-800">{language === 'tr' ? 'Tevkifat nedeni' : 'Withholding reason'}</Label>
+                              <div className="flex items-center gap-1">
+                                <Select
+                                  value={item.withholding_ratio || 'none'}
+                                  onValueChange={(v) => {
+                                    updateLineItem(index, 'withholding_ratio', v === 'none' ? null : v)
+                                    if (v !== 'none') setRatioFilterByLine((prev) => ({ ...prev, [index]: getTevkifatRatioFromCode(v) ?? null }))
+                                  }}
+                                >
+                                  <SelectTrigger className="flex-1 border border-gray-300 rounded h-8 text-gray-900 text-sm min-w-0">
+                                    <SelectValue placeholder={(ratioFilterByLine[index] ?? getTevkifatRatioFromCode(item.withholding_ratio)) ? (language === 'tr' ? 'Neden seçin' : 'Select reason') : (language === 'tr' ? 'Önce oran seçin' : 'Select ratio first')} />
+                                  </SelectTrigger>
+                                  <SelectContent className="max-h-[280px]">
+                                    <SelectItem value="none">{language === 'tr' ? 'Yok' : 'None'}</SelectItem>
+                                    {getTevkifatCodesByRatio(ratioFilterByLine[index] ?? getTevkifatRatioFromCode(item.withholding_ratio)).map((tc) => (
+                                      <SelectItem key={tc.code} value={tc.code}>
+                                        {tc.code} – {language === 'tr' ? tc.labelTr : tc.labelEn}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-gray-500 hover:text-gray-700" onClick={() => updateLineItem(index, 'withholding_ratio', null)}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="rounded border border-gray-200 bg-white p-2 space-y-1">
+                              <Label className="text-xs font-semibold text-gray-800">ÖTV</Label>
+                              <div className="flex items-center gap-1">
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  step={0.01}
+                                  className="flex-1 border border-gray-300 rounded h-8 text-right text-gray-900 text-sm min-w-0 max-w-[3.5rem]"
+                                  value={item.otv ? item.otv : ''}
+                                  onChange={(e) => updateLineItem(index, 'otv', parseFloat(e.target.value) || 0)}
+                                />
+                                <span className="text-gray-500 text-xs">%</span>
+                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-gray-500 hover:text-gray-700" onClick={() => updateLineItem(index, 'otv', 0)}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="rounded border border-gray-200 bg-white p-2 space-y-1">
+                              <Label className="text-xs font-semibold text-gray-800">ÖİV</Label>
+                              <div className="flex items-center gap-1">
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  step={0.01}
+                                  className="flex-1 border border-gray-300 rounded h-8 text-right text-gray-900 text-sm min-w-0 max-w-[3.5rem]"
+                                  value={item.oiv ? item.oiv : ''}
+                                  onChange={(e) => updateLineItem(index, 'oiv', parseFloat(e.target.value) || 0)}
+                                />
+                                <span className="text-gray-500 text-xs">%</span>
+                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-gray-500 hover:text-gray-700" onClick={() => updateLineItem(index, 'oiv', 0)}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="rounded border border-gray-200 bg-white p-2 space-y-1">
+                              <Label className="text-xs font-semibold text-gray-800">{language === 'tr' ? 'Konaklama Vergisi' : 'Accom. Tax'}</Label>
+                              <div className="flex items-center gap-1">
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  step={0.01}
+                                  className="flex-1 border border-gray-300 rounded h-8 text-right text-gray-900 text-sm min-w-0"
+                                  value={item.accommodation_tax ? item.accommodation_tax : ''}
+                                  onChange={(e) => updateLineItem(index, 'accommodation_tax', parseFloat(e.target.value) || 0)}
+                                />
+                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-gray-500 hover:text-gray-700" onClick={() => updateLineItem(index, 'accommodation_tax', 0)}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="rounded border border-gray-200 bg-white p-2 space-y-1">
+                              <Label className="text-xs font-semibold text-gray-800">{language === 'tr' ? 'İhraç Kodu' : 'Export Code'}</Label>
+                              <div className="flex items-center gap-1">
+                                <Select
+                                  value={item.export_code || 'none'}
+                                  onValueChange={(v) => updateLineItem(index, 'export_code', v === 'none' ? null : v)}
+                                >
+                                  <SelectTrigger className="flex-1 border border-gray-300 rounded h-8 text-gray-900 text-sm min-w-0">
+                                    <SelectValue placeholder={language === 'tr' ? 'Seçin' : 'Select'} />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="none">—</SelectItem>
+                                    {EXPORT_CODES.map((c) => (
+                                      <SelectItem key={c.code} value={c.code}>
+                                        {c.code} – {language === 'tr' ? c.labelTr : c.labelEn}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-gray-500 hover:text-gray-700" onClick={() => updateLineItem(index, 'export_code', null)}>
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                              <p className="text-[10px] text-gray-500 flex items-center gap-1">
+                                <Info className="h-3 w-3 shrink-0" />
+                                {language === 'tr' ? 'İhraç kodu tüm satırlara uygulanır.' : 'Export code applies to all lines.'}
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={addLineItem}
+              className="mt-6 text-[#0A2540] border-[#0A2540]/30 hover:bg-[#0A2540]/5"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              {language === 'tr' ? 'Yeni satır ekle' : 'Add new line'}
+            </Button>
 
             <div className="mt-6 flex justify-end">
               <div className="w-80 space-y-2">
@@ -984,6 +1166,31 @@ export default function NewInvoicePage() {
           </CardContent>
         </Card>
       </div>
+
+      {pendingTevkifatSendInvoiceId && tenantId && (
+        <TevkifatReasonSendDialog
+          open={!!pendingTevkifatSendInvoiceId}
+          onOpenChange={(open) => {
+            if (!open) {
+              setPendingTevkifatSendInvoiceId(null)
+              router.push('/invoices')
+            }
+          }}
+          tenantId={tenantId}
+          invoiceId={pendingTevkifatSendInvoiceId}
+          language={language}
+          onSent={() => {
+            toast.success(language === 'tr' ? 'Fatura kaydedildi ve e-fatura gönderildi.' : 'Invoice saved and e-invoice sent.')
+            setPendingTevkifatSendInvoiceId(null)
+            router.push('/invoices')
+          }}
+          onError={(msg) => {
+            toast.error(msg)
+            setPendingTevkifatSendInvoiceId(null)
+            router.push('/invoices')
+          }}
+        />
+      )}
 
       <Toaster />
     </DashboardLayout>

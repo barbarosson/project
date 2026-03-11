@@ -407,19 +407,35 @@ export default function EInvoiceCenterPage() {
       for (const inv of invoiceList) {
         const ettn = inv.Ettn ?? inv.UUID ?? inv.Id;
         if (!ettn) continue;
+        const docNumber = (inv.InvoiceNumber ?? inv.InvoiceId ?? '') as string;
         const { data: existing } = await supabase
           .from('edocuments')
-          .select('id')
+          .select('id, local_invoice_id')
           .eq('tenant_id', tenantId)
           .eq('ettn', ettn)
           .maybeSingle();
-        if (!existing) {
+        if (existing) {
+          if (docNumber) {
+            await supabase
+              .from('edocuments')
+              .update({ invoice_number: docNumber, updated_at: new Date().toISOString() })
+              .eq('id', existing.id);
+            const localId = (existing as { local_invoice_id?: string }).local_invoice_id;
+            if (localId) {
+              await supabase
+                .from('invoices')
+                .update({ invoice_number: docNumber, updated_at: new Date().toISOString() })
+                .eq('id', localId)
+                .eq('tenant_id', tenantId);
+            }
+          }
+        } else {
           await supabase.from('edocuments').insert({
             tenant_id: tenantId,
             document_type: 'efatura',
             direction,
             ettn,
-            invoice_number: inv.InvoiceNumber || inv.InvoiceId || null,
+            invoice_number: docNumber || null,
             status: inv.Status?.toLowerCase() || 'delivered',
             sender_vkn: inv.SenderVkn || inv.SenderIdentifier || null,
             sender_title: inv.SenderTitle || inv.SenderName || null,

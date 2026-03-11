@@ -57,6 +57,7 @@ interface Customer {
   balance: number
   status: string
   e_invoice_enabled: boolean
+  efatura_receiver_alias?: string | null
   branch_type?: string | null
   branch_code?: string | null
   parent_customer_id?: string | null
@@ -105,6 +106,7 @@ export function EditCustomerDialog({
     balance: 0,
     status: 'active',
     e_invoice_enabled: false,
+    efatura_receiver_alias: '',
   })
 
   useEffect(() => {
@@ -136,6 +138,7 @@ export function EditCustomerDialog({
         balance: customer.balance || 0,
         status: customer.status || 'active',
         e_invoice_enabled: customer.e_invoice_enabled || false,
+        efatura_receiver_alias: customer.efatura_receiver_alias ?? '',
       })
     }
   }, [customer])
@@ -354,6 +357,24 @@ export function EditCustomerDialog({
                     {formData.e_invoice_enabled ? t.customers.enabled : t.customers.disabled}
                   </Label>
                 </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-4 mt-4">
+              <div className="space-y-2">
+                <Label htmlFor="efatura_receiver_alias">
+                  {t.customers.efaturaReceiverAlias ?? 'Alıcı etiket (e-fatura)'}
+                </Label>
+                <Input
+                  id="efatura_receiver_alias"
+                  value={formData.efatura_receiver_alias}
+                  onChange={(e) =>
+                    setFormData({ ...formData, efatura_receiver_alias: e.target.value })
+                  }
+                  placeholder="örn. urn:mail:alici@..."
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t.customers.efaturaReceiverAliasHint ?? 'E-fatura gönderiminde portala gidecek alıcı etiketi. NES/GIB\'de alıcı için tanımlı etiket (boş bırakılırsa portanda manuel güncellenir).'}
+                </p>
               </div>
             </div>
           </TabsContent>
