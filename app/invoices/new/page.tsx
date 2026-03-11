@@ -316,6 +316,22 @@ export default function NewInvoicePage() {
       return
     }
 
+    // Tevkifat oranı seçildiyse tevkifat nedeni zorunludur (genel)
+    if (globalTevkifatRatioFilter && globalWithholdingRatio === 'none') {
+      toast.error(language === 'tr' ? 'Tevkifat oranı seçildi. Lütfen tevkifat nedenini de seçin.' : 'Withholding ratio is selected. Please select a withholding reason.')
+      return
+    }
+
+    // Satır bazında: oran seçilip neden seçilmemişse uyar
+    const lineMissingReason = lineItems.findIndex((item, idx) => {
+      const ratioForLine = ratioFilterByLine[idx] ?? getTevkifatRatioFromCode(item.withholding_ratio)
+      return ratioForLine && ratioForLine !== 'none' && !item.withholding_ratio
+    })
+    if (lineMissingReason >= 0) {
+      toast.error(language === 'tr' ? `Satır ${lineMissingReason + 1}: Tevkifat oranı seçildi. Lütfen tevkifat nedenini de seçin.` : `Line ${lineMissingReason + 1}: Withholding ratio is selected. Please select a withholding reason.`)
+      return
+    }
+
     setLoading(true)
     if (andSendEInvoice) setSendingEInvoice(true)
 
@@ -504,7 +520,7 @@ export default function NewInvoicePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>{t.invoices.invoiceDetails}</CardTitle>
+            <CardTitle className="text-2xl font-semibold leading-none tracking-tight text-gray-900">{t.invoices.invoiceDetails}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-4 rounded-lg border p-4 bg-muted/30">
@@ -652,17 +668,17 @@ export default function NewInvoicePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-gray-900">
+            <CardTitle className="text-2xl font-semibold leading-none tracking-tight text-gray-900">
               {language === 'tr' ? 'Hizmet ve Ürünler' : 'Services and Products'}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="text-[15px] text-gray-900">
             <div className="flex flex-wrap justify-end mb-4 gap-3 items-center">
-              <span className="text-sm text-gray-600">
+              <span className="text-[15px] font-semibold text-gray-800">
                 {language === 'tr' ? 'Tevkifat (tüm satırlar)' : 'Withholding (all lines)'}
               </span>
               <div className="flex items-center gap-2">
-                <Label className="text-xs text-gray-600">{language === 'tr' ? 'Oran' : 'Ratio'}</Label>
+                <Label className="text-[15px] font-semibold text-gray-800">{language === 'tr' ? 'Oran' : 'Ratio'}</Label>
                 <Select
                   value={globalTevkifatRatioFilter ?? 'none'}
                   onValueChange={(value) => {
@@ -677,8 +693,11 @@ export default function NewInvoicePage() {
                     }
                   }}
                 >
-                  <SelectTrigger className="w-24 border border-gray-300 rounded-md bg-white h-9 text-sm">
+                  <SelectTrigger className="relative w-24 border-2 border-gray-300 rounded-md bg-white h-10 pl-3 pr-8 text-gray-900 font-medium text-[15px] [&>span:first-child]:opacity-0 [&>span:first-child]:w-0 [&>span:first-child]:overflow-hidden [&>span:first-child]:min-w-0">
                     <SelectValue placeholder={language === 'tr' ? 'Oran' : 'Ratio'} />
+                    <span className="absolute left-3 right-8 text-left text-gray-900 font-medium text-[15px] truncate pointer-events-none">
+                      {globalTevkifatRatioFilter && globalTevkifatRatioFilter !== 'none' ? globalTevkifatRatioFilter : (language === 'tr' ? 'Yok' : 'None')}
+                    </span>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">{language === 'tr' ? 'Yok' : 'None'}</SelectItem>
@@ -689,7 +708,10 @@ export default function NewInvoicePage() {
                 </Select>
               </div>
               <div className="flex items-center gap-2">
-                <Label className="text-xs text-gray-600">{language === 'tr' ? 'Tevkifat nedeni' : 'Reason'}</Label>
+                <Label className="text-[15px] font-semibold text-gray-800">
+                  {language === 'tr' ? 'Tevkifat nedeni' : 'Reason'}
+                  {globalTevkifatRatioFilter && <span className="text-red-600 ml-0.5">*</span>}
+                </Label>
                 <Select
                   value={globalWithholdingRatio}
                   onValueChange={(value) => {
@@ -705,8 +727,16 @@ export default function NewInvoicePage() {
                     if (value !== 'none') setGlobalTevkifatRatioFilter(getTevkifatRatioFromCode(value))
                   }}
                 >
-                  <SelectTrigger className="w-56 border border-gray-300 rounded-md bg-white h-9 text-sm">
+                  <SelectTrigger className="relative w-56 border-2 border-gray-300 rounded-md bg-white h-10 pl-3 pr-8 text-gray-900 font-medium text-[15px] [&>span:first-child]:opacity-0 [&>span:first-child]:w-0 [&>span:first-child]:overflow-hidden [&>span:first-child]:min-w-0">
                     <SelectValue placeholder={globalTevkifatRatioFilter ? (language === 'tr' ? 'Neden seçin' : 'Select reason') : (language === 'tr' ? 'Önce oran seçin' : 'Select ratio first')} />
+                    <span className="absolute left-3 right-8 text-left text-gray-900 font-medium text-[15px] truncate pointer-events-none">
+                      {globalWithholdingRatio && globalWithholdingRatio !== 'none'
+                        ? (() => {
+                            const tc = TEVKIFAT_CODES.find((c) => c.code === globalWithholdingRatio)
+                            return tc ? `${tc.code} – ${language === 'tr' ? tc.labelTr : tc.labelEn}` : globalWithholdingRatio
+                          })()
+                        : (globalTevkifatRatioFilter ? (language === 'tr' ? 'Neden seçin' : 'Select reason') : (language === 'tr' ? 'Önce oran seçin' : 'Select ratio first'))}
+                    </span>
                   </SelectTrigger>
                   <SelectContent className="max-h-[280px]">
                     <SelectItem value="none">{language === 'tr' ? 'Tevkifat yok' : 'No withholding'}</SelectItem>
@@ -726,59 +756,49 @@ export default function NewInvoicePage() {
                   key={item.id}
                   className="rounded-xl border-2 border-gray-200 bg-white p-5 shadow-sm"
                 >
-                  <div className="grid grid-cols-1 xl:grid-cols-[1fr_1.3fr] gap-6 xl:gap-8">
-                    {/* Sol: Hizmet/Ürün + Açıklama */}
-                    <div className="space-y-4 rounded-lg border border-gray-200 bg-gray-50/50 p-4">
+                  <div className="space-y-4">
+                    {/* Üst: Hizmet/Ürün seçimi */}
+                    <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-4">
                       <div className="space-y-2">
-                        <Label className="text-sm font-semibold text-gray-800">
+                        <Label className="text-[15px] font-semibold text-gray-800">
                           {language === 'tr' ? 'Hizmet / Ürün' : 'Service / Product'} *
                         </Label>
-                        <Select
-                          value={item.product_id || ''}
-                          onValueChange={(value) => selectProduct(index, value)}
-                        >
-                          <SelectTrigger
-                            className="border-2 border-gray-300 rounded-md bg-white px-3 py-2 text-gray-900 font-medium h-10 focus-visible:ring-2 focus-visible:ring-[#0A2540]/20"
-                            data-field={`line-item-${index}-product`}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Select
+                            value={item.product_id || ''}
+                            onValueChange={(value) => selectProduct(index, value)}
                           >
-                            <SelectValue placeholder={t.invoices.selectProduct} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {products.map((product) => (
-                              <SelectItem key={product.id} value={product.id}>
-                                {product.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Input
-                          value={item.product_name}
-                          onChange={(e) => updateLineItem(index, 'product_name', e.target.value)}
-                          placeholder={language === 'tr' ? 'Veya özel ad yazın' : 'Or type custom name'}
-                          className="border-2 border-gray-300 rounded-md bg-white px-3 py-2 text-gray-900 font-medium h-10 focus-visible:ring-2 focus-visible:ring-[#0A2540]/20"
-                          data-field={`line-item-${index}-product-name`}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-sm font-semibold text-gray-800">
-                          {language === 'tr' ? 'Açıklama' : 'Description'}
-                        </Label>
-                        <Textarea
-                          value={item.description}
-                          onChange={(e) => updateLineItem(index, 'description', e.target.value)}
-                          placeholder={t.invoices.optional}
-                          className="min-h-[80px] border-2 border-gray-300 rounded-md bg-white px-3 py-2 text-gray-900 font-medium resize-none focus-visible:ring-2 focus-visible:ring-[#0A2540]/20"
-                          data-field={`line-item-${index}-description`}
-                        />
+                            <SelectTrigger
+                              className="border-2 border-gray-300 rounded-md bg-white px-3 py-2 text-gray-900 font-medium text-[15px] h-10 min-w-[12rem] focus-visible:ring-2 focus-visible:ring-[#0A2540]/20"
+                              data-field={`line-item-${index}-product`}
+                            >
+                              <SelectValue placeholder={t.invoices.selectProduct} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {products.map((product) => (
+                                <SelectItem key={product.id} value={product.id}>
+                                  {product.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Input
+                            value={item.product_name}
+                            onChange={(e) => updateLineItem(index, 'product_name', e.target.value)}
+                            placeholder={language === 'tr' ? 'Veya özel ad yazın' : 'Or type custom name'}
+                            className="border-2 border-gray-300 rounded-md bg-white px-3 py-2 text-gray-900 font-medium text-[15px] h-10 flex-1 min-w-[10rem] focus-visible:ring-2 focus-visible:ring-[#0A2540]/20"
+                            data-field={`line-item-${index}-product-name`}
+                          />
+                        </div>
                       </div>
                     </div>
 
-                    {/* Sağ: Üst satır (Miktar, Birim, Fiyat, KDV, Toplam) + ek alanlar açılır */}
+                    {/* Alt: Miktar, Birim, Fiyat, KDV, Toplam + ek alanlar */}
                     <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50/50 p-4">
                       <div className="overflow-x-auto">
-                        <div className="grid grid-cols-2 lg:grid-cols-[minmax(5rem,1fr)_minmax(5.5rem,1fr)_minmax(7rem,1.4fr)_minmax(5rem,1fr)_minmax(6.5rem,1fr)_auto] gap-x-4 gap-y-3 items-end min-w-0">
+                        <div className="grid grid-cols-2 lg:grid-cols-[minmax(6rem,1.25fr)_minmax(2.75rem,0.5fr)_minmax(8rem,1.6fr)_minmax(3rem,0.6fr)_minmax(7.5rem,1.25fr)] gap-x-4 gap-y-3 items-center min-w-0">
                           <div className="space-y-1 min-w-0">
-                            <Label className="text-xs font-semibold text-gray-700 block">
+                            <Label className="text-[15px] font-semibold text-gray-800 block">
                               {language === 'tr' ? 'Miktar' : 'Quantity'}
                             </Label>
                             <div className="relative min-w-0">
@@ -789,26 +809,27 @@ export default function NewInvoicePage() {
                                 onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
                                 min="0"
                                 step="0.01"
-                                className="pl-8 border-2 border-gray-300 rounded-md bg-white h-10 text-right text-gray-900 font-medium focus-visible:ring-2 focus-visible:ring-[#0A2540]/20 w-full min-w-0 max-w-full"
+                                className="pl-8 border-2 border-gray-300 rounded-md bg-white h-10 text-right text-gray-900 font-medium text-[15px] focus-visible:ring-2 focus-visible:ring-[#0A2540]/20 w-full min-w-0 max-w-full"
                                 data-field={`line-item-${index}-quantity`}
                               />
                             </div>
                           </div>
-                          <div className="space-y-1 min-w-0">
-                            <Label className="text-xs font-semibold text-gray-700 block">
+                          <div className="space-y-1 min-w-0 flex flex-col items-center justify-center">
+                            <Label className="text-[15px] font-semibold text-gray-800 block">
                               {language === 'tr' ? 'Birim' : 'Unit'}
                             </Label>
                             <Select
                               value={item.unit || 'adet'}
                               onValueChange={(v) => updateLineItem(index, 'unit', v)}
                             >
-                              <SelectTrigger className="border-2 border-gray-300 rounded-md bg-white h-10 px-2 text-gray-900 font-medium focus-visible:ring-2 focus-visible:ring-[#0A2540]/20 w-full min-w-0 max-w-full">
-                                <SelectValue placeholder={language === 'tr' ? 'Birim' : 'Unit'}>
+                              <SelectTrigger className="relative border-2 border-gray-300 rounded-md bg-white h-10 pl-2 pr-7 text-gray-900 font-medium text-[15px] focus-visible:ring-2 focus-visible:ring-[#0A2540]/20 w-full min-w-0 max-w-[4.5rem] [&>span:first-child]:!absolute [&>span:first-child]:!-left-[9999px] [&>span:first-child]:!opacity-0 [&>span:first-child]:!w-0 [&>span:first-child]:!overflow-hidden">
+                                <SelectValue placeholder={language === 'tr' ? 'Birim' : 'Unit'} />
+                                <span className="absolute left-2 right-7 text-left text-gray-900 font-medium text-[15px] truncate pointer-events-none">
                                   {(() => {
                                     const u = LINE_UNITS.find((x) => x.value === (item.unit || 'adet'))
                                     return u ? (language === 'tr' ? u.labelTr : u.labelEn) : (item.unit || 'adet')
                                   })()}
-                                </SelectValue>
+                                </span>
                               </SelectTrigger>
                               <SelectContent>
                                 {LINE_UNITS.map((u) => (
@@ -820,11 +841,11 @@ export default function NewInvoicePage() {
                             </Select>
                           </div>
                           <div className="space-y-1 min-w-0">
-                            <Label className="text-xs font-semibold text-gray-700 block">
+                            <Label className="text-[15px] font-semibold text-gray-800 block">
                               {t.invoices.unitPrice}
                             </Label>
                             <div className="flex border-2 border-gray-300 rounded-md bg-white overflow-hidden min-w-0">
-                              <span className="flex items-center px-2 text-gray-600 text-sm font-medium bg-gray-100 border-r border-gray-300 shrink-0">
+                              <span className="flex items-center px-2 text-gray-800 text-[15px] font-semibold bg-gray-100 border-r border-gray-300 shrink-0">
                                 {currency === 'TRY' ? '₺' : currency}
                               </span>
                               <Input
@@ -833,21 +854,22 @@ export default function NewInvoicePage() {
                                 onChange={(e) => updateLineItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
                                 min="0"
                                 step="0.01"
-                                className="border-0 rounded-none h-10 text-right text-gray-900 font-medium flex-1 min-w-0 w-12 focus-visible:ring-0"
+                                className="border-0 rounded-none h-10 text-right text-gray-900 font-medium text-[15px] flex-1 min-w-0 w-12 focus-visible:ring-0"
                                 data-field={`line-item-${index}-unit-price`}
                               />
                             </div>
                           </div>
-                          <div className="space-y-1 min-w-0">
-                            <Label className="text-xs font-semibold text-gray-700 block">KDV</Label>
+                          <div className="space-y-1 min-w-0 flex flex-col items-center justify-center">
+                            <Label className="text-[15px] font-semibold text-gray-800 block">KDV</Label>
                             <Select
                               value={item.vat_rate.toString()}
                               onValueChange={(value) => updateLineItem(index, 'vat_rate', parseFloat(value))}
                             >
-                              <SelectTrigger className="border-2 border-gray-300 rounded-md bg-white h-10 px-2 text-gray-900 font-medium focus-visible:ring-2 focus-visible:ring-[#0A2540]/20 w-full min-w-0 max-w-full" data-field={`line-item-${index}-vat`}>
-                                <SelectValue placeholder="KDV">
-                                  %{item.vat_rate}
-                                </SelectValue>
+                              <SelectTrigger className="relative border-2 border-gray-300 rounded-md bg-white h-10 pl-2 pr-7 text-gray-900 font-medium text-[15px] focus-visible:ring-2 focus-visible:ring-[#0A2540]/20 w-full min-w-0 max-w-[4.5rem] [&>span:first-child]:!absolute [&>span:first-child]:!-left-[9999px] [&>span:first-child]:!opacity-0 [&>span:first-child]:!w-0 [&>span:first-child]:!overflow-hidden" data-field={`line-item-${index}-vat`}>
+                                <SelectValue placeholder="KDV" />
+                                <span className="absolute left-2 right-7 text-left text-gray-900 font-medium text-[15px] truncate pointer-events-none">
+                                    %{item.vat_rate}
+                                </span>
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="0">%0</SelectItem>
@@ -858,27 +880,15 @@ export default function NewInvoicePage() {
                             </Select>
                           </div>
                           <div className="space-y-1 min-w-0">
-                            <Label className="text-xs font-semibold text-gray-700 block">{t.invoices.total}</Label>
+                            <Label className="text-[15px] font-semibold text-gray-800 block">{t.invoices.total}</Label>
                             <div className="flex border-2 border-gray-300 rounded-md bg-gray-100 overflow-hidden min-w-0">
-                              <span className="flex items-center px-2 text-gray-600 text-sm font-medium border-r border-gray-300 shrink-0">
+                              <span className="flex items-center px-2 text-gray-800 text-[15px] font-semibold border-r border-gray-300 shrink-0">
                                 {currency === 'TRY' ? '₺' : currency}
                               </span>
-                              <span className="text-right text-gray-900 font-semibold py-2 px-2 flex-1 min-w-0 text-sm truncate">
+                              <span className="text-right text-gray-900 font-semibold text-[15px] py-2 px-2 flex-1 min-w-0 truncate">
                                 {formatCurrency(item.total_with_vat, currency)}
                               </span>
                             </div>
-                          </div>
-                          <div className="flex justify-end">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon"
-                              className="rounded-full h-10 w-10 border-2 border-gray-300 text-gray-600 hover:bg-red-50 hover:border-red-300 hover:text-red-600 shrink-0"
-                              onClick={() => removeLineItem(index)}
-                              disabled={lineItems.length === 1}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
                           </div>
                         </div>
                       </div>
@@ -888,7 +898,7 @@ export default function NewInvoicePage() {
                         <button
                           type="button"
                           onClick={() => setExpandedExtraLineIndex((prev) => (prev === index ? null : index))}
-                          className="flex items-center gap-2 w-full text-left py-1.5 px-2 rounded-md hover:bg-gray-200/60 text-gray-700 text-sm font-medium"
+                          className="flex items-center gap-2 w-full text-left py-1.5 px-2 rounded-md hover:bg-gray-200/60 text-gray-800 text-[15px] font-semibold"
                         >
                           {expandedExtraLineIndex === index ? (
                             <ChevronUp className="h-4 w-4 shrink-0" />
@@ -896,7 +906,7 @@ export default function NewInvoicePage() {
                             <ChevronDown className="h-4 w-4 shrink-0" />
                           )}
                           <span>{language === 'tr' ? 'Ek alanlar' : 'Extra fields'}</span>
-                          <span className="text-gray-500 font-normal text-xs">
+                          <span className="text-gray-600 text-[15px] font-medium">
                             ({language === 'tr' ? 'İndirim' : 'Disc'}, {language === 'tr' ? 'Tevkifat' : 'Withh'}, ÖTV, ÖİV, {language === 'tr' ? 'Konaklama' : 'Accom'}, {language === 'tr' ? 'İhraç' : 'Export'})
                           </span>
                           {(item.discount !== 0 || item.withholding_ratio || (item.otv ?? 0) !== 0 || (item.oiv ?? 0) !== 0 || (item.accommodation_tax ?? 0) !== 0 || item.export_code) && (
@@ -904,18 +914,18 @@ export default function NewInvoicePage() {
                           )}
                         </button>
                         {expandedExtraLineIndex === index && (
-                          <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-2">
-                            <p className="col-span-full text-xs text-gray-600 mb-0.5">
+                          <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            <p className="col-span-full text-[15px] text-gray-700 mb-0.5">
                               {language === 'tr' ? 'İndirim, tevkifat, ÖTV, ÖİV, konaklama vergisi ve ihraç kodu.' : 'Discount, withholding, SCT, SIT, accommodation tax and export code.'}
                             </p>
-                            <div className="rounded border border-gray-200 bg-white p-2 space-y-1">
-                              <Label className="text-xs font-semibold text-gray-800">{language === 'tr' ? 'İndirim' : 'Discount'}</Label>
-                              <div className="flex items-center gap-1">
+                            <div className="rounded-lg border-2 border-gray-200 bg-white p-2 space-y-1">
+                              <Label className="text-[15px] font-semibold text-gray-800 block">{language === 'tr' ? 'İndirim' : 'Discount'}</Label>
+                              <div className="flex items-center gap-1.5">
                                 <Input
                                   type="number"
                                   min={0}
                                   step={0.01}
-                                  className="flex-1 border border-gray-300 rounded h-8 text-right text-gray-900 text-sm min-w-0"
+                                  className="w-16 max-w-[4.5rem] border-2 border-gray-300 rounded-md bg-white h-8 text-right text-gray-900 font-medium text-[15px] focus-visible:ring-2 focus-visible:ring-[#0A2540]/20"
                                   value={item.discount ? item.discount : ''}
                                   onChange={(e) => updateLineItem(index, 'discount', parseFloat(e.target.value) || 0)}
                                 />
@@ -923,21 +933,21 @@ export default function NewInvoicePage() {
                                   value={item.discount_type || 'percent'}
                                   onValueChange={(v) => updateLineItem(index, 'discount_type', v as 'percent' | 'amount')}
                                 >
-                                  <SelectTrigger className="w-11 border border-gray-300 rounded h-8 px-1 text-gray-900 text-sm shrink-0">
+                                  <SelectTrigger className="relative w-11 border-2 border-gray-300 rounded-md bg-white h-8 pl-1.5 pr-6 text-gray-900 font-medium text-[15px] shrink-0 focus-visible:ring-2 focus-visible:ring-[#0A2540]/20 [&>span:first-child]:opacity-0 [&>span:first-child]:w-0 [&>span:first-child]:overflow-hidden [&>span:first-child]:min-w-0">
                                     <SelectValue />
+                                    <span className="absolute left-1.5 right-6 text-left text-gray-900 font-medium text-[15px] truncate pointer-events-none">
+                                      {item.discount_type === 'amount' ? '₺' : '%'}
+                                    </span>
                                   </SelectTrigger>
                                   <SelectContent>
                                     <SelectItem value="percent">%</SelectItem>
                                     <SelectItem value="amount">₺</SelectItem>
                                   </SelectContent>
                                 </Select>
-                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-gray-500 hover:text-gray-700" onClick={() => updateLineItem(index, 'discount', 0)}>
-                                  <X className="h-3 w-3" />
-                                </Button>
                               </div>
                             </div>
-                            <div className="rounded border border-gray-200 bg-white p-2 space-y-1">
-                              <Label className="text-xs font-semibold text-gray-800">{language === 'tr' ? 'Tevkifat oranı' : 'Withholding ratio'}</Label>
+                            <div className="rounded-lg border-2 border-gray-200 bg-white p-2 space-y-1">
+                              <Label className="text-[15px] font-semibold text-gray-800 block">{language === 'tr' ? 'Tevkifat oranı' : 'Withholding ratio'}</Label>
                               <Select
                                 value={ratioFilterByLine[index] ?? getTevkifatRatioFromCode(item.withholding_ratio) ?? 'none'}
                                 onValueChange={(v) => {
@@ -949,8 +959,13 @@ export default function NewInvoicePage() {
                                   }
                                 }}
                               >
-                                <SelectTrigger className="border border-gray-300 rounded h-8 text-gray-900 text-sm w-full">
+                                <SelectTrigger className="relative border-2 border-gray-300 rounded-md bg-white h-8 pl-2 pr-7 text-gray-900 font-medium text-[15px] w-full focus-visible:ring-2 focus-visible:ring-[#0A2540]/20 [&>span:first-child]:opacity-0 [&>span:first-child]:w-0 [&>span:first-child]:overflow-hidden [&>span:first-child]:min-w-0">
                                   <SelectValue placeholder={language === 'tr' ? 'Oran' : 'Ratio'} />
+<span className="absolute left-2 right-7 text-left text-gray-900 font-medium text-[15px] truncate pointer-events-none">
+                                      {(ratioFilterByLine[index] ?? getTevkifatRatioFromCode(item.withholding_ratio)) && (ratioFilterByLine[index] ?? getTevkifatRatioFromCode(item.withholding_ratio)) !== 'none'
+                                      ? (ratioFilterByLine[index] ?? getTevkifatRatioFromCode(item.withholding_ratio))
+                                      : (language === 'tr' ? 'Yok' : 'None')}
+                                  </span>
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="none">{language === 'tr' ? 'Yok' : 'None'}</SelectItem>
@@ -960,9 +975,12 @@ export default function NewInvoicePage() {
                                 </SelectContent>
                               </Select>
                             </div>
-                            <div className="rounded border border-gray-200 bg-white p-2 space-y-1">
-                              <Label className="text-xs font-semibold text-gray-800">{language === 'tr' ? 'Tevkifat nedeni' : 'Withholding reason'}</Label>
-                              <div className="flex items-center gap-1">
+                            <div className="rounded-lg border-2 border-gray-200 bg-white p-2 space-y-1">
+                              <Label className="text-[15px] font-semibold text-gray-800 block">
+                                {language === 'tr' ? 'Tevkifat nedeni' : 'Withholding reason'}
+                                {(ratioFilterByLine[index] ?? getTevkifatRatioFromCode(item.withholding_ratio)) && (ratioFilterByLine[index] ?? getTevkifatRatioFromCode(item.withholding_ratio)) !== 'none' && <span className="text-red-600 ml-0.5">*</span>}
+                              </Label>
+                              <div className="flex items-center gap-1.5">
                                 <Select
                                   value={item.withholding_ratio || 'none'}
                                   onValueChange={(v) => {
@@ -970,8 +988,16 @@ export default function NewInvoicePage() {
                                     if (v !== 'none') setRatioFilterByLine((prev) => ({ ...prev, [index]: getTevkifatRatioFromCode(v) ?? null }))
                                   }}
                                 >
-                                  <SelectTrigger className="flex-1 border border-gray-300 rounded h-8 text-gray-900 text-sm min-w-0">
+                                  <SelectTrigger className="relative flex-1 min-w-0 border-2 border-gray-300 rounded-md bg-white h-8 pl-2 pr-7 text-gray-900 font-medium text-[15px] focus-visible:ring-2 focus-visible:ring-[#0A2540]/20 [&>span:first-child]:opacity-0 [&>span:first-child]:w-0 [&>span:first-child]:overflow-hidden [&>span:first-child]:min-w-0">
                                     <SelectValue placeholder={(ratioFilterByLine[index] ?? getTevkifatRatioFromCode(item.withholding_ratio)) ? (language === 'tr' ? 'Neden seçin' : 'Select reason') : (language === 'tr' ? 'Önce oran seçin' : 'Select ratio first')} />
+                                    <span className="absolute left-2 right-7 text-left text-gray-900 font-medium text-[15px] truncate pointer-events-none">
+                                      {item.withholding_ratio && item.withholding_ratio !== 'none'
+                                        ? (() => {
+                                            const tc = TEVKIFAT_CODES.find((c) => c.code === item.withholding_ratio)
+                                            return tc ? `${tc.code} – ${language === 'tr' ? tc.labelTr : tc.labelEn}` : item.withholding_ratio
+                                          })()
+                                        : ((ratioFilterByLine[index] ?? getTevkifatRatioFromCode(item.withholding_ratio)) ? (language === 'tr' ? 'Neden seçin' : 'Select reason') : (language === 'tr' ? 'Önce oran seçin' : 'Select ratio first'))}
+                                    </span>
                                   </SelectTrigger>
                                   <SelectContent className="max-h-[280px]">
                                     <SelectItem value="none">{language === 'tr' ? 'Yok' : 'None'}</SelectItem>
@@ -982,70 +1008,66 @@ export default function NewInvoicePage() {
                                     ))}
                                   </SelectContent>
                                 </Select>
-                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-gray-500 hover:text-gray-700" onClick={() => updateLineItem(index, 'withholding_ratio', null)}>
-                                  <X className="h-3 w-3" />
-                                </Button>
                               </div>
                             </div>
-                            <div className="rounded border border-gray-200 bg-white p-2 space-y-1">
-                              <Label className="text-xs font-semibold text-gray-800">ÖTV</Label>
-                              <div className="flex items-center gap-1">
+                            <div className="rounded-lg border-2 border-gray-200 bg-white p-2 space-y-1">
+                              <Label className="text-[15px] font-semibold text-gray-800 block">ÖTV</Label>
+                              <div className="flex items-center gap-1.5">
                                 <Input
                                   type="number"
                                   min={0}
                                   step={0.01}
-                                  className="flex-1 border border-gray-300 rounded h-8 text-right text-gray-900 text-sm min-w-0 max-w-[3.5rem]"
+                                  className="w-16 max-w-[4.5rem] border-2 border-gray-300 rounded-md bg-white h-8 text-right text-gray-900 font-medium text-[15px] focus-visible:ring-2 focus-visible:ring-[#0A2540]/20"
                                   value={item.otv ? item.otv : ''}
                                   onChange={(e) => updateLineItem(index, 'otv', parseFloat(e.target.value) || 0)}
                                 />
-                                <span className="text-gray-500 text-xs">%</span>
-                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-gray-500 hover:text-gray-700" onClick={() => updateLineItem(index, 'otv', 0)}>
-                                  <X className="h-3 w-3" />
-                                </Button>
+                                <span className="text-gray-800 text-[15px] font-semibold">%</span>
                               </div>
                             </div>
-                            <div className="rounded border border-gray-200 bg-white p-2 space-y-1">
-                              <Label className="text-xs font-semibold text-gray-800">ÖİV</Label>
-                              <div className="flex items-center gap-1">
+                            <div className="rounded-lg border-2 border-gray-200 bg-white p-2 space-y-1">
+                              <Label className="text-[15px] font-semibold text-gray-800 block">ÖİV</Label>
+                              <div className="flex items-center gap-1.5">
                                 <Input
                                   type="number"
                                   min={0}
                                   step={0.01}
-                                  className="flex-1 border border-gray-300 rounded h-8 text-right text-gray-900 text-sm min-w-0 max-w-[3.5rem]"
+                                  className="w-16 max-w-[4.5rem] border-2 border-gray-300 rounded-md bg-white h-8 text-right text-gray-900 font-medium text-[15px] focus-visible:ring-2 focus-visible:ring-[#0A2540]/20"
                                   value={item.oiv ? item.oiv : ''}
                                   onChange={(e) => updateLineItem(index, 'oiv', parseFloat(e.target.value) || 0)}
                                 />
-                                <span className="text-gray-500 text-xs">%</span>
-                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-gray-500 hover:text-gray-700" onClick={() => updateLineItem(index, 'oiv', 0)}>
-                                  <X className="h-3 w-3" />
-                                </Button>
+                                <span className="text-gray-800 text-[15px] font-semibold">%</span>
                               </div>
                             </div>
-                            <div className="rounded border border-gray-200 bg-white p-2 space-y-1">
-                              <Label className="text-xs font-semibold text-gray-800">{language === 'tr' ? 'Konaklama Vergisi' : 'Accom. Tax'}</Label>
-                              <div className="flex items-center gap-1">
+                            <div className="rounded-lg border-2 border-gray-200 bg-white p-2 space-y-1">
+                              <Label className="text-[15px] font-semibold text-gray-800 block">{language === 'tr' ? 'Konaklama Vergisi' : 'Accom. Tax'}</Label>
+                              <div className="flex items-center gap-1.5">
                                 <Input
                                   type="number"
                                   min={0}
                                   step={0.01}
-                                  className="flex-1 border border-gray-300 rounded h-8 text-right text-gray-900 text-sm min-w-0"
+                                  className="w-16 max-w-[4.5rem] border-2 border-gray-300 rounded-md bg-white h-8 text-right text-gray-900 font-medium text-[15px] focus-visible:ring-2 focus-visible:ring-[#0A2540]/20"
                                   value={item.accommodation_tax ? item.accommodation_tax : ''}
                                   onChange={(e) => updateLineItem(index, 'accommodation_tax', parseFloat(e.target.value) || 0)}
                                 />
-                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-gray-500 hover:text-gray-700" onClick={() => updateLineItem(index, 'accommodation_tax', 0)}>
-                                  <X className="h-3 w-3" />
-                                </Button>
                               </div>
                             </div>
-                            <div className="rounded border border-gray-200 bg-white p-2 space-y-1">
-                              <Label className="text-xs font-semibold text-gray-800">{language === 'tr' ? 'İhraç Kodu' : 'Export Code'}</Label>
-                              <div className="flex items-center gap-1">
+                            <div className="rounded-lg border-2 border-gray-200 bg-white p-2 space-y-1">
+                              <Label className="text-[15px] font-semibold text-gray-800 block">{language === 'tr' ? 'İhraç Kodu' : 'Export Code'}</Label>
+                              <div className="flex items-center gap-1.5">
                                 <Select
                                   value={item.export_code || 'none'}
                                   onValueChange={(v) => updateLineItem(index, 'export_code', v === 'none' ? null : v)}
                                 >
-                                  <SelectTrigger className="flex-1 border border-gray-300 rounded h-8 text-gray-900 text-sm min-w-0">
+                                  <SelectTrigger className="relative flex-1 min-w-0 border-2 border-gray-300 rounded-md bg-white h-8 pl-2 pr-7 text-gray-900 font-medium text-[15px] focus-visible:ring-2 focus-visible:ring-[#0A2540]/20 [&>span:first-child]:opacity-0 [&>span:first-child]:w-0 [&>span:first-child]:overflow-hidden [&>span:first-child]:min-w-0">
                                     <SelectValue placeholder={language === 'tr' ? 'Seçin' : 'Select'} />
+                                    <span className="absolute left-2 right-7 text-left text-gray-900 font-medium text-[15px] truncate pointer-events-none">
+                                      {item.export_code && item.export_code !== 'none'
+                                        ? (() => {
+                                            const ex = EXPORT_CODES.find((c) => c.code === item.export_code)
+                                            return ex ? `${ex.code} – ${language === 'tr' ? ex.labelTr : ex.labelEn}` : item.export_code
+                                          })()
+                                        : (language === 'tr' ? 'Seçin' : 'Select')}
+                                    </span>
                                   </SelectTrigger>
                                   <SelectContent>
                                     <SelectItem value="none">—</SelectItem>
@@ -1056,17 +1078,30 @@ export default function NewInvoicePage() {
                                     ))}
                                   </SelectContent>
                                 </Select>
-                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 shrink-0 text-gray-500 hover:text-gray-700" onClick={() => updateLineItem(index, 'export_code', null)}>
-                                  <X className="h-3 w-3" />
-                                </Button>
                               </div>
-                              <p className="text-[10px] text-gray-500 flex items-center gap-1">
-                                <Info className="h-3 w-3 shrink-0" />
+                              <p className="text-[15px] text-gray-600 flex items-center gap-1 mt-1">
+                                <Info className="h-3.5 w-3.5 shrink-0" />
                                 {language === 'tr' ? 'İhraç kodu tüm satırlara uygulanır.' : 'Export code applies to all lines.'}
                               </p>
                             </div>
                           </div>
                         )}
+                      </div>
+                    </div>
+
+                    {/* Açıklama (en alt) */}
+                    <div className="rounded-lg border border-gray-200 bg-gray-50/50 p-4">
+                      <div className="space-y-2">
+                        <Label className="text-[15px] font-semibold text-gray-800">
+                          {language === 'tr' ? 'Açıklama' : 'Description'}
+                        </Label>
+                        <Textarea
+                          value={item.description}
+                          onChange={(e) => updateLineItem(index, 'description', e.target.value)}
+                          placeholder={t.invoices.optional}
+                          className="min-h-[80px] border-2 border-gray-300 rounded-md bg-white px-3 py-2 text-gray-900 font-medium text-[15px] resize-none focus-visible:ring-2 focus-visible:ring-[#0A2540]/20"
+                          data-field={`line-item-${index}-description`}
+                        />
                       </div>
                     </div>
                   </div>
@@ -1078,7 +1113,7 @@ export default function NewInvoicePage() {
               type="button"
               variant="outline"
               onClick={addLineItem}
-              className="mt-6 text-[#0A2540] border-[#0A2540]/30 hover:bg-[#0A2540]/5"
+              className="mt-6 text-[15px] font-semibold text-[#0A2540] border-[#0A2540]/30 hover:bg-[#0A2540]/5"
             >
               <Plus className="mr-2 h-4 w-4" />
               {language === 'tr' ? 'Yeni satır ekle' : 'Add new line'}
@@ -1087,30 +1122,30 @@ export default function NewInvoicePage() {
             <div className="mt-6 flex justify-end">
               <div className="w-80 space-y-2">
                 <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">{t.invoices.subtotal}:</span>
-                  <span className="font-semibold">{formatCurrency(subtotal, currency)}</span>
+                  <span className="text-[15px] font-semibold text-gray-800">{t.invoices.subtotal}:</span>
+                  <span className="text-[15px] font-semibold text-gray-900">{formatCurrency(subtotal, currency)}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b">
-                  <span className="text-gray-600">{t.invoices.vatTotal}:</span>
-                  <span className="font-semibold">{formatCurrency(totalVat, currency)}</span>
+                  <span className="text-[15px] font-semibold text-gray-800">{t.invoices.vatTotal}:</span>
+                  <span className="text-[15px] font-semibold text-gray-900">{formatCurrency(totalVat, currency)}</span>
                 </div>
                 <div className="flex justify-between py-3 bg-[#00D4AA] text-white px-4 rounded-lg">
-                  <span className="font-bold text-lg">{t.invoices.grandTotal}:</span>
-                  <span className="font-bold text-lg">{formatCurrency(grandTotal, currency)}</span>
+                  <span className="text-[15px] font-bold">{t.invoices.grandTotal}:</span>
+                  <span className="text-[15px] font-bold">{formatCurrency(grandTotal, currency)}</span>
                 </div>
                 {totalWithholding > 0 && (
                   <>
                     <div className="flex justify-between py-2 border-b">
-                      <span className="text-gray-600">
+                      <span className="text-[15px] font-semibold text-gray-800">
                         {language === 'tr' ? 'Tevkifat toplamı:' : 'Total withholding:'}
                       </span>
-                      <span className="font-semibold">{formatCurrency(totalWithholding, currency)}</span>
+                      <span className="text-[15px] font-semibold text-gray-900">{formatCurrency(totalWithholding, currency)}</span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-gray-700 font-medium">
+                      <span className="text-[15px] font-semibold text-gray-800">
                         {language === 'tr' ? 'Ödenecek tutar:' : 'Payable amount:'}
                       </span>
-                      <span className="font-semibold">
+                      <span className="text-[15px] font-semibold text-gray-900">
                         {formatCurrency(Math.round((grandTotal - totalWithholding) * 100) / 100, currency)}
                       </span>
                     </div>
