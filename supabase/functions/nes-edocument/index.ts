@@ -174,12 +174,12 @@ function buildUblTrFromInvoiceData(data: Record<string, unknown>): string {
     </cac:TaxSubtotal>
   </cac:TaxTotal>
   ${withholdingAmount > 0 ? `<cac:WithholdingTaxTotal>
+    <cbc:TaxAmount currencyID="${currency}">${withholdingAmount.toFixed(2)}</cbc:TaxAmount>
     <cac:TaxSubtotal>
       <cac:TaxCategory><cbc:TaxExemptionReasonCode>${withholdingReasonCode}</cbc:TaxExemptionReasonCode><cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme></cac:TaxCategory>
       <cbc:TaxableAmount currencyID="${currency}">${taxExclusive.toFixed(2)}</cbc:TaxableAmount>
       <cbc:TaxAmount currencyID="${currency}">${withholdingAmount.toFixed(2)}</cbc:TaxAmount>
     </cac:TaxSubtotal>
-    <cbc:TaxAmount currencyID="${currency}">${withholdingAmount.toFixed(2)}</cbc:TaxAmount>
   </cac:WithholdingTaxTotal>` : ""}
   <cac:LegalMonetaryTotal>
     <cbc:LineExtensionAmount currencyID="${currency}">${taxExclusive.toFixed(2)}</cbc:LineExtensionAmount>
