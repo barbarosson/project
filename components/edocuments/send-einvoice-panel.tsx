@@ -44,6 +44,14 @@ interface InvoiceLineItem {
   unit_price: number
   tax_rate: number
   amount: number
+  discount?: number
+  discount_type?: string
+  otv?: number
+  otv_type?: string
+  oiv?: number
+  oiv_type?: string
+  accommodation_tax?: number
+  export_code?: string | null
 }
 
 type EdocModuleFlags = { efatura_enabled: boolean; earsiv_enabled: boolean; sender_alias?: string }
@@ -257,6 +265,14 @@ export function SendEInvoicePanel({ tenantId, language, translations: tr, initia
           TaxRate: item.tax_rate || 20,
           TaxAmount: ((item.quantity || 1) * (item.unit_price || 0) * (item.tax_rate || 20)) / 100,
           LineTotal: item.amount || 0,
+          Discount: Number(item.discount ?? 0),
+          DiscountType: item.discount_type ?? 'amount',
+          OTV: Number(item.otv ?? 0),
+          OTVType: item.otv_type ?? 'percent',
+          OIV: Number(item.oiv ?? 0),
+          OIVType: item.oiv_type ?? 'percent',
+          AccommodationTax: Number(item.accommodation_tax ?? 0),
+          ExportCode: item.export_code ?? undefined,
         })),
       }
 

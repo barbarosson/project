@@ -129,11 +129,46 @@ function buildUblTrFromInvoiceData(data: Record<string, unknown>): string {
       const desc = escapeXml(String(line.Name ?? line.Description ?? ""));
       const rawUnit = String(line.UnitCode ?? "C62").toUpperCase();
       const unitCode = escapeXml(rawUnit === "ADET" ? "C62" : rawUnit || "C62");
+      const lineBase = qty * unitPrice;
+      const discountVal = Number(line.Discount ?? 0);
+      const discountType = String(line.DiscountType ?? "amount").toLowerCase();
+      const discountAmount = discountVal > 0
+        ? (discountType === "percent" ? (lineBase * discountVal) / 100 : discountVal)
+        : 0;
+      const otvVal = Number(line.OTV ?? 0);
+      const otvType = String(line.OTVType ?? "percent").toLowerCase();
+      const otvAmount = otvVal > 0 ? (otvType === "percent" ? (lineBase * otvVal) / 100 : otvVal) : 0;
+      const oivVal = Number(line.OIV ?? 0);
+      const oivType = String(line.OIVType ?? "percent").toLowerCase();
+      const oivAmount = oivVal > 0 ? (oivType === "percent" ? (lineBase * oivVal) / 100 : oivVal) : 0;
+      const accommodationTax = Number(line.AccommodationTax ?? 0);
+      const exportCode = (line.ExportCode != null && String(line.ExportCode).trim() !== "") ? escapeXml(String(line.ExportCode).trim()) : "";
+      const allowanceChargeXml = [];
+      let seq = 0;
+      if (discountAmount > 0) {
+        seq++;
+        allowanceChargeXml.push(`<cac:AllowanceCharge><cbc:ChargeIndicator>false</cbc:ChargeIndicator><cbc:AllowanceChargeReason>${escapeXml('İndirim')}</cbc:AllowanceChargeReason><cbc:SequenceNumeric>${seq}</cbc:SequenceNumeric><cbc:Amount currencyID="${currency}">${discountAmount.toFixed(2)}</cbc:Amount></cac:AllowanceCharge>`);
+      }
+      if (otvAmount > 0) {
+        seq++;
+        allowanceChargeXml.push(`<cac:AllowanceCharge><cbc:ChargeIndicator>true</cbc:ChargeIndicator><cbc:AllowanceChargeReason>${escapeXml('ÖTV')}</cbc:AllowanceChargeReason><cbc:SequenceNumeric>${seq}</cbc:SequenceNumeric><cbc:Amount currencyID="${currency}">${otvAmount.toFixed(2)}</cbc:Amount></cac:AllowanceCharge>`);
+      }
+      if (oivAmount > 0) {
+        seq++;
+        allowanceChargeXml.push(`<cac:AllowanceCharge><cbc:ChargeIndicator>true</cbc:ChargeIndicator><cbc:AllowanceChargeReason>${escapeXml('ÖİV')}</cbc:AllowanceChargeReason><cbc:SequenceNumeric>${seq}</cbc:SequenceNumeric><cbc:Amount currencyID="${currency}">${oivAmount.toFixed(2)}</cbc:Amount></cac:AllowanceCharge>`);
+      }
+      if (accommodationTax > 0) {
+        seq++;
+        allowanceChargeXml.push(`<cac:AllowanceCharge><cbc:ChargeIndicator>true</cbc:ChargeIndicator><cbc:AllowanceChargeReason>${escapeXml('Konaklama Vergisi')}</cbc:AllowanceChargeReason><cbc:SequenceNumeric>${seq}</cbc:SequenceNumeric><cbc:Amount currencyID="${currency}">${accommodationTax.toFixed(2)}</cbc:Amount></cac:AllowanceCharge>`);
+      }
+      const allowanceChargeBlock = allowanceChargeXml.length > 0 ? allowanceChargeXml.join("") : "";
+      const itemContent = exportCode ? `<cac:Item><cbc:Name>${desc}</cbc:Name><cac:ClassifiedTaxCategory><cbc:ID>${exportCode}</cbc:ID></cac:ClassifiedTaxCategory></cac:Item>` : `<cac:Item><cbc:Name>${desc}</cbc:Name></cac:Item>`;
       return `<cac:InvoiceLine>
         <cbc:ID>${lineNum}</cbc:ID>
         <cbc:InvoicedQuantity unitCode="${unitCode}">${qty}</cbc:InvoicedQuantity>
         <cbc:LineExtensionAmount currencyID="${currency}">${lineTotal.toFixed(2)}</cbc:LineExtensionAmount>
-        <cac:Item><cbc:Name>${desc}</cbc:Name></cac:Item>
+        ${allowanceChargeBlock}
+        ${itemContent}
         <cac:Price><cbc:PriceAmount currencyID="${currency}">${unitPrice.toFixed(2)}</cbc:PriceAmount></cac:Price>
       </cac:InvoiceLine>`;
     })

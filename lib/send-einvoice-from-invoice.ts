@@ -121,6 +121,14 @@ export async function sendEInvoiceFromInvoiceId(
       TaxAmount:
         (Number(item.quantity ?? 1) * Number(item.unit_price ?? 0) * (Number(item.vat_rate) || 20)) / 100,
       LineTotal: lineTotal(item),
+      Discount: Number((item as { discount?: number }).discount ?? 0),
+      DiscountType: String((item as { discount_type?: string }).discount_type ?? 'amount'),
+      OTV: Number((item as { otv?: number }).otv ?? 0),
+      OTVType: String((item as { otv_type?: string }).otv_type ?? 'percent'),
+      OIV: Number((item as { oiv?: number }).oiv ?? 0),
+      OIVType: String((item as { oiv_type?: string }).oiv_type ?? 'percent'),
+      AccommodationTax: Number((item as { accommodation_tax?: number }).accommodation_tax ?? 0),
+      ExportCode: (item as { export_code?: string | null }).export_code ?? undefined,
     }))
 
     const taxInclusive = invoice.total || invoice.amount || (Number(invoice.subtotal ?? 0) + Number(invoice.tax_total ?? 0))
