@@ -29,7 +29,7 @@ import { supabase } from '@/lib/supabase';
 import { useTenant } from '@/contexts/tenant-context';
 import { useLanguage } from '@/contexts/language-context';
 import { toast } from 'sonner';
-import { getInvoiceXml, getInvoiceHtml, getIncomingInvoices, getOutgoingInvoices, getAccountInfo } from '@/lib/nes-api';
+import { getInvoiceXml, getInvoiceHtml, getIncomingInvoices, getOutgoingInvoices, getAccountInfo, getInvoiceStatus } from '@/lib/nes-api';
 import { getEdocStatusLabel, isEdocProcessCompleted } from '@/lib/edocument-status';
 import { importIncomingEdocumentToPurchase } from '@/lib/import-incoming-edocument';
 import { useRouter } from 'next/navigation';
@@ -44,6 +44,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
 
 type EdocSetup = { efatura_enabled: boolean; earsiv_enabled: boolean } | null;
 
@@ -62,6 +63,9 @@ type EdocRow = {
   document_type: string;
   created_at: string;
   local_purchase_invoice_id?: string | null;
+  local_invoice_id?: string | null;
+  subtotal?: number | null;
+  tax_total?: number | null;
 };
 
 function formatEdocDate(isoDate: string | null | undefined, lang: string): string {
@@ -119,7 +123,61 @@ export default function EInvoiceCenterPage() {
   const [importingEdocId, setImportingEdocId] = useState<string | null>(null);
   const [creditBalance, setCreditBalance] = useState<number | null>(null);
   const [creditLoading, setCreditLoading] = useState(false);
+  const [outgoingInvoiceAmountFallback, setOutgoingInvoiceAmountFallback] = useState<Record<string, number>>({});
+  const [outgoingWithholdingFallback, setOutgoingWithholdingFallback] = useState<Record<string, number>>({});
+  const [refreshingStatusId, setRefreshingStatusId] = useState<string | null>(null);
+  const [selectedIncomingIds, setSelectedIncomingIds] = useState<Set<string>>(new Set());
+  const [selectedOutgoingIds, setSelectedOutgoingIds] = useState<Set<string>>(new Set());
   const router = useRouter();
+
+  const toggleIncomingSelection = (id: string) => {
+    setSelectedIncomingIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const toggleOutgoingSelection = (id: string) => {
+    setSelectedOutgoingIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const selectAllIncoming = () => {
+    if (selectedIncomingIds.size === incomingDocs.length) setSelectedIncomingIds(new Set());
+    else setSelectedIncomingIds(new Set(incomingDocs.map((d) => d.id)));
+  };
+  const selectAllOutgoing = () => {
+    if (selectedOutgoingIds.size === outgoingDocs.length) setSelectedOutgoingIds(new Set());
+    else setSelectedOutgoingIds(new Set(outgoingDocs.map((d) => d.id)));
+  };
+
+  const exportEdocsToCsv = (rows: EdocRow[], direction: 'incoming' | 'outgoing') => {
+    const header =
+      language === 'tr'
+        ? 'Fatura No;Tarih;Ünvan;VKN/TCKN;Tutar;Durum;ETTN;Belge Tipi'
+        : 'Invoice No;Date;Title;VKN/TCKN;Amount;Status;ETTN;Document Type';
+    const lines = rows.map((doc) => {
+      const amount = doc.grand_total || (Number(doc.subtotal ?? 0) + Number(doc.tax_total ?? 0)) || 0;
+      const title = direction === 'incoming' ? (doc.sender_title ?? '') : (doc.receiver_title ?? '');
+      const vkn = direction === 'incoming' ? (doc.sender_vkn ?? '') : (doc.receiver_vkn ?? '');
+      const statusLabel = getEdocStatusLabel(doc.status, tr as Record<string, string>);
+      const esc = (s: string) => `"${String(s).replace(/"/g, '""')}"`;
+      return [doc.invoice_number ?? doc.id.slice(0, 8), formatEdocDate(doc.issue_date, language), title, vkn, amount.toFixed(2), statusLabel, doc.ettn ?? '', doc.document_type === 'earsiv' ? (language === 'tr' ? 'E-Arşiv' : 'E-Archive') : (language === 'tr' ? 'E-Fatura' : 'E-Invoice')].map(esc).join(';');
+    });
+    const csv = '\uFEFF' + header + '\n' + lines.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `e-fatura-${direction === 'incoming' ? 'gelen' : 'giden'}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(language === 'tr' ? `${rows.length} kayıt dışa aktarıldı.` : `${rows.length} record(s) exported.`);
+  };
 
   useEffect(() => {
     if (tenantId && mainTabValue === 'invoices') {
@@ -170,7 +228,7 @@ export default function EInvoiceCenterPage() {
       const baseCols = 'id, invoice_number, ettn, status, transferred, receiver_title, sender_title, receiver_vkn, sender_vkn, grand_total, issue_date, document_type, created_at';
       let query = supabase
         .from('edocuments')
-        .select(`${baseCols}, local_purchase_invoice_id`)
+        .select(`${baseCols}, local_purchase_invoice_id, local_invoice_id, subtotal, tax_total`)
         .eq('tenant_id', tenantId)
         .eq('direction', direction);
 
@@ -224,7 +282,30 @@ export default function EInvoiceCenterPage() {
         if (result.error) throw result.error;
       }
       const rows = (result.data ?? []) as EdocRow[];
-      if (direction === 'incoming') {
+      if (direction === 'outgoing') {
+        const withLocalInvoice = rows.filter((r) => r.local_invoice_id);
+        if (withLocalInvoice.length > 0) {
+          const ids = [...new Set(withLocalInvoice.map((r) => r.local_invoice_id).filter(Boolean))] as string[];
+          const { data: invs } = await supabase
+            .from('invoices')
+            .select('id, amount, total, withholding_amount')
+            .in('id', ids);
+          const map: Record<string, number> = {};
+          const withholdingMap: Record<string, number> = {};
+          for (const inv of (invs ?? []) as Array<{ id: string; amount?: number; total?: number; withholding_amount?: number }>) {
+            const amt = Number(inv.total || inv.amount || 0);
+            map[inv.id] = amt;
+            const wh = Number(inv.withholding_amount ?? 0);
+            if (wh > 0) withholdingMap[inv.id] = wh;
+          }
+          setOutgoingInvoiceAmountFallback(map);
+          setOutgoingWithholdingFallback(withholdingMap);
+        } else {
+          setOutgoingInvoiceAmountFallback({});
+          setOutgoingWithholdingFallback({});
+        }
+        setOutgoingDocs(rows);
+      } else if (direction === 'incoming') {
         // Backfill imported state for older records where edocuments.transferred/local_purchase_invoice_id
         // may not exist or wasn't written: if a purchase_invoice with same invoice_number exists, treat as imported.
         const invoiceNumbers = Array.from(
@@ -262,8 +343,6 @@ export default function EInvoiceCenterPage() {
         } else {
           setIncomingDocs(rows)
         }
-      } else {
-        setOutgoingDocs(rows)
       }
     } catch (e: unknown) {
       console.error('Edocuments load error:', e);
@@ -351,7 +430,7 @@ export default function EInvoiceCenterPage() {
             currency: inv.Currency || 'TRY',
             subtotal: Number(inv.SubTotal ?? inv.TaxExclusiveAmount ?? 0),
             tax_total: Number(inv.TaxTotal ?? inv.TaxAmount ?? 0),
-            grand_total: Number(inv.GrandTotal ?? inv.PayableAmount ?? inv.TaxInclusiveAmount ?? 0),
+            grand_total: Number(inv.PayableAmount || inv.GrandTotal || inv.TaxInclusiveAmount || 0),
             nes_response: inv,
           });
           imported++;
@@ -452,6 +531,24 @@ export default function EInvoiceCenterPage() {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
   }
+
+  const handleRefreshStatus = async (doc: EdocRow) => {
+    if (!tenantId || !doc.ettn || !doc.id) {
+      toast.error(language === 'tr' ? 'ETTN bulunamadı.' : 'ETTN not found.');
+      return;
+    }
+    setRefreshingStatusId(doc.id);
+    try {
+      await getInvoiceStatus(tenantId, [doc.ettn], doc.id);
+      toast.success(language === 'tr' ? 'Durum güncellendi.' : 'Status updated.');
+      loadInvoices();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error(language === 'tr' ? `Durum alınamadı: ${msg}` : `Failed to get status: ${msg}`);
+    } finally {
+      setRefreshingStatusId(null);
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -566,22 +663,22 @@ export default function EInvoiceCenterPage() {
                 <div className="flex flex-col gap-4">
                   <div className="flex flex-wrap items-end gap-3 p-4 rounded-lg border border-gray-200 bg-gray-50/50">
                     <div className="flex flex-wrap items-center gap-3">
-                      <div className="space-y-1">
+                      <div className="space-y-1 min-w-[180px]">
                         <label className="text-xs font-medium text-gray-600">{tr.filterDateFrom}</label>
                         <Input
                           type="date"
                           value={filterDateFrom}
                           onChange={(e) => setFilterDateFrom(e.target.value)}
-                          className="h-9 w-[140px]"
+                          className="h-9 w-full min-w-[180px]"
                         />
                       </div>
-                      <div className="space-y-1">
+                      <div className="space-y-1 min-w-[180px]">
                         <label className="text-xs font-medium text-gray-600">{tr.filterDateTo}</label>
                         <Input
                           type="date"
                           value={filterDateTo}
                           onChange={(e) => setFilterDateTo(e.target.value)}
-                          className="h-9 w-[140px]"
+                          className="h-9 w-full min-w-[180px]"
                         />
                       </div>
                       <div className="space-y-1">
@@ -717,34 +814,77 @@ export default function EInvoiceCenterPage() {
                           <p className="text-sm text-gray-400 mt-2">{tr.noIncomingInvoicesDesc}</p>
                         </div>
                       ) : (
-                        <div className="space-y-2">
+                        <>
+                          <div className="flex flex-wrap items-center gap-3 mb-4 p-3 rounded-lg border border-gray-200 bg-gray-50/50">
+                            <Checkbox
+                              checked={incomingDocs.length > 0 && selectedIncomingIds.size === incomingDocs.length}
+                              onCheckedChange={selectAllIncoming}
+                              aria-label={language === 'tr' ? 'Tümünü seç' : 'Select all'}
+                            />
+                            <span className="text-sm font-medium text-gray-700">
+                              {language === 'tr' ? 'Tümünü seç' : 'Select all'}
+                            </span>
+                            {selectedIncomingIds.size > 0 && (
+                              <>
+                                <span className="text-sm text-gray-600">
+                                  {selectedIncomingIds.size} {language === 'tr' ? 'seçili' : 'selected'}
+                                </span>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setSelectedIncomingIds(new Set())}
+                                  className="h-8"
+                                >
+                                  {language === 'tr' ? 'Seçimi temizle' : 'Clear selection'}
+                                </Button>
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  className="h-8 bg-[#0A2540] hover:bg-[#1e3a5f]"
+                                  onClick={() => exportEdocsToCsv(incomingDocs.filter((d) => selectedIncomingIds.has(d.id)), 'incoming')}
+                                >
+                                  <Download className="h-4 w-4 mr-2" />
+                                  {language === 'tr' ? 'Seçilenleri dışa aktar (CSV)' : 'Export selected (CSV)'}
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                          <div className="space-y-3">
                           {incomingDocs.map((doc) => (
                             <div
                               key={doc.id}
-                              className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-center rounded-lg border border-gray-200 bg-white p-3 shadow-sm min-w-0"
+                              className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-4 items-center rounded-xl border border-gray-200 bg-white p-4 shadow-sm min-w-0 min-h-[88px]"
                             >
-                              <div className="min-w-0 grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-1">
-                                <div className="min-w-0">
-                                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{tr.invoiceNumber}</p>
-                                  <p className="text-xs font-semibold text-gray-900 truncate" title={doc.invoice_number ?? undefined}>{doc.invoice_number || doc.id.slice(0, 8)}</p>
+                              <div className="flex items-center">
+                                <Checkbox
+                                  checked={selectedIncomingIds.has(doc.id)}
+                                  onCheckedChange={() => toggleIncomingSelection(doc.id)}
+                                  aria-label={doc.invoice_number ?? doc.id}
+                                  className="h-4 w-4"
+                                />
+                              </div>
+                              <div className="min-w-0 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-2">
+                                <div className="min-w-0 space-y-0.5">
+                                  <p className="text-xs font-medium text-gray-600">{tr.invoiceNumber}</p>
+                                  <p className="text-sm font-semibold text-gray-900 truncate" title={doc.invoice_number ?? undefined}>{doc.invoice_number || doc.id.slice(0, 8)}</p>
                                 </div>
-                                <div className="min-w-0">
-                                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{tr.issueDate}</p>
-                                  <p className="text-xs text-gray-900">{formatEdocDate(doc.issue_date, language)}</p>
+                                <div className="min-w-0 space-y-0.5">
+                                  <p className="text-xs font-medium text-gray-600">{tr.issueDate}</p>
+                                  <p className="text-sm text-gray-800">{formatEdocDate(doc.issue_date, language)}</p>
                                 </div>
-                                <div className="min-w-0 col-span-2 sm:col-span-1">
-                                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{tr.senderTitle}</p>
-                                  <p className="text-xs text-gray-900 truncate" title={doc.sender_title ?? undefined}>{doc.sender_title || '—'}</p>
-                                  {doc.sender_vkn && <p className="text-[11px] text-gray-400">VKN: {doc.sender_vkn}</p>}
+                                <div className="min-w-0 col-span-2 sm:col-span-1 space-y-0.5">
+                                  <p className="text-xs font-medium text-gray-600">{tr.senderTitle}</p>
+                                  <p className="text-sm font-medium text-gray-900 truncate" title={doc.sender_title ?? undefined}>{doc.sender_title || '—'}</p>
+                                  {doc.sender_vkn && <p className="text-xs text-gray-500">VKN: {doc.sender_vkn}</p>}
                                 </div>
-                                <div className="min-w-0">
-                                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{tr.grandTotal}</p>
-                                  <p className="text-sm font-semibold text-[#0A2540]">₺{(doc.grand_total ?? 0).toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                <div className="min-w-0 space-y-0.5">
+                                  <p className="text-xs font-medium text-gray-600">{tr.grandTotal}</p>
+                                  <p className="text-base font-semibold text-[#0A2540]">₺{(doc.grand_total || (Number(doc.subtotal ?? 0) + Number(doc.tax_total ?? 0)) || 0).toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-1.5 flex-wrap justify-end min-w-0">
-                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">{doc.document_type === 'earsiv' ? tr.earsiv : tr.efatura}</Badge>
-                                <Badge variant="secondary" className="text-[10px] font-normal px-1.5 py-0">
+                              <div className="flex items-center gap-2 flex-wrap justify-end min-w-0">
+                                <Badge variant="outline" className="text-xs px-2 py-0.5">{doc.document_type === 'earsiv' ? tr.earsiv : tr.efatura}</Badge>
+                                <Badge variant="secondary" className="text-xs font-medium px-2 py-0.5">
                                   {doc.local_purchase_invoice_id || doc.transferred || doc.status === 'transferred'
                                     ? tr.alreadyImported
                                     : getEdocStatusLabel(doc.status, tr as Record<string, string>)}
@@ -753,18 +893,18 @@ export default function EInvoiceCenterPage() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    className="h-7 min-h-7 px-2 text-[11px]"
+                                    className="h-8 min-h-8 px-3 text-xs font-medium"
                                     onClick={() => router.push(`/expenses?purchase_invoice_id=${doc.local_purchase_invoice_id}`)}
                                     title={tr.goToPurchaseInvoice}
                                   >
-                                    <ExternalLink className="h-3 w-3 mr-1" />
+                                    <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
                                     {tr.goToPurchaseInvoice}
                                   </Button>
                                 ) : doc.transferred || doc.status === 'transferred' ? (
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    className="h-7 min-h-7 px-2 text-[11px]"
+                                    className="h-8 min-h-8 px-3 text-xs"
                                     disabled
                                     title={tr.alreadyImported}
                                   >
@@ -774,12 +914,12 @@ export default function EInvoiceCenterPage() {
                                   <Button
                                     variant="default"
                                     size="sm"
-                                    className="h-7 min-h-7 px-2 text-[11px] bg-[#0A2540] hover:bg-[#1e3a5f]"
+                                    className="h-8 min-h-8 px-3 text-xs font-medium bg-[#0A2540] hover:bg-[#1e3a5f]"
                                     disabled={!!importingEdocId || doc.transferred || doc.status === 'transferred' || isEdocProcessCompleted(doc.status)}
                                     onClick={() => handleImportToPurchase(doc)}
                                     title={tr.importToPurchaseButton}
                                   >
-                                    {importingEdocId === doc.id ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <Download className="h-3 w-3 mr-1" />}
+                                    {importingEdocId === doc.id ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Download className="h-3.5 w-3.5 mr-1.5" />}
                                     {tr.importToPurchaseButton}
                                   </Button>
                                 )}
@@ -788,12 +928,12 @@ export default function EInvoiceCenterPage() {
                                     <Button
                                       variant="ghost"
                                       size="icon"
-                                      className="h-7 w-7 text-[#0A2540] hover:bg-gray-100"
+                                      className="h-8 w-8 text-[#0A2540] hover:bg-gray-100 rounded-md"
                                       title={language === 'tr' ? 'İşlemler' : 'Actions'}
                                       aria-label={language === 'tr' ? 'İşlemler' : 'Actions'}
                                     >
                                       <MoreVertical className="h-4 w-4" />
-                                      <span className="ml-1 text-base leading-none select-none">⋮</span>
+                                      <span className="ml-0.5 text-lg leading-none select-none font-medium">⋮</span>
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
@@ -818,7 +958,8 @@ export default function EInvoiceCenterPage() {
                               </div>
                             </div>
                           ))}
-                        </div>
+                          </div>
+                        </>
                       )}
                     </CardContent>
                   </Card>
@@ -847,45 +988,101 @@ export default function EInvoiceCenterPage() {
                           <p className="text-sm text-gray-400 mt-2">{tr.noSentInvoicesDesc}</p>
                         </div>
                       ) : (
-                        <div className="space-y-2">
+                        <>
+                          <div className="flex flex-wrap items-center gap-3 mb-4 p-3 rounded-lg border border-gray-200 bg-gray-50/50">
+                            <Checkbox
+                              checked={outgoingDocs.length > 0 && selectedOutgoingIds.size === outgoingDocs.length}
+                              onCheckedChange={selectAllOutgoing}
+                              aria-label={language === 'tr' ? 'Tümünü seç' : 'Select all'}
+                            />
+                            <span className="text-sm font-medium text-gray-700">
+                              {language === 'tr' ? 'Tümünü seç' : 'Select all'}
+                            </span>
+                            {selectedOutgoingIds.size > 0 && (
+                              <>
+                                <span className="text-sm text-gray-600">
+                                  {selectedOutgoingIds.size} {language === 'tr' ? 'seçili' : 'selected'}
+                                </span>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setSelectedOutgoingIds(new Set())}
+                                  className="h-8"
+                                >
+                                  {language === 'tr' ? 'Seçimi temizle' : 'Clear selection'}
+                                </Button>
+                                <Button
+                                  variant="default"
+                                  size="sm"
+                                  className="h-8 bg-[#0A2540] hover:bg-[#1e3a5f]"
+                                  onClick={() => exportEdocsToCsv(outgoingDocs.filter((d) => selectedOutgoingIds.has(d.id)), 'outgoing')}
+                                >
+                                  <Download className="h-4 w-4 mr-2" />
+                                  {language === 'tr' ? 'Seçilenleri dışa aktar (CSV)' : 'Export selected (CSV)'}
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                          <div className="space-y-3">
                           {outgoingDocs.map((doc) => (
                             <div
                               key={doc.id}
-                              className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-center rounded-lg border border-gray-200 bg-white p-3 shadow-sm min-w-0"
+                              className="grid grid-cols-1 md:grid-cols-[auto_1fr_auto] gap-4 items-center rounded-xl border border-gray-200 bg-white p-4 shadow-sm min-w-0 min-h-[88px]"
                             >
-                              <div className="min-w-0 grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-1">
-                                <div className="min-w-0">
-                                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{tr.invoiceNumber}</p>
-                                  <p className="text-xs font-semibold text-gray-900 truncate" title={doc.invoice_number ?? undefined}>{doc.invoice_number || doc.id.slice(0, 8)}</p>
+                              <div className="flex items-center">
+                                <Checkbox
+                                  checked={selectedOutgoingIds.has(doc.id)}
+                                  onCheckedChange={() => toggleOutgoingSelection(doc.id)}
+                                  aria-label={doc.invoice_number ?? doc.id}
+                                  className="h-4 w-4"
+                                />
+                              </div>
+                              <div className="min-w-0 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-2">
+                                <div className="min-w-0 space-y-0.5">
+                                  <p className="text-xs font-medium text-gray-600">{tr.invoiceNumber}</p>
+                                  <p className="text-sm font-semibold text-gray-900 truncate" title={doc.invoice_number ?? undefined}>{doc.invoice_number || doc.id.slice(0, 8)}</p>
                                 </div>
-                                <div className="min-w-0">
-                                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{tr.issueDate}</p>
-                                  <p className="text-xs text-gray-900">{formatEdocDate(doc.issue_date, language)}</p>
+                                <div className="min-w-0 space-y-0.5">
+                                  <p className="text-xs font-medium text-gray-600">{tr.issueDate}</p>
+                                  <p className="text-sm text-gray-800">{formatEdocDate(doc.issue_date, language)}</p>
                                 </div>
-                                <div className="min-w-0 col-span-2 sm:col-span-1">
-                                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{tr.receiverTitle}</p>
-                                  <p className="text-xs text-gray-900 truncate" title={doc.receiver_title ?? undefined}>{doc.receiver_title || '—'}</p>
-                                  {doc.receiver_vkn && <p className="text-[11px] text-gray-400">VKN: {doc.receiver_vkn}</p>}
+                                <div className="min-w-0 col-span-2 sm:col-span-1 space-y-0.5">
+                                  <p className="text-xs font-medium text-gray-600">{tr.receiverTitle}</p>
+                                  <p className="text-sm font-medium text-gray-900 truncate" title={doc.receiver_title ?? undefined}>{doc.receiver_title || '—'}</p>
+                                  {doc.receiver_vkn && <p className="text-xs text-gray-500">VKN: {doc.receiver_vkn}</p>}
                                 </div>
-                                <div className="min-w-0">
-                                  <p className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">{tr.grandTotal}</p>
-                                  <p className="text-sm font-semibold text-[#0A2540]">₺{(doc.grand_total ?? 0).toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                <div className="min-w-0 space-y-0.5">
+                                  <p className="text-xs font-medium text-gray-600">{tr.grandTotal}</p>
+                                  {(() => {
+                                  const fromInv = doc.local_invoice_id ? outgoingInvoiceAmountFallback[doc.local_invoice_id] : undefined;
+                                  const withholding = doc.local_invoice_id ? (outgoingWithholdingFallback[doc.local_invoice_id] ?? 0) : 0;
+                                  const grossTotal = fromInv ?? Number(doc.grand_total) ?? (Number(doc.subtotal ?? 0) + Number(doc.tax_total ?? 0)) ?? 0;
+                                  const payableAmount = withholding > 0 ? Math.round((grossTotal - withholding) * 100) / 100 : grossTotal;
+                                  return (
+                                    <div className="min-w-0 space-y-0.5">
+                                      <p className="text-base font-semibold text-[#0A2540]">₺{grossTotal.toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                      {withholding > 0 && (
+                                        <p className="text-sm text-gray-600">{(language === 'tr' ? 'Ödenecek: ' : 'Payable: ') + payableAmount.toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺'}</p>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
                                 </div>
                               </div>
-                              <div className="flex items-center gap-1.5 flex-wrap justify-end min-w-0">
-                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">{doc.document_type === 'earsiv' ? tr.earsiv : tr.efatura}</Badge>
-                                <Badge variant="secondary" className="text-[10px] font-normal px-1.5 py-0">{getEdocStatusLabel(doc.status, tr as Record<string, string>)}</Badge>
+                              <div className="flex items-center gap-2 flex-wrap justify-end min-w-0">
+                                <Badge variant="outline" className="text-xs px-2 py-0.5">{doc.document_type === 'earsiv' ? tr.earsiv : tr.efatura}</Badge>
+                                <Badge variant="secondary" className="text-xs font-medium px-2 py-0.5">{getEdocStatusLabel(doc.status, tr as Record<string, string>)}</Badge>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                                     <Button
                                       variant="ghost"
                                       size="icon"
-                                      className="h-7 w-7 text-[#0A2540] hover:bg-gray-100"
+                                      className="h-8 w-8 text-[#0A2540] hover:bg-gray-100 rounded-md"
                                       title={language === 'tr' ? 'İşlemler' : 'Actions'}
                                       aria-label={language === 'tr' ? 'İşlemler' : 'Actions'}
                                     >
                                       <MoreVertical className="h-4 w-4" />
-                                      <span className="ml-1 text-base leading-none select-none">⋮</span>
+                                      <span className="ml-0.5 text-lg leading-none select-none font-medium">⋮</span>
                                     </Button>
                                   </DropdownMenuTrigger>
                                   <DropdownMenuContent align="end">
@@ -905,12 +1102,26 @@ export default function EInvoiceCenterPage() {
                                       <Eye className="mr-2 h-4 w-4" />
                                       {language === 'tr' ? 'PDF Göster' : 'View PDF'}
                                     </DropdownMenuItem>
+                                    {doc.status === 'queued' && doc.ettn && (
+                                      <DropdownMenuItem
+                                        disabled={refreshingStatusId === doc.id}
+                                        onClick={(e) => { e.stopPropagation(); handleRefreshStatus(doc); }}
+                                      >
+                                        {refreshingStatusId === doc.id ? (
+                                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        ) : (
+                                          <RefreshCw className="mr-2 h-4 w-4" />
+                                        )}
+                                        {language === 'tr' ? 'Durum güncelle' : 'Refresh status'}
+                                      </DropdownMenuItem>
+                                    )}
                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               </div>
                             </div>
                           ))}
-                        </div>
+                          </div>
+                        </>
                       )}
                     </CardContent>
                   </Card>

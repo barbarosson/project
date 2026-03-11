@@ -71,6 +71,9 @@ export async function sendEInvoiceFromInvoiceId(
           ? 'earsiv'
           : 'efatura'
 
+    const withholdingAmount = Number((invoice as { withholding_amount?: number | null }).withholding_amount ?? 0) || 0
+    const effectiveInvoiceType = withholdingAmount > 0 ? 'TEVKIFAT' : 'SATIS'
+
     const { data: edoc, error: insertError } = await supabase
       .from('edocuments')
       .insert({
@@ -84,11 +87,11 @@ export async function sendEInvoiceFromInvoiceId(
         receiver_vkn: customer?.tax_number || '',
         receiver_title: customer?.company_title || customer?.name || '',
         issue_date: invoice.issue_date || new Date().toISOString().split('T')[0],
-        invoice_type: 'SATIS',
+        invoice_type: effectiveInvoiceType,
         currency: 'TRY',
         subtotal: invoice.subtotal || 0,
         tax_total: invoice.tax_total || 0,
-        grand_total: invoice.total || 0,
+        grand_total: invoice.total || invoice.amount || 0,
         local_invoice_id: invoice.id,
       })
       .select()
@@ -120,11 +123,14 @@ export async function sendEInvoiceFromInvoiceId(
       LineTotal: lineTotal(item),
     }))
 
+    const taxInclusive = invoice.total || invoice.amount || (Number(invoice.subtotal ?? 0) + Number(invoice.tax_total ?? 0))
+    const payableAmount = withholdingAmount > 0 ? Math.round((taxInclusive - withholdingAmount) * 100) / 100 : taxInclusive
+
     const nesInvoiceData = {
       InvoiceNumber: invoice.invoice_number,
       InvoiceId: invoice.invoice_number,
       IssueDate: invoice.issue_date || new Date().toISOString().split('T')[0],
-      InvoiceType: 'SATIS',
+      InvoiceType: effectiveInvoiceType,
       Currency: 'TRY',
       DefaultSeries: settings?.default_series || 'INV',
       SenderVkn: settings?.company_vkn || '',
@@ -136,7 +142,14 @@ export async function sendEInvoiceFromInvoiceId(
       ReceiverCountry: customer?.country || 'Türkiye',
       TaxExclusiveAmount: invoice.subtotal || 0,
       TaxAmount: invoice.tax_total || 0,
-      PayableAmount: invoice.total || 0,
+      TaxInclusiveAmount: taxInclusive,
+      PayableAmount: payableAmount,
+      ...(withholdingAmount > 0 && {
+        WithholdingAmount: withholdingAmount,
+        TevkifatAmount: withholdingAmount,
+        WithholdingReasonCode:
+          (lineItems as Array<{ withholding_reason_code?: string | null }>).find((l) => l.withholding_reason_code)?.withholding_reason_code || '9015',
+      }),
       Notes: invoice.notes || '',
       Lines: lines,
     }

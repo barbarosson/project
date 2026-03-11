@@ -45,6 +45,7 @@ interface Invoice {
   currency?: string
   notes: string
   staff_id?: string | null
+  withholding_amount?: number | null
 }
 
 interface EditInvoiceDialogProps {
@@ -91,6 +92,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
     currency: 'TRY',
     notes: '',
     staff_id: '',
+    withholding_amount: 0,
   })
   const [staffList, setStaffList] = useState<{ id: string; name: string; last_name?: string | null; department?: string | null; position?: string | null }[]>([])
   const [edocForInvoice, setEdocForInvoice] = useState<{ ettn: string; status: string; document_type: string } | null>(null)
@@ -222,6 +224,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
           currency: invoice.currency || 'TRY',
           notes: invoice.notes || '',
           staff_id: invoice.staff_id || '',
+          withholding_amount: Number((invoice as Invoice).withholding_amount ?? 0),
         }
 
         console.log('EditInvoiceDialog - Setting initial form data:', initialFormData)
@@ -399,11 +402,13 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
           subtotal,
           total_vat: taxAmount,
           amount: total,
+          total,
           status: formData.status,
           invoice_type: formData.invoice_type,
           currency: formData.currency || 'TRY',
           notes: formData.notes,
           staff_id: formData.staff_id || null,
+          withholding_amount: Number(formData.withholding_amount) || 0,
           tenant_id: tenantId,
           updated_at: new Date().toISOString(),
         })
@@ -800,6 +805,24 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
               <span>{t.invoices.total}:</span>
               <span>{formatCurrency(total, formData.currency || 'TRY')}</span>
             </div>
+            <div className="space-y-2 pt-2">
+              <Label className="text-sm font-normal">{language === 'tr' ? 'Tevkifat tutarı (₺)' : 'Withholding amount (₺)'}</Label>
+              <Input
+                type="number"
+                min={0}
+                step={0.01}
+                placeholder="0.00"
+                value={formData.withholding_amount > 0 ? formData.withholding_amount : ''}
+                onChange={(e) => setFormData({ ...formData, withholding_amount: parseFloat(e.target.value) || 0 })}
+                className="max-w-[180px]"
+              />
+            </div>
+            {formData.withholding_amount > 0 && (
+              <div className="flex justify-between text-base font-semibold text-primary">
+                <span>{language === 'tr' ? 'Ödenecek tutar' : 'Payable amount'}:</span>
+                <span>{formatCurrency(Math.round((total - formData.withholding_amount) * 100) / 100, formData.currency || 'TRY')}</span>
+              </div>
+            )}
             {displayCurrencies.length > 0 &&
               displayCurrencies.filter((c) => c !== (formData.currency || 'TRY')).length > 0 && (
                 <div className="pt-2 mt-2 border-t space-y-2">
@@ -898,7 +921,37 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
             </div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="flex-wrap gap-2">
+            {formData.status !== 'sent' && (
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={loading || sendingEInvoice}
+                onClick={async () => {
+                  if (!tenantId || sendingEInvoice) return
+                  setSendingEInvoice(true)
+                  try {
+                    const result = await sendEInvoiceFromInvoiceId(tenantId, invoice.id)
+                    if (result.success) {
+                      toast.success(language === 'tr' ? 'E-Fatura gönderildi.' : 'E-Invoice sent.')
+                      setFormData((prev) => ({ ...prev, status: 'sent' }))
+                      onSuccess()
+                      setEdocRefresh((r) => r + 1)
+                    } else {
+                      toast.error(result.error)
+                    }
+                  } catch (e: any) {
+                    toast.error(e?.message || (language === 'tr' ? 'Gönderim başarısız' : 'Send failed'))
+                  } finally {
+                    setSendingEInvoice(false)
+                  }
+                }}
+                className="mr-auto"
+              >
+                {sendingEInvoice ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+                {t.invoices.sendEInvoice}
+              </Button>
+            )}
             <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
               {t.common.cancel}
             </Button>

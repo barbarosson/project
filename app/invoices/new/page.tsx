@@ -15,8 +15,9 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Trash2, Save, Eye } from 'lucide-react'
+import { Plus, Trash2, Save, Eye, Send, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { sendEInvoiceFromInvoiceId } from '@/lib/send-einvoice-from-invoice'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
 import { useTenant } from '@/contexts/tenant-context'
@@ -24,6 +25,7 @@ import { useLanguage } from '@/contexts/language-context'
 import { useCurrency } from '@/contexts/currency-context'
 import { CURRENCY_LIST, getCurrencyLabel } from '@/lib/currencies'
 import { convertAmount, getRateForType, type TcmbRatesByCurrency } from '@/lib/tcmb'
+import { EXPORT_CODES } from '@/lib/invoice-line-codes'
 
 interface LineItem {
   id: string
@@ -36,6 +38,17 @@ interface LineItem {
   vat_amount: number
   total_with_vat: number
   product_id?: string
+  withholding_ratio?: string | null
+  withholding_amount?: number
+  discount?: number
+  discount_type?: 'percent' | 'amount'
+  otv?: number
+  otv_type?: 'percent' | 'amount'
+  oiv?: number
+  oiv_type?: 'percent' | 'amount'
+  accommodation_tax?: number
+  export_code?: string | null
+  withholding_reason_code?: string | null
 }
 
 interface Customer {
@@ -77,6 +90,8 @@ export default function NewInvoicePage() {
   const { currency: companyCurrency, formatCurrency, displayCurrencies, defaultRateType } = useCurrency()
   const [currency, setCurrency] = useState<string>('TRY')
   const [tcmbRates, setTcmbRates] = useState<TcmbRatesByCurrency | null>(null)
+  const [globalWithholdingRatio, setGlobalWithholdingRatio] = useState<string>('none')
+  const [sendingEInvoice, setSendingEInvoice] = useState(false)
 
   const [lineItems, setLineItems] = useState<LineItem[]>([
     {
@@ -88,7 +103,18 @@ export default function NewInvoicePage() {
       vat_rate: 20,
       line_total: 0,
       vat_amount: 0,
-      total_with_vat: 0
+      total_with_vat: 0,
+      withholding_ratio: null,
+      withholding_amount: 0,
+      discount: 0,
+      discount_type: 'percent',
+      otv: 0,
+      otv_type: 'percent',
+      oiv: 0,
+      oiv_type: 'percent',
+      accommodation_tax: 0,
+      export_code: null,
+      withholding_reason_code: null,
     }
   ])
 
@@ -163,15 +189,41 @@ export default function NewInvoicePage() {
   }, [effectiveCustomerId, issueDate, customers, subBranches])
 
   function calculateLineItem(item: LineItem): LineItem {
-    const line_total = item.quantity * item.unit_price
-    const vat_amount = line_total * (item.vat_rate / 100)
-    const total_with_vat = line_total + vat_amount
+    const raw_total = item.quantity * item.unit_price
+    const discountVal = Number(item.discount ?? 0) || 0
+    const discountAmount =
+      item.discount_type === 'amount'
+        ? discountVal
+        : raw_total * (discountVal / 100)
+    const line_total = Math.max(0, Math.round((raw_total - discountAmount) * 100) / 100)
+    const vat_amount = Math.round(line_total * (item.vat_rate / 100) * 100) / 100
+    let total_with_vat = line_total + vat_amount
+
+    const otvVal = Number(item.otv ?? 0) || 0
+    const otvAmount = item.otv_type === 'amount' ? otvVal : line_total * (otvVal / 100)
+    const oivVal = Number(item.oiv ?? 0) || 0
+    const oivAmount = item.oiv_type === 'amount' ? oivVal : line_total * (oivVal / 100)
+    const accomVal = Number(item.accommodation_tax ?? 0) || 0
+    total_with_vat = Math.round((total_with_vat + otvAmount + oivAmount + accomVal) * 100) / 100
+
+    let withholding_amount = 0
+    const ratio = item.withholding_ratio
+    if (ratio && ratio !== 'none' && vat_amount > 0) {
+      const [numStr, denStr] = ratio.split('/')
+      const num = parseFloat(numStr || '')
+      const den = parseFloat(denStr || '')
+      if (num > 0 && den > 0) {
+        const fraction = num / den
+        withholding_amount = Math.round(vat_amount * fraction * 100) / 100
+      }
+    }
 
     return {
       ...item,
-      line_total: Math.round(line_total * 100) / 100,
-      vat_amount: Math.round(vat_amount * 100) / 100,
-      total_with_vat: Math.round(total_with_vat * 100) / 100
+      line_total,
+      vat_amount,
+      total_with_vat,
+      withholding_amount,
     }
   }
 
@@ -194,7 +246,18 @@ export default function NewInvoicePage() {
         vat_rate: 20,
         line_total: 0,
         vat_amount: 0,
-        total_with_vat: 0
+        total_with_vat: 0,
+        withholding_ratio: null,
+        withholding_amount: 0,
+        discount: 0,
+        discount_type: 'percent',
+        otv: 0,
+        otv_type: 'percent',
+        oiv: 0,
+        oiv_type: 'percent',
+        accommodation_tax: 0,
+        export_code: null,
+        withholding_reason_code: null,
       }
     ])
   }
@@ -224,8 +287,9 @@ export default function NewInvoicePage() {
   const subtotal = lineItems.reduce((sum, item) => sum + item.line_total, 0)
   const totalVat = lineItems.reduce((sum, item) => sum + item.vat_amount, 0)
   const grandTotal = lineItems.reduce((sum, item) => sum + item.total_with_vat, 0)
+  const totalWithholding = lineItems.reduce((sum, item) => sum + (item.withholding_amount || 0), 0)
 
-  async function saveInvoice() {
+  async function saveInvoice(andSendEInvoice = false) {
     if (!tenantId) return
 
     if (!selectedCustomerId) {
@@ -239,6 +303,7 @@ export default function NewInvoicePage() {
     }
 
     setLoading(true)
+    if (andSendEInvoice) setSendingEInvoice(true)
 
     try {
       const invoiceNumber = `INV-${Date.now().toString().slice(-8)}`
@@ -251,8 +316,10 @@ export default function NewInvoicePage() {
             customer_id: effectiveCustomerId,
             invoice_number: invoiceNumber,
             amount: grandTotal,
+            total: grandTotal,
             subtotal: subtotal,
             total_vat: totalVat,
+            withholding_amount: totalWithholding || 0,
             status: 'draft',
             invoice_type: invoiceType,
             currency: currency || companyCurrency || 'TRY',
@@ -279,7 +346,16 @@ export default function NewInvoicePage() {
         line_total: item.line_total,
         vat_amount: item.vat_amount,
         total_with_vat: item.total_with_vat,
-        product_id: item.product_id || null
+        product_id: item.product_id || null,
+        discount: item.discount ?? 0,
+        discount_type: item.discount_type ?? 'percent',
+        otv: item.otv ?? 0,
+        otv_type: item.otv_type ?? 'percent',
+        oiv: item.oiv ?? 0,
+        oiv_type: item.oiv_type ?? 'percent',
+        accommodation_tax: item.accommodation_tax ?? 0,
+        export_code: item.export_code || null,
+        withholding_reason_code: item.withholding_reason_code || null,
       }))
 
       const { error: lineItemsError } = await supabase
@@ -349,13 +425,23 @@ export default function NewInvoicePage() {
         }
       }
 
-      toast.success(t.invoices.invoiceCreatedSuccess)
+      if (andSendEInvoice) {
+        const result = await sendEInvoiceFromInvoiceId(tenantId, invoice.id)
+        if (result.success) {
+          toast.success(language === 'tr' ? 'Fatura kaydedildi ve e-fatura gönderildi.' : 'Invoice saved and e-invoice sent.')
+        } else {
+          toast.warning(t.invoices.invoiceCreatedSuccess + (result.error ? ` ${result.error}` : ''))
+        }
+      } else {
+        toast.success(t.invoices.invoiceCreatedSuccess)
+      }
       router.push('/invoices')
     } catch (error: any) {
       console.error('Error creating invoice:', error)
       toast.error(error.message || t.invoices.failedToCreateInvoice)
     } finally {
       setLoading(false)
+      setSendingEInvoice(false)
     }
   }
 
@@ -377,12 +463,21 @@ export default function NewInvoicePage() {
               {t.common.cancel}
             </Button>
             <Button
-              onClick={saveInvoice}
+              onClick={() => saveInvoice(false)}
               disabled={loading}
               className="bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
             >
               <Save className="mr-2 h-4 w-4" />
-              {loading ? t.common.adding : t.invoices.saveInvoice}
+              {loading && !sendingEInvoice ? t.common.adding : t.invoices.saveInvoice}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => saveInvoice(true)}
+              disabled={loading}
+              className="font-semibold"
+            >
+              {loading && sendingEInvoice ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+              {loading && sendingEInvoice ? (language === 'tr' ? 'Gönderiliyor…' : 'Sending…') : (language === 'tr' ? 'Kaydet ve E-Fatura Gönder' : 'Save and Send E-Invoice')}
             </Button>
           </div>
         </div>
@@ -548,6 +643,38 @@ export default function NewInvoicePage() {
             </Button>
           </CardHeader>
           <CardContent>
+            <div className="flex justify-end mb-3 gap-2 items-center">
+              <span className="text-sm text-gray-600">
+                {language === 'tr' ? 'Tevkifat oranı (tüm satırlar)' : 'Withholding ratio (all lines)'}
+              </span>
+              <Select
+                value={globalWithholdingRatio}
+                onValueChange={(value) => {
+                  setGlobalWithholdingRatio(value)
+                  setLineItems((prev) =>
+                    prev.map((li) =>
+                      calculateLineItem({
+                        ...li,
+                        withholding_ratio: value === 'none' ? null : value,
+                      })
+                    )
+                  )
+                }}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue placeholder={language === 'tr' ? 'Seçin' : 'Select'} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{language === 'tr' ? 'Tevkifat yok' : 'No withholding'}</SelectItem>
+                  <SelectItem value="9/10">9/10</SelectItem>
+                  <SelectItem value="7/10">7/10</SelectItem>
+                  <SelectItem value="5/10">5/10</SelectItem>
+                  <SelectItem value="4/10">4/10</SelectItem>
+                  <SelectItem value="3/10">3/10</SelectItem>
+                  <SelectItem value="2/10">2/10</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -557,6 +684,14 @@ export default function NewInvoicePage() {
                     <th className="text-right p-2 text-sm font-semibold w-24">{t.invoices.quantity}</th>
                     <th className="text-right p-2 text-sm font-semibold w-32">{t.invoices.unitPrice}</th>
                     <th className="text-right p-2 text-sm font-semibold w-24">VAT %</th>
+                    <th className="text-right p-2 text-sm font-semibold w-28">
+                      {language === 'tr' ? 'Tevkifat' : 'Withholding'}
+                    </th>
+                    <th className="text-right p-2 text-sm font-semibold w-24">{language === 'tr' ? 'İndirim' : 'Discount'}</th>
+                    <th className="text-right p-2 text-sm font-semibold w-20">ÖTV</th>
+                    <th className="text-right p-2 text-sm font-semibold w-20">ÖİV</th>
+                    <th className="text-right p-2 text-sm font-semibold w-20">{language === 'tr' ? 'Konaklama' : 'Accom.'}</th>
+                    <th className="text-right p-2 text-sm font-semibold w-36">{language === 'tr' ? 'İhraç kodu' : 'Export code'}</th>
                     <th className="text-right p-2 text-sm font-semibold w-32">{t.invoices.total}</th>
                     {currency !== companyCurrency && (
                       <th className="text-right p-2 text-sm font-semibold w-32">
@@ -639,6 +774,105 @@ export default function NewInvoicePage() {
                           </SelectContent>
                         </Select>
                       </td>
+                      <td className="p-2">
+                        <Select
+                          value={item.withholding_ratio || 'none'}
+                          onValueChange={(value) =>
+                            updateLineItem(index, 'withholding_ratio', value === 'none' ? null : value)
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={language === 'tr' ? 'Yok' : 'None'} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">{language === 'tr' ? 'Yok' : 'None'}</SelectItem>
+                            <SelectItem value="9/10">9/10</SelectItem>
+                            <SelectItem value="7/10">7/10</SelectItem>
+                            <SelectItem value="5/10">5/10</SelectItem>
+                            <SelectItem value="4/10">4/10</SelectItem>
+                            <SelectItem value="3/10">3/10</SelectItem>
+                            <SelectItem value="2/10">2/10</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      <td className="p-2">
+                        <div className="flex gap-0.5 items-center justify-end">
+                          <Input
+                            type="number"
+                            min={0}
+                            step={0.01}
+                            className="w-16 text-right h-8 text-sm"
+                            value={item.discount ? item.discount : ''}
+                            onChange={(e) => updateLineItem(index, 'discount', parseFloat(e.target.value) || 0)}
+                          />
+                          <Select
+                            value={item.discount_type || 'percent'}
+                            onValueChange={(v) => updateLineItem(index, 'discount_type', v as 'percent' | 'amount')}
+                          >
+                            <SelectTrigger className="w-12 h-8 text-xs">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="percent">%</SelectItem>
+                              <SelectItem value="amount">₺</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </td>
+                      <td className="p-2">
+                        <div className="flex gap-0.5 items-center justify-end">
+                          <Input
+                            type="number"
+                            min={0}
+                            step={0.01}
+                            className="w-14 text-right h-8 text-sm"
+                            value={item.otv ? item.otv : ''}
+                            onChange={(e) => updateLineItem(index, 'otv', parseFloat(e.target.value) || 0)}
+                          />
+                          <span className="text-xs text-muted-foreground">%</span>
+                        </div>
+                      </td>
+                      <td className="p-2">
+                        <div className="flex gap-0.5 items-center justify-end">
+                          <Input
+                            type="number"
+                            min={0}
+                            step={0.01}
+                            className="w-14 text-right h-8 text-sm"
+                            value={item.oiv ? item.oiv : ''}
+                            onChange={(e) => updateLineItem(index, 'oiv', parseFloat(e.target.value) || 0)}
+                          />
+                          <span className="text-xs text-muted-foreground">%</span>
+                        </div>
+                      </td>
+                      <td className="p-2">
+                        <Input
+                          type="number"
+                          min={0}
+                          step={0.01}
+                          className="w-16 text-right h-8 text-sm"
+                          value={item.accommodation_tax ? item.accommodation_tax : ''}
+                          onChange={(e) => updateLineItem(index, 'accommodation_tax', parseFloat(e.target.value) || 0)}
+                        />
+                      </td>
+                      <td className="p-2">
+                        <Select
+                          value={item.export_code || 'none'}
+                          onValueChange={(value) => updateLineItem(index, 'export_code', value === 'none' ? null : value)}
+                        >
+                          <SelectTrigger className="h-8 text-xs min-w-0">
+                            <SelectValue placeholder={language === 'tr' ? 'Seçin' : 'Select'} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">—</SelectItem>
+                            {EXPORT_CODES.map((c) => (
+                              <SelectItem key={c.code} value={c.code}>
+                                {c.code} – {language === 'tr' ? c.labelTr : c.labelEn}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </td>
                       <td className="p-2 text-right font-semibold">
                         {formatCurrency(item.total_with_vat, currency)}
                       </td>
@@ -682,6 +916,24 @@ export default function NewInvoicePage() {
                   <span className="font-bold text-lg">{t.invoices.grandTotal}:</span>
                   <span className="font-bold text-lg">{formatCurrency(grandTotal, currency)}</span>
                 </div>
+                {totalWithholding > 0 && (
+                  <>
+                    <div className="flex justify-between py-2 border-b">
+                      <span className="text-gray-600">
+                        {language === 'tr' ? 'Tevkifat toplamı:' : 'Total withholding:'}
+                      </span>
+                      <span className="font-semibold">{formatCurrency(totalWithholding, currency)}</span>
+                    </div>
+                    <div className="flex justify-between py-2">
+                      <span className="text-gray-700 font-medium">
+                        {language === 'tr' ? 'Ödenecek tutar:' : 'Payable amount:'}
+                      </span>
+                      <span className="font-semibold">
+                        {formatCurrency(Math.round((grandTotal - totalWithholding) * 100) / 100, currency)}
+                      </span>
+                    </div>
+                  </>
+                )}
                 {currency !== companyCurrency && (
                   <div className="pt-3 mt-3 border-t border-white/30 space-y-2">
                     <div className="text-xs font-medium text-white/90">

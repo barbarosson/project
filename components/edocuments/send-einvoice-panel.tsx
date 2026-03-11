@@ -8,9 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/lib/supabase'
 import { sendInvoice, sendEArchive } from '@/lib/nes-api'
 import { toast } from 'sonner'
+import { Input } from '@/components/ui/input'
 import {
   Send, Loader2, FileText, AlertTriangle,
 } from 'lucide-react'
+import { WITHHOLDING_REASON_CODES } from '@/lib/invoice-line-codes'
 
 interface SendEInvoicePanelProps {
   tenantId: string
@@ -26,6 +28,10 @@ interface LocalInvoice {
   invoice_number: string
   customer_id: string | null
   total: number
+  amount?: number
+  subtotal?: number
+  tax_total?: number
+  withholding_amount?: number | null
   issue_date: string
   status: string
   customers: { name: string; company_title?: string } | null
@@ -49,6 +55,8 @@ export function SendEInvoicePanel({ tenantId, language, translations: tr, initia
   const [sending, setSending] = useState(false)
   const [docType, setDocType] = useState<'efatura' | 'earsiv'>('efatura')
   const [invoiceType, setInvoiceType] = useState('SATIS')
+  const [withholdingAmount, setWithholdingAmount] = useState(0)
+  const [withholdingReasonCode, setWithholdingReasonCode] = useState<string>('9015')
   const [sendAsDraft, setSendAsDraft] = useState(false)
   const [moduleFlags, setModuleFlags] = useState<EdocModuleFlags | null>(null)
   const t = tr || {}
@@ -90,12 +98,27 @@ export function SendEInvoicePanel({ tenantId, language, translations: tr, initia
     else if (efatura_enabled && earsiv_enabled) setDocType('efatura')
   }, [moduleFlags])
 
+  useEffect(() => {
+    if (invoiceType !== 'TEVKIFAT') setWithholdingAmount(0)
+  }, [invoiceType])
+
+  // Faturada tevkifat varsa paneli doldur (SATIS -> TEVKIFAT + tutar)
+  useEffect(() => {
+    if (!selectedInvoiceId || !invoices.length) return
+    const inv = invoices.find((i) => i.id === selectedInvoiceId)
+    const wh = Number(inv?.withholding_amount ?? 0)
+    if (wh > 0) {
+      setInvoiceType('TEVKIFAT')
+      setWithholdingAmount(wh)
+    }
+  }, [selectedInvoiceId, invoices])
+
   async function loadInvoices() {
     setLoading(true)
     try {
       const { data: invoiceList, error } = await supabase
         .from('invoices')
-        .select('id, invoice_number, customer_id, total, issue_date, status, customers(name, company_title)')
+        .select('id, invoice_number, customer_id, total, amount, subtotal, tax_total, withholding_amount, issue_date, status, customers(name, company_title)')
         .eq('tenant_id', tenantId)
         .in('status', ['sent', 'paid', 'overdue'])
         .order('created_at', { ascending: false })
@@ -176,7 +199,7 @@ export function SendEInvoicePanel({ tenantId, language, translations: tr, initia
           currency: 'TRY',
           subtotal: invoice.subtotal || 0,
           tax_total: invoice.tax_total || 0,
-          grand_total: invoice.total || 0,
+          grand_total: invoice.total || invoice.amount || 0,
           local_invoice_id: invoice.id,
         })
         .select()
@@ -192,11 +215,20 @@ export function SendEInvoicePanel({ tenantId, language, translations: tr, initia
         return
       }
 
+      const taxInclusive = invoice.total || invoice.amount || (Number(invoice.subtotal ?? 0) + Number(invoice.tax_total ?? 0))
+      // Fatura kaydındaki tevkifat öncelikli; yoksa paneldeki değer (NES/GIB için tutarlı olsun)
+      const fromDbWithholding = Number(invoice?.withholding_amount ?? 0) || 0
+      const effectiveWithholding = fromDbWithholding > 0
+        ? fromDbWithholding
+        : (invoiceType === 'TEVKIFAT' ? Number(withholdingAmount) || 0 : 0)
+      const payableAmount = effectiveWithholding > 0 ? Math.round((taxInclusive - effectiveWithholding) * 100) / 100 : taxInclusive
+      const effectiveInvoiceType = effectiveWithholding > 0 ? 'TEVKIFAT' : invoiceType
+
       const nesInvoiceData = {
         InvoiceNumber: invoice.invoice_number,
         InvoiceId: invoice.invoice_number,
         IssueDate: invoice.issue_date || new Date().toISOString().split('T')[0],
-        InvoiceType: invoiceType,
+        InvoiceType: effectiveInvoiceType,
         Currency: 'TRY',
         DefaultSeries: settings?.default_series || 'INV',
         SenderVkn: settings?.company_vkn || '',
@@ -206,9 +238,15 @@ export function SendEInvoicePanel({ tenantId, language, translations: tr, initia
         ReceiverAddress: customer?.address || '',
         ReceiverCity: customer?.city || '',
         ReceiverCountry: customer?.country || 'Türkiye',
-        TaxExclusiveAmount: invoice.subtotal || 0,
-        TaxAmount: invoice.tax_total || 0,
-        PayableAmount: invoice.total || 0,
+        TaxExclusiveAmount: invoice.subtotal ?? 0,
+        TaxAmount: invoice.tax_total ?? 0,
+        TaxInclusiveAmount: taxInclusive,
+        ...(effectiveWithholding > 0 && {
+          WithholdingAmount: effectiveWithholding,
+          TevkifatAmount: effectiveWithholding,
+          WithholdingReasonCode: withholdingReasonCode || '9015',
+        }),
+        PayableAmount: payableAmount,
         Notes: invoice.notes || '',
         Lines: (lineItems || []).map((item: InvoiceLineItem, idx: number) => ({
           LineNumber: idx + 1,
@@ -318,7 +356,7 @@ export function SendEInvoicePanel({ tenantId, language, translations: tr, initia
                   ) : (
                     invoices.map(inv => (
                       <SelectItem key={inv.id} value={inv.id}>
-                        {inv.invoice_number} - {inv.customers?.company_title || inv.customers?.name || 'N/A'} ({formatCurrency(inv.total, 'TRY')})
+                        {inv.invoice_number} - {inv.customers?.company_title || inv.customers?.name || 'N/A'} ({formatCurrency(Number(inv.total || inv.amount || 0), 'TRY')})
                       </SelectItem>
                     ))
                   )}
@@ -377,6 +415,45 @@ export function SendEInvoicePanel({ tenantId, language, translations: tr, initia
               </Select>
             </div>
 
+            {invoiceType === 'TEVKIFAT' && (
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    {t.withholdingAmount ?? (isTr ? 'Tevkifat tutarı (₺)' : 'Withholding amount (₺)')}
+                  </label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step={0.01}
+                    placeholder="0.00"
+                    value={withholdingAmount > 0 ? withholdingAmount : ''}
+                    onChange={(e) => setWithholdingAmount(parseFloat(e.target.value) || 0)}
+                    className="max-w-[180px]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">
+                    {isTr ? 'Tevkifat nedeni (e-fatura)' : 'Withholding reason (e-invoice)'}
+                  </label>
+                  <Select
+                    value={withholdingReasonCode}
+                    onValueChange={setWithholdingReasonCode}
+                  >
+                    <SelectTrigger className="max-w-[240px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {WITHHOLDING_REASON_CODES.map((r) => (
+                        <SelectItem key={r.code} value={r.code}>
+                          {r.code} – {isTr ? r.labelTr : r.labelEn}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
             {docType === 'efatura' && (
               <div className="space-y-2">
                 <label className="text-sm font-medium">
@@ -424,7 +501,7 @@ export function SendEInvoicePanel({ tenantId, language, translations: tr, initia
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">{t.totalLabel ?? (isTr ? 'Toplam' : 'Total')}</p>
-                  <p className="font-bold">{formatCurrency(selectedInvoice.total, 'TRY')}</p>
+                  <p className="font-bold">{formatCurrency(Number(selectedInvoice.total || selectedInvoice.amount || 0), 'TRY')}</p>
                 </div>
               </div>
             </div>

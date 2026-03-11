@@ -99,7 +99,12 @@ function buildUblTrFromInvoiceData(data: Record<string, unknown>): string {
   const receiverCountry = escapeXml(String(data.ReceiverCountry ?? "Türkiye"));
   const taxExclusive = Number(data.TaxExclusiveAmount ?? data.SubTotal ?? 0);
   const taxAmount = Number(data.TaxAmount ?? data.TaxTotal ?? 0);
-  const payable = Number(data.PayableAmount ?? data.GrandTotal ?? data.TaxInclusiveAmount ?? 0);
+  const withholdingAmount = Number(data.WithholdingAmount ?? data.TevkifatAmount ?? 0);
+  const withholdingReasonCode = escapeXml(String(data.WithholdingReasonCode ?? "9015").trim()) || "9015";
+  const taxInclusive = Number(data.TaxInclusiveAmount ?? 0) || taxExclusive + taxAmount;
+  const payable = withholdingAmount > 0
+    ? Math.round((taxInclusive - withholdingAmount) * 100) / 100
+    : Number(data.PayableAmount ?? data.GrandTotal ?? data.TaxInclusiveAmount ?? taxInclusive);
   let lines = (Array.isArray(data.Lines) ? data.Lines : []) as Array<Record<string, unknown>>;
   if (lines.length === 0 && (payable > 0 || taxExclusive > 0)) {
     lines = [{ Name: "Hizmet", Quantity: 1, UnitPrice: taxExclusive || payable, LineTotal: taxExclusive || payable }];
@@ -168,10 +173,18 @@ function buildUblTrFromInvoiceData(data: Record<string, unknown>): string {
       <cac:TaxCategory><cbc:TaxExemptionReasonCode>VAT</cbc:TaxExemptionReasonCode><cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme></cac:TaxCategory>
     </cac:TaxSubtotal>
   </cac:TaxTotal>
+  ${withholdingAmount > 0 ? `<cac:WithholdingTaxTotal>
+    <cac:TaxSubtotal>
+      <cac:TaxCategory><cbc:TaxExemptionReasonCode>${withholdingReasonCode}</cbc:TaxExemptionReasonCode><cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme></cac:TaxCategory>
+      <cbc:TaxableAmount currencyID="${currency}">${taxExclusive.toFixed(2)}</cbc:TaxableAmount>
+      <cbc:TaxAmount currencyID="${currency}">${withholdingAmount.toFixed(2)}</cbc:TaxAmount>
+    </cac:TaxSubtotal>
+    <cbc:TaxAmount currencyID="${currency}">${withholdingAmount.toFixed(2)}</cbc:TaxAmount>
+  </cac:WithholdingTaxTotal>` : ""}
   <cac:LegalMonetaryTotal>
     <cbc:LineExtensionAmount currencyID="${currency}">${taxExclusive.toFixed(2)}</cbc:LineExtensionAmount>
     <cbc:TaxExclusiveAmount currencyID="${currency}">${taxExclusive.toFixed(2)}</cbc:TaxExclusiveAmount>
-    <cbc:TaxInclusiveAmount currencyID="${currency}">${payable.toFixed(2)}</cbc:TaxInclusiveAmount>
+    <cbc:TaxInclusiveAmount currencyID="${currency}">${taxInclusive.toFixed(2)}</cbc:TaxInclusiveAmount>
     <cbc:PayableAmount currencyID="${currency}">${payable.toFixed(2)}</cbc:PayableAmount>
   </cac:LegalMonetaryTotal>
 ${lineXml}
@@ -733,11 +746,19 @@ Deno.serve(async (req: Request) => {
         }
 
         if (params.edocument_id) {
-          const uuid = (result as any)?.uuid ?? (result as any)?.id;
+          const res = result as Record<string, unknown> | null;
+          const uuid = (res?.uuid ?? res?.id ?? res?.Ettn ?? res?.ettn) as string | undefined;
+          let status = params.draft ? "draft" : "queued";
+          if (!params.draft && res && typeof res === "object") {
+            const raw = (res.RecordStatus ?? res.recordStatus ?? res.Status ?? res.status) as string | undefined;
+            if (typeof raw === "string" && /^(delivered|sent|accepted|rejected|queued|draft|cancelled|error)/i.test(raw.trim())) {
+              status = raw.trim().toLowerCase();
+            }
+          }
           await serviceClient
             .from("edocuments")
             .update({
-              status: params.draft ? "draft" : "queued",
+              status,
               ettn: uuid ?? undefined,
               nes_response: result,
               updated_at: new Date().toISOString(),
@@ -1072,24 +1093,86 @@ Deno.serve(async (req: Request) => {
       }
 
       case "get_invoice_status": {
-        result = await nesRequest(
-          baseUrl,
-          nesToken,
-          "POST",
-          "/api/v2/EInvoice/GetInvoiceStatus",
-          { EttnList: params.ettn_list }
-        );
+        const ettnList = Array.isArray(params.ettn_list) ? params.ettn_list : (params.ettn_list ? [params.ettn_list] : []);
+        if (ettnList.length === 0) {
+          return jsonResponse({ success: false, error: "ETTN listesi bos." }, 400);
+        }
+        const firstEttn = ettnList[0];
 
-        if (params.edocument_id && result) {
-          const statusResult = (result as any)?.Result;
-          if (statusResult?.StatusList?.[0]?.Status) {
+        // 1) Önce v1 giden listesi (senkron ile aynı endpoint) - senkron çalışıyorsa bu da çalışır
+        let statusUpdated = false;
+        try {
+          const raw = await nesRequest(
+            einvoiceBase,
+            nesToken,
+            "GET",
+            "/v1/outgoing/invoices",
+            undefined,
+            20000,
+            {
+              sort: "CreatedAt desc",
+              pageSize: 100,
+              page: 1,
+              startDate: "",
+              endDate: "",
+            }
+          );
+          const data = (raw as any)?.data ?? (raw as any)?.Data ?? [];
+          const list = Array.isArray(data) ? data : [];
+          const found = list.find((item: any) => {
+            const id = item?.id ?? item?.uuid ?? item?.ettn ?? item?.Ettn;
+            return id && (id === firstEttn || ettnList.includes(id));
+          });
+          if (found && params.edocument_id) {
+            const st = (found.recordStatus ?? found.outgoingStatus ?? found.status ?? found.RecordStatus ?? "queued") as string;
+            const status = String(st).toLowerCase();
             await serviceClient
               .from("edocuments")
               .update({
-                status: statusResult.StatusList[0].Status.toLowerCase(),
+                status: status || "queued",
                 updated_at: new Date().toISOString(),
               })
               .eq("id", params.edocument_id);
+            statusUpdated = true;
+          }
+          result = found
+            ? { Result: { StatusList: [{ Ettn: firstEttn, Status: found.recordStatus ?? found.outgoingStatus ?? "queued" }] } }
+            : { Result: { StatusList: [] } };
+        } catch (v1Err) {
+          // v1 404/error: v2 dene (bazı NES ortamlarında sadece v2 var)
+          let v2Ok = false;
+          const v2Paths = ["/api/v2/EInvoice/GetInvoiceStatus", "/v2/EInvoice/GetInvoiceStatus"];
+          const bases = [baseUrl, einvoiceBase, baseUrl.replace(/\/einvoice\/?$/i, "")].filter(Boolean);
+          for (const tryBase of bases) {
+            if (!tryBase) continue;
+            for (const path of v2Paths) {
+              try {
+                result = await nesRequest(tryBase, nesToken, "POST", path, { EttnList: ettnList });
+                v2Ok = true;
+                if (params.edocument_id && result) {
+                  const statusResult = (result as any)?.Result;
+                  if (statusResult?.StatusList?.[0]?.Status) {
+                    await serviceClient
+                      .from("edocuments")
+                      .update({
+                        status: String(statusResult.StatusList[0].Status).toLowerCase(),
+                        updated_at: new Date().toISOString(),
+                      })
+                      .eq("id", params.edocument_id);
+                  }
+                }
+                break;
+              } catch (_) {
+                /* try next */
+              }
+            }
+            if (v2Ok) break;
+          }
+          if (!v2Ok) {
+            throw new Error(
+              "Durum alinamadi. Giden listesi (v1) ve durum API (v2) denendi, ikisi de hata verdi. " +
+              "Senkron calisiyorsa v1 tekrar denenecek; edge function guncel mi kontrol edin."
+            );
           }
         }
         break;

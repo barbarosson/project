@@ -279,7 +279,7 @@ export default function InvoicesPage() {
         .single()
 
       if (customer) {
-        const invTotal = Number(deletingInvoice.total ?? deletingInvoice.amount ?? 0)
+        const invTotal = Number(deletingInvoice.total || deletingInvoice.amount || 0)
         await supabase
           .from('customers')
           .update({ balance: Math.max(0, (customer.balance || 0) - invTotal) })
@@ -402,7 +402,7 @@ export default function InvoicesPage() {
     try {
       const balanceDeltas: Record<string, number> = {}
       for (const inv of withoutPayments) {
-        const amt = Number(inv.total ?? inv.amount ?? 0)
+        const amt = Number(inv.total || inv.amount || 0)
         if (inv.customer_id && amt > 0) balanceDeltas[inv.customer_id] = (balanceDeltas[inv.customer_id] ?? 0) + amt
       }
       for (const [customerId, subtract] of Object.entries(balanceDeltas)) {
@@ -618,7 +618,7 @@ export default function InvoicesPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="font-semibold text-gray-900">
-                            {formatCurrency(Number(invoice.total ?? invoice.amount ?? 0), invoice.currency || 'TRY')}
+                            {formatCurrency(Number(invoice.total || invoice.amount || 0), invoice.currency || 'TRY')}
                           </div>
                           {invoice.paid_amount > 0 && invoice.status !== 'draft' && (
                             <div className="text-xs text-green-600">
@@ -772,7 +772,7 @@ export default function InvoicesPage() {
           type="invoice"
           referenceId={payingInvoice.id}
           customerId={payingInvoice.customer_id}
-          totalAmount={Number(payingInvoice.total ?? payingInvoice.amount ?? 0)}
+          totalAmount={Number(payingInvoice.total || payingInvoice.amount || 0)}
           paidAmount={Number(payingInvoice.paid_amount ?? 0)}
           currency={payingInvoice.currency || 'TRY'}
           onSuccess={() => {

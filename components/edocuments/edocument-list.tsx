@@ -39,6 +39,8 @@ interface Edocument {
   issue_date: string
   currency: string
   grand_total: number
+  subtotal?: number
+  tax_total?: number
   invoice_type: string | null
   created_at: string
 }
@@ -247,7 +249,7 @@ export function EdocumentList({ tenantId, language, translations: t, onViewDocum
                         {doc.issue_date ? new Date(doc.issue_date).toLocaleDateString(language === 'tr' ? 'tr-TR' : 'en-US') : '-'}
                       </TableCell>
                       <TableCell className="text-right font-medium text-sm">
-                        {formatCurrency(doc.grand_total, doc.currency)}
+                        {formatCurrency(doc.grand_total || (Number(doc.subtotal ?? 0) + Number(doc.tax_total ?? 0)) || 0, doc.currency)}
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline" className={`text-[10px] ${statusColors[doc.status] || ''}`}>
