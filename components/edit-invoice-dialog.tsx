@@ -145,6 +145,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
         currency: 'TRY',
         notes: '',
         staff_id: '',
+        withholding_amount: 0,
       })
       setLineItems([])
       setOriginalLineItems([])
