@@ -930,6 +930,10 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                 disabled={loading || sendingEInvoice}
                 onClick={async () => {
                   if (!tenantId || sendingEInvoice) return
+                  if (!invoice) {
+                    toast.error(language === 'tr' ? 'E-Fatura bulunamadı.' : 'Invoice not found.')
+                    return
+                  }
                   setSendingEInvoice(true)
                   try {
                     const result = await sendEInvoiceFromInvoiceId(tenantId, invoice.id)
