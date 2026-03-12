@@ -9,11 +9,11 @@ import { useSiteConfig } from '@/contexts/site-config-context'
 import { useRouter } from 'next/navigation'
 import { useContentSection } from '@/hooks/use-content-section'
 
-interface ParasutHeroSectionProps {
+interface ModulusHeroSectionProps {
   isAuthenticated?: boolean
 }
 
-export function ParasutHeroSection({ isAuthenticated = false }: ParasutHeroSectionProps) {
+export function ModulusHeroSection({ isAuthenticated = false }: ModulusHeroSectionProps) {
   const router = useRouter()
   const { language } = useLanguage()
   const { config } = useSiteConfig()
@@ -21,47 +21,47 @@ export function ParasutHeroSection({ isAuthenticated = false }: ParasutHeroSecti
 
   const heroTitle = useContentSection('landing_hero_main_title', language, {
     en: 'Focus on Your Business, Not Your Accounting.',
-    tr: 'Isletmenize Odaklanin, Muhasebenize Degil.'
+    tr: 'İşinize odaklanın, muhasebenize değil.'
   })
 
   const heroSubtitle = useContentSection('landing_hero_main_subtitle', language, {
-    en: 'Modulus Business makes business management as simple as sending a text. No accounting degree required.',
-    tr: 'Modulus Business, is yonetimini mesaj gondermek kadar basit hale getirir. Muhasebe diplomasi gerektirmez.'
+    en: 'Modulus makes running your business as simple as sending a message. No accounting degree required.',
+    tr: 'Modulus, işinizi yönetmeyi mesaj göndermek kadar basit hale getirir. Muhasebe bilmenize gerek yok.'
   })
 
   const ctaStartFree = useContentSection('landing_hero_cta_start_free', language, {
     en: 'Start Free',
-    tr: 'Ucretsiz Basla'
+    tr: 'Ücretsiz başla'
   })
 
   const ctaSeeHow = useContentSection('landing_hero_cta_see_how', language, {
     en: 'See How It Works',
-    tr: 'Nasil Calisir?'
+    tr: 'Nasıl çalıştığını görün'
   })
 
   const ctaDashboard = useContentSection('landing_hero_cta_dashboard', language, {
     en: 'Go to Dashboard',
-    tr: 'Panoya Git'
+    tr: 'Yönetim paneline git'
   })
 
   const benefit1 = useContentSection('landing_hero_benefit_1', language, {
     en: 'No credit card required',
-    tr: 'Kredi karti gerekmez'
+    tr: 'Kredi kartı gerekmez'
   })
 
   const benefit2 = useContentSection('landing_hero_benefit_2', language, {
     en: '14-day free trial',
-    tr: '14 gunluk ucretsiz deneme'
+    tr: '14 gün ücretsiz deneme'
   })
 
   const benefit3 = useContentSection('landing_hero_benefit_3', language, {
     en: 'Setup in 5 minutes',
-    tr: '5 dakikada kurulum'
+    tr: '5 dakikada kurulup kullanıma hazır'
   })
 
   const floatingCta = useContentSection('landing_floating_cta', language, {
     en: 'Try for Free',
-    tr: 'Ucretsiz Dene'
+    tr: 'Ücretsiz dene'
   })
 
   useEffect(() => {

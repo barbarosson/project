@@ -16,7 +16,7 @@
   - Other CMS features like theme settings
 
   ## Reason
-  The application uses ParasutLandingLayout with static components.
+  The application uses ModulusLandingLayout with static components.
   The CMS page/section editor in Site Commander is not being used.
   Only Banner Manager is actively utilized.
 */

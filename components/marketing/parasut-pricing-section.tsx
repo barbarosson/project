@@ -21,15 +21,53 @@ interface SubscriptionPlan {
   trial_days: number
 }
 
-const PLAN_CONFIG: Record<string, { icon: React.ElementType; labelTr: string; labelEn: string; popular?: boolean }> = {
-  FREE: { icon: Zap, labelTr: 'Temel', labelEn: 'Free' },
-  KUCUK: { icon: Star, labelTr: 'Kucuk', labelEn: 'Small' },
-  ORTA: { icon: Rocket, labelTr: 'Orta', labelEn: 'Medium', popular: true },
-  BUYUK: { icon: Crown, labelTr: 'Buyuk', labelEn: 'Large' },
-  ENTERPRISE: { icon: Building2, labelTr: 'Kurumsal', labelEn: 'Enterprise' },
+const PLAN_CONFIG: Record<string, {
+  icon: React.ElementType
+  labelTr: string
+  labelEn: string
+  whoTr: string
+  whoEn: string
+  popular?: boolean
+}> = {
+  FREE: {
+    icon: Zap,
+    labelTr: 'Temel',
+    labelEn: 'Free',
+    whoTr: 'Yeni başlayanlar ve denemek isteyen mikro işletmeler için',
+    whoEn: 'For solo founders and very small teams trying Modulus for the first time',
+  },
+  KUCUK: {
+    icon: Star,
+    labelTr: 'Küçük',
+    labelEn: 'Small',
+    whoTr: 'Fatura ve temel stok takibi yapan küçük işletmeler için',
+    whoEn: 'For small businesses that need invoicing, basic stock and expense tracking',
+  },
+  ORTA: {
+    icon: Rocket,
+    labelTr: 'Orta',
+    labelEn: 'Medium',
+    whoTr: 'Büyüyen KOBİ’ler, ekipli çalışma ve gelişmiş raporlama için',
+    whoEn: 'For growing SMEs that need team collaboration and advanced reporting',
+    popular: true,
+  },
+  BUYUK: {
+    icon: Crown,
+    labelTr: 'Büyük',
+    labelEn: 'Large',
+    whoTr: 'Çok şubeli, yüksek hacimli işletmeler için',
+    whoEn: 'For larger companies with multiple branches and higher transaction volumes',
+  },
+  ENTERPRISE: {
+    icon: Building2,
+    labelTr: 'Kurumsal',
+    labelEn: 'Enterprise',
+    whoTr: 'Özel entegrasyon ve sözleşmeli çözüm isteyen kurumsal yapılar için',
+    whoEn: 'For enterprises that need custom integrations, SLAs and tailored onboarding',
+  },
 }
 
-export function ParasutPricingSection() {
+export function ModulusPricingSection() {
   const { language } = useLanguage()
   const { currency, formatCurrency } = useCurrency()
   const [plans, setPlans] = useState<SubscriptionPlan[]>([])
@@ -91,8 +129,14 @@ export function ParasutPricingSection() {
           </h2>
           <p className="text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto">
             {language === 'en'
-              ? 'All plans include 14-day free trial. No credit card required. Cancel anytime.'
-              : 'Tum planlarda 14 gunluk ucretsiz deneme. Kredi karti gerekmez.'
+              ? 'All plans include a 14-day free trial. No credit card required. Cancel anytime.'
+              : 'Tüm planlarda 14 gün ücretsiz deneme bulunur. Kredi kartı gerekmez, istediğiniz zaman iptal edebilirsiniz.'
+            }
+          </p>
+          <p className="mt-2 text-sm text-gray-500 max-w-3xl mx-auto">
+            {language === 'en'
+              ? 'Prices are shown in your preferred currency and are exclusive of VAT.'
+              : 'Fiyatlar tercih ettiğiniz para biriminde gösterilir ve KDV hariçtir.'
             }
           </p>
         </div>
@@ -130,6 +174,10 @@ export function ParasutPricingSection() {
                   <h3 className="text-xl font-bold mb-1">
                     {language === 'tr' ? cfg.labelTr : cfg.labelEn}
                   </h3>
+
+                  <p className="text-xs text-gray-500 mb-2">
+                    {language === 'tr' ? cfg.whoTr : cfg.whoEn}
+                  </p>
 
                   <div className="mb-2">
                     {basePrice === 0 ? (

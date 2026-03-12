@@ -16,7 +16,7 @@ import { toast } from 'sonner'
 import { LoadingSpinner } from '@/components/loading-spinner'
 import { MfaVerify } from '@/components/mfa-verify'
 import { MarketingHeader } from '@/components/marketing/marketing-header'
-import { ParasutFooter } from '@/components/marketing/parasut-footer'
+import { ModulusFooter } from '@/components/marketing/parasut-footer'
 
 const t = {
   tr: {
@@ -424,7 +424,7 @@ function LoginContent() {
           </div>
         </section>
       </main>
-      <ParasutFooter />
+      <ModulusFooter />
     </div>
   )
 

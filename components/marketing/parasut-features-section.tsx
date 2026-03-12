@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
 
-export function ParasutFeaturesSection() {
+export function ModulusFeaturesSection() {
   const { language } = useLanguage()
 
   const features = [

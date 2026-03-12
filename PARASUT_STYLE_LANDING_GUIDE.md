@@ -508,11 +508,11 @@ Language controlled by `useLanguage()` context.
 ### For Developers:
 ```tsx
 // Import the layout
-import { ParasutLandingLayout } from '@/components/marketing/parasut-landing-layout'
+import { ModulusLandingLayout } from '@/components/marketing/parasut-landing-layout'
 
 // Use in a page
 export default function MyPage() {
-  return <ParasutLandingLayout />
+  return <ModulusLandingLayout />
 }
 ```
 

@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Shield, Loader2, ArrowRight, ArrowLeft } from 'lucide-react';
-import { ParasutFooter } from '@/components/marketing/parasut-footer';
+import { ModulusFooter } from '@/components/marketing/parasut-footer';
 
 const adminT = {
   tr: {
@@ -277,7 +277,7 @@ function AdminLoginContent() {
         </section>
       </main>
 
-      <ParasutFooter />
+      <ModulusFooter />
     </div>
   );
 }

@@ -3,17 +3,18 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
-import { ParasutHeroSection } from './parasut-hero-section'
-import { ParasutFeaturesSection } from './parasut-features-section'
-import { ThreeStepOnboardingSection } from './three-step-onboarding-section'
+import { ModulusHeroSection } from './parasut-hero-section'
+import { ModulusFeaturesSection } from './parasut-features-section'
 import { NumbersThatMatterSection } from './numbers-that-matter-section'
-import { ParasutPricingSection } from './parasut-pricing-section'
-import { ParasutFooter } from './parasut-footer'
+import { ModulusModulesOverviewSection } from './parasut-modules-overview-section'
+import { ThreeStepOnboardingSection } from './three-step-onboarding-section'
+import { ModulusPricingSection } from './parasut-pricing-section'
+import { ModulusFooter } from './parasut-footer'
 import { MarketingHeader } from './marketing-header'
 import { LoadingSpinner } from '@/components/loading-spinner'
 import { BannerDisplay } from '@/components/banner-display'
 
-export function ParasutLandingLayout() {
+export function ModulusLandingLayout() {
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -44,16 +45,17 @@ export function ParasutLandingLayout() {
 
       <main>
         <BannerDisplay position="hero" pageSlug="landing" />
-        <ParasutHeroSection isAuthenticated={isAuthenticated} />
+        <ModulusHeroSection isAuthenticated={isAuthenticated} />
         <BannerDisplay position="middle" pageSlug="landing" />
-        <ParasutFeaturesSection />
+        <ModulusFeaturesSection />
         <NumbersThatMatterSection />
+        <ModulusModulesOverviewSection />
         <ThreeStepOnboardingSection />
-        <ParasutPricingSection />
+        <ModulusPricingSection />
         <BannerDisplay position="bottom" pageSlug="landing" />
       </main>
 
-      <ParasutFooter />
+      <ModulusFooter />
       <BannerDisplay position="popup" pageSlug="landing" />
     </div>
   )

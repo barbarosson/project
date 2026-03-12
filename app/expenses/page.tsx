@@ -709,29 +709,39 @@ export default function ExpensesPage() {
                             {invoice.status === 'rejected' && <Badge variant="destructive">{t.expenses.rejected}</Badge>}
                           </TableCell>
                           <TableCell className="align-middle">
-                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-slate-700 hover:bg-slate-200"
+                                aria-label={t.common.view}
+                                onClick={() => { window.location.href = `/expenses/incoming/${invoice.id}` }}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 text-slate-700 hover:bg-slate-200"
+                                aria-label={t.common.edit}
+                                onClick={() => { window.location.href = `/expenses/incoming/${invoice.id}?mode=edit` }}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button type="button" variant="ghost" size="sm" className="bg-slate-100 hover:bg-slate-200 text-slate-800" aria-label={t.common.actions}>
+                                  <Button type="button" variant="ghost" size="sm" className="h-8 w-8 p-0 bg-slate-100 hover:bg-slate-200 text-slate-800" aria-label={t.common.actions}>
                                     <MoreVertical className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-                                  <DropdownMenuItem
-                                    onSelect={() => {
-                                      const path = `/expenses/incoming/${invoice.id}`
-                                      setTimeout(() => router.push(path), 50)
-                                    }}
-                                  >
+                                  <DropdownMenuItem onSelect={() => { window.location.href = `/expenses/incoming/${invoice.id}` }}>
                                     <Eye className="h-4 w-4 mr-2" />
                                     {t.common.view}
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onSelect={() => {
-                                      const path = `/expenses/incoming/${invoice.id}?mode=edit`
-                                      setTimeout(() => router.push(path), 50)
-                                    }}
-                                  >
+                                  <DropdownMenuItem onSelect={() => { window.location.href = `/expenses/incoming/${invoice.id}?mode=edit` }}>
                                     <Pencil className="h-4 w-4 mr-2" />
                                     {t.common.edit}
                                   </DropdownMenuItem>

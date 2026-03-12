@@ -288,7 +288,7 @@
 }
 
 @layer utilities {
-  /* Parasut-style gradient background */
+  /* Modulus-style gradient background */
   .stripe-hero-gradient {
     background: linear-gradient(135deg, #0A2540 0%, #0D3A5F 50%, #0A2540 100%);
     background-size: 200% 200%;

@@ -6,7 +6,7 @@ import { Facebook, Twitter, Linkedin, Github, Circle } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
 import { useSiteConfig } from '@/contexts/site-config-context'
 
-export function ParasutFooter() {
+export function ModulusFooter() {
   const { language } = useLanguage()
   const { config } = useSiteConfig()
 
