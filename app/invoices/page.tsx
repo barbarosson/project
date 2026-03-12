@@ -39,8 +39,9 @@ import { useTenant } from '@/contexts/tenant-context'
 import { useLanguage } from '@/contexts/language-context'
 import { getEdocStatusLabel } from '@/lib/edocument-status'
 import { useCurrency } from '@/contexts/currency-context'
-import { DollarSign } from 'lucide-react'
+import { DollarSign, FileDown } from 'lucide-react'
 import { getInvoiceXml } from '@/lib/nes-api'
+import * as XLSX from 'xlsx'
 
 interface Invoice {
   id: string
@@ -413,6 +414,57 @@ export default function InvoicesPage() {
   const allVisibleSelected = filteredInvoices.length > 0 && filteredInvoices.every((inv) => selectedIds.has(inv.id))
   const someSelected = selectedIds.size > 0
 
+  function handleBulkExportToExcel() {
+    if (!someSelected) return
+    const isTR = language === 'tr'
+    const selected = filteredInvoices.filter((inv) => selectedIds.has(inv.id))
+    if (selected.length === 0) return
+
+    const headers = isTR
+      ? ['Fatura No', 'Tip', 'Para Birimi', 'Cari', 'Tarih', 'Vade', 'Tutar', 'Ödenen', 'Kalan', 'Durum']
+      : ['Invoice No', 'Type', 'Currency', 'Customer', 'Issue Date', 'Due Date', 'Amount', 'Paid', 'Remaining', 'Status']
+
+    const rows = selected.map((inv) => {
+      const typeLabel = INVOICE_TYPE_LABELS[inv.invoice_type || 'sale']?.[language] || (inv.invoice_type || 'sale')
+      const currency = (inv.currency || 'TRY') as string
+      const total = Number(inv.total || inv.amount || 0)
+      const paid = Number(inv.paid_amount || 0)
+      const remaining = Number(inv.remaining_amount || Math.max(0, total - paid))
+      const customer = inv.customers?.company_title || inv.customers?.name || ''
+      const issue = inv.issue_date ? new Date(inv.issue_date).toISOString().slice(0, 10) : ''
+      const due = inv.due_date ? new Date(inv.due_date).toISOString().slice(0, 10) : ''
+      const status = getStatusLabel(inv.status || 'draft')
+
+      const formatNumber = (value: number) =>
+        isTR
+          ? value.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+          : value.toString()
+
+      return [
+        inv.invoice_number || '',
+        typeLabel,
+        currency,
+        customer,
+        issue,
+        due,
+        formatNumber(total),
+        formatNumber(paid),
+        formatNumber(remaining),
+        status,
+      ]
+    })
+
+    const data = [headers, ...rows]
+    if (data.length <= 1) return
+
+    const ws = XLSX.utils.aoa_to_sheet(data)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, isTR ? 'Faturalar' : 'Invoices')
+    const today = new Date().toISOString().slice(0, 10)
+    const fileName = isTR ? `satis_faturalari_${today}.xlsx` : `sales_invoices_${today}.xlsx`
+    XLSX.writeFile(wb, fileName)
+  }
+
   function toggleSelectAll() {
     if (allVisibleSelected) {
       setSelectedIds(new Set())
@@ -576,18 +628,33 @@ export default function InvoicesPage() {
             </div>
             {/* Toplu işlem çubuğu */}
             {someSelected && (
-              <div className="flex items-center gap-3 mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex flex-wrap items-center gap-3 mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <CheckSquare className="h-4 w-4 text-blue-600" />
                 <span className="text-sm font-medium text-blue-800">
                   {language === 'tr' ? `${selectedIds.size} fatura seçili` : `${selectedIds.size} invoice(s) selected`}
                 </span>
-                <Button size="sm" variant="destructive" className="text-[#0A2540]" onClick={handleBulkDelete}>
-                  <Trash2 className="h-3.5 w-3.5 mr-1" />
-                  {language === 'tr' ? 'Seçilenleri Sil' : 'Delete Selected'}
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => setSelectedIds(new Set())}>
-                  {language === 'tr' ? 'Seçimi Temizle' : 'Clear Selection'}
-                </Button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    onClick={handleBulkDelete}
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold h-10 px-4 py-2 bg-destructive hover:bg-destructive/90 text-[var(--color-primary)] ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    {language === 'tr' ? 'Seçilenleri Sil' : 'Delete Selected'}
+                  </Button>
+                  <Button
+                    onClick={() => setSelectedIds(new Set())}
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold h-10 px-4 py-2 border border-input bg-white text-[var(--body-text-color)] hover:bg-gray-50 ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                  >
+                    {language === 'tr' ? 'Seçimi Temizle' : 'Clear Selection'}
+                  </Button>
+                  <Button
+                    onClick={handleBulkExportToExcel}
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold h-10 px-4 py-2 bg-[#00D4AA] hover:bg-[#00B894] text-contrast-body ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 gap-2"
+                  >
+                    <FileDown className="h-4 w-4" />
+                    {language === 'tr' ? 'Seçilenleri Excel ile dışa aktar' : 'Export selected to Excel'}
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -704,60 +771,15 @@ export default function InvoicesPage() {
                               </Badge>
                             )}
                             {invoiceEdocs[invoice.id] && (
-                              <>
-                                <Badge variant="outline" className="text-[10px] bg-blue-50 text-blue-700 border-blue-200 cursor-pointer"
-                                  onClick={(e) => { e.stopPropagation(); router.push('/einvoice-center?tab=outgoing'); }}
-                                  title={language === 'tr' ? 'E-Fatura merkezi' : 'E-Invoice center'}
-                                >
-                                  <FileCheck2 className="h-2.5 w-2.5 mr-0.5" />
-                                  {language === 'tr' ? 'E-Fatura' : 'E-Invoice'}
-                                </Badge>
-                                <button
-                                  type="button"
-                                  className="text-[10px] text-blue-600 hover:underline font-medium"
-                                  onClick={async (e) => {
-                                    e.stopPropagation();
-                                    const edoc = invoiceEdocs[invoice.id];
-                                    if (!tenantId || !edoc?.ettn) return;
-                                    try {
-                                      const raw = await getInvoiceXml(tenantId, edoc.ettn, 'outgoing');
-                                      const xml = typeof raw === 'string' ? raw : (raw && typeof raw === 'object' && 'content' in raw ? (raw as { content: string }).content : '');
-                                      if (xml?.trim()) {
-                                        const w = window.open('', '_blank');
-                                        if (w) {
-                                          w.document.write(`<pre style="padding:1rem;font-size:12px;white-space:pre-wrap;word-break:break-all;">${xml.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>`);
-                                          w.document.close();
-                                        }
-                                      } else toast.error(language === 'tr' ? 'XML alınamadı' : 'XML not found');
-                                    } catch (err: any) {
-                                      toast.error(err?.message || (language === 'tr' ? 'XML açılamadı' : 'Failed to open XML'));
-                                    }
-                                  }}
-                                >
-                                  XML
-                                </button>
-                                <button
-                                  type="button"
-                                  className="text-[10px] text-blue-600 hover:underline font-medium"
-                                  onClick={async (e) => {
-                                    e.stopPropagation();
-                                    const edoc = invoiceEdocs[invoice.id];
-                                    if (!tenantId || !edoc?.ettn) return;
-                                    try {
-                                      const raw = await getInvoiceHtml(tenantId, edoc.ettn, 'outgoing');
-                                      const html = typeof raw === 'string' ? raw : (raw && typeof raw === 'object' && 'content' in raw ? (raw as { content: string }).content : '');
-                                      if (html?.trim()) {
-                                        const w = window.open('', '_blank');
-                                        if (w) { w.document.write(html); w.document.close(); }
-                                      } else toast.error(language === 'tr' ? 'PDF alınamadı' : 'PDF not found');
-                                    } catch (err: any) {
-                                      toast.error(err?.message || (language === 'tr' ? 'PDF açılamadı' : 'Failed to open PDF'));
-                                    }
-                                  }}
-                                >
-                                  PDF
-                                </button>
-                              </>
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] bg-blue-50 text-blue-700 border-blue-200 cursor-pointer"
+                                onClick={(e) => { e.stopPropagation(); router.push('/einvoice-center?tab=outgoing'); }}
+                                title={language === 'tr' ? 'E-Fatura merkezi' : 'E-Invoice center'}
+                              >
+                                <FileCheck2 className="h-2.5 w-2.5 mr-0.5" />
+                                {language === 'tr' ? 'E-Fatura' : 'E-Invoice'}
+                              </Badge>
                             )}
                           </div>
                         </TableCell>
@@ -819,6 +841,40 @@ export default function InvoicesPage() {
                                   <FileText className="h-4 w-4 mr-2" />
                                   {t.invoices.viewInvoicePdf}
                                 </DropdownMenuItem>
+                                {invoiceEdocs[invoice.id] && (
+                                  <DropdownMenuItem
+                                    onClick={async () => {
+                                      const edoc = invoiceEdocs[invoice.id]
+                                      if (!tenantId || !edoc?.ettn) return
+                                      try {
+                                        const raw = await getInvoiceXml(tenantId, edoc.ettn, 'outgoing')
+                                        const xml =
+                                          typeof raw === 'string'
+                                            ? raw
+                                            : raw && typeof raw === 'object' && 'content' in raw
+                                            ? (raw as { content: string }).content
+                                            : ''
+                                        if (xml?.trim()) {
+                                          const w = window.open('', '_blank')
+                                          if (w) {
+                                            w.document.write(
+                                              `<pre style="padding:1rem;font-size:12px;white-space:pre-wrap;word-break:break-all;">${xml
+                                                .replace(/&/g, '&amp;')
+                                                .replace(/</g, '&lt;')
+                                                .replace(/>/g, '&gt;')}</pre>`
+                                            )
+                                            w.document.close()
+                                          }
+                                        } else toast.error(language === 'tr' ? 'XML alınamadı' : 'XML not found')
+                                      } catch (err: any) {
+                                        toast.error(err?.message || (language === 'tr' ? 'XML açılamadı' : 'Failed to open XML'))
+                                      }
+                                    }}
+                                  >
+                                    <FileText className="h-4 w-4 mr-2" />
+                                    {language === 'tr' ? 'XML Göster' : 'View XML'}
+                                  </DropdownMenuItem>
+                                )}
                                 <DropdownMenuItem onClick={() => handleViewEdocStatus(invoice)}>
                                   <FileCheck2 className="h-4 w-4 mr-2" />
                                   {t.invoices.viewEdocStatus}
