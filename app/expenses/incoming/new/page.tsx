@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Trash2, Save, Loader2, Search, Info, ChevronDown, ChevronUp } from 'lucide-react'
+import { Plus, Trash2, Save, Loader2, Search, Info, ChevronDown, ChevronUp, Upload, Camera, Scan, CheckCircle2, AlertCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 import { Toaster } from '@/components/ui/sonner'
@@ -25,6 +25,7 @@ import { useCurrency } from '@/contexts/currency-context'
 import { CURRENCY_LIST, getCurrencyLabel } from '@/lib/currencies'
 import { convertAmount, getRateForType, type TcmbRatesByCurrency } from '@/lib/tcmb'
 import { EXPORT_CODES, TEVKIFAT_CODES, TEVKIFAT_RATIOS, getTevkifatPercent, getTevkifatCodesByRatio, getTevkifatRatioFromCode } from '@/lib/invoice-line-codes'
+import { compressImage, isImageFile } from '@/lib/image-utils'
 
 const LINE_UNITS = [
   { value: 'adet', labelTr: 'Adet', labelEn: 'Piece' },
@@ -41,6 +42,7 @@ const PURCHASE_INVOICE_TYPES = [
   { value: 'maas_odemesi', labelTr: 'Maaş Ödemesi Oluştur', labelEn: 'Create Salary Payment' },
   { value: 'vergi_odemesi', labelTr: 'Vergi Ödemesi Oluştur', labelEn: 'Create Tax Payment' },
   { value: 'diger', labelTr: 'Diğer', labelEn: 'Other' },
+  { value: 'fis', labelTr: 'Fiş', labelEn: 'Receipt' },
 ] as const
 
 interface LineItem {
@@ -99,6 +101,10 @@ export default function NewPurchaseInvoicePage() {
   )
   const [notes, setNotes] = useState<string>('')
   const [invoiceType, setInvoiceType] = useState<string>('fatura_olustur')
+  const [supplierFreeText, setSupplierFreeText] = useState<string>('')
+  const [ocrLoading, setOcrLoading] = useState(false)
+  const [ocrScanned, setOcrScanned] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const { currency: companyCurrency, formatCurrency, defaultRateType } = useCurrency()
   const [currency, setCurrency] = useState<string>('TRY')
   const [tcmbRates, setTcmbRates] = useState<TcmbRatesByCurrency | null>(null)
@@ -106,6 +112,7 @@ export default function NewPurchaseInvoicePage() {
   const [globalTevkifatRatioFilter, setGlobalTevkifatRatioFilter] = useState<string | null>(null)
   const [ratioFilterByLine, setRatioFilterByLine] = useState<Record<number, string | null>>({})
   const [expandedExtraLineIndex, setExpandedExtraLineIndex] = useState<number | null>(0)
+  const isFis = invoiceType === 'fis'
 
   const [lineItems, setLineItems] = useState<LineItem[]>([
     {
@@ -286,12 +293,68 @@ export default function NewPurchaseInvoicePage() {
   const grandTotal = lineItems.reduce((sum, item) => sum + item.total_with_vat, 0)
   const totalWithholding = lineItems.reduce((sum, item) => sum + (item.withholding_amount || 0), 0)
 
+  async function handleOcrImage(file: File) {
+    if (!isImageFile(file)) {
+      toast.error(language === 'tr' ? 'Geçerli bir resim dosyası seçin (JPEG, PNG, WebP).' : 'Please select a valid image file (JPEG, PNG, WebP).')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error(language === 'tr' ? 'Dosya boyutu 5 MB\'dan küçük olmalıdır.' : 'File size must be less than 5 MB.')
+      return
+    }
+    setOcrLoading(true)
+    try {
+      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession()
+      if (refreshError || !refreshData.session) {
+        throw new Error(language === 'tr' ? 'Oturum yenilenemedi.' : 'Could not refresh session.')
+      }
+      const base64Image = await compressImage(file, 1)
+      const { data: result, error: invokeError } = await supabase.functions.invoke('ocr-expense', {
+        body: { image_base64: base64Image, tenant_id: tenantId },
+        headers: {
+          Authorization: `Bearer ${refreshData.session.access_token}`,
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        },
+      })
+      if (invokeError || !result?.success) throw new Error(result?.error || 'OCR failed')
+      const ocrData = result.data
+      if (ocrData.vendor_name || ocrData.description) {
+        setSupplierFreeText(
+          [ocrData.vendor_name, ocrData.description].filter(Boolean).join(ocrData.vendor_name && ocrData.description ? ' - ' : '')
+        )
+      }
+      if (ocrData.date) setIssueDate(ocrData.date)
+      if (ocrData.currency) setCurrency(ocrData.currency)
+      if (ocrData.total_amount != null) {
+        setLineItems((prev) => {
+          const next = [...prev]
+          const first = { ...next[0], product_name: ocrData.description || ocrData.vendor_name || (language === 'tr' ? 'Fiş tutarı' : 'Receipt total'), quantity: 1, unit_price: Number(ocrData.total_amount), unit: 'adet' }
+          next[0] = calculateLineItem(first)
+          return next
+        })
+      }
+      setOcrScanned(true)
+      toast.success(language === 'tr' ? `Fiş tarandı (Güven: %${Math.round((ocrData.confidence ?? 0) * 100)})` : `Receipt scanned (Confidence: %${Math.round((ocrData.confidence ?? 0) * 100)})`)
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message || (language === 'tr' ? 'Fiş okunamadı.' : 'Could not read receipt.'))
+    } finally {
+      setOcrLoading(false)
+    }
+  }
+
   async function saveInvoice() {
     if (!tenantId) return
 
-    if (!selectedSupplierId) {
-      toast.error(language === 'tr' ? 'Lütfen tedarikçi seçin.' : 'Please select a supplier.')
-      return
+    if (isFis) {
+      if (!selectedSupplierId && !supplierFreeText.trim()) {
+        toast.error(language === 'tr' ? 'Tedarikçi seçin veya açıklama (serbest metin) girin.' : 'Select a supplier or enter description (free text).')
+        return
+      }
+    } else {
+      if (!selectedSupplierId) {
+        toast.error(language === 'tr' ? 'Lütfen tedarikçi seçin.' : 'Please select a supplier.')
+        return
+      }
     }
 
     if (!invoiceNumber.trim()) {
@@ -320,25 +383,27 @@ export default function NewPurchaseInvoicePage() {
 
     setLoading(true)
     try {
+      const insertPayload: Record<string, unknown> = {
+        tenant_id: tenantId,
+        supplier_id: selectedSupplierId || null,
+        invoice_number: invoiceNumber.trim(),
+        invoice_date: issueDate,
+        due_date: dueDate || issueDate,
+        invoice_type: invoiceType,
+        currency: currency || companyCurrency || 'TRY',
+        subtotal: Math.round(subtotal * 100) / 100,
+        tax_amount: Math.round(totalVat * 100) / 100,
+        total_amount: Math.round(grandTotal * 100) / 100,
+        withholding_amount: Math.round(totalWithholding * 100) / 100,
+        notes: notes || null,
+        status: 'pending',
+      }
+      if (isFis && supplierFreeText.trim()) {
+        insertPayload.supplier_display_name = supplierFreeText.trim()
+      }
       const { data: invoice, error: invoiceError } = await supabase
         .from('purchase_invoices')
-        .insert([
-          {
-            tenant_id: tenantId,
-            supplier_id: selectedSupplierId,
-            invoice_number: invoiceNumber.trim(),
-            invoice_date: issueDate,
-            due_date: dueDate || issueDate,
-            invoice_type: invoiceType,
-            currency: currency || companyCurrency || 'TRY',
-            subtotal: Math.round(subtotal * 100) / 100,
-            tax_amount: Math.round(totalVat * 100) / 100,
-            total_amount: Math.round(grandTotal * 100) / 100,
-            withholding_amount: Math.round(totalWithholding * 100) / 100,
-            notes: notes || null,
-            status: 'pending',
-          }
-        ])
+        .insert([insertPayload])
         .select()
         .single()
 
@@ -435,22 +500,119 @@ export default function NewPurchaseInvoicePage() {
             <CardTitle className="text-2xl font-semibold leading-none tracking-tight text-gray-900">{invoiceDetailsTitle}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-4 rounded-lg border p-4 bg-muted/30">
-              <div className="space-y-2">
-                <Label htmlFor="supplier">{supplierLabel} *</Label>
-                <Select value={selectedSupplierId} onValueChange={setSelectedSupplierId}>
-                  <SelectTrigger id="supplier">
-                    <SelectValue placeholder={selectSupplier} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {suppliers.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.company_title || s.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div className="space-y-2 rounded-lg border p-4 bg-muted/30">
+              <Label>{language === 'tr' ? 'Fatura Tipi' : 'Invoice Type'} *</Label>
+              <Select value={invoiceType} onValueChange={(v) => { setInvoiceType(v); if (v !== 'fis') setSupplierFreeText('') }}>
+                <SelectTrigger className="max-w-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PURCHASE_INVOICE_TYPES.map((pt) => (
+                    <SelectItem key={pt.value} value={pt.value}>
+                      {language === 'tr' ? pt.labelTr : pt.labelEn}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {isFis && (
+              <div className="border-2 border-dashed border-blue-300 rounded-lg p-4 bg-blue-50/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Scan className="h-5 w-5 text-blue-600" />
+                    <span className="font-medium text-sm text-blue-900">
+                      {language === 'tr' ? 'Yapay Zeka ile Fiş Tara' : 'Scan receipt with AI'}
+                    </span>
+                  </div>
+                  {ocrScanned && (
+                    <div className="flex items-center gap-1 text-green-600 text-xs">
+                      <CheckCircle2 className="h-4 w-4" />
+                      <span>{language === 'tr' ? 'Fiş tarandı' : 'Receipt scanned'}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) handleOcrImage(file)
+                    }}
+                    disabled={ocrLoading}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={ocrLoading}
+                    className="flex-1"
+                  >
+                    {ocrLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {language === 'tr' ? 'Taranıyor…' : 'Scanning…'}
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="mr-2 h-4 w-4" />
+                        {language === 'tr' ? 'Fiş Yükle' : 'Upload receipt'}
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (fileInputRef.current) {
+                        fileInputRef.current.setAttribute('capture', 'environment')
+                        fileInputRef.current.click()
+                      }
+                    }}
+                    disabled={ocrLoading}
+                  >
+                    <Camera className="h-4 w-4" />
+                  </Button>
+                </div>
+                {ocrLoading && (
+                  <p className="text-xs text-blue-700">{language === 'tr' ? 'Fiş analiz ediliyor…' : 'Analyzing receipt…'}</p>
+                )}
               </div>
+            )}
+
+            <div className="space-y-4 rounded-lg border p-4 bg-muted/30">
+              {isFis ? (
+                <div className="space-y-2">
+                  <Label htmlFor="supplier_free_text">{language === 'tr' ? 'Tedarikçi / Açıklama (serbest metin)' : 'Supplier / Description (free text)'}</Label>
+                  <Input
+                    id="supplier_free_text"
+                    value={supplierFreeText}
+                    onChange={(e) => setSupplierFreeText(e.target.value)}
+                    placeholder={language === 'tr' ? 'Örn: Market XYZ, benzin istasyonu…' : 'e.g. Market XYZ, gas station…'}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="supplier">{supplierLabel} *</Label>
+                  <Select value={selectedSupplierId} onValueChange={setSelectedSupplierId}>
+                    <SelectTrigger id="supplier">
+                      <SelectValue placeholder={selectSupplier} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {suppliers.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.company_title || s.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="invoice_number">{invoiceNumberLabel} *</Label>
                 <Input
@@ -463,22 +625,6 @@ export default function NewPurchaseInvoicePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>{language === 'tr' ? 'Fatura Tipi' : 'Invoice Type'}</Label>
-                <Select value={invoiceType} onValueChange={setInvoiceType}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {PURCHASE_INVOICE_TYPES.map((pt) => (
-                      <SelectItem key={pt.value} value={pt.value}>
-                        {language === 'tr' ? pt.labelTr : pt.labelEn}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
               <div className="space-y-2">
                 <Label>{language === 'tr' ? 'Para Birimi' : 'Currency'}</Label>
                 <Select value={currency} onValueChange={setCurrency}>

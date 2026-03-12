@@ -44,6 +44,7 @@ interface PurchaseInvoiceRow {
   status: 'pending' | 'accepted' | 'rejected'
   invoice_type: string
   supplier: { company_title: string; name: string } | null
+  supplier_display_name?: string | null
 }
 
 const PURCHASE_TYPE_LABELS: Record<string, Record<string, string>> = {
@@ -56,6 +57,7 @@ const PURCHASE_TYPE_LABELS: Record<string, Record<string, string>> = {
   maas_odemesi: { tr: 'Maaş Ödemesi Oluştur', en: 'Create Salary Payment' },
   vergi_odemesi: { tr: 'Vergi Ödemesi Oluştur', en: 'Create Tax Payment' },
   diger: { tr: 'Diğer', en: 'Other' },
+  fis: { tr: 'Fiş', en: 'Receipt' },
 }
 const PURCHASE_TYPE_COLORS: Record<string, string> = {
   purchase: 'bg-emerald-100 text-emerald-800',
@@ -67,6 +69,7 @@ const PURCHASE_TYPE_COLORS: Record<string, string> = {
   maas_odemesi: 'bg-teal-100 text-teal-800',
   vergi_odemesi: 'bg-rose-100 text-rose-800',
   diger: 'bg-gray-100 text-gray-800',
+  fis: 'bg-sky-100 text-sky-800',
 }
 
 export default function IncomingInvoiceDetailPage() {
@@ -106,6 +109,7 @@ export default function IncomingInvoiceDetailPage() {
             total_amount,
             status,
             invoice_type,
+            supplier_display_name,
             supplier:customers!purchase_invoices_supplier_id_fkey(company_title, name)
           `)
           .eq('tenant_id', tenantId)
@@ -234,7 +238,7 @@ export default function IncomingInvoiceDetailPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div className="space-y-1">
               <span className="font-medium text-gray-500 block">{t.expenses.supplier}</span>
-              <p className="font-medium text-[#0A2540]">{invoice.supplier?.company_title || invoice.supplier?.name || '–'}</p>
+              <p className="font-medium text-[#0A2540]">{invoice.supplier_id ? (invoice.supplier?.company_title || invoice.supplier?.name) : (invoice.supplier_display_name || '–')}</p>
             </div>
             <div className="space-y-1">
               <span className="font-medium text-gray-500 block">{t.expenses.invoiceNumber}</span>

@@ -6,7 +6,6 @@ import { DashboardLayout } from '@/components/dashboard-layout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   Table,
   TableBody,
@@ -29,7 +28,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Search, FileText, Receipt, CheckCircle2, XCircle, Eye, Trash2, Pencil, Upload, MoreVertical, FileDown } from 'lucide-react'
+import { Plus, Search, FileText, CheckCircle2, XCircle, Eye, Trash2, Pencil, Upload, MoreVertical } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
 import { useTenant } from '@/contexts/tenant-context'
@@ -37,25 +36,9 @@ import { useCurrency } from '@/contexts/currency-context'
 import { useLanguage } from '@/contexts/language-context'
 import { convertAmount, type TcmbRatesByCurrency } from '@/lib/tcmb'
 import { toast } from 'sonner'
-import { EditManualExpenseDialog } from '@/components/edit-manual-expense-dialog'
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
 import { ExpenseExcelImportDialog } from '@/components/expense-excel-import-dialog'
 import { format, subDays } from 'date-fns'
-import * as XLSX from 'xlsx'
-
-interface Expense {
-  id: string
-  category: string
-  description: string
-  amount: number
-  expense_date: string
-  payment_method: string
-  receipt_url: string | null
-  notes: string | null
-  currency?: string
-  customer_id?: string | null
-  staff_id?: string | null
-}
 
 interface PurchaseInvoice {
   id: string
@@ -70,7 +53,8 @@ interface PurchaseInvoice {
   supplier: {
     company_title: string
     name: string
-  }
+  } | null
+  supplier_display_name?: string | null
 }
 
 const PURCHASE_TYPE_LABELS: Record<string, Record<string, string>> = {
@@ -83,6 +67,7 @@ const PURCHASE_TYPE_LABELS: Record<string, Record<string, string>> = {
   maas_odemesi: { tr: 'Maaş Ödemesi Oluştur', en: 'Create Salary Payment' },
   vergi_odemesi: { tr: 'Vergi Ödemesi Oluştur', en: 'Create Tax Payment' },
   diger: { tr: 'Diğer', en: 'Other' },
+  fis: { tr: 'Fiş', en: 'Receipt' },
 }
 const PURCHASE_TYPE_COLORS: Record<string, string> = {
   purchase: 'bg-emerald-100 text-emerald-800',
@@ -94,6 +79,7 @@ const PURCHASE_TYPE_COLORS: Record<string, string> = {
   maas_odemesi: 'bg-teal-100 text-teal-800',
   vergi_odemesi: 'bg-rose-100 text-rose-800',
   diger: 'bg-gray-100 text-gray-800',
+  fis: 'bg-sky-100 text-sky-800',
 }
 
 export default function ExpensesPage() {
@@ -103,30 +89,19 @@ export default function ExpensesPage() {
   const { tenantId, loading: tenantLoading } = useTenant()
   const { formatCurrency, currency: preferredCurrency, defaultRateType } = useCurrency()
   const { t, language } = useLanguage()
-  const [expenses, setExpenses] = useState<Expense[]>([])
   const [purchaseInvoices, setPurchaseInvoices] = useState<PurchaseInvoice[]>([])
   const [tcmbRatesByDate, setTcmbRatesByDate] = useState<Record<string, TcmbRatesByCurrency>>({})
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [purchaseTypeFilter, setPurchaseTypeFilter] = useState<string>('all')
   const [purchaseStatusFilter, setPurchaseStatusFilter] = useState<string>('all')
-  const [expenseDateFrom, setExpenseDateFrom] = useState<string>('')
-  const [expenseDateTo, setExpenseDateTo] = useState<string>('')
   const [purchaseDateFrom, setPurchaseDateFrom] = useState<string>('')
   const [purchaseDateTo, setPurchaseDateTo] = useState<string>('')
   const [isExpenseImportDialogOpen, setIsExpenseImportDialogOpen] = useState(false)
-  const [isEditExpenseDialogOpen, setIsEditExpenseDialogOpen] = useState(false)
-  const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null)
-  const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [expenseToView, setExpenseToView] = useState<Expense | null>(null)
   const [selectedPurchaseIds, setSelectedPurchaseIds] = useState<Set<string>>(new Set())
   const [isBulkDeletePurchaseDialogOpen, setIsBulkDeletePurchaseDialogOpen] = useState(false)
   const [isDeletePurchaseDialogOpen, setIsDeletePurchaseDialogOpen] = useState(false)
   const [purchaseToDelete, setPurchaseToDelete] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState('manual')
 
   const targetCurrency = (preferredCurrency || 'TRY').toUpperCase()
 
@@ -220,7 +195,7 @@ export default function ExpensesPage() {
 
     setLoading(true)
     try {
-      await Promise.all([fetchExpenses(), fetchPurchaseInvoices()])
+      await fetchPurchaseInvoices()
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
@@ -229,37 +204,12 @@ export default function ExpensesPage() {
   }
 
   useEffect(() => {
-    if (expenses.length === 0 && purchaseInvoices.length === 0) return
-    const uniqueDates = Array.from(new Set([
-      ...expenses.map(e => e.expense_date ? format(new Date(e.expense_date), 'yyyy-MM-dd') : null),
-      ...purchaseInvoices.map(inv => inv.invoice_date ? format(new Date(inv.invoice_date), 'yyyy-MM-dd') : null)
-    ].filter(Boolean))) as string[]
+    if (purchaseInvoices.length === 0) return
+    const uniqueDates = Array.from(new Set(
+      purchaseInvoices.map(inv => inv.invoice_date ? format(new Date(inv.invoice_date), 'yyyy-MM-dd') : null).filter(Boolean)
+    )) as string[]
     fetchTcmbRatesForDates(uniqueDates).then(setTcmbRatesByDate)
-  }, [expenses.length, purchaseInvoices.length])
-
-  async function fetchExpenses() {
-    if (!tenantId) {
-      console.warn('⚠️ Cannot fetch expenses: tenantId is null')
-      return
-    }
-
-    console.log('🔍 Fetching expenses for tenant:', tenantId)
-
-    const { data, error } = await supabase
-      .from('expenses')
-      .select('*')
-      .eq('tenant_id', tenantId)
-      .order('expense_date', { ascending: false })
-
-    if (error) {
-      console.error('❌ Error fetching expenses:', error)
-      toast.error(t.expenses.loadExpensesError)
-      return
-    }
-
-    console.log('✅ Expenses loaded:', data?.length || 0, 'records')
-    setExpenses(data || [])
-  }
+  }, [purchaseInvoices.length])
 
   async function fetchPurchaseInvoices() {
     if (!tenantId) return
@@ -279,112 +229,6 @@ export default function ExpensesPage() {
     }
 
     setPurchaseInvoices(data || [])
-  }
-
-  async function handleDeleteExpense() {
-    if (!expenseToDelete || !tenantId) return
-
-    try {
-      const { data: exp } = await supabase
-        .from('expenses')
-        .select('customer_id, amount')
-        .eq('id', expenseToDelete)
-        .eq('tenant_id', tenantId)
-        .single()
-
-      const { error } = await supabase
-        .from('expenses')
-        .delete()
-        .eq('id', expenseToDelete)
-        .eq('tenant_id', tenantId)
-
-      if (error) throw error
-
-      if (exp?.customer_id && Number(exp.amount) > 0) {
-        const { data: cust } = await supabase.from('customers').select('balance').eq('id', exp.customer_id).eq('tenant_id', tenantId).single()
-        if (cust) {
-          await supabase.from('customers').update({ balance: Math.max(0, Number(cust.balance ?? 0) - Number(exp.amount)) }).eq('id', exp.customer_id).eq('tenant_id', tenantId)
-        }
-      }
-
-      toast.success(t.expenses.expenseDeletedSuccess)
-      fetchExpenses()
-    } catch (error: any) {
-      console.error('Error deleting expense:', error)
-      toast.error(error.message || t.expenses.deleteExpenseError)
-    } finally {
-      setIsDeleteDialogOpen(false)
-      setExpenseToDelete(null)
-    }
-  }
-
-  function toggleSelectAll() {
-    if (selectedIds.size === filteredExpenses.length) {
-      setSelectedIds(new Set())
-    } else {
-      setSelectedIds(new Set(filteredExpenses.map(e => e.id)))
-    }
-  }
-
-  function toggleSelect(id: string) {
-    const next = new Set(selectedIds)
-    if (next.has(id)) next.delete(id)
-    else next.add(id)
-    setSelectedIds(next)
-  }
-
-  async function handleBulkDelete() {
-    if (!tenantId || selectedIds.size === 0) return
-    try {
-      for (const id of selectedIds) {
-        const exp = expenses.find(e => e.id === id)
-        if (!exp) continue
-        const { error } = await supabase
-          .from('expenses')
-          .delete()
-          .eq('id', id)
-          .eq('tenant_id', tenantId)
-        if (error) throw error
-        if (exp.customer_id && Number(exp.amount) > 0) {
-          const { data: cust } = await supabase.from('customers').select('balance').eq('id', exp.customer_id).eq('tenant_id', tenantId).single()
-          if (cust) {
-            await supabase.from('customers').update({ balance: Math.max(0, Number(cust.balance ?? 0) - Number(exp.amount)) }).eq('id', exp.customer_id).eq('tenant_id', tenantId)
-          }
-        }
-      }
-      toast.success(t.expenses.expenseDeletedSuccess)
-      setSelectedIds(new Set())
-      fetchExpenses()
-    } catch (error: any) {
-      toast.error(error.message || t.expenses.deleteExpenseError)
-    } finally {
-      setIsBulkDeleteDialogOpen(false)
-    }
-  }
-
-  function handleBulkExportToExcel() {
-    if (selectedIds.size === 0) return
-    const toExport = filteredExpenses.filter((e) => selectedIds.has(e.id))
-    const isTR = language === 'tr'
-    const headers = isTR
-      ? ['Tarih', 'Kategori', 'Açıklama', 'Tutar', 'Para Birimi', 'Ödeme Yöntemi', 'Notlar']
-      : ['Date', 'Category', 'Description', 'Amount', 'Currency', 'Payment Method', 'Notes']
-    const rows = toExport.map((e) => [
-      e.expense_date ? format(new Date(e.expense_date), 'dd.MM.yyyy') : '',
-      t.expenses.categories[e.category as keyof typeof t.expenses.categories] ?? e.category,
-      e.description ?? '',
-      Number(e.amount) ?? 0,
-      (e as Expense).currency ?? 'TRY',
-      t.expenses.paymentMethods[e.payment_method as keyof typeof t.expenses.paymentMethods] ?? e.payment_method,
-      e.notes ?? '',
-    ])
-    const data = [headers, ...rows]
-    const ws = XLSX.utils.aoa_to_sheet(data)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, isTR ? 'Masraflar' : 'Expenses')
-    const dateStr = format(new Date(), 'yyyy-MM-dd')
-    XLSX.writeFile(wb, isTR ? `masraflar_${dateStr}.xlsx` : `expenses_${dateStr}.xlsx`)
-    toast.success(isTR ? 'Seçilen masraflar Excel\'e aktarıldı.' : 'Selected expenses exported to Excel.')
   }
 
   const filteredInvoices = purchaseInvoices.filter((invoice) => {
@@ -501,12 +345,15 @@ export default function ExpensesPage() {
         }
       }
 
+      const supplierLabel = invoice.supplier_id
+        ? (invoice.supplier?.company_title || invoice.supplier?.name)
+        : (invoice.supplier_display_name || invoice.invoice_number)
       const { error: expenseError } = await supabase
         .from('expenses')
         .insert({
           tenant_id: tenantId,
           category: 'general',
-          description: `Purchase Invoice ${invoice.invoice_number} from ${invoice.supplier?.company_title || invoice.supplier?.name}`,
+          description: `Purchase Invoice ${invoice.invoice_number} from ${supplierLabel}`,
           amount: invoice.total_amount,
           expense_date: invoice.invoice_date,
           payment_method: 'bank_transfer',
@@ -633,22 +480,6 @@ export default function ExpensesPage() {
     }
   }
 
-  const filteredExpenses = expenses.filter((expense) => {
-    if (expenseDateFrom || expenseDateTo) {
-      const d = expense.expense_date ? new Date(expense.expense_date).toISOString().slice(0, 10) : ''
-      if (expenseDateFrom && d < expenseDateFrom) return false
-      if (expenseDateTo && d > expenseDateTo) return false
-    }
-    return (
-      expense.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      expense.category.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-  })
-
-  const totalManualExpenses = expenses.reduce(
-    (sum, exp) => sum + convertToPreferred(Number(exp.amount), (exp as Expense).currency ?? 'TRY', exp.expense_date ? format(new Date(exp.expense_date), 'yyyy-MM-dd') : null),
-    0
-  )
   const totalAcceptedInvoices = purchaseInvoices
     .filter(inv => inv.status === 'accepted')
     .reduce(
@@ -661,7 +492,7 @@ export default function ExpensesPage() {
         ),
       0
     )
-  const totalExpenses = totalManualExpenses + totalAcceptedInvoices
+  const totalExpenses = totalAcceptedInvoices
   const pendingInvoicesCount = purchaseInvoices.filter(inv => inv.status === 'pending').length
 
   if (loading || tenantLoading) {
@@ -684,17 +515,7 @@ export default function ExpensesPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium text-gray-600">{t.expenses.manualExpenses}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(totalManualExpenses, targetCurrency)}</div>
-              <p className="text-xs text-gray-500 mt-1">{expenses.length} {t.expenses.expenseCountLabel}</p>
-            </CardContent>
-          </Card>
-
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium text-gray-600">{t.expenses.acceptedPurchases}</CardTitle>
@@ -730,188 +551,45 @@ export default function ExpensesPage() {
 
         <Card>
           <CardHeader>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between min-w-0">
-                <TabsList className="w-full sm:w-auto flex-shrink-0">
-                  <TabsTrigger value="manual" className="flex items-center gap-2 data-[state=inactive]:text-[#0A192F]">
-                    <Receipt size={16} />
-                    {t.expenses.manualExpenses}
-                  </TabsTrigger>
-                  <TabsTrigger value="incoming" className="flex items-center gap-2 data-[state=inactive]:text-[#0A192F]">
-                    <FileText size={16} />
-                    {t.expenses.incomingInvoices}
-                    {pendingInvoicesCount > 0 && (
-                      <Badge variant="destructive" className="ml-1">{pendingInvoicesCount}</Badge>
-                    )}
-                  </TabsTrigger>
-                </TabsList>
-
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial sm:justify-end">
-                  <div className="relative min-w-0 flex-1 sm:flex-initial" style={{ maxWidth: '100%' }}>
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 shrink-0" size={16} />
-                    <Input
-                      placeholder={t.common.search}
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="pl-9 w-full min-w-0 sm:w-52 md:w-64 max-w-full"
-                    />
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsExpenseImportDialogOpen(true)}
-                      className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-white hover:bg-gray-50 h-10 px-4 py-2 text-contrast-body shrink-0"
-                    >
-                      <Upload size={16} className="mr-2" />
-                      {t.expenses.bulkImport}
-                    </Button>
-                    {activeTab === 'incoming' && (
-                      <Button
-                        onClick={() => router.push('/expenses/incoming/new')}
-                        className="shrink-0 bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
-                      >
-                        <Plus size={16} className="mr-2" />
-                        {t.expenses.addIncomingInvoice}
-                      </Button>
-                    )}
-                  </div>
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between min-w-0">
+              <div className="flex items-center gap-2">
+                <FileText size={16} />
+                <span>{t.expenses.incomingInvoices}</span>
+                {pendingInvoicesCount > 0 && (
+                  <Badge variant="destructive" className="ml-1">{pendingInvoicesCount}</Badge>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial sm:justify-end">
+                <div className="relative min-w-0 flex-1 sm:flex-initial" style={{ maxWidth: '100%' }}>
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 shrink-0" size={16} />
+                  <Input
+                    placeholder={t.common.search}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 w-full min-w-0 sm:w-52 md:w-64 max-w-full"
+                  />
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsExpenseImportDialogOpen(true)}
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-white hover:bg-gray-50 h-10 px-4 py-2 text-contrast-body shrink-0"
+                  >
+                    <Upload size={16} className="mr-2" />
+                    {t.expenses.bulkImport}
+                  </Button>
+                  <Button
+                    onClick={() => router.push('/expenses/incoming/new')}
+                    className="shrink-0 bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
+                  >
+                    <Plus size={16} className="mr-2" />
+                    {t.expenses.addIncomingInvoice}
+                  </Button>
                 </div>
               </div>
+            </div>
 
-              <TabsContent value="manual" className="mt-6">
-                <div className="flex flex-wrap items-center gap-3 mb-4">
-                  <Input
-                    type="date"
-                    value={expenseDateFrom}
-                    onChange={(e) => setExpenseDateFrom(e.target.value)}
-                    className="w-[150px] h-9"
-                    aria-label={language === 'tr' ? 'Başlangıç tarihi' : 'Start date'}
-                  />
-                  <span className="text-gray-400 text-sm">–</span>
-                  <Input
-                    type="date"
-                    value={expenseDateTo}
-                    onChange={(e) => setExpenseDateTo(e.target.value)}
-                    className="w-[150px] h-9"
-                    aria-label={language === 'tr' ? 'Bitiş tarihi' : 'End date'}
-                  />
-                </div>
-                {selectedIds.size > 0 && (
-                  <div className="flex items-center gap-3 px-4 py-3 mb-4 rounded-lg bg-blue-50 border border-blue-200">
-                    <span className="text-sm font-medium text-blue-800">
-                      {selectedIds.size} {t.common.selected}
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="text-[var(--color-info)] bg-white hover:bg-gray-100"
-                      onClick={() => setIsBulkDeleteDialogOpen(true)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 mr-1" />
-                      {t.common.bulkDelete}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleBulkExportToExcel}
-                      className="inline-flex items-center gap-1.5"
-                    >
-                      <FileDown className="h-3.5 w-3.5" />
-                      {language === 'tr' ? 'Excel ile aktar' : 'Export to Excel'}
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => setSelectedIds(new Set())}>
-                      {language === 'tr' ? 'Seçimi temizle' : 'Clear selection'}
-                    </Button>
-                  </div>
-                )}
-                <Table>
-                  <TableHeader>
-                    <TableRow className="bg-gray-50">
-                      <TableHead className="h-8 w-4 min-w-4 max-w-4 p-0.5 text-center align-middle">
-                        <div className="inline-flex items-center justify-center w-4 h-6">
-                          <Checkbox
-                            size="sm"
-                            checked={filteredExpenses.length > 0 && selectedIds.size === filteredExpenses.length}
-                            onCheckedChange={toggleSelectAll}
-                            aria-label={t.common.selectAll}
-                          />
-                        </div>
-                      </TableHead>
-                      <TableHead>{t.expenses.expenseDate}</TableHead>
-                      <TableHead>{t.expenses.category}</TableHead>
-                      <TableHead>{t.expenses.description}</TableHead>
-                      <TableHead>{t.expenses.amount}</TableHead>
-                      <TableHead>{t.expenses.paymentMethod}</TableHead>
-                      <TableHead className="w-[60px]">{t.common.actions}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredExpenses.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={7} className="text-center py-8 text-gray-500">
-                          {t.common.noData}
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredExpenses.map((expense) => (
-                        <TableRow key={expense.id} className={selectedIds.has(expense.id) ? 'bg-blue-50' : ''}>
-                          <TableCell className="w-4 min-w-4 max-w-4 p-0.5 text-center align-middle">
-                            <div className="inline-flex items-center justify-center w-4 h-6">
-                              <Checkbox
-                                size="sm"
-                                checked={selectedIds.has(expense.id)}
-                                onCheckedChange={() => toggleSelect(expense.id)}
-                                aria-label={t.common.select}
-                              />
-                            </div>
-                          </TableCell>
-                          <TableCell>{format(new Date(expense.expense_date), 'MMM dd, yyyy')}</TableCell>
-                          <TableCell>
-                            <Badge variant="outline">
-                              {t.expenses.categories[expense.category as keyof typeof t.expenses.categories]}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{expense.description}</TableCell>
-                          <TableCell className="font-semibold">{renderAmountWithConversion(Number(expense.amount), (expense as Expense).currency ?? 'TRY', expense.expense_date ? format(new Date(expense.expense_date), 'yyyy-MM-dd') : null)}</TableCell>
-                          <TableCell>
-                            {t.expenses.paymentMethods[expense.payment_method as keyof typeof t.expenses.paymentMethods]}
-                          </TableCell>
-                          <TableCell className="align-middle">
-                            <div className="flex items-center gap-2">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm" className="bg-slate-100 hover:bg-slate-200 text-slate-800" aria-label={t.common.actions}>
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => { setExpenseToView(expense) }}>
-                                    <Eye className="h-4 w-4 mr-2" />
-                                    {t.common.view}
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => { setExpenseToEdit(expense); setIsEditExpenseDialogOpen(true) }}>
-                                    <Pencil className="h-4 w-4 mr-2" />
-                                    {t.common.edit}
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => { setExpenseToDelete(expense.id); setIsDeleteDialogOpen(true) }}
-                                    className="text-red-600"
-                                  >
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    {t.common.delete}
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </TabsContent>
-
-              <TabsContent value="incoming" className="mt-6">
+            <div className="mt-6">
                 <div className="flex flex-wrap items-center gap-3 mb-4">
                   <Select value={purchaseStatusFilter} onValueChange={setPurchaseStatusFilter}>
                     <SelectTrigger className="w-[160px] h-9">
@@ -939,6 +617,7 @@ export default function ExpensesPage() {
                       <SelectItem value="maas_odemesi">{PURCHASE_TYPE_LABELS.maas_odemesi[language]}</SelectItem>
                       <SelectItem value="vergi_odemesi">{PURCHASE_TYPE_LABELS.vergi_odemesi[language]}</SelectItem>
                       <SelectItem value="diger">{PURCHASE_TYPE_LABELS.diger[language]}</SelectItem>
+                      <SelectItem value="fis">{PURCHASE_TYPE_LABELS.fis[language]}</SelectItem>
                     </SelectContent>
                   </Select>
                   <Input
@@ -1024,7 +703,7 @@ export default function ExpensesPage() {
                               {PURCHASE_TYPE_LABELS[invoice.invoice_type || 'purchase']?.[language] || (invoice.invoice_type || 'purchase')}
                             </Badge>
                           </TableCell>
-                          <TableCell>{invoice.supplier?.company_title || invoice.supplier?.name}</TableCell>
+                          <TableCell>{invoice.supplier_id ? (invoice.supplier?.company_title || invoice.supplier?.name) : (invoice.supplier_display_name || '–')}</TableCell>
                           <TableCell>{format(new Date(invoice.invoice_date), 'MMM dd, yyyy')}</TableCell>
                           <TableCell className="font-semibold">{renderAmountWithConversion(Number(invoice.total_amount), 'TRY', invoice.invoice_date ? format(new Date(invoice.invoice_date), 'yyyy-MM-dd') : null)}</TableCell>
                           <TableCell>
@@ -1077,8 +756,7 @@ export default function ExpensesPage() {
                     )}
                   </TableBody>
                 </Table>
-              </TabsContent>
-            </Tabs>
+            </div>
           </CardHeader>
         </Card>
       </div>
@@ -1088,75 +766,6 @@ export default function ExpensesPage() {
         onClose={() => setIsExpenseImportDialogOpen(false)}
         onSuccess={fetchData}
       />
-
-      <EditManualExpenseDialog
-        expense={expenseToEdit}
-        open={isEditExpenseDialogOpen}
-        onOpenChange={(open) => {
-          setIsEditExpenseDialogOpen(open)
-          if (!open) setExpenseToEdit(null)
-        }}
-        onSuccess={() => {
-          fetchExpenses()
-          setIsEditExpenseDialogOpen(false)
-          setExpenseToEdit(null)
-        }}
-      />
-
-      <ConfirmDeleteDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-        onConfirm={handleDeleteExpense}
-        title={t.expenses.deleteExpenseTitle}
-        description={t.expenses.deleteExpenseDescription}
-      />
-
-      <ConfirmDeleteDialog
-        open={isBulkDeleteDialogOpen}
-        onOpenChange={setIsBulkDeleteDialogOpen}
-        onConfirm={handleBulkDelete}
-        itemCount={selectedIds.size}
-        title={t.expenses.deleteExpenseTitle}
-        description={language === 'tr' ? `${selectedIds.size} masrafı silmek istediğinize emin misiniz?` : `Are you sure you want to delete ${selectedIds.size} expense(s)?`}
-      />
-
-      <Dialog open={!!expenseToView} onOpenChange={(open) => !open && setExpenseToView(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t.common.view} - {t.expenses.manualExpenses}</DialogTitle>
-          </DialogHeader>
-          {expenseToView && (
-            <div className="grid gap-3 text-sm">
-              <div>
-                <span className="font-medium text-gray-500">{t.expenses.expenseDate}</span>
-                <p>{format(new Date(expenseToView.expense_date), 'dd MMM yyyy')}</p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-500">{t.expenses.category}</span>
-                <p>{t.expenses.categories[expenseToView.category as keyof typeof t.expenses.categories]}</p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-500">{t.expenses.description}</span>
-                <p>{expenseToView.description}</p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-500">{t.expenses.amount}</span>
-                <p className="font-semibold">{renderAmountWithConversion(Number(expenseToView.amount), expenseToView.currency ?? 'TRY', format(new Date(expenseToView.expense_date), 'yyyy-MM-dd'))}</p>
-              </div>
-              <div>
-                <span className="font-medium text-gray-500">{t.expenses.paymentMethod}</span>
-                <p>{t.expenses.paymentMethods[expenseToView.payment_method as keyof typeof t.expenses.paymentMethods]}</p>
-              </div>
-              {expenseToView.notes && (
-                <div>
-                  <span className="font-medium text-gray-500">{t.common.notes}</span>
-                  <p>{expenseToView.notes}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
       <ConfirmDeleteDialog
         open={isDeletePurchaseDialogOpen}

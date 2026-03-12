@@ -64,6 +64,7 @@ const PURCHASE_TYPES = [
   { value: 'maas_odemesi', tr: 'Maaş Ödemesi Oluştur', en: 'Create Salary Payment' },
   { value: 'vergi_odemesi', tr: 'Vergi Ödemesi Oluştur', en: 'Create Tax Payment' },
   { value: 'diger', tr: 'Diğer', en: 'Other' },
+  { value: 'fis', tr: 'Fiş', en: 'Receipt' },
 ] as const
 
 const DEFAULT_VAT_RATE = 20
