@@ -1289,7 +1289,7 @@ export default function EInvoiceCenterPage() {
                   </div>
                   <div>
                     <p className="text-xs font-medium text-gray-500">{language === 'tr' ? 'Durum' : 'Status'}</p>
-                    <p className="font-medium text-gray-900">{getEdocStatusLabel(viewingIncomingDoc.status, language)}</p>
+                    <p className="font-medium text-gray-900">{getEdocStatusLabel(viewingIncomingDoc.status, tr as Record<string, string>)}</p>
                   </div>
                   <div>
                     <p className="text-xs font-medium text-gray-500">{language === 'tr' ? 'İçe aktarıldı' : 'Imported'}</p>
