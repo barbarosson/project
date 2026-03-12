@@ -163,7 +163,7 @@ export function EditManualExpenseDialog({ expense, open, onOpenChange, onSuccess
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto bg-blue-50 border-blue-200">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t.expenses.editExpense}</DialogTitle>
           <DialogDescription>

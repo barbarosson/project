@@ -284,7 +284,7 @@ export function OrderExcelImportDialog({ isOpen, onClose, onSuccess }: OrderExce
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && handleClose()}>
-      <DialogContent className="sm:max-w-md bg-cyan-50">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{isTr ? 'Sipariş Excel İçe Aktar' : 'Import Orders from Excel'}</DialogTitle>
           <DialogDescription>

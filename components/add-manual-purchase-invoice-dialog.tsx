@@ -59,10 +59,11 @@ interface AddManualPurchaseInvoiceDialogProps {
 }
 
 const PURCHASE_TYPES = [
-  { value: 'purchase', tr: 'Alış', en: 'Purchase' },
-  { value: 'purchase_return', tr: 'Alıştan İade', en: 'Purchase Return' },
-  { value: 'devir', tr: 'Devir', en: 'Carry Forward' },
-  { value: 'devir_return', tr: 'Devir İade', en: 'Carry Fwd Return' },
+  { value: 'fatura_olustur', tr: 'Fatura Oluştur', en: 'Create Invoice' },
+  { value: 'konaklama_ver_faturasi', tr: 'Konaklama Ver. Faturası Oluştur', en: 'Create Accommodation Tax Invoice' },
+  { value: 'maas_odemesi', tr: 'Maaş Ödemesi Oluştur', en: 'Create Salary Payment' },
+  { value: 'vergi_odemesi', tr: 'Vergi Ödemesi Oluştur', en: 'Create Tax Payment' },
+  { value: 'diger', tr: 'Diğer', en: 'Other' },
 ] as const
 
 const DEFAULT_VAT_RATE = 20
@@ -98,7 +99,7 @@ export function AddManualPurchaseInvoiceDialog({
     invoice_number: '',
     invoice_date: new Date().toISOString().split('T')[0],
     due_date: '',
-    invoice_type: 'purchase' as string,
+    invoice_type: 'fatura_olustur' as string,
   })
 
   const [lineItems, setLineItems] = useState<LineItem[]>([
@@ -124,7 +125,7 @@ export function AddManualPurchaseInvoiceDialog({
       invoice_number: initialInvoice.invoice_number || '',
       invoice_date: initialInvoice.invoice_date || new Date().toISOString().split('T')[0],
       due_date: initialInvoice.due_date || '',
-      invoice_type: (initialInvoice.invoice_type || 'purchase') as string,
+      invoice_type: (initialInvoice.invoice_type || 'fatura_olustur') as string,
     })
 
     ;(async () => {
@@ -332,7 +333,7 @@ export function AddManualPurchaseInvoiceDialog({
             subtotal,
             tax_amount: taxAmount,
             total_amount: totalAmount,
-            invoice_type: formData.invoice_type || 'purchase',
+            invoice_type: formData.invoice_type || 'fatura_olustur',
           })
           .eq('tenant_id', tenantId)
           .eq('id', initialInvoice.id)
@@ -374,7 +375,7 @@ export function AddManualPurchaseInvoiceDialog({
             tax_amount: taxAmount,
             total_amount: totalAmount,
             status: 'pending',
-            invoice_type: formData.invoice_type || 'purchase',
+            invoice_type: formData.invoice_type || 'fatura_olustur',
           })
           .select('id')
           .single()
@@ -402,7 +403,7 @@ export function AddManualPurchaseInvoiceDialog({
         invoice_number: '',
         invoice_date: new Date().toISOString().split('T')[0],
         due_date: '',
-        invoice_type: 'purchase',
+        invoice_type: 'fatura_olustur',
       })
       setLineItems([{ id: crypto.randomUUID(), product_id: null, description: '', quantity: '1', unit_price: '', vat_rate: DEFAULT_VAT_RATE }])
     } catch (err: any) {
@@ -659,7 +660,7 @@ export function AddManualPurchaseInvoiceDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto bg-blue-50 border-blue-200">
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         {content}
       </DialogContent>
     </Dialog>

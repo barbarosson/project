@@ -580,7 +580,7 @@ export default function AccountsPage() {
       </div>
 
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] bg-cyan-50">
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>{t.finance.accounts.addAccount}</DialogTitle>
             <DialogDescription>Create a new cash or bank account to track your finances.</DialogDescription>
@@ -718,7 +718,7 @@ export default function AccountsPage() {
       </Dialog>
 
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] bg-cyan-50">
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>{t.finance.accounts.editAccount}</DialogTitle>
             <DialogDescription>Update account information.</DialogDescription>
@@ -841,7 +841,7 @@ export default function AccountsPage() {
       </Dialog>
 
       <Dialog open={closeDialogOpen} onOpenChange={(open) => { if (!open) { setCloseDialogOpen(false); setSelectedAccount(null) } }}>
-        <DialogContent className="sm:max-w-lg bg-cyan-50">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{t.finance.accounts.confirmCloseAccount}</DialogTitle>
             <DialogDescription>

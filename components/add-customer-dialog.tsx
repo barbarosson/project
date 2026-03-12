@@ -552,7 +552,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
   return (
     <>
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleClose() }}>
-      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col overflow-hidden p-6 !bg-sky-50 border border-sky-200">
+      <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col overflow-hidden p-6">
         <DialogHeader className="shrink-0">
           <DialogTitle>{t.customers.addCustomer}</DialogTitle>
           <DialogDescription>

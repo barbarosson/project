@@ -97,7 +97,7 @@ export function EditPurchaseOrderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-white border border-gray-200">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-gray-900">
             {t.common.edit} – {purchaseOrder.po_number}

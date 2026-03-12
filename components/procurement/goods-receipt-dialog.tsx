@@ -110,7 +110,7 @@ export function GoodsReceiptDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-white border border-gray-200">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-gray-900 flex items-center gap-2">
             <Package className="h-5 w-5 text-[#00D4AA]" />

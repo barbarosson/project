@@ -97,7 +97,7 @@ export function EditProductionDialog({ open, onOpenChange, tenantId, order, onSu
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6 !bg-sky-50 border border-sky-200">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
           <DialogTitle>
             {isTR ? 'Üretim Emrini Düzenle' : 'Edit Production Order'}

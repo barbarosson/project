@@ -1024,11 +1024,11 @@ export default function Dashboard() {
         </div>
 
         <Dialog open={detailModal !== null} onOpenChange={(open) => !open && setDetailModal(null)}>
-          <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
-            <DialogHeader>
-              <div className="flex items-start w-full gap-4">
-                <div className="flex-shrink-0 min-w-0">
-                  <DialogTitle>
+          <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col p-0 gap-0 rounded-xl border-2 border-gray-200 shadow-xl">
+            <DialogHeader className="shrink-0 border-b border-gray-200 bg-white px-6 py-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="min-w-0">
+                  <DialogTitle className="text-xl font-bold text-gray-900 tracking-tight">
                     {detailModal === 'cashOnHand' && t.dashboard.cashOnHand}
                     {detailModal === 'income' && t.dashboard.cashFlowIncome}
                     {detailModal === 'invoicing' && t.dashboard.invoicing}
@@ -1036,7 +1036,7 @@ export default function Dashboard() {
                     {detailModal === 'customers' && t.dashboard.activeCustomers}
                     {detailModal === 'lowStock' && t.dashboard.lowStockAlerts}
                   </DialogTitle>
-                  <DialogDescription>
+                  <DialogDescription className="mt-1 text-sm text-gray-500">
                     {detailModal === 'cashOnHand' && t.dashboard.allAccounts}
                     {detailModal === 'income' && (language === 'tr' ? 'Tahsil edilen faturalar ve fatura ile eşlenmemiş tahsilatlar' : 'Collected invoices and unmatched collections')}
                     {detailModal === 'invoicing' && (language === 'tr' ? 'Dönemde kesilen faturalar' : 'Invoices issued in period')}
@@ -1045,233 +1045,246 @@ export default function Dashboard() {
                     {detailModal === 'lowStock' && t.dashboard.requiresAttention}
                   </DialogDescription>
                 </div>
-                <div className="flex-1 flex justify-center items-center min-w-0">
-                  <Button variant="outline" size="sm" className="flex-shrink-0 gap-2" onClick={exportDetailToExcel}>
-                    <FileDown className="h-4 w-4" />
-                    {language === 'tr' ? 'Excel ile dışa aktar' : 'Export to Excel'}
-                  </Button>
-                </div>
-                <div className="w-24 flex-shrink-0" aria-hidden />
+                <Button variant="success" size="sm" className="shrink-0 gap-2 w-fit" onClick={exportDetailToExcel}>
+                  <FileDown className="h-4 w-4" />
+                  {language === 'tr' ? 'Excel ile dışa aktar' : 'Export to Excel'}
+                </Button>
               </div>
             </DialogHeader>
-            <div className="overflow-auto flex-1 -mx-6 px-6">
+            <div className="overflow-auto flex-1 min-h-0 px-6 py-4 bg-gray-50/50">
               {detailModal === 'cashOnHand' && (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{language === 'tr' ? 'Hesap' : 'Account'}</TableHead>
-                      <TableHead className="text-right">{language === 'tr' ? 'Bakiye' : 'Balance'}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {detailAccounts.map((acc: any) => (
-                      <TableRow key={acc.id}>
-                        <TableCell>{acc.name || (language === 'tr' ? 'Hesap' : 'Account')}</TableCell>
-                        <TableCell className="text-right font-medium">{formatCurrency(Number(acc.current_balance) || 0)}</TableCell>
+                <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-gray-200 bg-gray-100 hover:bg-gray-100">
+                        <TableHead className="font-semibold text-gray-800">{language === 'tr' ? 'Hesap' : 'Account'}</TableHead>
+                        <TableHead className="text-right font-semibold text-gray-800">{language === 'tr' ? 'Bakiye' : 'Balance'}</TableHead>
                       </TableRow>
-                    ))}
-                    {detailAccounts.length === 0 && (
-                      <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {detailAccounts.map((acc: any) => (
+                        <TableRow key={acc.id} className="hover:bg-gray-50">
+                          <TableCell className="font-medium text-gray-900">{acc.name || (language === 'tr' ? 'Hesap' : 'Account')}</TableCell>
+                          <TableCell className="text-right font-medium text-gray-900">{formatCurrency(Number(acc.current_balance) || 0)}</TableCell>
+                        </TableRow>
+                      ))}
+                      {detailAccounts.length === 0 && (
+                        <TableRow><TableCell colSpan={2} className="text-center py-8 text-gray-500">{t.common.noData}</TableCell></TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
               {detailModal === 'income' && (
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-medium mb-2">{language === 'tr' ? 'Tahsil edilen faturalar' : 'Collected invoices'}</h4>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>{language === 'tr' ? 'Fatura no' : 'Invoice'}</TableHead>
-                          <TableHead>{language === 'tr' ? 'Ödeme tarihi' : 'Payment date'}</TableHead>
-                          <TableHead className="text-right">{language === 'tr' ? 'Tutar' : 'Amount'}</TableHead>
-                          <TableHead className="text-right">{language === 'tr' ? 'Tercih para biriminde' : 'In preferred currency'}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {detailCollectedInvoices.map((i: any) => {
-                          const amt = Number(i.amount) || Number(i.total) || 0
-                          const invCurrency = ((i.currency || 'TRY') as string).toUpperCase()
-                          const targetCur = (companyCurrency || 'TRY').toUpperCase()
-                          const rateDate = i.payment_date ? format(new Date(i.payment_date), 'yyyy-MM-dd') : ''
-                          const rates = rateDate ? tcmbRatesByDate[rateDate] : null
-                          const converted = invCurrency !== targetCur && rates
-                            ? convertAmount(amt, invCurrency, targetCur, rates, defaultRateType)
-                            : amt
-                          return (
-                            <TableRow key={i.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push(`/invoices/${i.id}`)}>
-                              <TableCell>{i.invoice_number}</TableCell>
-                              <TableCell>{i.payment_date ? format(new Date(i.payment_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
-                              <TableCell className="text-right font-medium">{formatCurrency(amt, invCurrency)}</TableCell>
-                              <TableCell className="text-right font-medium">{converted != null ? formatCurrency(converted, targetCur) : '–'}</TableCell>
-                            </TableRow>
-                          )
-                        })}
-                        {detailCollectedInvoices.length === 0 && (
-                          <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3">{language === 'tr' ? 'Tahsil edilen faturalar' : 'Collected invoices'}</h4>
+                    <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="border-gray-200 bg-gray-100 hover:bg-gray-100">
+                            <TableHead className="font-semibold text-gray-800">{language === 'tr' ? 'Fatura no' : 'Invoice'}</TableHead>
+                            <TableHead className="font-semibold text-gray-800">{language === 'tr' ? 'Ödeme tarihi' : 'Payment date'}</TableHead>
+                            <TableHead className="text-right font-semibold text-gray-800">{language === 'tr' ? 'Tutar' : 'Amount'}</TableHead>
+                            <TableHead className="text-right font-semibold text-gray-800">{language === 'tr' ? 'Tercih para biriminde' : 'In preferred currency'}</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {detailCollectedInvoices.map((i: any) => {
+                            const amt = Number(i.amount) || Number(i.total) || 0
+                            const invCurrency = ((i.currency || 'TRY') as string).toUpperCase()
+                            const targetCur = (companyCurrency || 'TRY').toUpperCase()
+                            const rateDate = i.payment_date ? format(new Date(i.payment_date), 'yyyy-MM-dd') : ''
+                            const rates = rateDate ? tcmbRatesByDate[rateDate] : null
+                            const converted = invCurrency !== targetCur && rates
+                              ? convertAmount(amt, invCurrency, targetCur, rates, defaultRateType)
+                              : amt
+                            return (
+                              <TableRow key={i.id} className="cursor-pointer hover:bg-gray-50" onClick={() => router.push(`/invoices/${i.id}`)}>
+                                <TableCell className="font-medium text-gray-900">{i.invoice_number}</TableCell>
+                                <TableCell className="text-gray-700">{i.payment_date ? format(new Date(i.payment_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
+                                <TableCell className="text-right font-medium text-gray-900">{formatCurrency(amt, invCurrency)}</TableCell>
+                                <TableCell className="text-right font-medium text-gray-900">{converted != null ? formatCurrency(converted, targetCur) : '–'}</TableCell>
+                              </TableRow>
+                            )
+                          })}
+                          {detailCollectedInvoices.length === 0 && (
+                            <TableRow><TableCell colSpan={4} className="text-center py-8 text-gray-500">{t.common.noData}</TableCell></TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </div>
                   <div>
-                    <h4 className="font-medium mb-2">{language === 'tr' ? 'Fatura ile eşlenmemiş tahsilatlar' : 'Unmatched collections'}</h4>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>{language === 'tr' ? 'Tarih' : 'Date'}</TableHead>
-                          <TableHead>{language === 'tr' ? 'Açıklama' : 'Description'}</TableHead>
-                          <TableHead className="text-right">{language === 'tr' ? 'Tutar' : 'Amount'}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {detailUnmatchedIncome.map((tx: any) => (
-                          <TableRow key={tx.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push('/finance/transactions')}>
-                            <TableCell>{tx.transaction_date ? format(new Date(tx.transaction_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
-                            <TableCell>{tx.description || '-'}</TableCell>
-                            <TableCell className="text-right font-medium">{formatCurrency(Number(tx.amount) || 0)}</TableCell>
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3">{language === 'tr' ? 'Fatura ile eşlenmemiş tahsilatlar' : 'Unmatched collections'}</h4>
+                    <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="border-gray-200 bg-gray-100 hover:bg-gray-100">
+                            <TableHead className="font-semibold text-gray-800">{language === 'tr' ? 'Tarih' : 'Date'}</TableHead>
+                            <TableHead className="font-semibold text-gray-800">{language === 'tr' ? 'Açıklama' : 'Description'}</TableHead>
+                            <TableHead className="text-right font-semibold text-gray-800">{language === 'tr' ? 'Tutar' : 'Amount'}</TableHead>
                           </TableRow>
-                        ))}
-                        {detailUnmatchedIncome.length === 0 && (
-                          <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {detailUnmatchedIncome.map((tx: any) => (
+                            <TableRow key={tx.id} className="cursor-pointer hover:bg-gray-50" onClick={() => router.push('/finance/transactions')}>
+                              <TableCell className="text-gray-700">{tx.transaction_date ? format(new Date(tx.transaction_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
+                              <TableCell className="font-medium text-gray-900">{tx.description || '-'}</TableCell>
+                              <TableCell className="text-right font-medium text-gray-900">{formatCurrency(Number(tx.amount) || 0)}</TableCell>
+                            </TableRow>
+                          ))}
+                          {detailUnmatchedIncome.length === 0 && (
+                            <TableRow><TableCell colSpan={3} className="text-center py-8 text-gray-500">{t.common.noData}</TableCell></TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </div>
                 </div>
               )}
               {detailModal === 'invoicing' && (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{language === 'tr' ? 'Fatura no' : 'Invoice'}</TableHead>
-                      <TableHead>{language === 'tr' ? 'Kesim tarihi' : 'Issue date'}</TableHead>
-                      <TableHead>{language === 'tr' ? 'Durum' : 'Status'}</TableHead>
-                      <TableHead className="text-right">{language === 'tr' ? 'Tutar' : 'Amount'}</TableHead>
-                      <TableHead className="text-right">{language === 'tr' ? 'Tercih para biriminde' : 'In preferred currency'}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {detailPeriodInvoices.map((i: any) => {
-                      const amt = Number(i.amount) || Number(i.total) || 0
-                      const invCurrency = ((i.currency || 'TRY') as string).toUpperCase()
-                      const targetCur = (companyCurrency || 'TRY').toUpperCase()
-                      const rateDate = i.issue_date ? format(new Date(i.issue_date), 'yyyy-MM-dd') : ''
-                      const rates = rateDate ? tcmbRatesByDate[rateDate] : null
-                      const converted = invCurrency !== targetCur && rates
-                        ? convertAmount(amt, invCurrency, targetCur, rates, defaultRateType)
-                        : amt
-                      return (
-                        <TableRow key={i.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push(`/invoices/${i.id}`)}>
-                          <TableCell>{i.invoice_number}</TableCell>
-                          <TableCell>{i.issue_date ? format(new Date(i.issue_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
-                          <TableCell>{i.status}</TableCell>
-                          <TableCell className="text-right font-medium">{formatCurrency(amt, invCurrency)}</TableCell>
-                          <TableCell className="text-right font-medium">{converted != null ? formatCurrency(converted, targetCur) : '–'}</TableCell>
-                        </TableRow>
-                      )
-                    })}
-                    {detailPeriodInvoices.length === 0 && (
-                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-gray-200 bg-gray-100 hover:bg-gray-100">
+                        <TableHead className="font-semibold text-gray-800">{language === 'tr' ? 'Fatura no' : 'Invoice'}</TableHead>
+                        <TableHead className="font-semibold text-gray-800">{language === 'tr' ? 'Kesim tarihi' : 'Issue date'}</TableHead>
+                        <TableHead className="font-semibold text-gray-800">{language === 'tr' ? 'Durum' : 'Status'}</TableHead>
+                        <TableHead className="text-right font-semibold text-gray-800">{language === 'tr' ? 'Tutar' : 'Amount'}</TableHead>
+                        <TableHead className="text-right font-semibold text-gray-800">{language === 'tr' ? 'Tercih para biriminde' : 'In preferred currency'}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {detailPeriodInvoices.map((i: any) => {
+                        const amt = Number(i.amount) || Number(i.total) || 0
+                        const invCurrency = ((i.currency || 'TRY') as string).toUpperCase()
+                        const targetCur = (companyCurrency || 'TRY').toUpperCase()
+                        const rateDate = i.issue_date ? format(new Date(i.issue_date), 'yyyy-MM-dd') : ''
+                        const rates = rateDate ? tcmbRatesByDate[rateDate] : null
+                        const converted = invCurrency !== targetCur && rates
+                          ? convertAmount(amt, invCurrency, targetCur, rates, defaultRateType)
+                          : amt
+                        return (
+                          <TableRow key={i.id} className="cursor-pointer hover:bg-gray-50" onClick={() => router.push(`/invoices/${i.id}`)}>
+                            <TableCell className="font-medium text-gray-900">{i.invoice_number}</TableCell>
+                            <TableCell className="text-gray-700">{i.issue_date ? format(new Date(i.issue_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
+                            <TableCell><span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800">{i.status}</span></TableCell>
+                            <TableCell className="text-right font-medium text-gray-900">{formatCurrency(amt, invCurrency)}</TableCell>
+                            <TableCell className="text-right font-medium text-gray-900">{converted != null ? formatCurrency(converted, targetCur) : '–'}</TableCell>
+                          </TableRow>
+                        )
+                      })}
+                      {detailPeriodInvoices.length === 0 && (
+                        <TableRow><TableCell colSpan={5} className="text-center py-8 text-gray-500">{t.common.noData}</TableCell></TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
               {detailModal === 'expenses' && (
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-medium mb-2">{language === 'tr' ? 'Masraflar' : 'Expenses'}</h4>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>{language === 'tr' ? 'Tarih' : 'Date'}</TableHead>
-                          <TableHead>{language === 'tr' ? 'Açıklama' : 'Description'}</TableHead>
-                          <TableHead className="text-right">{language === 'tr' ? 'Tutar' : 'Amount'}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {detailPeriodExpenses.map((e: any) => (
-                          <TableRow key={e.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push('/expenses')}>
-                            <TableCell>{e.expense_date ? format(new Date(e.expense_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
-                            <TableCell>{e.description || e.category || '-'}</TableCell>
-                            <TableCell className="text-right font-medium">{formatCurrency(Number(e.amount) || 0)}</TableCell>
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3">{language === 'tr' ? 'Masraflar' : 'Expenses'}</h4>
+                    <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="border-gray-200 bg-gray-100 hover:bg-gray-100">
+                            <TableHead className="font-semibold text-gray-800">{language === 'tr' ? 'Tarih' : 'Date'}</TableHead>
+                            <TableHead className="font-semibold text-gray-800">{language === 'tr' ? 'Açıklama' : 'Description'}</TableHead>
+                            <TableHead className="text-right font-semibold text-gray-800">{language === 'tr' ? 'Tutar' : 'Amount'}</TableHead>
                           </TableRow>
-                        ))}
-                        {detailPeriodExpenses.length === 0 && (
-                          <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {detailPeriodExpenses.map((e: any) => (
+                            <TableRow key={e.id} className="cursor-pointer hover:bg-gray-50" onClick={() => router.push('/expenses')}>
+                              <TableCell className="text-gray-700">{e.expense_date ? format(new Date(e.expense_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
+                              <TableCell className="font-medium text-gray-900">{e.description || e.category || '-'}</TableCell>
+                              <TableCell className="text-right font-medium text-gray-900">{formatCurrency(Number(e.amount) || 0)}</TableCell>
+                            </TableRow>
+                          ))}
+                          {detailPeriodExpenses.length === 0 && (
+                            <TableRow><TableCell colSpan={3} className="text-center py-8 text-gray-500">{t.common.noData}</TableCell></TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </div>
                   <div>
-                    <h4 className="font-medium mb-2">{language === 'tr' ? 'İşlem giderleri' : 'Transaction expenses'}</h4>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>{language === 'tr' ? 'Tarih' : 'Date'}</TableHead>
-                          <TableHead>{language === 'tr' ? 'Açıklama' : 'Description'}</TableHead>
-                          <TableHead className="text-right">{language === 'tr' ? 'Tutar' : 'Amount'}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {detailPeriodTxExpenses.map((tx: any) => (
-                          <TableRow key={tx.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push('/finance/transactions')}>
-                            <TableCell>{tx.transaction_date ? format(new Date(tx.transaction_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
-                            <TableCell>{tx.description || '-'}</TableCell>
-                            <TableCell className="text-right font-medium">{formatCurrency(Number(tx.amount) || 0)}</TableCell>
+                    <h4 className="text-sm font-semibold text-gray-700 mb-3">{language === 'tr' ? 'İşlem giderleri' : 'Transaction expenses'}</h4>
+                    <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="border-gray-200 bg-gray-100 hover:bg-gray-100">
+                            <TableHead className="font-semibold text-gray-800">{language === 'tr' ? 'Tarih' : 'Date'}</TableHead>
+                            <TableHead className="font-semibold text-gray-800">{language === 'tr' ? 'Açıklama' : 'Description'}</TableHead>
+                            <TableHead className="text-right font-semibold text-gray-800">{language === 'tr' ? 'Tutar' : 'Amount'}</TableHead>
                           </TableRow>
-                        ))}
-                        {detailPeriodTxExpenses.length === 0 && (
-                          <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {detailPeriodTxExpenses.map((tx: any) => (
+                            <TableRow key={tx.id} className="cursor-pointer hover:bg-gray-50" onClick={() => router.push('/finance/transactions')}>
+                              <TableCell className="text-gray-700">{tx.transaction_date ? format(new Date(tx.transaction_date), 'dd.MM.yyyy', { locale: dateLocale }) : '-'}</TableCell>
+                              <TableCell className="font-medium text-gray-900">{tx.description || '-'}</TableCell>
+                              <TableCell className="text-right font-medium text-gray-900">{formatCurrency(Number(tx.amount) || 0)}</TableCell>
+                            </TableRow>
+                          ))}
+                          {detailPeriodTxExpenses.length === 0 && (
+                            <TableRow><TableCell colSpan={3} className="text-center py-8 text-gray-500">{t.common.noData}</TableCell></TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </div>
                 </div>
               )}
               {detailModal === 'customers' && (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{language === 'tr' ? 'Müşteri' : 'Customer'}</TableHead>
-                      <TableHead>Email</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {detailActiveCustomers.map((c: any) => (
-                      <TableRow key={c.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push('/customers')}>
-                        <TableCell>{c.company_title || c.name || '-'}</TableCell>
-                        <TableCell>{c.email || '-'}</TableCell>
+                <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-gray-200 bg-gray-100 hover:bg-gray-100">
+                        <TableHead className="font-semibold text-gray-800">{language === 'tr' ? 'Müşteri' : 'Customer'}</TableHead>
+                        <TableHead className="font-semibold text-gray-800">Email</TableHead>
                       </TableRow>
-                    ))}
-                    {detailActiveCustomers.length === 0 && (
-                      <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {detailActiveCustomers.map((c: any) => (
+                        <TableRow key={c.id} className="cursor-pointer hover:bg-gray-50" onClick={() => router.push('/customers')}>
+                          <TableCell className="font-medium text-gray-900">{c.company_title || c.name || '-'}</TableCell>
+                          <TableCell className="text-gray-700">{c.email || '-'}</TableCell>
+                        </TableRow>
+                      ))}
+                      {detailActiveCustomers.length === 0 && (
+                        <TableRow><TableCell colSpan={2} className="text-center py-8 text-gray-500">{t.common.noData}</TableCell></TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
               {detailModal === 'lowStock' && (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{language === 'tr' ? 'Ürün' : 'Product'}</TableHead>
-                      <TableHead className="text-right">{language === 'tr' ? 'Stok' : 'Stock'}</TableHead>
-                      <TableHead className="text-right">{language === 'tr' ? 'Min. stok' : 'Min stock'}</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {detailLowStockProducts.map((p: any) => (
-                      <TableRow key={p.id} className="cursor-pointer hover:bg-muted/50" onClick={() => router.push('/inventory')}>
-                        <TableCell>{p.name}</TableCell>
-                        <TableCell className="text-right">{p.stock_quantity}</TableCell>
-                        <TableCell className="text-right">{p.min_stock_level}</TableCell>
+                <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-gray-200 bg-gray-100 hover:bg-gray-100">
+                        <TableHead className="font-semibold text-gray-800">{language === 'tr' ? 'Ürün' : 'Product'}</TableHead>
+                        <TableHead className="text-right font-semibold text-gray-800">{language === 'tr' ? 'Stok' : 'Stock'}</TableHead>
+                        <TableHead className="text-right font-semibold text-gray-800">{language === 'tr' ? 'Min. stok' : 'Min stock'}</TableHead>
                       </TableRow>
-                    ))}
-                    {detailLowStockProducts.length === 0 && (
-                      <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground">{t.common.noData}</TableCell></TableRow>
-                    )}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {detailLowStockProducts.map((p: any) => (
+                        <TableRow key={p.id} className="cursor-pointer hover:bg-gray-50" onClick={() => router.push('/inventory')}>
+                          <TableCell className="font-medium text-gray-900">{p.name}</TableCell>
+                          <TableCell className="text-right font-medium text-gray-900">{p.stock_quantity}</TableCell>
+                          <TableCell className="text-right font-medium text-gray-900">{p.min_stock_level}</TableCell>
+                        </TableRow>
+                      ))}
+                      {detailLowStockProducts.length === 0 && (
+                        <TableRow><TableCell colSpan={3} className="text-center py-8 text-gray-500">{t.common.noData}</TableCell></TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               )}
             </div>
           </DialogContent>

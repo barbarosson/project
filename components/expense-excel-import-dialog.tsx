@@ -379,7 +379,7 @@ export function ExpenseExcelImportDialog({ isOpen, onClose, onSuccess }: Expense
 
   return (
     <Dialog open={isOpen} onOpenChange={open => !open && handleClose()}>
-      <DialogContent className="sm:max-w-md bg-cyan-50">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{isTr ? 'Toplu aktarım' : 'Bulk import'}</DialogTitle>
           <DialogDescription>

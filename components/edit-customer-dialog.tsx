@@ -178,7 +178,7 @@ export function EditCustomerDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-6 !bg-sky-50 border border-sky-200">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-6">
         <DialogHeader>
           <DialogTitle>{t.customers.editCustomer}</DialogTitle>
           <DialogDescription>

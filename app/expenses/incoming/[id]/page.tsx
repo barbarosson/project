@@ -51,12 +51,22 @@ const PURCHASE_TYPE_LABELS: Record<string, Record<string, string>> = {
   purchase_return: { tr: 'Alıştan İade', en: 'Purchase Return' },
   devir: { tr: 'Devir', en: 'Carry Forward' },
   devir_return: { tr: 'Devir İade', en: 'Carry Fwd Return' },
+  fatura_olustur: { tr: 'Fatura Oluştur', en: 'Create Invoice' },
+  konaklama_ver_faturasi: { tr: 'Konaklama Ver. Faturası Oluştur', en: 'Create Accommodation Tax Invoice' },
+  maas_odemesi: { tr: 'Maaş Ödemesi Oluştur', en: 'Create Salary Payment' },
+  vergi_odemesi: { tr: 'Vergi Ödemesi Oluştur', en: 'Create Tax Payment' },
+  diger: { tr: 'Diğer', en: 'Other' },
 }
 const PURCHASE_TYPE_COLORS: Record<string, string> = {
   purchase: 'bg-emerald-100 text-emerald-800',
   purchase_return: 'bg-orange-100 text-orange-800',
   devir: 'bg-violet-100 text-violet-800',
   devir_return: 'bg-pink-100 text-pink-800',
+  fatura_olustur: 'bg-blue-100 text-blue-800',
+  konaklama_ver_faturasi: 'bg-amber-100 text-amber-800',
+  maas_odemesi: 'bg-teal-100 text-teal-800',
+  vergi_odemesi: 'bg-rose-100 text-rose-800',
+  diger: 'bg-gray-100 text-gray-800',
 }
 
 export default function IncomingInvoiceDetailPage() {

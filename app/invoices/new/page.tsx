@@ -933,7 +933,7 @@ export default function NewInvoicePage() {
                                   value={item.discount_type || 'percent'}
                                   onValueChange={(v) => updateLineItem(index, 'discount_type', v as 'percent' | 'amount')}
                                 >
-                                  <SelectTrigger className="relative w-11 border-2 border-gray-300 rounded-md bg-white h-8 pl-1.5 pr-6 text-gray-900 font-medium text-[15px] shrink-0 focus-visible:ring-2 focus-visible:ring-[#0A2540]/20 [&>span:first-child]:opacity-0 [&>span:first-child]:w-0 [&>span:first-child]:overflow-hidden [&>span:first-child]:min-w-0">
+                                  <SelectTrigger className="relative w-11 border border-gray-300 rounded-md bg-white h-8 pl-1.5 pr-6 text-gray-900 font-medium text-[15px] shrink-0 focus-visible:ring-2 focus-visible:ring-[#0A2540]/20 [&>span:first-child]:opacity-0 [&>span:first-child]:w-0 [&>span:first-child]:overflow-hidden [&>span:first-child]:min-w-0">
                                     <SelectValue />
                                     <span className="absolute left-1.5 right-6 text-left text-gray-900 font-medium text-[15px] truncate pointer-events-none">
                                       {item.discount_type === 'amount' ? '₺' : '%'}

@@ -231,7 +231,7 @@ export function StaffExcelImportDialog({ open, onOpenChange, onSuccess }: StaffE
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-white border border-gray-200">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-gray-900 flex items-center gap-2">
             <FileSpreadsheet className="h-5 w-5 text-[#00D4AA]" />

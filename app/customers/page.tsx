@@ -326,16 +326,18 @@ export default function CustomersPage() {
       const customersToDelete: string[] = []
 
       for (const customerId of customerIds) {
-        const [invoicesResult, proposalsResult, transactionsResult] = await Promise.all([
+        const [invoicesResult, proposalsResult, transactionsResult, purchaseInvoicesResult] = await Promise.all([
           supabase.from('invoices').select('id').eq('customer_id', customerId).eq('tenant_id', tenantId).limit(1),
           supabase.from('proposals').select('id').eq('customer_id', customerId).eq('tenant_id', tenantId).limit(1),
-          supabase.from('transactions').select('id').eq('customer_id', customerId).eq('tenant_id', tenantId).limit(1)
+          supabase.from('transactions').select('id').eq('customer_id', customerId).eq('tenant_id', tenantId).limit(1),
+          supabase.from('purchase_invoices').select('id').eq('supplier_id', customerId).eq('tenant_id', tenantId).limit(1)
         ])
 
         const hasRelations =
           (invoicesResult.data?.length ?? 0) > 0 ||
           (proposalsResult.data?.length ?? 0) > 0 ||
-          (transactionsResult.data?.length ?? 0) > 0
+          (transactionsResult.data?.length ?? 0) > 0 ||
+          (purchaseInvoicesResult.data?.length ?? 0) > 0
 
         if (hasRelations) {
           customersToDeactivate.push(customerId)

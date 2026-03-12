@@ -29,7 +29,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Search, FileText, Receipt, CheckCircle2, XCircle, Eye, Trash2, Pencil, Upload, MoreVertical } from 'lucide-react'
+import { Plus, Search, FileText, Receipt, CheckCircle2, XCircle, Eye, Trash2, Pencil, Upload, MoreVertical, FileDown } from 'lucide-react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { supabase } from '@/lib/supabase'
 import { useTenant } from '@/contexts/tenant-context'
@@ -37,11 +37,11 @@ import { useCurrency } from '@/contexts/currency-context'
 import { useLanguage } from '@/contexts/language-context'
 import { convertAmount, type TcmbRatesByCurrency } from '@/lib/tcmb'
 import { toast } from 'sonner'
-import { AddManualExpenseDialog } from '@/components/add-manual-expense-dialog'
 import { EditManualExpenseDialog } from '@/components/edit-manual-expense-dialog'
 import { ConfirmDeleteDialog } from '@/components/confirm-delete-dialog'
 import { ExpenseExcelImportDialog } from '@/components/expense-excel-import-dialog'
 import { format, subDays } from 'date-fns'
+import * as XLSX from 'xlsx'
 
 interface Expense {
   id: string
@@ -78,12 +78,22 @@ const PURCHASE_TYPE_LABELS: Record<string, Record<string, string>> = {
   purchase_return: { tr: 'Alıştan İade', en: 'Purchase Return' },
   devir: { tr: 'Devir', en: 'Carry Forward' },
   devir_return: { tr: 'Devir İade', en: 'Carry Fwd Return' },
+  fatura_olustur: { tr: 'Fatura Oluştur', en: 'Create Invoice' },
+  konaklama_ver_faturasi: { tr: 'Konaklama Ver. Faturası Oluştur', en: 'Create Accommodation Tax Invoice' },
+  maas_odemesi: { tr: 'Maaş Ödemesi Oluştur', en: 'Create Salary Payment' },
+  vergi_odemesi: { tr: 'Vergi Ödemesi Oluştur', en: 'Create Tax Payment' },
+  diger: { tr: 'Diğer', en: 'Other' },
 }
 const PURCHASE_TYPE_COLORS: Record<string, string> = {
   purchase: 'bg-emerald-100 text-emerald-800',
   purchase_return: 'bg-orange-100 text-orange-800',
   devir: 'bg-violet-100 text-violet-800',
   devir_return: 'bg-pink-100 text-pink-800',
+  fatura_olustur: 'bg-blue-100 text-blue-800',
+  konaklama_ver_faturasi: 'bg-amber-100 text-amber-800',
+  maas_odemesi: 'bg-teal-100 text-teal-800',
+  vergi_odemesi: 'bg-rose-100 text-rose-800',
+  diger: 'bg-gray-100 text-gray-800',
 }
 
 export default function ExpensesPage() {
@@ -104,7 +114,6 @@ export default function ExpensesPage() {
   const [expenseDateTo, setExpenseDateTo] = useState<string>('')
   const [purchaseDateFrom, setPurchaseDateFrom] = useState<string>('')
   const [purchaseDateTo, setPurchaseDateTo] = useState<string>('')
-  const [isAddExpenseDialogOpen, setIsAddExpenseDialogOpen] = useState(false)
   const [isExpenseImportDialogOpen, setIsExpenseImportDialogOpen] = useState(false)
   const [isEditExpenseDialogOpen, setIsEditExpenseDialogOpen] = useState(false)
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | null>(null)
@@ -351,6 +360,31 @@ export default function ExpensesPage() {
     } finally {
       setIsBulkDeleteDialogOpen(false)
     }
+  }
+
+  function handleBulkExportToExcel() {
+    if (selectedIds.size === 0) return
+    const toExport = filteredExpenses.filter((e) => selectedIds.has(e.id))
+    const isTR = language === 'tr'
+    const headers = isTR
+      ? ['Tarih', 'Kategori', 'Açıklama', 'Tutar', 'Para Birimi', 'Ödeme Yöntemi', 'Notlar']
+      : ['Date', 'Category', 'Description', 'Amount', 'Currency', 'Payment Method', 'Notes']
+    const rows = toExport.map((e) => [
+      e.expense_date ? format(new Date(e.expense_date), 'dd.MM.yyyy') : '',
+      t.expenses.categories[e.category as keyof typeof t.expenses.categories] ?? e.category,
+      e.description ?? '',
+      Number(e.amount) ?? 0,
+      (e as Expense).currency ?? 'TRY',
+      t.expenses.paymentMethods[e.payment_method as keyof typeof t.expenses.paymentMethods] ?? e.payment_method,
+      e.notes ?? '',
+    ])
+    const data = [headers, ...rows]
+    const ws = XLSX.utils.aoa_to_sheet(data)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, isTR ? 'Masraflar' : 'Expenses')
+    const dateStr = format(new Date(), 'yyyy-MM-dd')
+    XLSX.writeFile(wb, isTR ? `masraflar_${dateStr}.xlsx` : `expenses_${dateStr}.xlsx`)
+    toast.success(isTR ? 'Seçilen masraflar Excel\'e aktarıldı.' : 'Selected expenses exported to Excel.')
   }
 
   const filteredInvoices = purchaseInvoices.filter((invoice) => {
@@ -731,15 +765,6 @@ export default function ExpensesPage() {
                       <Upload size={16} className="mr-2" />
                       {t.expenses.bulkImport}
                     </Button>
-                    {activeTab === 'manual' && (
-                      <Button
-                        onClick={() => setIsAddExpenseDialogOpen(true)}
-                        className="shrink-0 bg-[#00D4AA] hover:bg-[#00B894] font-semibold text-contrast-body"
-                      >
-                        <Plus size={16} className="mr-2" />
-                        {t.expenses.addExpense}
-                      </Button>
-                    )}
                     {activeTab === 'incoming' && (
                       <Button
                         onClick={() => router.push('/expenses/incoming/new')}
@@ -784,6 +809,15 @@ export default function ExpensesPage() {
                     >
                       <Trash2 className="h-3.5 w-3.5 mr-1" />
                       {t.common.bulkDelete}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleBulkExportToExcel}
+                      className="inline-flex items-center gap-1.5"
+                    >
+                      <FileDown className="h-3.5 w-3.5" />
+                      {language === 'tr' ? 'Excel ile aktar' : 'Export to Excel'}
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setSelectedIds(new Set())}>
                       {language === 'tr' ? 'Seçimi temizle' : 'Clear selection'}
@@ -900,6 +934,11 @@ export default function ExpensesPage() {
                       <SelectItem value="purchase_return">{PURCHASE_TYPE_LABELS.purchase_return[language]}</SelectItem>
                       <SelectItem value="devir">{PURCHASE_TYPE_LABELS.devir[language]}</SelectItem>
                       <SelectItem value="devir_return">{PURCHASE_TYPE_LABELS.devir_return[language]}</SelectItem>
+                      <SelectItem value="fatura_olustur">{PURCHASE_TYPE_LABELS.fatura_olustur[language]}</SelectItem>
+                      <SelectItem value="konaklama_ver_faturasi">{PURCHASE_TYPE_LABELS.konaklama_ver_faturasi[language]}</SelectItem>
+                      <SelectItem value="maas_odemesi">{PURCHASE_TYPE_LABELS.maas_odemesi[language]}</SelectItem>
+                      <SelectItem value="vergi_odemesi">{PURCHASE_TYPE_LABELS.vergi_odemesi[language]}</SelectItem>
+                      <SelectItem value="diger">{PURCHASE_TYPE_LABELS.diger[language]}</SelectItem>
                     </SelectContent>
                   </Select>
                   <Input
@@ -1044,12 +1083,6 @@ export default function ExpensesPage() {
         </Card>
       </div>
 
-      <AddManualExpenseDialog
-        open={isAddExpenseDialogOpen}
-        onOpenChange={setIsAddExpenseDialogOpen}
-        onSuccess={fetchExpenses}
-      />
-
       <ExpenseExcelImportDialog
         isOpen={isExpenseImportDialogOpen}
         onClose={() => setIsExpenseImportDialogOpen(false)}
@@ -1088,7 +1121,7 @@ export default function ExpensesPage() {
       />
 
       <Dialog open={!!expenseToView} onOpenChange={(open) => !open && setExpenseToView(null)}>
-        <DialogContent className="max-w-md bg-blue-50 border-blue-200">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{t.common.view} - {t.expenses.manualExpenses}</DialogTitle>
           </DialogHeader>
