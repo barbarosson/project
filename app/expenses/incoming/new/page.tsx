@@ -451,9 +451,9 @@ export default function NewPurchaseInvoicePage() {
     }
   }
 
-  const pageTitle = language === 'tr' ? 'Alış Faturası Oluştur' : 'Create Purchase Invoice'
+  const pageTitle = language === 'tr' ? 'Gider Girişi Oluştur' : 'Create Expense Entry'
   const pageDesc = language === 'tr' ? 'Tedarikçi alış faturası oluşturun.' : 'Create a purchase invoice from a supplier.'
-  const invoiceDetailsTitle = language === 'tr' ? 'Fatura Bilgileri' : 'Invoice Details'
+  const invoiceDetailsTitle = language === 'tr' ? 'Gider Bilgileri' : 'Expense Details'
   const supplierLabel = language === 'tr' ? 'Tedarikçi' : 'Supplier'
   const selectSupplier = language === 'tr' ? 'Tedarikçi seçin' : 'Select supplier'
   const optional = language === 'tr' ? 'İsteğe bağlı' : 'Optional'

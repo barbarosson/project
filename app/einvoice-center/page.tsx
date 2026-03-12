@@ -832,14 +832,14 @@ export default function EInvoiceCenterPage() {
                       ) : (
                         <>
                           <div className="flex flex-wrap items-center gap-3 mb-4 p-3 rounded-lg border border-gray-200 bg-gray-50/50">
-                            <Checkbox
-                              checked={incomingDocs.length > 0 && selectedIncomingIds.size === incomingDocs.length}
-                              onCheckedChange={selectAllIncoming}
-                              aria-label={language === 'tr' ? 'Tümünü seç' : 'Select all'}
-                            />
-                            <span className="text-sm font-medium text-gray-700">
-                              {language === 'tr' ? 'Tümünü seç' : 'Select all'}
-                            </span>
+                            <div className="inline-flex items-center justify-center">
+                              <Checkbox
+                                size="sm"
+                                checked={incomingDocs.length > 0 && selectedIncomingIds.size === incomingDocs.length}
+                                onCheckedChange={selectAllIncoming}
+                                aria-label={language === 'tr' ? 'Tümünü seç' : 'Select all'}
+                              />
+                            </div>
                             {selectedIncomingIds.size > 0 && (
                               <>
                                 <span className="text-sm text-gray-600">
@@ -860,7 +860,7 @@ export default function EInvoiceCenterPage() {
                                   onClick={() => exportEdocsToCsv(incomingDocs.filter((d) => selectedIncomingIds.has(d.id)), 'incoming')}
                                 >
                                   <Download className="h-4 w-4 mr-2" />
-                                  {language === 'tr' ? 'Seçilenleri dışa aktar (CSV)' : 'Export selected (CSV)'}
+                                  {language === 'tr' ? 'Excel ile dışa aktar' : 'Export to Excel'}
                                 </Button>
                               </>
                             )}
@@ -873,10 +873,10 @@ export default function EInvoiceCenterPage() {
                             >
                               <div className="flex items-center">
                                 <Checkbox
+                                  size="sm"
                                   checked={selectedIncomingIds.has(doc.id)}
                                   onCheckedChange={() => toggleIncomingSelection(doc.id)}
                                   aria-label={doc.invoice_number ?? doc.id}
-                                  className="h-4 w-4"
                                 />
                               </div>
                               <div className="min-w-0 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-2">
@@ -1006,14 +1006,14 @@ export default function EInvoiceCenterPage() {
                       ) : (
                         <>
                           <div className="flex flex-wrap items-center gap-3 mb-4 p-3 rounded-lg border border-gray-200 bg-gray-50/50">
-                            <Checkbox
-                              checked={outgoingDocs.length > 0 && selectedOutgoingIds.size === outgoingDocs.length}
-                              onCheckedChange={selectAllOutgoing}
-                              aria-label={language === 'tr' ? 'Tümünü seç' : 'Select all'}
-                            />
-                            <span className="text-sm font-medium text-gray-700">
-                              {language === 'tr' ? 'Tümünü seç' : 'Select all'}
-                            </span>
+                            <div className="inline-flex items-center justify-center">
+                              <Checkbox
+                                size="sm"
+                                checked={outgoingDocs.length > 0 && selectedOutgoingIds.size === outgoingDocs.length}
+                                onCheckedChange={selectAllOutgoing}
+                                aria-label={language === 'tr' ? 'Tümünü seç' : 'Select all'}
+                              />
+                            </div>
                             {selectedOutgoingIds.size > 0 && (
                               <>
                                 <span className="text-sm text-gray-600">
@@ -1034,7 +1034,7 @@ export default function EInvoiceCenterPage() {
                                   onClick={() => exportEdocsToCsv(outgoingDocs.filter((d) => selectedOutgoingIds.has(d.id)), 'outgoing')}
                                 >
                                   <Download className="h-4 w-4 mr-2" />
-                                  {language === 'tr' ? 'Seçilenleri dışa aktar (CSV)' : 'Export selected (CSV)'}
+                                  {language === 'tr' ? 'Excel ile dışa aktar' : 'Export to Excel'}
                                 </Button>
                               </>
                             )}
@@ -1047,10 +1047,10 @@ export default function EInvoiceCenterPage() {
                             >
                               <div className="flex items-center">
                                 <Checkbox
+                                  size="sm"
                                   checked={selectedOutgoingIds.has(doc.id)}
                                   onCheckedChange={() => toggleOutgoingSelection(doc.id)}
                                   aria-label={doc.invoice_number ?? doc.id}
-                                  className="h-4 w-4"
                                 />
                               </div>
                               <div className="min-w-0 grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-2">
