@@ -44,6 +44,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 
 type EdocSetup = { efatura_enabled: boolean; earsiv_enabled: boolean } | null;
@@ -128,6 +129,10 @@ export default function EInvoiceCenterPage() {
   const [refreshingStatusId, setRefreshingStatusId] = useState<string | null>(null);
   const [selectedIncomingIds, setSelectedIncomingIds] = useState<Set<string>>(new Set());
   const [selectedOutgoingIds, setSelectedOutgoingIds] = useState<Set<string>>(new Set());
+  const [viewingIncomingDoc, setViewingIncomingDoc] = useState<EdocRow | null>(null);
+  const [viewingIncomingHtml, setViewingIncomingHtml] = useState<string | null>(null);
+  const [viewingIncomingHtmlLoading, setViewingIncomingHtmlLoading] = useState(false);
+  const [viewingIncomingHtmlError, setViewingIncomingHtmlError] = useState<string | null>(null);
   const router = useRouter();
 
   const toggleIncomingSelection = (id: string) => {
@@ -354,6 +359,35 @@ export default function EInvoiceCenterPage() {
     }
   };
 
+  useEffect(() => {
+    if (!viewingIncomingDoc) {
+      setViewingIncomingHtml(null);
+      setViewingIncomingHtmlError(null);
+      return;
+    }
+    const ettn = viewingIncomingDoc.ettn?.trim();
+    if (!tenantId || !ettn) {
+      setViewingIncomingHtml(null);
+      setViewingIncomingHtmlError(null);
+      return;
+    }
+    let cancelled = false;
+    setViewingIncomingHtmlLoading(true);
+    setViewingIncomingHtmlError(null);
+    setViewingIncomingHtml(null);
+    getInvoiceHtml(tenantId, ettn, 'incoming')
+      .then((html) => {
+        if (!cancelled && typeof html === 'string') setViewingIncomingHtml(html);
+      })
+      .catch((err) => {
+        if (!cancelled) setViewingIncomingHtmlError(err instanceof Error ? err.message : String(err));
+      })
+      .finally(() => {
+        if (!cancelled) setViewingIncomingHtmlLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, [tenantId, viewingIncomingDoc?.id, viewingIncomingDoc?.ettn]);
+
   const handleSyncInvoices = async (direction: 'incoming' | 'outgoing') => {
     if (!tenantId) return;
     setSyncing(direction);
@@ -466,16 +500,22 @@ export default function EInvoiceCenterPage() {
     }
   };
 
-  const handleImportToPurchase = async (doc: EdocRow) => {
+  const handleImportToPurchase = async (doc: EdocRow, fromView?: boolean) => {
     if (!tenantId || !doc.id) return;
     setImportingEdocId(doc.id);
     try {
       const result = await importIncomingEdocumentToPurchase(tenantId, doc.id);
       if (result.success) {
-        toast.success(language === 'tr' ? 'Alış faturası oluşturuldu.' : 'Purchase invoice created.');
+        if (fromView) {
+          toast.success(language === 'tr' ? 'Cari oluşturuldu ve fatura aktarıldı.' : 'Customer was created and invoice was imported.');
+          setViewingIncomingDoc(null);
+        } else {
+          toast.success(language === 'tr' ? 'Alış faturası oluşturuldu.' : 'Purchase invoice created.');
+        }
         loadInvoices();
       } else if ('alreadyImported' in result && result.alreadyImported) {
         toast.info(language === 'tr' ? 'Zaten aktarılmış.' : 'Already imported.');
+        if (fromView) setViewingIncomingDoc(null);
         loadInvoices();
       } else {
         toast.error('error' in result ? result.error : '');
@@ -932,11 +972,11 @@ export default function EInvoiceCenterPage() {
                                     size="sm"
                                     className="h-8 min-h-8 px-3 text-xs font-medium bg-[#0A2540] hover:bg-[#1e3a5f]"
                                     disabled={!!importingEdocId || doc.transferred || doc.status === 'transferred' || isEdocProcessCompleted(doc.status)}
-                                    onClick={() => handleImportToPurchase(doc)}
-                                    title={tr.importToPurchaseButton}
+                                    onClick={() => setViewingIncomingDoc(doc)}
+                                    title={language === 'tr' ? 'Gelen faturayı görüntüle' : 'View incoming invoice'}
                                   >
-                                    {importingEdocId === doc.id ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Download className="h-3.5 w-3.5 mr-1.5" />}
-                                    {tr.importToPurchaseButton}
+                                    <Eye className="h-3.5 w-3.5 mr-1.5" />
+                                    {language === 'tr' ? 'Gelen faturayı görüntüle' : 'View incoming invoice'}
                                   </Button>
                                 )}
                                 <DropdownMenu>
@@ -1147,6 +1187,148 @@ export default function EInvoiceCenterPage() {
           </Tabs>
         </div>
       </div>
+
+      <Dialog
+        open={!!viewingIncomingDoc}
+        onOpenChange={(open) => {
+          if (!open) {
+            setViewingIncomingDoc(null);
+            setViewingIncomingHtml(null);
+            setViewingIncomingHtmlError(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col gap-0 p-0 overflow-hidden">
+          <DialogHeader className="px-6 pt-6 pb-2 shrink-0">
+            <DialogTitle>{language === 'tr' ? 'Gelen faturayı görüntüle' : 'View incoming invoice'}</DialogTitle>
+          </DialogHeader>
+          {viewingIncomingDoc && (
+            <div className="flex flex-col gap-4 px-6 pb-6 overflow-y-auto min-h-0 flex-1">
+              <p className="text-sm text-gray-600 shrink-0">
+                {language === 'tr' ? 'Faturayı kontrol edin, ardından içeri aktarın. İçeri aktarırken gerekirse cari oluşturulur ve fatura giderlere aktarılır.' : 'Review the invoice, then import. On import, a customer will be created if needed and the invoice will be imported to expenses.'}
+              </p>
+
+              {/* Fatura görüntüleme (HTML) */}
+              <div className="rounded-lg border bg-white overflow-hidden shrink-0" style={{ minHeight: 320 }}>
+                {viewingIncomingHtmlLoading && (
+                  <div className="flex items-center justify-center py-16 text-gray-500">
+                    <Loader2 className="h-8 w-8 animate-spin mr-2" />
+                    <span>{language === 'tr' ? 'Fatura yükleniyor…' : 'Loading invoice…'}</span>
+                  </div>
+                )}
+                {viewingIncomingHtmlError && !viewingIncomingHtmlLoading && (
+                  <div className="p-4 text-sm text-destructive bg-destructive/10 rounded-lg">
+                    {viewingIncomingHtmlError}
+                  </div>
+                )}
+                {viewingIncomingHtml && !viewingIncomingHtmlLoading && (
+                  <iframe
+                    title={language === 'tr' ? 'Fatura önizleme' : 'Invoice preview'}
+                    srcDoc={viewingIncomingHtml}
+                    className="w-full border-0 rounded-lg"
+                    style={{ minHeight: 380, height: 420 }}
+                    sandbox="allow-same-origin"
+                  />
+                )}
+                {!viewingIncomingHtml && !viewingIncomingHtmlLoading && !viewingIncomingHtmlError && viewingIncomingDoc.ettn && (
+                  <div className="flex items-center justify-center py-16 text-gray-500 text-sm">
+                    {language === 'tr' ? 'Fatura içeriği alınamıyor.' : 'Invoice content unavailable.'}
+                  </div>
+                )}
+              </div>
+
+              {/* Fatura detayları */}
+              <div className="rounded-lg border bg-muted/30 p-4 space-y-3 shrink-0">
+                <h4 className="text-sm font-semibold text-gray-900">
+                  {language === 'tr' ? 'Fatura detayları' : 'Invoice details'}
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3 text-sm">
+                  <div>
+                    <p className="text-xs font-medium text-gray-500">{tr.invoiceNumber}</p>
+                    <p className="font-medium text-gray-900">{viewingIncomingDoc.invoice_number || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500">{language === 'tr' ? 'ETTN / UUID' : 'ETTN / UUID'}</p>
+                    <p className="font-medium text-gray-900 break-all">{viewingIncomingDoc.ettn || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500">{language === 'tr' ? 'Düzenleme Tarihi' : 'Issue Date'}</p>
+                    <p className="font-medium text-gray-900">{formatEdocDate(viewingIncomingDoc.issue_date, language)}</p>
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <p className="text-xs font-medium text-gray-500">{tr.senderTitle}</p>
+                    <p className="font-medium text-gray-900">{viewingIncomingDoc.sender_title || '—'}</p>
+                    {viewingIncomingDoc.sender_vkn && <p className="text-xs text-gray-500">VKN: {viewingIncomingDoc.sender_vkn}</p>}
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500">{tr.receiverTitle}</p>
+                    <p className="font-medium text-gray-900">{viewingIncomingDoc.receiver_title || '—'}</p>
+                    {viewingIncomingDoc.receiver_vkn && <p className="text-xs text-gray-500">VKN: {viewingIncomingDoc.receiver_vkn}</p>}
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500">{language === 'tr' ? 'Ara toplam' : 'Subtotal'}</p>
+                    <p className="font-medium text-gray-900">
+                      ₺{(Number(viewingIncomingDoc.subtotal ?? 0) || 0).toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500">{language === 'tr' ? 'KDV toplamı' : 'VAT total'}</p>
+                    <p className="font-medium text-gray-900">
+                      ₺{(Number(viewingIncomingDoc.tax_total ?? 0) || 0).toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500">{tr.grandTotal}</p>
+                    <p className="text-base font-semibold text-[#0A2540]">
+                      ₺{(viewingIncomingDoc.grand_total || (Number(viewingIncomingDoc.subtotal ?? 0) + Number(viewingIncomingDoc.tax_total ?? 0)) || 0).toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500">{language === 'tr' ? 'Belge tipi' : 'Document type'}</p>
+                    <p className="font-medium text-gray-900">{viewingIncomingDoc.document_type === 'earsiv' ? tr.earsiv : tr.efatura}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500">{language === 'tr' ? 'Durum' : 'Status'}</p>
+                    <p className="font-medium text-gray-900">{getEdocStatusLabel(viewingIncomingDoc.status, language)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-gray-500">{language === 'tr' ? 'İçe aktarıldı' : 'Imported'}</p>
+                    <p className="font-medium text-gray-900">
+                      {viewingIncomingDoc.transferred || viewingIncomingDoc.status === 'transferred' || viewingIncomingDoc.local_purchase_invoice_id
+                        ? (language === 'tr' ? 'Evet' : 'Yes')
+                        : (language === 'tr' ? 'Hayır' : 'No')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 pt-2 shrink-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setViewingIncomingDoc(null);
+                    setViewingIncomingHtml(null);
+                    setViewingIncomingHtmlError(null);
+                  }}
+                >
+                  {language === 'tr' ? 'Kapat' : 'Close'}
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="bg-[#0A2540] hover:bg-[#1e3a5f]"
+                  disabled={!!importingEdocId || !!viewingIncomingDoc.transferred || viewingIncomingDoc.status === 'transferred' || isEdocProcessCompleted(viewingIncomingDoc.status)}
+                  onClick={() => handleImportToPurchase(viewingIncomingDoc, true)}
+                >
+                  {importingEdocId === viewingIncomingDoc.id ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> : <Download className="h-3.5 w-3.5 mr-1.5" />}
+                  {tr.importToPurchaseButton}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   )
 }

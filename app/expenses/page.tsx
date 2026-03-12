@@ -216,10 +216,7 @@ export default function ExpensesPage() {
 
     const { data, error } = await supabase
       .from('purchase_invoices')
-      .select(`
-        *,
-        supplier:customers!purchase_invoices_supplier_id_fkey(company_title, name)
-      `)
+      .select('*, supplier:customers(company_title, name)')
       .eq('tenant_id', tenantId)
       .order('invoice_date', { ascending: false })
 
@@ -712,36 +709,46 @@ export default function ExpensesPage() {
                             {invoice.status === 'rejected' && <Badge variant="destructive">{t.expenses.rejected}</Badge>}
                           </TableCell>
                           <TableCell className="align-middle">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                               <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm" className="bg-slate-100 hover:bg-slate-200 text-slate-800" aria-label={t.common.actions}>
+                                  <Button type="button" variant="ghost" size="sm" className="bg-slate-100 hover:bg-slate-200 text-slate-800" aria-label={t.common.actions}>
                                     <MoreVertical className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => router.push(`/expenses/incoming/${invoice.id}`)}>
+                                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                  <DropdownMenuItem
+                                    onSelect={() => {
+                                      const path = `/expenses/incoming/${invoice.id}`
+                                      setTimeout(() => router.push(path), 50)
+                                    }}
+                                  >
                                     <Eye className="h-4 w-4 mr-2" />
                                     {t.common.view}
                                   </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => router.push(`/expenses/incoming/${invoice.id}?mode=edit`)}>
+                                  <DropdownMenuItem
+                                    onSelect={() => {
+                                      const path = `/expenses/incoming/${invoice.id}?mode=edit`
+                                      setTimeout(() => router.push(path), 50)
+                                    }}
+                                  >
                                     <Pencil className="h-4 w-4 mr-2" />
                                     {t.common.edit}
                                   </DropdownMenuItem>
                                   {invoice.status === 'pending' && (
                                     <>
-                                      <DropdownMenuItem onClick={() => handleAcceptInvoice(invoice.id)} className="text-green-600">
+                                      <DropdownMenuItem onSelect={() => handleAcceptInvoice(invoice.id)} className="text-green-600">
                                         <CheckCircle2 className="h-4 w-4 mr-2" />
                                         {t.common.accepted}
                                       </DropdownMenuItem>
-                                      <DropdownMenuItem onClick={() => handleRejectInvoice(invoice.id)} className="text-red-600">
+                                      <DropdownMenuItem onSelect={() => handleRejectInvoice(invoice.id)} className="text-red-600">
                                         <XCircle className="h-4 w-4 mr-2" />
                                         {t.common.rejected}
                                       </DropdownMenuItem>
                                     </>
                                   )}
                                   <DropdownMenuItem
-                                    onClick={() => { setPurchaseToDelete(invoice.id); setIsDeletePurchaseDialogOpen(true) }}
+                                    onSelect={() => { setPurchaseToDelete(invoice.id); setIsDeletePurchaseDialogOpen(true) }}
                                     className="text-red-600"
                                   >
                                     <Trash2 className="h-4 w-4 mr-2" />

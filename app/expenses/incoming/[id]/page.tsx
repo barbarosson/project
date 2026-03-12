@@ -76,7 +76,8 @@ export default function IncomingInvoiceDetailPage() {
   const params = useParams()
   const searchParams = useSearchParams()
   const router = useRouter()
-  const id = params?.id as string | undefined
+  const rawId = params?.id
+  const id = typeof rawId === 'string' ? rawId : Array.isArray(rawId) ? rawId[0] : undefined
   const mode = searchParams?.get('mode') // 'edit' | null (view)
   const { tenantId } = useTenant()
   const { formatCurrency } = useCurrency()
@@ -88,33 +89,23 @@ export default function IncomingInvoiceDetailPage() {
   const [notFound, setNotFound] = useState(false)
 
   useEffect(() => {
-    if (!tenantId || !id) {
-      if (!id) setNotFound(true)
+    if (!id) {
+      setNotFound(true)
       setLoading(false)
       return
     }
+    if (!tenantId) return
     let cancelled = false
+    setLoading(true)
+    setNotFound(false)
     ;(async () => {
       const [invRes, linesRes] = await Promise.all([
         supabase
           .from('purchase_invoices')
-          .select(`
-            id,
-            supplier_id,
-            invoice_number,
-            invoice_date,
-            due_date,
-            subtotal,
-            tax_amount,
-            total_amount,
-            status,
-            invoice_type,
-            supplier_display_name,
-            supplier:customers!purchase_invoices_supplier_id_fkey(company_title, name)
-          `)
+          .select('id, supplier_id, invoice_number, invoice_date, due_date, subtotal, tax_amount, total_amount, status, invoice_type, supplier_display_name, supplier:customers(company_title, name)')
           .eq('tenant_id', tenantId)
           .eq('id', id)
-          .single(),
+          .maybeSingle(),
         supabase
           .from('purchase_invoice_line_items')
           .select('id, description, quantity, unit_price, tax_rate, tax_amount, total')

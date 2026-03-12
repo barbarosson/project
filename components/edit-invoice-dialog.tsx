@@ -591,6 +591,9 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="proforma">{language === 'tr' ? 'Proforma faturası oluştur' : 'Create Proforma invoice'}</SelectItem>
+                  <SelectItem value="perakende">{language === 'tr' ? 'Perakende faturası oluştur' : 'Create Retail invoice'}</SelectItem>
+                  <SelectItem value="konaklama_ver">{language === 'tr' ? 'Konaklama Ver. faturası oluştur' : 'Create Accommodation Tax invoice'}</SelectItem>
                   <SelectItem value="sale">{language === 'tr' ? 'Satış' : 'Sale'}</SelectItem>
                   <SelectItem value="sale_return">{language === 'tr' ? 'Satıştan İade' : 'Sale Return'}</SelectItem>
                   <SelectItem value="devir">{language === 'tr' ? 'Devir' : 'Carry Forward'}</SelectItem>

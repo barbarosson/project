@@ -73,12 +73,18 @@ const INVOICE_TYPE_LABELS: Record<string, Record<string, string>> = {
   sale_return: { tr: 'Satıştan İade', en: 'Sale Return' },
   devir: { tr: 'Devir', en: 'Carry Forward' },
   devir_return: { tr: 'Devir İade', en: 'Carry Fwd Return' },
+  proforma: { tr: 'Proforma faturası', en: 'Proforma invoice' },
+  perakende: { tr: 'Perakende faturası', en: 'Retail invoice' },
+  konaklama_ver: { tr: 'Konaklama Ver. faturası', en: 'Accommodation Tax invoice' },
 }
 const INVOICE_TYPE_COLORS: Record<string, string> = {
   sale: 'bg-emerald-100 text-emerald-800',
   sale_return: 'bg-orange-100 text-orange-800',
   devir: 'bg-violet-100 text-violet-800',
   devir_return: 'bg-pink-100 text-pink-800',
+  proforma: 'bg-blue-100 text-blue-800',
+  perakende: 'bg-amber-100 text-amber-800',
+  konaklama_ver: 'bg-teal-100 text-teal-800',
 }
 
 export default function InvoicesPage() {
@@ -602,6 +608,9 @@ export default function InvoicesPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">{language === 'tr' ? 'Tüm Tipler' : 'All Types'}</SelectItem>
+                  <SelectItem value="proforma">{INVOICE_TYPE_LABELS.proforma[language]}</SelectItem>
+                  <SelectItem value="perakende">{INVOICE_TYPE_LABELS.perakende[language]}</SelectItem>
+                  <SelectItem value="konaklama_ver">{INVOICE_TYPE_LABELS.konaklama_ver[language]}</SelectItem>
                   <SelectItem value="sale">{language === 'tr' ? 'Satış' : 'Sale'}</SelectItem>
                   <SelectItem value="sale_return">{language === 'tr' ? 'Satıştan İade' : 'Sale Return'}</SelectItem>
                   <SelectItem value="devir">{language === 'tr' ? 'Devir' : 'Carry Forward'}</SelectItem>
@@ -784,10 +793,11 @@ export default function InvoicesPage() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button
+                                  type="button"
                                   variant="ghost"
                                   size="sm"
                                   className="bg-slate-100 hover:bg-slate-200 text-slate-800"
@@ -795,13 +805,13 @@ export default function InvoicesPage() {
                                   <MoreVertical className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => router.push(`/invoices/${invoice.id}`)}>
+                              <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                                <DropdownMenuItem onSelect={() => router.push(`/invoices/${invoice.id}`)}>
                                   <Eye className="h-4 w-4 mr-2" />
                                   {t.invoices.view}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() => handleCopyInvoice(invoice)}
+                                  onSelect={() => handleCopyInvoice(invoice)}
                                   disabled={!!copyingInvoiceId}
                                 >
                                   {copyingInvoiceId === invoice.id ? (
@@ -815,18 +825,18 @@ export default function InvoicesPage() {
                                   invoice.status !== 'cancelled' &&
                                   invoice.status !== 'draft' &&
                                   Number(invoice.remaining_amount ?? 0) > 0.01 && (
-                                    <DropdownMenuItem onClick={() => handleRecordPayment(invoice)} className="text-green-600">
+                                    <DropdownMenuItem onSelect={() => handleRecordPayment(invoice)} className="text-green-600">
                                       <DollarSign className="h-4 w-4 mr-2" />
                                       {t.invoices.recordPayment}
                                     </DropdownMenuItem>
                                   )}
-                                <DropdownMenuItem onClick={() => handleEdit(invoice)}>
+                                <DropdownMenuItem onSelect={() => handleEdit(invoice)}>
                                   <Edit className="h-4 w-4 mr-2" />
                                   {t.invoices.edit}
                                 </DropdownMenuItem>
-                                {invoice.status !== 'sent' && (
+                                {invoice.status !== 'sent' && (invoice.invoice_type || 'sale') !== 'proforma' && (
                                   <DropdownMenuItem
-                                    onClick={() => handleSendEInvoice(invoice)}
+                                    onSelect={() => handleSendEInvoice(invoice)}
                                     disabled={!!sendingEInvoiceId}
                                   >
                                     {sendingEInvoiceId === invoice.id ? (
@@ -837,17 +847,16 @@ export default function InvoicesPage() {
                                     {t.invoices.sendEInvoice}
                                   </DropdownMenuItem>
                                 )}
-                                <DropdownMenuItem onClick={() => handleViewInvoicePdf(invoice)}>
+                                <DropdownMenuItem onSelect={() => handleViewInvoicePdf(invoice)}>
                                   <FileText className="h-4 w-4 mr-2" />
                                   {t.invoices.viewInvoicePdf}
                                 </DropdownMenuItem>
                                 {invoiceEdocs[invoice.id] && (
                                   <DropdownMenuItem
-                                    onClick={async () => {
+                                    onSelect={() => {
                                       const edoc = invoiceEdocs[invoice.id]
                                       if (!tenantId || !edoc?.ettn) return
-                                      try {
-                                        const raw = await getInvoiceXml(tenantId, edoc.ettn, 'outgoing')
+                                      getInvoiceXml(tenantId, edoc.ettn, 'outgoing').then((raw) => {
                                         const xml =
                                           typeof raw === 'string'
                                             ? raw
@@ -866,21 +875,21 @@ export default function InvoicesPage() {
                                             w.document.close()
                                           }
                                         } else toast.error(language === 'tr' ? 'XML alınamadı' : 'XML not found')
-                                      } catch (err: any) {
-                                        toast.error(err?.message || (language === 'tr' ? 'XML açılamadı' : 'Failed to open XML'))
-                                      }
+                                      }).catch((err: unknown) => {
+                                        toast.error(err instanceof Error ? err.message : (language === 'tr' ? 'XML açılamadı' : 'Failed to open XML'))
+                                      })
                                     }}
                                   >
                                     <FileText className="h-4 w-4 mr-2" />
                                     {language === 'tr' ? 'XML Göster' : 'View XML'}
                                   </DropdownMenuItem>
                                 )}
-                                <DropdownMenuItem onClick={() => handleViewEdocStatus(invoice)}>
+                                <DropdownMenuItem onSelect={() => handleViewEdocStatus(invoice)}>
                                   <FileCheck2 className="h-4 w-4 mr-2" />
                                   {t.invoices.viewEdocStatus}
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() => handleDelete(invoice)}
+                                  onSelect={() => handleDelete(invoice)}
                                   className="text-red-600"
                                   disabled={Number(invoice.paid_amount ?? 0) > 0.01}
                                   title={Number(invoice.paid_amount ?? 0) > 0.01 ? t.invoices.cannotDeleteInvoiceWithPayments : undefined}

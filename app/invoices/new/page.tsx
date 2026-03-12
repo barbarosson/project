@@ -58,6 +58,7 @@ interface LineItem {
   oiv?: number
   oiv_type?: 'percent' | 'amount'
   accommodation_tax?: number
+  accommodation_tax_type?: 'percent' | 'amount'
   export_code?: string | null
   withholding_reason_code?: string | null
 }
@@ -129,6 +130,7 @@ export default function NewInvoicePage() {
       oiv: 0,
       oiv_type: 'percent',
       accommodation_tax: 0,
+      accommodation_tax_type: 'amount',
       export_code: null,
       withholding_reason_code: null,
     }
@@ -204,6 +206,15 @@ export default function NewInvoicePage() {
     }
   }, [effectiveCustomerId, issueDate, customers, subBranches])
 
+  function applyKonaklamaVerDefault() {
+    setLineItems((prev) =>
+      prev.map((item) => {
+        const updated = { ...item, accommodation_tax: 2, accommodation_tax_type: 'percent' as const }
+        return calculateLineItem(updated)
+      })
+    )
+  }
+
   function calculateLineItem(item: LineItem): LineItem {
     const raw_total = item.quantity * item.unit_price
     const discountVal = Number(item.discount ?? 0) || 0
@@ -219,7 +230,8 @@ export default function NewInvoicePage() {
     const otvAmount = item.otv_type === 'amount' ? otvVal : line_total * (otvVal / 100)
     const oivVal = Number(item.oiv ?? 0) || 0
     const oivAmount = item.oiv_type === 'amount' ? oivVal : line_total * (oivVal / 100)
-    const accomVal = Number(item.accommodation_tax ?? 0) || 0
+    const accomRateOrAmount = Number(item.accommodation_tax ?? 0) || 0
+    const accomVal = item.accommodation_tax_type === 'percent' ? line_total * (accomRateOrAmount / 100) : accomRateOrAmount
     total_with_vat = Math.round((total_with_vat + otvAmount + oivAmount + accomVal) * 100) / 100
 
     let withholding_amount = 0
@@ -269,7 +281,8 @@ export default function NewInvoicePage() {
         otv_type: 'percent',
         oiv: 0,
         oiv_type: 'percent',
-        accommodation_tax: 0,
+        accommodation_tax: invoiceType === 'konaklama_ver' ? 2 : 0,
+        accommodation_tax_type: invoiceType === 'konaklama_ver' ? 'percent' : 'amount',
         export_code: null,
         withholding_reason_code: null,
       }
@@ -383,7 +396,9 @@ export default function NewInvoicePage() {
         otv_type: item.otv_type ?? 'percent',
         oiv: item.oiv ?? 0,
         oiv_type: item.oiv_type ?? 'percent',
-        accommodation_tax: item.accommodation_tax ?? 0,
+        accommodation_tax: item.accommodation_tax_type === 'percent'
+          ? Math.round((item.line_total * (item.accommodation_tax ?? 0) / 100) * 100) / 100
+          : (item.accommodation_tax ?? 0),
         export_code: item.export_code || null,
         withholding_reason_code: item.withholding_reason_code || null,
         withholding_ratio: item.withholding_ratio || null,
@@ -506,6 +521,7 @@ export default function NewInvoicePage() {
               <Save className="mr-2 h-4 w-4" />
               {loading && !sendingEInvoice ? t.common.adding : t.invoices.saveInvoice}
             </Button>
+            {invoiceType !== 'proforma' && (
             <Button
               variant="secondary"
               onClick={() => saveInvoice(true)}
@@ -515,6 +531,7 @@ export default function NewInvoicePage() {
               {loading && sendingEInvoice ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
               {loading && sendingEInvoice ? (language === 'tr' ? 'Gönderiliyor…' : 'Sending…') : (language === 'tr' ? 'Kaydet ve E-Fatura Gönder' : 'Save and Send E-Invoice')}
             </Button>
+            )}
           </div>
         </div>
 
@@ -523,6 +540,30 @@ export default function NewInvoicePage() {
             <CardTitle className="text-2xl font-semibold leading-none tracking-tight text-gray-900">{t.invoices.invoiceDetails}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="space-y-2 rounded-lg border p-4 bg-muted/30">
+              <Label htmlFor="invoice_type" data-field="new-invoice-type-label" className="cursor-text select-text">{language === 'tr' ? 'Fatura Tipi' : 'Invoice Type'} *</Label>
+              <Select
+                value={invoiceType}
+                onValueChange={(value) => {
+                  setInvoiceType(value)
+                  if (value === 'konaklama_ver') applyKonaklamaVerDefault()
+                }}
+              >
+                <SelectTrigger id="invoice_type" data-field="new-invoice-type" data-testid="new-invoice-type-trigger" className="max-w-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sale">{language === 'tr' ? 'Satış' : 'Sale'}</SelectItem>
+                  <SelectItem value="proforma">{language === 'tr' ? 'Proforma faturası oluştur' : 'Create Proforma invoice'}</SelectItem>
+                  <SelectItem value="perakende">{language === 'tr' ? 'Perakende faturası oluştur' : 'Create Retail invoice'}</SelectItem>
+                  <SelectItem value="konaklama_ver">{language === 'tr' ? 'Konaklama Ver. faturası oluştur' : 'Create Accommodation Tax invoice'}</SelectItem>
+                  <SelectItem value="sale_return">{language === 'tr' ? 'Satıştan İade' : 'Sale Return'}</SelectItem>
+                  <SelectItem value="devir">{language === 'tr' ? 'Devir' : 'Carry Forward'}</SelectItem>
+                  <SelectItem value="devir_return">{language === 'tr' ? 'Devir İade' : 'Carry Fwd Return'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-4 rounded-lg border p-4 bg-muted/30">
               <div className="space-y-2" data-field="new-invoice-customer" data-testid="new-invoice-customer">
                 <Label htmlFor="customer" data-field="new-invoice-customer-label" className="cursor-text select-text">{t.invoices.customer} *</Label>
@@ -568,21 +609,6 @@ export default function NewInvoicePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2" data-field="new-invoice-type" data-testid="new-invoice-type">
-                <Label htmlFor="invoice_type" data-field="new-invoice-type-label" className="cursor-text select-text">{language === 'tr' ? 'Fatura Tipi' : 'Invoice Type'}</Label>
-                <Select value={invoiceType} onValueChange={setInvoiceType}>
-                  <SelectTrigger id="invoice_type" data-field="new-invoice-type" data-testid="new-invoice-type-trigger">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sale">{language === 'tr' ? 'Satış' : 'Sale'}</SelectItem>
-                    <SelectItem value="sale_return">{language === 'tr' ? 'Satıştan İade' : 'Sale Return'}</SelectItem>
-                    <SelectItem value="devir">{language === 'tr' ? 'Devir' : 'Carry Forward'}</SelectItem>
-                    <SelectItem value="devir_return">{language === 'tr' ? 'Devir İade' : 'Carry Fwd Return'}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
               <div className="space-y-2" data-field="new-invoice-currency" data-testid="new-invoice-currency">
                 <Label htmlFor="currency" data-field="new-invoice-currency-label" className="cursor-text select-text">{language === 'tr' ? 'Para Birimi' : 'Currency'}</Label>
                 <Select value={currency} onValueChange={setCurrency}>
@@ -1040,6 +1066,11 @@ export default function NewInvoicePage() {
                             </div>
                             <div className="rounded-lg border-2 border-gray-200 bg-white p-2 space-y-1">
                               <Label className="text-[15px] font-semibold text-gray-800 block">{language === 'tr' ? 'Konaklama Vergisi' : 'Accom. Tax'}</Label>
+                              {invoiceType === 'konaklama_ver' && (
+                                <p className="text-xs text-muted-foreground">
+                                  {language === 'tr' ? 'Oran %2, KDV hariç konaklama bedeli üzerinden hesaplanır.' : 'Rate 2%, calculated on accommodation amount excluding VAT.'}
+                                </p>
+                              )}
                               <div className="flex items-center gap-1.5">
                                 <Input
                                   type="number"
@@ -1049,6 +1080,7 @@ export default function NewInvoicePage() {
                                   value={item.accommodation_tax ? item.accommodation_tax : ''}
                                   onChange={(e) => updateLineItem(index, 'accommodation_tax', parseFloat(e.target.value) || 0)}
                                 />
+                                {item.accommodation_tax_type === 'percent' && <span className="text-gray-800 text-[15px] font-semibold">%</span>}
                               </div>
                             </div>
                             <div className="rounded-lg border-2 border-gray-200 bg-white p-2 space-y-1">

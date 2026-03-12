@@ -45,6 +45,7 @@ interface Invoice {
   subtotal: number
   total_vat: number
   status: string
+  invoice_type?: string
   currency?: string
   issue_date: string
   due_date: string
@@ -310,7 +311,7 @@ export default function InvoiceDetailPage() {
               {copying ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Copy className="mr-2 h-4 w-4" />}
               {language === 'tr' ? 'Kopyala' : 'Copy'}
             </Button>
-            {invoice.status !== 'sent' && (
+            {invoice.status !== 'sent' && (invoice.invoice_type || 'sale') !== 'proforma' && (
               <Button
                 variant="outline"
                 disabled={sendingEInvoice}
