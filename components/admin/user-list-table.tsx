@@ -17,7 +17,18 @@ import {
   Users as UsersIcon,
   Package,
   Receipt,
+  Pencil,
+  UserX,
+  Key,
+  Eye,
 } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { ModulusUcNoktaButton } from '@/components/ui/card-menu-button';
 
 interface UserProfile {
   id: string;
@@ -30,6 +41,7 @@ interface UserProfile {
   last_sign_in_at: string | null;
   phone: string | null;
   company_name: string | null;
+  membership_plan?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -47,7 +59,10 @@ interface UserListTableProps {
   users: UserProfile[];
   usageStats: UsageStats;
   loading: boolean;
-  onUserSelect: (user: UserProfile) => void;
+  onViewUser: (user: UserProfile) => void;
+  onEditUser: (user: UserProfile) => void;
+  onToggleActive: (user: UserProfile) => void;
+  onResetPassword: (user: UserProfile) => void;
 }
 
 function getInitials(name: string | null, email: string) {
@@ -84,7 +99,10 @@ export function UserListTable({
   users,
   usageStats,
   loading,
-  onUserSelect,
+  onViewUser,
+  onEditUser,
+  onToggleActive,
+  onResetPassword,
 }: UserListTableProps) {
   if (loading) {
     return (
@@ -121,9 +139,11 @@ export function UserListTable({
             <TableHead className="w-[280px]">Kullanici</TableHead>
             <TableHead>Rol</TableHead>
             <TableHead>Durum</TableHead>
+            <TableHead>Uyelik Paketi</TableHead>
             <TableHead>Kullanim</TableHead>
             <TableHead>Kayit Tarihi</TableHead>
             <TableHead>Son Giris</TableHead>
+            <TableHead className="w-[56px]" />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -137,7 +157,7 @@ export function UserListTable({
               <TableRow
                 key={u.id}
                 className="cursor-pointer hover:bg-muted/50 transition-colors"
-                onClick={() => onUserSelect(u)}
+                onClick={() => onViewUser(u)}
               >
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -158,6 +178,11 @@ export function UserListTable({
                 </TableCell>
                 <TableCell>{getRoleBadge(u.role)}</TableCell>
                 <TableCell>{getStatusBadge(u.is_active)}</TableCell>
+                <TableCell>
+                  <span className="text-sm">
+                    {u.membership_plan || '-'}
+                  </span>
+                </TableCell>
                 <TableCell>
                   {stats ? (
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
@@ -193,6 +218,31 @@ export function UserListTable({
                       ? format(new Date(u.last_sign_in_at), 'dd.MM.yyyy HH:mm')
                       : '-'}
                   </span>
+                </TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <ModulusUcNoktaButton aria-label="Kullanici islemleri" title="Kullanici islemleri" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onViewUser(u)}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        Goruntule
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onEditUser(u)}>
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Duzenle
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onResetPassword(u)}>
+                        <Key className="h-4 w-4 mr-2" />
+                        Sifre Sifirla
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => onToggleActive(u)}>
+                        <UserX className="h-4 w-4 mr-2" />
+                        {u.is_active ? 'Inaktif Yap' : 'Aktif Yap'}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             );

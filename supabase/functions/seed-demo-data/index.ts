@@ -34,6 +34,18 @@ function shortId(): string {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
+function isServiceRoleJwt(token: string): boolean {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return false;
+    const payload = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const decoded = JSON.parse(atob(payload));
+    return decoded?.role === "service_role";
+  } catch {
+    return false;
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -47,9 +59,24 @@ Deno.serve(async (req: Request) => {
       return respond({ error: "Missing authorization header" }, 401);
     }
 
-    const token = authHeader.replace("Bearer ", "");
+    const token = authHeader.replace("Bearer ", "").trim();
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseServiceKey = (Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "").trim();
+
+    const body = await req.json().catch(() => ({}));
+    const tenant_id = typeof body.tenant_id === "string" ? body.tenant_id.trim() : "";
+
+    if (!tenant_id) {
+      return respond({ error: "tenant_id is required" }, 400);
+    }
+
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(tenant_id)) {
+      return respond(
+        { error: "tenant_id must be a valid UUID", detail: "Invalid tenant_id format", steps },
+        400
+      );
+    }
 
     const db = createClient(supabaseUrl, supabaseServiceKey, {
       auth: { autoRefreshToken: false, persistSession: false },
@@ -57,52 +84,66 @@ Deno.serve(async (req: Request) => {
 
     steps.push("service client created");
 
-    const {
-      data: { user },
-      error: authError,
-    } = await db.auth.admin.getUserById(
-      (
-        await createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-          global: { headers: { Authorization: `Bearer ${token}` } },
-        }).auth.getUser(token)
-      ).data.user?.id || ""
-    );
+    // Service-role invocation: JWT has role "service_role" (from Next.js API) or exact key match
+    const isServiceRole =
+      (token.length > 100 && isServiceRoleJwt(token)) ||
+      (supabaseServiceKey && token === supabaseServiceKey);
+    if (isServiceRole) {
+      steps.push("service-role invocation, tenant_id: " + tenant_id);
+    } else {
+      const anonClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+      });
+      const { data: tokenData, error: tokenError } = await anonClient.auth.getUser(token);
+      const callerUserId = tokenData?.user?.id ?? null;
 
-    if (authError || !user) {
-      return respond(
-        { error: "Invalid token", detail: authError?.message },
-        401
-      );
-    }
+      if (tokenError || !callerUserId) {
+        steps.push("getUser failed: " + (tokenError?.message ?? "no user"));
+        return respond(
+          {
+            error: "Invalid or expired token",
+            detail: tokenError?.message ?? "Could not resolve user from token",
+            steps,
+          },
+          401
+        );
+      }
 
-    steps.push("user verified: " + user.id);
+      const {
+        data: { user },
+        error: authError,
+      } = await db.auth.admin.getUserById(callerUserId);
 
-    const { data: callerProfile } = await db
-      .from("profiles")
-      .select("role, tenant_id")
-      .eq("id", user.id)
-      .maybeSingle();
+      if (authError || !user) {
+        steps.push("getUserById failed: " + (authError?.message ?? "no user"));
+        return respond(
+          { error: "Invalid token", detail: authError?.message, steps },
+          401
+        );
+      }
 
-    steps.push("profile: " + JSON.stringify(callerProfile));
+      steps.push("user verified: " + user.id);
 
-    if (
-      !callerProfile ||
-      (callerProfile.role !== "admin" && callerProfile.role !== "super_admin")
-    ) {
-      return respond(
-        {
-          error: "Insufficient permissions",
-          detail: `Role: ${callerProfile?.role || "none"}`,
-        },
-        403
-      );
-    }
+      const { data: callerProfile } = await db
+        .from("profiles")
+        .select("role, tenant_id")
+        .eq("id", user.id)
+        .maybeSingle();
 
-    const body = await req.json();
-    const tenant_id = body.tenant_id;
+      steps.push("profile: " + JSON.stringify(callerProfile));
 
-    if (!tenant_id) {
-      return respond({ error: "tenant_id is required" }, 400);
+      if (
+        !callerProfile ||
+        (callerProfile.role !== "admin" && callerProfile.role !== "super_admin")
+      ) {
+        return respond(
+          {
+            error: "Insufficient permissions",
+            detail: `Role: ${callerProfile?.role || "none"}`,
+          },
+          403
+        );
+      }
     }
 
     steps.push("tenant_id: " + tenant_id);

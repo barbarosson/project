@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { supabase } from '@/lib/supabase';
 import {
@@ -43,6 +43,7 @@ import {
   Loader2,
   Database,
   Pencil,
+  Copy,
 } from 'lucide-react';
 import { EditUserDialog } from '@/components/admin/edit-user-dialog';
 
@@ -57,6 +58,7 @@ interface UserProfile {
   last_sign_in_at: string | null;
   phone: string | null;
   company_name: string | null;
+   membership_plan?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -73,6 +75,7 @@ interface UserDetailSheetProps {
   usageStats?: UsageStatsData;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialAction?: 'view' | 'edit' | 'resetPassword' | 'toggleActive' | null;
   onUserUpdated: () => void;
 }
 
@@ -81,6 +84,7 @@ export function UserDetailSheet({
   usageStats,
   open,
   onOpenChange,
+  initialAction,
   onUserUpdated,
 }: UserDetailSheetProps) {
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
@@ -90,6 +94,17 @@ export function UserDetailSheet({
   const [saving, setSaving] = useState(false);
   const [seeding, setSeeding] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open || !initialAction) return;
+    if (initialAction === 'edit') {
+      setEditDialogOpen(true);
+    } else if (initialAction === 'resetPassword') {
+      setPasswordDialogOpen(true);
+    } else if (initialAction === 'toggleActive') {
+      setStatusDialogOpen(true);
+    }
+  }, [initialAction, open]);
 
   if (!user) return null;
 
@@ -196,28 +211,43 @@ export function UserDetailSheet({
     try {
       setSeeding(true);
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) return;
+      if (!session?.access_token) {
+        toast.error('Oturum bulunamadi. Lutfen giris yapin.');
+        return;
+      }
 
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const response = await fetch(
-        `${supabaseUrl}/functions/v1/seed-demo-data`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-            Apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-          },
-          body: JSON.stringify({ tenant_id: user.tenant_id }),
-        }
-      );
+      const response = await fetch('/api/admin/seed-demo-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ tenant_id: user.tenant_id }),
+      });
 
-      const result = await response.json();
+      const rawText = await response.text();
+      let result: Record<string, unknown> = {};
+      try {
+        result = rawText ? JSON.parse(rawText) : {};
+      } catch {
+        result = { error: rawText || `HTTP ${response.status}` };
+      }
+
       if (!response.ok) {
-        const detail = result.detail ? ` (${result.detail})` : '';
-        const stepsInfo = result.steps?.length ? ` [Son adim: ${result.steps[result.steps.length - 1]}]` : '';
-        console.error('Demo seed error:', result);
-        throw new Error((result.error || 'Demo veri yukleme basarisiz') + detail + stepsInfo);
+        const msg = (result.message as string) || (result.error as string);
+        const isInvalidJwt = response.status === 401 && (msg?.toLowerCase().includes('invalid jwt') || (result as any).code === 401);
+        if (isInvalidJwt) {
+          throw new Error('Oturum suresi dolmus veya gecersiz. Sayfayi yenileyip tekrar giris yapin, sonra Demo Veri Yukle\'yi tekrar deneyin.');
+        }
+        const errMsg = msg || 'Demo veri yukleme basarisiz';
+        const detail = result.detail ? ` — ${result.detail}` : '';
+        const steps = (result.steps as string[] | undefined);
+        const stepsStr = steps?.length ? ` [Son adimlar: ${steps.slice(-4).join(' → ')}]` : '';
+        const rawSnippet = rawText.slice(0, 200).replace(/\n/g, ' ');
+        console.error(`Demo seed error: HTTP ${response.status}`, rawSnippet);
+        console.error('Demo seed body:', JSON.stringify(result));
+        const statusHint = response.status ? ` (HTTP ${response.status})` : '';
+        throw new Error(errMsg + detail + stepsStr + statusHint);
       }
 
       toast.success(`Demo verileri yuklendi: ${Object.entries(result.results || {}).map(([k, v]) => `${k}: ${v}`).join(', ')}`);
@@ -313,6 +343,17 @@ export function UserDetailSheet({
                 Uyelik Bilgileri
               </h3>
               <div className="space-y-3">
+                {user.membership_plan && (
+                  <div className="flex items-center gap-3">
+                    <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <div className="flex items-center justify-between flex-1">
+                      <span className="text-sm">Uyelik Paketi</span>
+                      <span className="text-sm font-medium">
+                        {user.membership_plan}
+                      </span>
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-center gap-3">
                   <Shield className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div className="flex items-center justify-between flex-1">
@@ -343,11 +384,30 @@ export function UserDetailSheet({
                 {user.tenant_id && (
                   <div className="flex items-center gap-3">
                     <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <div className="flex items-center justify-between flex-1">
+                    <div className="flex items-center justify-between flex-1 min-w-0">
                       <span className="text-sm">Tenant ID</span>
-                      <span className="text-xs font-mono text-muted-foreground">
-                        {user.tenant_id.slice(0, 8)}...
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-mono text-muted-foreground truncate max-w-[140px]" title={user.tenant_id}>
+                          {user.tenant_id.slice(0, 8)}...
+                        </span>
+                        <button
+                          type="button"
+                          className="shrink-0 rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            try {
+                              await navigator.clipboard.writeText(user.tenant_id);
+                              toast.success('Tenant ID panoya kopyalandi');
+                            } catch {
+                              toast.error('Kopyalama basarisiz');
+                            }
+                          }}
+                          aria-label="Tenant ID kopyala"
+                          title="Kopyala"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}

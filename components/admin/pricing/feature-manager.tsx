@@ -21,17 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Save,
-  Search,
-  Check,
-  X,
-  Plus,
-  ArrowUp,
-  ArrowDown,
-  Edit,
-  Trash2,
-} from 'lucide-react';
+import { Save, Search, Plus, X, ArrowUp, ArrowDown, Edit, Trash2, Check } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import type { SubscriptionPlan, PlanFeature, FeatureAssignment } from '@/app/admin/pricing/page';
@@ -360,18 +350,21 @@ export function FeatureManager({ plans, features, assignments, onRefresh }: Feat
         </div>
       </div>
 
-      <Card>
-        <div className="overflow-auto max-h-[calc(100vh-260px)]">
-          <div className="min-w-[900px]">
-            <div className="sticky top-0 z-10 bg-card border-b">
+      <Card className="border-muted">
+        <div className="overflow-auto max-h-[calc(100vh-260px)] rounded-md">
+          <div className="min-w-[900px] text-xs sm:text-sm">
+            <div className="sticky top-0 z-10 bg-card/95 backdrop-blur border-b">
               <div
-                className="grid"
-                style={{ gridTemplateColumns: `280px 48px repeat(${plans.length}, 1fr)` }}
+                className="grid text-[11px] uppercase tracking-wide text-muted-foreground"
+                style={{ gridTemplateColumns: `260px 44px repeat(${plans.length}, minmax(0, 0.5fr))` }}
               >
-                <div className="p-3 font-semibold text-sm">Ozellik</div>
-                <div className="p-3 text-center text-xs text-muted-foreground">Sira</div>
+                <div className="px-3 py-2 font-semibold text-left text-foreground">Ozellik</div>
+                <div className="px-2 py-2 text-center">Sira</div>
                 {plans.map((plan) => (
-                  <div key={plan.id} className="p-3 text-center font-semibold text-sm border-l">
+                  <div
+                    key={plan.id}
+                    className="px-2 py-2 text-center font-semibold text-foreground border-l"
+                  >
                     {plan.name}
                   </div>
                 ))}
@@ -395,13 +388,17 @@ export function FeatureManager({ plans, features, assignments, onRefresh }: Feat
                   return (
                     <div
                       key={feature.id}
-                      className="grid border-b hover:bg-muted/20 transition-colors"
-                      style={{ gridTemplateColumns: `280px 48px repeat(${plans.length}, 1fr)` }}
+                      className="grid border-b hover:bg-muted/30 transition-colors min-h-8"
+                      style={{ gridTemplateColumns: `220px 36px repeat(${plans.length}, minmax(0, 0.4fr))` }}
                     >
-                      <div className="p-2 px-3 flex items-center gap-2 group">
-                        <div className="flex-1 min-w-0">
-                          <span className="text-sm font-medium block truncate">{feature.name_tr}</span>
-                          <span className="text-xs text-muted-foreground">{feature.feature_key}</span>
+                      <div className="py-1 pl-2 pr-1.5 flex items-center gap-1.5 group">
+                        <div className="flex-1 min-w-0 space-y-0.5">
+                          <span className="text-sm font-medium block truncate">
+                            {feature.name_tr}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground truncate">
+                            {feature.feature_key}
+                          </span>
                         </div>
                         <div className="hidden group-hover:flex items-center gap-0.5 shrink-0">
                           <button
@@ -419,7 +416,7 @@ export function FeatureManager({ plans, features, assignments, onRefresh }: Feat
                         </div>
                       </div>
 
-                      <div className="p-1 flex flex-col items-center justify-center gap-0.5">
+                      <div className="px-1 py-0.5 flex flex-col items-center justify-center gap-0.5">
                         <button
                           onClick={() => handleMoveFeature(feature, 'up')}
                           disabled={posInCat === 0}
@@ -441,34 +438,20 @@ export function FeatureManager({ plans, features, assignments, onRefresh }: Feat
                         const hasChange = localChanges.has(getKey(plan.id, feature.id));
 
                         return (
-                          <div
+                          <button
                             key={plan.id}
-                            className={`p-2 flex flex-col items-center justify-center gap-1 border-l ${
-                              hasChange ? 'bg-amber-50 dark:bg-amber-950/30' : ''
+                            type="button"
+                            onClick={() => toggleFeature(plan.id, feature.id)}
+                            className={`px-1.5 py-1.5 flex items-center justify-center border-l focus:outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-[1px] focus-visible:ring-offset-background ${
+                              hasChange ? 'bg-emerald-50/60 dark:bg-emerald-950/40' : ''
                             }`}
                           >
-                            <button
-                              onClick={() => toggleFeature(plan.id, feature.id)}
-                              className={`w-7 h-7 rounded-md flex items-center justify-center transition-colors ${
-                                enabled
-                                  ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                                  : 'bg-gray-200 dark:bg-gray-700 text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-600'
-                              }`}
-                            >
-                              {enabled ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />}
-                            </button>
-
-                            {feature.is_limit && enabled && (
-                              <Input
-                                value={getLimitValue(plan.id, feature.id)}
-                                onChange={(e) =>
-                                  setLimitInputValue(plan.id, feature.id, e.target.value)
-                                }
-                                className="h-6 w-20 text-xs text-center"
-                                placeholder="Limit"
-                              />
+                            {enabled ? (
+                              <Check className="h-5 w-5 text-emerald-500" />
+                            ) : (
+                              <X className="h-5 w-5 text-red-500" />
                             )}
-                          </div>
+                          </button>
                         );
                       })}
                     </div>

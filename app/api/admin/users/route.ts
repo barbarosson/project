@@ -31,7 +31,9 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: profilesError.message }, { status: 500 });
       }
 
-      const tenantIds = Array.from(new Set((profiles || []).map((p: any) => p.tenant_id).filter(Boolean)));
+      const tenantIds = Array.from(
+        new Set((profiles || []).map((p: any) => p.tenant_id).filter(Boolean))
+      );
 
       let usageStats: Record<string, any> = {};
 
@@ -66,7 +68,31 @@ export async function GET(request: NextRequest) {
         }
       }
 
-      return NextResponse.json({ users: profiles, usageStats });
+      // Fetch membership / subscription info per user
+      const userIds = (profiles || []).map((p: any) => p.id);
+      const membershipByUser: Record<string, string | null> = {};
+
+      if (userIds.length > 0) {
+        const { data: subs, error: subsError } = await authedClient
+          .from('user_subscriptions')
+          .select('user_id, plan_name, status')
+          .in('user_id', userIds);
+
+        if (!subsError && subs) {
+          for (const sub of subs as any[]) {
+            if (sub.status === 'active' && !membershipByUser[sub.user_id]) {
+              membershipByUser[sub.user_id] = sub.plan_name;
+            }
+          }
+        }
+      }
+
+      const usersWithMembership = (profiles || []).map((p: any) => ({
+        ...p,
+        membership_plan: membershipByUser[p.id] || null,
+      }));
+
+      return NextResponse.json({ users: usersWithMembership, usageStats });
     } catch (error) {
       return NextResponse.json(
         { error: 'Failed to fetch users' },

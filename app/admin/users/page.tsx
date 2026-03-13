@@ -37,6 +37,7 @@ interface UserProfile {
   last_sign_in_at: string | null;
   phone: string | null;
   company_name: string | null;
+  membership_plan?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -61,6 +62,9 @@ export default function AdminUsersPage() {
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [addUserOpen, setAddUserOpen] = useState(false);
+  const [initialAction, setInitialAction] = useState<
+    'view' | 'edit' | 'resetPassword' | 'toggleActive' | null
+  >(null);
 
   const fetchUsers = useCallback(async () => {
     try {
@@ -113,8 +117,12 @@ export default function AdminUsersPage() {
     admins: users.filter((u) => u.role === 'admin' || u.role === 'super_admin').length,
   };
 
-  const handleUserSelect = (u: UserProfile) => {
+  const openUserWithAction = (
+    u: UserProfile,
+    action: 'view' | 'edit' | 'resetPassword' | 'toggleActive' | null
+  ) => {
     setSelectedUser(u);
+    setInitialAction(action);
     setSheetOpen(true);
   };
 
@@ -239,7 +247,10 @@ export default function AdminUsersPage() {
             users={filteredUsers}
             usageStats={usageStats}
             loading={loading}
-            onUserSelect={handleUserSelect}
+            onViewUser={(u) => openUserWithAction(u, 'view')}
+            onEditUser={(u) => openUserWithAction(u, 'edit')}
+            onToggleActive={(u) => openUserWithAction(u, 'toggleActive')}
+            onResetPassword={(u) => openUserWithAction(u, 'resetPassword')}
           />
         </CardContent>
       </Card>
@@ -248,7 +259,11 @@ export default function AdminUsersPage() {
         user={selectedUser}
         usageStats={selectedUser?.tenant_id ? usageStats[selectedUser.tenant_id] : undefined}
         open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        onOpenChange={(open) => {
+          setSheetOpen(open);
+          if (!open) setInitialAction(null);
+        }}
+        initialAction={initialAction}
         onUserUpdated={handleUserUpdated}
       />
 

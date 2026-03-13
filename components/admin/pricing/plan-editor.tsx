@@ -9,6 +9,13 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { ModulusUcNoktaButton } from '@/components/ui/card-menu-button';
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -16,13 +23,24 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from '@/components/ui/alert-dialog';
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Edit, Save, X, Star, Zap, Crown, Rocket, Building2 } from 'lucide-react';
+import { Edit, Save, X, Star, Zap, Crown, Rocket, Building2, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import type { SubscriptionPlan } from '@/app/admin/pricing/page';
@@ -102,47 +120,98 @@ export function PlanEditor({ plans, onRefresh }: PlanEditorProps) {
   const [editingPlan, setEditingPlan] = useState<SubscriptionPlan | null>(null);
   const [formData, setFormData] = useState<PlanFormData>(getDefaultFormData());
   const [saving, setSaving] = useState(false);
+  const [planDialogOpen, setPlanDialogOpen] = useState(false);
 
   const openEdit = (plan: SubscriptionPlan) => {
     setEditingPlan(plan);
     setFormData(getDefaultFormData(plan));
+    setPlanDialogOpen(true);
+  };
+
+  const openNew = () => {
+    setEditingPlan(null);
+    setFormData(getDefaultFormData());
+    setPlanDialogOpen(true);
   };
 
   const handleSave = async () => {
-    if (!editingPlan) return;
+    if (!formData.name || !formData.plan_code) {
+      toast.error('Paket adi ve paket kodu gerekli');
+      return;
+    }
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('subscription_plans')
-        .update({
+      const annualTL = formData.annual_price_tl > 0 ? formData.annual_price_tl : null;
+      const annualUSD = formData.annual_price_usd > 0 ? formData.annual_price_usd : null;
+
+      if (editingPlan) {
+        const { error } = await supabase
+          .from('subscription_plans')
+          .update({
+            name: formData.name,
+            plan_code: formData.plan_code,
+            description: formData.description,
+            price_tl: formData.price_tl,
+            monthly_price: formData.monthly_price,
+            annual_price_tl: annualTL,
+            price_usd: formData.price_usd,
+            annual_price_usd: annualUSD,
+            discount_annual: formData.discount_annual,
+            trial_days: formData.trial_days,
+            max_installments: formData.max_installments,
+            setup_fee: formData.setup_fee,
+            currency: formData.currency,
+            is_active: formData.is_active,
+            highlight: formData.highlight,
+            badge_text: formData.badge_text || null,
+            badge_color: formData.badge_color || null,
+            iyzico_plan_ref: formData.iyzico_plan_ref || null,
+            iyzico_product_ref: formData.iyzico_product_ref || null,
+            iyzico_monthly_plan_ref: formData.iyzico_monthly_plan_ref || null,
+            iyzico_annual_plan_ref: formData.iyzico_annual_plan_ref || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', editingPlan.id);
+
+        if (error) throw error;
+        toast.success('Paket guncellendi');
+      } else {
+        const maxSort = plans.reduce((max, p) => Math.max(max, p.sort_order || 0), 0);
+        const { error } = await supabase.from('subscription_plans').insert({
           name: formData.name,
           plan_code: formData.plan_code,
+          plan_tier: formData.plan_code,
           description: formData.description,
           price_tl: formData.price_tl,
           monthly_price: formData.monthly_price,
-          annual_price_tl: formData.annual_price_tl,
-          price_usd: formData.price_usd,
-          annual_price_usd: formData.annual_price_usd,
+          annual_price_tl: annualTL,
+          price_usd: formData.price_usd || null,
+          annual_price_usd: annualUSD,
           discount_annual: formData.discount_annual,
           trial_days: formData.trial_days,
           max_installments: formData.max_installments,
           setup_fee: formData.setup_fee,
           currency: formData.currency,
           is_active: formData.is_active,
+          recommended: false,
           highlight: formData.highlight,
+          sort_order: maxSort + 10,
           badge_text: formData.badge_text || null,
           badge_color: formData.badge_color || null,
           iyzico_plan_ref: formData.iyzico_plan_ref || null,
           iyzico_product_ref: formData.iyzico_product_ref || null,
           iyzico_monthly_plan_ref: formData.iyzico_monthly_plan_ref || null,
           iyzico_annual_plan_ref: formData.iyzico_annual_plan_ref || null,
+          billing_periods: ['monthly', 'annual'],
+          features: [],
           updated_at: new Date().toISOString(),
-        })
-        .eq('id', editingPlan.id);
+        });
+        if (error) throw error;
+        toast.success('Yeni paket eklendi');
+      }
 
-      if (error) throw error;
-      toast.success('Paket guncellendi');
       setEditingPlan(null);
+      setPlanDialogOpen(false);
       await onRefresh();
     } catch (err: any) {
       toast.error(err.message || 'Kaydetme hatasi');
@@ -151,8 +220,69 @@ export function PlanEditor({ plans, onRefresh }: PlanEditorProps) {
     }
   };
 
+  const handleDelete = async () => {
+    if (!editingPlan) return;
+    setSaving(true);
+    try {
+      const { error: delAssErr } = await supabase
+        .from('plan_feature_assignments')
+        .delete()
+        .eq('plan_id', editingPlan.id);
+      if (delAssErr) throw delAssErr;
+
+      const { error } = await supabase.from('subscription_plans').delete().eq('id', editingPlan.id);
+      if (error) throw error;
+
+      toast.success('Paket silindi');
+      setEditingPlan(null);
+      setPlanDialogOpen(false);
+      await onRefresh();
+    } catch (err: any) {
+      toast.error(err.message || 'Silme hatasi');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeletePlanById = async (planId: string) => {
+    setSaving(true);
+    try {
+      const { error: delAssErr } = await supabase
+        .from('plan_feature_assignments')
+        .delete()
+        .eq('plan_id', planId);
+      if (delAssErr) throw delAssErr;
+
+      const { error } = await supabase.from('subscription_plans').delete().eq('id', planId);
+      if (error) throw error;
+
+      toast.success('Paket silindi');
+      setEditingPlan(null);
+      setPlanDialogOpen(false);
+      await onRefresh();
+    } catch (err: any) {
+      toast.error(err.message || 'Silme hatasi');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="text-sm text-muted-foreground">
+          Paketleri olusturun, duzenleyin ve fiyatlarini yonetin.
+        </div>
+        <Button
+          variant="outline"
+          onClick={openNew}
+          className="bg-white/70 dark:bg-slate-900/40 border border-input text-gray-900 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-100 dark:hover:text-gray-100"
+        >
+          <Plus className="h-4 w-4 mr-2 text-gray-900 dark:text-gray-100" />
+          Paket Ekle
+        </Button>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {plans.map((plan) => {
           const Icon = PLAN_ICONS[plan.name] || Zap;
@@ -177,13 +307,52 @@ export function PlanEditor({ plans, onRefresh }: PlanEditorProps) {
                     <Icon className="h-5 w-5" />
                     <CardTitle className="text-lg">{plan.name}</CardTitle>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     {!plan.is_active && (
-                      <Badge variant="secondary" className="text-xs">Pasif</Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        Pasif
+                      </Badge>
                     )}
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(plan)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <ModulusUcNoktaButton
+                          aria-label="Paket islemleri"
+                          title="Paket islemleri"
+                          disabled={saving}
+                        />
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => openEdit(plan)}>
+                          <Edit className="h-4 w-4 mr-2" />
+                          Duzenle
+                        </DropdownMenuItem>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <DropdownMenuItem className="text-destructive" disabled={saving}>
+                              <X className="h-4 w-4 mr-2" />
+                              Sil
+                            </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Paketi silmek istiyor musunuz?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Bu islem geri alinamaz. Plan atamalari (ozellik/limit) da silinecektir.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Vazgec</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeletePlanById(plan.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Sil
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">{plan.description}</p>
@@ -235,10 +404,15 @@ export function PlanEditor({ plans, onRefresh }: PlanEditorProps) {
         })}
       </div>
 
-      <Dialog open={!!editingPlan} onOpenChange={(open) => !open && setEditingPlan(null)}>
+      <Dialog open={planDialogOpen} onOpenChange={(open) => {
+        setPlanDialogOpen(open);
+        if (!open) setEditingPlan(null);
+      }}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Paket Duzenle: {editingPlan?.name}</DialogTitle>
+            <DialogTitle>
+              {editingPlan ? `Paket Duzenle: ${editingPlan.name}` : 'Yeni Paket Ekle'}
+            </DialogTitle>
           </DialogHeader>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
@@ -458,14 +632,53 @@ export function PlanEditor({ plans, onRefresh }: PlanEditorProps) {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingPlan(null)}>
+            <div className="flex items-center justify-between w-full gap-2">
+              <div>
+                {editingPlan && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="h-9 w-9"
+                        aria-label="Paketi sil"
+                        title="Paketi sil"
+                        disabled={saving}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Paketi silmek istiyor musunuz?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Bu islem geri alinamaz. Plan atamalari (ozellik/limit) da silinecektir.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Vazgec</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          Sil
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={() => {
+                  setPlanDialogOpen(false);
+                  setEditingPlan(null);
+                }}>
               <X className="h-4 w-4 mr-2" />
               Iptal
             </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              <Save className="h-4 w-4 mr-2" />
-              {saving ? 'Kaydediliyor...' : 'Kaydet'}
-            </Button>
+                <Button onClick={handleSave} disabled={saving}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {saving ? 'Kaydediliyor...' : editingPlan ? 'Kaydet' : 'Ekle'}
+                </Button>
+              </div>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
