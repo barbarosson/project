@@ -448,7 +448,7 @@ export function UserDetailSheet({
                           onClick={async (e) => {
                             e.stopPropagation();
                             try {
-                              await navigator.clipboard.writeText(user.tenant_id);
+                              await navigator.clipboard.writeText(user.tenant_id ?? '');
                               toast.success('Tenant ID panoya kopyalandi');
                             } catch {
                               toast.error('Kopyalama basarisiz');
