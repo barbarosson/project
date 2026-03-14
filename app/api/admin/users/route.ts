@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
       while (true) {
         const { data: authData, error: authError } = await service.auth.admin.listUsers({
           page,
-          per_page: perPage,
+          perPage,
         });
         if (authError) break;
         const users = authData?.users ?? [];
