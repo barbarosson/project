@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAdmin } from '@/contexts/admin-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -16,18 +16,26 @@ import TypographyController from '@/components/admin/typography-controller';
 import AssetsManager from '@/components/admin/assets-manager';
 import { ContentEditor } from '@/components/admin/content-editor';
 
+const VALID_TABS = ['content', 'banners', 'theme', 'typography', 'design', 'assets', 'settings'] as const;
+
 export default function SiteCommanderPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { profile, isSuperAdmin } = useAdmin();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('banners');
 
   useEffect(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl && VALID_TABS.includes(tabFromUrl as (typeof VALID_TABS)[number])) {
+      setActiveTab(tabFromUrl);
+      return;
+    }
     const savedTab = sessionStorage.getItem('siteCommander_activeTab');
-    if (savedTab) {
+    if (savedTab && VALID_TABS.includes(savedTab as (typeof VALID_TABS)[number])) {
       setActiveTab(savedTab);
     }
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     if (!isSuperAdmin) {

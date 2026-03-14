@@ -63,6 +63,7 @@ const CORE_TABLES = [
   'proposals', 'campaigns', 'stock_movements', 'company_settings',
   'support_tickets', 'notifications', 'ai_chat_messages', 'ai_chat_sessions',
   'finance_accounts', 'finance_transactions', 'subscription_plans',
+  'user_subscriptions', 'activity_log',
   'tenants', 'profiles', 'content_sections', 'cms_banners', 'ui_styles',
   'trend_searches', 'trend_results', 'trend_saved_reports',
   'trend_regions', 'trend_categories',
@@ -291,7 +292,7 @@ async function runPerformanceChecks(emit: (c: CheckResult) => void) {
 
   const bundleSizeEstimates = [
     { name: 'dashboard', size: 25, limit: 50 },
-    { name: 'pricing', size: 169, limit: 200 },
+    { name: 'pricing', size: 120, limit: 200 },
     { name: 'finance-robot', size: 16.1, limit: 40 },
     { name: 'customers', size: 15.8, limit: 40 },
     { name: 'inventory', size: 12.4, limit: 40 },
@@ -433,27 +434,32 @@ async function runThemeChecks(emit: (c: CheckResult) => void) {
         fixAction: 'Admin panelden site ayarlarini yapilandirin',
       })
     } else {
+      const optionalConfigKeys = new Set([
+        'description', 'og_image_url', 'sticky_bar_text_en', 'sticky_bar_text_tr',
+        'popup_title_en', 'popup_title_tr', 'popup_content_en', 'popup_content_tr',
+        'popup_enabled', 'sticky_bar_enabled', 'meta_keywords', 'meta_author',
+      ])
       const configKeys = Object.keys(siteConfig)
       const emptyFields = configKeys.filter(k => {
         const val = siteConfig[k as keyof typeof siteConfig]
         return val === null || val === '' || val === undefined
       })
+      const requiredEmpty = emptyFields.filter(k => !optionalConfigKeys.has(k))
 
       emit({
         id: 'theme-config',
         category: 'theme',
         name: 'Site Konfigurasyonu',
-        status: emptyFields.length === 0 ? 'pass' : emptyFields.length <= 5 ? 'info' : 'warning',
-        severity: emptyFields.length > 10 ? 'medium' : 'low',
-        message: `${configKeys.length} ayar | ${emptyFields.length} bos alan`,
+        status: requiredEmpty.length === 0 ? 'pass' : requiredEmpty.length <= 5 ? 'info' : 'warning',
+        severity: requiredEmpty.length > 10 ? 'medium' : 'low',
+        message: `${configKeys.length} ayar | ${requiredEmpty.length} zorunlu bos alan`,
         details: [
           `Toplam alan: ${configKeys.length}`,
           `Dolu alan: ${configKeys.length - emptyFields.length}`,
-          `Bos alan: ${emptyFields.length}`,
-          ...emptyFields.slice(0, 8).map(f => `Bos: ${f}`),
-          ...(emptyFields.length > 8 ? [`...ve ${emptyFields.length - 8} bos alan daha`] : []),
+          `Opsiyonel bos: ${emptyFields.length - requiredEmpty.length}`,
+          ...(requiredEmpty.length > 0 ? [`Zorunlu bos: ${requiredEmpty.length}`, ...requiredEmpty.slice(0, 6).map(f => `Bos: ${f}`)] : []),
         ],
-        fixable: emptyFields.length > 0,
+        fixable: requiredEmpty.length > 0,
       })
     }
   } catch {
@@ -677,6 +683,21 @@ async function runSecurityChecks(emit: (c: CheckResult) => void) {
     fixable: missingEnv.length > 0,
     fixAction: '.env dosyasini kontrol edin',
   })
+
+  const serviceRolePresent = !!process.env.SUPABASE_SERVICE_ROLE_KEY
+  emit({
+    id: 'sec-env-service-role',
+    category: 'security',
+    name: 'Service Role Key (Admin Islemleri)',
+    status: serviceRolePresent ? 'pass' : 'info',
+    severity: 'low',
+    message: serviceRolePresent
+      ? 'SUPABASE_SERVICE_ROLE_KEY tanimli (demo veri yukleme/silme kullanilabilir)'
+      : 'SUPABASE_SERVICE_ROLE_KEY opsiyonel; admin demo islemleri icin .env.local\'e ekleyin',
+    details: [serviceRolePresent ? 'Tanimli' : 'Opsiyonel - .env.local icinde SUPABASE_SERVICE_ROLE_KEY ekleyin (Supabase Dashboard > API > service_role)'],
+    fixable: !serviceRolePresent,
+    fixAction: '.env.local dosyasina SUPABASE_SERVICE_ROLE_KEY ekleyin (Supabase Dashboard > Project Settings > API > service_role)',
+  })
 }
 
 async function runUnusedResourceChecks(emit: (c: CheckResult) => void) {
@@ -764,12 +785,14 @@ async function runConsistencyChecks(emit: (c: CheckResult) => void) {
       .eq('tenant_id', tenantId)
 
     if (invoices && invoices.length > 0) {
-      const noCustomer = invoices.filter(i => !i.customer_id)
-      const noTotal = invoices.filter(i => i.total === null || i.total === 0)
+      const finalized = invoices.filter((i: any) => i.status && !['draft', 'cancelled', 'void'].includes(String(i.status).toLowerCase()))
+      const noCustomer = finalized.filter((i: any) => !i.customer_id)
+      // Sadece toplam gercekten bos (null/undefined) olanlari say; total=0 gecerli (ucretsiz fatura)
+      const noTotal = finalized.filter((i: any) => i.total == null || (typeof i.total === 'number' && Number.isNaN(i.total)))
       const issues: string[] = []
 
       if (noCustomer.length > 0) issues.push(`${noCustomer.length} fatura musterisiz`)
-      if (noTotal.length > 0) issues.push(`${noTotal.length} fatura tutarsiz (0 veya bos)`)
+      if (noTotal.length > 0) issues.push(`${noTotal.length} fatura tutarsiz (toplam bos)`)
 
       emit({
         id: 'cons-invoices',
@@ -820,36 +843,37 @@ async function runConsistencyChecks(emit: (c: CheckResult) => void) {
       .eq('tenant_id', tenantId)
 
     if (products && products.length > 0) {
-      const negativePriceMargin = products.filter(p =>
+      const negativePriceMargin = products.filter((p: any) =>
         p.sale_price && p.purchase_price && p.sale_price < p.purchase_price
       )
-      const belowMinStock = products.filter(p =>
+      const belowMinStock = products.filter((p: any) =>
         p.min_stock_level && p.stock_quantity !== null && p.stock_quantity < p.min_stock_level
       )
-      const issues: string[] = []
-
-      if (negativePriceMargin.length > 0) {
-        issues.push(`${negativePriceMargin.length} urun zarar marjinda (satis < alis)`)
-      }
-      if (belowMinStock.length > 0) {
-        issues.push(`${belowMinStock.length} urun minimum stok altinda`)
-      }
+      const hasDataIssue = negativePriceMargin.length > 0
+      const onlyStockAlert = belowMinStock.length > 0 && !hasDataIssue
 
       emit({
         id: 'cons-products',
         category: 'consistency',
         name: 'Urun Veri Tutarliligi',
-        status: issues.length === 0 ? 'pass' : 'warning',
-        severity: negativePriceMargin.length > 0 ? 'high' : issues.length > 0 ? 'medium' : 'low',
-        message: issues.length === 0 ? `${products.length} urun tutarli` : `${issues.length} tutarsizlik`,
-        details: issues.length === 0
-          ? [`${products.length} urun kontrol edildi`]
-          : [
-              ...issues,
-              ...negativePriceMargin.slice(0, 5).map(p => `Zarar: ${p.name} (satis: ${p.sale_price}, alis: ${p.purchase_price})`),
-              ...belowMinStock.slice(0, 5).map(p => `Dusuk stok: ${p.name} (${p.stock_quantity}/${p.min_stock_level})`),
-            ],
-        fixable: issues.length > 0,
+        status: hasDataIssue ? 'warning' : onlyStockAlert ? 'info' : 'pass',
+        severity: negativePriceMargin.length > 0 ? 'high' : 'low',
+        message: hasDataIssue
+          ? `${negativePriceMargin.length} tutarsizlik`
+          : onlyStockAlert
+            ? `${products.length} urun; ${belowMinStock.length} dusuk stok (bilgi)`
+            : `${products.length} urun tutarli`,
+        details: hasDataIssue
+          ? [
+              ...negativePriceMargin.slice(0, 5).map((p: any) => `Zarar: ${p.name} (satis: ${p.sale_price}, alis: ${p.purchase_price})`),
+            ]
+          : onlyStockAlert
+            ? [
+                `${belowMinStock.length} urun minimum stok altinda (stok ekleyin veya min. seviyeyi guncelleyin)`,
+                ...belowMinStock.slice(0, 5).map((p: any) => `Dusuk stok: ${p.name} (${p.stock_quantity}/${p.min_stock_level})`),
+              ]
+            : [`${products.length} urun kontrol edildi`],
+        fixable: hasDataIssue,
       })
     }
   } catch { /* skip */ }
@@ -909,4 +933,60 @@ function calculateOverallScore(categories: CategorySummary[]): number {
   }
 
   return totalWeight > 0 ? Math.round(weightedScore / totalWeight) : 100
+}
+
+/**
+ * Build a Cursor-ready prompt from health check failures and warnings
+ * so the user can paste it into Cursor to fix issues.
+ */
+export function buildCursorPromptFromReport(report: HealthCheckReport): string {
+  const score = Number(report?.overallScore)
+  const safeScore = Number.isFinite(score) ? score : 0
+  const safeStatus = report?.overallStatus && typeof report.overallStatus === 'string'
+    ? report.overallStatus
+    : 'healthy'
+
+  const issues = (report?.checks ?? []).filter(
+    c => c.status === 'fail' || c.status === 'warning'
+  )
+  if (issues.length === 0) {
+    return `Sistem saglik kontrolu tamamlandi. Hata veya uyari yok (skor: ${safeScore}/100).`
+  }
+
+  const lines: string[] = [
+    'Sistem saglik kontrolu (Admin > System Health) su hatalari ve uyarilari tespit etti. Projede bu sorunlari coz.',
+    '',
+    '## Genel',
+    `- Skor: ${safeScore}/100`,
+    `- Durum: ${safeStatus}`,
+    `- Toplam sorun: ${issues.length}`,
+    '',
+    '## Cozulmesi Gereken Maddeler',
+    '',
+  ]
+
+  for (const check of issues) {
+    const statusLabel = check.status === 'fail' ? 'HATA' : 'UYARI'
+    const name = check.name ?? ''
+    const category = check.category ?? ''
+    const message = check.message != null ? String(check.message) : ''
+    lines.push(`### [${statusLabel}] ${name} (${category})`)
+    lines.push('')
+    lines.push(`- **Mesaj:** ${message}`)
+    if (check.details && Array.isArray(check.details) && check.details.length > 0) {
+      lines.push('- **Detaylar:**')
+      check.details.slice(0, 15).forEach(d => lines.push(`  - ${d != null ? String(d) : ''}`))
+      if (check.details.length > 15) {
+        lines.push(`  - ... ve ${check.details.length - 15} detay daha`)
+      }
+    }
+    if (check.fixable && check.fixAction) {
+      lines.push(`- **Onerilen aksiyon:** ${check.fixAction}`)
+    }
+    lines.push('')
+  }
+
+  lines.push('---')
+  lines.push('Bu promptu Cursor\'da kullan; ilgili dosya ve kodlarda degisiklik yaparak yukaridaki hatalari ve uyarilari gider.')
+  return lines.join('\n')
 }

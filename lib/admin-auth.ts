@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export interface AdminUser {
   id: string;
   email: string;
-  role: 'admin' | 'super_admin';
+  role: 'super_admin';
 }
 
 export async function verifyAdminRequest(
@@ -46,7 +46,7 @@ export async function verifyAdminRequest(
       return { user: null, error: 'Profile not found' };
     }
 
-    if (profile.role !== 'admin' && profile.role !== 'super_admin') {
+    if (profile.role !== 'super_admin') {
       return { user: null, error: 'Insufficient permissions' };
     }
 

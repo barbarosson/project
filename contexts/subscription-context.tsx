@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { supabase } from '@/lib/supabase';
-import { isSuperAdmin } from '@/lib/access-control';
 
 export type PlanName = 'FREE' | 'KUCUK' | 'ORTA' | 'BUYUK' | 'ENTERPRISE';
 
@@ -73,6 +72,7 @@ interface SubscriptionContextType {
   creditBalance: CreditBalance | null;
   allPlans: SubscriptionPlan[];
   loading: boolean;
+  mustChangePassword: boolean;
   hasFeature: (featureCode: FeatureCode) => boolean;
   canAccessRoute: (route: string) => boolean;
   refreshSubscription: () => Promise<void>;
@@ -142,35 +142,59 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const [userSubscription, setUserSubscription] = useState<UserSubscription | null>(null);
   const [creditBalance, setCreditBalance] = useState<CreditBalance | null>(null);
   const [allPlans, setAllPlans] = useState<SubscriptionPlan[]>([]);
+  const [profileRole, setProfileRole] = useState<string | null>(null);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const isSuperAdminByRole = profileRole === 'super_admin';
 
   const fetchSubscriptionData = async () => {
     if (!user) {
+      setProfileRole(null);
+      setMustChangePassword(false);
       setLoading(false);
       return;
     }
 
     try {
-      const [plansResponse, subscriptionResponse, creditsResponse] = await Promise.all([
+      const [plansResponse, subscriptionResponse, creditsResponse, profileResponse] = await Promise.all([
         supabase.from('subscription_plans').select('*').order('monthly_price', { ascending: true }),
         supabase.from('user_subscriptions').select('*').eq('user_id', user.id).maybeSingle(),
         supabase.from('credit_balances').select('*').eq('user_id', user.id).maybeSingle(),
+        supabase.from('profiles').select('role, must_change_password').eq('id', user.id).maybeSingle(),
       ]);
 
       if (plansResponse.data) {
         setAllPlans(plansResponse.data);
       }
 
+      let role: string | null = null;
+      let mustChange = false;
+      if (profileResponse.error) {
+        const { data: fallback } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
+        const p = fallback as { role?: string } | null;
+        role = p?.role ?? null;
+      } else {
+        const profile = profileResponse.data as { role?: string; must_change_password?: boolean } | null;
+        role = profile?.role ?? null;
+        mustChange = profile?.must_change_password === true;
+      }
+      setProfileRole(role);
+      setMustChangePassword(mustChange);
+
       if (subscriptionResponse.data) {
         setUserSubscription(subscriptionResponse.data);
         const plan = plansResponse.data?.find(p => p.name === subscriptionResponse.data.plan_name);
         setCurrentPlan(plan || plansResponse.data?.[0] || null);
       } else {
-        setCurrentPlan(plansResponse.data?.[0] || null);
+        // Super admin'lere paket atanmamışsa UI'da ENTERPRISE göster (tüm menülere erişim için)
+        const defaultPlanName = role === 'super_admin' ? 'ENTERPRISE' : 'FREE';
+        const defaultPlan = plansResponse.data?.find(p => p.name === defaultPlanName) || plansResponse.data?.[0] || null;
+        setCurrentPlan(defaultPlan);
         setUserSubscription({
           id: '',
           user_id: user.id,
-          plan_name: 'FREE',
+          plan_name: defaultPlanName as PlanName,
           status: 'active',
           started_at: new Date().toISOString(),
           expires_at: null,
@@ -201,10 +225,10 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     fetchSubscriptionData();
-  }, [user]);
+  }, [user?.id]);
 
   const hasFeature = (featureCode: FeatureCode): boolean => {
-    if (isSuperAdmin(user)) return true;
+    if (isSuperAdminByRole) return true;
     if (!currentPlan) return true;
     const planFeatures = PLAN_FEATURES[currentPlan.name as PlanName];
     if (!planFeatures) return true;
@@ -212,7 +236,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   };
 
   const canAccessRoute = (route: string): boolean => {
-    if (isSuperAdmin(user)) return true;
+    if (isSuperAdminByRole) return true;
     const requiredFeatures = FEATURE_TO_ROUTE_MAP[route];
     if (!requiredFeatures) return true;
     return requiredFeatures.some(feature => hasFeature(feature));
@@ -260,6 +284,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         creditBalance,
         allPlans,
         loading,
+        mustChangePassword,
         hasFeature,
         canAccessRoute,
         refreshSubscription,

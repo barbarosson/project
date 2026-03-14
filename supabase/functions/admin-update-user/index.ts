@@ -27,19 +27,22 @@ Deno.serve(async (req: Request) => {
 
     const token = authHeader.replace("Bearer ", "");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
       auth: { autoRefreshToken: false, persistSession: false },
+      global: { headers: { Authorization: `Bearer ${token}` } },
     });
-
     const {
       data: { user: callerUser },
       error: authError,
-    } = await adminClient.auth.getUser(token);
+    } = await authClient.auth.getUser(token);
     if (authError || !callerUser) {
       return new Response(
-        JSON.stringify({ error: "Gecersiz veya suresi dolmus oturum" }),
+        JSON.stringify({
+          error: "Gecersiz veya suresi dolmus oturum. Lutfen cikis yapip tekrar giris yapin.",
+        }),
         {
           status: 401,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -47,16 +50,17 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    const adminClient = createClient(supabaseUrl, supabaseServiceKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
     const { data: callerProfile } = await adminClient
       .from("profiles")
       .select("role")
       .eq("id", callerUser.id)
       .maybeSingle();
 
-    if (
-      !callerProfile ||
-      (callerProfile.role !== "admin" && callerProfile.role !== "super_admin")
-    ) {
+    if (!callerProfile || callerProfile.role !== "super_admin") {
       return new Response(
         JSON.stringify({ error: "Yetersiz yetki" }),
         {
@@ -91,7 +95,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const validRoles = ["user", "admin", "super_admin"];
+    const validRoles = ["user", "super_admin"];
     const newRole = role && validRoles.includes(role) ? role : undefined;
 
     if (newRole === "super_admin" && callerProfile.role !== "super_admin") {
@@ -177,8 +181,11 @@ Deno.serve(async (req: Request) => {
     const validStatuses = ["active", "cancelled", "expired"];
     const subUpdates: Record<string, unknown> = {};
 
-    if (plan_name && validPlans.includes(plan_name))
+    if (newRole === "super_admin") {
+      subUpdates.plan_name = "ENTERPRISE";
+    } else if (plan_name && validPlans.includes(plan_name)) {
       subUpdates.plan_name = plan_name;
+    }
     if (plan_status && validStatuses.includes(plan_status))
       subUpdates.status = plan_status;
     if (plan_expires_at !== undefined)
@@ -187,7 +194,25 @@ Deno.serve(async (req: Request) => {
       subUpdates.payment_method = payment_method || null;
     if (auto_renew !== undefined) subUpdates.auto_renew = auto_renew;
 
-    if (Object.keys(subUpdates).length > 0) {
+    if (newRole === "super_admin") {
+      const { error: upsertErr } = await adminClient
+        .from("user_subscriptions")
+        .upsert({
+          user_id: userId,
+          plan_name: "ENTERPRISE",
+          status: "active",
+          started_at: new Date().toISOString(),
+          expires_at: null,
+          payment_method: null,
+          auto_renew: true,
+        }, { onConflict: "user_id" });
+      if (upsertErr) {
+        return new Response(
+          JSON.stringify({ error: "Abonelik atanmadi: " + upsertErr.message }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    } else if (Object.keys(subUpdates).length > 0) {
       const { error: subError } = await adminClient
         .from("user_subscriptions")
         .update(subUpdates)

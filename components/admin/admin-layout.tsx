@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useAdmin } from '@/contexts/admin-context';
+import { useLanguage } from '@/contexts/language-context';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -21,7 +22,6 @@ import {
   FileText,
   Image,
   MessageSquare,
-  BarChart,
   Users,
   LayoutDashboard,
   HelpCircle,
@@ -39,6 +39,8 @@ import {
   Activity,
   Languages,
   HeartPulse,
+  FolderOpen,
+  Type,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -46,55 +48,66 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-const adminNavigation = [
+const adminNavigationConfig = [
   {
-    title: 'Dashboard',
+    sectionKey: 'dashboard' as const,
     items: [
-      { name: 'Overview', href: '/admin/site-commander', icon: LayoutDashboard },
-      { name: 'Analytics', href: '/admin/diagnostics', icon: BarChart },
-      { name: 'Activity Log', href: '/admin/activity-log', icon: Activity },
-      { name: 'System Health', href: '/admin/healthcheck', icon: HeartPulse },
+      { key: 'overview' as const, href: '/admin/site-commander', icon: LayoutDashboard },
+      { key: 'activityLog' as const, href: '/admin/activity-log', icon: Activity },
+      { key: 'systemHealth' as const, href: '/admin/healthcheck', icon: HeartPulse },
     ],
   },
   {
-    title: 'Content Management',
+    sectionKey: 'contentManagement' as const,
     items: [
-      { name: 'Site Commander', href: '/admin/site-commander', icon: Settings },
-      { name: 'Banner Studio', href: '/admin/banner-studio', icon: Image },
-      { name: 'Blog Manager', href: '/admin/blog', icon: FileText },
-      { name: 'Help Center', href: '/admin/help-center', icon: HelpCircle },
-      { name: 'Testimonials', href: '/admin/testimonials', icon: MessageSquare },
-      { name: 'Translation Agent', href: '/admin/translations', icon: Languages },
+      { key: 'siteCommander' as const, href: '/admin/site-commander', icon: Settings, descKey: 'siteCommander' as const },
+      { key: 'contentSections' as const, href: '/admin/site-commander?tab=content', icon: FileText, descKey: 'contentSections' as const },
+      { key: 'bannerStudio' as const, href: '/admin/banner-studio', icon: Image, descKey: 'bannerStudio' as const },
+      { key: 'blog' as const, href: '/admin/blog', icon: BookOpen, descKey: 'blog' as const },
+      { key: 'helpCenter' as const, href: '/admin/help-center', icon: HelpCircle, descKey: 'helpCenter' as const },
+      { key: 'testimonials' as const, href: '/admin/testimonials', icon: MessageSquare, descKey: 'testimonials' as const },
+      { key: 'translations' as const, href: '/admin/translations', icon: Languages, descKey: 'translations' as const },
+      { key: 'mediaLibrary' as const, href: '/admin/site-commander?tab=assets', icon: FolderOpen, descKey: 'mediaLibrary' as const },
     ],
   },
   {
-    title: 'Marketing',
+    sectionKey: 'marketing' as const,
     items: [
-      { name: 'Campaigns', href: '/admin/campaigns', icon: Megaphone },
-      { name: 'Coupons', href: '/admin/coupons', icon: Tag },
-      { name: 'Pricing Plans', href: '/admin/pricing', icon: CreditCard },
+      { key: 'campaigns' as const, href: '/admin/campaigns', icon: Megaphone },
+      { key: 'coupons' as const, href: '/admin/coupons', icon: Tag },
+      { key: 'pricingPlans' as const, href: '/admin/pricing', icon: CreditCard },
     ],
   },
   {
-    title: 'Customer Support',
+    sectionKey: 'customerSupport' as const,
     items: [
-      { name: 'Live Chat', href: '/admin/live-support', icon: MessageSquare },
-      { name: 'Help Desk', href: '/admin/helpdesk', icon: Ticket },
-      { name: 'Demo Requests', href: '/admin/demo-requests', icon: Users },
+      { key: 'liveChat' as const, href: '/admin/live-support', icon: MessageSquare },
+      { key: 'helpDesk' as const, href: '/admin/helpdesk', icon: Ticket },
+      { key: 'demoRequests' as const, href: '/admin/demo-requests', icon: Users },
     ],
   },
   {
-    title: 'User Management',
+    sectionKey: 'userManagement' as const,
     items: [
-      { name: 'Users', href: '/admin/users', icon: Users },
+      { key: 'users' as const, href: '/admin/users', icon: Users },
     ],
   },
 ];
 
+function getTabFromHref(href: string): string | null {
+  try {
+    return new URL(href, 'https://a').searchParams.get('tab');
+  } catch {
+    return null;
+  }
+}
+
 export function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { profile, signOut, isSuperAdmin, isLoading } = useAdmin();
+  const { t } = useLanguage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
@@ -110,7 +123,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
         <div className="text-center">
           <Shield className="h-12 w-12 mx-auto mb-4 animate-pulse" style={{ color: '#00D4AA' }} />
-          <p className="text-muted-foreground">Loading admin panel...</p>
+          <p className="text-muted-foreground">{t.adminNav.loading}</p>
         </div>
       </div>
     );
@@ -124,7 +137,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center">
         <div className="text-center">
           <Shield className="h-12 w-12 text-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">Redirecting to login...</p>
+          <p className="text-muted-foreground">{t.adminNav.redirecting}</p>
         </div>
       </div>
     );
@@ -156,7 +169,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             {!sidebarCollapsed && (
               <div className="flex items-center gap-2">
                 <Shield className="h-6 w-6" style={{ color: '#00D4AA' }} />
-                <span className="font-bold text-lg" style={{ color: '#0A2540' }}>Admin Panel</span>
+                <span className="font-bold text-lg" style={{ color: '#0A2540' }}>{t.adminNav.adminPanel}</span>
               </div>
             )}
             {sidebarCollapsed && (
@@ -187,20 +200,28 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
           <ScrollArea className="flex-1 p-4">
             <nav className="space-y-6">
-              {adminNavigation.map((section) => (
-                <div key={section.title}>
+              {adminNavigationConfig.map((section) => (
+                <div key={section.sectionKey}>
                   {!sidebarCollapsed && (
                     <h3 className="mb-2 px-2 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      {section.title}
+                      {t.adminNav.sections[section.sectionKey]}
                     </h3>
                   )}
                   <div className="space-y-1">
                     {section.items.map((item) => {
-                      const isActive = pathname === item.href;
+                      const itemTab = getTabFromHref(item.href);
+                      const currentTab = searchParams.get('tab');
+                      const isActive = pathname === '/admin/site-commander'
+                        ? (itemTab == null ? !currentTab : currentTab === itemTab)
+                        : pathname === item.href;
+                      const title = 'descKey' in item && item.descKey && t.adminNav.descriptions[item.descKey]
+                        ? t.adminNav.descriptions[item.descKey]
+                        : t.adminNav.items[item.key];
                       return (
                         <Link
                           key={item.href}
                           href={item.href}
+                          title={title}
                           className={cn(
                             'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                             isActive
@@ -212,7 +233,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                           onClick={() => setSidebarOpen(false)}
                         >
                           <item.icon className="h-4 w-4 shrink-0" />
-                          {!sidebarCollapsed && <span>{item.name}</span>}
+                          {!sidebarCollapsed && <span>{t.adminNav.items[item.key]}</span>}
                         </Link>
                       );
                     })}
@@ -250,11 +271,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Admin Account</DropdownMenuLabel>
+                <DropdownMenuLabel>{t.adminNav.adminAccount}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
+                  {t.adminNav.signOut}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -277,7 +298,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <div className="flex items-center gap-2">
               {isSuperAdmin && (
                 <div className="px-2 py-1 bg-amber-100 dark:bg-amber-900 text-amber-900 dark:text-amber-100 rounded text-xs font-medium">
-                  Super Admin
+                  {t.sidebar.superAdmin}
                 </div>
               )}
             </div>

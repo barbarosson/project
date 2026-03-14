@@ -10,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -21,6 +22,8 @@ import {
   UserX,
   Key,
   Eye,
+  Database,
+  Trash2,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -29,6 +32,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ModulusUcNoktaButton } from '@/components/ui/card-menu-button';
+import { cn } from '@/lib/utils';
 
 interface UserProfile {
   id: string;
@@ -59,10 +63,14 @@ interface UserListTableProps {
   users: UserProfile[];
   usageStats: UsageStats;
   loading: boolean;
+  selectedUserIds: string[];
+  onSelectionChange: (ids: string[]) => void;
   onViewUser: (user: UserProfile) => void;
   onEditUser: (user: UserProfile) => void;
   onToggleActive: (user: UserProfile) => void;
   onResetPassword: (user: UserProfile) => void;
+  onSeedDemoData?: (user: UserProfile) => void;
+  onDeleteDemoData?: (user: UserProfile) => void;
 }
 
 function getInitials(name: string | null, email: string) {
@@ -81,8 +89,6 @@ function getRoleBadge(role: string) {
   switch (role) {
     case 'super_admin':
       return <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 hover:bg-amber-100">Super Admin</Badge>;
-    case 'admin':
-      return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 hover:bg-blue-100">Admin</Badge>;
     default:
       return <Badge variant="secondary">Kullanici</Badge>;
   }
@@ -99,11 +105,35 @@ export function UserListTable({
   users,
   usageStats,
   loading,
+  selectedUserIds,
+  onSelectionChange,
   onViewUser,
   onEditUser,
   onToggleActive,
   onResetPassword,
+  onSeedDemoData,
+  onDeleteDemoData,
 }: UserListTableProps) {
+  const selectedSet = new Set(selectedUserIds);
+  const allIds = users.map((u) => u.id);
+  const allSelected = allIds.length > 0 && allIds.every((id) => selectedSet.has(id));
+  const someSelected = selectedUserIds.length > 0;
+
+  const handleToggleAll = (checked: boolean | 'indeterminate') => {
+    if (checked === true) {
+      onSelectionChange([...allIds]);
+    } else {
+      onSelectionChange([]);
+    }
+  };
+
+  const handleToggleOne = (id: string, checked: boolean | 'indeterminate') => {
+    if (checked === true) {
+      onSelectionChange([...selectedUserIds, id]);
+    } else {
+      onSelectionChange(selectedUserIds.filter((x) => x !== id));
+    }
+  };
   if (loading) {
     return (
       <div className="space-y-3">
@@ -136,6 +166,14 @@ export function UserListTable({
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/50">
+            <TableHead className="w-10 px-2">
+              <Checkbox
+                checked={allSelected ? true : someSelected ? 'indeterminate' : false}
+                onCheckedChange={handleToggleAll}
+                aria-label="Tumunu sec"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </TableHead>
             <TableHead className="w-[280px]">Kullanici</TableHead>
             <TableHead>Rol</TableHead>
             <TableHead>Durum</TableHead>
@@ -156,9 +194,20 @@ export function UserListTable({
             return (
               <TableRow
                 key={u.id}
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                className={cn(
+                  'cursor-pointer hover:bg-muted/50 transition-colors',
+                  selectedSet.has(u.id) && 'bg-primary/5'
+                )}
                 onClick={() => onViewUser(u)}
               >
+                <TableCell className="w-10 px-2" onClick={(e) => e.stopPropagation()}>
+                  <Checkbox
+                    variant="round"
+                    checked={selectedSet.has(u.id)}
+                    onCheckedChange={(checked) => handleToggleOne(u.id, checked)}
+                    aria-label={`${u.email} sec`}
+                  />
+                </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar className="h-9 w-9">
@@ -229,6 +278,15 @@ export function UserListTable({
                         <Eye className="h-4 w-4 mr-2" />
                         Goruntule
                       </DropdownMenuItem>
+                      {onDeleteDemoData && (
+                        <DropdownMenuItem
+                          onClick={() => onDeleteDemoData(u)}
+                          disabled={!u.tenant_id}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Demo Verilerini Sil
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem onClick={() => onEditUser(u)}>
                         <Pencil className="h-4 w-4 mr-2" />
                         Duzenle
@@ -241,6 +299,22 @@ export function UserListTable({
                         <UserX className="h-4 w-4 mr-2" />
                         {u.is_active ? 'Inaktif Yap' : 'Aktif Yap'}
                       </DropdownMenuItem>
+                      {onSeedDemoData && (
+                        <DropdownMenuItem
+                          onClick={() => onSeedDemoData(u)}
+                          disabled={!u.tenant_id || Boolean(
+                            u.tenant_id &&
+                            usageStats[u.tenant_id] &&
+                            (usageStats[u.tenant_id].invoices +
+                              usageStats[u.tenant_id].customers +
+                              usageStats[u.tenant_id].products +
+                              usageStats[u.tenant_id].expenses) > 0
+                          )}
+                        >
+                          <Database className="h-4 w-4 mr-2" />
+                          Demo Veri Yukle
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>

@@ -65,7 +65,6 @@ interface EditUserDialogProps {
 
 const roleLabels: Record<string, string> = {
   user: 'Kullanici',
-  admin: 'Admin',
   super_admin: 'Super Admin',
 };
 
@@ -156,49 +155,44 @@ export function EditUserDialog({
     try {
       setSaving(true);
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) {
-        toast.error('Oturum bulunamadi');
+      const accessToken = session?.access_token;
+      if (!accessToken) {
+        toast.error('Oturum bulunamadi. Lutfen tekrar giris yapin.');
         return;
       }
 
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const response = await fetch(
-        `${supabaseUrl}/functions/v1/admin-update-user`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-            Apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-          },
-          body: JSON.stringify({
-            userId: user.id,
-            email: form.email !== user.email ? form.email : undefined,
-            full_name: form.full_name,
-            phone: form.phone,
-            company_name: form.company_name,
-            role: form.role !== user.role ? form.role : undefined,
-            plan_name: form.plan_name,
-            plan_status: form.plan_status,
-            plan_expires_at: form.plan_expires_at || null,
-            payment_method: form.payment_method || null,
-            auto_renew: form.auto_renew,
-          }),
-        }
-      );
+      const response = await fetch('/api/admin/update-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          userId: user.id,
+          email: form.email !== user.email ? form.email : undefined,
+          full_name: form.full_name,
+          phone: form.phone,
+          company_name: form.company_name,
+          role: form.role !== user.role ? form.role : undefined,
+          plan_name: form.plan_name,
+          plan_status: form.plan_status,
+          plan_expires_at: form.plan_expires_at || null,
+          payment_method: form.payment_method || null,
+          auto_renew: form.auto_renew,
+        }),
+      });
 
+      const result = await response.json().catch(() => ({}));
       if (!response.ok) {
-        let errorMsg = 'Guncelleme basarisiz';
-        try {
-          const err = await response.json();
-          errorMsg = err.error || errorMsg;
-        } catch {
-          errorMsg = `Hata (${response.status}): ${response.statusText}`;
-        }
-        throw new Error(errorMsg);
+        throw new Error((result as { error?: string }).error || 'Guncelleme basarisiz');
       }
 
-      toast.success('Kullanici bilgileri guncellendi');
+      const warning = (result as { warning?: string }).warning;
+      if (warning) {
+        toast.warning(warning);
+      } else {
+        toast.success('Kullanici bilgileri guncellendi');
+      }
       onUserUpdated();
       onOpenChange(false);
     } catch (error: any) {

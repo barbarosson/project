@@ -172,7 +172,6 @@ export function AddUserDialog({
 
   const roleLabels: Record<string, string> = {
     user: 'Kullanici',
-    admin: 'Admin',
     super_admin: 'Super Admin',
   };
 

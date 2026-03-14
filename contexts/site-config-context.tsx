@@ -200,7 +200,7 @@ export function SiteConfigProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    // Check if user is super_admin or admin
+    // Check if user is super_admin
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -210,7 +210,7 @@ export function SiteConfigProvider({ children }: { children: ReactNode }) {
           .eq('id', user.id)
           .maybeSingle();
 
-        if (profile && (profile.role === 'super_admin' || profile.role === 'admin')) {
+        if (profile && profile.role === 'super_admin') {
           setBypassMaintenance(true);
           return;
         }

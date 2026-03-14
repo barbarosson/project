@@ -44,6 +44,7 @@ import {
   Database,
   Pencil,
   Copy,
+  Trash2,
 } from 'lucide-react';
 import { EditUserDialog } from '@/components/admin/edit-user-dialog';
 
@@ -90,10 +91,27 @@ export function UserDetailSheet({
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [seedDialogOpen, setSeedDialogOpen] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
   const [saving, setSaving] = useState(false);
   const [seeding, setSeeding] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDemoDialogOpen, setDeleteDemoDialogOpen] = useState(false);
+  const [deletingDemo, setDeletingDemo] = useState(false);
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+  const [errorDialogMessage, setErrorDialogMessage] = useState('');
+
+  const showErrorDialog = (message: string) => {
+    setErrorDialogMessage(message);
+    setErrorDialogOpen(true);
+  };
+
+  const copyErrorToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(errorDialogMessage);
+      toast.success('Hata metni panoya kopyalandi');
+    } catch {
+      toast.error('Kopyalama basarisiz');
+    }
+  };
 
   useEffect(() => {
     if (!open || !initialAction) return;
@@ -147,39 +165,28 @@ export function UserDetailSheet({
       onUserUpdated();
       onOpenChange(false);
     } catch (error: any) {
-      toast.error(error.message || 'Islem basarisiz');
+      const msg = error?.message || 'Islem basarisiz';
+      toast.error(msg);
+      showErrorDialog(msg);
     } finally {
       setSaving(false);
     }
   };
 
   const handleResetPassword = async () => {
-    if (!newPassword || newPassword.length < 6) {
-      toast.error('Sifre en az 6 karakter olmalidir');
-      return;
-    }
-
     try {
       setSaving(true);
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) return;
 
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const response = await fetch(
-        `${supabaseUrl}/functions/v1/admin-reset-password`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-            Apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-          },
-          body: JSON.stringify({
-            userId: user.id,
-            newPassword,
-          }),
-        }
-      );
+      const response = await fetch('/api/admin/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ userId: user.id }),
+      });
 
       if (!response.ok) {
         let errorMsg = 'Sifre sifirlama basarisiz';
@@ -192,11 +199,12 @@ export function UserDetailSheet({
         throw new Error(errorMsg);
       }
 
-      toast.success('Sifre basariyla sifirlandi');
+      toast.success('Sifre sifirlandi. Gecici sifre kullaniciya e-posta ile gonderildi; ilk giriste sifre degistirmesi istenecek.');
       setPasswordDialogOpen(false);
-      setNewPassword('');
     } catch (error: any) {
-      toast.error(error.message || 'Sifre sifirlama basarisiz');
+      const msg = error?.message || 'Sifre sifirlama basarisiz';
+      toast.error(msg);
+      showErrorDialog(msg);
     } finally {
       setSaving(false);
     }
@@ -255,11 +263,60 @@ export function UserDetailSheet({
       onUserUpdated();
     } catch (error: any) {
       console.error('Demo seed full error:', error);
-      toast.error(error.message || 'Demo veri yukleme basarisiz');
+      const msg = error?.message || 'Demo veri yukleme basarisiz';
+      toast.error(msg);
+      showErrorDialog(msg);
     } finally {
       setSeeding(false);
     }
   };
+
+  const handleDeleteDemoData = async () => {
+    if (!user.tenant_id) return;
+    try {
+      setDeletingDemo(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        toast.error('Oturum bulunamadi. Lutfen giris yapin.');
+        return;
+      }
+      const response = await fetch('/api/admin/delete-demo-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ tenant_id: user.tenant_id }),
+      });
+      const rawText = await response.text();
+      let result: Record<string, unknown> = {};
+      try {
+        result = rawText ? JSON.parse(rawText) : {};
+      } catch {
+        result = { error: rawText || `HTTP ${response.status}` };
+      }
+      if (!response.ok) {
+        const detail = (result.detail as string) || (result.message as string) || (result.error as string);
+        const deleteErrors = result.deleteErrors as string[] | undefined;
+        const extra = deleteErrors?.length ? ` (${deleteErrors.slice(0, 2).join('; ')})` : '';
+        throw new Error((detail || 'Demo veri silme basarisiz') + extra);
+      }
+      toast.success('Demo verileri silindi');
+      setDeleteDemoDialogOpen(false);
+      onUserUpdated();
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Demo veri silme basarisiz';
+      toast.error(msg);
+      showErrorDialog(msg);
+    } finally {
+      setDeletingDemo(false);
+    }
+  };
+
+  const hasDemoData = Boolean(
+    usageStats &&
+    (usageStats.invoices + usageStats.customers + usageStats.products + usageStats.expenses) > 0
+  );
 
   const usageItems = [
     { label: 'Faturalar', value: usageStats?.invoices || 0, icon: FileText, color: 'text-blue-600' },
@@ -289,12 +346,7 @@ export function UserDetailSheet({
                       Super Admin
                     </Badge>
                   )}
-                  {user.role === 'admin' && (
-                    <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 hover:bg-blue-100">
-                      Admin
-                    </Badge>
-                  )}
-                  {user.role === 'user' && (
+                  {user.role !== 'super_admin' && (
                     <Badge variant="secondary">Kullanici</Badge>
                   )}
                   {user.is_active ? (
@@ -358,7 +410,7 @@ export function UserDetailSheet({
                   <Shield className="h-4 w-4 text-muted-foreground shrink-0" />
                   <div className="flex items-center justify-between flex-1">
                     <span className="text-sm">Rol</span>
-                    <span className="text-sm font-medium capitalize">{user.role === 'super_admin' ? 'Super Admin' : user.role === 'admin' ? 'Admin' : 'Kullanici'}</span>
+                    <span className="text-sm font-medium capitalize">{user.role === 'super_admin' ? 'Super Admin' : 'Kullanici'}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -483,14 +535,26 @@ export function UserDetailSheet({
                   )}
                 </Button>
                 {user.tenant_id && (
-                  <Button
-                    variant="outline"
-                    className="justify-start border-teal-200 text-teal-700 hover:bg-teal-50 dark:border-teal-800 dark:text-teal-300 dark:hover:bg-teal-950"
-                    onClick={() => setSeedDialogOpen(true)}
-                  >
-                    <Database className="h-4 w-4 mr-2" />
-                    Demo Veri Yukle
-                  </Button>
+                  <>
+                    <Button
+                      variant="outline"
+                      className="justify-start border-teal-200 text-teal-700 hover:bg-teal-50 dark:border-teal-800 dark:text-teal-300 dark:hover:bg-teal-950 disabled:opacity-60"
+                      onClick={() => setSeedDialogOpen(true)}
+                      disabled={hasDemoData}
+                    >
+                      <Database className="h-4 w-4 mr-2" />
+                      Demo Veri Yukle
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="justify-start border-red-200 text-red-700 hover:bg-red-50 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-950"
+                      onClick={() => setDeleteDemoDialogOpen(true)}
+                      disabled={!hasDemoData}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Demo Verilerini Sil
+                    </Button>
+                  </>
                 )}
               </div>
             </div>
@@ -498,40 +562,19 @@ export function UserDetailSheet({
         </SheetContent>
       </Sheet>
 
-      <AlertDialog open={passwordDialogOpen} onOpenChange={(open) => {
-        if (!open) setNewPassword('');
-        setPasswordDialogOpen(open);
-      }}>
+      <AlertDialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Sifre Sifirla</AlertDialogTitle>
             <AlertDialogDescription>
-              {user.full_name || user.email} icin yeni sifre belirleyin.
+              Sistem {user.full_name || user.email} icin gecici bir giris sifresi olusturacak ve e-posta ile gonderecek. Kullanici ilk giriste uygulama tarafindan yeni sifre belirlemesi istenecek. Devam edilsin mi?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="py-4">
-            <Label htmlFor="new-password" className="text-sm font-medium">
-              Yeni Sifre
-            </Label>
-            <Input
-              id="new-password"
-              type="text"
-              placeholder="En az 6 karakter"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              className="mt-2"
-            />
-          </div>
           <AlertDialogFooter>
-            <AlertDialogCancel>
-              Iptal
-            </AlertDialogCancel>
-            <Button
-              onClick={handleResetPassword}
-              disabled={saving || newPassword.length < 6}
-            >
+            <AlertDialogCancel>Iptal</AlertDialogCancel>
+            <Button onClick={handleResetPassword} disabled={saving}>
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Sifreyi Sifirla
+              Evet, Sifreyi Sifirla ve E-posta Gonder
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -582,6 +625,58 @@ export function UserDetailSheet({
               {seeding && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {seeding ? 'Yukleniyor...' : 'Verileri Yukle'}
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={deleteDemoDialogOpen} onOpenChange={setDeleteDemoDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Demo Verilerini Sil</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bu kullaniciya ait tum demo verileri (musteriler, urunler, faturalar, giderler, teklifler, kampanyalar, stok hareketleri, destek talepleri, hesaplar, islemler) kalici olarak silinecek. Bu islem geri alinamaz.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deletingDemo}>Iptal</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteDemoData}
+              disabled={deletingDemo}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deletingDemo && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {deletingDemo ? 'Siliniyor...' : 'Evet, Sil'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={errorDialogOpen} onOpenChange={setErrorDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hata detayi</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">Asagidaki metni secip kopyalayabilir veya butona tiklayin:</p>
+                <pre
+                  className="max-h-48 overflow-auto rounded-md border bg-muted/50 p-3 text-left text-sm whitespace-pre-wrap break-words select-text"
+                >
+                  {errorDialogMessage}
+                </pre>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={copyErrorToClipboard}
+              className="mr-2"
+            >
+              <Copy className="h-4 w-4 mr-2" />
+              Kopyala
+            </Button>
+            <AlertDialogCancel>Kapat</AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

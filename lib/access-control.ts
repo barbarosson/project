@@ -4,7 +4,7 @@ export const ADMIN_EMAIL = 'admin@modulus.com'
 export const SUPER_ADMIN_EMAIL = 'admin@modulus.com'
 export const DEMO_EMAIL = 'demo@modulus.com'
 
-export type UserRole = 'super_admin' | 'admin' | 'demo' | 'regular'
+export type UserRole = 'super_admin' | 'demo' | 'regular'
 
 export function isSuperAdmin(user: User | null): boolean {
   if (!user?.email) return false
@@ -17,8 +17,7 @@ export function getUserRole(user: User | null): UserRole {
 
   const email = user.email.toLowerCase().trim()
 
-  if (email === SUPER_ADMIN_EMAIL) return 'super_admin'
-  if (email === ADMIN_EMAIL) return 'admin'
+  if (email === SUPER_ADMIN_EMAIL || email === ADMIN_EMAIL) return 'super_admin'
   if (email === DEMO_EMAIL) return 'demo'
 
   return 'regular'
@@ -26,7 +25,7 @@ export function getUserRole(user: User | null): UserRole {
 
 export function isAdmin(user: User | null): boolean {
   const role = getUserRole(user)
-  return role === 'admin' || role === 'super_admin'
+  return role === 'super_admin'
 }
 
 export function isDemo(user: User | null): boolean {
@@ -65,6 +64,7 @@ export const PROTECTED_ADMIN_ROUTES = [
   '/admin/diagnostics',
   '/admin/helpdesk',
   '/admin/live-support',
+  '/admin/demo-requests',
 ]
 
 export const PROTECTED_MANAGEMENT_ROUTES = [

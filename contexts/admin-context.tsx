@@ -9,7 +9,7 @@ interface AdminProfile {
   email: string;
   full_name: string | null;
   avatar_url: string | null;
-  role: 'admin' | 'super_admin';
+  role: 'super_admin';
   tenant_id: string | null;
 }
 
@@ -59,7 +59,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
 
-      if (data && (data.role === 'admin' || data.role === 'super_admin')) {
+      if (data && data.role === 'super_admin') {
         console.log('✅ [AdminContext] Admin profile set:', data.role);
         const adminProfile = data as AdminProfile;
         setProfile(adminProfile);

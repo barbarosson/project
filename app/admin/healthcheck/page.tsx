@@ -20,15 +20,25 @@ import {
   Activity, Search, AlertTriangle, CheckCircle2, XCircle, Loader2,
   Database, Zap, Languages, Palette, Copy, Shield, Trash2,
   GitMerge, Download, RefreshCcw, Play, Clock, BarChart3,
-  ChevronRight, FileText, Sparkles, Heart, Server, Eye
+  ChevronRight, FileText, Sparkles, Heart, Server, Eye, MessageSquare
 } from 'lucide-react'
 import {
   runFullHealthCheck,
+  buildCursorPromptFromReport,
   type HealthCheckReport,
   type CheckResult,
   type CheckCategory,
   type CategorySummary,
 } from '@/lib/healthcheck'
+import { toast } from 'sonner'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Textarea } from '@/components/ui/textarea'
 
 const CATEGORY_ICONS: Record<CheckCategory, typeof Database> = {
   database: Database,
@@ -180,6 +190,8 @@ export default function AdminHealthcheckPage() {
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [consoleLog, setConsoleLog] = useState<string[]>([])
   const consoleRef = useRef<HTMLDivElement>(null)
+  const [cursorPromptOpen, setCursorPromptOpen] = useState(false)
+  const [cursorPromptText, setCursorPromptText] = useState('')
 
   useEffect(() => {
     if (consoleRef.current) {
@@ -257,6 +269,17 @@ export default function AdminHealthcheckPage() {
     URL.revokeObjectURL(url)
   }
 
+  const openCursorPrompt = () => {
+    if (!report) return
+    const prompt = buildCursorPromptFromReport(report)
+    setCursorPromptText(prompt)
+    setCursorPromptOpen(true)
+    navigator.clipboard.writeText(prompt).then(
+      () => toast.success('Cursor promptu panoya kopyalandi. Cursor\'da yapistirip hatalari cozdurebilirsiniz.'),
+      () => toast.info('Prompt pencerede gosteriliyor; kopyalamak icin metni secin.')
+    )
+  }
+
   const allChecks = report?.checks || liveChecks
   const passCount = allChecks.filter(c => c.status === 'pass' || c.status === 'info').length
   const failCount = allChecks.filter(c => c.status === 'fail').length
@@ -281,10 +304,22 @@ export default function AdminHealthcheckPage() {
 
           <div className="flex items-center gap-2">
             {report && (
-              <Button variant="outline" size="sm" onClick={exportReport}>
-                <Download className="h-4 w-4 mr-1" />
-                Rapor
-              </Button>
+              <>
+                <Button variant="outline" size="sm" onClick={exportReport}>
+                  <Download className="h-4 w-4 mr-1" />
+                  Rapor
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={openCursorPrompt}
+                  disabled={failCount === 0 && warnCount === 0}
+                  title={failCount === 0 && warnCount === 0 ? 'Hata/uyari yok' : 'Cursor\'da kullanmak icin promptu kopyala'}
+                >
+                  <MessageSquare className="h-4 w-4 mr-1" />
+                  Cursor Icin Prompt
+                </Button>
+              </>
             )}
             <Button
               onClick={runHealthCheck}
@@ -526,6 +561,38 @@ export default function AdminHealthcheckPage() {
             </Tabs>
           </>
         )}
+
+        <Dialog open={cursorPromptOpen} onOpenChange={setCursorPromptOpen}>
+          <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+            <DialogHeader>
+              <DialogTitle>Cursor Icin Prompt</DialogTitle>
+              <DialogDescription>
+                Bu metni Cursor sohbetine yapistirarak tespit edilen hatalari otomatik cozdurebilirsiniz. Zaten panoya kopyalandi.
+              </DialogDescription>
+            </DialogHeader>
+            <Textarea
+              readOnly
+              value={cursorPromptText}
+              className="flex-1 min-h-[320px] font-mono text-xs resize-none"
+            />
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(cursorPromptText)
+                  toast.success('Tekrar panoya kopyalandi')
+                }}
+              >
+                <Copy className="h-4 w-4 mr-1" />
+                Kopyala
+              </Button>
+              <Button size="sm" onClick={() => setCursorPromptOpen(false)}>
+                Kapat
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AdminLayout>
   )

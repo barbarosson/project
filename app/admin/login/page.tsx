@@ -66,7 +66,7 @@ function AdminLoginContent() {
         .eq('id', user.id)
         .maybeSingle();
 
-      if (profile && (profile.role === 'admin' || profile.role === 'super_admin')) {
+      if (profile && profile.role === 'super_admin') {
         setHasCheckedAuth(true);
         window.location.href = redirectUrl;
       } else if (profileError) {
@@ -113,7 +113,7 @@ function AdminLoginContent() {
             throw new Error('Profile not found and could not be created. Please contact administrator.');
           }
 
-          if (newProfile.role !== 'admin' && newProfile.role !== 'super_admin') {
+          if (newProfile.role !== 'super_admin') {
             await supabase.auth.signOut();
             throw new Error('Access denied. Admin privileges required.');
           }
@@ -123,7 +123,7 @@ function AdminLoginContent() {
           return;
         }
 
-        if (profile.role !== 'admin' && profile.role !== 'super_admin') {
+        if (profile.role !== 'super_admin') {
           await supabase.auth.signOut();
           throw new Error('Access denied. Admin privileges required.');
         }

@@ -54,10 +54,7 @@ Deno.serve(async (req: Request) => {
       .eq("id", callerUser.id)
       .maybeSingle();
 
-    if (
-      !callerProfile ||
-      (callerProfile.role !== "admin" && callerProfile.role !== "super_admin")
-    ) {
+    if (!callerProfile || callerProfile.role !== "super_admin") {
       return new Response(
         JSON.stringify({ error: "Insufficient permissions" }),
         {
@@ -102,7 +99,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    const validRoles = ["user", "admin", "super_admin"];
+    const validRoles = ["user", "super_admin"];
     const userRole = validRoles.includes(role) ? role : "user";
 
     if (
@@ -124,16 +121,41 @@ Deno.serve(async (req: Request) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
+    const emailNorm = (email as string).toLowerCase().trim();
+    const { data: existingProfile } = await adminClient
+      .from("profiles")
+      .select("id")
+      .ilike("email", emailNorm)
+      .maybeSingle();
+    if (existingProfile) {
+      return new Response(
+        JSON.stringify({
+          error: "Bu e-posta adresi zaten sistemde kayitli. Ayni mail adresi ile birden fazla kullanici olusturulamaz.",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     const { data: userData, error: createError } =
       await adminClient.auth.admin.createUser({
-        email,
+        email: emailNorm,
         password,
         email_confirm: true,
         user_metadata: { full_name: full_name || "" },
       });
 
     if (createError) {
-      return new Response(JSON.stringify({ error: createError.message }), {
+      const isDuplicate =
+        createError.message?.includes("already") ||
+        createError.message?.includes("duplicate") ||
+        (createError as { code?: string }).code === "23505";
+      const message = isDuplicate
+        ? "Bu e-posta adresi zaten sistemde kayitli. Ayni mail adresi ile birden fazla kullanici olusturulamaz."
+        : createError.message;
+      return new Response(JSON.stringify({ error: message }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -142,7 +164,9 @@ Deno.serve(async (req: Request) => {
     const userId = userData.user.id;
 
     const validPlans = ["STARTER", "ADVANCED", "ENTERPRISE"];
-    const selectedPlan = validPlans.includes(plan_name) ? plan_name : "STARTER";
+    const selectedPlan = userRole === "super_admin"
+      ? "ENTERPRISE"
+      : (validPlans.includes(plan_name) ? plan_name : "STARTER");
     const subStatus =
       plan_status === "active" ||
       plan_status === "cancelled" ||
@@ -191,7 +215,7 @@ Deno.serve(async (req: Request) => {
 
     const { error: profileError } = await adminClient.from("profiles").upsert({
       id: userId,
-      email,
+      email: emailNorm,
       full_name: full_name || null,
       phone: phone || null,
       company_name: company_name || null,

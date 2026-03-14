@@ -39,11 +39,29 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    const emailNorm = String(email).toLowerCase().trim();
+    const { data: existingProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .ilike("email", emailNorm)
+      .maybeSingle();
+    if (existingProfile) {
+      return new Response(
+        JSON.stringify({
+          error: "Bu e-posta adresi zaten sistemde kayitli. Ayni mail adresi ile birden fazla kullanici olusturulamaz.",
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     const password = generatePassword();
 
     const { data: userData, error: userError } =
       await supabaseAdmin.auth.admin.createUser({
-        email,
+        email: emailNorm,
         password,
         email_confirm: true,
         user_metadata: {
@@ -51,7 +69,19 @@ Deno.serve(async (req: Request) => {
         },
       });
 
-    if (userError) throw userError;
+    if (userError) {
+      const isDuplicate =
+        userError.message?.includes("already") ||
+        userError.message?.includes("duplicate") ||
+        (userError as { code?: string }).code === "23505";
+      const msg = isDuplicate
+        ? "Bu e-posta adresi zaten sistemde kayitli. Ayni mail adresi ile birden fazla kullanici olusturulamaz."
+        : userError.message;
+      return new Response(JSON.stringify({ error: msg }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const userId = userData.user.id;
 
@@ -78,7 +108,7 @@ Deno.serve(async (req: Request) => {
       .from("profiles")
       .update({
         tenant_id: tenantId,
-        role: "admin",
+        role: "super_admin",
         company_name: companyName,
         full_name: fullName,
       })

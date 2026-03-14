@@ -65,6 +65,7 @@ Deno.serve(async (req: Request) => {
 
     const body = await req.json().catch(() => ({}));
     const tenant_id = typeof body.tenant_id === "string" ? body.tenant_id.trim() : "";
+    const delete_only = body.delete_only === true;
 
     if (!tenant_id) {
       return respond({ error: "tenant_id is required" }, 400);
@@ -134,7 +135,7 @@ Deno.serve(async (req: Request) => {
 
       if (
         !callerProfile ||
-        (callerProfile.role !== "admin" && callerProfile.role !== "super_admin")
+        callerProfile.role !== "super_admin"
       ) {
         return respond(
           {
@@ -195,10 +196,12 @@ Deno.serve(async (req: Request) => {
       "Mersin",
     ];
 
-    // DELETE existing data in correct order (children first)
+    // DELETE existing data in correct order (children first; FK: order_items→orders→customers)
     const deleteTables = [
       "transactions",
       "stock_movements",
+      "order_items",
+      "orders",
       "proposal_line_items",
       "invoice_line_items",
       "proposals",
@@ -211,17 +214,50 @@ Deno.serve(async (req: Request) => {
       "customers",
     ];
 
+    const deleteErrors: string[] = [];
+    const tenantIdRaw = String(tenant_id);
+
     for (const table of deleteTables) {
       const { error } = await db
         .from(table)
         .delete()
-        .eq("tenant_id", tenant_id);
+        .eq("tenant_id", tenantIdRaw);
       if (error) {
-        steps.push(`DELETE ${table} failed: ${error.message}`);
+        const msg = error.message || "";
+        const isMissingTable =
+          (error as { code?: string }).code === "42P01" ||
+          /relation\s+["']?[\w.]*["']?\s+does not exist/i.test(msg) ||
+          /could not find/i.test(msg);
+        if (isMissingTable) {
+          steps.push(`DELETE ${table} skipped (table not found)`);
+        } else {
+          steps.push(`DELETE ${table} failed: ${msg}`);
+          deleteErrors.push(`${table}: ${msg}`);
+        }
       }
     }
 
+    if (deleteErrors.length > 0) {
+      return respond(
+        {
+          error: "Demo veri silinirken hata olustu",
+          detail: deleteErrors[0],
+          steps,
+          deleteErrors,
+        },
+        500
+      );
+    }
+
     steps.push("old data deleted");
+
+    if (delete_only) {
+      return respond({
+        success: true,
+        message: "Demo verileri silindi",
+        results: {},
+      });
+    }
 
     // CUSTOMERS
     const customersData = COMPANY_NAMES.map((name, i) => ({
@@ -438,18 +474,18 @@ Deno.serve(async (req: Request) => {
     const campaignsData = [
       { name: "Yaz Indirimi", type: "email", status: "active" },
       { name: "Yeni Uye Hosgeldin", type: "email", status: "active" },
-      { name: "Black Friday Ozel", type: "sms", status: "draft" },
+      { name: "Black Friday Ozel", type: "discount", status: "draft" },
       { name: "Sadakat Programi", type: "email", status: "completed" },
       { name: "Urun Tanitim", type: "email", status: "active" },
       { name: "Referans Programi", type: "email", status: "draft" },
-      { name: "Bayram Kampanyasi", type: "sms", status: "completed" },
+      { name: "Bayram Kampanyasi", type: "announcement", status: "completed" },
       { name: "Geri Kazanim", type: "email", status: "active" },
       { name: "Yilbasi Ozel", type: "email", status: "draft" },
-      { name: "Erken Kus Firsati", type: "sms", status: "active" },
+      { name: "Erken Kus Firsati", type: "discount", status: "active" },
     ].map((c, i) => ({
       tenant_id,
       ...c,
-      target_segment: randomPick(["all", "new", "returning", "vip"]),
+      target_segment: randomPick(["all", "champions", "at_risk", "new_leads", "regular"]),
       subject: `${c.name} - Ozel Firsat`,
       message: `${c.name} kampanyasi. Bu firsati kacirmayin!`,
       discount_rate: randomPick([5, 10, 15, 20, 25, 30]),
@@ -542,7 +578,7 @@ Deno.serve(async (req: Request) => {
     const smData = products!.map((p: any) => ({
       tenant_id,
       product_id: p.id,
-      movement_type: randomPick(["in", "out", "adjustment"]),
+      movement_type: randomPick(["in", "out"]),
       quantity: Math.floor(Math.random() * 50) + 1,
       reason: randomPick([
         "Satin alma",
@@ -635,7 +671,7 @@ Deno.serve(async (req: Request) => {
     const txData = Array.from({ length: 10 }, (_, i) => ({
       tenant_id,
       account_id: accounts![i % accounts!.length].id,
-      transaction_type: randomPick(["income", "expense", "transfer"]),
+      transaction_type: randomPick(["income", "expense"]),
       amount: randomBetween(500, 25000),
       currency: "TRY",
       transaction_date: randomDate(sixMonthsAgo, now),

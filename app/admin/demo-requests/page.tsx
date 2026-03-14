@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useAuth } from '@/contexts/auth-context'
-import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -39,6 +37,7 @@ import {
 import { toast } from 'sonner'
 import { LoadingSpinner } from '@/components/loading-spinner'
 import { format } from 'date-fns'
+import { useAdmin } from '@/contexts/admin-context'
 
 interface DemoRequest {
   id: string
@@ -58,8 +57,7 @@ interface DemoRequest {
 }
 
 export default function AdminDemoRequestsPage() {
-  const { isSuperAdmin, loading: authLoading } = useAuth()
-  const router = useRouter()
+  const { profile, isLoading: authLoading } = useAdmin()
   const [requests, setRequests] = useState<DemoRequest[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedRequest, setSelectedRequest] = useState<DemoRequest | null>(null)
@@ -67,18 +65,13 @@ export default function AdminDemoRequestsPage() {
   const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null)
   const [rejectionReason, setRejectionReason] = useState('')
   const [processing, setProcessing] = useState(false)
+  const [createdPassword, setCreatedPassword] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!authLoading && !isSuperAdmin) {
-      router.push('/dashboard')
-    }
-  }, [isSuperAdmin, authLoading, router])
-
-  useEffect(() => {
-    if (isSuperAdmin) {
+    if (!authLoading && profile?.role === 'super_admin') {
       fetchRequests()
     }
-  }, [isSuperAdmin])
+  }, [profile?.role, authLoading])
 
   const fetchRequests = async () => {
     try {
@@ -111,32 +104,37 @@ export default function AdminDemoRequestsPage() {
     setProcessing(true)
 
     try {
-      // Call edge function to create demo account
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-demo-account`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify({
-            requestId: selectedRequest.id,
-            email: selectedRequest.email,
-            fullName: selectedRequest.full_name,
-            companyName: selectedRequest.company_name
-          })
-        }
-      )
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) {
+        toast.error('Oturum bulunamadi. Lutfen giris yapin.')
+        return
+      }
+
+      // Server-side proxy (service role) creates demo account securely
+      const response = await fetch('/api/admin/create-demo-account', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          requestId: selectedRequest.id,
+          email: selectedRequest.email,
+          fullName: selectedRequest.full_name,
+          companyName: selectedRequest.company_name,
+        }),
+      })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Failed to create demo account')
+        const raw = await response.text()
+        let parsed: any = {}
+        try { parsed = raw ? JSON.parse(raw) : {} } catch { parsed = { error: raw } }
+        throw new Error(parsed?.message || parsed?.error || 'Demo hesap olusturulamadi')
       }
 
       const result = await response.json()
-
-      toast.success(`Demo account created successfully! Password: ${result.password}`)
+      setCreatedPassword(result.password || null)
+      toast.success('Demo hesap olusturuldu')
 
       await fetchRequests()
       setDialogOpen(false)
@@ -188,8 +186,22 @@ export default function AdminDemoRequestsPage() {
     )
   }
 
-  if (!isSuperAdmin) {
-    return null
+  if (profile?.role !== 'super_admin') {
+    return (
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Demo Talepleri</CardTitle>
+            <CardDescription>Bu sayfa sadece Super Admin icindir.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Yetkiniz yok. Super Admin hesabi ile giris yapin.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   const pendingRequests = requests.filter(r => r.status === 'pending')
