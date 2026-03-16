@@ -8,6 +8,8 @@ const corsHeaders = {
 };
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const RESEND_FROM_EMAIL =
+  Deno.env.get("RESEND_FROM_EMAIL") || "ModulusTech <info@modulusaas.com>";
 
 interface WelcomePayload {
   email: string;
@@ -146,7 +148,7 @@ Deno.serve(async (req: Request) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "onboarding@resend.dev",
+        from: RESEND_FROM_EMAIL,
         to: [email],
         subject,
         html,

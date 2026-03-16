@@ -300,7 +300,9 @@ Deno.serve(async (req: Request) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "ModulusTech <noreply@modulus.app>",
+        from:
+          Deno.env.get("RESEND_FROM_EMAIL") ||
+          "ModulusTech <info@modulusaas.com>",
         to: [customerEmail],
         subject: `Cari Mutabakat Mektubu - ${rec.request_number}`,
         html: emailHtml,

@@ -7,6 +7,8 @@ const corsHeaders = {
 }
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const RESEND_FROM_EMAIL =
+  Deno.env.get("RESEND_FROM_EMAIL") || "ModulusTech <info@modulusaas.com>";
 
 interface TicketData {
   ticket_number: string
@@ -141,8 +143,8 @@ Deno.serve(async (req: Request) => {
         "Authorization": `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "ModulusTech Helpdesk <noreply@modulus.app>",
-        to: ["info@modulus.app"],
+        from: RESEND_FROM_EMAIL,
+        to: ["info@modulusaas.com"],
         reply_to: ticketData.user_email,
         subject: `🎫 New Support Ticket #${ticketData.ticket_number} - ${ticketData.subject}`,
         html: emailHtml,
