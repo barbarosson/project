@@ -43,6 +43,8 @@ export interface SubscriptionPlan {
   description: string;
   features: string[];
   created_at: string;
+  // Opsiyonel: subscription_plans.trial_days kolonu
+  trial_days?: number | null;
 }
 
 export interface UserSubscription {
@@ -187,22 +189,63 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         const plan = plansResponse.data?.find(p => p.name === subscriptionResponse.data.plan_name);
         setCurrentPlan(plan || plansResponse.data?.[0] || null);
       } else {
-        // Super admin'lere paket atanmamışsa UI'da ENTERPRISE göster (tüm menülere erişim için)
+        // Kullanıcının henuz user_subscriptions kaydi yoksa, DB'de bir kayit olustur
+        // Super admin'lere ENTERPRISE, diger tum kullanicilara FREE plan + deneme suresi
         const defaultPlanName = role === 'super_admin' ? 'ENTERPRISE' : 'FREE';
-        const defaultPlan = plansResponse.data?.find(p => p.name === defaultPlanName) || plansResponse.data?.[0] || null;
+        const defaultPlan =
+          plansResponse.data?.find(p => p.name === defaultPlanName) ||
+          plansResponse.data?.[0] ||
+          null;
+
+        let createdSub: UserSubscription | null = null;
+        try {
+          const now = new Date();
+          const planTrialDays = defaultPlan?.trial_days ?? 14;
+          const trialMs = planTrialDays * 24 * 60 * 60 * 1000;
+          const trialEndIso =
+            defaultPlanName === 'FREE'
+              ? new Date(now.getTime() + trialMs).toISOString()
+              : null;
+
+          const { data: inserted, error: insertError } = await supabase
+            .from('user_subscriptions')
+            .insert({
+              user_id: user.id,
+              plan_name: defaultPlanName,
+              status: 'active',
+              started_at: now.toISOString(),
+              expires_at: trialEndIso,
+              payment_method: null,
+              auto_renew: true,
+            })
+            .select('*')
+            .maybeSingle();
+
+          if (insertError) {
+            console.error('Error creating default subscription:', insertError);
+          } else if (inserted) {
+            createdSub = inserted as UserSubscription;
+          }
+        } catch (e) {
+          console.error('Error creating default subscription:', e);
+        }
+
+        const finalSub: UserSubscription =
+          createdSub ?? {
+            id: '',
+            user_id: user.id,
+            plan_name: defaultPlanName as PlanName,
+            status: 'active',
+            started_at: new Date().toISOString(),
+            expires_at: null,
+            payment_method: null,
+            auto_renew: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          };
+
         setCurrentPlan(defaultPlan);
-        setUserSubscription({
-          id: '',
-          user_id: user.id,
-          plan_name: defaultPlanName as PlanName,
-          status: 'active',
-          started_at: new Date().toISOString(),
-          expires_at: null,
-          payment_method: null,
-          auto_renew: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
+        setUserSubscription(finalSub);
       }
 
       if (creditsResponse.data) {

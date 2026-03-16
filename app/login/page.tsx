@@ -62,6 +62,9 @@ const t = {
     googleNotEnabled: 'Google girisi henuz etkinlestirilmemis',
     loading: 'Yukleniyor...',
     userExists: 'Bu e-posta adresi zaten kayitli. Lutfen giris yapin.',
+    forgotPassword: 'Şifreni mi unuttun?',
+    forgotPasswordSent: 'Eger bu e-posta sistemimizde kayitliyse, sifre sifirlama e-postasi gonderildi.',
+    forgotPasswordEmailRequired: 'Once e-posta adresinizi yazin.',
   },
   en: {
     welcome: 'Welcome Back',
@@ -106,6 +109,9 @@ const t = {
     googleNotEnabled: 'Google sign-in is not enabled yet',
     loading: 'Loading...',
     userExists: 'This email is already registered. Please sign in.',
+    forgotPassword: 'Forgot password?',
+    forgotPasswordSent: 'If this email exists in our system, a reset email has been sent.',
+    forgotPasswordEmailRequired: 'Please enter your email first.',
   },
 }
 
@@ -204,6 +210,36 @@ function LoginContent() {
         msg = l.emailNotConfirmed
       }
       toast.error(msg, { duration: 5000 })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleForgotPassword() {
+    const emailVal = loginEmailRef.current?.value?.trim() ?? ''
+    if (!emailVal) {
+      toast.error(language === 'tr' ? 'Önce e-posta adresinizi yazın.' : t.en.forgotPasswordEmailRequired)
+      return
+    }
+    setLoading(true)
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: emailVal }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        const errMsg = (data && (data.error as string)) || l.genericError
+        toast.error(errMsg)
+        return
+      }
+      toast.success(l.forgotPasswordSent, { duration: 6000 })
+    } catch (error: any) {
+      const msg = error?.message || l.genericError
+      toast.error(msg)
     } finally {
       setLoading(false)
     }
@@ -608,8 +644,7 @@ function LoginContent() {
                         type="email"
                         placeholder="ornek@email.com"
                         autoComplete="email"
-                        className="pl-10 rounded-xl"
-                        style={{ borderColor: '#E6EBF1' }}
+                        className="pl-10 rounded-xl h-11 border-2 border-slate-200 bg-slate-50 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:border-sky-500"
                         disabled={loading}
                         onKeyDown={(e) => e.key === 'Enter' && handleEmailSignIn()}
                       />
@@ -625,11 +660,20 @@ function LoginContent() {
                         type="password"
                         placeholder="********"
                         autoComplete="current-password"
-                        className="pl-10 rounded-xl"
-                        style={{ borderColor: '#E6EBF1' }}
+                        className="pl-10 rounded-xl h-11 border-2 border-slate-200 bg-slate-50 focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:border-sky-500"
                         disabled={loading}
                         onKeyDown={(e) => e.key === 'Enter' && handleEmailSignIn()}
                       />
+                    </div>
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={handleForgotPassword}
+                        className="text-xs font-medium text-sky-600 hover:text-sky-700 hover:underline"
+                        disabled={loading}
+                      >
+                        {l.forgotPassword}
+                      </button>
                     </div>
                   </div>
                   <Button
