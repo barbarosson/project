@@ -188,18 +188,19 @@ export function UserDetailSheet({
         body: JSON.stringify({ userId: user.id }),
       });
 
+      const data = await response.json().catch(() => ({}));
+
       if (!response.ok) {
-        let errorMsg = 'Sifre sifirlama basarisiz';
-        try {
-          const err = await response.json();
-          errorMsg = err.error || errorMsg;
-        } catch {
-          errorMsg = `Hata (${response.status}): ${response.statusText}`;
-        }
+        const errorMsg = data?.error || `Hata (${response.status}): ${response.statusText}`;
         throw new Error(errorMsg);
       }
 
-      toast.success('Sifre sifirlandi. Gecici sifre kullaniciya e-posta ile gonderildi; ilk giriste sifre degistirmesi istenecek.');
+      if (data.emailSent) {
+        toast.success('Sifre sifirlandi. Gecici sifre kullaniciya e-posta ile gonderildi; ilk giriste sifre degistirmesi istenecek.');
+      } else {
+        toast.warning(data.message || 'Sifre sifirlandi ancak e-posta gonderilemedi.');
+        if (data.emailError) showErrorDialog(data.emailError);
+      }
       setPasswordDialogOpen(false);
     } catch (error: any) {
       const msg = error?.message || 'Sifre sifirlama basarisiz';
@@ -448,6 +449,10 @@ export function UserDetailSheet({
                           onClick={async (e) => {
                             e.stopPropagation();
                             try {
+                              if (!user.tenant_id) {
+                                toast.error('Tenant ID mevcut degil');
+                                return;
+                              }
                               await navigator.clipboard.writeText(user.tenant_id);
                               toast.success('Tenant ID panoya kopyalandi');
                             } catch {

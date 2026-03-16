@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'ModulusTech <noreply@modulus.app>';
 const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || process.env.SITE_URL || 'https://modulustech.app';
 
 const LOWER = 'abcdefghijklmnopqrstuvwxyz';
@@ -85,6 +86,9 @@ export async function POST(request: NextRequest) {
         console.warn('[reset-password] profiles update:', profileError.message);
       }
 
+      let emailSent = false;
+      let emailError: string | null = null;
+
       if (RESEND_API_KEY && targetEmail) {
         const html = `
 <!DOCTYPE html>
@@ -95,7 +99,7 @@ export async function POST(request: NextRequest) {
     <h2 style="color: #0A2540; margin-top: 0;">Sifreniz Sifirlandi</h2>
     <p>Hesabiniz icin gecici bir giris sifresi olusturuldu. Ilk giriste uygulama sizden yeni bir sifre belirlemenizi isteyecektir.</p>
     <p style="font-size: 18px; font-weight: 600; letter-spacing: 4px; background: #e2e8f0; padding: 12px 20px; border-radius: 8px; text-align: center;">${tempCode}</p>
-    <p style="color: #64748b; font-size: 14px;">Bu kodu kimseyle paylasmayin. Giris yaptiktan sonra mutlaka sifrenizi degistirin.</p>
+    <p style="color: #64748b; font-size: 14px;">Bu sifreyi kimseyle paylasmayin. Giris yaptiktan sonra mutlaka sifrenizi degistirin.</p>
     <p style="margin-top: 24px;"><a href="${SITE_URL}/dashboard" style="background: #00D4AA; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600;">Uygulamaya Gir</a></p>
     <p style="margin-top: 32px; font-size: 12px; color: #94a3b8;">ModulusTech ERP - Otomatik e-posta</p>
   </div>
@@ -109,25 +113,43 @@ export async function POST(request: NextRequest) {
               Authorization: `Bearer ${RESEND_API_KEY}`,
             },
             body: JSON.stringify({
-              from: 'ModulusTech <noreply@modulus.app>',
+              from: RESEND_FROM_EMAIL,
               to: [targetEmail],
-              subject: 'ModulusTech - Gecici giris kodu (sifre sifirlandi)',
+              subject: 'ModulusTech - Gecici giris sifresi (sifre sifirlandi)',
               html,
             }),
           });
-          if (!emailRes.ok) {
-            const errText = await emailRes.text();
-            console.error('Resend error:', errText);
+          const errText = await emailRes.text();
+          if (emailRes.ok) {
+            emailSent = true;
+          } else {
+            let msg = errText;
+            try {
+              const errJson = JSON.parse(errText) as { message?: string };
+              msg = errJson.message || errText;
+            } catch {
+              // keep errText
+            }
+            emailError = msg;
+            console.error('[reset-password] Resend error:', emailRes.status, msg);
           }
         } catch (e) {
-          console.error('Send email error:', e);
+          emailError = e instanceof Error ? e.message : String(e);
+          console.error('[reset-password] Send email error:', e);
         }
+      } else if (targetEmail) {
+        emailError = 'RESEND_API_KEY tanimli degil; e-posta gonderilmedi.';
       }
 
       return NextResponse.json({
         success: true,
-        message:
-          'Sifre sifirlandi. Gecici kod kullaniciya e-posta ile gonderildi (e-posta yapilandirmasi yoksa atlandi).',
+        message: emailSent
+          ? 'Sifre sifirlandi. Gecici sifre kullaniciya e-posta ile gonderildi.'
+          : emailError
+            ? `Sifre sifirlandi ancak e-posta gonderilemedi: ${emailError}`
+            : 'Sifre sifirlandi. (E-posta atlandi.)',
+        emailSent,
+        emailError: emailError ?? undefined,
       });
     });
     return res;
