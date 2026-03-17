@@ -838,6 +838,20 @@ function LoginContent() {
 
         <div className="mt-6 pt-6 space-y-4" style={{ borderTop: '1px solid #E6EBF1' }}>
           <div className="rounded-xl p-4" style={{ backgroundColor: '#F6F9FC' }}>
+            <p className="text-sm mb-3" style={{ color: '#425466' }}>
+              {language === 'tr'
+                ? 'Bir paket seçin ve kredi/banka kartı ile güvenli ödeme yapın.'
+                : 'Choose a package and pay securely with credit/debit card.'}
+            </p>
+            <Button
+              className="w-full rounded-full font-semibold"
+              style={{ backgroundColor: '#00D4AA', color: '#ffffff' }}
+              onClick={() => router.push('/buy')}
+            >
+              {language === 'tr' ? 'Paket Seç & Öde' : 'Choose Plan & Pay'}
+            </Button>
+          </div>
+          <div className="rounded-xl p-4" style={{ backgroundColor: '#F6F9FC' }}>
             <p className="text-sm mb-3" style={{ color: '#425466' }}>{l.demoRequestInfo}</p>
             <Button
               className="w-full rounded-full font-semibold"

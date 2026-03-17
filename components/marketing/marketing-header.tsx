@@ -118,6 +118,15 @@ export function MarketingHeader() {
                     {t.marketing.nav.signIn}
                   </Button>
                 </Link>
+                <Link href="/landing#pricing">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-2xl font-bold rounded-full px-5 transition-all duration-300 border-[#00D4AA] text-[#0A2540] hover:bg-[#00D4AA]/10"
+                  >
+                    {language === 'tr' ? 'Satın Al' : 'Buy Now'}
+                  </Button>
+                </Link>
                 <Link href="/contact">
                   <Button
                     size="sm"
@@ -192,6 +201,14 @@ export function MarketingHeader() {
               <Link href="/login" className="block">
                 <Button variant="outline" className="w-full text-2xl font-bold rounded-full" style={{ borderColor: '#E6EBF1', color: '#0A2540' }}>
                   {t.marketing.nav.signIn}
+                </Button>
+              </Link>
+              <Link href="/landing#pricing" className="block" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button
+                  variant="outline"
+                  className="w-full text-2xl font-bold rounded-full border-[#00D4AA] text-[#0A2540] hover:bg-[#00D4AA]/10"
+                >
+                  {language === 'tr' ? 'Satın Al' : 'Buy Now'}
                 </Button>
               </Link>
               <Link href="/contact" className="block">
