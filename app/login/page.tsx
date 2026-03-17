@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef, Suspense } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { useLanguage } from '@/contexts/language-context'
@@ -20,51 +22,51 @@ import { ModulusFooter } from '@/components/marketing/parasut-footer'
 
 const t = {
   tr: {
-    welcome: 'Tekrar Hos Geldiniz',
-    subtitle: 'Hesabiniza giris yaparak buyumeye devam edin',
-    signIn: 'Giris Yap',
-    signUp: 'Kayit Ol',
-    signInDesc: 'Hesabiniza giris yapin',
-    signUpDesc: 'Yeni hesap olusturun',
+    welcome: 'Tekrar Hoş Geldiniz',
+    subtitle: 'Hesabınıza giriş yaparak büyümeye devam edin',
+    signIn: 'Giriş Yap',
+    signUp: 'Kayıt Ol',
+    signInDesc: 'Hesabınıza giriş yapın',
+    signUpDesc: 'Yeni hesap oluşturun',
     email: 'E-posta',
-    password: 'Sifre',
-    confirmPassword: 'Sifre Tekrar',
+    password: 'Şifre',
+    confirmPassword: 'Şifre (Tekrar)',
     fullName: 'Ad Soyad',
-    magicLink: 'Sihirli Link',
-    magicLinkDesc: 'E-postaniza giris linki gonderecegiz. Sifre gerekmez!',
-    sendMagicLink: 'Sihirli Link Gonder',
-    sending: 'Gonderiliyor...',
+    magicLink: 'Sihirli Giriş Linki',
+    magicLinkDesc: 'E-postanıza giriş linki göndereceğiz. Şifre gerekmez!',
+    sendMagicLink: 'Sihirli Link Gönder',
+    sending: 'Gönderiliyor...',
     or: 'veya',
     googleContinue: 'Google ile devam et',
-    fillAll: 'Lutfen tum alanlari doldurun',
-    passwordMin: 'Sifre en az 6 karakter olmali',
-    passwordMismatch: 'Sifreler eslesmiyor',
-    loginSuccess: 'Giris basarili!',
-    invalidCredentials: 'E-posta veya sifre hatali. Lutfen tekrar deneyin.',
-    emailNotConfirmed: 'E-postanizi henuz dogrulamadiniz. Lutfen gelen kutunuzu kontrol edin.',
-    genericError: 'Bir hata olustu',
-    processing: 'Isleniyor...',
-    checkEmail: 'E-postanizi Kontrol Edin!',
-    confirmationSent: 'adresine bir dogrulama linki gonderdik. Lutfen gelen kutunuzu kontrol edin ve linke tiklayarak hesabinizi aktif hale getirin.',
-    checkSpam: 'E-posta gelmediyse spam/gereksiz klasorunu kontrol edin.',
-    resendEmail: 'Tekrar Gonder',
-    resending: 'Gonderiliyor...',
-    resendSuccess: 'Dogrulama e-postasi tekrar gonderildi!',
-    backToLogin: 'Girise Don',
-    signUpSuccess: 'Kayit basarili! E-postanizi kontrol edin.',
-    magicLinkSent: 'E-postanizi kontrol edin! Giris linki gonderildi.',
-    demoRequestInfo: 'Henuz hesabiniz yok mu? Demo talebi gonderin, onaylandiginda ornek verilerle dolu bir hesap olusturalim!',
-    demoRequestBtn: 'Demo Hesap Talebi Gonder',
-    tryDemo: 'Hazir Demo Hesabini Dene',
-    demoSuccess: 'Demo hesabina giris yapildi!',
-    demoFail: 'Demo hesabina giris yapilamadi. Lutfen yoneticiyle iletisime gecin.',
-    backHome: 'Ana Sayfaya Don',
-    googleNotEnabled: 'Google girisi henuz etkinlestirilmemis',
-    loading: 'Yukleniyor...',
-    userExists: 'Bu e-posta adresi zaten kayitli. Lutfen giris yapin.',
+    fillAll: 'Lütfen tüm alanları doldurun',
+    passwordMin: 'Şifre en az 6 karakter olmalı',
+    passwordMismatch: 'Şifreler eşleşmiyor',
+    loginSuccess: 'Giriş başarılı!',
+    invalidCredentials: 'E-posta veya şifre hatalı. Lütfen tekrar deneyin.',
+    emailNotConfirmed: 'E-postanızı henüz doğrulamadınız. Lütfen gelen kutunuzu kontrol edin.',
+    genericError: 'Bir hata oluştu',
+    processing: 'İşleniyor...',
+    checkEmail: 'E-postanızı kontrol edin!',
+    confirmationSent: 'adresine bir doğrulama linki gönderdik. Lütfen gelen kutunuzu kontrol edin ve linke tıklayarak hesabınızı aktif hale getirin.',
+    checkSpam: 'E-posta gelmediyse spam/gereksiz klasörünü kontrol edin.',
+    resendEmail: 'Tekrar Gönder',
+    resending: 'Gönderiliyor...',
+    resendSuccess: 'Doğrulama e-postası tekrar gönderildi!',
+    backToLogin: 'Girişe Dön',
+    signUpSuccess: 'Kayıt başarılı! E-postanızı kontrol edin.',
+    magicLinkSent: 'E-postanızı kontrol edin! Giriş linki gönderildi.',
+    demoRequestInfo: 'Henüz hesabınız yok mu? Demo talebi gönderin, onaylandığında örnek verilerle dolu bir hesap oluşturalım!',
+    demoRequestBtn: 'Demo Hesap Talebi Gönder',
+    tryDemo: 'Hazır demo hesabı dene',
+    demoSuccess: 'Demo hesabına giriş yapıldı!',
+    demoFail: 'Demo hesabına giriş yapılamadı. Lütfen yöneticiyle iletişime geçin.',
+    backHome: 'Ana sayfaya dön',
+    googleNotEnabled: 'Google girişi henüz etkinleştirilmemiş',
+    loading: 'Yükleniyor...',
+    userExists: 'Bu e-posta adresi zaten kayıtlı. Lütfen giriş yapın.',
     forgotPassword: 'Şifreni mi unuttun?',
-    forgotPasswordSent: 'Eger bu e-posta sistemimizde kayitliyse, sifre sifirlama e-postasi gonderildi.',
-    forgotPasswordEmailRequired: 'Once e-posta adresinizi yazin.',
+    forgotPasswordSent: 'Eğer bu e-posta sistemimizde kayıtlıysa, şifre sıfırlama e-postası gönderildi.',
+    forgotPasswordEmailRequired: 'Önce e-posta adresinizi yazın.',
   },
   en: {
     welcome: 'Welcome Back',
@@ -865,6 +867,56 @@ function LoginContent() {
             >
               ← {l.backHome}
             </Button>
+          </div>
+
+          <div className="pt-4 space-y-3" style={{ borderTop: '1px solid #E6EBF1' }}>
+            <div className="text-xs text-center" style={{ color: '#6B7280' }}>
+              {language === 'tr'
+                ? 'Güvenli bağlantı (SSL) ile korunur.'
+                : 'Protected by secure connection (SSL).'}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs">
+              <Link href="/hakkimizda" className="hover:underline" style={{ color: '#425466' }}>
+                {language === 'tr' ? 'Hakkımızda' : 'About'}
+              </Link>
+              <Link href="/teslimat-iade" className="hover:underline" style={{ color: '#425466' }}>
+                {language === 'tr' ? 'Teslimat ve İade Şartları' : 'Shipping & Returns'}
+              </Link>
+              <Link href="/gizlilik" className="hover:underline" style={{ color: '#425466' }}>
+                {language === 'tr' ? 'Gizlilik Sözleşmesi' : 'Privacy Policy'}
+              </Link>
+              <Link href="/mesafeli-satis" className="hover:underline" style={{ color: '#425466' }}>
+                {language === 'tr' ? 'Mesafeli Satış Sözleşmesi' : 'Distance Sales Contract'}
+              </Link>
+            </div>
+
+            <div className="flex items-center justify-center gap-3 opacity-90">
+              <Image
+                src="/payments/visa.svg"
+                alt="Visa"
+                width={48}
+                height={16}
+                className="h-4 w-auto"
+                priority
+              />
+              <Image
+                src="/payments/mastercard.svg"
+                alt="Mastercard"
+                width={72}
+                height={16}
+                className="h-4 w-auto"
+                priority
+              />
+              <Image
+                src="/payments/iyzico-ile-ode.svg"
+                alt="iyzico ile Öde"
+                width={110}
+                height={20}
+                className="h-4.5 w-auto"
+                priority
+              />
+            </div>
           </div>
         </div>
       </div>
