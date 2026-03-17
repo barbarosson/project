@@ -23,6 +23,17 @@ export function PublicHeader() {
     }
   }
 
+  const goToPricing = () => {
+    const element = document.getElementById('pricing')
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+      setMobileMenuOpen(false)
+      return
+    }
+    router.push('/pricing')
+    setMobileMenuOpen(false)
+  }
+
   const navItems = [
     { label: language === 'tr' ? 'Özellikler' : 'Features', id: 'features' },
     { label: language === 'tr' ? 'Nasıl Çalışır' : 'How it Works', id: 'how-it-works' },
@@ -66,6 +77,13 @@ export function PublicHeader() {
               onClick={() => router.push('/login')}
             >
               {language === 'tr' ? 'Giriş Yap' : 'Sign In'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={goToPricing}
+              className="border-[#00D4AA] text-[#0A2540] hover:bg-[#00D4AA]/10"
+            >
+              {language === 'tr' ? 'Satın Al' : 'Buy Now'}
             </Button>
             <Button
               onClick={() => router.push('/login?mode=register')}
@@ -120,6 +138,13 @@ export function PublicHeader() {
                   className="w-full"
                 >
                   {language === 'tr' ? 'Giriş Yap' : 'Sign In'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={goToPricing}
+                  className="w-full border-[#00D4AA] text-[#0A2540] hover:bg-[#00D4AA]/10"
+                >
+                  {language === 'tr' ? 'Satın Al' : 'Buy Now'}
                 </Button>
                 <Button
                   onClick={() => {
