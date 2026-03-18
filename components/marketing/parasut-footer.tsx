@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { ModulusLogo } from '@/components/modulus-logo'
 import { Facebook, Twitter, Linkedin, Github, Circle } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
@@ -34,7 +35,7 @@ export function ModulusFooter() {
     company: {
       title: language === 'en' ? 'Company' : 'Sirket',
       links: [
-        { name: language === 'en' ? 'About Us' : 'Hakkimizda', href: '#' },
+        { name: language === 'en' ? 'About Us' : 'Hakkımızda', href: '/hakkimizda' },
         { name: language === 'en' ? 'Careers' : 'Kariyer', href: '#' },
         { name: language === 'en' ? 'Contact' : 'Iletisim', href: '/contact' },
         { name: language === 'en' ? 'Press Kit' : 'Basin Kiti', href: '#' },
@@ -45,13 +46,29 @@ export function ModulusFooter() {
     legal: {
       title: language === 'en' ? 'Legal' : 'Yasal',
       links: [
-        { name: language === 'en' ? 'Privacy Policy' : 'Gizlilik Politikasi', href: '#' },
-        { name: language === 'en' ? 'Terms of Service' : 'Kullanim Sartlari', href: '#' },
-        { name: language === 'en' ? 'Cookie Policy' : 'Cerez Politikasi', href: '#' },
-        { name: language === 'en' ? 'GDPR' : 'KVKK', href: '#' },
-        { name: language === 'en' ? 'Security' : 'Guvenlik', href: '#' }
-      ]
-    }
+        { name: language === 'en' ? 'Home' : 'Ana Sayfa', href: '/landing' },
+        {
+          name: language === 'en' ? 'Privacy Policy' : 'Gizlilik Politikası',
+          href: '/gizlilik',
+        },
+        {
+          name: language === 'en' ? 'Cancellation & Refund' : 'İptal ve İade Şartları',
+          href: '/teslimat-iade#iptal-iade',
+        },
+        {
+          name: language === 'en' ? 'Delivery Policy' : 'Teslimat Politikası',
+          href: '/teslimat-iade#teslimat',
+        },
+        {
+          name: language === 'en' ? 'Distance Sales Agreement' : 'Mesafeli Satış Sözleşmesi',
+          href: '/mesafeli-satis',
+        },
+        {
+          name: language === 'en' ? 'Imprint / Contact' : 'Künye ve İletişim',
+          href: '/contact#kunye',
+        },
+      ],
+    },
   }
 
   const socialLinks = [
@@ -62,7 +79,11 @@ export function ModulusFooter() {
   ]
 
   return (
-    <footer style={{ backgroundColor: '#0A2540' }}>
+    <footer
+      style={{
+        background: 'linear-gradient(180deg, #0A2540 0%, #071a2e 55%, #061528 100%)',
+      }}
+    >
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
         <div className="py-20 lg:py-24">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-10 lg:gap-16 mb-16">
@@ -86,6 +107,51 @@ export function ModulusFooter() {
                 </ul>
               </div>
             ))}
+          </div>
+
+          <div
+            className="rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 mb-10"
+            style={{
+              backgroundColor: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.1)',
+            }}
+          >
+            <div className="text-center sm:text-left">
+              <div className="text-[13px] font-semibold" style={{ color: 'rgba(255,255,255,0.85)' }}>
+                {language === 'en'
+                  ? 'Secure payments with iyzico (credit/debit card)'
+                  : 'Ödemeler iyzico altyapısı ile güvenle alınır (kredi/banka kartı)'}
+              </div>
+              <div className="text-[12px] mt-1" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                {language === 'en'
+                  ? 'Card information is transmitted directly to the payment provider.'
+                  : 'Kart bilgileriniz ödeme sağlayıcı altyapısına doğrudan iletilir.'}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center gap-4 opacity-95">
+              <Image
+                src="/payments/visa.svg"
+                alt="Visa"
+                width={60}
+                height={20}
+                className="h-5 w-auto"
+              />
+              <Image
+                src="/payments/mastercard.svg"
+                alt="Mastercard"
+                width={84}
+                height={20}
+                className="h-5 w-auto"
+              />
+              <Image
+                src="/payments/iyzico-ile-ode.svg"
+                alt={language === 'en' ? 'Pay with iyzico' : 'iyzico ile Öde'}
+                width={140}
+                height={24}
+                className="h-6 w-auto"
+              />
+            </div>
           </div>
 
           <div className="pt-10" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>

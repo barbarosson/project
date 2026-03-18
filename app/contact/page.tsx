@@ -29,10 +29,12 @@ export default function ContactPage() {
     heading_tr: 'İletişime Geçin',
     description_en: 'Have questions? We would love to hear from you.',
     description_tr: 'Sorularınız mı var? Sizden haber almayı çok isteriz.',
-    email: 'info@modulustech.com',
-    phone: '+90 532 496 58 28',
-    address_en: 'Istanbul, Turkey',
-    address_tr: 'İstanbul, Türkiye',
+    email: 'info@modulustech.app',
+    phone: '0532 496 58 28',
+    address_en:
+      'Küçükbakkalköy, Selvili Sok. No:4/48, 34750 Ataşehir/İstanbul',
+    address_tr:
+      'Küçükbakkalköy, Selvili Sok. No:4/48, 34750 Ataşehir/İstanbul',
     office_hours_en: 'Monday - Friday: 9:00 AM - 6:00 PM',
     office_hours_tr: 'Pazartesi - Cuma: 09:00 - 18:00',
   }
@@ -399,6 +401,72 @@ export default function ContactPage() {
               </Card>
             </div>
           </div>
+
+          <Card id="kunye" className="max-w-6xl mx-auto mt-16 p-8 border border-slate-200 scroll-mt-24">
+            <h2 className="text-xl font-bold mb-2" style={{ color: '#0A2540' }}>
+              {language === 'tr'
+                ? 'Web Sitesi Künye Bilgileri'
+                : 'Legal / Company Information'}
+            </h2>
+            <p className="text-sm mb-6" style={{ color: '#64748b' }}>
+              {language === 'tr'
+                ? 'iyzico onay süreci için bu bilgilerin sitede görünür olması şarttır.'
+                : 'These details are displayed for regulatory and payment provider compliance.'}
+            </p>
+            <dl className="grid sm:grid-cols-2 gap-4 text-sm" style={{ color: '#425466' }}>
+              <div>
+                <dt className="font-semibold text-slate-800">
+                  {language === 'tr' ? 'Ticari Ünvan' : 'Trade name'}
+                </dt>
+                <dd className="mt-1">Songurtech - Barbaros Songur</dd>
+              </div>
+              <div>
+                <dt className="font-semibold text-slate-800">
+                  {language === 'tr' ? 'Vergi Kimlik No' : 'Tax ID'}
+                </dt>
+                <dd className="mt-1">7740154044</dd>
+              </div>
+              <div className="sm:col-span-2">
+                <dt className="font-semibold text-slate-800">
+                  {language === 'tr' ? 'Adres' : 'Address'}
+                </dt>
+                <dd className="mt-1">
+                  Küçükbakkalköy, Selvili Sok. No:4/48, 34750 Ataşehir/İstanbul
+                </dd>
+              </div>
+              <div>
+                <dt className="font-semibold text-slate-800">
+                  {language === 'tr' ? 'Telefon' : 'Phone'}
+                </dt>
+                <dd className="mt-1">
+                  <a href="tel:+905324965828" className="text-sky-700 hover:underline">
+                    0532 496 58 28
+                  </a>
+                </dd>
+              </div>
+              <div>
+                <dt className="font-semibold text-slate-800">E-posta</dt>
+                <dd className="mt-1">
+                  <a href="mailto:info@modulustech.app" className="text-sky-700 hover:underline">
+                    info@modulustech.app
+                  </a>
+                </dd>
+              </div>
+              <div className="sm:col-span-2">
+                <dt className="font-semibold text-slate-800">Web</dt>
+                <dd className="mt-1">
+                  <a
+                    href="https://www.modulusaas.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sky-700 hover:underline"
+                  >
+                    www.modulusaas.com
+                  </a>
+                </dd>
+              </div>
+            </dl>
+          </Card>
         </div>
       </section>
     </MarketingLayout>

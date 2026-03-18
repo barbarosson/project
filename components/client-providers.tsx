@@ -16,6 +16,7 @@ import { LeadPopup } from '@/components/marketing/lead-popup'
 import { UIStyleInjector } from '@/components/ui-style-injector'
 import { PageTransitionLogo } from '@/components/page-transition-logo'
 import { HtmlLangSync } from '@/components/html-lang-sync'
+import { GlobalAnaSayfaLink } from '@/components/global-ana-sayfa-link'
 import { Toaster } from 'sonner'
 
 export function ClientProviders({ children }: { children: ReactNode }) {
@@ -27,6 +28,7 @@ export function ClientProviders({ children }: { children: ReactNode }) {
             <ThemeProvider>
               <LanguageProvider>
                 <HtmlLangSync />
+                <GlobalAnaSayfaLink />
                 <CurrencyProvider>
                   <NotificationProvider>
                     <UIStyleInjector />

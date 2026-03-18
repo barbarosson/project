@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/contexts/language-context'
 import { Button } from '@/components/ui/button'
@@ -31,6 +32,7 @@ type BuyerForm = {
 
 export default function BuyPage() {
   const { language } = useLanguage()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(true)
   const [plans, setPlans] = useState<Plan[]>([])
   const [selectedPlanId, setSelectedPlanId] = useState<string>('')
@@ -60,8 +62,14 @@ export default function BuyPage() {
 
         if (error) throw error
         if (!mounted) return
-        setPlans((data as Plan[]) || [])
-        setSelectedPlanId((data as Plan[] | null)?.[0]?.id ?? '')
+        const fetchedPlans = (data as Plan[]) || []
+        setPlans(fetchedPlans)
+
+        const requestedPlanId = searchParams.get('planId')
+        const requestedPlanExists =
+          !!requestedPlanId && fetchedPlans.some((p) => p.id === requestedPlanId)
+
+        setSelectedPlanId(requestedPlanExists ? (requestedPlanId as string) : (fetchedPlans[0]?.id ?? ''))
       } catch (e: any) {
         if (!mounted) return
         setError(e?.message || (language === 'tr' ? 'Planlar yüklenemedi.' : 'Failed to load plans.'))
@@ -161,6 +169,36 @@ export default function BuyPage() {
             {error}
           </div>
         )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{language === 'tr' ? 'Ödeme Sepeti' : 'Checkout Basket'}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm" style={{ color: '#425466' }}>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="font-semibold" style={{ color: '#0A2540' }}>
+                  {selectedPlan ? selectedPlan.name : (language === 'tr' ? 'Paket seçilmedi' : 'No plan selected')}
+                </div>
+                {selectedPlan?.description && (
+                  <div className="mt-1">
+                    {selectedPlan.description}
+                  </div>
+                )}
+              </div>
+              <div className="font-bold whitespace-nowrap" style={{ color: '#0A2540' }}>
+                {amountTl > 0
+                  ? `${amountTl} TL/ay`
+                  : (language === 'tr' ? 'Ücretsiz' : 'Free')}
+              </div>
+            </div>
+            <div className="text-xs" style={{ color: '#6B7280' }}>
+              {language === 'tr'
+                ? 'Fiyatlar seçili pakete göre otomatik doldurulur.'
+                : 'Pricing is prefilled based on selected plan.'}
+            </div>
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>

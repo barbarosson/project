@@ -213,7 +213,7 @@ export function ModulusPricingSection() {
                   ))}
                 </ul>
 
-                <Link href="/login" className="block mt-auto">
+                <Link href={`/buy?planId=${plan.id}`} className="block mt-auto">
                   <Button
                     className={`w-full h-11 text-sm font-semibold ${
                       isPopular
@@ -221,10 +221,7 @@ export function ModulusPricingSection() {
                         : 'bg-gray-900 hover:bg-gray-800 text-white'
                     }`}
                   >
-                    {basePrice === 0
-                      ? (language === 'en' ? 'Start Free' : 'Ucretsiz Basla')
-                      : (language === 'en' ? 'Start Free Trial' : 'Ucretsiz Dene')
-                    }
+                    {language === 'en' ? 'Buy Now' : 'Satın Al'}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
