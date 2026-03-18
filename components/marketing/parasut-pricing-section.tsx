@@ -217,7 +217,7 @@ export function ModulusPricingSection() {
                   <Button
                     className={`w-full h-11 text-sm font-semibold ${
                       isPopular
-                        ? 'bg-emerald-500 hover:bg-emerald-600 text-[var(--color-primary)] shadow-lg'
+                        ? 'bg-emerald-500 hover:bg-emerald-600 text-[var(--body-text-color)] shadow-lg'
                         : 'bg-gray-900 hover:bg-gray-800 text-white'
                     }`}
                   >
