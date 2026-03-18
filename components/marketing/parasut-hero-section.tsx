@@ -110,7 +110,7 @@ export function ModulusHeroSection({ isAuthenticated = false }: ModulusHeroSecti
               <span className="text-sm font-semibold text-white/90">
                 {config
                   ? (language === 'en' ? config.trust_badge_en : config.trust_badge_tr)
-                  : (language === 'en' ? 'Trusted by 10,000+ businesses' : '10.000+ isletme tarafindan guveniliyor')
+                  : (language === 'en' ? 'Less is more: simplicity wins.' : 'Az, çoktur: sadelik kazanır.')
                 }
               </span>
             </div>

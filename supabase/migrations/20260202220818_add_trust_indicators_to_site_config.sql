@@ -10,7 +10,7 @@
   1. **Trust Indicators**
      - trust_badge_en (text) - Social proof message in English
      - trust_badge_tr (text) - Social proof message in Turkish
-     - Default: "Trusted by 10,000+ businesses" / "10.000+ işletme tarafından güveniliyor"
+     - Default: "Less is more: simplicity wins." / "Az, çoktur: sadelik kazanır."
   
   2. **Statistics Fields**
      - stats_customers_count (integer) - Number of customers
@@ -33,11 +33,11 @@
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'site_config' AND column_name = 'trust_badge_en') THEN
-    ALTER TABLE site_config ADD COLUMN trust_badge_en text DEFAULT 'Trusted by 10,000+ businesses';
+    ALTER TABLE site_config ADD COLUMN trust_badge_en text DEFAULT 'Less is more: simplicity wins.';
   END IF;
   
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'site_config' AND column_name = 'trust_badge_tr') THEN
-    ALTER TABLE site_config ADD COLUMN trust_badge_tr text DEFAULT '10.000+ işletme tarafından güveniliyor';
+    ALTER TABLE site_config ADD COLUMN trust_badge_tr text DEFAULT 'Az, çoktur: sadelik kazanır.';
   END IF;
 END $$;
 

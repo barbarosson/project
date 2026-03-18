@@ -623,7 +623,7 @@ export function AdvancedSiteSettings() {
                     id="trust_badge_tr"
                     value={config.trust_badge_tr || ''}
                     onChange={(e) => updateField('trust_badge_tr', e.target.value)}
-                    placeholder="10.000+ işletme tarafından güveniliyor"
+                    placeholder="Az, çoktur: sadelik kazanır."
                   />
                   <p className="text-xs text-[#0A192F]">
                     Bu metin açılış sayfalarının hero bölümünde görünür
