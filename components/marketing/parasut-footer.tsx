@@ -27,7 +27,6 @@ export function ModulusFooter() {
       links: [
         { name: language === 'en' ? 'Help Center' : 'Yardim Merkezi', href: '/help' },
         { name: language === 'en' ? 'Blog' : 'Blog', href: '#' },
-        { name: language === 'en' ? 'Case Studies' : 'Basari Hikayeleri', href: '/case-studies' },
         { name: language === 'en' ? 'Tutorials' : 'Egitimler', href: '#' },
         { name: language === 'en' ? 'Community' : 'Topluluk', href: '#' }
       ]

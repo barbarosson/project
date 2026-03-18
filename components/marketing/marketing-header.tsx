@@ -34,7 +34,6 @@ export function MarketingHeader() {
   const navigation = [
     { name: t.marketing.nav.product, href: '/landing#product' },
     { name: t.marketing.nav.solutions, href: '/landing#solutions' },
-    { name: t.marketing.nav.caseStudies, href: '/case-studies' },
     { name: t.marketing.nav.pricing, href: '/landing#pricing' },
     { name: t.marketing.nav.contact, href: '/contact' },
   ]

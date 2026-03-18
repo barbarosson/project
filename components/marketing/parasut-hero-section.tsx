@@ -78,6 +78,27 @@ export function ModulusHeroSection({ isAuthenticated = false }: ModulusHeroSecti
     benefit3.content
   ]
 
+  const trustBadgeRaw =
+    config
+      ? (language === 'en' ? config.trust_badge_en : config.trust_badge_tr)
+      : (language === 'en' ? 'Less is more: simplicity wins.' : 'Az, çoktur: sadelik kazanır.')
+
+  // If the database still contains the previous default trust badge text,
+  // normalize it to the new slogan so the UI reflects the latest copy.
+  const trustBadgeText = (() => {
+    if (language === 'en') {
+      if (!trustBadgeRaw) return 'Less is more: simplicity wins.'
+      if (trustBadgeRaw.trim() === 'Trusted by 10,000+ businesses') return 'Less is more: simplicity wins.'
+      return trustBadgeRaw
+    }
+
+    if (!trustBadgeRaw) return 'Az, çoktur: sadelik kazanır.'
+    const trimmed = trustBadgeRaw.trim()
+    if (trimmed === '10.000+ işletme tarafından güveniliyor') return 'Az, çoktur: sadelik kazanır.'
+    if (trimmed === '10.000+ isletme tarafindan guveniliyor') return 'Az, çoktur: sadelik kazanır.'
+    return trustBadgeRaw
+  })()
+
   return (
     <>
       <section className="stripe-hero-gradient relative" style={{ paddingTop: '160px', paddingBottom: '120px' }}>
@@ -108,10 +129,7 @@ export function ModulusHeroSection({ isAuthenticated = false }: ModulusHeroSecti
               style={{ backgroundColor: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)' }}>
               <Sparkles className="h-4 w-4 text-[#00D4AA]" />
               <span className="text-sm font-semibold text-white/90">
-                {config
-                  ? (language === 'en' ? config.trust_badge_en : config.trust_badge_tr)
-                  : (language === 'en' ? 'Less is more: simplicity wins.' : 'Az, çoktur: sadelik kazanır.')
-                }
+                {trustBadgeText}
               </span>
             </div>
 

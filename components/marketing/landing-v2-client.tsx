@@ -5,7 +5,6 @@ import { FeaturesSection } from '@/components/marketing/features-section'
 import { SocialProofSection } from '@/components/marketing/social-proof-section'
 import { HowItWorksSection } from '@/components/marketing/how-it-works-section'
 import { PricingSection } from '@/components/marketing/pricing-section'
-import { CaseStudiesSection } from '@/components/marketing/case-studies-section'
 import { FAQSection } from '@/components/marketing/faq-section'
 import { FinalCTASection } from '@/components/marketing/final-cta-section'
 import { MarketingLayout } from '@/components/marketing/marketing-layout'
@@ -22,7 +21,6 @@ export function LandingV2Client() {
       <SocialProofSection />
       <HowItWorksSection />
       <PricingSection />
-      <CaseStudiesSection />
       <FAQSection />
       <FinalCTASection />
       <BannerDisplay position="bottom" pageSlug="home" />

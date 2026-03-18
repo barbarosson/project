@@ -8,7 +8,6 @@
   - Pricing page
   - About page
   - Contact page
-  - Case Studies page
   - Help page
   - Global sections (Navbar, Footer)
 
@@ -26,7 +25,6 @@ VALUES
   ('pricing', 'Pricing', 'Pricing Plans - Modulus ERP', 'Choose the perfect plan for your business. Flexible pricing with all the features you need.', 'ERP pricing, business software pricing, subscription plans', 3, true),
   ('about', 'About', 'About Us - Modulus ERP', 'Learn more about Modulus ERP and our mission to simplify business management.', 'about us, company info, ERP company', 4, true),
   ('contact', 'Contact', 'Contact Us - Modulus ERP', 'Get in touch with our team. We are here to help you succeed.', 'contact, support, help', 5, true),
-  ('case-studies', 'Case Studies', 'Case Studies - Modulus ERP', 'See how businesses are succeeding with Modulus ERP.', 'case studies, success stories, testimonials', 6, true),
   ('help', 'Help Center', 'Help Center - Modulus ERP', 'Find answers to common questions and learn how to use Modulus ERP.', 'help, support, documentation, guides', 7, true),
   ('global-navbar', 'Global Navigation', 'Navigation Menu', 'Global navigation menu configuration', 'navigation, menu', 100, true),
   ('global-footer', 'Global Footer', 'Footer Content', 'Global footer configuration', 'footer, contact info', 101, true)
@@ -317,22 +315,16 @@ SELECT
         'order', 2
       ),
       jsonb_build_object(
-        'label_en', 'Case Studies',
-        'label_tr', 'Vaka Çalışmaları',
-        'href', '/case-studies',
-        'order', 3
-      ),
-      jsonb_build_object(
         'label_en', 'Help',
         'label_tr', 'Yardım',
         'href', '/help',
-        'order', 4
+        'order', 3
       ),
       jsonb_build_object(
         'label_en', 'Contact',
         'label_tr', 'İletişim',
         'href', '/contact',
-        'order', 5
+        'order', 4
       )
     ),
     'cta_button_text_en', 'Get Started',
@@ -371,8 +363,7 @@ SELECT
         'title_tr', 'Ürün',
         'links', jsonb_build_array(
           jsonb_build_object('label_en', 'Features', 'label_tr', 'Özellikler', 'href', '/features'),
-          jsonb_build_object('label_en', 'Pricing', 'label_tr', 'Fiyatlandırma', 'href', '/pricing'),
-          jsonb_build_object('label_en', 'Case Studies', 'label_tr', 'Vaka Çalışmaları', 'href', '/case-studies')
+          jsonb_build_object('label_en', 'Pricing', 'label_tr', 'Fiyatlandırma', 'href', '/pricing')
         )
       ),
       jsonb_build_object(

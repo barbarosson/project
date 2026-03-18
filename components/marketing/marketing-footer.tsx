@@ -26,7 +26,6 @@ export function MarketingFooter() {
       links: [
         { name: t.marketing.footer.about, href: '#' },
         { name: t.marketing.footer.careers, href: '#' },
-        { name: t.marketing.footer.caseStudies, href: '/case-studies' },
         { name: t.marketing.footer.blog, href: '#' },
       ],
     },
