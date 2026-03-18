@@ -11,6 +11,11 @@ export function MarketingFooter() {
   const { t } = useLanguage()
   const { config } = useSiteConfig()
 
+  const companyName =
+    (config && (config as any).site_name_tr) || 'Songurtech - Barbaros Songur'
+  const companyAddress =
+    (config && (config as any).contact_address) || 'Küçükbakkalköy, Selvili Sok. No:4/48, 34750 Ataşehir/İstanbul'
+
   const footerLinks = {
     product: {
       title: t.marketing.footer.product,
@@ -41,10 +46,10 @@ export function MarketingFooter() {
     legal: {
       title: t.marketing.footer.legal,
       links: [
-        { name: t.marketing.footer.privacy, href: '#' },
-        { name: t.marketing.footer.terms, href: '#' },
-        { name: t.marketing.footer.cookies, href: '#' },
-        { name: t.marketing.footer.kvkk, href: '#' },
+        { name: 'Gizlilik Politikası', href: '/gizlilik' },
+        { name: 'İptal ve İade Şartları', href: '/teslimat-iade#iptal-iade' },
+        { name: 'Teslimat Politikası', href: '/teslimat-iade#teslimat' },
+        { name: 'Mesafeli Satış Sözleşmesi', href: '/mesafeli-satis' },
       ],
     },
   }
@@ -86,6 +91,11 @@ export function MarketingFooter() {
                 <ModulusLogo size={30} />
               </div>
 
+              <div className="text-center md:text-left">
+                <div className="text-sm font-semibold text-[#0A2540]">{companyName}</div>
+                <div className="text-xs text-auto-contrast-muted-light">{companyAddress}</div>
+              </div>
+
               <p className="text-sm text-auto-contrast-muted-light">
                 © 2026 ModulusTech. {t.marketing.footer.allRightsReserved}
               </p>
@@ -105,6 +115,12 @@ export function MarketingFooter() {
                   )
                 })}
               </div>
+            </div>
+
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3 opacity-90">
+              <Image src="/payments/visa.svg" alt="Visa" width={56} height={18} className="h-4 w-auto" />
+              <Image src="/payments/mastercard.svg" alt="Mastercard" width={80} height={18} className="h-4 w-auto" />
+              <Image src="/payments/iyzico-ile-ode.svg" alt="iyzico ile Öde" width={120} height={22} className="h-4.5 w-auto" />
             </div>
           </div>
         </div>

@@ -30,8 +30,8 @@ export function ModulusHeroSection({ isAuthenticated = false }: ModulusHeroSecti
   })
 
   const ctaStartFree = useContentSection('landing_hero_cta_start_free', language, {
-    en: 'Start Free',
-    tr: 'Ücretsiz başla'
+    en: 'Start 14-Day Free Trial',
+    tr: '14 Gün Ücretsiz Deneyin'
   })
 
   const ctaSeeHow = useContentSection('landing_hero_cta_see_how', language, {
@@ -60,8 +60,8 @@ export function ModulusHeroSection({ isAuthenticated = false }: ModulusHeroSecti
   })
 
   const floatingCta = useContentSection('landing_floating_cta', language, {
-    en: 'Try for Free',
-    tr: 'Ücretsiz dene'
+    en: 'Start 14-Day Free Trial',
+    tr: '14 Gün Ücretsiz Deneyin'
   })
 
   useEffect(() => {

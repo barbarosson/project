@@ -38,6 +38,11 @@ export function WorldClassPricing() {
                 : '14 günlük ücretsiz deneme ile başlayın. Kredi kartı gerekmez. İstediğiniz zaman iptal edin.'
               }
             </p>
+            <p className="text-sm text-muted-foreground">
+              {language === 'en'
+                ? 'Prices shown are exclusive of VAT.'
+                : 'Gösterilen fiyatlar KDV hariçtir.'}
+            </p>
 
             {/* Trust Indicators */}
             <div className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">

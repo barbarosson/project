@@ -11,6 +11,11 @@ export function ModulusFooter() {
   const { language } = useLanguage()
   const { config } = useSiteConfig()
 
+  const companyName =
+    (config && (config as any).site_name_tr) || 'Songurtech - Barbaros Songur'
+  const companyAddress =
+    (config && (config as any).contact_address) || 'Küçükbakkalköy, Selvili Sok. No:4/48, 34750 Ataşehir/İstanbul'
+
   const footerSections = {
     product: {
       title: language === 'en' ? 'Product' : 'Urun',
@@ -183,6 +188,15 @@ export function ModulusFooter() {
                     )
                   })}
                 </div>
+              </div>
+            </div>
+
+            <div className="mt-8 text-center lg:text-left space-y-1">
+              <div className="text-[14px] font-semibold" style={{ color: 'rgba(255,255,255,0.75)' }}>
+                {companyName}
+              </div>
+              <div className="text-[13px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
+                {companyAddress}
               </div>
             </div>
 

@@ -813,6 +813,17 @@ function LoginContent() {
                   </div>
                 </div>
 
+                <div className="rounded-xl p-3" style={{ backgroundColor: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.18)' }}>
+                  <div className="flex items-start gap-2">
+                    <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" style={{ color: '#3B82F6' }} />
+                    <p className="text-xs" style={{ color: '#0A2540' }}>
+                      {language === 'tr'
+                        ? 'Kayıt olurken kredi kartı bilgisi gerekmez.'
+                        : 'No credit card required to sign up.'}
+                    </p>
+                  </div>
+                </div>
+
                 <Button
                   className="w-full rounded-full h-12 font-semibold gap-2"
                   style={{ backgroundColor: '#0A2540', color: '#ffffff' }}

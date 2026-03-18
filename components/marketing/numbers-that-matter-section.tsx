@@ -10,13 +10,6 @@ export function NumbersThatMatterSection() {
 
   const stats = [
     {
-      icon: Users,
-      number: '10,000+',
-      label_en: 'Active Businesses',
-      label_tr: 'Aktif İşletme',
-      color: 'blue'
-    },
-    {
       icon: CheckCircle2,
       number: '99.9%',
       label_en: 'Uptime Guarantee',
@@ -36,13 +29,6 @@ export function NumbersThatMatterSection() {
       label_en: 'Support Available',
       label_tr: 'Destek Hizmeti',
       color: 'purple'
-    },
-    {
-      icon: TrendingUp,
-      number: '₺50M+',
-      label_en: 'Processed Monthly',
-      label_tr: 'Aylık İşlem',
-      color: 'indigo'
     },
     {
       icon: Shield,
@@ -101,7 +87,7 @@ export function NumbersThatMatterSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-16">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 mb-16 justify-items-center">
           {stats.map((stat, index) => {
             const Icon = stat.icon
             const colorClasses = {
@@ -113,7 +99,7 @@ export function NumbersThatMatterSection() {
               red: 'bg-red-50 text-red-600'
             }
             return (
-              <Card key={index} className="p-6 text-center bg-white hover:shadow-lg transition-shadow">
+              <Card key={index} className="p-6 text-center bg-white hover:shadow-lg transition-shadow w-full">
                 <div className={`w-12 h-12 rounded-xl ${colorClasses[stat.color as keyof typeof colorClasses]} flex items-center justify-center mx-auto mb-4`}>
                   <Icon className="h-6 w-6" />
                 </div>
