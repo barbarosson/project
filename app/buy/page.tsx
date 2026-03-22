@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/contexts/language-context'
@@ -107,6 +107,30 @@ function getPlanKey(name: string) {
   return null
 }
 
+/**
+ * iyzico HTML often includes <script>; React innerHTML does not run scripts.
+ * Re-insert script nodes so the hosted checkout / iframe bootstrap runs.
+ */
+function IyzicoCheckoutMount({ html }: { html: string }) {
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!ref.current || !html) return
+    const container = ref.current
+    container.innerHTML = html
+    container.querySelectorAll('script').forEach((oldScript) => {
+      const newScript = document.createElement('script')
+      Array.from(oldScript.attributes).forEach((attr) => {
+        newScript.setAttribute(attr.name, attr.value)
+      })
+      newScript.textContent = oldScript.textContent
+      oldScript.parentNode?.replaceChild(newScript, oldScript)
+    })
+  }, [html])
+
+  return <div ref={ref} className="min-h-[480px] w-full" />
+}
+
 export default function BuyPage() {
   const { language } = useLanguage()
   const searchParams = useSearchParams()
@@ -116,6 +140,9 @@ export default function BuyPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [checkoutHtml, setCheckoutHtml] = useState<string | null>(null)
+  /** Hosted payment page — use iframe; innerHTML scripts often do not run in React. */
+  const [paymentPageUrl, setPaymentPageUrl] = useState<string | null>(null)
+  const paymentSectionRef = useRef<HTMLDivElement>(null)
   const [authUserId, setAuthUserId] = useState<string | null>(null)
   const [requireMembership, setRequireMembership] = useState(false)
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signup')
@@ -169,6 +196,11 @@ export default function BuyPage() {
       mounted = false
     }
   }, [language])
+
+  useEffect(() => {
+    if (!paymentSectionRef.current || (!checkoutHtml && !paymentPageUrl)) return
+    paymentSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [checkoutHtml, paymentPageUrl])
 
   const selectedPlan = useMemo(
     () => plans.find((p) => p.id === selectedPlanId) || null,
@@ -243,6 +275,7 @@ export default function BuyPage() {
   async function startCheckout() {
     setError(null)
     setCheckoutHtml(null)
+    setPaymentPageUrl(null)
 
     if (!selectedPlan) {
       setError(language === 'tr' ? 'Lütfen bir paket seçin.' : 'Please select a plan.')
@@ -283,11 +316,14 @@ export default function BuyPage() {
       if (!res.ok) {
         throw new Error((data && data.error) || 'Checkout initialization failed')
       }
-      if (!data.checkoutFormContent) {
+      const html = typeof data.checkoutFormContent === 'string' ? data.checkoutFormContent : ''
+      const pageUrl = typeof data.paymentPageUrl === 'string' ? data.paymentPageUrl : ''
+      if (!html && !pageUrl) {
         throw new Error(language === 'tr' ? 'Ödeme formu alınamadı.' : 'Checkout form content missing.')
       }
 
-      setCheckoutHtml(data.checkoutFormContent as string)
+      setCheckoutHtml(html || null)
+      setPaymentPageUrl(pageUrl || null)
     } catch (e: any) {
       setError(e?.message || (language === 'tr' ? 'Ödeme başlatılamadı.' : 'Failed to start payment.'))
     } finally {
@@ -547,25 +583,42 @@ export default function BuyPage() {
           </CardContent>
         </Card>
 
-        {checkoutHtml && (
-          <Card className="border border-white/25 bg-white/95 shadow-2xl">
+        {(checkoutHtml || paymentPageUrl) && (
+          <Card ref={paymentSectionRef} className="border border-white/25 bg-white/95 shadow-2xl scroll-mt-6">
             <CardHeader>
               <CardTitle className="text-[#0A2540]">{language === 'tr' ? '3) Ödeme' : '3) Payment'}</CardTitle>
+              {searchParams.get('payment') === 'done' && (
+                <p className="text-sm font-medium text-emerald-700 pt-1">
+                  {language === 'tr'
+                    ? 'Ödeme adımı tamamlandı. Sonucu iyzico ve e-posta bildirimlerinizden kontrol edebilirsiniz.'
+                    : 'Payment step finished. Check iyzico and your email for the result.'}
+                </p>
+              )}
             </CardHeader>
-            <CardContent>
-              <div
-                className="rounded-xl border border-slate-300 p-4 bg-white"
-                dangerouslySetInnerHTML={{ __html: checkoutHtml }}
-              />
+            <CardContent className="space-y-3">
+              {paymentPageUrl ? (
+                <>
+                  <p className="text-sm text-[#425466]">
+                    {language === 'tr'
+                      ? 'Kart bilgilerinizi aşağıdaki güvenli alanda girin. 3D doğrulama penceresi açılırsa talimatları izleyin.'
+                      : 'Enter your card details in the secure area below. Follow any 3D Secure prompts.'}
+                  </p>
+                  <iframe
+                    title={language === 'tr' ? 'iyzico ödeme' : 'iyzico payment'}
+                    src={paymentPageUrl}
+                    className="min-h-[720px] w-full rounded-xl border border-slate-300 bg-white"
+                    allow="payment *"
+                  />
+                </>
+              ) : checkoutHtml ? (
+                <div className="rounded-xl border border-slate-300 p-4 bg-white">
+                  <IyzicoCheckoutMount html={checkoutHtml} />
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         )}
 
-        <div className="text-xs text-white/70">
-          {language === 'tr'
-            ? 'Not: iyzico checkout formunun çalışması için sunucuda IYZICO_API_KEY / IYZICO_SECRET_KEY / IYZICO_BASE_URL değişkenleri tanımlı olmalıdır.'
-            : 'Note: To render iyzico checkout form, server env vars IYZICO_API_KEY / IYZICO_SECRET_KEY / IYZICO_BASE_URL must be set.'}
-        </div>
       </div>
     </main>
   )

@@ -1,6 +1,6 @@
-import Iyzipay from 'iyzipay'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { postCheckoutFormInitialize } from '@/lib/iyzico/checkout-form-initialize'
 
 export const runtime = 'nodejs'
 
@@ -28,29 +28,12 @@ function requiredEnv(name: string): string {
   return v
 }
 
-function iyzico(): Iyzipay {
-  return new Iyzipay({
-    apiKey: requiredEnv('IYZICO_API_KEY'),
-    secretKey: requiredEnv('IYZICO_SECRET_KEY'),
-    uri: process.env.IYZICO_BASE_URL || 'https://sandbox-api.iyzipay.com',
-  })
-}
-
-function createCheckoutFormInitialize(iyzi: Iyzipay, req: any): Promise<any> {
-  return new Promise((resolve, reject) => {
-    iyzi.checkoutFormInitialize.create(req, (err: any, result: any) => {
-      if (err) return reject(err)
-      return resolve(result)
-    })
-  })
-}
-
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as CheckoutRequest
 
     const origin = headers().get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-    const locale = body.locale === 'en' ? Iyzipay.LOCALE.EN : Iyzipay.LOCALE.TR
+    const locale = body.locale === 'en' ? 'en' : 'tr'
 
     const price = Number(body.plan?.price)
     if (!body.plan?.id || !body.plan?.name || !Number.isFinite(price) || price <= 0) {
@@ -65,18 +48,21 @@ export async function POST(request: Request) {
     const now = Date.now()
     const conversationId = `plan_${body.plan.id}_${now}`
 
+    const apiKey = requiredEnv('IYZICO_API_KEY')
+    const secretKey = requiredEnv('IYZICO_SECRET_KEY')
+    const baseUri = process.env.IYZICO_BASE_URL || 'https://sandbox-api.iyzipay.com'
+
     // Minimal request for digital service subscription.
     // NOTE: identityNumber is required by iyzico API; merchants should collect/validate it per their compliance needs.
-    const req: any = {
+    const initBody = {
       locale,
       conversationId,
       price: price.toFixed(2),
       paidPrice: price.toFixed(2),
-      currency: Iyzipay.CURRENCY.TRY,
-      installment: '1',
+      currency: 'TRY',
       basketId: conversationId,
-      paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
-      callbackUrl: `${origin}/api/payments/iyzico/callback`,
+      paymentGroup: 'PRODUCT',
+      callbackUrl: `${origin.replace(/\/+$/, '')}/api/payments/iyzico/callback`,
       enabledInstallments: ['1', '2', '3', '6', '9', '12'],
       buyer: {
         id: `buyer_${now}`,
@@ -112,13 +98,13 @@ export async function POST(request: Request) {
           id: body.plan.id,
           name: `${body.plan.name} Plan`,
           category1: 'Subscription',
-          itemType: Iyzipay.BASKET_ITEM_TYPE.VIRTUAL,
+          itemType: 'VIRTUAL',
           price: price.toFixed(2),
         },
       ],
     }
 
-    const result = await createCheckoutFormInitialize(iyzico(), req)
+    const result = await postCheckoutFormInitialize(baseUri, apiKey, secretKey, initBody)
 
     if (!result || result.status !== 'success') {
       return NextResponse.json(
@@ -140,4 +126,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: msg }, { status })
   }
 }
-
