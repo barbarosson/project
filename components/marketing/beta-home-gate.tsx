@@ -2,53 +2,106 @@
 
 import { useEffect, useState, type ReactNode } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ModulusLogo } from '@/components/modulus-logo'
 import { Lock, Sparkles } from 'lucide-react'
-
-const STORAGE_KEY = 'modulus_beta_home_unlock_v1'
-/** Davetli beta erişimi — sunucu tarafında gizli değil; yumuşak lansman kapısı. */
-const ACCESS_CODE = 'QWERTY123'
-/** Ekranda gösterilen referans etiketi (pazarlama / iletişim için) */
-const REFERENCE_CODE = 'MOD-BETA-2026'
+import {
+  BETA_SESSION_STORAGE_KEY,
+  REFERENCE_CODE_DISPLAY,
+  safeReturnPath,
+} from '@/lib/beta-access'
 
 type BetaHomeGateProps = {
   children: ReactNode
 }
 
 export function BetaHomeGate({ children }: BetaHomeGateProps) {
+  const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [unlocked, setUnlocked] = useState(false)
   const [code, setCode] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [returnTo, setReturnTo] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
-    try {
-      if (typeof window !== 'undefined' && sessionStorage.getItem(STORAGE_KEY) === '1') {
-        setUnlocked(true)
-      }
-    } catch {
-      /* ignore */
-    }
-    setMounted(true)
+    if (typeof window === 'undefined') return
+    const p = new URLSearchParams(window.location.search)
+    setReturnTo(safeReturnPath(p.get('returnTo')))
   }, [])
 
-  function handleSubmit(e: React.FormEvent) {
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch('/api/beta/status', { cache: 'no-store' })
+        const data = await res.json().catch(() => ({}))
+        if (!cancelled && data?.unlocked === true) {
+          try {
+            sessionStorage.setItem(BETA_SESSION_STORAGE_KEY, '1')
+          } catch {
+            /* ignore */
+          }
+          setUnlocked(true)
+        } else if (!cancelled) {
+          try {
+            if (sessionStorage.getItem(BETA_SESSION_STORAGE_KEY) === '1') {
+              /* Eski oturum: çerez yoksa tekrar kod gerekir */
+            }
+          } catch {
+            /* ignore */
+          }
+        }
+      } catch {
+        /* ignore */
+      } finally {
+        if (!cancelled) setMounted(true)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     const trimmed = code.trim()
-    if (trimmed === ACCESS_CODE) {
+    if (!trimmed) {
+      setError('Lütfen erişim kodunu girin.')
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const res = await fetch('/api/beta/unlock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: trimmed }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError('Erişim kodu hatalı. Davetli beta kullanıcıları için doğru kodu girin.')
+        return
+      }
       try {
-        sessionStorage.setItem(STORAGE_KEY, '1')
+        sessionStorage.setItem(BETA_SESSION_STORAGE_KEY, '1')
       } catch {
         /* ignore */
       }
       setUnlocked(true)
-      return
+      const dest = safeReturnPath(returnTo) || '/'
+      if (dest !== '/' || (typeof window !== 'undefined' && window.location.search)) {
+        router.replace(dest)
+      }
+    } catch {
+      setError('Bağlantı hatası. Tekrar deneyin.')
+    } finally {
+      setSubmitting(false)
     }
-    setError('Erişim kodu hatalı. Davetli beta kullanıcıları için doğru kodu girin.')
   }
 
   if (!mounted) {
@@ -88,6 +141,12 @@ export function BetaHomeGate({ children }: BetaHomeGateProps) {
             <strong className="text-white/95">Beta sürümü</strong> yalnızca{' '}
             <strong className="text-[#00D4AA]">sınırlı kullanıcı</strong> ve davet kapsamında açılmıştır.
           </p>
+          {returnTo && (
+            <p className="mt-4 text-xs rounded-lg px-3 py-2 max-w-md" style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.75)' }}>
+              Erişim sonrası sizi şu adrese yönlendireceğiz:{' '}
+              <span className="font-mono text-[#00D4AA]">{returnTo}</span>
+            </p>
+          )}
         </div>
 
         <div
@@ -104,7 +163,7 @@ export function BetaHomeGate({ children }: BetaHomeGateProps) {
                 Referans kodu
               </p>
               <p className="text-lg font-mono font-bold tracking-wide mt-0.5" style={{ color: '#00D4AA' }}>
-                {REFERENCE_CODE}
+                {REFERENCE_CODE_DISPLAY}
               </p>
             </div>
             <div
@@ -138,10 +197,11 @@ export function BetaHomeGate({ children }: BetaHomeGateProps) {
             )}
             <Button
               type="submit"
+              disabled={submitting}
               className="w-full h-12 rounded-full font-semibold text-base"
               style={{ backgroundColor: '#00D4AA', color: '#0A2540' }}
             >
-              Ana ekrana giriş
+              {submitting ? 'Doğrulanıyor…' : 'Devam et'}
             </Button>
           </form>
 
