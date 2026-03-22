@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { getServiceSupabase } from '@/lib/beta-reference-code'
-import { getPublicSiteUrl, sendBetaAdminApprovalRequest } from '@/lib/beta-reference-mail'
+import {
+  getPublicSiteUrl,
+  sendBetaAdminApprovalRequest,
+  sendBetaTalepReceivedAck,
+} from '@/lib/beta-reference-mail'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -110,13 +114,61 @@ export async function POST(request: NextRequest) {
     rejectUrl,
   })
 
+  const ack = await sendBetaTalepReceivedAck({ toEmail: emailNorm })
+
   if (!mail.ok) {
-    console.error('[beta-reference/request] admin mail failed:', mail.error)
+    console.error('[beta-reference/request] admin mail failed:', mail.error, mail.statusCode)
+  }
+  if (!ack.ok) {
+    console.error('[beta-reference/request] ack mail failed:', ack.error)
+  }
+
+  const baseMessage =
+    'Talebiniz alındı. Referans kodunuz admin onayından sonra e-posta adresinize gönderilecektir.'
+
+  if (!mail.ok && !ack.ok) {
+    return NextResponse.json({
+      ok: true,
+      message: baseMessage,
+      emailAdminSent: false,
+      emailAckSent: false,
+      warning:
+        'E-posta gönderilemedi. Netlify’da RESEND_API_KEY tanımlı mı ve Resend’de gönderici domain doğrulandı mı kontrol edin. Talep veritabanına kaydedildi.',
+      mailHint: process.env.NODE_ENV === 'development' ? mail.error : undefined,
+    })
+  }
+
+  if (!mail.ok) {
+    return NextResponse.json({
+      ok: true,
+      message: baseMessage,
+      emailAdminSent: false,
+      emailAckSent: ack.ok,
+      warning:
+        'Admin bildirimi e-postası gönderilemedi (spam kutusu / Resend domain veya alıcı kısıtı). Talep kayıtlıdır; Supabase’den onay linkini manuel oluşturabilir veya Resend ayarlarını düzeltin.',
+      mailHint:
+        process.env.NODE_ENV === 'development'
+          ? mail.error
+          : summarizeMailError(mail.error),
+    })
   }
 
   return NextResponse.json({
     ok: true,
-    message:
-      'Talebiniz alındı. Referans kodunuz admin onayından sonra e-posta adresinize gönderilecektir.',
+    message: baseMessage,
+    emailAdminSent: true,
+    emailAckSent: ack.ok,
   })
+}
+
+function summarizeMailError(err?: string): string | undefined {
+  if (!err) return undefined
+  const e = err.toLowerCase()
+  if (e.includes('domain') || e.includes('verify')) {
+    return 'Resend: gönderici domain doğrulanmamış olabilir (resend.com/domains).'
+  }
+  if (e.includes('sandbox') || e.includes('testing') || e.includes('only')) {
+    return 'Resend: test modunda yalnızca doğrulanmış alıcılara izin verilir.'
+  }
+  return err.length > 160 ? `${err.slice(0, 160)}…` : err
 }

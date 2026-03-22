@@ -12,12 +12,16 @@ export default function BetaTalepPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [warning, setWarning] = useState<string | null>(null)
+  const [emailAckSent, setEmailAckSent] = useState<boolean | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setMessage(null)
+    setWarning(null)
+    setEmailAckSent(null)
     const trimmed = email.trim()
     if (!trimmed) {
       setError('Lütfen e-posta adresinizi girin.')
@@ -53,6 +57,10 @@ export default function BetaTalepPage() {
           ? data.message
           : 'Talebiniz alındı. Onay sonrası referans kodunuz e-posta ile iletilecektir.'
       )
+      if (typeof data.warning === 'string' && data.warning.trim()) {
+        setWarning(data.warning.trim())
+      }
+      setEmailAckSent(typeof data.emailAckSent === 'boolean' ? data.emailAckSent : null)
       setEmail('')
     } catch {
       setError('Bağlantı hatası.')
@@ -118,6 +126,17 @@ export default function BetaTalepPage() {
             {message && (
               <p className="text-sm rounded-lg px-3 py-2" style={{ background: 'rgba(16,185,129,0.12)', color: '#6EE7B7' }}>
                 {message}
+                {emailAckSent === true && (
+                  <span className="block mt-2 text-xs opacity-90">
+                    Size “Talebiniz alındı” bilgilendirmesi gittiyse e-posta gönderimi çalışıyordur; gelmediyse Resend/domain ayarlarını kontrol edin.
+                  </span>
+                )}
+              </p>
+            )}
+            {warning && (
+              <p className="text-sm rounded-lg px-3 py-2" style={{ background: 'rgba(251,191,36,0.15)', color: '#FDE68A' }}>
+                <strong className="block mb-1">E-posta uyarısı</strong>
+                {warning}
               </p>
             )}
             <Button
