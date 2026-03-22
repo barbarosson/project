@@ -141,6 +141,13 @@ export function BetaHomeGate({ children }: BetaHomeGateProps) {
             <strong className="text-white/95">Beta sürümü</strong> yalnızca{' '}
             <strong className="text-[#00D4AA]">sınırlı kullanıcı</strong> ve davet kapsamında açılmıştır.
           </p>
+          <p className="mt-4 text-sm" style={{ color: 'rgba(255,255,255,0.65)' }}>
+            Henüz referans kodunuz yok mu?{' '}
+            <Link href="/beta-talep" className="font-semibold text-[#7DD3FC] hover:underline">
+              Beta referans kodu talep edin
+            </Link>{' '}
+            — onay sonrası kod e-postanıza gönderilir.
+          </p>
           {returnTo && (
             <p className="mt-4 text-xs rounded-lg px-3 py-2 max-w-md" style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.75)' }}>
               Erişim sonrası sizi şu adrese yönlendireceğiz:{' '}

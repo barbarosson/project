@@ -10,6 +10,7 @@ function isPublicBetaPath(pathname: string): boolean {
   if (pathname === '/') return true
   if (pathname.startsWith('/login')) return true
   if (pathname.startsWith('/auth')) return true
+  if (pathname.startsWith('/beta-talep')) return true
   return false
 }
 
