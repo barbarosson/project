@@ -136,8 +136,6 @@ export function PricingSection() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Netlify/Production'da hangi bundle'ın çalıştığını hızlı doğrulamak için
-    console.log('[pricing-ui] pricing-section loaded')
     fetchPlans()
   }, [])
 

@@ -173,8 +173,6 @@ export function ModulusPricingSection() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Netlify/Production'da hangi bundle'ın çalıştığını hızlı doğrulamak için
-    console.log('[pricing-ui] parasut-pricing-section loaded')
     fetchPlans()
   }, [])
 

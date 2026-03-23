@@ -1,7 +1,6 @@
-import { ModulusLandingLayout } from '@/components/marketing/parasut-landing-layout'
+'use client'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+import { ModulusLandingLayout } from '@/components/marketing/parasut-landing-layout'
 
 export default function LandingPage() {
   return <ModulusLandingLayout />
