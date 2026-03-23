@@ -7,13 +7,12 @@ import { useCurrency } from '@/hooks/use-currency'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle2, Circle, Star, Zap, Crown, Rocket, Building2, ArrowRight } from 'lucide-react'
+import { CheckCircle2, Star, Zap, Crown, Rocket, Building2, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 
 interface SubscriptionPlan {
   id: string
   name: string
-  plan_code?: string
   price_tl: number
   price_usd: number
   description: string
@@ -66,104 +65,6 @@ const PLAN_CONFIG: Record<string, {
     whoTr: 'Özel entegrasyon ve sözleşmeli çözüm isteyen kurumsal yapılar için',
     whoEn: 'For enterprises that need custom integrations, SLAs and tailored onboarding',
   },
-}
-
-type FeatureKey =
-  | 'DASHBOARD'
-  | 'CLIENTS'
-  | 'SALES_INVOICES'
-  | 'PURCHASE_INVOICES'
-  | 'ORDERS'
-  | 'PURCHASE_ORDERS'
-  | 'PRODUCTS_SERVICES'
-  | 'HR'
-  | 'WAREHOUSE_STOCK'
-  | 'BRANCHES'
-  | 'PROJECTS'
-  | 'PRODUCTION'
-  | 'COSTING'
-  | 'QUALITY'
-  | 'QUOTATIONS'
-  | 'CAMPAIGNS'
-  | 'MARKETPLACE_INTEGRATIONS'
-  | 'AI_BOTS'
-  | 'E_DOCUMENTS'
-  | 'E_INVOICE'
-  | 'E_ARCHIVE'
-  | 'E_IRSALIYE'
-  | 'E_SMM'
-  | 'SUPPORT_EMAIL'
-  | 'LIVE_CHAT'
-  | 'APP_CHATBOT'
-
-const FEATURE_CATALOG: Array<{
-  groupLabelTr: string
-  groupLabelEn: string
-  items: Array<{ key: FeatureKey; labelTr: string; labelEn: string }>
-}> = [
-  {
-    groupLabelTr: 'Uygulama modülleri',
-    groupLabelEn: 'App modules',
-    items: [
-      { key: 'DASHBOARD', labelTr: 'Kontrol paneli', labelEn: 'Dashboard' },
-      { key: 'CLIENTS', labelTr: 'Cariler', labelEn: 'Clients' },
-      { key: 'SALES_INVOICES', labelTr: 'Satış Faturaları', labelEn: 'Sales Invoices' },
-      { key: 'PURCHASE_INVOICES', labelTr: 'Alış Faturaları', labelEn: 'Purchase Invoices' },
-      { key: 'ORDERS', labelTr: 'Siparişler', labelEn: 'Orders' },
-      { key: 'PURCHASE_ORDERS', labelTr: 'Satın Alma İşlemleri', labelEn: 'Procurement' },
-      { key: 'PRODUCTS_SERVICES', labelTr: 'Ürün ve Hizmetler', labelEn: 'Products & Services' },
-      { key: 'HR', labelTr: 'İnsan kaynakları', labelEn: 'Human Resources' },
-      { key: 'WAREHOUSE_STOCK', labelTr: 'Depo ve stok yönetimi', labelEn: 'Warehouse & Stock' },
-      { key: 'BRANCHES', labelTr: 'Şube yönetimi', labelEn: 'Branch management' },
-      { key: 'PROJECTS', labelTr: 'Proje yönetimi', labelEn: 'Project management' },
-      { key: 'PRODUCTION', labelTr: 'Üretim', labelEn: 'Production' },
-      { key: 'COSTING', labelTr: 'Maliyet', labelEn: 'Costing' },
-      { key: 'QUALITY', labelTr: 'Kalite', labelEn: 'Quality' },
-      { key: 'QUOTATIONS', labelTr: 'Teklifler', labelEn: 'Quotations' },
-      { key: 'CAMPAIGNS', labelTr: 'Kampanyalar', labelEn: 'Campaigns' },
-      {
-        key: 'MARKETPLACE_INTEGRATIONS',
-        labelTr: 'Pazaryeri entegrasyonları',
-        labelEn: 'Marketplace integrations',
-      },
-    ],
-  },
-  {
-    groupLabelTr: 'Yapay Zeka',
-    groupLabelEn: 'AI',
-    items: [{ key: 'AI_BOTS', labelTr: 'Tüm modüllere ait AI botları', labelEn: 'AI bots for all modules' }],
-  },
-  {
-    groupLabelTr: 'E-belge entegrasyonları',
-    groupLabelEn: 'E-document integrations',
-    items: [
-      { key: 'E_DOCUMENTS', labelTr: 'E-belge entegrasyonları (genel)', labelEn: 'E-doc integrations (general)' },
-      { key: 'E_INVOICE', labelTr: 'e-Fatura', labelEn: 'e-Invoice' },
-      { key: 'E_ARCHIVE', labelTr: 'e-Arşiv', labelEn: 'e-Archive' },
-      { key: 'E_IRSALIYE', labelTr: 'e-İrsaliye', labelEn: 'e-Delivery Note' },
-      { key: 'E_SMM', labelTr: 'e-SMM', labelEn: 'e-SMM' },
-    ],
-  },
-  {
-    groupLabelTr: 'Destek',
-    groupLabelEn: 'Support',
-    items: [
-      { key: 'SUPPORT_EMAIL', labelTr: 'Destek hattı mail', labelEn: 'Support email' },
-      { key: 'LIVE_CHAT', labelTr: 'Canlı chat', labelEn: 'Live chat' },
-      { key: 'APP_CHATBOT', labelTr: 'Uygulama chatbot', labelEn: 'App chatbot' },
-    ],
-  },
-]
-
-const ALL_FEATURE_KEYS: FeatureKey[] = FEATURE_CATALOG.flatMap((g) => g.items.map((i) => i.key))
-
-// Varsayılan: Temel + Küçük paketlerde tüm öğeler aktif. Orta/Büyük/Kurumsal için siz tikleri söyleyince güncelleyeceğiz.
-const PLAN_ENABLED_FEATURE_KEYS: Record<string, FeatureKey[]> = {
-  FREE: ALL_FEATURE_KEYS,
-  KUCUK: ALL_FEATURE_KEYS,
-  ORTA: [],
-  BUYUK: [],
-  ENTERPRISE: [],
 }
 
 export function ModulusPricingSection() {
@@ -242,12 +143,10 @@ export function ModulusPricingSection() {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-12">
           {plans.map((plan) => {
-            const planTier = (plan.plan_code || plan.name || '').toString().toUpperCase()
-            const cfg = PLAN_CONFIG[planTier] || PLAN_CONFIG.FREE
+            const cfg = PLAN_CONFIG[plan.name] || PLAN_CONFIG.FREE
             const Icon = cfg.icon
             const basePrice = currency === 'TRY' ? plan.price_tl : plan.price_usd
             const isPopular = cfg.popular
-            const isComingSoon = ['ORTA', 'BUYUK', 'ENTERPRISE'].includes(planTier)
 
             return (
               <Card
@@ -281,11 +180,7 @@ export function ModulusPricingSection() {
                   </p>
 
                   <div className="mb-2">
-                    {isComingSoon ? (
-                      <span className="text-2xl lg:text-3xl font-bold text-gray-400">
-                        {language === 'en' ? 'COMING SOON' : 'ÇOK YAKINDA'}
-                      </span>
-                    ) : basePrice === 0 ? (
+                    {basePrice === 0 ? (
                       <span className="text-3xl font-bold text-gray-600">
                         {language === 'tr' ? 'Ucretsiz' : 'Free'}
                       </span>
@@ -298,71 +193,38 @@ export function ModulusPricingSection() {
                   </div>
 
                   {plan.trial_days > 0 && basePrice > 0 && (
-                    !isComingSoon && (
-                      <p className="text-xs text-green-600 font-semibold">
-                        {language === 'en'
-                          ? `${plan.trial_days}-day free trial`
-                          : `${plan.trial_days} gun ucretsiz deneme`
-                        }
-                      </p>
-                    )
+                    <p className="text-xs text-green-600 font-semibold">
+                      {language === 'en'
+                        ? `${plan.trial_days}-day free trial`
+                        : `${plan.trial_days} gun ucretsiz deneme`
+                      }
+                    </p>
                   )}
                 </div>
 
-                <div className="space-y-3 mb-6 flex-1">
-                  {FEATURE_CATALOG.map((group) => (
-                    <div key={group.groupLabelTr}>
-                      <div className="text-[11px] font-semibold text-gray-500 mb-2 uppercase tracking-wide">
-                        {language === 'en' ? group.groupLabelEn : group.groupLabelTr}
-                      </div>
-                      <div className="space-y-2">
-                        {group.items.map((item) => {
-                          const enabled = new Set(
-                            PLAN_ENABLED_FEATURE_KEYS[planTier] || []
-                          ).has(item.key)
-                          return (
-                            <div key={item.key} className="flex items-start gap-2">
-                              {enabled ? (
-                                <CheckCircle2
-                                  className={`h-4 w-4 flex-shrink-0 mt-0.5 ${
-                                    isPopular ? 'text-emerald-500' : 'text-green-600'
-                                  }`}
-                                />
-                              ) : (
-                                <Circle className="h-4 w-4 flex-shrink-0 mt-0.5 text-gray-300" />
-                              )}
-                              <span className={`text-sm ${enabled ? 'text-gray-700' : 'text-gray-400'}`}>
-                                {language === 'en' ? item.labelEn : item.labelTr}
-                              </span>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
+                <ul className="space-y-2 mb-6 flex-1">
+                  {plan.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <CheckCircle2 className={`h-4 w-4 flex-shrink-0 mt-0.5 ${
+                        isPopular ? 'text-emerald-500' : 'text-green-600'
+                      }`} />
+                      <span className="text-sm text-gray-700">{feature}</span>
+                    </li>
                   ))}
-                </div>
+                </ul>
 
-                {isComingSoon ? (
+                <Link href={`/buy?planId=${plan.id}`} className="block mt-auto">
                   <Button
-                    disabled
-                    className="w-full h-11 text-sm font-semibold bg-gray-200 text-gray-500 cursor-not-allowed"
+                    className={`w-full h-11 text-sm font-semibold ${
+                      isPopular
+                        ? 'bg-emerald-500 hover:bg-emerald-600 !text-[var(--body-text-color)] shadow-lg'
+                        : 'bg-gray-900 hover:bg-gray-800 text-white'
+                    }`}
                   >
-                    {language === 'en' ? 'COMING SOON' : 'ÇOK YAKINDA'}
+                    {language === 'en' ? 'Buy Now' : 'Satın Al'}
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
-                ) : (
-                  <Link href={`/buy?planId=${plan.id}`} className="block mt-auto">
-                    <Button
-                      className={`w-full h-11 text-sm font-semibold ${
-                        isPopular
-                          ? 'bg-emerald-500 hover:bg-emerald-600 !text-[var(--body-text-color)] shadow-lg'
-                          : 'bg-gray-900 hover:bg-gray-800 text-white'
-                      }`}
-                    >
-                      {language === 'en' ? 'Buy Now' : 'Satın Al'}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                )}
+                </Link>
               </Card>
             )
           })}
