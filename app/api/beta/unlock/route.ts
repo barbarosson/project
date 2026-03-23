@@ -3,7 +3,6 @@ import {
   BETA_COOKIE_NAME,
   getBetaAccessCode,
 } from '@/lib/beta-access'
-import { isValidBetaAccessCode } from '@/lib/beta-reference-code'
 
 export const runtime = 'nodejs'
 
@@ -15,12 +14,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: 'Invalid JSON' }, { status: 400 })
   }
 
+  const expected = getBetaAccessCode()
   const code = (body.code || '').trim()
-  let allowed = code === getBetaAccessCode()
-  if (!allowed) {
-    allowed = await isValidBetaAccessCode(code)
-  }
-  if (!allowed) {
+  if (code !== expected) {
     return NextResponse.json({ ok: false, error: 'invalid_code' }, { status: 401 })
   }
 
