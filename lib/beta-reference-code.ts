@@ -1,14 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 
-/** Sunucuda bazen yalnızca NEXT_PUBLIC_* tanımlı olur; önce doğrudan URL dene */
-function supabaseUrl(): string {
-  return (
-    process.env.SUPABASE_URL?.trim() ||
-    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() ||
-    ''
-  )
-}
-
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
 export function generateReferenceCode(): string {
@@ -21,11 +13,10 @@ export function generateReferenceCode(): string {
 }
 
 export function getServiceSupabase() {
-  const url = supabaseUrl()
-  if (!url || !SUPABASE_SERVICE_ROLE_KEY?.trim()) {
+  if (!SUPABASE_URL?.trim() || !SUPABASE_SERVICE_ROLE_KEY?.trim()) {
     return null
   }
-  return createClient(url, SUPABASE_SERVICE_ROLE_KEY, {
+  return createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { autoRefreshToken: false, persistSession: false },
   })
 }

@@ -33,19 +33,11 @@ export default function BetaTalepPage() {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        const hint = typeof data.hint === 'string' ? data.hint : ''
-        if (data.error === 'invalid_email') {
-          setError('Geçerli bir e-posta adresi girin.')
-        } else if (data.error === 'server_config' || data.error === 'schema_not_ready') {
-          setError(
-            hint ||
-              (data.error === 'schema_not_ready'
-                ? 'Veritabanı tablosu henüz oluşturulmamış. Yönetici migration uygulamalı.'
-                : 'Sunucu yapılandırması eksik (Supabase service role).')
-          )
-        } else {
-          setError(hint || 'Talep gönderilemedi. Lütfen tekrar deneyin.')
-        }
+        setError(
+          data.error === 'invalid_email'
+            ? 'Geçerli bir e-posta adresi girin.'
+            : 'Talep gönderilemedi. Lütfen tekrar deneyin.'
+        )
         return
       }
       setMessage(
