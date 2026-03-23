@@ -15,11 +15,6 @@ export function ModulusFooter() {
     (config && (config as any).site_name_tr) || 'Songurtech - Barbaros Songur'
   const companyAddress =
     (config && (config as any).contact_address) || 'Küçükbakkalköy, Selvili Sok. No:4/48, 34750 Ataşehir/İstanbul'
-  const companyAddressDisplay =
-    (companyAddress || '').trim().toLocaleLowerCase('tr-TR') === 'ataşehir' ||
-    (companyAddress || '').trim().toLocaleLowerCase('tr-TR') === 'atasehir'
-      ? 'ATAŞEHİR/İSTANBUL'
-      : companyAddress
 
   const footerSections = {
     product: {
@@ -201,7 +196,7 @@ export function ModulusFooter() {
                 {companyName}
               </div>
               <div className="text-[13px]" style={{ color: 'rgba(255,255,255,0.55)' }}>
-                {companyAddressDisplay}
+                {companyAddress}
               </div>
             </div>
 
