@@ -7,12 +7,16 @@ import { useCurrency } from '@/hooks/use-currency'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle2, Star, Zap, Crown, Rocket, Building2, ArrowRight } from 'lucide-react'
+import { Star, Zap, Crown, Rocket, Building2, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
+import { getCanonicalPlanTier } from '@/lib/subscription-plan-tier'
+import { PricingAppFeatureList } from '@/components/marketing/pricing-app-feature-list'
 
 interface SubscriptionPlan {
   id: string
   name: string
+  plan_code?: string
+  plan_tier?: string
   price_tl: number
   price_usd: number
   description: string
@@ -20,6 +24,8 @@ interface SubscriptionPlan {
   recommended: boolean
   trial_days: number
 }
+
+const COMING_SOON_TIERS = new Set(['ORTA', 'BUYUK', 'ENTERPRISE'])
 
 const PLAN_CONFIG: Record<string, {
   icon: React.ElementType
@@ -143,10 +149,12 @@ export function ModulusPricingSection() {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-12">
           {plans.map((plan) => {
-            const cfg = PLAN_CONFIG[plan.name] || PLAN_CONFIG.FREE
+            const planTier = getCanonicalPlanTier(plan)
+            const isComingSoon = COMING_SOON_TIERS.has(planTier)
+            const cfg = PLAN_CONFIG[planTier] || PLAN_CONFIG[plan.name] || PLAN_CONFIG.FREE
             const Icon = cfg.icon
             const basePrice = currency === 'TRY' ? plan.price_tl : plan.price_usd
-            const isPopular = cfg.popular
+            const isPopular = Boolean(cfg.popular && !isComingSoon)
 
             return (
               <Card
@@ -180,7 +188,11 @@ export function ModulusPricingSection() {
                   </p>
 
                   <div className="mb-2">
-                    {basePrice === 0 ? (
+                    {isComingSoon ? (
+                      <span className="text-2xl font-bold tracking-tight text-amber-600">
+                        {language === 'en' ? 'Coming soon' : 'ÇOK YAKINDA'}
+                      </span>
+                    ) : basePrice === 0 ? (
                       <span className="text-3xl font-bold text-gray-600">
                         {language === 'tr' ? 'Ucretsiz' : 'Free'}
                       </span>
@@ -192,7 +204,7 @@ export function ModulusPricingSection() {
                     )}
                   </div>
 
-                  {plan.trial_days > 0 && basePrice > 0 && (
+                  {!isComingSoon && plan.trial_days > 0 && basePrice > 0 && (
                     <p className="text-xs text-green-600 font-semibold">
                       {language === 'en'
                         ? `${plan.trial_days}-day free trial`
@@ -202,29 +214,48 @@ export function ModulusPricingSection() {
                   )}
                 </div>
 
-                <ul className="space-y-2 mb-6 flex-1">
-                  {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <CheckCircle2 className={`h-4 w-4 flex-shrink-0 mt-0.5 ${
-                        isPopular ? 'text-emerald-500' : 'text-green-600'
-                      }`} />
-                      <span className="text-sm text-gray-700">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+                {isComingSoon && (
+                  <div className="mb-3 rounded-lg border border-dashed border-amber-200 bg-amber-50/50 px-3 py-2 text-center">
+                    <p className="text-xs font-medium text-amber-800">
+                      {language === 'en'
+                        ? 'This tier will be available for purchase soon.'
+                        : 'Bu paket satışa açılınca buradan haber vereceğiz.'}
+                    </p>
+                  </div>
+                )}
 
-                <Link href={`/buy?planId=${plan.id}`} className="block mt-auto">
-                  <Button
-                    className={`w-full h-11 text-sm font-semibold ${
-                      isPopular
-                        ? 'bg-emerald-500 hover:bg-emerald-600 text-[var(--body-text-color)] shadow-lg'
-                        : 'bg-gray-900 hover:bg-gray-800 text-white'
-                    }`}
-                  >
-                    {language === 'en' ? 'Buy Now' : 'Satın Al'}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
+                <PricingAppFeatureList
+                  planTier={planTier}
+                  language={language}
+                  isPopular={isPopular}
+                  isComingSoon={isComingSoon}
+                  variant="parasut"
+                />
+
+                {isComingSoon ? (
+                  <div className="mt-auto">
+                    <Button
+                      type="button"
+                      disabled
+                      className="w-full h-11 text-sm font-semibold bg-gray-200 text-gray-600 cursor-not-allowed"
+                    >
+                      {language === 'en' ? 'Coming soon' : 'ÇOK YAKINDA'}
+                    </Button>
+                  </div>
+                ) : (
+                  <Link href={`/buy?planId=${plan.id}`} className="block mt-auto">
+                    <Button
+                      className={`w-full h-11 text-sm font-semibold ${
+                        isPopular
+                          ? 'bg-emerald-500 hover:bg-emerald-600 text-[var(--body-text-color)] shadow-lg'
+                          : 'bg-gray-900 hover:bg-gray-800 text-white'
+                      }`}
+                    >
+                      {language === 'en' ? 'Buy Now' : 'Satın Al'}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                )}
               </Card>
             )
           })}

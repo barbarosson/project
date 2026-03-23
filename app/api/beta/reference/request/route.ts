@@ -1,19 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { getServiceSupabase } from '@/lib/beta-reference-code'
-import { sendBetaAdminApprovalRequest } from '@/lib/beta-reference-mail'
+import { getPublicSiteUrl, sendBetaAdminApprovalRequest } from '@/lib/beta-reference-mail'
 
 export const runtime = 'nodejs'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-const MAIL_DEBUG_ENABLED = process.env.BETA_MAIL_DEBUG === '1'
-
-function resolveBaseUrl(request: NextRequest): string {
-  const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim()
-  if (envUrl) return envUrl.replace(/\/+$/, '')
-  // Fallback prevents broken approval links when env is missing/misconfigured.
-  return request.nextUrl.origin.replace(/\/+$/, '')
-}
 
 export async function POST(request: NextRequest) {
   let body: { email?: string } = {}
@@ -39,7 +31,7 @@ export async function POST(request: NextRequest) {
   }
 
   const decisionToken = crypto.randomBytes(32).toString('hex')
-  const base = resolveBaseUrl(request)
+  const base = getPublicSiteUrl()
   const approveUrl = `${base}/api/beta/reference/decision?token=${encodeURIComponent(decisionToken)}&decision=approve`
   const rejectUrl = `${base}/api/beta/reference/decision?token=${encodeURIComponent(decisionToken)}&decision=reject`
 
@@ -71,19 +63,11 @@ export async function POST(request: NextRequest) {
   if (!mail.ok) {
     console.error('[beta-reference/request] admin mail failed:', mail.error)
     // Talep kayıtlı; admin e-postası gidemezse yine de kullanıcıya genel mesaj
-    return NextResponse.json({
-      ok: true,
-      message:
-        'Talebiniz alındı. Referans kodunuz admin onayından sonra e-posta adresinize gönderilecektir.',
-      emailAdminSent: false,
-      ...(MAIL_DEBUG_ENABLED && { mailError: mail.error || 'unknown' }),
-    })
   }
 
   return NextResponse.json({
     ok: true,
     message:
       'Talebiniz alındı. Referans kodunuz admin onayından sonra e-posta adresinize gönderilecektir.',
-    emailAdminSent: true,
   })
 }

@@ -5,21 +5,27 @@ import { supabase } from '@/lib/supabase'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { CheckCircle2, Star, Zap, Crown, Rocket, Building2 } from 'lucide-react'
+import { Star, Zap, Crown, Rocket, Building2 } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/contexts/language-context'
 import { useSiteConfig } from '@/contexts/site-config-context'
 import { useCurrency } from '@/hooks/use-currency'
+import { getCanonicalPlanTier } from '@/lib/subscription-plan-tier'
+import { PricingAppFeatureList } from '@/components/marketing/pricing-app-feature-list'
 
 interface SubscriptionPlan {
   id: string
   name: string
+  plan_code?: string
+  plan_tier?: string
   price_tl: number
   price_usd: number
   description: string
   features: string[]
   recommended: boolean
 }
+
+const COMING_SOON_TIERS = new Set(['ORTA', 'BUYUK', 'ENTERPRISE'])
 
 const PLAN_CONFIG: Record<string, { icon: React.ElementType; labelTr: string; labelEn: string; popular?: boolean }> = {
   FREE: { icon: Zap, labelTr: 'Temel', labelEn: 'Free' },
@@ -92,10 +98,12 @@ export function PricingSection() {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-7xl mx-auto">
           {plans.map((plan) => {
-            const cfg = PLAN_CONFIG[plan.name] || PLAN_CONFIG.FREE
+            const planTier = getCanonicalPlanTier(plan)
+            const isComingSoon = COMING_SOON_TIERS.has(planTier)
+            const cfg = PLAN_CONFIG[planTier] || PLAN_CONFIG[plan.name] || PLAN_CONFIG.FREE
             const Icon = cfg.icon
             const basePrice = currency === 'TRY' ? plan.price_tl : plan.price_usd
-            const isPopular = cfg.popular
+            const isPopular = Boolean(cfg.popular && !isComingSoon)
 
             return (
               <Card
@@ -124,7 +132,11 @@ export function PricingSection() {
                     {language === 'tr' ? cfg.labelTr : cfg.labelEn}
                   </h3>
                   <div className="mb-1">
-                    {basePrice === 0 ? (
+                    {isComingSoon ? (
+                      <span className="text-xl font-bold tracking-tight text-amber-600">
+                        {language === 'en' ? 'Coming soon' : 'ÇOK YAKINDA'}
+                      </span>
+                    ) : basePrice === 0 ? (
                       <span className="text-2xl font-bold text-gray-600">
                         {language === 'tr' ? 'Ucretsiz' : 'Free'}
                       </span>
@@ -137,31 +149,50 @@ export function PricingSection() {
                   </div>
                 </div>
 
-                <ul className="space-y-2 mb-6 flex-1">
-                  {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-start gap-2">
-                      <CheckCircle2 className={`h-4 w-4 flex-shrink-0 mt-0.5 ${
-                        isPopular ? 'text-emerald-500' : 'text-green-600'
-                      }`} />
-                      <span className="text-sm text-auto-contrast-muted-light">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
+                {isComingSoon && (
+                  <div className="mb-3 rounded-lg border border-dashed border-amber-200 bg-amber-50/50 px-3 py-2 text-center">
+                    <p className="text-xs font-medium text-amber-800">
+                      {language === 'en'
+                        ? 'This tier will be available soon.'
+                        : 'Bu paket çok yakında satışa açılacak.'}
+                    </p>
+                  </div>
+                )}
 
-                <Link href="/login" className="block mt-auto">
-                  <Button
-                    className={`w-full ${
-                      isPopular
-                        ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                        : 'bg-gray-900 hover:bg-gray-800 text-white'
-                    }`}
-                  >
-                    {basePrice === 0
-                      ? (language === 'en' ? 'Start Free' : 'Ucretsiz Basla')
-                      : t.marketing.pricing.startFreeTrial
-                    }
-                  </Button>
-                </Link>
+                <PricingAppFeatureList
+                  planTier={planTier}
+                  language={language}
+                  isPopular={isPopular}
+                  isComingSoon={isComingSoon}
+                  variant="marketing"
+                />
+
+                {isComingSoon ? (
+                  <div className="mt-auto">
+                    <Button
+                      type="button"
+                      disabled
+                      className="w-full bg-gray-200 text-gray-600 cursor-not-allowed"
+                    >
+                      {language === 'en' ? 'Coming soon' : 'ÇOK YAKINDA'}
+                    </Button>
+                  </div>
+                ) : (
+                  <Link href="/login" className="block mt-auto">
+                    <Button
+                      className={`w-full ${
+                        isPopular
+                          ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                          : 'bg-gray-900 hover:bg-gray-800 text-white'
+                      }`}
+                    >
+                      {basePrice === 0
+                        ? (language === 'en' ? 'Start Free' : 'Ucretsiz Basla')
+                        : t.marketing.pricing.startFreeTrial
+                      }
+                    </Button>
+                  </Link>
+                )}
               </Card>
             )
           })}
