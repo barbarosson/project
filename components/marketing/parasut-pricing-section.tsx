@@ -13,6 +13,7 @@ import Link from 'next/link'
 interface SubscriptionPlan {
   id: string
   name: string
+  plan_code?: string
   price_tl: number
   price_usd: number
   description: string

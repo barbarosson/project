@@ -14,6 +14,7 @@ import { useCurrency } from '@/hooks/use-currency'
 interface SubscriptionPlan {
   id: string
   name: string
+  plan_code?: string
   price_tl: number
   price_usd: number
   description: string
