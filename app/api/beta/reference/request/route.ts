@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { getServiceSupabase } from '@/lib/beta-reference-code'
-import { getPublicSiteUrl, sendBetaAdminApprovalRequest } from '@/lib/beta-reference-mail'
+import { sendBetaAdminApprovalRequest } from '@/lib/beta-reference-mail'
 
 export const runtime = 'nodejs'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MAIL_DEBUG_ENABLED = process.env.BETA_MAIL_DEBUG === '1'
+
+function resolveBaseUrl(request: NextRequest): string {
+  const envUrl = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+  if (envUrl) return envUrl.replace(/\/+$/, '')
+  // Fallback prevents broken approval links when env is missing/misconfigured.
+  return request.nextUrl.origin.replace(/\/+$/, '')
+}
 
 export async function POST(request: NextRequest) {
   let body: { email?: string } = {}
@@ -32,7 +39,7 @@ export async function POST(request: NextRequest) {
   }
 
   const decisionToken = crypto.randomBytes(32).toString('hex')
-  const base = getPublicSiteUrl()
+  const base = resolveBaseUrl(request)
   const approveUrl = `${base}/api/beta/reference/decision?token=${encodeURIComponent(decisionToken)}&decision=approve`
   const rejectUrl = `${base}/api/beta/reference/decision?token=${encodeURIComponent(decisionToken)}&decision=reject`
 
