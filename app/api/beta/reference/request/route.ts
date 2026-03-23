@@ -127,14 +127,18 @@ export async function POST(request: NextRequest) {
     'Talebiniz alındı. Referans kodunuz admin onayından sonra e-posta adresinize gönderilecektir.'
 
   if (!mail.ok && !ack.ok) {
+    const keyMissing =
+      (mail.error || '').includes('RESEND_API_KEY') || (ack.error || '').includes('RESEND_API_KEY')
+    const combinedHint = buildCombinedMailHint(mail.error, ack.error)
     return NextResponse.json({
       ok: true,
       message: baseMessage,
       emailAdminSent: false,
       emailAckSent: false,
-      warning:
-        'E-posta gönderilemedi. Netlify’da RESEND_API_KEY tanımlı mı ve Resend’de gönderici domain doğrulandı mı kontrol edin. Talep veritabanına kaydedildi.',
-      mailHint: process.env.NODE_ENV === 'development' ? mail.error : undefined,
+      warning: keyMissing
+        ? 'E-posta gönderilemedi: sunucuda RESEND_API_KEY okunamıyor veya boş. Netlify → Site → Environment variables → Production’da tanımlı olduğundan ve deploy sonrası yeniden derlendiğinden emin olun. Talep kayıtlıdır.'
+        : 'E-posta gönderilemedi: Resend isteği reddedildi. API anahtarı tanımlı olsa bile gönderici adresi (BETA_MAIL_FROM / RESEND_FROM_EMAIL) Resend’de doğrulanmış bir domainden olmalıdır. Ayrıntı aşağıda. Talep kayıtlıdır.',
+      mailHint: combinedHint,
     })
   }
 
@@ -153,11 +157,23 @@ export async function POST(request: NextRequest) {
     })
   }
 
+  if (!ack.ok) {
+    return NextResponse.json({
+      ok: true,
+      message: baseMessage,
+      emailAdminSent: true,
+      emailAckSent: false,
+      warning:
+        'Bilgilendirme e-postası (talep sahibi) gönderilemedi. Admin bildirimi gittiyse onay akışı çalışır; yine de Resend alıcı / domain ayarlarını kontrol edin.',
+      mailHint: summarizeMailError(ack.error),
+    })
+  }
+
   return NextResponse.json({
     ok: true,
     message: baseMessage,
     emailAdminSent: true,
-    emailAckSent: ack.ok,
+    emailAckSent: true,
   })
 }
 
@@ -170,5 +186,19 @@ function summarizeMailError(err?: string): string | undefined {
   if (e.includes('sandbox') || e.includes('testing') || e.includes('only')) {
     return 'Resend: test modunda yalnızca doğrulanmış alıcılara izin verilir.'
   }
+  if (e.includes('invalid') && e.includes('from')) {
+    return 'Resend: "from" adresi geçersiz veya doğrulanmamış domain.'
+  }
+  if (e.includes('401') || e.includes('unauthorized')) {
+    return 'Resend: API anahtarı geçersiz veya yetkisiz (RESEND_API_KEY).'
+  }
   return err.length > 160 ? `${err.slice(0, 160)}…` : err
+}
+
+function buildCombinedMailHint(a?: string, b?: string): string | undefined {
+  const sa = summarizeMailError(a)
+  const sb = summarizeMailError(b)
+  if (!sa && !sb) return undefined
+  if (sa && sb && sa === sb) return sa
+  return [sa, sb].filter(Boolean).join(' · ')
 }
