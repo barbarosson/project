@@ -13,6 +13,7 @@ export default function BetaTalepPage() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [warning, setWarning] = useState<string | null>(null)
+  const [mailHint, setMailHint] = useState<string | null>(null)
   const [emailAckSent, setEmailAckSent] = useState<boolean | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -21,6 +22,7 @@ export default function BetaTalepPage() {
     setError(null)
     setMessage(null)
     setWarning(null)
+    setMailHint(null)
     setEmailAckSent(null)
     const trimmed = email.trim()
     if (!trimmed) {
@@ -59,6 +61,9 @@ export default function BetaTalepPage() {
       )
       if (typeof data.warning === 'string' && data.warning.trim()) {
         setWarning(data.warning.trim())
+      }
+      if (typeof data.mailHint === 'string' && data.mailHint.trim()) {
+        setMailHint(data.mailHint.trim())
       }
       setEmailAckSent(typeof data.emailAckSent === 'boolean' ? data.emailAckSent : null)
       setEmail('')
@@ -137,6 +142,11 @@ export default function BetaTalepPage() {
               <p className="text-sm rounded-lg px-3 py-2" style={{ background: 'rgba(251,191,36,0.15)', color: '#FDE68A' }}>
                 <strong className="block mb-1">E-posta uyarısı</strong>
                 {warning}
+                {mailHint && (
+                  <span className="block mt-2 text-xs opacity-95 leading-relaxed border-t border-amber-400/20 pt-2">
+                    {mailHint}
+                  </span>
+                )}
               </p>
             )}
             <Button
