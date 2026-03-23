@@ -1,6 +1,9 @@
 import { Metadata } from 'next';
 import { LandingV2Client } from '@/components/marketing/landing-v2-client';
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export async function generateMetadata(): Promise<Metadata> {
   return {
     title: 'Modulus ERP - Complete Business Management Solution',
