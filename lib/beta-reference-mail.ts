@@ -4,6 +4,19 @@
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 
+async function parseResendError(res: Response): Promise<string> {
+  const raw = await res.text()
+  try {
+    const parsed = JSON.parse(raw) as { message?: string; name?: string }
+    const parts = [`resend_status=${res.status}`]
+    if (parsed.name) parts.push(`name=${parsed.name}`)
+    if (parsed.message) parts.push(`message=${parsed.message}`)
+    return parts.join(' ')
+  } catch {
+    return `resend_status=${res.status} body=${raw}`
+  }
+}
+
 /** Gönderici: doğrulanmış domain; varsayılan ModulusTech */
 export function getBetaMailFrom(): string {
   return (
@@ -69,10 +82,7 @@ export async function sendBetaAdminApprovalRequest(params: {
         html,
       }),
     })
-    if (!res.ok) {
-      const t = await res.text()
-      return { ok: false, error: t }
-    }
+    if (!res.ok) return { ok: false, error: await parseResendError(res) }
     return { ok: true }
   } catch (e: unknown) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) }
@@ -125,10 +135,7 @@ export async function sendBetaUserReferenceCode(params: {
         html,
       }),
     })
-    if (!res.ok) {
-      const t = await res.text()
-      return { ok: false, error: t }
-    }
+    if (!res.ok) return { ok: false, error: await parseResendError(res) }
     return { ok: true }
   } catch (e: unknown) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) }
@@ -169,10 +176,7 @@ export async function sendBetaUserRejected(params: { toEmail: string }): Promise
         html,
       }),
     })
-    if (!res.ok) {
-      const t = await res.text()
-      return { ok: false, error: t }
-    }
+    if (!res.ok) return { ok: false, error: await parseResendError(res) }
     return { ok: true }
   } catch (e: unknown) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) }
