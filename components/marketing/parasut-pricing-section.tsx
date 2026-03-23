@@ -143,10 +143,12 @@ export function ModulusPricingSection() {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-12">
           {plans.map((plan) => {
-            const cfg = PLAN_CONFIG[plan.name] || PLAN_CONFIG.FREE
+            const planTier = (plan.plan_code || plan.name || '').toString().toUpperCase()
+            const cfg = PLAN_CONFIG[planTier] || PLAN_CONFIG.FREE
             const Icon = cfg.icon
             const basePrice = currency === 'TRY' ? plan.price_tl : plan.price_usd
             const isPopular = cfg.popular
+            const isComingSoon = ['ORTA', 'BUYUK', 'ENTERPRISE'].includes(planTier)
 
             return (
               <Card
@@ -180,7 +182,11 @@ export function ModulusPricingSection() {
                   </p>
 
                   <div className="mb-2">
-                    {basePrice === 0 ? (
+                    {isComingSoon ? (
+                      <span className="text-2xl lg:text-3xl font-bold text-gray-400">
+                        {language === 'en' ? 'COMING SOON' : 'ÇOK YAKINDA'}
+                      </span>
+                    ) : basePrice === 0 ? (
                       <span className="text-3xl font-bold text-gray-600">
                         {language === 'tr' ? 'Ucretsiz' : 'Free'}
                       </span>
@@ -192,7 +198,7 @@ export function ModulusPricingSection() {
                     )}
                   </div>
 
-                  {plan.trial_days > 0 && basePrice > 0 && (
+                  {!isComingSoon && plan.trial_days > 0 && basePrice > 0 && (
                     <p className="text-xs text-green-600 font-semibold">
                       {language === 'en'
                         ? `${plan.trial_days}-day free trial`
@@ -203,28 +209,48 @@ export function ModulusPricingSection() {
                 </div>
 
                 <ul className="space-y-2 mb-6 flex-1">
-                  {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <CheckCircle2 className={`h-4 w-4 flex-shrink-0 mt-0.5 ${
-                        isPopular ? 'text-emerald-500' : 'text-green-600'
-                      }`} />
-                      <span className="text-sm text-gray-700">{feature}</span>
+                  {isComingSoon ? (
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 flex-shrink-0 mt-0.5 text-gray-300" />
+                      <span className="text-sm text-gray-500">
+                        {language === 'en' ? 'COMING SOON' : 'ÇOK YAKINDA'}
+                      </span>
                     </li>
-                  ))}
+                  ) : (
+                    plan.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <CheckCircle2
+                          className={`h-4 w-4 flex-shrink-0 mt-0.5 ${
+                            isPopular ? 'text-emerald-500' : 'text-green-600'
+                          }`}
+                        />
+                        <span className="text-sm text-gray-700">{feature}</span>
+                      </li>
+                    ))
+                  )}
                 </ul>
 
-                <Link href={`/buy?planId=${plan.id}`} className="block mt-auto">
+                {isComingSoon ? (
                   <Button
-                    className={`w-full h-11 text-sm font-semibold ${
-                      isPopular
-                        ? 'bg-emerald-500 hover:bg-emerald-600 !text-[var(--body-text-color)] shadow-lg'
-                        : 'bg-gray-900 hover:bg-gray-800 text-white'
-                    }`}
+                    disabled
+                    className="w-full h-11 text-sm font-semibold bg-gray-200 text-gray-500 cursor-not-allowed mt-auto"
                   >
-                    {language === 'en' ? 'Buy Now' : 'Satın Al'}
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    {language === 'en' ? 'COMING SOON' : 'ÇOK YAKINDA'}
                   </Button>
-                </Link>
+                ) : (
+                  <Link href={`/buy?planId=${plan.id}`} className="block mt-auto">
+                    <Button
+                      className={`w-full h-11 text-sm font-semibold ${
+                        isPopular
+                          ? 'bg-emerald-500 hover:bg-emerald-600 !text-[var(--body-text-color)] shadow-lg'
+                          : 'bg-gray-900 hover:bg-gray-800 text-white'
+                      }`}
+                    >
+                      {language === 'en' ? 'Buy Now' : 'Satın Al'}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                )}
               </Card>
             )
           })}

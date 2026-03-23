@@ -92,10 +92,12 @@ export function PricingSection() {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-7xl mx-auto">
           {plans.map((plan) => {
-            const cfg = PLAN_CONFIG[plan.name] || PLAN_CONFIG.FREE
+            const planTier = (plan.plan_code || plan.name || '').toString().toUpperCase()
+            const cfg = PLAN_CONFIG[planTier] || PLAN_CONFIG.FREE
             const Icon = cfg.icon
             const basePrice = currency === 'TRY' ? plan.price_tl : plan.price_usd
             const isPopular = cfg.popular
+            const isComingSoon = ['ORTA', 'BUYUK', 'ENTERPRISE'].includes(planTier)
 
             return (
               <Card
@@ -124,7 +126,11 @@ export function PricingSection() {
                     {language === 'tr' ? cfg.labelTr : cfg.labelEn}
                   </h3>
                   <div className="mb-1">
-                    {basePrice === 0 ? (
+                    {isComingSoon ? (
+                      <span className="text-2xl font-bold text-gray-400">
+                        {language === 'en' ? 'COMING SOON' : 'ÇOK YAKINDA'}
+                      </span>
+                    ) : basePrice === 0 ? (
                       <span className="text-2xl font-bold text-gray-600">
                         {language === 'tr' ? 'Ucretsiz' : 'Free'}
                       </span>
@@ -138,30 +144,50 @@ export function PricingSection() {
                 </div>
 
                 <ul className="space-y-2 mb-6 flex-1">
-                  {plan.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-start gap-2">
-                      <CheckCircle2 className={`h-4 w-4 flex-shrink-0 mt-0.5 ${
-                        isPopular ? 'text-emerald-500' : 'text-green-600'
-                      }`} />
-                      <span className="text-sm text-auto-contrast-muted-light">{feature}</span>
+                  {isComingSoon ? (
+                    <li className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 flex-shrink-0 mt-0.5 text-gray-300" />
+                      <span className="text-sm text-auto-contrast-muted-light">
+                        {language === 'en' ? 'COMING SOON' : 'ÇOK YAKINDA'}
+                      </span>
                     </li>
-                  ))}
+                  ) : (
+                    plan.features.map((feature, featureIndex) => (
+                      <li key={featureIndex} className="flex items-start gap-2">
+                        <CheckCircle2
+                          className={`h-4 w-4 flex-shrink-0 mt-0.5 ${
+                            isPopular ? 'text-emerald-500' : 'text-green-600'
+                          }`}
+                        />
+                        <span className="text-sm text-auto-contrast-muted-light">{feature}</span>
+                      </li>
+                    ))
+                  )}
                 </ul>
 
-                <Link href="/login" className="block mt-auto">
+                {isComingSoon ? (
                   <Button
-                    className={`w-full ${
-                      isPopular
-                        ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
-                        : 'bg-gray-900 hover:bg-gray-800 text-white'
-                    }`}
+                    disabled
+                    className="w-full mt-auto h-11 text-sm font-semibold bg-gray-200 text-gray-500 cursor-not-allowed"
                   >
-                    {basePrice === 0
-                      ? (language === 'en' ? 'Start Free' : 'Ucretsiz Basla')
-                      : t.marketing.pricing.startFreeTrial
-                    }
+                    {language === 'en' ? 'COMING SOON' : 'ÇOK YAKINDA'}
                   </Button>
-                </Link>
+                ) : (
+                  <Link href="/login" className="block mt-auto">
+                    <Button
+                      className={`w-full ${
+                        isPopular
+                          ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                          : 'bg-gray-900 hover:bg-gray-800 text-white'
+                      }`}
+                    >
+                      {basePrice === 0
+                        ? (language === 'en' ? 'Start Free' : 'Ucretsiz Basla')
+                        : t.marketing.pricing.startFreeTrial
+                      }
+                    </Button>
+                  </Link>
+                )}
               </Card>
             )
           })}
