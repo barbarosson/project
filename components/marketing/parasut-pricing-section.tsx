@@ -1,277 +1,300 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
 import { useLanguage } from '@/contexts/language-context'
 import { useCurrency } from '@/hooks/use-currency'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Star, Zap, Crown, Rocket, Building2, ArrowRight } from 'lucide-react'
+import {
+  CheckCircle2,
+  ArrowRight,
+  Sparkles,
+  Package,
+  ShoppingCart,
+  FileCheck,
+  Headphones,
+  Zap,
+  Settings2,
+  Factory,
+  TrendingUp,
+  Plus,
+} from 'lucide-react'
 import Link from 'next/link'
-import { getCanonicalPlanTier } from '@/lib/subscription-plan-tier'
-import { PricingAppFeatureList } from '@/components/marketing/pricing-app-feature-list'
+import {
+  getBaseModules,
+  getAlaCarteModules,
+  MODULE_CATEGORIES,
+  MARKETPLACE_BUNDLE,
+  type PricingModule,
+  type ModuleCategory,
+} from '@/lib/pricing-configurator-data'
 
-interface SubscriptionPlan {
-  id: string
-  name: string
-  plan_code?: string
-  plan_tier?: string
-  price_tl: number
-  price_usd: number
-  description: string
-  features: string[]
-  recommended: boolean
-  trial_days: number
+const CATEGORY_ICONS: Record<string, React.ElementType> = {
+  LayoutDashboard: Zap,
+  Settings2,
+  Factory,
+  TrendingUp,
+  Brain: Sparkles,
+  ShoppingCart,
+  FileCheck,
+  Headphones,
 }
 
-const COMING_SOON_TIERS = new Set(['ORTA', 'BUYUK', 'ENTERPRISE'])
-
-const PLAN_CONFIG: Record<string, {
-  icon: React.ElementType
+const HIGHLIGHT_ADDONS: {
+  id: string
+  category: ModuleCategory
   labelTr: string
   labelEn: string
-  whoTr: string
-  whoEn: string
-  popular?: boolean
-}> = {
-  FREE: {
-    icon: Zap,
-    labelTr: 'Temel',
-    labelEn: 'Free',
-    whoTr: 'Yeni başlayanlar ve denemek isteyen mikro işletmeler için',
-    whoEn: 'For solo founders and very small teams trying Modulus for the first time',
-  },
-  KUCUK: {
-    icon: Star,
-    labelTr: 'Küçük',
-    labelEn: 'Small',
-    whoTr: 'Fatura ve temel stok takibi yapan küçük işletmeler için',
-    whoEn: 'For small businesses that need invoicing, basic stock and expense tracking',
-  },
-  ORTA: {
-    icon: Rocket,
-    labelTr: 'Orta',
-    labelEn: 'Medium',
-    whoTr: 'Büyüyen KOBİ’ler, ekipli çalışma ve gelişmiş raporlama için',
-    whoEn: 'For growing SMEs that need team collaboration and advanced reporting',
-    popular: true,
-  },
-  BUYUK: {
-    icon: Crown,
-    labelTr: 'Büyük',
-    labelEn: 'Large',
-    whoTr: 'Çok şubeli, yüksek hacimli işletmeler için',
-    whoEn: 'For larger companies with multiple branches and higher transaction volumes',
-  },
-  ENTERPRISE: {
-    icon: Building2,
-    labelTr: 'Kurumsal',
-    labelEn: 'Enterprise',
-    whoTr: 'Özel entegrasyon ve sözleşmeli çözüm isteyen kurumsal yapılar için',
-    whoEn: 'For enterprises that need custom integrations, SLAs and tailored onboarding',
-  },
-}
+  priceTRY: number
+  priceUSD: number
+}[] = [
+  { id: 'orders', category: 'operational', labelTr: 'Siparişler', labelEn: 'Orders', priceTRY: 149, priceUSD: 9 },
+  { id: 'warehouse', category: 'operational', labelTr: 'Depo & Stok', labelEn: 'Warehouse', priceTRY: 199, priceUSD: 12 },
+  { id: 'manufacturing', category: 'production', labelTr: 'Üretim', labelEn: 'Manufacturing', priceTRY: 299, priceUSD: 18 },
+  { id: 'projects', category: 'sales_marketing', labelTr: 'Proje Yönetimi', labelEn: 'Projects', priceTRY: 149, priceUSD: 9 },
+  { id: 'quotes', category: 'sales_marketing', labelTr: 'Teklifler', labelEn: 'Quotes', priceTRY: 99, priceUSD: 6 },
+  { id: 'ai_global_chatbot', category: 'ai', labelTr: 'AI Chatbot', labelEn: 'AI Chatbot', priceTRY: 199, priceUSD: 12 },
+]
 
 export function ModulusPricingSection() {
   const { language } = useLanguage()
   const { currency, formatCurrency } = useCurrency()
-  const [plans, setPlans] = useState<SubscriptionPlan[]>([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchPlans()
-  }, [])
-
-  async function fetchPlans() {
-    try {
-      const { data } = await supabase
-        .from('subscription_plans')
-        .select('*')
-        .order('monthly_price', { ascending: true })
-
-      if (data) {
-        setPlans(data as SubscriptionPlan[])
-      }
-    } catch (error) {
-      console.error('Error fetching pricing data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (loading) {
-    return (
-      <section id="pricing" className="py-20 lg:py-28 bg-gradient-to-br from-gray-50 via-white to-gray-50">
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Card key={i} className="p-6">
-                <div className="animate-pulse space-y-4">
-                  <div className="h-6 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-12 bg-gray-200 rounded w-full"></div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-    )
-  }
+  const baseModules = getBaseModules()
+  const alaCarteCount = getAlaCarteModules().length
 
   return (
     <section id="pricing" className="py-20 lg:py-28 bg-gradient-to-br from-gray-50 via-white to-gray-50">
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
+        {/* Header */}
         <div className="text-center mb-16">
           <Badge className="mb-4 bg-emerald-500 text-white px-4 py-1.5">
-            {language === 'en' ? 'Simple Pricing' : 'Basit Fiyatlandirma'}
+            {language === 'en' ? 'Modular Pricing' : 'Modüler Fiyatlandırma'}
           </Badge>
           <h2 className="text-3xl lg:text-5xl font-bold mb-4" style={{ color: '#1a202c' }}>
             {language === 'en'
-              ? 'Choose Your Perfect Plan'
-              : 'Size Uygun Plani Secin'
-            }
+              ? 'Pay Only for What You Need'
+              : 'Sadece İhtiyacınız Olana Ödeyin'}
           </h2>
           <p className="text-lg lg:text-xl text-gray-600 max-w-3xl mx-auto">
             {language === 'en'
-              ? 'All plans include a 14-day free trial. No credit card required. Cancel anytime.'
-              : 'Tüm planlarda 14 gün ücretsiz deneme bulunur. Kredi kartı gerekmez, istediğiniz zaman iptal edebilirsiniz.'
-            }
+              ? 'Start free with the essentials. Add powerful modules as your business grows.'
+              : 'Temel özelliklerle ücretsiz başlayın. İşiniz büyüdükçe modül ekleyin.'}
           </p>
           <p className="mt-2 text-sm text-gray-500 max-w-3xl mx-auto">
             {language === 'en'
-              ? 'Prices are shown in your preferred currency and are exclusive of VAT.'
-              : 'Fiyatlar tercih ettiğiniz para biriminde gösterilir ve KDV hariçtir.'
-            }
+              ? '14-day free trial · No credit card required · Cancel anytime'
+              : '14 gün ücretsiz deneme · Kredi kartı gerekmez · İstediğiniz zaman iptal'}
           </p>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-12">
-          {plans.map((plan) => {
-            const planTier = getCanonicalPlanTier(plan)
-            const isComingSoon = COMING_SOON_TIERS.has(planTier)
-            const cfg = PLAN_CONFIG[planTier] || PLAN_CONFIG[plan.name] || PLAN_CONFIG.FREE
-            const Icon = cfg.icon
-            const basePrice = currency === 'TRY' ? plan.price_tl : plan.price_usd
-            const isPopular = Boolean(cfg.popular && !isComingSoon)
-
-            return (
-              <Card
-                key={plan.id}
-                className={`relative p-6 flex flex-col transition-all duration-300 ${
-                  isPopular
-                    ? 'border-2 border-emerald-500 shadow-2xl lg:scale-105 bg-gradient-to-br from-emerald-50 to-white'
-                    : 'border-2 border-gray-200 hover:border-emerald-300 bg-white hover:shadow-xl'
-                }`}
-              >
-                {isPopular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-emerald-500 text-white px-4 py-1.5 text-sm font-semibold shadow-lg">
-                      {language === 'en' ? 'Most Popular' : 'En Populer'}
-                    </Badge>
+        {/* Base Package Card */}
+        <div className="max-w-3xl mx-auto mb-12">
+          <Card className="relative overflow-hidden border-2 border-emerald-500 shadow-2xl bg-gradient-to-br from-emerald-50 to-white">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/5 rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="relative p-8 lg:p-10">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center">
+                      <Package className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold">
+                        {language === 'en' ? 'Base Package' : 'Temel Paket'}
+                      </h3>
+                      <Badge className="bg-emerald-100 text-emerald-700 text-xs mt-0.5">
+                        {language === 'en' ? 'Always included' : 'Her zaman dahil'}
+                      </Badge>
+                    </div>
                   </div>
-                )}
-
-                <div className="text-center mb-5">
-                  <div className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3 ${
-                    isPopular ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-1">
-                    {language === 'tr' ? cfg.labelTr : cfg.labelEn}
-                  </h3>
-
-                  <p className="text-xs text-gray-500 mb-2">
-                    {language === 'tr' ? cfg.whoTr : cfg.whoEn}
+                  <p className="text-sm text-gray-600 mt-2 max-w-md">
+                    {language === 'en'
+                      ? 'Everything you need to get started. Includes 1 user, email support, and essential business tools.'
+                      : 'Başlamak için ihtiyacınız olan her şey. 1 kullanıcı, e-posta desteği ve temel iş araçları dahil.'}
                   </p>
-
-                  <div className="mb-2">
-                    {isComingSoon ? (
-                      <span className="text-2xl font-bold tracking-tight text-amber-600">
-                        {language === 'en' ? 'Coming soon' : 'ÇOK YAKINDA'}
-                      </span>
-                    ) : basePrice === 0 ? (
-                      <span className="text-3xl font-bold text-gray-600">
-                        {language === 'tr' ? 'Ucretsiz' : 'Free'}
-                      </span>
-                    ) : (
-                      <>
-                        <span className="text-3xl font-bold">{formatCurrency(basePrice)}</span>
-                        <span className="text-gray-600 ml-1">/{language === 'en' ? 'mo' : 'ay'}</span>
-                      </>
-                    )}
-                  </div>
-
-                  {!isComingSoon && plan.trial_days > 0 && basePrice > 0 && (
-                    <p className="text-xs text-green-600 font-semibold">
-                      {language === 'en'
-                        ? `${plan.trial_days}-day free trial`
-                        : `${plan.trial_days} gun ucretsiz deneme`
-                      }
-                    </p>
-                  )}
                 </div>
-
-                {isComingSoon && (
-                  <div className="mb-3 rounded-lg border border-dashed border-amber-200 bg-amber-50/50 px-3 py-2 text-center">
-                    <p className="text-xs font-medium text-amber-800">
-                      {language === 'en'
-                        ? 'This tier will be available for purchase soon.'
-                        : 'Bu paket satışa açılınca buradan haber vereceğiz.'}
-                    </p>
+                <div className="text-center lg:text-right flex-shrink-0">
+                  <div className="text-4xl font-extrabold text-emerald-600">
+                    {language === 'en' ? 'Free' : 'Ücretsiz'}
                   </div>
-                )}
+                  <p className="text-xs text-gray-500 mt-1">
+                    {language === 'en' ? 'to get started' : 'başlamak için'}
+                  </p>
+                </div>
+              </div>
 
-                <PricingAppFeatureList
-                  planTier={planTier}
-                  language={language}
-                  isPopular={isPopular}
-                  isComingSoon={isComingSoon}
-                  variant="parasut"
-                />
-
-                {isComingSoon ? (
-                  <div className="mt-auto">
-                    <Button
-                      type="button"
-                      disabled
-                      className="w-full h-11 text-sm font-semibold bg-gray-200 text-gray-600 cursor-not-allowed"
-                    >
-                      {language === 'en' ? 'Coming soon' : 'ÇOK YAKINDA'}
-                    </Button>
+              {/* Base features grid */}
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {baseModules.map((mod) => (
+                  <div key={mod.id} className="flex items-center gap-2.5 rounded-lg bg-white/80 border border-gray-100 px-3 py-2.5">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                    <span className="text-sm font-medium text-gray-700">
+                      {language === 'en' ? mod.labelEn : mod.labelTr}
+                    </span>
                   </div>
-                ) : (
-                  <Link href={`/buy?planId=${plan.id}`} className="block mt-auto">
-                    <Button
-                      className={`w-full h-11 text-sm font-semibold ${
-                        isPopular
-                          ? 'bg-emerald-500 hover:bg-emerald-600 text-[var(--body-text-color)] shadow-lg'
-                          : 'bg-gray-900 hover:bg-gray-800 text-white'
-                      }`}
-                    >
-                      {language === 'en' ? 'Buy Now' : 'Satın Al'}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                )}
-              </Card>
-            )
-          })}
+                ))}
+                <div className="flex items-center gap-2.5 rounded-lg bg-white/80 border border-gray-100 px-3 py-2.5">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                  <span className="text-sm font-medium text-gray-700">
+                    {language === 'en' ? '1 User included' : '1 Kullanıcı dahil'}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2.5 rounded-lg bg-white/80 border border-gray-100 px-3 py-2.5">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                  <span className="text-sm font-medium text-gray-700">
+                    {language === 'en' ? 'Email support' : 'E-posta desteği'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                <Link href="/login" className="flex-1">
+                  <Button
+                    size="lg"
+                    className="w-full h-12 text-sm font-bold shadow-lg"
+                    style={{ backgroundColor: '#0A2540', color: '#ffffff' }}
+                  >
+                    {language === 'en' ? 'Start Free — No Card Needed' : 'Ücretsiz Başla — Kart Gerekmez'}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </Card>
         </div>
 
-        <div className="text-center mt-12">
+        {/* Add-on Modules Section */}
+        <div className="mb-12">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold mb-2" style={{ color: '#1a202c' }}>
+              {language === 'en'
+                ? 'Grow with Add-on Modules'
+                : 'Ek Modüllerle Büyüyün'}
+            </h3>
+            <p className="text-sm text-gray-500">
+              {language === 'en'
+                ? `${alaCarteCount}+ modules available. Here are the most popular ones.`
+                : `${alaCarteCount}+ modül mevcut. İşte en popüler olanlar.`}
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl mx-auto">
+            {HIGHLIGHT_ADDONS.map((addon) => {
+              const p = currency === 'TRY' ? addon.priceTRY : addon.priceUSD
+              return (
+                <Card
+                  key={addon.id}
+                  className="p-5 border-2 border-gray-200 hover:border-emerald-300 bg-white hover:shadow-lg transition-all duration-200 flex flex-col"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="font-bold text-sm">
+                      {language === 'en' ? addon.labelEn : addon.labelTr}
+                    </h4>
+                    <Badge variant="outline" className="text-[10px] px-1.5 flex-shrink-0">
+                      {language === 'en' ? 'Add-on' : 'Ek modül'}
+                    </Badge>
+                  </div>
+                  <div className="mt-auto pt-3">
+                    <span className="text-xl font-extrabold">
+                      {formatCurrency(p)}
+                    </span>
+                    <span className="text-xs text-gray-500 ml-1">
+                      /{language === 'en' ? 'mo' : 'ay'}
+                    </span>
+                  </div>
+                </Card>
+              )
+            })}
+          </div>
+
+          {/* AI & Marketplace highlights */}
+          <div className="grid sm:grid-cols-2 gap-4 max-w-4xl mx-auto mt-4">
+            {/* AI Bot Highlight */}
+            <Card className="p-5 border-2 border-violet-200 bg-violet-50/50 hover:shadow-lg transition-all">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-9 h-9 rounded-xl bg-violet-500 text-white flex items-center justify-center">
+                  <Sparkles className="h-4 w-4" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm">
+                    {language === 'en' ? 'AI Bots for Every Module' : 'Her Modül İçin AI Bot'}
+                  </h4>
+                  <p className="text-xs text-gray-500">
+                    {language === 'en'
+                      ? 'Add AI intelligence to any active module'
+                      : 'Aktif her modüle AI zekası ekleyin'}
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm text-violet-700 font-medium">
+                {language === 'en'
+                  ? `from ${formatCurrency(currency === 'TRY' ? 49 : 3)}/module/mo`
+                  : `${formatCurrency(currency === 'TRY' ? 49 : 3)}/modül/ay'dan başlayan`}
+              </p>
+            </Card>
+
+            {/* Marketplace Highlight */}
+            <Card className="p-5 border-2 border-orange-200 bg-orange-50/50 hover:shadow-lg transition-all">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-9 h-9 rounded-xl bg-orange-500 text-white flex items-center justify-center">
+                  <ShoppingCart className="h-4 w-4" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-sm">
+                    {language === 'en' ? 'Marketplace Integrations' : 'Pazaryeri Entegrasyonları'}
+                  </h4>
+                  <p className="text-xs text-gray-500">
+                    Amazon + Hepsiburada + Trendyol
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm text-orange-700 font-medium">
+                {formatCurrency(currency === 'TRY' ? MARKETPLACE_BUNDLE.monthlyPriceTRY : MARKETPLACE_BUNDLE.monthlyPriceUSD)}
+                /{language === 'en' ? 'mo' : 'ay'}
+              </p>
+            </Card>
+          </div>
+
+          {/* E-Invoice badge */}
+          <div className="max-w-4xl mx-auto mt-4">
+            <Card className="p-4 border-2 border-green-200 bg-green-50/50 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <FileCheck className="h-5 w-5 text-green-600" />
+                <div>
+                  <span className="font-bold text-sm">
+                    {language === 'en' ? 'E-Invoice Integration' : 'E-Fatura Entegrasyonu'}
+                  </span>
+                  <Badge className="ml-2 bg-green-600 text-white text-[10px]">
+                    {language === 'en' ? 'Free' : 'Ücretsiz'}
+                  </Badge>
+                </div>
+              </div>
+              <span className="text-xs text-gray-500">
+                {language === 'en' ? 'Credit packs available' : 'Kredi paketleri mevcut'}
+              </span>
+            </Card>
+          </div>
+        </div>
+
+        {/* CTA: Build Your Plan */}
+        <div className="text-center">
           <Link href="/pricing">
             <Button
               size="lg"
-              className="gap-2 shadow-2xl rounded-full font-semibold transition-all duration-300 hover:scale-105"
+              className="gap-2 shadow-2xl rounded-full font-semibold transition-all duration-300 hover:scale-105 h-14 px-10 text-base"
               style={{ backgroundColor: '#0A2540', color: '#00D4AA' }}
             >
-              {language === 'en' ? 'View Full Pricing Details' : 'Tum Fiyatlandirma Detaylari'}
+              <Plus className="h-5 w-5" />
+              {language === 'en' ? 'Build Your Custom Plan' : 'Özel Planınızı Oluşturun'}
               <ArrowRight className="h-4 w-4" />
             </Button>
           </Link>
+          <p className="mt-3 text-xs text-gray-400">
+            {language === 'en'
+              ? 'Use our configurator to select modules and see live pricing'
+              : 'Modül seçip canlı fiyat görmek için yapılandırıcıyı kullanın'}
+          </p>
         </div>
       </div>
     </section>

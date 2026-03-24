@@ -1,4 +1,4 @@
-import Iyzipay from 'iyzipay'
+import { createHmac } from 'crypto'
 import { headers } from 'next/headers'
 import { NextResponse } from 'next/server'
 
@@ -28,29 +28,34 @@ function requiredEnv(name: string): string {
   return v
 }
 
-function iyzico(): Iyzipay {
-  return new Iyzipay({
-    apiKey: requiredEnv('IYZICO_API_KEY'),
-    secretKey: requiredEnv('IYZICO_SECRET_KEY'),
-    uri: process.env.IYZICO_BASE_URL || 'https://sandbox-api.iyzipay.com',
-  })
-}
-
-function createCheckoutFormInitialize(iyzi: Iyzipay, req: any): Promise<any> {
-  return new Promise((resolve, reject) => {
-    iyzi.checkoutFormInitialize.create(req, (err: any, result: any) => {
-      if (err) return reject(err)
-      return resolve(result)
-    })
-  })
+/**
+ * iyzico IYZWSv2 imza algoritması (SDK'sız, pure Node.js)
+ * Ref: https://docs.iyzico.com/en/getting-started/preliminaries/authentication/hmacsha256-auth
+ */
+function generateAuthorizationHeader(
+  apiKey: string,
+  secretKey: string,
+  uri: string,
+  body: string
+): { authorization: string; randomKey: string } {
+  const randomKey = Date.now().toString() + Math.random().toString(36).substring(2, 10)
+  const payload = randomKey + uri + body
+  const signature = createHmac('sha256', secretKey)
+    .update(payload, 'utf8')
+    .digest('hex')
+  const authorizationParams = `apiKey:${apiKey}&randomKey:${randomKey}&signature:${signature}`
+  const authorization = `IYZWSv2 ${Buffer.from(authorizationParams).toString('base64')}`
+  return { authorization, randomKey }
 }
 
 export async function POST(request: Request) {
   try {
     const body = (await request.json()) as CheckoutRequest
 
+    const apiKey = requiredEnv('IYZICO_API_KEY')
+    const secretKey = requiredEnv('IYZICO_SECRET_KEY')
+    const baseUrl = process.env.IYZICO_BASE_URL || 'https://sandbox-api.iyzipay.com'
     const origin = headers().get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-    const locale = body.locale === 'en' ? Iyzipay.LOCALE.EN : Iyzipay.LOCALE.TR
 
     const price = Number(body.plan?.price)
     if (!body.plan?.id || !body.plan?.name || !Number.isFinite(price) || price <= 0) {
@@ -64,20 +69,20 @@ export async function POST(request: Request) {
 
     const now = Date.now()
     const conversationId = `plan_${body.plan.id}_${now}`
+    const ip = headers().get('x-forwarded-for')?.split(',')[0]?.trim() || '127.0.0.1'
+    const dateStr = new Date().toISOString().slice(0, 19).replace('T', ' ')
 
-    // Minimal request for digital service subscription.
-    // NOTE: identityNumber is required by iyzico API; merchants should collect/validate it per their compliance needs.
-    const req: any = {
-      locale,
+    const requestBody = {
+      locale: body.locale === 'en' ? 'en' : 'tr',
       conversationId,
       price: price.toFixed(2),
       paidPrice: price.toFixed(2),
-      currency: Iyzipay.CURRENCY.TRY,
+      currency: 'TRY',
       installment: '1',
       basketId: conversationId,
-      paymentGroup: Iyzipay.PAYMENT_GROUP.PRODUCT,
+      paymentGroup: 'PRODUCT',
       callbackUrl: `${origin}/api/payments/iyzico/callback`,
-      enabledInstallments: ['1', '2', '3', '6', '9', '12'],
+      enabledInstallments: [1, 2, 3, 6, 9, 12],
       buyer: {
         id: `buyer_${now}`,
         name: b.name,
@@ -85,10 +90,10 @@ export async function POST(request: Request) {
         gsmNumber: b.gsmNumber,
         email: b.email,
         identityNumber: '11111111111',
-        lastLoginDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
-        registrationDate: new Date().toISOString().slice(0, 19).replace('T', ' '),
+        lastLoginDate: dateStr,
+        registrationDate: dateStr,
         registrationAddress: b.address,
-        ip: headers().get('x-forwarded-for')?.split(',')[0]?.trim() || '127.0.0.1',
+        ip,
         city: b.city,
         country: b.country,
         zipCode: '00000',
@@ -110,19 +115,35 @@ export async function POST(request: Request) {
       basketItems: [
         {
           id: body.plan.id,
-          name: `${body.plan.name} Plan`,
+          name: `${body.plan.name} Plan`.slice(0, 50),
           category1: 'Subscription',
-          itemType: Iyzipay.BASKET_ITEM_TYPE.VIRTUAL,
+          itemType: 'VIRTUAL',
           price: price.toFixed(2),
         },
       ],
     }
 
-    const result = await createCheckoutFormInitialize(iyzico(), req)
+    const uri = '/payment/iyzipos/checkoutform/initialize/auth/ecom'
+    const jsonBody = JSON.stringify(requestBody)
+    const { authorization, randomKey } = generateAuthorizationHeader(apiKey, secretKey, uri, jsonBody)
+
+    const response = await fetch(`${baseUrl}${uri}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': authorization,
+        'x-iyzi-rnd': randomKey,
+      },
+      body: jsonBody,
+    })
+
+    const result = await response.json()
 
     if (!result || result.status !== 'success') {
+      console.error('[iyzico] checkout-form error:', JSON.stringify(result, null, 2))
       return NextResponse.json(
-        { error: result?.errorMessage || 'iyzico initialize failed', raw: result },
+        { error: result?.errorMessage || 'iyzico initialize failed', errorCode: result?.errorCode, raw: result },
         { status: 400 }
       )
     }
@@ -136,8 +157,6 @@ export async function POST(request: Request) {
     })
   } catch (e: any) {
     const msg = e?.message || 'Unexpected error'
-    const status = msg.startsWith('Missing env:') ? 500 : 500
-    return NextResponse.json({ error: msg }, { status })
+    return NextResponse.json({ error: msg }, { status: 500 })
   }
 }
-
