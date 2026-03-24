@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,9 @@ import { Separator } from '@/components/ui/separator'
 import { Loader2, CreditCard, ShieldCheck } from 'lucide-react'
 import type { PricingBreakdown } from '@/hooks/use-pricing-engine'
 import type { BillingCycle } from '@/hooks/use-pricing-engine'
+import { useAuth } from '@/contexts/auth-context'
+import { useTenant } from '@/contexts/tenant-context'
+import { supabase } from '@/lib/supabase'
 
 interface IyzicoCheckoutDialogProps {
   open: boolean
@@ -44,6 +47,8 @@ export function IyzicoCheckoutDialog({
   currency,
   formatCurrency,
 }: IyzicoCheckoutDialogProps) {
+  const { user } = useAuth()
+  const { tenantId } = useTenant()
   const [form, setForm] = useState<BuyerForm>({
     name: '',
     surname: '',
@@ -56,6 +61,65 @@ export function IyzicoCheckoutDialog({
   const [error, setError] = useState<string | null>(null)
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null)
   const [checkoutHtml, setCheckoutHtml] = useState<string | null>(null)
+  const [prefilledOnce, setPrefilledOnce] = useState(false)
+
+  useEffect(() => {
+    if (!open || prefilledOnce) return
+
+    let cancelled = false
+    ;(async () => {
+      try {
+        const metadata = (user?.user_metadata || {}) as Record<string, any>
+        const fullName = String(metadata.full_name || metadata.name || '').trim()
+        const firstFromMeta = String(metadata.first_name || '').trim()
+        const lastFromMeta = String(metadata.last_name || '').trim()
+        const phoneFromMeta = String(metadata.phone || metadata.phone_number || '').trim()
+
+        let name = firstFromMeta
+        let surname = lastFromMeta
+        if (!name && !surname && fullName) {
+          const parts = fullName.split(/\s+/).filter(Boolean)
+          name = parts[0] || ''
+          surname = parts.slice(1).join(' ')
+        }
+
+        let email = String(user?.email || '').trim()
+        let gsmNumber = phoneFromMeta
+        let address = ''
+        let city = ''
+
+        if (tenantId) {
+          const { data } = await supabase
+            .from('company_settings')
+            .select('email, phone, address, city')
+            .eq('tenant_id', tenantId)
+            .maybeSingle()
+
+          email = email || String(data?.email || '').trim()
+          gsmNumber = gsmNumber || String(data?.phone || '').trim()
+          address = String(data?.address || '').trim()
+          city = String(data?.city || '').trim()
+        }
+
+        if (cancelled) return
+        setForm((prev) => ({
+          name: prev.name || name,
+          surname: prev.surname || surname,
+          email: prev.email || email,
+          gsmNumber: prev.gsmNumber || gsmNumber,
+          address: prev.address || address,
+          city: prev.city || city,
+        }))
+        setPrefilledOnce(true)
+      } catch {
+        // sessiz geç: kullanıcı elle doldurabilir
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [open, prefilledOnce, tenantId, user])
 
   const isYearly = billingCycle === 'yearly'
   const totalMonthly = currency === 'TRY' ? breakdown.totalMonthlyTRY : breakdown.totalMonthlyUSD

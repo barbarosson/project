@@ -324,6 +324,24 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </li>
               )
             })}
+            <li>
+              <Link
+                href="/settings/subscription"
+                onClick={onClose}
+                className={cn(
+                  'flex items-center gap-3 px-4 py-3 rounded-lg transition-all',
+                  'hover:bg-white/10',
+                  pathname === '/settings/subscription' && 'bg-[#00D4AA]/20 text-[#7DD3FC] hover:bg-[#00D4AA]/30'
+                )}
+              >
+                <CreditCard size={20} />
+                <div className="flex-1">
+                  <div className="text-sm font-medium">
+                    {language === 'tr' ? 'Paket ve Ek Özellikler' : 'Plan & Add-ons'}
+                  </div>
+                </div>
+              </Link>
+            </li>
           </ul>
         </nav>
 
