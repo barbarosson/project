@@ -20,6 +20,7 @@ import {
   getBaseModules,
   getAlaCarteModules,
   MARKETPLACE_BUNDLE,
+  EINVOICE_CREDIT_PACKS,
 } from '@/lib/pricing-configurator-data'
 
 const HIGHLIGHT_ADDONS = [
@@ -160,10 +161,20 @@ export function PricingSection() {
             <Card className="p-3 border-2 border-green-200 bg-green-50/50 text-center">
               <FileCheck className="h-4 w-4 text-green-600 mx-auto mb-1" />
               <p className="text-xs font-bold">{language === 'en' ? 'E-Invoice' : 'E-Fatura'}</p>
-              <Badge className="bg-green-600 text-white text-[9px] mt-0.5">
-                {language === 'en' ? 'Free' : 'Ücretsiz'}
-              </Badge>
+              <Badge className="bg-green-600 text-white text-[9px] mt-0.5">-%15</Badge>
             </Card>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-4xl mx-auto mt-3">
+            {EINVOICE_CREDIT_PACKS.map((pack) => (
+              <Link key={pack.id} href={`/pricing?creditPack=${pack.id}`} className="block">
+                <Card className="p-3 border hover:border-green-300 bg-white transition-all">
+                  <p className="text-xs font-semibold">{pack.qty.toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US')} e‑Kontör</p>
+                  <p className="text-[10px] text-gray-400 line-through">{formatCurrency(pack.listPriceTRY ?? pack.priceTRY)}</p>
+                  <p className="text-sm font-bold text-green-700">{formatCurrency(pack.priceTRY)} + KDV</p>
+                </Card>
+              </Link>
+            ))}
           </div>
         </div>
 

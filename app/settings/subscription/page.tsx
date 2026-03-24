@@ -16,6 +16,7 @@ import { PRICING_MODULES, SCALABLE_UNITS, YEARLY_DISCOUNT_MONTHS } from '@/lib/p
 import { Checkbox } from '@/components/ui/checkbox';
 import { IyzicoCheckoutDialog } from '@/components/pricing/iyzico-checkout-dialog';
 import type { PricingBreakdown } from '@/hooks/use-pricing-engine';
+import type { PricingLineItem } from '@/hooks/use-pricing-engine';
 
 export default function SubscriptionPage() {
   const { t, language } = useLanguage();
@@ -80,8 +81,9 @@ export default function SubscriptionPage() {
   const selectedModules = paidModules.filter((m) => selectedModuleIds.has(m.id));
 
   const cartBreakdown = useMemo<PricingBreakdown>(() => {
-    const lineItems = [];
-    let totalMonthlyTRY = 0;
+    const lineItems: PricingLineItem[] = [];
+    let recurringMonthlyTRY = 0;
+    let oneTimeTRY = 0;
     let selectedModuleCount = 0;
 
     for (const mod of selectedModules) {
@@ -93,7 +95,7 @@ export default function SubscriptionPage() {
         monthlyUSD: mod.monthlyPriceUSD,
         type: 'module' as const,
       });
-      totalMonthlyTRY += mod.monthlyPriceTRY;
+      recurringMonthlyTRY += mod.monthlyPriceTRY;
       selectedModuleCount += 1;
     }
 
@@ -106,7 +108,7 @@ export default function SubscriptionPage() {
         monthlyUSD: extraUsers * extraUsersUnit.unitPriceUSD,
         type: 'scalable' as const,
       });
-      totalMonthlyTRY += extraUsers * extraUsersUnit.unitPriceTRY;
+      recurringMonthlyTRY += extraUsers * extraUsersUnit.unitPriceTRY;
     }
 
     if (selectedEInvoicePackQty) {
@@ -121,22 +123,24 @@ export default function SubscriptionPage() {
           monthlyUSD: 0,
           type: 'credit_pack' as const,
         });
-        totalMonthlyTRY += discounted;
+        oneTimeTRY += discounted;
       }
     }
 
     const yearlyMultiplier = 12 - YEARLY_DISCOUNT_MONTHS;
+    const totalMonthlyTRY = recurringMonthlyTRY + oneTimeTRY;
+    const totalYearlyTRY = recurringMonthlyTRY * yearlyMultiplier + oneTimeTRY;
     return {
       lineItems,
       subtotalMonthlyTRY: totalMonthlyTRY,
       subtotalMonthlyUSD: 0,
-      subtotalYearlyTRY: totalMonthlyTRY * 12,
+      subtotalYearlyTRY: recurringMonthlyTRY * 12 + oneTimeTRY,
       subtotalYearlyUSD: 0,
-      discountMonthsTRY: totalMonthlyTRY * YEARLY_DISCOUNT_MONTHS,
+      discountMonthsTRY: recurringMonthlyTRY * YEARLY_DISCOUNT_MONTHS,
       discountMonthsUSD: 0,
       totalMonthlyTRY,
       totalMonthlyUSD: 0,
-      totalYearlyTRY: totalMonthlyTRY * yearlyMultiplier,
+      totalYearlyTRY,
       totalYearlyUSD: 0,
       selectedModuleCount,
       aiBotCount: 0,
@@ -294,7 +298,9 @@ export default function SubscriptionPage() {
                   cartBreakdown.lineItems.map((item) => (
                     <div key={item.id} className="flex items-center justify-between text-sm">
                       <span>{language === 'tr' ? item.labelTr : item.labelEn}</span>
-                      <span className="font-semibold">{formatTRY(item.monthlyTRY * multiplier)}</span>
+                      <span className="font-semibold">
+                        {formatTRY(item.type === 'credit_pack' ? item.monthlyTRY : item.monthlyTRY * multiplier)}
+                      </span>
                     </div>
                   ))
                 )}

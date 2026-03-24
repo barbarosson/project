@@ -1,5 +1,7 @@
 'use client'
 
+import { useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { usePricingEngine, type BillingCycle } from '@/hooks/use-pricing-engine'
 import { useLanguage } from '@/contexts/language-context'
 import { useCurrency } from '@/hooks/use-currency'
@@ -168,10 +170,18 @@ function ModuleCard({
 
 export function PricingConfigurator() {
   const engine = usePricingEngine()
+  const searchParams = useSearchParams()
   const { language } = useLanguage()
   const { currency, formatCurrency } = useCurrency()
 
   const recommendedIds = new Set(engine.recommendations.map((r) => r.moduleId))
+  useEffect(() => {
+    const preselectedPackId = searchParams.get('creditPack')
+    if (!preselectedPackId) return
+    if (EINVOICE_CREDIT_PACKS.some((p) => p.id === preselectedPackId)) {
+      engine.setSelectedCreditPack(preselectedPackId)
+    }
+  }, [searchParams, engine])
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6">
@@ -409,31 +419,40 @@ export function PricingConfigurator() {
                 ? 'Integration is free. Purchase credit packs as needed.'
                 : 'Entegrasyon ücretsizdir. İhtiyacınıza göre kredi paketi satın alın.'}
             </p>
-            <div className="grid sm:grid-cols-3 gap-3">
+            <div className="space-y-2">
               {EINVOICE_CREDIT_PACKS.map((pack) => {
                 const sel = engine.selectedCreditPack === pack.id
                 const p = currency === 'TRY' ? pack.priceTRY : pack.priceUSD
+                const listP = currency === 'TRY' ? (pack.listPriceTRY ?? pack.priceTRY) : (pack.listPriceUSD ?? pack.priceUSD)
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={pack.id}
-                    className={`rounded-xl border-2 p-4 text-center cursor-pointer transition-all ${
+                    className={`w-full rounded-xl border-2 p-4 text-left cursor-pointer transition-all ${
                       sel
                         ? 'border-green-500 bg-green-50 dark:bg-green-950/30 shadow-md'
                         : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
                     }`}
                     onClick={() => engine.setSelectedCreditPack(sel ? null : pack.id)}
                   >
-                    <p className="text-2xl font-bold">{pack.qty}</p>
-                    <p className="text-xs text-gray-500 mb-2">
-                      {language === 'en' ? 'credits' : 'kredi'}
-                    </p>
-                    <p className="font-bold text-sm">{formatCurrency(p)}</p>
-                    {pack.discountPct > 0 && (
-                      <Badge className="mt-1 bg-green-100 text-green-700 text-[10px]">
-                        %{pack.discountPct} {language === 'en' ? 'savings' : 'tasarruf'}
-                      </Badge>
-                    )}
-                  </div>
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-base font-bold">{pack.qty.toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US')} e‑Kontör</p>
+                        <p className="text-xs text-gray-500">
+                          {language === 'en' ? 'VAT excluded' : '+ KDV'}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        {listP > p && (
+                          <p className="text-xs text-gray-400 line-through">{formatCurrency(listP)}</p>
+                        )}
+                        <p className="text-sm font-bold">{formatCurrency(p)}</p>
+                        <Badge className="mt-1 bg-green-100 text-green-700 text-[10px]">
+                          -%{pack.discountPct} {language === 'en' ? 'discount' : 'indirim'}
+                        </Badge>
+                      </div>
+                    </div>
+                  </button>
                 )
               })}
             </div>

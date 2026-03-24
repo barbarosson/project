@@ -83,6 +83,9 @@ export interface MarketplaceExtraChannel {
 export interface EInvoiceCreditPack {
   id: string
   qty: number
+  /** Liste fiyatı (üstü çizili gösterim için) */
+  listPriceTRY?: number
+  listPriceUSD?: number
   priceTRY: number
   priceUSD: number
   /** İndirim yüzdesi (büyük paket avantajı) */
@@ -434,9 +437,12 @@ export const MARKETPLACE_EXTRA_CHANNELS: MarketplaceExtraChannel[] = [
 // ─── E-Fatura Kredi Paketleri ─────────────────────────────────
 
 export const EINVOICE_CREDIT_PACKS: EInvoiceCreditPack[] = [
-  { id: 'credit_100', qty: 100, priceTRY: 99, priceUSD: 6, discountPct: 0 },
-  { id: 'credit_500', qty: 500, priceTRY: 399, priceUSD: 24, discountPct: 20 },
-  { id: 'credit_1000', qty: 1000, priceTRY: 699, priceUSD: 42, discountPct: 30 },
+  { id: 'credit_100', qty: 100, listPriceTRY: 400, priceTRY: 340, priceUSD: 21, discountPct: 15 },
+  { id: 'credit_200', qty: 200, listPriceTRY: 660, priceTRY: 561, priceUSD: 35, discountPct: 15 },
+  { id: 'credit_500', qty: 500, listPriceTRY: 1500, priceTRY: 1275, priceUSD: 80, discountPct: 15 },
+  { id: 'credit_1000', qty: 1000, listPriceTRY: 2500, priceTRY: 2125, priceUSD: 133, discountPct: 15 },
+  { id: 'credit_2500', qty: 2500, listPriceTRY: 5500, priceTRY: 4675, priceUSD: 292, discountPct: 15 },
+  { id: 'credit_5000', qty: 5000, listPriceTRY: 9500, priceTRY: 8075, priceUSD: 505, discountPct: 15 },
 ]
 
 // ─── Yıllık İndirim ──────────────────────────────────────────

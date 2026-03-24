@@ -25,6 +25,7 @@ import {
   getAlaCarteModules,
   MODULE_CATEGORIES,
   MARKETPLACE_BUNDLE,
+  EINVOICE_CREDIT_PACKS,
   type PricingModule,
   type ModuleCategory,
 } from '@/lib/pricing-configurator-data'
@@ -256,23 +257,29 @@ export function ModulusPricingSection() {
             </Card>
           </div>
 
-          {/* E-Invoice badge */}
+          {/* E-Invoice packs */}
           <div className="max-w-4xl mx-auto mt-4">
-            <Card className="p-4 border-2 border-green-200 bg-green-50/50 flex items-center justify-between">
-              <div className="flex items-center gap-3">
+            <Card className="p-4 border-2 border-green-200 bg-green-50/50">
+              <div className="flex items-center gap-3 mb-3">
                 <FileCheck className="h-5 w-5 text-green-600" />
                 <div>
                   <span className="font-bold text-sm">
-                    {language === 'en' ? 'E-Invoice Integration' : 'E-Fatura Entegrasyonu'}
+                    {language === 'en' ? 'E-Invoice Credit Packs' : 'E-Fatura e‑Kontör Paketleri'}
                   </span>
-                  <Badge className="ml-2 bg-green-600 text-white text-[10px]">
-                    {language === 'en' ? 'Free' : 'Ücretsiz'}
-                  </Badge>
+                  <Badge className="ml-2 bg-green-600 text-white text-[10px]">-%15</Badge>
                 </div>
               </div>
-              <span className="text-xs text-gray-500">
-                {language === 'en' ? 'Credit packs available' : 'Kredi paketleri mevcut'}
-              </span>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {EINVOICE_CREDIT_PACKS.map((pack) => (
+                  <Link key={pack.id} href={`/pricing?creditPack=${pack.id}`} className="block">
+                    <div className="rounded-md border bg-white px-3 py-2 hover:border-green-300 transition-colors">
+                      <p className="text-xs font-semibold">{pack.qty.toLocaleString(language === 'tr' ? 'tr-TR' : 'en-US')} e‑Kontör</p>
+                      <p className="text-[11px] text-gray-400 line-through">{formatCurrency(pack.listPriceTRY ?? pack.priceTRY)}</p>
+                      <p className="text-sm font-bold text-green-700">{formatCurrency(pack.priceTRY)} + KDV</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </Card>
           </div>
         </div>

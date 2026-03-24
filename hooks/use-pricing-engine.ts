@@ -146,8 +146,10 @@ export function usePricingEngine() {
   // ── Hesaplama motoru ──
   const breakdown = useMemo<PricingBreakdown>(() => {
     const lineItems: PricingLineItem[] = []
-    let sumTRY = 0
-    let sumUSD = 0
+    let recurringTRY = 0
+    let recurringUSD = 0
+    let oneTimeTRY = 0
+    let oneTimeUSD = 0
 
     // 1) Temel paket
     const baseTRY = PRICING_MODULES.filter((m) => m.includedInBase).reduce((s, m) => s + m.monthlyPriceTRY, 0)
@@ -160,8 +162,8 @@ export function usePricingEngine() {
       monthlyUSD: baseUSD,
       type: 'base',
     })
-    sumTRY += baseTRY
-    sumUSD += baseUSD
+    recurringTRY += baseTRY
+    recurringUSD += baseUSD
 
     // 2) A-la-carte modüller
     for (const mod of PRICING_MODULES) {
@@ -175,8 +177,8 @@ export function usePricingEngine() {
         monthlyUSD: mod.monthlyPriceUSD,
         type: 'module',
       })
-      sumTRY += mod.monthlyPriceTRY
-      sumUSD += mod.monthlyPriceUSD
+      recurringTRY += mod.monthlyPriceTRY
+      recurringUSD += mod.monthlyPriceUSD
     }
 
     // 3) AI botlar
@@ -194,8 +196,8 @@ export function usePricingEngine() {
         monthlyUSD: mod.aiBotPriceUSD,
         type: 'ai_bot',
       })
-      sumTRY += mod.aiBotPriceTRY
-      sumUSD += mod.aiBotPriceUSD
+      recurringTRY += mod.aiBotPriceTRY
+      recurringUSD += mod.aiBotPriceUSD
     }
 
     // 4) Ölçeklenebilir birimler
@@ -213,8 +215,8 @@ export function usePricingEngine() {
           monthlyUSD: pUSD,
           type: 'scalable',
         })
-        sumTRY += pTRY
-        sumUSD += pUSD
+        recurringTRY += pTRY
+        recurringUSD += pUSD
       }
     }
 
@@ -228,8 +230,8 @@ export function usePricingEngine() {
         monthlyUSD: MARKETPLACE_BUNDLE.monthlyPriceUSD,
         type: 'marketplace',
       })
-      sumTRY += MARKETPLACE_BUNDLE.monthlyPriceTRY
-      sumUSD += MARKETPLACE_BUNDLE.monthlyPriceUSD
+      recurringTRY += MARKETPLACE_BUNDLE.monthlyPriceTRY
+      recurringUSD += MARKETPLACE_BUNDLE.monthlyPriceUSD
 
       for (const ch of MARKETPLACE_EXTRA_CHANNELS) {
         if (!marketplaceExtraChannels.has(ch.id)) continue
@@ -241,8 +243,8 @@ export function usePricingEngine() {
           monthlyUSD: ch.monthlyPriceUSD,
           type: 'marketplace',
         })
-        sumTRY += ch.monthlyPriceTRY
-        sumUSD += ch.monthlyPriceUSD
+        recurringTRY += ch.monthlyPriceTRY
+        recurringUSD += ch.monthlyPriceUSD
       }
     }
 
@@ -258,28 +260,30 @@ export function usePricingEngine() {
           monthlyUSD: pack.priceUSD,
           type: 'credit_pack',
         })
-        sumTRY += pack.priceTRY
-        sumUSD += pack.priceUSD
+        oneTimeTRY += pack.priceTRY
+        oneTimeUSD += pack.priceUSD
       }
     }
 
-    // Yıllık hesaplama
+    // Yıllık hesaplama (e-Fatura kredi paketi tek seferliktir; periyoda göre değişmez)
     const yearlyMultiplier = 12 - YEARLY_DISCOUNT_MONTHS
-    const subtotalYearlyTRY = sumTRY * 12
-    const subtotalYearlyUSD = sumUSD * 12
-    const totalYearlyTRY = sumTRY * yearlyMultiplier
-    const totalYearlyUSD = sumUSD * yearlyMultiplier
+    const subtotalMonthlyTRY = recurringTRY + oneTimeTRY
+    const subtotalMonthlyUSD = recurringUSD + oneTimeUSD
+    const subtotalYearlyTRY = recurringTRY * 12 + oneTimeTRY
+    const subtotalYearlyUSD = recurringUSD * 12 + oneTimeUSD
+    const totalYearlyTRY = recurringTRY * yearlyMultiplier + oneTimeTRY
+    const totalYearlyUSD = recurringUSD * yearlyMultiplier + oneTimeUSD
 
     return {
       lineItems,
-      subtotalMonthlyTRY: sumTRY,
-      subtotalMonthlyUSD: sumUSD,
+      subtotalMonthlyTRY,
+      subtotalMonthlyUSD,
       subtotalYearlyTRY,
       subtotalYearlyUSD,
-      discountMonthsTRY: sumTRY * YEARLY_DISCOUNT_MONTHS,
-      discountMonthsUSD: sumUSD * YEARLY_DISCOUNT_MONTHS,
-      totalMonthlyTRY: sumTRY,
-      totalMonthlyUSD: sumUSD,
+      discountMonthsTRY: recurringTRY * YEARLY_DISCOUNT_MONTHS,
+      discountMonthsUSD: recurringUSD * YEARLY_DISCOUNT_MONTHS,
+      totalMonthlyTRY: subtotalMonthlyTRY,
+      totalMonthlyUSD: subtotalMonthlyUSD,
       totalYearlyTRY,
       totalYearlyUSD,
       selectedModuleCount: selectedModules.size,
