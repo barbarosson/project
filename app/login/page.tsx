@@ -124,6 +124,10 @@ function LoginContent() {
   const { language, setLanguage } = useLanguage()
   const l = t[language]
 
+  // Supabase redirect URLs (magic link / OAuth / email confirmation) should always
+  // land on the production domain.
+  const authCallbackUrl = 'https://www.modulusaas.com/auth/callback'
+
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin')
   const [authMethod, setAuthMethod] = useState<'email' | 'magic'>('email')
   const [loading, setLoading] = useState(false)
@@ -268,7 +272,7 @@ function LoginContent() {
         password,
         options: {
           data: { full_name: fullName },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: authCallbackUrl,
         },
       })
 
@@ -317,7 +321,7 @@ function LoginContent() {
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: registeredEmail,
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+        options: { emailRedirectTo: authCallbackUrl },
       })
       if (error) throw error
       toast.success(l.resendSuccess)
@@ -339,12 +343,28 @@ function LoginContent() {
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email: magicEmailVal,
-        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+        options: {
+          emailRedirectTo: authCallbackUrl,
+          // Magic-link flow should work even when the user doesn't exist yet.
+          shouldCreateUser: true,
+        },
       })
       if (error) throw error
       toast.success(l.magicLinkSent)
     } catch (error: any) {
-      toast.error(error.message || l.genericError)
+      const err = error as any
+      console.error('Magic link error:', {
+        message: err?.message,
+        name: err?.name,
+        status: err?.status,
+        code: err?.code,
+        url: err?.url,
+        // Different supabase-js versions expose different fields
+        details: err?.details,
+        body: err?.body ?? err?.response?.data ?? err?.response?.body,
+        raw: err,
+      })
+      toast.error(err?.message || l.genericError)
     } finally {
       setLoading(false)
     }
@@ -356,7 +376,7 @@ function LoginContent() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: authCallbackUrl,
           queryParams: { access_type: 'offline', prompt: 'consent' },
         },
       })
