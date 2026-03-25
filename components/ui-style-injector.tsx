@@ -115,12 +115,12 @@ export function UIStyleInjector() {
       }
 
       const cssRule = `
-        button,
-        .btn,
+        button:not([role="tab"]),
+        .btn:not([role="tab"]),
         [role="button"],
-        a > button,
-        button.inline-flex,
-        Link > button {
+        a > button:not([role="tab"]),
+        button.inline-flex:not([role="tab"]),
+        Link > button:not([role="tab"]) {
           ${properties.join('\n          ')}
         }
       `
@@ -161,7 +161,7 @@ export function UIStyleInjector() {
         } else if (element_name.startsWith('h')) {
           selector = `${element_name}, .${element_name}`
         } else if (element_name === 'button') {
-          selector = 'button, .btn, [role="button"], a > button, button.inline-flex'
+          selector = 'button:not([role="tab"]), .btn:not([role="tab"]), [role="button"], a > button:not([role="tab"]), button.inline-flex:not([role="tab"])'
         } else if (element_name === 'input') {
           selector = 'input, textarea, select, .input'
         } else if (element_name === 'label') {

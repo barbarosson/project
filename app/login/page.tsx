@@ -138,6 +138,7 @@ function LoginContent() {
   const [fullName, setFullName] = useState('')
   const loginEmailRef = useRef<HTMLInputElement>(null)
   const loginPasswordRef = useRef<HTMLInputElement>(null)
+  const magicEmailRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const errorParam = searchParams.get('error')
@@ -329,14 +330,15 @@ function LoginContent() {
   }
 
   async function handleMagicLink() {
-    if (!email) {
+    const magicEmailVal = magicEmailRef.current?.value?.trim() ?? ''
+    if (!magicEmailVal) {
       toast.error(l.fillAll)
       return
     }
     setLoading(true)
     try {
       const { error } = await supabase.auth.signInWithOtp({
-        email,
+        email: magicEmailVal,
         options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       })
       if (error) throw error
@@ -590,13 +592,25 @@ function LoginContent() {
           <CardHeader className="pb-4 px-0 pt-0 border-0">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'signin' | 'signup')}>
               <TabsList className="grid w-full grid-cols-2 rounded-xl" style={{ backgroundColor: '#F6F9FC' }}>
-                <TabsTrigger value="signin" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm" style={{ color: '#0A2540' }}>{l.signIn}</TabsTrigger>
-                <TabsTrigger value="signup" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm" style={{ color: '#0A2540' }}>{l.signUp}</TabsTrigger>
+                <TabsTrigger
+                  value="signin"
+                  className="rounded-lg font-semibold data-[state=active]:bg-[#0A2540] data-[state=active]:shadow-sm"
+                  style={{ color: activeTab === 'signin' ? '#ffffff' : '#0A2540' }}
+                >
+                  {l.signIn}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="signup"
+                  className="rounded-lg font-semibold data-[state=active]:bg-[#0A2540] data-[state=active]:shadow-sm"
+                  style={{ color: activeTab === 'signup' ? '#ffffff' : '#0A2540' }}
+                >
+                  {l.signUp}
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </CardHeader>
 
-          <CardContent className="space-y-5 px-0 pb-0">
+          <CardContent className="space-y-5 px-0 pb-0 pt-4">
             <div className="space-y-3">
               <Button
                 variant="outline"
@@ -627,15 +641,23 @@ function LoginContent() {
             {activeTab === 'signin' ? (
               <Tabs value={authMethod} onValueChange={(v) => setAuthMethod(v as 'email' | 'magic')}>
                 <TabsList className="grid w-full grid-cols-2 rounded-xl" style={{ backgroundColor: '#F6F9FC' }}>
-                  <TabsTrigger value="email" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm" style={{ color: '#0A2540' }}>
+                  <TabsTrigger
+                    value="email"
+                    className="rounded-lg font-semibold data-[state=active]:bg-[#0A2540] data-[state=active]:shadow-sm"
+                    style={{ color: authMethod === 'email' ? '#ffffff' : '#0A2540' }}
+                  >
                     {l.email}
                   </TabsTrigger>
-                  <TabsTrigger value="magic" className="rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm" style={{ color: '#0A2540' }}>
+                  <TabsTrigger
+                    value="magic"
+                    className="rounded-lg font-semibold data-[state=active]:bg-[#0A2540] data-[state=active]:shadow-sm"
+                    style={{ color: authMethod === 'magic' ? '#ffffff' : '#0A2540' }}
+                  >
                     {l.magicLink}
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="email" className="space-y-4 mt-4" forceMount hidden={authMethod !== 'email'}>
+                <TabsContent value="email" className="space-y-4 mt-6" forceMount hidden={authMethod !== 'email'}>
                   <div className="space-y-2">
                     <Label htmlFor="login-email">{l.email}</Label>
                     <div className="relative">
@@ -698,7 +720,7 @@ function LoginContent() {
                   </Button>
                 </TabsContent>
 
-                <TabsContent value="magic" className="space-y-4 mt-4">
+                <TabsContent value="magic" className="space-y-4 mt-6">
                   <div className="rounded-xl p-4 space-y-2" style={{ backgroundColor: 'rgba(0,212,170,0.08)', border: '1px solid rgba(0,212,170,0.2)' }}>
                     <div className="flex items-center gap-2" style={{ color: '#0A2540' }}>
                       <Sparkles className="h-5 w-5" style={{ color: '#00D4AA' }} />
@@ -714,8 +736,7 @@ function LoginContent() {
                         id="magic-email"
                         type="email"
                         placeholder="ornek@email.com"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                      ref={magicEmailRef}
                         className="pl-10 rounded-xl"
                         style={{ borderColor: '#E6EBF1' }}
                         disabled={loading}
