@@ -32,8 +32,8 @@ target as (
     au.admin_uid,
     au.email,
     coalesce(
-      (select p.tenant_id::text from public.profiles p where p.id = au.admin_uid limit 1),
-      (select t.id::text from public.tenants t where t.owner_id = au.admin_uid order by t.created_at asc nulls last limit 1)
+      (select p.tenant_id from public.profiles p where p.id = au.admin_uid limit 1),
+      (select t.id from public.tenants t where t.owner_id = au.admin_uid order by t.created_at asc nulls last limit 1)
     ) as target_tenant_id
   from admin_user au
 )
@@ -41,7 +41,7 @@ select
   t.admin_uid,
   t.email,
   t.target_tenant_id,
-  (select count(*) from public.customers c where c.tenant_id = t.admin_uid::text) as customers_with_wrong_tenant_id,
+  (select count(*) from public.customers c where c.tenant_id = t.admin_uid) as customers_with_wrong_tenant_id,
   (select count(*) from public.customers c where c.tenant_id = t.target_tenant_id) as customers_already_on_target_tenant
 from target t;
 
@@ -54,7 +54,7 @@ with admin_user as (
 )
 select c.id, c.company_title, c.name, c.tax_number, c.created_at, c.tenant_id
 from public.customers c
-where c.tenant_id = (select admin_uid::text from admin_user)
+where c.tenant_id = (select admin_uid from admin_user)
 order by c.created_at desc
 limit 50;
 
@@ -65,7 +65,7 @@ limit 50;
 do $$
 declare
   v_admin_uid uuid;
-  v_target_tenant_id text;
+  v_target_tenant_id uuid;
   v_moved int := 0;
 begin
   select u.id into v_admin_uid
@@ -78,23 +78,23 @@ begin
   end if;
 
   select coalesce(
-      (select p.tenant_id::text from public.profiles p where p.id = v_admin_uid limit 1),
-      (select t.id::text from public.tenants t where t.owner_id = v_admin_uid order by t.created_at asc nulls last limit 1)
+      (select p.tenant_id from public.profiles p where p.id = v_admin_uid limit 1),
+      (select t.id from public.tenants t where t.owner_id = v_admin_uid order by t.created_at asc nulls last limit 1)
     )
     into v_target_tenant_id;
 
-  if v_target_tenant_id is null or length(trim(v_target_tenant_id)) = 0 then
+  if v_target_tenant_id is null then
     raise exception 'Target tenant id could not be resolved for admin uid %, check profiles.tenant_id or tenants.owner_id', v_admin_uid;
   end if;
 
   -- Move customers written under tenant_id = admin uid to the resolved tenant id
   update public.customers
   set tenant_id = v_target_tenant_id
-  where tenant_id = v_admin_uid::text;
+  where tenant_id = v_admin_uid;
 
   get diagnostics v_moved = row_count;
 
-  raise notice 'Moved % customers rows from tenant_id=% to tenant_id=%', v_moved, v_admin_uid::text, v_target_tenant_id;
+  raise notice 'Moved % customers rows from tenant_id=% to tenant_id=%', v_moved, v_admin_uid, v_target_tenant_id;
 end $$;
 
 -- =========================
@@ -111,8 +111,8 @@ target as (
     au.admin_uid,
     au.email,
     coalesce(
-      (select p.tenant_id::text from public.profiles p where p.id = au.admin_uid limit 1),
-      (select t.id::text from public.tenants t where t.owner_id = au.admin_uid order by t.created_at asc nulls last limit 1)
+      (select p.tenant_id from public.profiles p where p.id = au.admin_uid limit 1),
+      (select t.id from public.tenants t where t.owner_id = au.admin_uid order by t.created_at asc nulls last limit 1)
     ) as target_tenant_id
   from admin_user au
 )
@@ -120,7 +120,7 @@ select
   t.admin_uid,
   t.email,
   t.target_tenant_id,
-  (select count(*) from public.customers c where c.tenant_id = t.admin_uid::text) as customers_still_on_admin_uid,
+  (select count(*) from public.customers c where c.tenant_id = t.admin_uid) as customers_still_on_admin_uid,
   (select count(*) from public.customers c where c.tenant_id = t.target_tenant_id) as customers_on_target_tenant
 from target t;
 
