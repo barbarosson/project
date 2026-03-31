@@ -34,8 +34,12 @@ begin
   for r in
     select c.table_name
     from information_schema.columns c
+    join information_schema.tables t
+      on t.table_schema = c.table_schema
+     and t.table_name = c.table_name
     where c.table_schema = 'public'
       and c.column_name = 'tenant_id'
+      and t.table_type = 'BASE TABLE'
       and c.table_name not in ('profiles', 'tenants')
     group by c.table_name
     order by c.table_name
@@ -74,8 +78,12 @@ begin
     for r in
       select c.table_name
       from information_schema.columns c
+      join information_schema.tables t
+        on t.table_schema = c.table_schema
+       and t.table_name = c.table_name
       where c.table_schema = 'public'
         and c.column_name = 'tenant_id'
+        and t.table_type = 'BASE TABLE'
         and c.table_name not in ('profiles', 'tenants')
       group by c.table_name
       order by c.table_name
