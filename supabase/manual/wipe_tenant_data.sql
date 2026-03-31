@@ -24,7 +24,8 @@
 -- =========================
 do $$
 declare
-  v_tenant uuid := '361e6d16-13da-4aaf-b6ac-eda4451cf7b6';
+  -- Use text so this works whether tenant_id column is uuid or text
+  v_tenant text := '361e6d16-13da-4aaf-b6ac-eda4451cf7b6';
   r record;
   v_count bigint;
 begin
@@ -39,7 +40,7 @@ begin
     group by c.table_name
     order by c.table_name
   loop
-    execute format('select count(*) from public.%I where tenant_id = $1', r.table_name)
+    execute format('select count(*) from public.%I where tenant_id::text = $1', r.table_name)
       into v_count
       using v_tenant;
 
@@ -55,7 +56,8 @@ end $$;
 -- =========================
 do $$
 declare
-  v_tenant uuid := '361e6d16-13da-4aaf-b6ac-eda4451cf7b6';
+  -- Use text so this works whether tenant_id column is uuid or text
+  v_tenant text := '361e6d16-13da-4aaf-b6ac-eda4451cf7b6';
   v_confirm boolean := false; -- <-- set TRUE to actually delete
   r record;
   v_deleted bigint;
@@ -79,7 +81,7 @@ begin
       order by c.table_name
     loop
       begin
-        execute format('delete from public.%I where tenant_id = $1', r.table_name)
+        execute format('delete from public.%I where tenant_id::text = $1', r.table_name)
           using v_tenant;
         get diagnostics v_deleted = row_count;
         if v_deleted > 0 then
