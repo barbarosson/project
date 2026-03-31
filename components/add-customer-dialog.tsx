@@ -428,16 +428,15 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
       return
     }
 
+    if (!tenantId) {
+      toast.error(language === 'tr' ? 'Tenant bilgisi bulunamadı. Lütfen tekrar giriş yapın.' : 'Tenant information not found. Please sign in again.')
+      return
+    }
+
     setLoading(true)
 
     try {
-      const { data: userData, error: userError } = await supabase.auth.getUser()
-
-      if (userError || !userData?.user?.id) {
-        throw new Error(t.inventory.authRequired)
-      }
-
-      const tenant_id = userData.user.id
+      const tenant_id = tenantId
 
       // Alt cari/şube eklerken VKN kontrolü yapma (aynı VKN ana cari ile paylaşılır)
       const isSubCustomer = Boolean(formData.parent_customer_id)

@@ -70,8 +70,13 @@ export function TenantProvider({ children }: { children: ReactNode }) {
           .maybeSingle()
         if (tenantRow?.id) effectiveTenantId = String(tenantRow.id)
       }
-      if (!effectiveTenantId) effectiveTenantId = userId
-      setTenantId(effectiveTenantId)
+      // Son fallback: legacy single-tenant kullanımında bazı tablolar tenant_id = auth.uid()::text ile tutuluyor.
+      // Super admin için ise userId'ye düşmek yanlış tenant filtrelemesine neden olabileceğinden null bırakıyoruz.
+      if (!effectiveTenantId) {
+        effectiveTenantId = isSuperAdminUser ? '' : userId
+      }
+
+      setTenantId(effectiveTenantId || null)
     } catch (error) {
       setTenantId(null)
       setSuperAdmin(false)

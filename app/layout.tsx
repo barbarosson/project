@@ -1,18 +1,11 @@
 import './globals.css'
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
 import { ClientProviders } from '@/components/client-providers'
+import '@fontsource/inter/latin.css'
 
 // v2.3 - Theme sync: 1739350000 (cache bust)
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
-
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800'],
-  variable: '--font-inter',
-  display: 'swap',
-})
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://modulus.tech'),
@@ -98,8 +91,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="tr" className={inter.variable} suppressHydrationWarning>
-      <body className={`${inter.className} font-inter text-[#0A2540] bg-[#0A2540]/5`}>
+    <html lang="tr" suppressHydrationWarning>
+      <body className="font-inter text-[#0A2540] bg-[#0A2540]/5">
         <ClientProviders>{children}</ClientProviders>
       </body>
     </html>

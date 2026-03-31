@@ -96,6 +96,12 @@ export default function CustomersPage() {
   }, [tenantId, tenantLoading])
 
   useEffect(() => {
+    if (!tenantLoading && !tenantId) {
+      setLoading(false)
+    }
+  }, [tenantLoading, tenantId])
+
+  useEffect(() => {
     filterCustomers()
   }, [searchQuery, segmentFilter, customers, customerSegments])
 
