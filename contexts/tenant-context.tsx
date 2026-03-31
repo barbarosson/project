@@ -59,8 +59,18 @@ export function TenantProvider({ children }: { children: ReactNode }) {
         .eq('id', userId)
         .maybeSingle()
 
-      const effectiveTenantId =
-        profile?.tenant_id != null ? String(profile.tenant_id) : userId
+      // Eğer profile.tenant_id yoksa, tenant'ı owner_id üzerinden bulmayı dene.
+      // (Bazı akışlarda tenant kaydı oluşturulup profile.tenant_id yazılmayabiliyor.)
+      let effectiveTenantId: string = profile?.tenant_id != null ? String(profile.tenant_id) : ''
+      if (!effectiveTenantId) {
+        const { data: tenantRow } = await supabase
+          .from('tenants')
+          .select('id')
+          .eq('owner_id', userId)
+          .maybeSingle()
+        if (tenantRow?.id) effectiveTenantId = String(tenantRow.id)
+      }
+      if (!effectiveTenantId) effectiveTenantId = userId
       setTenantId(effectiveTenantId)
     } catch (error) {
       setTenantId(null)

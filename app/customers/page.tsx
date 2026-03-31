@@ -169,11 +169,13 @@ export default function CustomersPage() {
     }
   }
 
-  // Sadece ana cariler listelenir; alt şubeler ana carinin "Şube ve Alt Cariler" bölümünde gösterilir
-  const mainCustomers = useMemo(
-    () => customers.filter((c) => c.branch_type === 'main' || !c.parent_customer_id),
-    [customers]
-  )
+  // Varsayılan olarak sadece ana cariler listelenir; alt şubeler ana carinin "Şube ve Alt Cariler" bölümünde gösterilir.
+  // Ancak bazı tenant'larda tüm kayıtlar yanlışlıkla alt-şube gibi (parent_customer_id dolu) import edilmiş olabiliyor.
+  // Bu durumda ekranın tamamen boş görünmemesi için fallback olarak tüm carileri gösteriyoruz.
+  const mainCustomers = useMemo(() => {
+    const mains = customers.filter((c) => c.branch_type === 'main' || !c.parent_customer_id)
+    return mains.length > 0 ? mains : customers
+  }, [customers])
 
   function filterCustomers() {
     let filtered = mainCustomers

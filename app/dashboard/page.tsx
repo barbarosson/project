@@ -507,18 +507,20 @@ export default function Dashboard() {
     const monthlyData: { [key: string]: { income: number; expenses: number } } = {}
     const locale = lang === 'tr' ? 'tr-TR' : 'en-US'
 
-    // Gelir: ödenmiş faturalar (tahsilat)
+    // Gelir: ödenmiş faturalar (tahsilat) — ödeme tarihine göre
     ;(invoices || [])
-      .filter((inv: any) => inv.status === 'paid')
+      .filter((inv: any) => inv.status === 'paid' && inv.payment_date)
       .forEach((invoice: any) => {
-        const relevantDate = invoice.payment_date ? new Date(invoice.payment_date) : new Date(invoice.issue_date)
+        const relevantDate = new Date(invoice.payment_date)
         const monthKey = `${relevantDate.getFullYear()}-${String(relevantDate.getMonth() + 1).padStart(2, '0')}`
 
         if (!monthlyData[monthKey]) {
           monthlyData[monthKey] = { income: 0, expenses: 0 }
         }
 
-        monthlyData[monthKey].income += Number(invoice.total) || Number(invoice.amount) || 0
+        // Öncelik: paid_amount → total → amount
+        monthlyData[monthKey].income +=
+          Number(invoice.paid_amount) || Number(invoice.total) || Number(invoice.amount) || 0
       })
 
     // Gider: masraflar tablosu
@@ -548,7 +550,10 @@ export default function Dashboard() {
 
         const amount = Number(tx.amount) || 0
         if (tx.transaction_type === 'income') {
-          monthlyData[monthKey].income += amount
+          // Dashboard özetinde gelir kartı, fatura tahsilatını ayrıca topluyor.
+          // Bu yüzden invoice'a bağlı gelir işlemlerini burada hariç tutuyoruz (double count önlemek için).
+          const isInvoiceLinked = tx.reference_type === 'invoice' && !!tx.reference_id
+          if (!isInvoiceLinked) monthlyData[monthKey].income += amount
         } else {
           monthlyData[monthKey].expenses += amount
         }
