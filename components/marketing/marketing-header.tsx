@@ -33,6 +33,11 @@ export function MarketingHeader() {
 
   const navigation = [
     { name: t.marketing.nav.product, href: '/landing#product' },
+    {
+      name: language === 'en' ? 'AppointFlow' : 'AppointFlow',
+      href: '/products/appointflow',
+      badge: language === 'en' ? 'NEW' : 'YENİ',
+    },
     { name: t.marketing.nav.solutions, href: '/landing#solutions' },
     { name: t.marketing.nav.pricing, href: '/landing#pricing' },
     { name: t.marketing.nav.contact, href: '/contact' },
@@ -58,7 +63,7 @@ export function MarketingHeader() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="transition-all duration-300 hover:opacity-80"
+                className="transition-all duration-300 hover:opacity-80 inline-flex items-center gap-2"
               >
                 <span
                   className="font-bold"
@@ -70,6 +75,14 @@ export function MarketingHeader() {
                 >
                   {item.name}
                 </span>
+                {'badge' in item && item.badge && (
+                  <span
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white align-middle"
+                    style={{ backgroundColor: '#00D4AA', letterSpacing: '0.05em' }}
+                  >
+                    {item.badge}
+                  </span>
+                )}
               </Link>
             ))}
           </div>
@@ -164,10 +177,18 @@ export function MarketingHeader() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="block py-3 px-3 text-2xl font-bold text-[#425466] hover:text-[#0A2540] hover:bg-[#F6F9FC] rounded-lg transition-all"
+                className="py-3 px-3 text-2xl font-bold text-[#425466] hover:text-[#0A2540] hover:bg-[#F6F9FC] rounded-lg transition-all flex items-center gap-2"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                {item.name}
+                <span>{item.name}</span>
+                {'badge' in item && item.badge && (
+                  <span
+                    className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
+                    style={{ backgroundColor: '#00D4AA', letterSpacing: '0.05em' }}
+                  >
+                    {item.badge}
+                  </span>
+                )}
               </Link>
             ))}
             <div className="pt-6 border-t border-gray-100 space-y-3">

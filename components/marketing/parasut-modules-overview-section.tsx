@@ -13,8 +13,10 @@ import {
   FolderKanban,
   Users,
   Brain,
-  LineChart
+  LineChart,
+  CalendarClock
 } from 'lucide-react'
+import Link from 'next/link'
 import { useLanguage } from '@/contexts/language-context'
 
 export function ModulusModulesOverviewSection() {
@@ -240,6 +242,29 @@ export function ModulusModulesOverviewSection() {
         'Fatura, stok, proje gibi modül bazlı raporlar',
         'Detaylı analiz için Excel / CSV dışa aktarma'
       ]
+    },
+    {
+      icon: CalendarClock,
+      key: 'appointflow',
+      href: '/products/appointflow',
+      badge_en: 'NEW',
+      badge_tr: 'YENİ',
+      title_en: 'AppointFlow — Autonomous Appointment Agent',
+      title_tr: 'AppointFlow — Otonom Randevu Ajanı',
+      description_en:
+        'A 24/7 AI agent that books, reminds and manages client appointments over WhatsApp + Google Calendar — perfect for service businesses.',
+      description_tr:
+        'WhatsApp ve Google Calendar üzerinden 7/24 randevu alan, hatırlatan ve yöneten yapay zeka ajanı — hizmet işletmeleri için birebir.',
+      bullets_en: [
+        'Inbound WhatsApp replies in 9 languages',
+        'Auto-books slots from your Google Calendar',
+        '24h + 2h reminders, no-show recovery, full billing'
+      ],
+      bullets_tr: [
+        '9 dilde WhatsApp mesajlarına otomatik yanıt',
+        'Google Calendar\'dan otomatik uygun saat önerisi',
+        '24s + 2s hatırlatma, gelmeyen telafisi, tam faturalama'
+      ]
     }
   ]
 
@@ -266,17 +291,33 @@ export function ModulusModulesOverviewSection() {
           {modules.map((mod) => {
             const Icon = mod.icon
             const bullets = language === 'en' ? mod.bullets_en : mod.bullets_tr
-            return (
+            const badge = (mod as any).badge_en && (mod as any).badge_tr
+              ? (language === 'en' ? (mod as any).badge_en : (mod as any).badge_tr)
+              : null
+            const href = (mod as any).href as string | undefined
+
+            const card = (
               <Card
                 key={mod.key}
-                className="p-7 bg-white border border-gray-200 hover:border-blue-200 hover:shadow-xl transition-all duration-300 flex flex-col"
+                className={`p-7 bg-white border transition-all duration-300 flex flex-col h-full ${
+                  href
+                    ? 'border-[#00D4AA]/40 hover:border-[#00D4AA] hover:shadow-2xl cursor-pointer'
+                    : 'border-gray-200 hover:border-blue-200 hover:shadow-xl'
+                }`}
               >
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-11 h-11 rounded-2xl bg-blue-50 flex items-center justify-center">
-                    <Icon className="h-6 w-6 text-blue-600" />
+                  <div className={`w-11 h-11 rounded-2xl flex items-center justify-center ${
+                    href ? 'bg-[#00D4AA]/10' : 'bg-blue-50'
+                  }`}>
+                    <Icon className={`h-6 w-6 ${href ? 'text-[#00D4AA]' : 'text-blue-600'}`} />
                   </div>
-                  <h3 className="text-lg font-bold" style={{ fontFamily: 'Montserrat, sans-serif', color: '#1a202c' }}>
-                    {language === 'en' ? mod.title_en : mod.title_tr}
+                  <h3 className="text-lg font-bold flex items-center gap-2" style={{ fontFamily: 'Montserrat, sans-serif', color: '#1a202c' }}>
+                    <span>{language === 'en' ? mod.title_en : mod.title_tr}</span>
+                    {badge && (
+                      <Badge className="bg-[#00D4AA] text-white text-[10px] px-2 py-0.5 leading-none">
+                        {badge}
+                      </Badge>
+                    )}
                   </h3>
                 </div>
 
@@ -287,12 +328,30 @@ export function ModulusModulesOverviewSection() {
                 <ul className="space-y-1.5 text-sm text-gray-600 mt-auto">
                   {bullets.map((b, idx) => (
                     <li key={idx} className="flex items-start gap-1.5">
-                      <span className="mt-1 text-blue-500">•</span>
+                      <span className={`mt-1 ${href ? 'text-[#00D4AA]' : 'text-blue-500'}`}>•</span>
                       <span>{b}</span>
                     </li>
                   ))}
                 </ul>
+
+                {href && (
+                  <div className="mt-5 pt-4 border-t border-gray-100">
+                    <span className="text-sm font-semibold text-[#0A2540] inline-flex items-center gap-1">
+                      {language === 'en' ? 'Learn more' : 'Detayları gör'} <span aria-hidden>→</span>
+                    </span>
+                  </div>
+                )}
               </Card>
+            )
+
+            return href ? (
+              <Link key={mod.key} href={href} className="block h-full">
+                {card}
+              </Link>
+            ) : (
+              <div key={mod.key} className="h-full">
+                {card}
+              </div>
             )
           })}
         </div>
