@@ -4,6 +4,8 @@ import { verifyWebhookSignature, detectIntent } from '@/lib/apptflow/whatsapp'
 import { getServiceSupabase } from '@/lib/apptflow/supabase'
 import { dispatchEvent } from '@/lib/apptflow/orchestrator'
 import { recordUsage } from '@/lib/apptflow/cost'
+import { handleInbound } from '@/lib/apptflow/reply-engine'
+import type { LocaleCode } from '@/lib/apptflow/types'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -42,9 +44,14 @@ export async function POST(req: NextRequest) {
       // Look up tenant by the WA phone_number_id that received the message.
       const { data: tenant } = await sb
         .from('tenants')
-        .select('id, default_locale')
+        .select('id, default_locale, timezone, business_name')
         .eq('whatsapp_phone_number_id', phoneNumberId)
-        .maybeSingle()
+        .maybeSingle<{
+          id: string
+          default_locale: LocaleCode | null
+          timezone: string | null
+          business_name: string | null
+        }>()
 
       for (const msg of value.messages ?? []) {
         const from: string = msg.from
@@ -108,6 +115,20 @@ export async function POST(req: NextRequest) {
               customer_id: customerId,
               wa_message_id: waId,
             },
+          })
+
+          // In-process reply: intent routing, slot offers, booking, etc.
+          // Wrapped in try/catch inside the engine itself so a fault here
+          // never yields a 500 back to Meta (which would trigger retries).
+          const phoneE164 = from.startsWith('+') ? from : `+${from}`
+          await handleInbound({
+            tenantId: tenant.id,
+            tenantLocale: (tenant.default_locale ?? 'en') as LocaleCode,
+            tenantTimezone: tenant.timezone ?? 'UTC',
+            customerId,
+            customerPhoneE164: phoneE164,
+            inboundText: text,
+            intent,
           })
         }
       }
