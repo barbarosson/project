@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        await sb.from('conversations').insert({
+        const { error: convInsertErr } = await sb.from('conversations').insert({
           tenant_id: tenant?.id ?? null,
           customer_id: customerId,
           wa_message_id: waId,
@@ -85,6 +85,15 @@ export async function POST(req: NextRequest) {
           intent: intent.intent,
           confidence: intent.confidence,
         })
+        if (convInsertErr) {
+          console.error('[wa webhook] inbound conversation insert failed', {
+            err: convInsertErr.message,
+            code: convInsertErr.code,
+            phoneNumberId,
+            from,
+            hasTenant: Boolean(tenant?.id),
+          })
+        }
 
         if (tenant) {
           await recordUsage(tenant.id, 'whatsapp.inbound', 1, { type: msg.type ?? 'text' })
@@ -105,7 +114,7 @@ export async function POST(req: NextRequest) {
 
       // Delivery / read statuses.
       for (const st of value.statuses ?? []) {
-        await sb.from('conversations').insert({
+        const { error: statusInsertErr } = await sb.from('conversations').insert({
           tenant_id: tenant?.id ?? null,
           wa_message_id: st.id,
           direction: 'outbound',
@@ -114,6 +123,14 @@ export async function POST(req: NextRequest) {
           message_type: 'system',
           intent: `status.${st.status}`,
         })
+        if (statusInsertErr) {
+          console.error('[wa webhook] status conversation insert failed', {
+            err: statusInsertErr.message,
+            code: statusInsertErr.code,
+            phoneNumberId,
+            statusKind: st.status,
+          })
+        }
         if (tenant) {
           await dispatchEvent({
             event: 'whatsapp.delivery',
