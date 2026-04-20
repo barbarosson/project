@@ -11,6 +11,19 @@ function isPublicBetaPath(pathname: string): boolean {
   if (pathname.startsWith('/login')) return true
   if (pathname.startsWith('/auth')) return true
   if (pathname.startsWith('/beta-talep')) return true
+  // Public marketing pages (accessible without login — required for
+  // payment-provider verification, SEO, external review):
+  if (pathname.startsWith('/products')) return true
+  if (pathname.startsWith('/landing')) return true
+  if (pathname.startsWith('/pricing')) return true
+  if (pathname.startsWith('/contact')) return true
+  // Public legal / about pages (required by payment providers and law):
+  if (pathname.startsWith('/gizlilik')) return true
+  if (pathname.startsWith('/teslimat-iade')) return true
+  if (pathname.startsWith('/mesafeli-satis')) return true
+  if (pathname.startsWith('/hakkimizda')) return true
+  if (pathname.startsWith('/support')) return true
+  if (pathname.startsWith('/help')) return true
   return false
 }
 
