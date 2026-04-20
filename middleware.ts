@@ -24,6 +24,8 @@ function isPublicBetaPath(pathname: string): boolean {
   if (pathname.startsWith('/hakkimizda')) return true
   if (pathname.startsWith('/support')) return true
   if (pathname.startsWith('/help')) return true
+  // English-language public routes (legal + marketing for international buyers):
+  if (pathname.startsWith('/en')) return true
   return false
 }
 
