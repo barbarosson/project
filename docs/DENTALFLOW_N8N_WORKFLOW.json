@@ -1,0 +1,141 @@
+{
+  "name": "DentalFlow Autonomous Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "dentalflow/lead-created",
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      },
+      "id": "WebhookLeadCreated",
+      "name": "Webhook Lead Created",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        120,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.NEXT_PUBLIC_SITE_URL}}/api/dentalflow/events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-dentalflow-secret",
+              "value": "={{$env.DENTALFLOW_WEBHOOK_SECRET}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={\"event\":\"lead.created\",\"clinic_id\":\"{{$json.body.clinic_id}}\",\"payload\":{{$json.body}}}"
+      },
+      "id": "CallOrchestratorLead",
+      "name": "Call Orchestrator Lead",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        380,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{$json}}"
+      },
+      "id": "LeadWebhookResponse",
+      "name": "Lead Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        640,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      },
+      "id": "DailyCron",
+      "name": "Daily Cron",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        120,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$env.NEXT_PUBLIC_SITE_URL}}/api/dentalflow/events",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-dentalflow-secret",
+              "value": "={{$env.DENTALFLOW_WEBHOOK_SECRET}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "jsonBody": "={\"event\":\"daily.kpi_rollup\",\"clinic_id\":\"{{$env.DENTALFLOW_DEFAULT_CLINIC_ID}}\",\"payload\":{\"source\":\"n8n_cron\"}}"
+      },
+      "id": "CallOrchestratorDaily",
+      "name": "Call Orchestrator Daily",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        380,
+        420
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Lead Created": {
+      "main": [
+        [
+          {
+            "node": "Call Orchestrator Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Orchestrator Lead": {
+      "main": [
+        [
+          {
+            "node": "Lead Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily Cron": {
+      "main": [
+        [
+          {
+            "node": "Call Orchestrator Daily",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "pinData": {}
+}
