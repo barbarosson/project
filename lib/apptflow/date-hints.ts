@@ -25,12 +25,12 @@ export type DayHint =
 
 const WEEKDAY_PATTERNS: Array<[Weekday, RegExp[]]> = [
   [0, [/\bpazar\b/i, /\bsunday\b/i, /\bdomingo\b/i, /\bdimanche\b/i, /\bsonntag\b/i, /\bdomenica\b/i, /\bвоскресен/i, /الأحد/]],
-  [1, [/\bpazartesi\b/i, /\bmonday\b/i, /\blunes\b/i, /\blundi\b/i, /\bmontag\b/i, /\blunedì\b/i, /\blunedi\b/i, /\bsegunda-?feira\b/i, /\bпонедельн/i, /الاثنين/]],
-  [2, [/\bsalı\b/i, /\bsali\b/i, /\btuesday\b/i, /\bmartes\b/i, /\bmardi\b/i, /\bdienstag\b/i, /\bmartedì\b/i, /\bmartedi\b/i, /\bterça-?feira\b/i, /\bterca-?feira\b/i, /\bвторник/i, /الثلاثاء/]],
-  [3, [/\bçarşamba\b/i, /\bcarsamba\b/i, /\bwednesday\b/i, /\bmiércoles\b/i, /\bmiercoles\b/i, /\bmercredi\b/i, /\bmittwoch\b/i, /\bmercoledì\b/i, /\bmercoledi\b/i, /\bquarta-?feira\b/i, /\bсреда/i, /الأربعاء/]],
-  [4, [/\bperşembe\b/i, /\bpersembe\b/i, /\bthursday\b/i, /\bjueves\b/i, /\bjeudi\b/i, /\bdonnerstag\b/i, /\bgiovedì\b/i, /\bgiovedi\b/i, /\bquinta-?feira\b/i, /\bчетверг/i, /الخميس/]],
-  [5, [/\bcuma\b/i, /\bfriday\b/i, /\bviernes\b/i, /\bvendredi\b/i, /\bfreitag\b/i, /\bvenerdì\b/i, /\bvenerdi\b/i, /\bsexta-?feira\b/i, /\bпятниц/i, /الجمعة/]],
-  [6, [/\bcumartesi\b/i, /\bsaturday\b/i, /\bsábado\b/i, /\bsabado\b/i, /\bsamedi\b/i, /\bsamstag\b/i, /\bsabato\b/i, /\bсуббот/i, /السبت/]],
+  [1, [/\bpazartesi\b/i, /(?<![a-zçğıöşü])pazartesi(?![a-zçğıöşü])/i, /\bmonday\b/i, /\blunes\b/i, /\blundi\b/i, /\bmontag\b/i, /\blunedì\b/i, /\blunedi\b/i, /\bsegunda-?feira\b/i, /\bпонедельн/i, /الاثنين/]],
+  [2, [/\bsalı\b/i, /\bsali\b/i, /(?<![a-zçğıöşü])salı(?![a-zçğıöşü])/i, /(?<![a-zçğıöşü])sali(?![a-zçğıöşü])/i, /\btuesday\b/i, /\bmartes\b/i, /\bmardi\b/i, /\bdienstag\b/i, /\bmartedì\b/i, /\bmartedi\b/i, /\bterça-?feira\b/i, /\bterca-?feira\b/i, /\bвторник/i, /الثلاثاء/]],
+  [3, [/\bçarşamba\b/i, /\bcarsamba\b/i, /(?<![a-zçğıöşü])çarşamba(?![a-zçğıöşü])/i, /(?<![a-zçğıöşü])carsamba(?![a-zçğıöşü])/i, /\bwednesday\b/i, /\bmiércoles\b/i, /\bmiercoles\b/i, /\bmercredi\b/i, /\bmittwoch\b/i, /\bmercoledì\b/i, /\bmercoledi\b/i, /\bquarta-?feira\b/i, /\bсреда/i, /الأربعاء/]],
+  [4, [/\bperşembe\b/i, /\bpersembe\b/i, /(?<![a-zçğıöşü])perşembe(?![a-zçğıöşü])/i, /(?<![a-zçğıöşü])persembe(?![a-zçğıöşü])/i, /\bthursday\b/i, /\bjueves\b/i, /\bjeudi\b/i, /\bdonnerstag\b/i, /\bgiovedì\b/i, /\bgiovedi\b/i, /\bquinta-?feira\b/i, /\bчетверг/i, /الخميس/]],
+  [5, [/\bcuma\b/i, /(?<![a-zçğıöşü])cuma(?![a-zçğıöşü])/i, /\bfriday\b/i, /\bviernes\b/i, /\bvendredi\b/i, /\bfreitag\b/i, /\bvenerdì\b/i, /\bvenerdi\b/i, /\bsexta-?feira\b/i, /\bпятниц/i, /الجمعة/]],
+  [6, [/\bcumartesi\b/i, /(?<![a-zçğıöşü])cumartesi(?![a-zçğıöşü])/i, /\bsaturday\b/i, /\bsábado\b/i, /\bsabado\b/i, /\bsamedi\b/i, /\bsamstag\b/i, /\bsabato\b/i, /\bсуббот/i, /السبت/]],
 ]
 
 const TODAY_RE    = /\b(today|bugün|bugun|hoy|aujourd['’]hui|heute|oggi|hoje|сегодня)\b|اليوم/i

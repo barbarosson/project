@@ -786,6 +786,55 @@ async function offerCancellation(args: HandleInboundArgs, locale: LocaleCode): P
     return
   }
 
+  // Global plural cancel (no specific day): "randevularımı iptal et"
+  // Cancels all upcoming appointments in one command and sends one summary.
+  if (!dayHint && wantsPlural) {
+    const { data: appts } = await sb
+      .from('appointments')
+      .select('id, starts_at, service:services(name)')
+      .eq('tenant_id', args.tenantId)
+      .eq('customer_id', args.customerId)
+      .in('status', ['scheduled', 'confirmed', 'rescheduled'])
+      .gte('starts_at', new Date().toISOString())
+      .order('starts_at', { ascending: true })
+      .limit(20)
+
+    if (!appts || appts.length === 0) {
+      await sendAndRecord({
+        tenantId: args.tenantId,
+        customerId: args.customerId,
+        toPlus: args.customerPhoneE164,
+        locale,
+        text: t(locale, 'fallback'),
+        metadata: { pending_action: null, source: 'reply-engine' },
+      })
+      return
+    }
+
+    for (const appt of appts as any[]) {
+      await cancelBooking(appt.id, undefined, locale, false)
+    }
+
+    const items = (appts as any[])
+      .map(appt => formatDateTimeForHumans(appt.starts_at, args.tenantTimezone, locale))
+      .join(' · ')
+
+    const summary =
+      locale === 'tr'
+        ? `${appts.length} randevunuz iptal edildi: ${items}`
+        : `${appts.length} appointments cancelled: ${items}`
+
+    await sendAndRecord({
+      tenantId: args.tenantId,
+      customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
+      locale,
+      text: summary,
+      metadata: { pending_action: null, source: 'reply-engine' },
+    })
+    return
+  }
+
   const { data: appt } = await sb
     .from('appointments')
     .select('id, starts_at, service:services(name)')
