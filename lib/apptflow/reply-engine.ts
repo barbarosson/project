@@ -793,6 +793,7 @@ async function offerCancellation(args: HandleInboundArgs, locale: LocaleCode): P
 
   const sb = getServiceSupabase()
   const dayHint = parseDayHint(args.inboundText)
+  const timeHint = extractTimeHint(args.inboundText)
   const wantsPlural = /\b(randevularımı|randevularimi|appointments|all|hepsini|tümünü|tumunu)\b/i.test(args.inboundText)
   if (dayHint && wantsPlural) {
     const bounds = computeDayBounds(dayHint, args.tenantTimezone)
@@ -840,6 +841,41 @@ async function offerCancellation(args: HandleInboundArgs, locale: LocaleCode): P
       metadata: { pending_action: null, source: 'reply-engine' },
     })
     return
+  }
+
+  // Targeted single cancellation by explicit day+time:
+  // "çarşamba 17 i iptal eder misin" should cancel that exact slot first.
+  if (dayHint && timeHint) {
+    const bounds = computeDayBounds(dayHint, args.tenantTimezone)
+    const targetStart = tzLocalToUtcISO(bounds.targetYMD, timeHint.hour, timeHint.minute, args.tenantTimezone)
+    const targetMs = new Date(targetStart).getTime()
+    const toleranceMs = 60_000 // 1 minute tolerance for formatting/seconds drift
+
+    const { data: dayAppts } = await sb
+      .from('appointments')
+      .select('id, starts_at')
+      .eq('tenant_id', args.tenantId)
+      .eq('customer_id', args.customerId)
+      .in('status', ['scheduled', 'confirmed', 'rescheduled'])
+      .gte('starts_at', bounds.fromISO)
+      .lt('starts_at', bounds.toISO)
+      .order('starts_at', { ascending: true })
+
+    const exact = (dayAppts ?? []).find((a: any) => {
+      const startsMs = new Date(a.starts_at).getTime()
+      return Math.abs(startsMs - targetMs) <= toleranceMs
+    }) as { id: string; starts_at: string } | undefined
+
+    if (exact) {
+      await cancelBooking(exact.id, undefined, locale)
+      await recordOutboundStub({
+        tenantId: args.tenantId,
+        customerId: args.customerId,
+        metadata: { pending_action: null, source: 'reply-engine' },
+      })
+      return
+    }
+    // If exact match wasn't found, continue with the normal flow below.
   }
 
   // Global plural cancel (no specific day): "randevularımı iptal et"
