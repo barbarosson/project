@@ -317,3 +317,50 @@ export function tzLocalToUtcISO(
   const [y, mo, d] = targetYMD.split('-').map(Number)
   return tzWallToUtc(y, mo, d, hour, minute, tz).toISOString()
 }
+
+// ---------- Multiple (day, time) extraction ----------
+//
+// Scans the whole message for segments that contain both a weekday/relative
+// word AND an hour, returning distinct (dayHint, hour, minute) triples so
+// the reply engine can handle sentences like
+//   "pazartesi 15 ve çarşamba 17"
+//   "monday 15 and wednesday 17"
+// without collapsing everything into a single day.
+
+export function extractMultipleDayTimeHints(text: string): Array<{
+  dayHint: DayHint
+  hour: number
+  minute: number
+}> {
+  if (!text) return []
+  const normalized = text.toLowerCase()
+  const results: Array<{ dayHint: DayHint; hour: number; minute: number }> = []
+  const seen = new Set<string>()
+
+  const segments = normalized
+    .split(/\s+(?:ve|and|y|und|ile|,|;)\s+/i)
+    .map(s => s.trim())
+    .filter(Boolean)
+
+  for (const segment of segments) {
+    const dayHint = parseDayHint(segment)
+    if (!dayHint) continue
+    let time = extractTimeHint(segment)
+    // If extractTimeHint didn't find a time in this short segment (e.g.
+    // "pazartesi 15" has no "saat"/"müsait" keyword), accept a bare hour
+    // because the presence of a day hint makes the number unambiguous.
+    if (!time) {
+      const bare = segment.match(/\b([01]?\d|2[0-3])(?:[:.]([0-5]\d))?\b/)
+      if (bare) {
+        time = { hour: Number(bare[1]), minute: Number(bare[2] ?? '0') }
+      }
+    }
+    if (!time) continue
+    const key = `${JSON.stringify(dayHint)}-${time.hour}:${time.minute}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    results.push({ dayHint, hour: time.hour, minute: time.minute })
+  }
+
+  return results
+}

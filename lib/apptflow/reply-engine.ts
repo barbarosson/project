@@ -31,6 +31,7 @@ import {
   weekdayLabel,
   extractTimeHint,
   tzLocalToUtcISO,
+  extractMultipleDayTimeHints,
 } from './date-hints'
 import type { LocaleCode } from './types'
 
@@ -385,8 +386,74 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
   const bounds = hint ? computeDayBounds(hint, tz) : null
 
   // Did they also name a specific time? ("15:00", "3pm", "saat 15")
-  const timeHint = extractTimeHint(args.inboundText)
+  let timeHint = extractTimeHint(args.inboundText)
+  // If a day is present but extractTimeHint didn't find a keyword-anchored
+  // time, accept a bare hour (e.g. "çarşamba 17 değil mi" → 17:00). The
+  // dayHint itself disambiguates numeric tokens from slot-index replies.
+  if (hint && !timeHint) {
+    const bare = args.inboundText.match(/\b([01]?\d|2[0-3])(?:[:.]([0-5]\d))?\b/)
+    if (bare) {
+      timeHint = { hour: Number(bare[1]), minute: Number(bare[2] ?? '0') }
+    }
+  }
   const multiHours = extractMultipleHourHints(args.inboundText)
+  const multiDayTime = extractMultipleDayTimeHints(args.inboundText)
+
+  // Case -2: user mentions two+ distinct (day, time) pairs in one message.
+  // Example: "pazartesi 15 ve çarşamba 17 için uygunsa kapatır mısın"
+  // Each pair is checked on its own day; we confirm-all whatever is free.
+  if (multiDayTime.length >= 2) {
+    const requested = multiDayTime.slice(0, 3).map(p => {
+      const b = computeDayBounds(p.dayHint, tz)
+      const startsAt = tzLocalToUtcISO(b.targetYMD, p.hour, p.minute, tz)
+      const endsAt = new Date(
+        new Date(startsAt).getTime() + service.duration_minutes * 60_000,
+      ).toISOString()
+      return {
+        startsAt,
+        endsAt,
+        dayLabel: weekdayLabel(b.fromISO, tz, locale),
+        timeLabel: `${String(p.hour).padStart(2, '0')}:${String(p.minute).padStart(2, '0')}`,
+      }
+    })
+
+    const available: typeof requested = []
+    for (const r of requested) {
+      const free = await isSlotAvailable({
+        tenantId: args.tenantId,
+        startsAt: r.startsAt,
+        endsAt: r.endsAt,
+      })
+      if (free) available.push(r)
+    }
+
+    if (available.length > 0) {
+      const pretty = available
+        .map((a, i) => `${i + 1}) ${a.dayLabel} ${a.timeLabel}`)
+        .join('  ·  ')
+      const text =
+        locale === 'tr'
+          ? `Şu saatler uygun: ${pretty}. Hepsini onaylamak için EVET yazın veya numarayla seçin.`
+          : `These slots are available: ${pretty}. Reply YES to confirm all or pick by number.`
+      await sendAndRecord({
+        tenantId: args.tenantId,
+        customerId: args.customerId,
+        toPlus: args.customerPhoneE164,
+        locale,
+        text,
+        metadata: {
+          pending_action: 'slot_choice',
+          slot_candidates: available.map(a => ({ startsAt: a.startsAt, endsAt: a.endsAt })),
+          service_id: service.id,
+          confirm_all: true,
+          source: 'reply-engine',
+        },
+      })
+      return
+    }
+    // Nothing free across the requested pairs → fall through to the regular
+    // day-scan below so we can still offer alternatives.
+  }
 
   // Case -1: user asks to reserve/check two+ explicit times in one message.
   // Example: "cuma 16 ve cuma 15 için 2 randevu alabilir miyim"
