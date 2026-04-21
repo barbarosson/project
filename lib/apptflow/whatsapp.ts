@@ -127,6 +127,10 @@ export function detectIntent(text: string): Intent {
     // — CONFIRM (short answers like "yes / evet / sí")
     [/\b(yes|evet|tamam|olur|ok|okay|si|sí|oui|ja|да|sim|نعم|confirm)\b/, 'confirm'],
 
+    // — APPOINTMENT LOOKUP (must come before broad BOOK follow-up rules)
+    [/\b(başka\s+randevu\w*\s+var\s*m[ıiu]|baska\s+randevu\w*\s+var\s*m[ıiu]|randevu\w*\s+kaçta|randevu\w*\s+kacta|randevu\w*\s+ne\s+zaman|randevu\w*\s+saat\w*|az\s+önce\s+aldığım\s+randevu\w*)\b/i, 'appointment_lookup'],
+    [/\b(my\s+appointment|another\s+appointment|do\s+i\s+have\s+another\s+appointment|what\s+time\s+is\s+my\s+appointment|when\s+is\s+my\s+appointment)\b/i, 'appointment_lookup'],
+
     // — BOOK: explicit booking words
     [/\b(book|reserve|reservar|prenota|termin|buchen|запись|حجز)\b/, 'book'],
     [/\b(randevu|rdv|appuntamento|agendamento|cita|appointment)\b/, 'book'],

@@ -101,9 +101,17 @@ export async function handleInbound(args: HandleInboundArgs): Promise<void> {
 
 async function routeInbound(args: HandleInboundArgs, locale: LocaleCode): Promise<void> {
   const prior = await getLastOutboundState(args.tenantId, args.customerId)
+  const explicitDayHint = parseDayHint(args.inboundText)
+  const explicitTimeHint = extractTimeHint(args.inboundText)
+  const explicitAppointmentLookup = args.intent.intent === 'appointment_lookup'
 
   // 1) Conversational continuations (prior state + current text).
   if (prior?.pending_action === 'slot_choice') {
+    // If user asks a fresh day/time question (or appointment lookup),
+    // don't interpret numeric tokens as slot indexes from old state.
+    if (explicitAppointmentLookup || explicitDayHint || explicitTimeHint) {
+      // fall through to fresh intent routing below
+    } else {
     const candidates = prior.slot_candidates ?? []
     const pick = pickSlot(args.inboundText, candidates)
     if (pick) {
@@ -121,6 +129,7 @@ async function routeInbound(args: HandleInboundArgs, locale: LocaleCode): Promis
     ) {
       await bookSelectedSlot(args, candidates[0], prior.service_id ?? null)
       return
+    }
     }
     // If the user said something else, drop the pending state and
     // route as a fresh intent below.
@@ -193,7 +202,8 @@ async function answerAppointmentLookup(args: HandleInboundArgs, locale: LocaleCo
   }
 
   const sb = getServiceSupabase()
-  const { data: appt } = await sb
+  const asksForAnother = /\b(başka|baska|another|other|daha)\b/i.test(args.inboundText)
+  const { data: appts } = await sb
     .from('appointments')
     .select('starts_at, status, service:services(name)')
     .eq('tenant_id', args.tenantId)
@@ -201,10 +211,10 @@ async function answerAppointmentLookup(args: HandleInboundArgs, locale: LocaleCo
     .in('status', ['scheduled', 'confirmed', 'rescheduled'])
     .gte('starts_at', new Date().toISOString())
     .order('starts_at', { ascending: true })
-    .limit(1)
-    .maybeSingle<any>()
+    .limit(2)
 
-  if (!appt) {
+  const chosen = asksForAnother ? appts?.[1] : appts?.[0]
+  if (!chosen) {
     await sendAndRecord({
       tenantId: args.tenantId,
       customerId: args.customerId,
@@ -216,7 +226,7 @@ async function answerAppointmentLookup(args: HandleInboundArgs, locale: LocaleCo
     return
   }
 
-  const when = new Date(appt.starts_at).toLocaleString(locale, {
+  const when = new Date(chosen.starts_at).toLocaleString(locale, {
     timeZone: args.tenantTimezone,
     weekday: 'short',
     year: 'numeric',
@@ -225,13 +235,18 @@ async function answerAppointmentLookup(args: HandleInboundArgs, locale: LocaleCo
     hour: '2-digit',
     minute: '2-digit',
   })
+  const serviceName =
+    Array.isArray((chosen as any).service)
+      ? ((chosen as any).service[0]?.name ?? 'appointment')
+      : ((chosen as any).service?.name ?? 'appointment')
+
   await sendAndRecord({
     tenantId: args.tenantId,
     customerId: args.customerId,
     toPlus: args.customerPhoneE164,
     locale,
     text: t(locale, 'appointment_lookup_found', {
-      service: appt.service?.name ?? 'appointment',
+      service: serviceName,
       when,
     }),
     metadata: { pending_action: null, source: 'reply-engine' },
