@@ -309,17 +309,23 @@ async function answerAppointmentList(args: HandleInboundArgs, locale: LocaleCode
   }
 
   const sb = getServiceSupabase()
-  const week = computeCurrentWeekBounds(args.tenantTimezone)
-  const { data: appts } = await sb
+  const asksThisWeek = /\b(bu\s+hafta|this\s+week)\b/i.test(args.inboundText)
+  let query = sb
     .from('appointments')
     .select('starts_at, service:services(name)')
     .eq('tenant_id', args.tenantId)
     .eq('customer_id', args.customerId)
     .in('status', ['scheduled', 'confirmed', 'rescheduled'])
-    .gte('starts_at', week.fromISO)
-    .lt('starts_at', week.toISO)
+    .gte('starts_at', new Date().toISOString())
     .order('starts_at', { ascending: true })
     .limit(10)
+
+  if (asksThisWeek) {
+    const week = computeCurrentWeekBounds(args.tenantTimezone)
+    query = query.gte('starts_at', week.fromISO).lt('starts_at', week.toISO)
+  }
+
+  const { data: appts } = await query
 
   if (!appts || appts.length === 0) {
     await sendAndRecord({
@@ -418,6 +424,7 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
     })
 
     const available: typeof requested = []
+    const unavailable: typeof requested = []
     for (const r of requested) {
       const free = await isSlotAvailable({
         tenantId: args.tenantId,
@@ -425,16 +432,28 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
         endsAt: r.endsAt,
       })
       if (free) available.push(r)
+      else unavailable.push(r)
     }
 
-    if (available.length > 0) {
-      const pretty = available
+    const requestedPretty = requested
+      .map(r => `${r.dayLabel} ${r.timeLabel}`)
+      .join(', ')
+    const availablePretty = available
         .map((a, i) => `${i + 1}) ${a.dayLabel} ${a.timeLabel}`)
         .join('  ·  ')
+    const unavailablePretty = unavailable
+      .map(a => `${a.dayLabel} ${a.timeLabel}`)
+      .join(', ')
+
+    if (available.length > 0) {
       const text =
         locale === 'tr'
-          ? `Şu saatler uygun: ${pretty}. Hepsini onaylamak için EVET yazın veya numarayla seçin.`
-          : `These slots are available: ${pretty}. Reply YES to confirm all or pick by number.`
+          ? unavailable.length > 0
+            ? `İstediğiniz saatler: ${requestedPretty}. Uygun olanlar: ${availablePretty}. Uygun olmayanlar: ${unavailablePretty}. Hepsini onaylamak için EVET yazın veya numarayla seçin.`
+            : `Şu saatler uygun: ${availablePretty}. Hepsini onaylamak için EVET yazın veya numarayla seçin.`
+          : unavailable.length > 0
+            ? `Requested: ${requestedPretty}. Available: ${availablePretty}. Unavailable: ${unavailablePretty}. Reply YES to confirm all available ones or pick by number.`
+            : `These slots are available: ${availablePretty}. Reply YES to confirm all or pick by number.`
       await sendAndRecord({
         tenantId: args.tenantId,
         customerId: args.customerId,
@@ -451,8 +470,45 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
       })
       return
     }
-    // Nothing free across the requested pairs → fall through to the regular
-    // day-scan below so we can still offer alternatives.
+    // Nothing free across requested multi-day pairs. Do NOT drop into
+    // single-day parsing branches; offer generic alternatives explicitly.
+    const fallbackSlots = await suggestOpenSlots({
+      tenantId: args.tenantId,
+      durationMinutes: service.duration_minutes,
+      lookaheadDays: 7,
+    })
+    if (fallbackSlots.length > 0) {
+      const pretty = fallbackSlots
+        .map((s, i) => `${i + 1}) ${formatSlotForHumans(s.startsAt, tz, locale)}`)
+        .join('  ·  ')
+      const text =
+        locale === 'tr'
+          ? `İstediğiniz saatler şu an dolu (${requestedPretty}). Alternatifler: ${pretty}`
+          : `Requested slots are currently unavailable (${requestedPretty}). Alternatives: ${pretty}`
+      await sendAndRecord({
+        tenantId: args.tenantId,
+        customerId: args.customerId,
+        toPlus: args.customerPhoneE164,
+        locale,
+        text,
+        metadata: {
+          pending_action: 'slot_choice',
+          slot_candidates: fallbackSlots,
+          service_id: service.id,
+          source: 'reply-engine',
+        },
+      })
+      return
+    }
+    await sendAndRecord({
+      tenantId: args.tenantId,
+      customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
+      locale,
+      text: t(locale, 'fallback'),
+      metadata: { pending_action: null, source: 'reply-engine' },
+    })
+    return
   }
 
   // Case -1: user asks to reserve/check two+ explicit times in one message.
@@ -830,6 +886,32 @@ async function offerCancellation(args: HandleInboundArgs, locale: LocaleCode): P
       toPlus: args.customerPhoneE164,
       locale,
       text: summary,
+      metadata: { pending_action: null, source: 'reply-engine' },
+    })
+    return
+  }
+
+  const { data: upcoming } = await sb
+    .from('appointments')
+    .select('id, starts_at')
+    .eq('tenant_id', args.tenantId)
+    .eq('customer_id', args.customerId)
+    .in('status', ['scheduled', 'confirmed', 'rescheduled'])
+    .gte('starts_at', new Date().toISOString())
+    .order('starts_at', { ascending: true })
+    .limit(3)
+
+  if ((upcoming?.length ?? 0) > 1 && !dayHint && !wantsPlural) {
+    const text =
+      locale === 'tr'
+        ? 'Birden fazla randevunuz var. "hepsini iptal et" ya da gün belirterek yazın (ör. "çarşamba randevularımı iptal et").'
+        : 'You have multiple appointments. Please say "cancel all appointments" or specify a day (e.g. "cancel my Wednesday appointments").'
+    await sendAndRecord({
+      tenantId: args.tenantId,
+      customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
+      locale,
+      text,
       metadata: { pending_action: null, source: 'reply-engine' },
     })
     return
