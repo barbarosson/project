@@ -114,9 +114,11 @@ async function routeInbound(args: HandleInboundArgs, locale: LocaleCode): Promis
       // fall through to fresh intent routing below
     } else {
     const candidates = prior.slot_candidates ?? []
-    const pick = pickSlot(args.inboundText, candidates)
-    if (pick) {
-      await bookSelectedSlot(args, pick, prior.service_id ?? null)
+    const picks = pickSlots(args.inboundText, candidates)
+    if (picks.length > 0) {
+      for (const slot of picks) {
+        await bookSelectedSlot(args, slot, prior.service_id ?? null)
+      }
       return
     }
     // Convenience: when only one slot is pending and the customer says
@@ -129,6 +131,24 @@ async function routeInbound(args: HandleInboundArgs, locale: LocaleCode): Promis
         /\b(yes|evet|tamam|ok|okay|si|sí|oui|ja|да|sim|نعم)\b/i.test(args.inboundText))
     ) {
       await bookSelectedSlot(args, candidates[0], prior.service_id ?? null)
+      return
+    }
+
+    // If customer says "ikisini / both" after a sequence of specific-time
+    // availability checks, merge recent single-slot pending offers and book
+    // all of them in one go.
+    if (isMultiConfirm(args.inboundText)) {
+      const recent = await getRecentPendingSlots(args.tenantId, args.customerId)
+      if (recent.length >= 2) {
+        for (const r of recent) {
+          await bookSelectedSlot(args, r.slot, r.serviceId)
+        }
+        return
+      }
+      if (candidates.length === 1) {
+        await bookSelectedSlot(args, candidates[0], prior.service_id ?? null)
+        return
+      }
       return
     }
     }
@@ -295,6 +315,52 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
 
   // Did they also name a specific time? ("15:00", "3pm", "saat 15")
   const timeHint = extractTimeHint(args.inboundText)
+  const multiHours = extractMultipleHourHints(args.inboundText)
+
+  // Case -1: user asks to reserve/check two+ explicit times in one message.
+  // Example: "cuma 16 ve cuma 15 için 2 randevu alabilir miyim"
+  if (bounds && multiHours.length >= 2) {
+    const requestedSlots = multiHours.slice(0, 3).map(hm => {
+      const startsAt = tzLocalToUtcISO(bounds.targetYMD, hm.hour, hm.minute, tz)
+      const endsAt = new Date(
+        new Date(startsAt).getTime() + service.duration_minutes * 60_000,
+      ).toISOString()
+      return { startsAt, endsAt, label: `${String(hm.hour).padStart(2, '0')}:${String(hm.minute).padStart(2, '0')}` }
+    })
+
+    const available: { startsAt: string; endsAt: string; label: string }[] = []
+    for (const rs of requestedSlots) {
+      const free = await isSlotAvailable({
+        tenantId: args.tenantId,
+        startsAt: rs.startsAt,
+        endsAt: rs.endsAt,
+      })
+      if (free) available.push(rs)
+    }
+
+    if (available.length > 0) {
+      const dayLabel = weekdayLabel(bounds.fromISO, tz, locale)
+      const times = available.map(a => a.label).join(', ')
+      const text =
+        locale === 'tr'
+          ? `${dayLabel} için şu saatler uygun: ${times}. Hepsini onaylamak için EVET yazın veya saatleri numarayla seçin.`
+          : `These times are available on ${dayLabel}: ${times}. Reply YES to confirm all or pick by number.`
+      await sendAndRecord({
+        tenantId: args.tenantId,
+        customerId: args.customerId,
+        toPlus: args.customerPhoneE164,
+        locale,
+        text,
+        metadata: {
+          pending_action: 'slot_choice',
+          slot_candidates: available.map(a => ({ startsAt: a.startsAt, endsAt: a.endsAt })),
+          service_id: service.id,
+          source: 'reply-engine',
+        },
+      })
+      return
+    }
+  }
 
   // --- Case 0: day + time given → check that exact slot on the calendar.
   // We do this BEFORE the generic day-scan so "cuma 15:00 müsait mi?" can
@@ -770,6 +836,90 @@ function pickSlot(
     if (match) return match
   }
   return null
+}
+
+function pickSlots(
+  text: string,
+  slots: { startsAt: string; endsAt: string }[],
+): { startsAt: string; endsAt: string }[] {
+  if (slots.length === 0) return []
+  const trimmed = text.trim().toLowerCase()
+
+  // Multi numeric picks: "1 ve 2", "1,2", "1 and 2"
+  const nums = [...trimmed.matchAll(/\b([1-9])\b/g)]
+    .map(m => Number(m[1]) - 1)
+    .filter(i => i >= 0 && i < slots.length)
+  if (nums.length >= 2) {
+    return [...new Set(nums)].map(i => slots[i])
+  }
+
+  // "both / ikisi / ikisini / hepsi" selects all currently offered slots.
+  if (isMultiConfirm(trimmed)) {
+    return slots
+  }
+
+  const one = pickSlot(text, slots)
+  return one ? [one] : []
+}
+
+function isMultiConfirm(text: string): boolean {
+  return /\b(ikisi|ikisini|ikiside|ikisini\s+de|ikisini\s+da|both|all|hepsi|tümü|tumunu|tumunu)\b/i.test(text)
+}
+
+function extractMultipleHourHints(text: string): Array<{ hour: number; minute: number }> {
+  const out: Array<{ hour: number; minute: number }> = []
+  // Capture times with optional minutes in messages containing connectors.
+  if (!/\b(ve|and|ile|,&|,)\b/i.test(text)) return out
+
+  for (const m of text.matchAll(/\b([01]?\d|2[0-3])(?::([0-5]\d))?\b/g)) {
+    const raw = m[0]
+    const idx = m.index ?? 0
+    const tail = text.slice(idx, idx + 16).toLowerCase()
+    // Skip counters like "2 randevu".
+    if (/\b\d+\s+randevu/.test(tail)) continue
+    const hour = Number(m[1])
+    const minute = Number(m[2] ?? '0')
+    if (hour >= 0 && hour <= 23) out.push({ hour, minute })
+    if (raw.length === 1 && !/\b(saat|:|\.|pm|am|akşam|aksam|öğleden|ogleden)\b/i.test(text)) {
+      // Bare single digit without time context is likely an index.
+      out.pop()
+    }
+  }
+  return out.filter((v, i, arr) =>
+    arr.findIndex(x => x.hour === v.hour && x.minute === v.minute) === i,
+  )
+}
+
+async function getRecentPendingSlots(
+  tenantId: string,
+  customerId: string | null,
+): Promise<Array<{ slot: { startsAt: string; endsAt: string }; serviceId: string | null }>> {
+  if (!customerId) return []
+  const sb = getServiceSupabase()
+  const since = new Date(Date.now() - 30 * 60_000).toISOString()
+  const { data } = await sb
+    .from('conversations')
+    .select('metadata, created_at')
+    .eq('tenant_id', tenantId)
+    .eq('customer_id', customerId)
+    .eq('direction', 'outbound')
+    .gte('created_at', since)
+    .order('created_at', { ascending: false })
+    .limit(6)
+
+  const result: Array<{ slot: { startsAt: string; endsAt: string }; serviceId: string | null }> = []
+  const seen = new Set<string>()
+  for (const row of data ?? []) {
+    const md = (row as any).metadata as OutboundMetadata | undefined
+    if (!md || md.pending_action !== 'slot_choice') continue
+    for (const s of md.slot_candidates ?? []) {
+      const key = `${s.startsAt}-${s.endsAt}`
+      if (seen.has(key)) continue
+      seen.add(key)
+      result.push({ slot: s, serviceId: md.service_id ?? null })
+    }
+  }
+  return result
 }
 
 function formatSlotForHumans(iso: string, tz: string | null, locale: LocaleCode): string {
