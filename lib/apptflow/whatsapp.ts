@@ -125,7 +125,7 @@ export function detectIntent(text: string): Intent {
     [/\b(reschedule|ertele|change|cambiar|mover|verschieben|перенести|spostare|تعديل)\b/, 'reschedule'],
 
     // — CONFIRM (short answers like "yes / evet / sí")
-    [/\b(yes|evet|tamam|olur|ok|okay|si|sí|oui|ja|да|sim|نعم|confirm)\b/, 'confirm'],
+    [/\b(yes|evet|onaylıyorum|onayliyorum|onayladım|onayladim|tamam|olur|ok|okay|si|sí|oui|ja|да|sim|نعم|confirm)\b/, 'confirm'],
 
     // — APPOINTMENT LOOKUP (must come before broad BOOK follow-up rules)
     [/\b(başka\s+randevu\w*\s+var\s*m[ıiu]|baska\s+randevu\w*\s+var\s*m[ıiu]|randevu\w*\s+kaçta|randevu\w*\s+kacta|randevu\w*\s+ne\s+zaman|randevu\w*\s+saat\w*|az\s+önce\s+aldığım\s+randevu\w*)\b/i, 'appointment_lookup'],

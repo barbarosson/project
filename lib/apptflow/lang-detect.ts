@@ -23,7 +23,7 @@ const CYRILLIC_SCRIPT   = /[\u0400-\u04FF]/
 // that rarely collide), then romance/germanic by frequency of use in our
 // target markets. English is last because many words overlap.
 const WORD_MARKERS: Array<[LocaleCode, RegExp]> = [
-  ['tr', /\b(merhaba|selam|günaydın|iyi\s?günler|randevu\w*|fiyat|saat|kaçta|kacta|müsait\w*|musait\w*|öğleden|ogleden|iptal|edelim|açık|kapalı|evet|hayır|teşekkür|lütfen|nasıl|nerede|ne\s?kadar|var\s?mı|yok\s?mu|bugün|yarın)\b/i],
+  ['tr', /\b(merhaba|selam|günaydın|iyi\s?günler|randevu\w*|fiyat|saat|kaçta|kacta|müsait\w*|musait\w*|öğleden|ogleden|iptal|edelim|onaylıyorum|onayliyorum|onayladım|onayladim|açık|kapalı|evet|hayır|teşekkür|lütfen|nasıl|nerede|ne\s?kadar|var\s?mı|yok\s?mu|bugün|yarın)\b/i],
   ['es', /\b(hola|buenos\s?días|gracias|por\s?favor|precio|cita|cuánto|cuándo|dónde|cómo|sí|hoy|mañana)\b/i],
   ['de', /\b(hallo|guten\s?tag|danke|bitte|preis|termin|wie\s?viel|wann|wo|ja|heute|morgen)\b/i],
   ['fr', /\b(bonjour|merci|s'il\s?vous\s?plaît|prix|rendez-vous|combien|quand|où|oui|aujourd'hui|demain)\b/i],

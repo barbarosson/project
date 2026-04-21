@@ -57,6 +57,7 @@ interface OutboundMetadata {
   slot_candidates?: { startsAt: string; endsAt: string }[]
   service_id?: string | null
   appointment_id?: string | null
+  confirm_all?: boolean
   // When the bot itself replies we stamp this so future debugging is cheap.
   source?: 'reply-engine'
 }
@@ -117,6 +118,15 @@ async function routeInbound(args: HandleInboundArgs, locale: LocaleCode): Promis
     const picks = pickSlots(args.inboundText, candidates)
     if (picks.length > 0) {
       for (const slot of picks) {
+        await bookSelectedSlot(args, slot, prior.service_id ?? null)
+      }
+      return
+    }
+    if (
+      prior.confirm_all &&
+      (args.intent.intent === 'confirm' || isMultiConfirm(args.inboundText))
+    ) {
+      for (const slot of candidates) {
         await bookSelectedSlot(args, slot, prior.service_id ?? null)
       }
       return
@@ -355,6 +365,7 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
           pending_action: 'slot_choice',
           slot_candidates: available.map(a => ({ startsAt: a.startsAt, endsAt: a.endsAt })),
           service_id: service.id,
+          confirm_all: true,
           source: 'reply-engine',
         },
       })
@@ -777,6 +788,7 @@ interface LastOutboundState {
   slot_candidates?: { startsAt: string; endsAt: string }[]
   service_id?: string | null
   appointment_id?: string | null
+  confirm_all?: boolean
 }
 
 async function getLastOutboundState(
@@ -801,6 +813,7 @@ async function getLastOutboundState(
     slot_candidates: md.slot_candidates,
     service_id: md.service_id ?? null,
     appointment_id: md.appointment_id ?? null,
+    confirm_all: md.confirm_all ?? false,
   }
 }
 
