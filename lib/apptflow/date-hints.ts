@@ -166,6 +166,21 @@ export function computeDayBounds(
   }
 }
 
+export function computeCurrentWeekBounds(
+  tz: string,
+  now: Date = new Date(),
+): { fromISO: string; toISO: string } {
+  const today = tzToday(tz, now)
+  const daysFromMonday = (today.weekday + 6) % 7
+  const anchor = tzWallToUtc(today.year, today.month, today.day, 0, 0, tz)
+  const start = new Date(anchor.getTime() - daysFromMonday * 86_400_000)
+  const end = new Date(start.getTime() + 7 * 86_400_000)
+  return {
+    fromISO: start.toISOString(),
+    toISO: end.toISOString(),
+  }
+}
+
 // Human-friendly day label in the customer's locale, e.g. "Perşembe".
 export function weekdayLabel(
   dateISO: string,

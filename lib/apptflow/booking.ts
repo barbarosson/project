@@ -147,6 +147,7 @@ export async function cancelBooking(
   appointmentId: string,
   reason?: string,
   localeOverride?: LocaleCode,
+  notifyCustomer = true,
 ) {
   const sb = getServiceSupabase()
   const { data: appt } = await sb
@@ -171,6 +172,7 @@ export async function cancelBooking(
   if (error) throw error
 
   // Notify customer.
+  if (!notifyCustomer) return
   try {
     const { data: enriched } = await sb
       .from('appointments')

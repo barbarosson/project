@@ -27,6 +27,7 @@ import { env } from './env'
 import {
   parseDayHint,
   computeDayBounds,
+  computeCurrentWeekBounds,
   weekdayLabel,
   extractTimeHint,
   tzLocalToUtcISO,
@@ -211,6 +212,9 @@ async function routeInbound(args: HandleInboundArgs, locale: LocaleCode): Promis
     case 'appointment_lookup':
       await answerAppointmentLookup(args, locale)
       return
+    case 'appointment_list':
+      await answerAppointmentList(args, locale)
+      return
     case 'info':
     case 'unknown':
       // Safety net: availability questions must stay deterministic and never
@@ -286,6 +290,63 @@ async function answerAppointmentLookup(args: HandleInboundArgs, locale: LocaleCo
       service: serviceName,
       when,
     }),
+    metadata: { pending_action: null, source: 'reply-engine' },
+  })
+}
+
+async function answerAppointmentList(args: HandleInboundArgs, locale: LocaleCode): Promise<void> {
+  if (!args.customerId) {
+    await sendAndRecord({
+      tenantId: args.tenantId,
+      customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
+      locale,
+      text: t(locale, 'appointment_list_none'),
+      metadata: { pending_action: null, source: 'reply-engine' },
+    })
+    return
+  }
+
+  const sb = getServiceSupabase()
+  const week = computeCurrentWeekBounds(args.tenantTimezone)
+  const { data: appts } = await sb
+    .from('appointments')
+    .select('starts_at, service:services(name)')
+    .eq('tenant_id', args.tenantId)
+    .eq('customer_id', args.customerId)
+    .in('status', ['scheduled', 'confirmed', 'rescheduled'])
+    .gte('starts_at', week.fromISO)
+    .lt('starts_at', week.toISO)
+    .order('starts_at', { ascending: true })
+    .limit(10)
+
+  if (!appts || appts.length === 0) {
+    await sendAndRecord({
+      tenantId: args.tenantId,
+      customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
+      locale,
+      text: t(locale, 'appointment_list_none'),
+      metadata: { pending_action: null, source: 'reply-engine' },
+    })
+    return
+  }
+
+  const items = appts
+    .map((appt: any) => {
+      const service = Array.isArray(appt.service)
+        ? (appt.service[0]?.name ?? 'appointment')
+        : (appt.service?.name ?? 'appointment')
+      return `${service} (${formatDateTimeForHumans(appt.starts_at, args.tenantTimezone, locale)})`
+    })
+    .join(' · ')
+
+  await sendAndRecord({
+    tenantId: args.tenantId,
+    customerId: args.customerId,
+    toPlus: args.customerPhoneE164,
+    locale,
+    text: t(locale, 'appointment_list_found', { items }),
     metadata: { pending_action: null, source: 'reply-engine' },
   })
 }
@@ -608,6 +669,56 @@ async function offerCancellation(args: HandleInboundArgs, locale: LocaleCode): P
   }
 
   const sb = getServiceSupabase()
+  const dayHint = parseDayHint(args.inboundText)
+  const wantsPlural = /\b(randevularımı|randevularimi|appointments|all|hepsini|tümünü|tumunu)\b/i.test(args.inboundText)
+  if (dayHint && wantsPlural) {
+    const bounds = computeDayBounds(dayHint, args.tenantTimezone)
+    const dayLabel = weekdayLabel(bounds.fromISO, args.tenantTimezone, locale)
+    const { data: appts } = await sb
+      .from('appointments')
+      .select('id, starts_at, service:services(name)')
+      .eq('tenant_id', args.tenantId)
+      .eq('customer_id', args.customerId)
+      .in('status', ['scheduled', 'confirmed', 'rescheduled'])
+      .gte('starts_at', bounds.fromISO)
+      .lt('starts_at', bounds.toISO)
+      .order('starts_at', { ascending: true })
+
+    if (!appts || appts.length === 0) {
+      await sendAndRecord({
+        tenantId: args.tenantId,
+        customerId: args.customerId,
+        toPlus: args.customerPhoneE164,
+        locale,
+        text: t(locale, 'cancel_day_none', { day: dayLabel }),
+        metadata: { pending_action: null, source: 'reply-engine' },
+      })
+      return
+    }
+
+    for (const appt of appts as any[]) {
+      await cancelBooking(appt.id, undefined, locale, false)
+    }
+
+    const items = (appts as any[])
+      .map(appt => formatDateTimeForHumans(appt.starts_at, args.tenantTimezone, locale))
+      .join(' · ')
+
+    await sendAndRecord({
+      tenantId: args.tenantId,
+      customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
+      locale,
+      text: t(locale, 'cancel_day_found', {
+        day: dayLabel,
+        count: appts.length,
+        items,
+      }),
+      metadata: { pending_action: null, source: 'reply-engine' },
+    })
+    return
+  }
+
   const { data: appt } = await sb
     .from('appointments')
     .select('id, starts_at, service:services(name)')
@@ -941,6 +1052,23 @@ function formatSlotForHumans(iso: string, tz: string | null, locale: LocaleCode)
     return d.toLocaleString(locale, {
       timeZone: tz ?? 'UTC',
       weekday: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  } catch {
+    return d.toISOString()
+  }
+}
+
+function formatDateTimeForHumans(iso: string, tz: string | null, locale: LocaleCode): string {
+  const d = new Date(iso)
+  try {
+    return d.toLocaleString(locale, {
+      timeZone: tz ?? 'UTC',
+      weekday: 'short',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
       hour: '2-digit',
       minute: '2-digit',
     })

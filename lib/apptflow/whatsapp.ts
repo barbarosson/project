@@ -106,7 +106,7 @@ export function verifyWebhookSignature(rawBody: string, headerValue: string | nu
 // floor — the orchestrator may upgrade to an LLM call when confidence
 // is low, but having a free-tier deterministic path keeps costs down.
 export interface Intent {
-  intent: 'book' | 'cancel' | 'reschedule' | 'confirm' | 'appointment_lookup' | 'info' | 'unknown'
+  intent: 'book' | 'cancel' | 'reschedule' | 'confirm' | 'appointment_lookup' | 'appointment_list' | 'info' | 'unknown'
   confidence: number
 }
 
@@ -130,6 +130,8 @@ export function detectIntent(text: string): Intent {
     // — APPOINTMENT LOOKUP (must come before broad BOOK follow-up rules)
     [/\b(başka\s+randevu\w*\s+var\s*m[ıiu]|baska\s+randevu\w*\s+var\s*m[ıiu]|randevu\w*\s+kaçta|randevu\w*\s+kacta|randevu\w*\s+ne\s+zaman|randevu\w*\s+saat\w*|az\s+önce\s+aldığım\s+randevu\w*)\b/i, 'appointment_lookup'],
     [/\b(my\s+appointment|another\s+appointment|do\s+i\s+have\s+another\s+appointment|what\s+time\s+is\s+my\s+appointment|when\s+is\s+my\s+appointment)\b/i, 'appointment_lookup'],
+    [/\b(bu\s+haftaki\s+randevu\w*|hafta\w*\s+randevu\w*|randevularım\s+neler|randevularım\s+var\s*m[ıiu])\b/i, 'appointment_list'],
+    [/\b(this\s+week('?s)?\s+appointments|my\s+appointments\s+this\s+week|list\s+my\s+appointments)\b/i, 'appointment_list'],
 
     // — BOOK: explicit booking words
     [/\b(book|reserve|reservar|prenota|termin|buchen|запись|حجز)\b/, 'book'],
