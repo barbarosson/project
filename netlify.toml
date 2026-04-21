@@ -8,6 +8,7 @@ NODE_VERSION = "20"
 NPM_FLAGS = "--legacy-peer-deps"
 NEXT_TELEMETRY_DISABLED = "1"
 NETLIFY_NEXT_PLUGIN_SKIP = "false"
+NODE_OPTIONS = "--max-old-space-size=4096"
 
 [dev]
 command = "npm run dev"
