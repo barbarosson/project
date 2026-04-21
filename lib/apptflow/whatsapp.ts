@@ -106,7 +106,7 @@ export function verifyWebhookSignature(rawBody: string, headerValue: string | nu
 // floor — the orchestrator may upgrade to an LLM call when confidence
 // is low, but having a free-tier deterministic path keeps costs down.
 export interface Intent {
-  intent: 'book' | 'cancel' | 'reschedule' | 'confirm' | 'appointment_lookup' | 'appointment_list' | 'info' | 'unknown'
+  intent: 'book' | 'cancel' | 'reschedule' | 'confirm' | 'appointment_lookup' | 'appointment_list' | 'price_list' | 'info' | 'unknown'
   confidence: number
 }
 
@@ -175,6 +175,12 @@ export function detectIntent(text: string): Intent {
     [/\b(agendamento|meu\s+agendamento|que\s+horas)\b/, 'appointment_lookup'],
     [/(мо[йе]\s+запис|во\s+сколько|когда\s+запись)/i, 'appointment_lookup'],
     [/(موعدي|موعدي\s+الساعة|متى\s+موعدي)/, 'appointment_lookup'],
+
+    // — PRICE_LIST: show the full service + price catalogue.
+    [/\b(fiyat\s*listesi|fiyatlar(?:ınız|inizi)?|hizmetler(?:iniz)?|ücretler|ucretler|tarife|tarife\w+)\b/i, 'price_list'],
+    [/\b(price\s+list|price\s+sheet|pricing|services\s+and\s+prices|services\s+list|list\s+of\s+services|your\s+services)\b/i, 'price_list'],
+    [/\b(lista\s+de\s+precios|precios|servicios\s+y\s+precios|liste\s+de\s+prix|tarifs|preisliste|leistungen\s+und\s+preise|listino|prezzi|lista\s+de\s+preços|preços\s+e\s+serviços|прайс|прайс-лист|услуги\s+и\s+цены)\b/i, 'price_list'],
+    [/(قائمة\s+الأسعار|الأسعار|الخدمات\s+والأسعار)/i, 'price_list'],
 
     // — INFO: price / cost questions that are NOT about availability
     [/\b(price|fiyat|ücret|ucret|kaç\s?para|ne\s?kadar|precio|cuánto|cuanto|prix|combien|preis|wie\s?viel|цена|сколько|prezzo|quanto|سعر|cost|costs)\b/, 'info'],

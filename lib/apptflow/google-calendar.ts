@@ -175,41 +175,144 @@ export async function deleteEvent(args: {
   await recordUsage(args.tenantId, 'calendar.sync', 1, { op: 'delete' })
 }
 
-// Given the tenant's working window and existing busy slots, return
-// the next N open slots of `durationMinutes` length.
+// Given the tenant's weekly windows (in *tenant-local* time) and existing
+// busy slots, return the next N open slots of `durationMinutes` length.
+// The iteration steps through each local day in `tz`, consults the windows
+// defined for that weekday, and walks in 15-minute increments.
+//
+// When windows are omitted we fall back to Mon–Sat 09:00–18:00 to preserve
+// previous default behaviour.
+export interface ProposeSlotsOptions {
+  durationMinutes: number
+  bufferMinutes?: number
+  maxSlots?: number
+  tz?: string                     // tenant timezone (e.g. "Europe/Istanbul")
+  windows?: Array<{ weekday: number; startMin: number; endMin: number }>
+  stepMinutes?: number
+}
+
 export function proposeSlots(
   busy: CalendarSlot[],
   fromTs: Date,
   toTs: Date,
-  durationMinutes: number,
-  workingHours: { startHour: number; endHour: number } = { startHour: 9, endHour: 18 },
-  maxSlots = 3,
+  durationOrOpts: number | ProposeSlotsOptions,
+  legacyWorkingHours?: { startHour: number; endHour: number },
+  legacyMaxSlots?: number,
 ): CalendarSlot[] {
-  const slots: CalendarSlot[] = []
+  const opts: ProposeSlotsOptions = typeof durationOrOpts === 'number'
+    ? {
+        durationMinutes: durationOrOpts,
+        maxSlots: legacyMaxSlots ?? 3,
+        windows: legacyWorkingHours
+          ? [1, 2, 3, 4, 5, 6].map(wd => ({
+              weekday: wd,
+              startMin: legacyWorkingHours.startHour * 60,
+              endMin: legacyWorkingHours.endHour * 60,
+            }))
+          : undefined,
+      }
+    : durationOrOpts
+
+  const maxSlots = opts.maxSlots ?? 3
+  const step = opts.stepMinutes ?? 15
+  const duration = opts.durationMinutes
+  const buffer = opts.bufferMinutes ?? 0
+  const tz = opts.tz ?? 'UTC'
+  const windows =
+    opts.windows && opts.windows.length > 0
+      ? opts.windows
+      : [1, 2, 3, 4, 5, 6].map(wd => ({ weekday: wd, startMin: 9 * 60, endMin: 18 * 60 }))
+
+  const windowsByWd: Record<number, Array<{ startMin: number; endMin: number }>> = {}
+  for (const w of windows) {
+    (windowsByWd[w.weekday] ||= []).push({ startMin: w.startMin, endMin: w.endMin })
+  }
+  for (const k of Object.keys(windowsByWd)) {
+    windowsByWd[Number(k)].sort((a, b) => a.startMin - b.startMin)
+  }
+
   const busyRanges = busy
     .map(b => ({ s: +new Date(b.startsAt), e: +new Date(b.endsAt) }))
     .sort((a, b) => a.s - b.s)
 
-  const cursor = new Date(fromTs)
-  cursor.setMinutes(0, 0, 0)
+  const slots: CalendarSlot[] = []
 
-  while (slots.length < maxSlots && cursor < toTs) {
-    const hour = cursor.getUTCHours()
-    if (hour < workingHours.startHour || hour >= workingHours.endHour) {
-      cursor.setUTCHours(workingHours.startHour, 0, 0, 0)
-      if (hour >= workingHours.endHour) cursor.setUTCDate(cursor.getUTCDate() + 1)
-      continue
+  // Walk day by day in the tenant timezone.
+  let dayCursor = new Date(fromTs.getTime())
+  while (slots.length < maxSlots && dayCursor < toTs) {
+    const localDay = localYMDW(dayCursor, tz)
+    const dayWindows = windowsByWd[localDay.weekday] ?? []
+
+    for (const win of dayWindows) {
+      // Iterate slot start times within [startMin, endMin - duration].
+      for (
+        let m = win.startMin;
+        m + duration <= win.endMin;
+        m += step
+      ) {
+        const startLocalMs = tzLocalDateToUtcMs(localDay.y, localDay.mo, localDay.d, Math.floor(m / 60), m % 60, tz)
+        if (startLocalMs < +fromTs) continue
+        if (startLocalMs >= +toTs) break
+        const endLocalMs = startLocalMs + duration * 60_000
+        const bufferedEnd = endLocalMs + buffer * 60_000
+        const overlap = busyRanges.some(b => !(bufferedEnd <= b.s || startLocalMs >= b.e))
+        if (!overlap) {
+          slots.push({
+            startsAt: new Date(startLocalMs).toISOString(),
+            endsAt: new Date(endLocalMs).toISOString(),
+          })
+          if (slots.length >= maxSlots) return slots
+        }
+      }
     }
-    const s = +cursor
-    const e = s + durationMinutes * 60_000
-    const overlap = busyRanges.some(b => !(e <= b.s || s >= b.e))
-    if (!overlap) {
-      slots.push({
-        startsAt: new Date(s).toISOString(),
-        endsAt: new Date(e).toISOString(),
-      })
-    }
-    cursor.setUTCMinutes(cursor.getUTCMinutes() + 30)
+
+    // Advance to next local midnight.
+    dayCursor = new Date(
+      tzLocalDateToUtcMs(localDay.y, localDay.mo, localDay.d, 0, 0, tz) + 86_400_000,
+    )
   }
   return slots
+}
+
+interface LocalDayParts { y: number; mo: number; d: number; weekday: number }
+
+function localYMDW(at: Date, tz: string): LocalDayParts {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    weekday: 'short',
+  }).formatToParts(at)
+  const g: Record<string, string> = {}
+  for (const p of parts) g[p.type] = p.value
+  const WD: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 }
+  return {
+    y: Number(g.year),
+    mo: Number(g.month),
+    d: Number(g.day),
+    weekday: WD[g.weekday] ?? 0,
+  }
+}
+
+// Convert a local wall-clock (y, mo, d, h, mi) in `tz` to UTC milliseconds.
+function tzLocalDateToUtcMs(
+  y: number, mo: number, d: number, h: number, mi: number, tz: string,
+): number {
+  const utcGuess = Date.UTC(y, mo - 1, d, h, mi, 0, 0)
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(new Date(utcGuess))
+  const g: Record<string, string> = {}
+  for (const p of fmt) g[p.type] = p.value
+  const seenH = Number(g.hour === '24' ? '0' : g.hour)
+  const seenUtc = Date.UTC(Number(g.year), Number(g.month) - 1, Number(g.day), seenH, Number(g.minute), 0, 0)
+  const tzOffsetMs = seenUtc - utcGuess
+  return utcGuess - tzOffsetMs
 }

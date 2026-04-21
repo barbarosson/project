@@ -51,12 +51,19 @@ interface HandleInboundArgs {
 type PendingAction =
   | null
   | 'slot_choice'                   // bot just listed slots → waiting for a pick
+  | 'service_choice'                // bot asked "which service?" → waiting for a pick
   | 'reschedule_slot_choice'        // bot offered new slots for a reschedule
   | 'cancel_confirm'                // bot asked "should I cancel your X appointment?"
+
+interface ServiceOption {
+  id: string
+  name: string
+}
 
 interface OutboundMetadata {
   pending_action?: PendingAction
   slot_candidates?: { startsAt: string; endsAt: string }[]
+  service_candidates?: ServiceOption[]
   service_id?: string | null
   appointment_id?: string | null
   confirm_all?: boolean
@@ -108,6 +115,49 @@ async function routeInbound(args: HandleInboundArgs, locale: LocaleCode): Promis
   const explicitTimeHint = extractTimeHint(args.inboundText)
   const explicitAppointmentLookup = args.intent.intent === 'appointment_lookup'
   const likelyAvailability = looksLikeAvailabilityMessage(args.inboundText)
+
+  // 0) Service-choice continuation: bot asked "which service?" previously.
+  if (prior?.pending_action === 'service_choice' && prior.service_candidates?.length) {
+    const picked = pickServiceChoice(args.inboundText, prior.service_candidates)
+    if (picked) {
+      await sendAndRecord({
+        tenantId: args.tenantId,
+        customerId: args.customerId,
+        toPlus: args.customerPhoneE164,
+        locale,
+        text: t(locale, 'service_picked', { service: picked.name }),
+        metadata: { pending_action: null, source: 'reply-engine' },
+      })
+      await offerSlotsForBooking(args, locale, picked.id)
+      return
+    }
+    // If the user clearly asked for a price list / appointment lookup / cancel,
+    // don't re-ask service — fall through below. Otherwise re-prompt.
+    if (
+      args.intent.intent !== 'price_list' &&
+      args.intent.intent !== 'appointment_list' &&
+      args.intent.intent !== 'appointment_lookup' &&
+      args.intent.intent !== 'cancel' &&
+      args.intent.intent !== 'reschedule'
+    ) {
+      const list = prior.service_candidates
+        .map((s, i) => `${i + 1}) ${s.name}`)
+        .join('  ·  ')
+      await sendAndRecord({
+        tenantId: args.tenantId,
+        customerId: args.customerId,
+        toPlus: args.customerPhoneE164,
+        locale,
+        text: t(locale, 'service_not_matched', { services: list }),
+        metadata: {
+          pending_action: 'service_choice',
+          service_candidates: prior.service_candidates,
+          source: 'reply-engine',
+        },
+      })
+      return
+    }
+  }
 
   // 1) Conversational continuations (prior state + current text).
   if (prior?.pending_action === 'slot_choice') {
@@ -216,6 +266,9 @@ async function routeInbound(args: HandleInboundArgs, locale: LocaleCode): Promis
     case 'appointment_list':
       await answerAppointmentList(args, locale)
       return
+    case 'price_list':
+      await answerPriceList(args, locale)
+      return
     case 'info':
     case 'unknown':
       // Safety net: availability questions must stay deterministic and never
@@ -295,6 +348,47 @@ async function answerAppointmentLookup(args: HandleInboundArgs, locale: LocaleCo
   })
 }
 
+async function answerPriceList(args: HandleInboundArgs, locale: LocaleCode): Promise<void> {
+  const sb = getServiceSupabase()
+  const { data: services } = await sb
+    .from('services')
+    .select('name, duration_minutes, price_amount, price_currency, description, category')
+    .eq('tenant_id', args.tenantId)
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: true })
+
+  if (!services || services.length === 0) {
+    await sendAndRecord({
+      tenantId: args.tenantId,
+      customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
+      locale,
+      text: t(locale, 'price_list_empty'),
+      metadata: { pending_action: null, source: 'reply-engine' },
+    })
+    return
+  }
+
+  const items = (services as any[])
+    .map(s => {
+      const price = Number(s.price_amount) > 0
+        ? `${Number(s.price_amount)} ${s.price_currency}`
+        : '—'
+      return `${s.name} (${s.duration_minutes} min · ${price})`
+    })
+    .join(' · ')
+
+  await sendAndRecord({
+    tenantId: args.tenantId,
+    customerId: args.customerId,
+    toPlus: args.customerPhoneE164,
+    locale,
+    text: t(locale, 'price_list', { items }),
+    metadata: { pending_action: null, source: 'reply-engine' },
+  })
+}
+
 async function answerAppointmentList(args: HandleInboundArgs, locale: LocaleCode): Promise<void> {
   if (!args.customerId) {
     await sendAndRecord({
@@ -360,13 +454,18 @@ async function answerAppointmentList(args: HandleInboundArgs, locale: LocaleCode
 
 // ---------- Handlers ----------
 
-async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode): Promise<void> {
+async function offerSlotsForBooking(
+  args: HandleInboundArgs,
+  locale: LocaleCode,
+  forcedServiceId?: string,
+): Promise<void> {
   const sb = getServiceSupabase()
   const { data: services } = await sb
     .from('services')
-    .select('id, name, duration_minutes')
+    .select('id, name, duration_minutes, buffer_minutes, price_amount, price_currency, sort_order, category')
     .eq('tenant_id', args.tenantId)
     .eq('is_active', true)
+    .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true })
 
   if (!services || services.length === 0) {
@@ -381,10 +480,38 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
     return
   }
 
-  // MVP: use the first active service when only one is defined. When
-  // multiple exist we still pick the first for now; a later iteration
-  // will prompt ask_service and wait for a choice.
-  const service = services[0]
+  // Pick service: forced > name match in message > single service > prompt.
+  const forcedService = forcedServiceId
+    ? (services as any[]).find(s => s.id === forcedServiceId)
+    : undefined
+  const matched = forcedService ?? matchServiceFromText(args.inboundText, services as any[])
+  const service = matched ?? (services.length === 1 ? services[0] : undefined)
+
+  if (!service) {
+    // Multiple services, none named in the message → ask.
+    const options: ServiceOption[] = (services as any[]).map(s => ({ id: s.id, name: s.name }))
+    const list = (services as any[])
+      .map((s, i) => {
+        const price = Number(s.price_amount) > 0
+          ? ` — ${Number(s.price_amount)} ${s.price_currency}`
+          : ''
+        return `${i + 1}) ${s.name} (${s.duration_minutes} min${price})`
+      })
+      .join('  ·  ')
+    await sendAndRecord({
+      tenantId: args.tenantId,
+      customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
+      locale,
+      text: t(locale, 'ask_service_choice', { services: list }),
+      metadata: {
+        pending_action: 'service_choice',
+        service_candidates: options,
+        source: 'reply-engine',
+      },
+    })
+    return
+  }
   const tz = args.tenantTimezone
 
   // Did the customer mention a specific day?  ("perşembe", "tomorrow", …)
@@ -475,7 +602,9 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
     // single-day parsing branches; offer generic alternatives explicitly.
     const fallbackSlots = await suggestOpenSlots({
       tenantId: args.tenantId,
+      serviceId: service.id,
       durationMinutes: service.duration_minutes,
+      bufferMinutes: (service as any).buffer_minutes ?? 0,
       lookaheadDays: 7,
     })
     if (fallbackSlots.length > 0) {
@@ -601,7 +730,9 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
     // Not free → offer closest alternatives (same day first, up to 5).
     const sameDayAlts = await suggestOpenSlots({
       tenantId: args.tenantId,
+      serviceId: service.id,
       durationMinutes: service.duration_minutes,
+      bufferMinutes: (service as any).buffer_minutes ?? 0,
       targetWindow: { fromISO: bounds.fromISO, toISO: bounds.toISO },
     })
     const pool =
@@ -609,7 +740,9 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
         ? sameDayAlts
         : await suggestOpenSlots({
             tenantId: args.tenantId,
+            serviceId: service.id,
             durationMinutes: service.duration_minutes,
+            bufferMinutes: (service as any).buffer_minutes ?? 0,
             lookaheadDays: 14,
           })
     const alts = closestSlotsTo(startsAt, pool, 5)
@@ -654,14 +787,18 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
   const targetedSlots = bounds
     ? await suggestOpenSlots({
         tenantId: args.tenantId,
+        serviceId: service.id,
         durationMinutes: service.duration_minutes,
+        bufferMinutes: (service as any).buffer_minutes ?? 0,
         targetWindow: { fromISO: bounds.fromISO, toISO: bounds.toISO },
       })
     : []
 
   const fallbackSlots = await suggestOpenSlots({
     tenantId: args.tenantId,
+    serviceId: service.id,
     durationMinutes: service.duration_minutes,
+    bufferMinutes: (service as any).buffer_minutes ?? 0,
     lookaheadDays: 7,
   })
 
@@ -1020,6 +1157,7 @@ async function offerReschedule(args: HandleInboundArgs, locale: LocaleCode): Pro
   const targetedSlots = bounds
     ? await suggestOpenSlots({
         tenantId: args.tenantId,
+        serviceId: appt.service.id,
         durationMinutes: appt.service.duration_minutes,
         targetWindow: { fromISO: bounds.fromISO, toISO: bounds.toISO },
       })
@@ -1027,6 +1165,7 @@ async function offerReschedule(args: HandleInboundArgs, locale: LocaleCode): Pro
 
   const fallbackSlots = await suggestOpenSlots({
     tenantId: args.tenantId,
+    serviceId: appt.service.id,
     durationMinutes: appt.service.duration_minutes,
     lookaheadDays: 7,
   })
@@ -1136,6 +1275,7 @@ async function unknownFallback(args: HandleInboundArgs, locale: LocaleCode): Pro
 interface LastOutboundState {
   pending_action: PendingAction
   slot_candidates?: { startsAt: string; endsAt: string }[]
+  service_candidates?: ServiceOption[]
   service_id?: string | null
   appointment_id?: string | null
   confirm_all?: boolean
@@ -1161,6 +1301,7 @@ async function getLastOutboundState(
   return {
     pending_action: md.pending_action,
     slot_candidates: md.slot_candidates,
+    service_candidates: md.service_candidates,
     service_id: md.service_id ?? null,
     appointment_id: md.appointment_id ?? null,
     confirm_all: md.confirm_all ?? false,
@@ -1223,6 +1364,45 @@ function pickSlots(
 
   const one = pickSlot(text, slots)
   return one ? [one] : []
+}
+
+function pickServiceChoice(
+  text: string,
+  options: ServiceOption[],
+): ServiceOption | null {
+  if (options.length === 0) return null
+  const trimmed = text.trim().toLowerCase()
+
+  // Numeric pick: "1", "2", "3"
+  const num = trimmed.match(/\b([1-9])\b/)
+  if (num) {
+    const idx = Number(num[1]) - 1
+    if (idx >= 0 && idx < options.length) return options[idx]
+  }
+
+  // Name match (substring, case-insensitive).
+  for (const opt of options) {
+    const name = opt.name.toLowerCase()
+    if (name && trimmed.includes(name)) return opt
+    // Also match first significant word.
+    const firstWord = name.split(/\s+/)[0]
+    if (firstWord && firstWord.length >= 3 && trimmed.includes(firstWord)) return opt
+  }
+  return null
+}
+
+function matchServiceFromText<T extends { id: string; name: string; category: string | null }>(
+  text: string,
+  services: T[],
+): T | undefined {
+  const trimmed = text.toLowerCase()
+  for (const s of services) {
+    const name = (s.name || '').toLowerCase()
+    if (name && name.length >= 3 && trimmed.includes(name)) return s
+    const cat = (s.category || '').toLowerCase()
+    if (cat && cat.length >= 3 && trimmed.includes(cat)) return s
+  }
+  return undefined
 }
 
 function isMultiConfirm(text: string): boolean {

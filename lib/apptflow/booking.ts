@@ -4,6 +4,7 @@ import {
   createEvent, updateEvent, deleteEvent, listBusySlots, proposeSlots,
   type CalendarSlot,
 } from './google-calendar'
+import { resolveServiceWindows } from './availability'
 import { sendText } from './whatsapp'
 import { t } from './i18n'
 import type { LocaleCode, Tenant } from './types'
@@ -46,7 +47,7 @@ export async function createBooking(args: CreateBookingArgs) {
 
   const { data: service } = await sb
     .from('services')
-    .select('id, name, duration_minutes')
+    .select('id, name, duration_minutes, price_amount, price_currency')
     .eq('id', args.serviceId)
     .eq('tenant_id', args.tenantId)
     .maybeSingle()
@@ -127,11 +128,16 @@ export async function createBooking(args: CreateBookingArgs) {
 
   // Fire confirmation WhatsApp (best-effort).
   try {
+    const priceAmount = Number((service as any).price_amount ?? 0)
+    const priceCurrency = (service as any).price_currency ?? tenant.default_currency ?? ''
+    const serviceLabel = priceAmount > 0
+      ? `${service.name} (${priceAmount} ${priceCurrency})`
+      : service.name
     await sendText({
       tenantId: args.tenantId,
       to: args.customerPhoneE164.replace(/^\+/, ''),
       text: t(args.locale ?? tenant.default_locale, 'booking_confirmed', {
-        service: service.name,
+        service: serviceLabel,
         when: humanWhen(args.startsAt, args.locale ?? tenant.default_locale, tenant.timezone),
       }),
     })
@@ -288,8 +294,11 @@ export async function isSlotAvailable(args: {
 export async function suggestOpenSlots(args: {
   tenantId: string
   durationMinutes: number
+  bufferMinutes?: number
+  serviceId?: string
   lookaheadDays?: number
   targetWindow?: { fromISO: string; toISO: string }
+  maxSlots?: number
 }): Promise<CalendarSlot[]> {
   const from = args.targetWindow
     ? new Date(args.targetWindow.fromISO)
@@ -313,5 +322,24 @@ export async function suggestOpenSlots(args: {
       .lte('ends_at', to.toISOString())
     busy = (data ?? []).map(r => ({ startsAt: r.starts_at, endsAt: r.ends_at }))
   }
-  return proposeSlots(busy, from, to, args.durationMinutes)
+
+  const sb = getServiceSupabase()
+  const { data: tenant } = await sb
+    .from('tenants')
+    .select('timezone')
+    .eq('id', args.tenantId)
+    .maybeSingle()
+  const tz = tenant?.timezone ?? 'UTC'
+
+  const windows = args.serviceId
+    ? await resolveServiceWindows({ tenantId: args.tenantId, serviceId: args.serviceId })
+    : undefined
+
+  return proposeSlots(busy, from, to, {
+    durationMinutes: args.durationMinutes,
+    bufferMinutes: args.bufferMinutes,
+    maxSlots: args.maxSlots ?? 3,
+    tz,
+    windows,
+  })
 }
