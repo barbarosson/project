@@ -213,6 +213,28 @@ export function extractTimeHint(text: string): { hour: number; minute: number } 
     }
   }
 
+  // Reverse-order Turkish meridiem phrases:
+  // "öğleden sonra 3", "akşam 6", "aksam saat 7:30"
+  const trPmPrefix = text.match(/\b(?:öğleden\s*sonra|ogleden\s*sonra|akşam|aksam)\s*(?:saat\s*)?(\d{1,2})(?::([0-5]\d))?\b/i)
+  if (trPmPrefix) {
+    let h = Number(trPmPrefix[1])
+    const m = Number(trPmPrefix[2] ?? '0')
+    if (h >= 1 && h <= 12) {
+      if (h < 12) h += 12
+      return { hour: h, minute: m }
+    }
+  }
+
+  const trAmPrefix = text.match(/\b(?:sabah)\s*(?:saat\s*)?(\d{1,2})(?::([0-5]\d))?\b/i)
+  if (trAmPrefix) {
+    let h = Number(trAmPrefix[1])
+    const m = Number(trAmPrefix[2] ?? '0')
+    if (h >= 1 && h <= 12) {
+      if (h === 12) h = 0
+      return { hour: h, minute: m }
+    }
+  }
+
   // 24-hour with separator: "15:00", "15.30", "15h30", "15 00"
   const m24 = text.match(/\b([01]?\d|2[0-3])[:.h\s]([0-5]\d)\b/i)
   if (m24) {

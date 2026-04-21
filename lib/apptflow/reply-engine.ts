@@ -104,6 +104,7 @@ async function routeInbound(args: HandleInboundArgs, locale: LocaleCode): Promis
   const explicitDayHint = parseDayHint(args.inboundText)
   const explicitTimeHint = extractTimeHint(args.inboundText)
   const explicitAppointmentLookup = args.intent.intent === 'appointment_lookup'
+  const likelyAvailability = looksLikeAvailabilityMessage(args.inboundText)
 
   // 1) Conversational continuations (prior state + current text).
   if (prior?.pending_action === 'slot_choice') {
@@ -182,6 +183,12 @@ async function routeInbound(args: HandleInboundArgs, locale: LocaleCode): Promis
       return
     case 'info':
     case 'unknown':
+      // Safety net: availability questions must stay deterministic and never
+      // fall into LLM "I can't be sure" style answers.
+      if (likelyAvailability || explicitDayHint || explicitTimeHint) {
+        await offerSlotsForBooking(args, locale)
+        return
+      }
     default:
       await unknownFallback(args, locale)
       return
@@ -777,6 +784,11 @@ function formatSlotForHumans(iso: string, tz: string | null, locale: LocaleCode)
   } catch {
     return d.toISOString()
   }
+}
+
+function looksLikeAvailabilityMessage(text: string): boolean {
+  const t = text.toLowerCase()
+  return /\b(müsait(?:lik)?|musait(?:lik)?|uygun(?:luk)?|boş(?:luk)?|bos(?:luk)?|açık(?:lık)?|acik(?:lik)?|mevcut|available|free|open|slot|slots)\b/i.test(t)
 }
 
 interface SendAndRecordArgs {
