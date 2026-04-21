@@ -446,14 +446,15 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
       .join(', ')
 
     if (available.length > 0) {
-      const text =
-        locale === 'tr'
-          ? unavailable.length > 0
-            ? `İstediğiniz saatler: ${requestedPretty}. Uygun olanlar: ${availablePretty}. Uygun olmayanlar: ${unavailablePretty}. Hepsini onaylamak için EVET yazın veya numarayla seçin.`
-            : `Şu saatler uygun: ${availablePretty}. Hepsini onaylamak için EVET yazın veya numarayla seçin.`
-          : unavailable.length > 0
-            ? `Requested: ${requestedPretty}. Available: ${availablePretty}. Unavailable: ${unavailablePretty}. Reply YES to confirm all available ones or pick by number.`
-            : `These slots are available: ${availablePretty}. Reply YES to confirm all or pick by number.`
+      const text = unavailable.length > 0
+        ? t(locale, 'multi_day_partial_available', {
+            requested: requestedPretty,
+            available: availablePretty,
+            unavailable: unavailablePretty,
+          })
+        : t(locale, 'multi_day_all_available', {
+            available: availablePretty,
+          })
       await sendAndRecord({
         tenantId: args.tenantId,
         customerId: args.customerId,
@@ -481,10 +482,10 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
       const pretty = fallbackSlots
         .map((s, i) => `${i + 1}) ${formatSlotForHumans(s.startsAt, tz, locale)}`)
         .join('  ·  ')
-      const text =
-        locale === 'tr'
-          ? `İstediğiniz saatler şu an dolu (${requestedPretty}). Alternatifler: ${pretty}`
-          : `Requested slots are currently unavailable (${requestedPretty}). Alternatives: ${pretty}`
+      const text = t(locale, 'multi_day_all_unavailable', {
+        requested: requestedPretty,
+        slots: pretty,
+      })
       await sendAndRecord({
         tenantId: args.tenantId,
         customerId: args.customerId,
@@ -801,7 +802,7 @@ async function offerCancellation(args: HandleInboundArgs, locale: LocaleCode): P
       timeHint = { hour: Number(bare[1]), minute: Number(bare[2] ?? '0') }
     }
   }
-  const wantsPlural = /\b(randevularımı|randevularimi|appointments|all|hepsini|tümünü|tumunu)\b/i.test(args.inboundText)
+  const wantsPlural = /\b(randevularımı|randevularimi|appointments?|all|hepsini|tümünü|tumunu|todos?|todas?|tutti|tutte|alle|alles|tous|toutes|все|всех|جميع|الكل)\b/i.test(args.inboundText)
   if (dayHint && wantsPlural) {
     const bounds = computeDayBounds(dayHint, args.tenantTimezone)
     const dayLabel = weekdayLabel(bounds.fromISO, args.tenantTimezone, locale)
@@ -918,10 +919,10 @@ async function offerCancellation(args: HandleInboundArgs, locale: LocaleCode): P
       .map(appt => formatDateTimeForHumans(appt.starts_at, args.tenantTimezone, locale))
       .join(' · ')
 
-    const summary =
-      locale === 'tr'
-        ? `${appts.length} randevunuz iptal edildi: ${items}`
-        : `${appts.length} appointments cancelled: ${items}`
+    const summary = t(locale, 'cancel_all_found', {
+      count: appts.length,
+      items,
+    })
 
     await sendAndRecord({
       tenantId: args.tenantId,
@@ -945,10 +946,7 @@ async function offerCancellation(args: HandleInboundArgs, locale: LocaleCode): P
     .limit(3)
 
   if ((upcoming?.length ?? 0) > 1 && !dayHint && !wantsPlural) {
-    const text =
-      locale === 'tr'
-        ? 'Birden fazla randevunuz var. "hepsini iptal et" ya da gün belirterek yazın (ör. "çarşamba randevularımı iptal et").'
-        : 'You have multiple appointments. Please say "cancel all appointments" or specify a day (e.g. "cancel my Wednesday appointments").'
+    const text = t(locale, 'cancel_disambiguate_multiple')
     await sendAndRecord({
       tenantId: args.tenantId,
       customerId: args.customerId,

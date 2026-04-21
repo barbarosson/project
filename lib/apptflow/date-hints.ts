@@ -292,7 +292,7 @@ export function extractTimeHint(text: string): { hour: number; minute: number } 
   // Bare-hour in availability questions: "cuma 15 müsait mi", "friday 3 free?"
   // Keep this last to reduce false positives with slot-index replies.
   const bareQuestion = text.match(
-    /\b([01]?\d|2[0-3])\b(?=.*\b(müsait|musait|uygun|boş|bos|available|free|slot|saat)\b)/i,
+    /\b([01]?\d|2[0-3])\b(?=.*\b(müsait|musait|uygun|boş|bos|available|free|slot|saat|disponible|libre|frei|disponibile|доступн|свободн|متاح)\b)/i,
   )
   if (bareQuestion) {
     return { hour: Number(bareQuestion[1]), minute: 0 }
@@ -338,7 +338,7 @@ export function extractMultipleDayTimeHints(text: string): Array<{
   const seen = new Set<string>()
 
   const segments = normalized
-    .split(/\s+(?:ve|and|y|und|ile|,|;)\s+/i)
+    .split(/\s+(?:ve|and|y|und|et|e|con|ile|и|و|,|;)\s+/i)
     .map(s => s.trim())
     .filter(Boolean)
 

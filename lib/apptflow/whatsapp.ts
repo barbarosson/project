@@ -132,6 +132,7 @@ export function detectIntent(text: string): Intent {
     [/\b(my\s+appointment|another\s+appointment|do\s+i\s+have\s+another\s+appointment|what\s+time\s+is\s+my\s+appointment|when\s+is\s+my\s+appointment)\b/i, 'appointment_lookup'],
     [/\b(bu\s+haftaki\s+randevu\w*|hafta\w*\s+randevu\w*|randevularım\s+neler|randevularım\s+var\s*m[ıiu]|randevular[ıi]m\s+neler)\b/i, 'appointment_list'],
     [/\b(this\s+week('?s)?\s+appointments|my\s+appointments\s+this\s+week|list\s+my\s+appointments)\b/i, 'appointment_list'],
+    [/\b(mis\s+citas|mis\s+turnos|mes\s+rendez[-\s]?vous|meine\s+termine|i\s+miei\s+appuntamenti|meus\s+agendamentos|мои\s+записи|مواعيدي)\b/i, 'appointment_list'],
 
     // — BOOK: explicit booking words
     [/\b(book|reserve|reservar|prenota|termin|buchen|запись|حجز)\b/, 'book'],
