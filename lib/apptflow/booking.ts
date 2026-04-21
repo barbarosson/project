@@ -21,6 +21,18 @@ interface CreateBookingArgs {
   notes?: string
 }
 
+function humanWhen(iso: string, locale: string, timeZone?: string | null): string {
+  return new Date(iso).toLocaleString(locale, {
+    timeZone: timeZone ?? 'UTC',
+    weekday: 'short',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
 export async function createBooking(args: CreateBookingArgs) {
   const sb = getServiceSupabase()
 
@@ -120,9 +132,7 @@ export async function createBooking(args: CreateBookingArgs) {
       to: args.customerPhoneE164.replace(/^\+/, ''),
       text: t(args.locale ?? tenant.default_locale, 'booking_confirmed', {
         service: service.name,
-        when: new Date(args.startsAt).toLocaleString(args.locale ?? tenant.default_locale, {
-          timeZone: tenant.timezone,
-        }),
+        when: humanWhen(args.startsAt, args.locale ?? tenant.default_locale, tenant.timezone),
       }),
     })
     await sb.from('appointments').update({ confirmation_sent: true }).eq('id', inserted.id)
@@ -133,7 +143,11 @@ export async function createBooking(args: CreateBookingArgs) {
   return inserted
 }
 
-export async function cancelBooking(appointmentId: string, reason?: string) {
+export async function cancelBooking(
+  appointmentId: string,
+  reason?: string,
+  localeOverride?: LocaleCode,
+) {
   const sb = getServiceSupabase()
   const { data: appt } = await sb
     .from('appointments')
@@ -168,15 +182,13 @@ export async function cancelBooking(appointmentId: string, reason?: string) {
       .eq('id', appointmentId)
       .single<any>()
     if (enriched?.customer?.phone_e164) {
-      const locale = enriched.customer.preferred_locale ?? enriched.tenant.default_locale
+      const locale = localeOverride ?? enriched.customer.preferred_locale ?? enriched.tenant.default_locale
       await sendText({
         tenantId: appt.tenant_id,
         to: enriched.customer.phone_e164.replace(/^\+/, ''),
         text: t(locale, 'booking_cancelled', {
           service: enriched.service?.name ?? 'appointment',
-          when: new Date(enriched.starts_at).toLocaleString(locale, {
-            timeZone: enriched.tenant.timezone,
-          }),
+          when: humanWhen(enriched.starts_at, locale, enriched.tenant.timezone),
         }),
       })
     }

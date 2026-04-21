@@ -135,7 +135,7 @@ export function detectIntent(text: string): Intent {
     //    These natural phrasings should kick off the slot flow without
     //    forcing the customer to say the magic word "book".
     //    TR
-    [/\b(müsait|musait|uygun|boş|bos|açık|acik|mevcut)\b/, 'book'],
+    [/\b(müsait(?:lik)?|musait(?:lik)?|uygun(?:luk)?|boş(?:luk)?|bos(?:luk)?|açık(?:lık)?|acik(?:lik)?|mevcut)\b/, 'book'],
     //    EN
     [/\b(available|free|open|slot|slots|opening|openings)\b/, 'book'],
     //    ES / PT

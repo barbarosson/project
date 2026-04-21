@@ -191,6 +191,28 @@ export function weekdayLabel(
 export function extractTimeHint(text: string): { hour: number; minute: number } | null {
   if (!text) return null
 
+  // Turkish natural meridiem phrases first, so "saat 3 öğleden sonra"
+  // maps to 15:00 instead of 03:00.
+  const trPm = text.match(/\b(?:saat\s*)?(\d{1,2})(?::([0-5]\d))?\s*(?:öğleden\s*sonra|ogleden\s*sonra|akşam|aksam)\b/i)
+  if (trPm) {
+    let h = Number(trPm[1])
+    const m = Number(trPm[2] ?? '0')
+    if (h >= 1 && h <= 12) {
+      if (h < 12) h += 12
+      return { hour: h, minute: m }
+    }
+  }
+
+  const trAm = text.match(/\b(?:saat\s*)?(\d{1,2})(?::([0-5]\d))?\s*(?:sabah)\b/i)
+  if (trAm) {
+    let h = Number(trAm[1])
+    const m = Number(trAm[2] ?? '0')
+    if (h >= 1 && h <= 12) {
+      if (h === 12) h = 0
+      return { hour: h, minute: m }
+    }
+  }
+
   // 24-hour with separator: "15:00", "15.30", "15h30", "15 00"
   const m24 = text.match(/\b([01]?\d|2[0-3])[:.h\s]([0-5]\d)\b/i)
   if (m24) {
@@ -219,6 +241,24 @@ export function extractTimeHint(text: string): { hour: number; minute: number } 
     const h = Number(particle[1])
     const m = Number(particle[2] ?? '0')
     if (h >= 0 && h <= 23) return { hour: h, minute: m }
+  }
+
+  // Turkish dative suffix: "15'e", "15 e", "15te", "15'te"
+  const trLoose = text.match(/\b([01]?\d|2[0-3])(?:\s*[:.]\s*([0-5]\d))?\s*(?:'?(?:e|a|te|ta))\b/i)
+  if (trLoose) {
+    return {
+      hour: Number(trLoose[1]),
+      minute: Number(trLoose[2] ?? '0'),
+    }
+  }
+
+  // Bare-hour in availability questions: "cuma 15 müsait mi", "friday 3 free?"
+  // Keep this last to reduce false positives with slot-index replies.
+  const bareQuestion = text.match(
+    /\b([01]?\d|2[0-3])\b(?=.*\b(müsait|musait|uygun|boş|bos|available|free|slot|saat)\b)/i,
+  )
+  if (bareQuestion) {
+    return { hour: Number(bareQuestion[1]), minute: 0 }
   }
 
   return null

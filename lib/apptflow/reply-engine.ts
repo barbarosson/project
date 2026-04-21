@@ -136,13 +136,10 @@ async function routeInbound(args: HandleInboundArgs, locale: LocaleCode): Promis
 
   if (prior?.pending_action === 'cancel_confirm' && prior.appointment_id) {
     if (args.intent.intent === 'confirm' || /\b(yes|evet|si|sí|oui|ja|да|sim|نعم)\b/i.test(args.inboundText)) {
-      await cancelBooking(prior.appointment_id)
-      await sendAndRecord({
+      await cancelBooking(prior.appointment_id, undefined, locale)
+      await recordOutboundStub({
         tenantId: args.tenantId,
         customerId: args.customerId,
-      toPlus: args.customerPhoneE164,
-        locale,
-        text: t(locale, 'fallback'),     // booking_cancelled already sent by cancelBooking
         metadata: { pending_action: null, source: 'reply-engine' },
       })
       return
@@ -474,7 +471,7 @@ async function offerCancellation(args: HandleInboundArgs, locale: LocaleCode): P
   }
 
   // Single-turn cancel: do it now, notification will be sent by cancelBooking().
-  await cancelBooking(appt.id)
+  await cancelBooking(appt.id, undefined, locale)
   await recordOutboundStub({
     tenantId: args.tenantId,
     customerId: args.customerId,
