@@ -75,7 +75,8 @@ export async function handleInbound(args: HandleInboundArgs): Promise<void> {
     try {
       await sendAndRecord({
         tenantId: args.tenantId,
-        toPlus: args.customerPhoneE164,
+        customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
         locale: args.tenantLocale,
         text: t(args.tenantLocale, 'fallback'),
         metadata: { pending_action: null, source: 'reply-engine' },
@@ -116,7 +117,8 @@ async function routeInbound(args: HandleInboundArgs): Promise<void> {
       await cancelBooking(prior.appointment_id)
       await sendAndRecord({
         tenantId: args.tenantId,
-        toPlus: args.customerPhoneE164,
+        customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
         locale,
         text: t(locale, 'fallback'),     // booking_cancelled already sent by cancelBooking
         metadata: { pending_action: null, source: 'reply-engine' },
@@ -140,7 +142,8 @@ async function routeInbound(args: HandleInboundArgs): Promise<void> {
       // Confirm without pending state = unclear. Fall back.
       await sendAndRecord({
         tenantId: args.tenantId,
-        toPlus: args.customerPhoneE164,
+        customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
         locale,
         text: t(locale, 'fallback'),
         metadata: { pending_action: null, source: 'reply-engine' },
@@ -168,6 +171,7 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
   if (!services || services.length === 0) {
     await sendAndRecord({
       tenantId: args.tenantId,
+      customerId: args.customerId,
       toPlus: args.customerPhoneE164,
       locale,
       text: t(locale, 'fallback'),
@@ -189,6 +193,7 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
   if (slots.length === 0) {
     await sendAndRecord({
       tenantId: args.tenantId,
+      customerId: args.customerId,
       toPlus: args.customerPhoneE164,
       locale,
       text: t(locale, 'fallback'),
@@ -203,7 +208,8 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
 
   await sendAndRecord({
     tenantId: args.tenantId,
-    toPlus: args.customerPhoneE164,
+    customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
     locale,
     text: t(locale, 'ask_time', { slots: pretty }),
     metadata: {
@@ -239,6 +245,7 @@ async function bookSelectedSlot(
     // record the outbound in our own log so state is consistent.
     await recordOutboundStub({
       tenantId: args.tenantId,
+      customerId: args.customerId,
       metadata: { pending_action: null, source: 'reply-engine' },
     })
   } catch (err) {
@@ -254,6 +261,7 @@ async function offerCancellation(args: HandleInboundArgs, locale: LocaleCode): P
   if (!args.customerId) {
     await sendAndRecord({
       tenantId: args.tenantId,
+      customerId: args.customerId,
       toPlus: args.customerPhoneE164,
       locale,
       text: t(locale, 'fallback'),
@@ -277,6 +285,7 @@ async function offerCancellation(args: HandleInboundArgs, locale: LocaleCode): P
   if (!appt) {
     await sendAndRecord({
       tenantId: args.tenantId,
+      customerId: args.customerId,
       toPlus: args.customerPhoneE164,
       locale,
       text: t(locale, 'fallback'),
@@ -289,6 +298,7 @@ async function offerCancellation(args: HandleInboundArgs, locale: LocaleCode): P
   await cancelBooking(appt.id)
   await recordOutboundStub({
     tenantId: args.tenantId,
+    customerId: args.customerId,
     metadata: { pending_action: null, source: 'reply-engine' },
   })
 }
@@ -333,7 +343,8 @@ async function offerReschedule(args: HandleInboundArgs, locale: LocaleCode): Pro
 
   await sendAndRecord({
     tenantId: args.tenantId,
-    toPlus: args.customerPhoneE164,
+    customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
     locale,
     text: t(locale, 'ask_time', { slots: pretty }),
     metadata: {
@@ -363,7 +374,8 @@ async function rescheduleToSelectedSlot(
   }
   await sendAndRecord({
     tenantId: args.tenantId,
-    toPlus: args.customerPhoneE164,
+    customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
     locale: args.tenantLocale,
     text: t(args.tenantLocale, 'booking_rescheduled', {
       service: '',
@@ -391,7 +403,8 @@ async function unknownFallback(args: HandleInboundArgs, locale: LocaleCode): Pro
 
   await sendAndRecord({
     tenantId: args.tenantId,
-    toPlus: args.customerPhoneE164,
+    customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
     locale,
     text: finalText,
     metadata: {
@@ -485,6 +498,7 @@ function formatSlotForHumans(iso: string, tz: string | null, locale: LocaleCode)
 
 interface SendAndRecordArgs {
   tenantId: string
+  customerId: string | null                   // needed so the NEXT turn can read pending state
   toPlus: string                              // '+90...'
   locale: LocaleCode
   text: string
@@ -510,9 +524,9 @@ async function sendAndRecord(a: SendAndRecordArgs): Promise<void> {
   }
 
   const sb = getServiceSupabase()
-  await sb.from('conversations').insert({
+  const { error: convErr } = await sb.from('conversations').insert({
     tenant_id: a.tenantId,
-    customer_id: null,                       // customer resolution handled separately in webhook
+    customer_id: a.customerId,
     wa_message_id: waMessageId || null,
     direction: 'outbound',
     channel: 'whatsapp',
@@ -521,6 +535,14 @@ async function sendAndRecord(a: SendAndRecordArgs): Promise<void> {
     language: a.locale,
     metadata: a.metadata,
   })
+  if (convErr) {
+    console.error('[reply-engine] outbound conversation insert failed', {
+      err: convErr.message,
+      code: convErr.code,
+      tenantId: a.tenantId,
+      customerId: a.customerId,
+    })
+  }
 }
 
 // Used when the outbound text itself was sent by another helper
@@ -528,11 +550,13 @@ async function sendAndRecord(a: SendAndRecordArgs): Promise<void> {
 // row so pending_action is reset to null.
 async function recordOutboundStub(a: {
   tenantId: string
+  customerId: string | null
   metadata: OutboundMetadata
 }): Promise<void> {
   const sb = getServiceSupabase()
   await sb.from('conversations').insert({
     tenant_id: a.tenantId,
+    customer_id: a.customerId,
     direction: 'outbound',
     channel: 'system',
     message_type: 'system',
