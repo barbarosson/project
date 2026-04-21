@@ -229,6 +229,44 @@ export async function rescheduleBooking(args: {
   if (error) throw error
 }
 
+// Is this exact slot free on the tenant's real calendar?
+// Used when the customer asks about a specific time ("is Friday 3pm free?")
+// — we skip proposeSlots and check the calendar directly so we can answer
+// yes/no instead of only listing the next N default slots.
+export async function isSlotAvailable(args: {
+  tenantId: string
+  startsAt: string
+  endsAt: string
+}): Promise<boolean> {
+  const from = new Date(args.startsAt)
+  const to = new Date(args.endsAt)
+  let busy: CalendarSlot[] = []
+  try {
+    // Query slightly wider so partial-overlap is always caught.
+    const padFrom = new Date(from.getTime() - 60_000)
+    const padTo = new Date(to.getTime() + 60_000)
+    busy = await listBusySlots(args.tenantId, padFrom, padTo)
+  } catch {
+    const sb = getServiceSupabase()
+    const { data } = await sb
+      .from('appointments')
+      .select('starts_at, ends_at')
+      .eq('tenant_id', args.tenantId)
+      .in('status', ['scheduled', 'confirmed'])
+      .lt('starts_at', args.endsAt)
+      .gt('ends_at', args.startsAt)
+    busy = (data ?? []).map(r => ({ startsAt: r.starts_at, endsAt: r.ends_at }))
+  }
+  const s = +from
+  const e = +to
+  const overlap = busy.some(b => {
+    const bs = +new Date(b.startsAt)
+    const be = +new Date(b.endsAt)
+    return !(e <= bs || s >= be)
+  })
+  return !overlap
+}
+
 // Used by the messaging agent to offer slots to a customer.
 // Either scans the next `lookaheadDays` (default 7), or — when the
 // caller passes `targetWindow` — restricts the scan to that exact

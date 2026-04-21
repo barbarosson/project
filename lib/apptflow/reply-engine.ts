@@ -20,10 +20,17 @@ import {
   cancelBooking,
   rescheduleBooking,
   suggestOpenSlots,
+  isSlotAvailable,
 } from './booking'
 import { t } from './i18n'
 import { env } from './env'
-import { parseDayHint, computeDayBounds, weekdayLabel } from './date-hints'
+import {
+  parseDayHint,
+  computeDayBounds,
+  weekdayLabel,
+  extractTimeHint,
+  tzLocalToUtcISO,
+} from './date-hints'
 import type { LocaleCode } from './types'
 
 // ---------- Types ----------
@@ -97,9 +104,22 @@ async function routeInbound(args: HandleInboundArgs, locale: LocaleCode): Promis
 
   // 1) Conversational continuations (prior state + current text).
   if (prior?.pending_action === 'slot_choice') {
-    const pick = pickSlot(args.inboundText, prior.slot_candidates ?? [])
+    const candidates = prior.slot_candidates ?? []
+    const pick = pickSlot(args.inboundText, candidates)
     if (pick) {
       await bookSelectedSlot(args, pick, prior.service_id ?? null)
+      return
+    }
+    // Convenience: when only one slot is pending and the customer says
+    // "yes / evet / ok / tamam", treat that as picking slot #1. This is
+    // the happy path after we proactively offered a specific requested
+    // time ("Cuma 15:00 uygun, EVET yazın.").
+    if (
+      candidates.length === 1 &&
+      (args.intent.intent === 'confirm' ||
+        /\b(yes|evet|tamam|ok|okay|si|sí|oui|ja|да|sim|نعم)\b/i.test(args.inboundText))
+    ) {
+      await bookSelectedSlot(args, candidates[0], prior.service_id ?? null)
       return
     }
     // If the user said something else, drop the pending state and
@@ -191,6 +211,99 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
   // Did the customer mention a specific day?  ("perşembe", "tomorrow", …)
   const hint = parseDayHint(args.inboundText)
   const bounds = hint ? computeDayBounds(hint, tz) : null
+
+  // Did they also name a specific time? ("15:00", "3pm", "saat 15")
+  const timeHint = extractTimeHint(args.inboundText)
+
+  // --- Case 0: day + time given → check that exact slot on the calendar.
+  // We do this BEFORE the generic day-scan so "cuma 15:00 müsait mi?" can
+  // get a direct yes/no instead of the three default morning slots.
+  if (bounds && timeHint) {
+    const startsAt = tzLocalToUtcISO(
+      bounds.targetYMD,
+      timeHint.hour,
+      timeHint.minute,
+      tz,
+    )
+    const endsAt = new Date(
+      new Date(startsAt).getTime() + service.duration_minutes * 60_000,
+    ).toISOString()
+
+    const free = await isSlotAvailable({
+      tenantId: args.tenantId,
+      startsAt,
+      endsAt,
+    })
+
+    const dayLabel = weekdayLabel(bounds.fromISO, tz, locale)
+    const timeLabel = `${String(timeHint.hour).padStart(2, '0')}:${String(timeHint.minute).padStart(2, '0')}`
+
+    if (free) {
+      await sendAndRecord({
+        tenantId: args.tenantId,
+        customerId: args.customerId,
+        toPlus: args.customerPhoneE164,
+        locale,
+        text: t(locale, 'specific_time_available', { day: dayLabel, time: timeLabel }),
+        metadata: {
+          pending_action: 'slot_choice',
+          slot_candidates: [{ startsAt, endsAt }],
+          service_id: service.id,
+          source: 'reply-engine',
+        },
+      })
+      return
+    }
+
+    // Not free → offer closest alternatives (on the same day first, then any day).
+    const sameDayAlts = await suggestOpenSlots({
+      tenantId: args.tenantId,
+      durationMinutes: service.duration_minutes,
+      targetWindow: { fromISO: bounds.fromISO, toISO: bounds.toISO },
+    })
+    const alts =
+      sameDayAlts.length > 0
+        ? sameDayAlts
+        : await suggestOpenSlots({
+            tenantId: args.tenantId,
+            durationMinutes: service.duration_minutes,
+            lookaheadDays: 7,
+          })
+
+    if (alts.length === 0) {
+      await sendAndRecord({
+        tenantId: args.tenantId,
+        customerId: args.customerId,
+        toPlus: args.customerPhoneE164,
+        locale,
+        text: t(locale, 'fallback'),
+        metadata: { pending_action: null, source: 'reply-engine' },
+      })
+      return
+    }
+
+    const pretty = alts
+      .map((s, i) => `${i + 1}) ${formatSlotForHumans(s.startsAt, tz, locale)}`)
+      .join('  ·  ')
+    await sendAndRecord({
+      tenantId: args.tenantId,
+      customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
+      locale,
+      text: t(locale, 'specific_time_taken', {
+        day: dayLabel,
+        time: timeLabel,
+        slots: pretty,
+      }),
+      metadata: {
+        pending_action: 'slot_choice',
+        slot_candidates: alts,
+        service_id: service.id,
+        source: 'reply-engine',
+      },
+    })
+    return
+  }
 
   // Slots scoped to the requested day (if any), plus a fallback scan so we
   // can offer alternatives when the requested day is fully booked.
@@ -707,16 +820,18 @@ async function tryLlmReply(args: {
           {
             role: 'system',
             content: [
-              `You are a WhatsApp appointment assistant for a small service business.`,
+              `You are a warm, concise WhatsApp assistant for a small service business.`,
               // Language discipline — this MUST be respected verbatim.
               `CRITICAL: Reply in the SAME LANGUAGE as the user's last message.`,
               `Do not translate or switch languages, even if the business context is in English.`,
               `If the user writes in Turkish, answer in Turkish. If in Spanish, answer in Spanish. Etc.`,
               `Best-guess locale code for the user's language: ${args.locale}.`,
-              // Style + safety rails.
-              `Reply in 1–2 short sentences. Do NOT invent times, prices or services that aren't in the business context.`,
-              `If the user wants to book, tell them to reply with the word "book" so the system can offer slots.`,
-              `If the user wants to cancel or reschedule, tell them to reply with "cancel" or "reschedule".`,
+              // Scope.
+              `You ONLY answer general questions (hours, services, location chit-chat). You do NOT offer or confirm appointments yourself — the surrounding system does that automatically when the user asks about booking, a specific day, or a specific time.`,
+              `Therefore: NEVER instruct the user to "reply book", "reply cancel", or "reply reschedule". They can ask naturally ("cuma 15:00 müsait mi?", "randevu istiyorum") and the system will handle it.`,
+              // Safety rails.
+              `Reply in 1–2 short sentences. Do NOT invent times, prices, services, or addresses that aren't in the business context below.`,
+              `If you don't know something specific (e.g. exact price), say you'll check and invite the user to ask for a booking day/time.`,
               `Business context:`,
               args.businessContext,
             ].join('\n'),

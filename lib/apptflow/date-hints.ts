@@ -181,3 +181,62 @@ export function weekdayLabel(
     return new Date(dateISO).toUTCString()
   }
 }
+
+// ---------- Time-of-day extraction ----------
+//
+// Pulls a wall-clock time out of a message: "15:00", "3pm", "saat 15",
+// "at 3:30 pm". Returns the 24h hour/minute pair, not a Date, because
+// whether that time is today/Friday/etc. comes from the day hint.
+
+export function extractTimeHint(text: string): { hour: number; minute: number } | null {
+  if (!text) return null
+
+  // 24-hour with separator: "15:00", "15.30", "15h30", "15 00"
+  const m24 = text.match(/\b([01]?\d|2[0-3])[:.h\s]([0-5]\d)\b/i)
+  if (m24) {
+    return { hour: Number(m24[1]), minute: Number(m24[2]) }
+  }
+
+  // 12-hour with am/pm: "3pm", "3 pm", "3:30pm", "3:30 am"
+  const m12 = text.match(/\b(\d{1,2})(?::([0-5]\d))?\s?(am|pm|a\.m\.|p\.m\.)\b/i)
+  if (m12) {
+    let h = Number(m12[1])
+    const m = Number(m12[2] ?? '0')
+    const ampm = m12[3].toLowerCase().replace(/\./g, '')
+    if (h >= 1 && h <= 12) {
+      if (ampm === 'pm' && h < 12) h += 12
+      if (ampm === 'am' && h === 12) h = 0
+      return { hour: h, minute: m }
+    }
+  }
+
+  // "saat 15" / "at 15" / "о 15" — hour alone after a time particle.
+  // Guarded by the particle to avoid matching slot-index replies like "3".
+  const particle = text.match(
+    /\b(?:saat|at|om|à|a\s+las|alle|в|em|um)\s+(\d{1,2})(?::([0-5]\d))?\b/i,
+  )
+  if (particle) {
+    const h = Number(particle[1])
+    const m = Number(particle[2] ?? '0')
+    if (h >= 0 && h <= 23) return { hour: h, minute: m }
+  }
+
+  return null
+}
+
+// ---------- Wall-clock → UTC ISO helper (public) ----------
+//
+// Given a YYYY-MM-DD (local calendar date in `tz`) and an hour/minute,
+// return the UTC ISO timestamp of that moment. Used to check whether a
+// customer-requested time (e.g. Friday 15:00 Istanbul) is available on
+// the real calendar.
+
+export function tzLocalToUtcISO(
+  targetYMD: string,
+  hour: number,
+  minute: number,
+  tz: string,
+): string {
+  const [y, mo, d] = targetYMD.split('-').map(Number)
+  return tzWallToUtc(y, mo, d, hour, minute, tz).toISOString()
+}
