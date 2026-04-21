@@ -597,20 +597,21 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
       return
     }
 
-    // Not free → offer closest alternatives (on the same day first, then any day).
+    // Not free → offer closest alternatives (same day first, up to 5).
     const sameDayAlts = await suggestOpenSlots({
       tenantId: args.tenantId,
       durationMinutes: service.duration_minutes,
       targetWindow: { fromISO: bounds.fromISO, toISO: bounds.toISO },
     })
-    const alts =
+    const pool =
       sameDayAlts.length > 0
         ? sameDayAlts
         : await suggestOpenSlots({
             tenantId: args.tenantId,
             durationMinutes: service.duration_minutes,
-            lookaheadDays: 7,
+            lookaheadDays: 14,
           })
+    const alts = closestSlotsTo(startsAt, pool, 5)
 
     if (alts.length === 0) {
       await sendAndRecord({
@@ -793,7 +794,13 @@ async function offerCancellation(args: HandleInboundArgs, locale: LocaleCode): P
 
   const sb = getServiceSupabase()
   const dayHint = parseDayHint(args.inboundText)
-  const timeHint = extractTimeHint(args.inboundText)
+  let timeHint = extractTimeHint(args.inboundText)
+  if (dayHint && !timeHint) {
+    const bare = args.inboundText.match(/\b([01]?\d|2[0-3])(?:[:.]([0-5]\d))?\b/)
+    if (bare) {
+      timeHint = { hour: Number(bare[1]), minute: Number(bare[2] ?? '0') }
+    }
+  }
   const wantsPlural = /\b(randevularımı|randevularimi|appointments|all|hepsini|tümünü|tumunu)\b/i.test(args.inboundText)
   if (dayHint && wantsPlural) {
     const bounds = computeDayBounds(dayHint, args.tenantTimezone)
@@ -1309,6 +1316,22 @@ function formatDateTimeForHumans(iso: string, tz: string | null, locale: LocaleC
   } catch {
     return d.toISOString()
   }
+}
+
+function closestSlotsTo(
+  referenceISO: string,
+  slots: { startsAt: string; endsAt: string }[],
+  limit = 5,
+): { startsAt: string; endsAt: string }[] {
+  const ref = new Date(referenceISO).getTime()
+  return [...slots]
+    .sort((a, b) => {
+      const da = Math.abs(new Date(a.startsAt).getTime() - ref)
+      const db = Math.abs(new Date(b.startsAt).getTime() - ref)
+      if (da !== db) return da - db
+      return new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
+    })
+    .slice(0, limit)
 }
 
 function looksLikeAvailabilityMessage(text: string): boolean {
