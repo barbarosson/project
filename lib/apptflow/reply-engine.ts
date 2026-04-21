@@ -168,12 +168,74 @@ async function routeInbound(args: HandleInboundArgs, locale: LocaleCode): Promis
         metadata: { pending_action: null, source: 'reply-engine' },
       })
       return
+    case 'appointment_lookup':
+      await answerAppointmentLookup(args, locale)
+      return
     case 'info':
     case 'unknown':
     default:
       await unknownFallback(args, locale)
       return
   }
+}
+
+async function answerAppointmentLookup(args: HandleInboundArgs, locale: LocaleCode): Promise<void> {
+  if (!args.customerId) {
+    await sendAndRecord({
+      tenantId: args.tenantId,
+      customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
+      locale,
+      text: t(locale, 'appointment_lookup_none'),
+      metadata: { pending_action: null, source: 'reply-engine' },
+    })
+    return
+  }
+
+  const sb = getServiceSupabase()
+  const { data: appt } = await sb
+    .from('appointments')
+    .select('starts_at, status, service:services(name)')
+    .eq('tenant_id', args.tenantId)
+    .eq('customer_id', args.customerId)
+    .in('status', ['scheduled', 'confirmed', 'rescheduled'])
+    .gte('starts_at', new Date().toISOString())
+    .order('starts_at', { ascending: true })
+    .limit(1)
+    .maybeSingle<any>()
+
+  if (!appt) {
+    await sendAndRecord({
+      tenantId: args.tenantId,
+      customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
+      locale,
+      text: t(locale, 'appointment_lookup_none'),
+      metadata: { pending_action: null, source: 'reply-engine' },
+    })
+    return
+  }
+
+  const when = new Date(appt.starts_at).toLocaleString(locale, {
+    timeZone: args.tenantTimezone,
+    weekday: 'short',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+  await sendAndRecord({
+    tenantId: args.tenantId,
+    customerId: args.customerId,
+    toPlus: args.customerPhoneE164,
+    locale,
+    text: t(locale, 'appointment_lookup_found', {
+      service: appt.service?.name ?? 'appointment',
+      when,
+    }),
+    metadata: { pending_action: null, source: 'reply-engine' },
+  })
 }
 
 // ---------- Handlers ----------

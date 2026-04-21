@@ -106,7 +106,7 @@ export function verifyWebhookSignature(rawBody: string, headerValue: string | nu
 // floor — the orchestrator may upgrade to an LLM call when confidence
 // is low, but having a free-tier deterministic path keeps costs down.
 export interface Intent {
-  intent: 'book' | 'cancel' | 'reschedule' | 'confirm' | 'info' | 'unknown'
+  intent: 'book' | 'cancel' | 'reschedule' | 'confirm' | 'appointment_lookup' | 'info' | 'unknown'
   confidence: number
 }
 
@@ -157,6 +157,17 @@ export function detectIntent(text: string): Intent {
     [/\b(başka|baska|diğer|diger|another|other|another\s?time|more\s?slots?|more\s?times?)\b/, 'book'],
     [/\b(otro|otra|otros|otras|autres?|andere|anderen|altre?|altri|altro|outro|outra|outros|outras)\b/, 'book'],
     [/(другой|другое|другие|ещё|еще|أخرى|آخر|المزيد)/, 'book'],
+
+    // — APPOINTMENT LOOKUP: "what time is my appointment?"
+    [/\b(randevum|randevu(mun|nun|nın|nin)?\s+saat(i|i̇)?|kaçta|kacta|ne\s+zaman)\b/, 'appointment_lookup'],
+    [/\b(my\s+appointment|what\s+time\s+is\s+my\s+appointment|when\s+is\s+my\s+appointment)\b/, 'appointment_lookup'],
+    [/\b(cita|mi\s+cita|a\s+qué\s+hora|a\s+que\s+hora|cuando\s+es\s+mi\s+cita)\b/, 'appointment_lookup'],
+    [/\b(rendez[-\s]?vous|mon\s+rendez[-\s]?vous|à\s+quelle\s+heure|a\s+quelle\s+heure)\b/, 'appointment_lookup'],
+    [/\b(terminim|mein\s+termin|wann\s+ist\s+mein\s+termin|uhrzeit)\b/, 'appointment_lookup'],
+    [/\b(appuntamento|il\s+mio\s+appuntamento|a\s+che\s+ora)\b/, 'appointment_lookup'],
+    [/\b(agendamento|meu\s+agendamento|que\s+horas)\b/, 'appointment_lookup'],
+    [/(мо[йе]\s+запис|во\s+сколько|когда\s+запись)/i, 'appointment_lookup'],
+    [/(موعدي|موعدي\s+الساعة|متى\s+موعدي)/, 'appointment_lookup'],
 
     // — INFO: price / cost questions that are NOT about availability
     [/\b(price|fiyat|ücret|ucret|kaç\s?para|ne\s?kadar|precio|cuánto|cuanto|prix|combien|preis|wie\s?viel|цена|сколько|prezzo|quanto|سعر|cost|costs)\b/, 'info'],

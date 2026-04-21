@@ -12,6 +12,8 @@ type MessageKey =
   | 'no_slots_on_day'
   | 'specific_time_available'
   | 'specific_time_taken'
+  | 'appointment_lookup_found'
+  | 'appointment_lookup_none'
   | 'booking_confirmed'
   | 'booking_reminder_24h'
   | 'booking_reminder_2h'
@@ -34,6 +36,8 @@ const CATALOGS: Record<LocaleCode, Catalog> = {
     no_slots_on_day: 'We are fully booked on {day}. Closest open times: {slots}. Reply with a number to book.',
     specific_time_available: '{day} at {time} is available. Reply YES to confirm.',
     specific_time_taken: '{day} at {time} is not available. Closest open times: {slots}. Reply with a number to book.',
+    appointment_lookup_found: 'Your upcoming {service} appointment is on {when}.',
+    appointment_lookup_none: 'I cannot find an upcoming appointment for you right now.',
     booking_confirmed: 'You are booked for {service} on {when}. We will remind you before.',
     booking_reminder_24h: 'Reminder: {service} tomorrow at {time}. Reply YES to confirm, RESCHEDULE to change, CANCEL to cancel.',
     booking_reminder_2h: 'See you in 2 hours for your {service} at {time}. Reply CANCEL if you cannot make it.',
@@ -53,6 +57,8 @@ const CATALOGS: Record<LocaleCode, Catalog> = {
     no_slots_on_day: '{day} günü müsaitliğimiz yok. En yakın boş zamanlar: {slots}. Randevu için bir numara yazabilirsiniz.',
     specific_time_available: '{day} {time} saati uygun. Onaylamak için EVET yazın.',
     specific_time_taken: '{day} {time} saati dolu. En yakın boş zamanlar: {slots}. Randevu için bir numara yazabilirsiniz.',
+    appointment_lookup_found: 'Yaklaşan {service} randevunuz {when}.',
+    appointment_lookup_none: 'Sizin için yaklaşan bir randevu bulamadım.',
     booking_confirmed: '{service} randevunuz {when} için alındı. Öncesinde hatırlatacağız.',
     booking_reminder_24h: 'Hatırlatma: Yarın {time} {service} randevunuz var. Onaylamak için EVET, değiştirmek için ERTELE, iptal için İPTAL yazın.',
     booking_reminder_2h: '2 saat sonra {time} {service} randevunuz var. Gelemeyecekseniz İPTAL yazın.',
@@ -72,6 +78,8 @@ const CATALOGS: Record<LocaleCode, Catalog> = {
     no_slots_on_day: 'Estamos completos el {day}. Horarios libres más cercanos: {slots}. Responde con un número para reservar.',
     specific_time_available: 'El {day} a las {time} está disponible. Responde SÍ para confirmar.',
     specific_time_taken: 'El {day} a las {time} no está disponible. Horarios libres más cercanos: {slots}. Responde con un número para reservar.',
+    appointment_lookup_found: 'Tu próxima cita de {service} es el {when}.',
+    appointment_lookup_none: 'No encuentro una cita próxima para ti en este momento.',
     booking_confirmed: 'Tu cita de {service} está reservada para {when}. Te recordaremos antes.',
     booking_reminder_24h: 'Recordatorio: mañana a las {time} tienes {service}. Responde SÍ para confirmar, CAMBIAR para reprogramar, CANCELAR para cancelar.',
     booking_reminder_2h: 'Nos vemos en 2 horas para tu {service} a las {time}. Responde CANCELAR si no puedes.',
@@ -91,6 +99,8 @@ const CATALOGS: Record<LocaleCode, Catalog> = {
     no_slots_on_day: 'Am {day} sind wir ausgebucht. Nächste freie Zeiten: {slots}. Antworte mit einer Nummer zum Buchen.',
     specific_time_available: '{day} um {time} ist frei. Antworte JA zum Bestätigen.',
     specific_time_taken: '{day} um {time} ist belegt. Nächste freie Zeiten: {slots}. Antworte mit einer Nummer zum Buchen.',
+    appointment_lookup_found: 'Dein nächster {service}-Termin ist am {when}.',
+    appointment_lookup_none: 'Ich finde gerade keinen bevorstehenden Termin für dich.',
     booking_confirmed: 'Dein Termin für {service} am {when} steht. Wir erinnern dich vorher.',
     booking_reminder_24h: 'Erinnerung: Morgen um {time} {service}. Antworte JA zum Bestätigen, VERSCHIEBEN oder ABSAGEN.',
     booking_reminder_2h: 'In 2 Stunden {service} um {time}. Antworte ABSAGEN, falls es nicht klappt.',
@@ -110,6 +120,8 @@ const CATALOGS: Record<LocaleCode, Catalog> = {
     no_slots_on_day: 'Nous sommes complets {day}. Prochains créneaux libres : {slots}. Répondez avec un numéro pour réserver.',
     specific_time_available: '{day} à {time} est disponible. Répondez OUI pour confirmer.',
     specific_time_taken: '{day} à {time} n\'est pas disponible. Prochains créneaux libres : {slots}. Répondez avec un numéro pour réserver.',
+    appointment_lookup_found: 'Votre prochain rendez-vous {service} est le {when}.',
+    appointment_lookup_none: 'Je ne trouve pas de rendez-vous à venir pour vous.',
     booking_confirmed: 'Votre RDV {service} le {when} est réservé. Nous vous rappellerons.',
     booking_reminder_24h: 'Rappel : demain à {time} {service}. Répondez OUI, REPORTER ou ANNULER.',
     booking_reminder_2h: 'Dans 2 heures {service} à {time}. Répondez ANNULER si besoin.',
@@ -129,6 +141,8 @@ const CATALOGS: Record<LocaleCode, Catalog> = {
     no_slots_on_day: 'Estamos lotados em {day}. Horários livres mais próximos: {slots}. Responda com um número para agendar.',
     specific_time_available: '{day} às {time} está disponível. Responda SIM para confirmar.',
     specific_time_taken: '{day} às {time} não está disponível. Horários livres mais próximos: {slots}. Responda com um número para agendar.',
+    appointment_lookup_found: 'Seu próximo agendamento de {service} é em {when}.',
+    appointment_lookup_none: 'Não encontrei um agendamento futuro para você agora.',
     booking_confirmed: 'Seu {service} está marcado para {when}. Avisaremos antes.',
     booking_reminder_24h: 'Lembrete: amanhã às {time} {service}. Responda SIM, REMARCAR ou CANCELAR.',
     booking_reminder_2h: 'Em 2 horas {service} às {time}. Responda CANCELAR se não puder.',
@@ -148,6 +162,8 @@ const CATALOGS: Record<LocaleCode, Catalog> = {
     no_slots_on_day: 'يوم {day} مكتمل. أقرب المواعيد المتاحة: {slots}. رد برقم للحجز.',
     specific_time_available: '{day} الساعة {time} متاح. رد نعم للتأكيد.',
     specific_time_taken: '{day} الساعة {time} غير متاح. أقرب المواعيد: {slots}. رد برقم للحجز.',
+    appointment_lookup_found: 'موعدك القادم لـ {service} هو {when}.',
+    appointment_lookup_none: 'لا أجد موعدًا قادمًا لك الآن.',
     booking_confirmed: 'تم حجز {service} يوم {when}. سنذكّرك قبل الموعد.',
     booking_reminder_24h: 'تذكير: غدًا الساعة {time} {service}. رد نعم للتأكيد، تغيير لإعادة الجدولة، إلغاء للإلغاء.',
     booking_reminder_2h: 'بعد ساعتين {service} الساعة {time}. رد إلغاء إذا لم تتمكن.',
@@ -167,6 +183,8 @@ const CATALOGS: Record<LocaleCode, Catalog> = {
     no_slots_on_day: 'Siamo al completo il {day}. Orari liberi più vicini: {slots}. Rispondi con un numero per prenotare.',
     specific_time_available: 'Il {day} alle {time} è libero. Rispondi SÌ per confermare.',
     specific_time_taken: 'Il {day} alle {time} è occupato. Orari liberi più vicini: {slots}. Rispondi con un numero per prenotare.',
+    appointment_lookup_found: 'Il tuo prossimo appuntamento per {service} è il {when}.',
+    appointment_lookup_none: 'Non trovo un appuntamento imminente per te in questo momento.',
     booking_confirmed: 'Il tuo {service} è prenotato per il {when}. Ti ricorderemo prima.',
     booking_reminder_24h: 'Promemoria: domani alle {time} {service}. Rispondi SÌ, SPOSTA o ANNULLA.',
     booking_reminder_2h: 'Tra 2 ore {service} alle {time}. Rispondi ANNULLA se non puoi.',
@@ -186,6 +204,8 @@ const CATALOGS: Record<LocaleCode, Catalog> = {
     no_slots_on_day: '{day} всё занято. Ближайшее свободное время: {slots}. Ответьте номером, чтобы записаться.',
     specific_time_available: '{day} в {time} свободно. Ответьте ДА для подтверждения.',
     specific_time_taken: '{day} в {time} занято. Ближайшее свободное: {slots}. Ответьте номером, чтобы записаться.',
+    appointment_lookup_found: 'Ваша ближайшая запись на {service}: {when}.',
+    appointment_lookup_none: 'Сейчас не вижу для вас ближайшей записи.',
     booking_confirmed: '{service} записан на {when}. Напомним заранее.',
     booking_reminder_24h: 'Напоминание: завтра в {time} {service}. Ответьте ДА, ПЕРЕНЕСТИ или ОТМЕНА.',
     booking_reminder_2h: 'Через 2 часа {service} в {time}. Ответьте ОТМЕНА, если не сможете.',
