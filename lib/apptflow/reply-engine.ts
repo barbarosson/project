@@ -23,6 +23,7 @@ import {
 } from './booking'
 import { t } from './i18n'
 import { env } from './env'
+import { parseDayHint, computeDayBounds, weekdayLabel } from './date-hints'
 import type { LocaleCode } from './types'
 
 // ---------- Types ----------
@@ -185,40 +186,103 @@ async function offerSlotsForBooking(args: HandleInboundArgs, locale: LocaleCode)
   // multiple exist we still pick the first for now; a later iteration
   // will prompt ask_service and wait for a choice.
   const service = services[0]
-  const slots = await suggestOpenSlots({
+  const tz = args.tenantTimezone
+
+  // Did the customer mention a specific day?  ("perşembe", "tomorrow", …)
+  const hint = parseDayHint(args.inboundText)
+  const bounds = hint ? computeDayBounds(hint, tz) : null
+
+  // Slots scoped to the requested day (if any), plus a fallback scan so we
+  // can offer alternatives when the requested day is fully booked.
+  const targetedSlots = bounds
+    ? await suggestOpenSlots({
+        tenantId: args.tenantId,
+        durationMinutes: service.duration_minutes,
+        targetWindow: { fromISO: bounds.fromISO, toISO: bounds.toISO },
+      })
+    : []
+
+  const fallbackSlots = await suggestOpenSlots({
     tenantId: args.tenantId,
     durationMinutes: service.duration_minutes,
     lookaheadDays: 7,
   })
 
-  if (slots.length === 0) {
+  // --- Decide which message to send ---
+
+  // Case 1: user specified a day and we found openings on it.
+  if (bounds && targetedSlots.length > 0) {
+    const pretty = targetedSlots
+      .map((s, i) => `${i + 1}) ${formatSlotForHumans(s.startsAt, tz, locale)}`)
+      .join('  ·  ')
+    const dayLabel = weekdayLabel(bounds.fromISO, tz, locale)
     await sendAndRecord({
       tenantId: args.tenantId,
       customerId: args.customerId,
       toPlus: args.customerPhoneE164,
       locale,
-      text: t(locale, 'fallback'),
-      metadata: { pending_action: null, source: 'reply-engine' },
+      text: t(locale, 'ask_time_on_day', { day: dayLabel, slots: pretty }),
+      metadata: {
+        pending_action: 'slot_choice',
+        slot_candidates: targetedSlots,
+        service_id: service.id,
+        source: 'reply-engine',
+      },
     })
     return
   }
 
-  const pretty = slots
-    .map((s, i) => `${i + 1}) ${formatSlotForHumans(s.startsAt, args.tenantTimezone, locale)}`)
-    .join('  ·  ')
+  // Case 2: user specified a day but it's full → apologise + offer alternatives.
+  if (bounds && targetedSlots.length === 0 && fallbackSlots.length > 0) {
+    const pretty = fallbackSlots
+      .map((s, i) => `${i + 1}) ${formatSlotForHumans(s.startsAt, tz, locale)}`)
+      .join('  ·  ')
+    const dayLabel = weekdayLabel(bounds.fromISO, tz, locale)
+    await sendAndRecord({
+      tenantId: args.tenantId,
+      customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
+      locale,
+      text: t(locale, 'no_slots_on_day', { day: dayLabel, slots: pretty }),
+      metadata: {
+        pending_action: 'slot_choice',
+        slot_candidates: fallbackSlots,
+        service_id: service.id,
+        source: 'reply-engine',
+      },
+    })
+    return
+  }
 
+  // Case 3: no day specified — classic "next 3 open slots" experience.
+  if (!bounds && fallbackSlots.length > 0) {
+    const pretty = fallbackSlots
+      .map((s, i) => `${i + 1}) ${formatSlotForHumans(s.startsAt, tz, locale)}`)
+      .join('  ·  ')
+    await sendAndRecord({
+      tenantId: args.tenantId,
+      customerId: args.customerId,
+      toPlus: args.customerPhoneE164,
+      locale,
+      text: t(locale, 'ask_time', { slots: pretty }),
+      metadata: {
+        pending_action: 'slot_choice',
+        slot_candidates: fallbackSlots,
+        service_id: service.id,
+        source: 'reply-engine',
+      },
+    })
+    return
+  }
+
+  // Case 4: nothing open anywhere in the lookahead window.
   await sendAndRecord({
     tenantId: args.tenantId,
     customerId: args.customerId,
-      toPlus: args.customerPhoneE164,
+    toPlus: args.customerPhoneE164,
     locale,
-    text: t(locale, 'ask_time', { slots: pretty }),
-    metadata: {
-      pending_action: 'slot_choice',
-      slot_candidates: slots,
-      service_id: service.id,
-      source: 'reply-engine',
-    },
+    text: t(locale, 'fallback'),
+    metadata: { pending_action: null, source: 'reply-engine' },
   })
 }
 
@@ -328,30 +392,59 @@ async function offerReschedule(args: HandleInboundArgs, locale: LocaleCode): Pro
     return
   }
 
-  const slots = await suggestOpenSlots({
+  const tz = args.tenantTimezone
+  const hint = parseDayHint(args.inboundText)
+  const bounds = hint ? computeDayBounds(hint, tz) : null
+
+  const targetedSlots = bounds
+    ? await suggestOpenSlots({
+        tenantId: args.tenantId,
+        durationMinutes: appt.service.duration_minutes,
+        targetWindow: { fromISO: bounds.fromISO, toISO: bounds.toISO },
+      })
+    : []
+
+  const fallbackSlots = await suggestOpenSlots({
     tenantId: args.tenantId,
     durationMinutes: appt.service.duration_minutes,
     lookaheadDays: 7,
   })
 
-  if (slots.length === 0) {
+  const chosenSlots =
+    bounds && targetedSlots.length > 0 ? targetedSlots : fallbackSlots
+  if (chosenSlots.length === 0) {
     await unknownFallback(args, locale)
     return
   }
 
-  const pretty = slots
-    .map((s, i) => `${i + 1}) ${formatSlotForHumans(s.startsAt, args.tenantTimezone, locale)}`)
+  const pretty = chosenSlots
+    .map((s, i) => `${i + 1}) ${formatSlotForHumans(s.startsAt, tz, locale)}`)
     .join('  ·  ')
+
+  let textBody: string
+  if (bounds && targetedSlots.length > 0) {
+    textBody = t(locale, 'ask_time_on_day', {
+      day: weekdayLabel(bounds.fromISO, tz, locale),
+      slots: pretty,
+    })
+  } else if (bounds && targetedSlots.length === 0) {
+    textBody = t(locale, 'no_slots_on_day', {
+      day: weekdayLabel(bounds.fromISO, tz, locale),
+      slots: pretty,
+    })
+  } else {
+    textBody = t(locale, 'ask_time', { slots: pretty })
+  }
 
   await sendAndRecord({
     tenantId: args.tenantId,
     customerId: args.customerId,
-      toPlus: args.customerPhoneE164,
+    toPlus: args.customerPhoneE164,
     locale,
-    text: t(locale, 'ask_time', { slots: pretty }),
+    text: textBody,
     metadata: {
       pending_action: 'reschedule_slot_choice',
-      slot_candidates: slots,
+      slot_candidates: chosenSlots,
       appointment_id: appt.id,
       source: 'reply-engine',
     },

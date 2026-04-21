@@ -230,13 +230,22 @@ export async function rescheduleBooking(args: {
 }
 
 // Used by the messaging agent to offer slots to a customer.
+// Either scans the next `lookaheadDays` (default 7), or — when the
+// caller passes `targetWindow` — restricts the scan to that exact
+// from/to window (e.g. a single local day the customer asked for).
 export async function suggestOpenSlots(args: {
   tenantId: string
   durationMinutes: number
   lookaheadDays?: number
+  targetWindow?: { fromISO: string; toISO: string }
 }): Promise<CalendarSlot[]> {
-  const from = new Date()
-  const to = new Date(from.getTime() + (args.lookaheadDays ?? 7) * 86_400_000)
+  const from = args.targetWindow
+    ? new Date(args.targetWindow.fromISO)
+    : new Date()
+  const to = args.targetWindow
+    ? new Date(args.targetWindow.toISO)
+    : new Date(from.getTime() + (args.lookaheadDays ?? 7) * 86_400_000)
+
   let busy: CalendarSlot[] = []
   try {
     busy = await listBusySlots(args.tenantId, from, to)
