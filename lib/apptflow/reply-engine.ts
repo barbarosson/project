@@ -29,9 +29,10 @@ import type { LocaleCode } from './types'
 
 interface HandleInboundArgs {
   tenantId: string
-  tenantLocale: LocaleCode
+  tenantLocale: LocaleCode       // business default (used only as fallback)
   tenantTimezone: string
   customerId: string | null
+  customerLocale?: LocaleCode    // language of THIS customer, detected from inbound
   customerPhoneE164: string      // always starts with '+'
   inboundText: string
   intent: Intent
@@ -62,8 +63,9 @@ interface TenantRow {
 // ---------- Public entry point ----------
 
 export async function handleInbound(args: HandleInboundArgs): Promise<void> {
+  const effectiveLocale: LocaleCode = args.customerLocale ?? args.tenantLocale
   try {
-    await routeInbound(args)
+    await routeInbound(args, effectiveLocale)
   } catch (err) {
     console.error('[reply-engine] failed', {
       err: (err as Error).message,
@@ -76,9 +78,9 @@ export async function handleInbound(args: HandleInboundArgs): Promise<void> {
       await sendAndRecord({
         tenantId: args.tenantId,
         customerId: args.customerId,
-      toPlus: args.customerPhoneE164,
-        locale: args.tenantLocale,
-        text: t(args.tenantLocale, 'fallback'),
+        toPlus: args.customerPhoneE164,
+        locale: effectiveLocale,
+        text: t(effectiveLocale, 'fallback'),
         metadata: { pending_action: null, source: 'reply-engine' },
       })
     } catch {
@@ -89,8 +91,7 @@ export async function handleInbound(args: HandleInboundArgs): Promise<void> {
 
 // ---------- Core router ----------
 
-async function routeInbound(args: HandleInboundArgs): Promise<void> {
-  const locale = args.tenantLocale
+async function routeInbound(args: HandleInboundArgs, locale: LocaleCode): Promise<void> {
   const prior = await getLastOutboundState(args.tenantId, args.customerId)
 
   // 1) Conversational continuations (prior state + current text).
@@ -226,9 +227,10 @@ async function bookSelectedSlot(
   slot: { startsAt: string; endsAt: string },
   serviceId: string | null,
 ): Promise<void> {
+  const locale = args.customerLocale ?? args.tenantLocale
   if (!serviceId) {
     // No service locked in from prior turn — re-offer slots instead of silently failing.
-    await offerSlotsForBooking(args, args.tenantLocale)
+    await offerSlotsForBooking(args, locale)
     return
   }
   try {
@@ -238,7 +240,7 @@ async function bookSelectedSlot(
       startsAt: slot.startsAt,
       endsAt: slot.endsAt,
       customerPhoneE164: args.customerPhoneE164,
-      locale: args.tenantLocale,
+      locale,
       channel: 'bot',
     })
     // createBooking already sends the confirmation WhatsApp; we still
@@ -253,7 +255,7 @@ async function bookSelectedSlot(
     console.warn('[reply-engine] booking failed, re-offering slots', {
       msg: (err as Error).message,
     })
-    await offerSlotsForBooking(args, args.tenantLocale)
+    await offerSlotsForBooking(args, locale)
   }
 }
 
@@ -361,6 +363,7 @@ async function rescheduleToSelectedSlot(
   appointmentId: string,
   slot: { startsAt: string; endsAt: string },
 ): Promise<void> {
+  const locale = args.customerLocale ?? args.tenantLocale
   try {
     await rescheduleBooking({
       appointmentId,
@@ -369,17 +372,17 @@ async function rescheduleToSelectedSlot(
     })
   } catch (err) {
     console.warn('[reply-engine] reschedule failed', { msg: (err as Error).message })
-    await unknownFallback(args, args.tenantLocale)
+    await unknownFallback(args, locale)
     return
   }
   await sendAndRecord({
     tenantId: args.tenantId,
     customerId: args.customerId,
-      toPlus: args.customerPhoneE164,
-    locale: args.tenantLocale,
-    text: t(args.tenantLocale, 'booking_rescheduled', {
+    toPlus: args.customerPhoneE164,
+    locale,
+    text: t(locale, 'booking_rescheduled', {
       service: '',
-      when: formatSlotForHumans(slot.startsAt, args.tenantTimezone, args.tenantLocale),
+      when: formatSlotForHumans(slot.startsAt, args.tenantTimezone, locale),
     }),
     metadata: { pending_action: null, source: 'reply-engine' },
   })
@@ -612,10 +615,15 @@ async function tryLlmReply(args: {
             role: 'system',
             content: [
               `You are a WhatsApp appointment assistant for a small service business.`,
-              `Always reply in the locale code: ${args.locale}.`,
-              `Reply in 1–2 short sentences. Do NOT invent times, prices or services.`,
-              `If the user wants to book, ask them to reply "book" so the system can offer slots.`,
-              `If the user wants to cancel or reschedule, ask them to reply "cancel" or "reschedule".`,
+              // Language discipline — this MUST be respected verbatim.
+              `CRITICAL: Reply in the SAME LANGUAGE as the user's last message.`,
+              `Do not translate or switch languages, even if the business context is in English.`,
+              `If the user writes in Turkish, answer in Turkish. If in Spanish, answer in Spanish. Etc.`,
+              `Best-guess locale code for the user's language: ${args.locale}.`,
+              // Style + safety rails.
+              `Reply in 1–2 short sentences. Do NOT invent times, prices or services that aren't in the business context.`,
+              `If the user wants to book, tell them to reply with the word "book" so the system can offer slots.`,
+              `If the user wants to cancel or reschedule, tell them to reply with "cancel" or "reschedule".`,
               `Business context:`,
               args.businessContext,
             ].join('\n'),

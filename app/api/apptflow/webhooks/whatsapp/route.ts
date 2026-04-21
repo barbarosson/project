@@ -5,6 +5,7 @@ import { getServiceSupabase } from '@/lib/apptflow/supabase'
 import { dispatchEvent } from '@/lib/apptflow/orchestrator'
 import { recordUsage } from '@/lib/apptflow/cost'
 import { handleInbound } from '@/lib/apptflow/reply-engine'
+import { detectLocale } from '@/lib/apptflow/lang-detect'
 import type { LocaleCode } from '@/lib/apptflow/types'
 
 export const runtime = 'nodejs'
@@ -60,24 +61,47 @@ export async function POST(req: NextRequest) {
 
         const intent = detectIntent(text)
 
-        // Try to resolve the customer.
+        // Detect language of the incoming message so the bot can reply in it.
+        const tenantFallbackLocale: LocaleCode =
+          (tenant?.default_locale ?? 'en') as LocaleCode
+        const detectedLocale = detectLocale(text, tenantFallbackLocale)
+
+        // Try to resolve the customer, and learn their language preference
+        // on every inbound so later turns speak the same language.
         let customerId: string | null = null
+        let customerLocale: LocaleCode = tenantFallbackLocale
         if (tenant) {
           const phone = from.startsWith('+') ? from : `+${from}`
           const { data: existing } = await sb
             .from('customers')
-            .select('id')
+            .select('id, preferred_locale')
             .eq('tenant_id', tenant.id)
             .eq('phone_e164', phone)
-            .maybeSingle()
-          customerId = existing?.id ?? null
-          if (!customerId) {
+            .maybeSingle<{ id: string; preferred_locale: string | null }>()
+
+          if (existing) {
+            customerId = existing.id
+            customerLocale = (existing.preferred_locale ?? detectedLocale) as LocaleCode
+            // Update stored preference if it differs (user switched languages).
+            if (existing.preferred_locale !== detectedLocale) {
+              await sb
+                .from('customers')
+                .update({ preferred_locale: detectedLocale })
+                .eq('id', existing.id)
+              customerLocale = detectedLocale
+            }
+          } else {
             const { data: inserted } = await sb
               .from('customers')
-              .insert({ tenant_id: tenant.id, phone_e164: phone })
+              .insert({
+                tenant_id: tenant.id,
+                phone_e164: phone,
+                preferred_locale: detectedLocale,
+              })
               .select('id')
               .single()
             customerId = inserted?.id ?? null
+            customerLocale = detectedLocale
           }
         }
 
@@ -91,6 +115,7 @@ export async function POST(req: NextRequest) {
           message_type: msg.type ?? 'text',
           intent: intent.intent,
           confidence: intent.confidence,
+          language: detectedLocale,
         })
         if (convInsertErr) {
           console.error('[wa webhook] inbound conversation insert failed', {
@@ -126,6 +151,7 @@ export async function POST(req: NextRequest) {
             tenantLocale: (tenant.default_locale ?? 'en') as LocaleCode,
             tenantTimezone: tenant.timezone ?? 'UTC',
             customerId,
+            customerLocale,
             customerPhoneE164: phoneE164,
             inboundText: text,
             intent,
