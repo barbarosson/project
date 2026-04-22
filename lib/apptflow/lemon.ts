@@ -145,6 +145,24 @@ export async function createCheckoutSession(args: CreateCheckoutArgs): Promise<C
 }
 
 // ----------------------------------------------------------------
+// Subscription URLs (customer portal, update payment method).
+// Lemon Squeezy exposes both on `GET /subscriptions/{id}` under
+// attributes.urls. They are signed / short-lived.
+// Docs: https://docs.lemonsqueezy.com/api/subscriptions
+// ----------------------------------------------------------------
+
+export type SubscriptionUrls = {
+  customer_portal?: string | null
+  update_payment_method?: string | null
+}
+
+export async function getSubscriptionUrls(subscriptionId: string): Promise<SubscriptionUrls> {
+  const res = await lsFetch<{ urls?: SubscriptionUrls }>(`/subscriptions/${subscriptionId}`)
+  const data = Array.isArray(res.data) ? res.data[0] : res.data
+  return data?.attributes?.urls ?? {}
+}
+
+// ----------------------------------------------------------------
 // Webhook signature verification (X-Signature header, HMAC-SHA256 hex)
 // Docs: https://docs.lemonsqueezy.com/help/webhooks
 // ----------------------------------------------------------------
