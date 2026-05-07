@@ -1,6 +1,6 @@
 [build]
-base = "."
-command = "npx next build"
+base = "ai-suite"
+command = "npm run build"
 publish = ".next"
 
 [build.environment]
