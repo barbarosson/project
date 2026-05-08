@@ -57,7 +57,7 @@ export function HomeClient() {
             withWordmark
             className="gap-3"
             iconClassName="size-56"
-            wordmarkClassName="text-3xl"
+            wordmarkClassName="text-5xl sm:text-6xl"
           />
         </div>
         <div className="flex items-center gap-2">

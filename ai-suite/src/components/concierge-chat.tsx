@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/i18n/i18n-provider";
+import { IsendaiLogo } from "@/components/isendai-logo";
 
 type UiMsg = { id: string; role: "assistant" | "user"; content: string };
 
@@ -109,7 +110,14 @@ export function ConciergeChat({ className }: { className?: string }) {
   return (
     <Card className={cn("bg-card/70 backdrop-blur", className)}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">{t("concierge.title")}</CardTitle>
+        <CardTitle className="text-base">
+          <IsendaiLogo
+            withWordmark
+            className="gap-2"
+            iconClassName="size-6"
+            wordmarkClassName="text-base"
+          />
+        </CardTitle>
       </CardHeader>
       <CardContent className="grid gap-3">
         <div className="max-h-56 space-y-2 overflow-auto rounded-xl border bg-background/50 p-3 text-sm">

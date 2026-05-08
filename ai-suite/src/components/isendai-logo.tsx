@@ -7,11 +7,13 @@ export function IsendaiLogo({
   iconClassName,
   wordmarkClassName,
   withWordmark = false,
+  wordmarkText = "ISENDAI",
 }: {
   className?: string;
   iconClassName?: string;
   wordmarkClassName?: string;
   withWordmark?: boolean;
+  wordmarkText?: string;
 }) {
   return (
     <div className={cn("inline-flex items-center gap-2", className)}>
@@ -80,8 +82,17 @@ export function IsendaiLogo({
       </svg>
 
       {withWordmark ? (
-        <span className={cn("text-sm font-semibold tracking-tight", wordmarkClassName)}>
-          isendai
+        <span
+          className={cn(
+            "bg-gradient-to-br from-[hsl(255_85%_65%)] via-[hsl(200_95%_55%)] to-[hsl(285_85%_65%)]",
+            "bg-clip-text text-transparent",
+            "[text-shadow:0_0_22px_hsl(255_85%_65%_/_0.15)]",
+            "font-black uppercase leading-none tracking-tight",
+            "[font-family:var(--font-space-grotesk)]",
+            wordmarkClassName
+          )}
+        >
+          {wordmarkText}
         </span>
       ) : null}
     </div>
