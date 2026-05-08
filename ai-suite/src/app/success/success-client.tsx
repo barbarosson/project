@@ -29,6 +29,7 @@ function isToolName(value: string | null): value is ToolName {
 export function SuccessClient() {
   const searchParams = useSearchParams();
   const toolParam = searchParams.get("tool");
+  const isTest = searchParams.get("test") === "1";
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -117,7 +118,9 @@ export function SuccessClient() {
         <div className="mb-6 flex items-center gap-2">
           <CheckCircle2 className="size-5 text-emerald-500" />
           <p className="text-sm text-muted-foreground">
-            Payment received. Generating your result…
+            {isTest
+              ? "Test mode. Generating your result…"
+              : "Payment received. Generating your result…"}
           </p>
         </div>
 

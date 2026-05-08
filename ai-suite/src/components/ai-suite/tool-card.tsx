@@ -61,9 +61,8 @@ export function ToolCard({ tool }: { tool: ToolName }) {
       savePayload(payload);
       const link = getStripeLink(tool);
       if (!link) {
-        alert(
-          `Stripe link env missing: ${meta.stripeEnvVar}. Add it to .env.local then restart dev server.`
-        );
+        // Stripe not configured yet → allow instant testing via /success
+        window.location.href = `/success?tool=${tool}&test=1`;
         return;
       }
       window.location.href = link;
