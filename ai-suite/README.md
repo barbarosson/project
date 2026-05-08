@@ -7,7 +7,7 @@ Minimal “AI Suite” demo with 3 tools, Stripe Payment Link redirect, and a `/
 1) Create `.env.local` from the example:
 
 ```bash
-copy .env.local.example .env.local
+copy .env.example .env.local
 ```
 
 2) Fill:

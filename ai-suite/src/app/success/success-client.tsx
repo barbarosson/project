@@ -2,10 +2,11 @@
 
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
-import { CheckCircle2, Copy, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, CheckCircle2, Copy, Loader2 } from "lucide-react";
 
 import type { ToolName, ToolPayload } from "@/components/ai-suite/tools";
-import { TOOL_META } from "@/components/ai-suite/tools";
+import { getToolDefinition } from "@/components/ai-suite/tools";
 import { useI18n } from "@/i18n/i18n-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,11 +21,7 @@ import { cn } from "@/lib/utils";
 type Stored = { v: 1; savedAt: string; payload: ToolPayload };
 
 function isToolName(value: string | null): value is ToolName {
-  return (
-    value === "corporate-whisperer" ||
-    value === "coverletter-ai" ||
-    value === "dating-roast"
-  );
+  return typeof value === "string" && value.length > 0;
 }
 
 export function SuccessClient() {
@@ -48,12 +45,12 @@ export function SuccessClient() {
 
       if (!tool) {
         setError(
-          "Missing or invalid tool parameter. Expected /success?tool=corporate-whisperer|coverletter-ai|dating-roast"
+          "Missing or invalid tool parameter."
         );
         return;
       }
 
-      const storageKey = TOOL_META[tool].storageKey;
+      const storageKey = getToolDefinition(tool).storageKey;
       const raw = localStorage.getItem(storageKey);
       if (!raw) {
         setError(
@@ -128,7 +125,15 @@ export function SuccessClient() {
 
         <Card>
           <CardHeader>
-            <CardTitle>{tool ? TOOL_META[tool].label : "Success"}</CardTitle>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <CardTitle>{tool ? getToolDefinition(tool).label : "Success"}</CardTitle>
+              <Button asChild variant="outline">
+                <Link href="/">
+                  <ArrowLeft className="size-4" />
+                  Back to Home
+                </Link>
+              </Button>
+            </div>
             <CardDescription>
               {tool ? t("success.usingSaved") : "—"}
             </CardDescription>

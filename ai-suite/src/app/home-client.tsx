@@ -6,9 +6,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AuroraBackground } from "@/components/aurora-background";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { useI18n } from "@/i18n/i18n-provider";
+import { CATEGORY_META, TOOLS, type ToolCategory } from "@/components/ai-suite/tools";
 
 export function HomeClient() {
   const { t } = useI18n();
+
+  const categories: ToolCategory[] = ["work-career", "crisis-money", "social-dating"];
 
   return (
     <div className="min-h-full bg-background">
@@ -70,37 +73,33 @@ export function HomeClient() {
               </p>
             </div>
 
-            <Tabs defaultValue="corporate-whisperer" className="w-full">
+            <Tabs defaultValue="work-career" className="w-full">
               <TabsList className="grid h-auto w-full grid-cols-1 gap-2 bg-transparent p-0 sm:grid-cols-3">
-                <TabsTrigger
-                  value="corporate-whisperer"
-                  className="h-10 rounded-md border bg-card/80 backdrop-blur"
-                >
-                  {t("tabs.corporate")}
-                </TabsTrigger>
-                <TabsTrigger
-                  value="coverletter-ai"
-                  className="h-10 rounded-md border bg-card/80 backdrop-blur"
-                >
-                  {t("tabs.coverletter")}
-                </TabsTrigger>
-                <TabsTrigger
-                  value="dating-roast"
-                  className="h-10 rounded-md border bg-card/80 backdrop-blur"
-                >
-                  {t("tabs.dating")}
-                </TabsTrigger>
+                {categories.map((cat) => (
+                  <TabsTrigger
+                    key={cat}
+                    value={cat}
+                    className="h-10 rounded-md border bg-card/80 backdrop-blur"
+                  >
+                    {CATEGORY_META[cat].label}
+                  </TabsTrigger>
+                ))}
               </TabsList>
 
-              <TabsContent value="corporate-whisperer">
-                <ToolCard tool="corporate-whisperer" />
-              </TabsContent>
-              <TabsContent value="coverletter-ai">
-                <ToolCard tool="coverletter-ai" />
-              </TabsContent>
-              <TabsContent value="dating-roast">
-                <ToolCard tool="dating-roast" />
-              </TabsContent>
+              {categories.map((cat) => (
+                <TabsContent key={cat} value={cat}>
+                  <div className="mt-3">
+                    <p className="text-sm text-muted-foreground">
+                      {CATEGORY_META[cat].description}
+                    </p>
+                  </div>
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {TOOLS.filter((t) => t.category === cat).map((tool) => (
+                      <ToolCard key={tool.tool} tool={tool.tool} />
+                    ))}
+                  </div>
+                </TabsContent>
+              ))}
             </Tabs>
           </div>
 
