@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Briefcase, Flame, Mail } from "lucide-react";
+import { toast } from "sonner";
 
 import type { ToolName, ToolPayload } from "./tools";
 import { getStripeLinkForModel, getToolDefinition } from "./tools";
@@ -74,6 +75,10 @@ export function ToolCard({
   const buttonLabel = `${def.actionLabel} - ${priceLabel}`;
 
   async function onPayAndGenerate() {
+    if (!isValid) {
+      toast.error("Please enter some text before generating.");
+      return;
+    }
     setBusy(true);
     try {
       savePayload(def.storageKey, payload);
@@ -152,7 +157,7 @@ export function ToolCard({
           <p className="text-sm text-slate-300">
             {t("tool.flow.hint")}
           </p>
-          <Button onClick={onPayAndGenerate} disabled={!isValid || busy}>
+          <Button onClick={onPayAndGenerate} disabled={busy}>
             {buttonLabel}
           </Button>
         </div>

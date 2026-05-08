@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Minus, MoveRight, Plus, Sparkles } from "lucide-react";
 
@@ -316,7 +317,16 @@ export function HomeClient() {
       <footer className="border-t bg-background/70 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-10 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">{t("footer.copyright")}</p>
-          <p className="text-sm text-muted-foreground">{t("footer.trust")}</p>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+            <Link className="hover:text-foreground transition-colors" href="/privacy">
+              Privacy
+            </Link>
+            <Link className="hover:text-foreground transition-colors" href="/terms">
+              Terms
+            </Link>
+            <span className="hidden sm:inline">·</span>
+            <span>{t("footer.trust")}</span>
+          </div>
         </div>
       </footer>
     </div>

@@ -4,6 +4,7 @@ import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Copy, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 import type { ToolName, ToolPayload } from "@/components/ai-suite/tools";
 import { getStripeLinkForModel, getToolDefinition } from "@/components/ai-suite/tools";
@@ -160,9 +161,20 @@ export function SuccessClient() {
         extra,
       }),
     });
-    const json = (await res.json()) as { result?: string; error?: string };
-    if (!res.ok) throw new Error(json?.error || "Generation failed.");
-    if (!json.result) throw new Error("No result returned.");
+    const raw = await res.text();
+    let json: { result?: string; error?: string } | null = null;
+    try {
+      json = JSON.parse(raw) as { result?: string; error?: string };
+    } catch {
+      json = null;
+    }
+
+    if (!res.ok) {
+      if (res.status >= 500) toast.error("Server error. Please try again in a moment.");
+      throw new Error(json?.error || "Generation failed.");
+    }
+
+    if (!json?.result) throw new Error("No result returned.");
     return json.result;
   }
 

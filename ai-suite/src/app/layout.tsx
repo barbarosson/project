@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import Script from "next/script";
 import { cookies } from "next/headers";
+import { Toaster } from "sonner";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { I18nProvider } from "@/i18n/i18n-provider";
@@ -26,8 +27,23 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "AI Suite",
-  description: "One-click AI solutions for your daily struggles.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://isendai.netlify.app"),
+  title: "isendai | Perfect Your Message Before You Hit Send",
+  description:
+    "Stop overthinking. Let AI transform your angry emails, write your cover letters, and handle your communication stress in seconds. Pay per use, no subscriptions.",
+  openGraph: {
+    type: "website",
+    title: "isendai | Perfect Your Message Before You Hit Send",
+    description:
+      "Stop overthinking. Let AI transform your angry emails, write your cover letters, and handle your communication stress in seconds. Pay per use, no subscriptions.",
+    siteName: "isendai",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "isendai | Perfect Your Message Before You Hit Send",
+    description:
+      "Stop overthinking. Let AI transform your angry emails, write your cover letters, and handle your communication stress in seconds. Pay per use, no subscriptions.",
+  },
 };
 
 export default async function RootLayout({
@@ -82,6 +98,7 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
             </ModelProvider>
           </I18nProvider>
         </ThemeProvider>
+        <Toaster theme="dark" richColors closeButton />
       </body>
     </html>
   );
