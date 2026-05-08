@@ -1,0 +1,184 @@
+"use client";
+
+import { ModeToggle } from "@/components/mode-toggle";
+import { ToolCard } from "@/components/ai-suite/tool-card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AuroraBackground } from "@/components/aurora-background";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { useI18n } from "@/i18n/i18n-provider";
+
+export function HomeClient() {
+  const { t } = useI18n();
+
+  return (
+    <div className="min-h-full bg-background">
+      <AuroraBackground />
+
+      <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-5">
+        <div className="flex items-center gap-2">
+          <div className="size-8 rounded-lg border bg-card shadow-sm" />
+          <span className="text-sm font-semibold tracking-tight">
+            {t("brand.name")}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher className="hidden sm:inline-flex" />
+          <ModeToggle />
+        </div>
+      </header>
+
+      <main className="mx-auto w-full max-w-6xl px-4 pb-16">
+        <section className="relative overflow-hidden rounded-2xl border bg-card/80 px-6 py-14 shadow-sm backdrop-blur sm:px-10">
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_50%_0%,hsl(var(--primary)_/_0.18)_0%,transparent_70%)]" />
+          <p className="text-sm font-medium text-muted-foreground">
+            {t("hero.kicker")}
+          </p>
+          <h1 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-5xl">
+            {t("hero.title")}
+          </h1>
+          <p className="mt-4 max-w-2xl text-balance text-base text-muted-foreground sm:text-lg">
+            {t("hero.subtitle")}
+          </p>
+          <div className="mt-6 flex flex-wrap gap-2">
+            <span className="rounded-full border bg-background/70 px-3 py-1 text-xs text-muted-foreground backdrop-blur">
+              {t("hero.badge.noSubscription")}
+            </span>
+            <span className="rounded-full border bg-background/70 px-3 py-1 text-xs text-muted-foreground backdrop-blur">
+              {t("hero.badge.noSignups")}
+            </span>
+            <span className="rounded-full border bg-background/70 px-3 py-1 text-xs text-muted-foreground backdrop-blur">
+              {t("hero.badge.payPerUse")}
+            </span>
+            <span className="rounded-full border bg-background/70 px-3 py-1 text-xs text-muted-foreground backdrop-blur">
+              {t("hero.badge.noStore")}
+            </span>
+          </div>
+
+          <div className="mt-6 sm:hidden">
+            <LanguageSwitcher />
+          </div>
+        </section>
+
+        <section className="mt-10 grid gap-10">
+          <div>
+            <div className="mb-4">
+              <h2 className="text-pretty text-xl font-semibold tracking-tight">
+                {t("section.tools.title")}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t("section.tools.subtitle")}
+              </p>
+            </div>
+
+            <Tabs defaultValue="corporate-whisperer" className="w-full">
+              <TabsList className="grid h-auto w-full grid-cols-1 gap-2 bg-transparent p-0 sm:grid-cols-3">
+                <TabsTrigger
+                  value="corporate-whisperer"
+                  className="h-10 rounded-md border bg-card/80 backdrop-blur"
+                >
+                  {t("tabs.corporate")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="coverletter-ai"
+                  className="h-10 rounded-md border bg-card/80 backdrop-blur"
+                >
+                  {t("tabs.coverletter")}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="dating-roast"
+                  className="h-10 rounded-md border bg-card/80 backdrop-blur"
+                >
+                  {t("tabs.dating")}
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="corporate-whisperer">
+                <ToolCard tool="corporate-whisperer" />
+              </TabsContent>
+              <TabsContent value="coverletter-ai">
+                <ToolCard tool="coverletter-ai" />
+              </TabsContent>
+              <TabsContent value="dating-roast">
+                <ToolCard tool="dating-roast" />
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          <div className="grid gap-4 rounded-2xl border bg-card/80 p-6 shadow-sm backdrop-blur sm:grid-cols-3 sm:gap-6 sm:p-8">
+            <div>
+              <p className="text-sm font-semibold">{t("how.1.title")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t("how.1.body")}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-semibold">{t("how.2.title")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t("how.2.body")}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm font-semibold">{t("how.3.title")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t("how.3.body")}
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h2 className="text-pretty text-xl font-semibold tracking-tight">
+              {t("products.title")}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t("products.subtitle")}
+            </p>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-xl border bg-card/80 p-4 shadow-sm backdrop-blur">
+                <p className="text-sm font-semibold">{t("products.corp.title")}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  “{t("products.corp.slogan")}”
+                </p>
+              </div>
+              <div className="rounded-xl border bg-card/80 p-4 shadow-sm backdrop-blur">
+                <p className="text-sm font-semibold">{t("products.cover.title")}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  “{t("products.cover.slogan")}”
+                </p>
+              </div>
+              <div className="rounded-xl border bg-card/80 p-4 shadow-sm backdrop-blur">
+                <p className="text-sm font-semibold">{t("products.dating.title")}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  “{t("products.dating.slogan")}”
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-xl border bg-card/80 p-4 shadow-sm backdrop-blur">
+              <p className="text-sm font-semibold">{t("faq.q1")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("faq.a1")}</p>
+            </div>
+            <div className="rounded-xl border bg-card/80 p-4 shadow-sm backdrop-blur">
+              <p className="text-sm font-semibold">{t("faq.q2")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("faq.a2")}</p>
+            </div>
+            <div className="rounded-xl border bg-card/80 p-4 shadow-sm backdrop-blur">
+              <p className="text-sm font-semibold">{t("faq.q3")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("faq.a3")}</p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t bg-background/70 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-10 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">{t("footer.copyright")}</p>
+          <p className="text-sm text-muted-foreground">{t("footer.trust")}</p>
+        </div>
+      </footer>
+    </div>
+  );
+}
+

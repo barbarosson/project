@@ -6,6 +6,7 @@ import { CheckCircle2, Copy, Loader2 } from "lucide-react";
 
 import type { ToolName, ToolPayload } from "@/components/ai-suite/tools";
 import { TOOL_META } from "@/components/ai-suite/tools";
+import { useI18n } from "@/i18n/i18n-provider";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -30,6 +31,7 @@ export function SuccessClient() {
   const searchParams = useSearchParams();
   const toolParam = searchParams.get("tool");
   const isTest = searchParams.get("test") === "1";
+  const { t } = useI18n();
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -119,8 +121,8 @@ export function SuccessClient() {
           <CheckCircle2 className="size-5 text-emerald-500" />
           <p className="text-sm text-muted-foreground">
             {isTest
-              ? "Test mode. Generating your result…"
-              : "Payment received. Generating your result…"}
+              ? t("success.test")
+              : t("success.paid")}
           </p>
         </div>
 
@@ -128,14 +130,14 @@ export function SuccessClient() {
           <CardHeader>
             <CardTitle>{tool ? TOOL_META[tool].label : "Success"}</CardTitle>
             <CardDescription>
-              {tool ? "We’re using your saved input from localStorage." : "—"}
+              {tool ? t("success.usingSaved") : "—"}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             {loading ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="size-4 animate-spin" />
-                Generating with GPT‑4o‑mini…
+                {t("success.generating")}
               </div>
             ) : error ? (
               <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
@@ -154,12 +156,12 @@ export function SuccessClient() {
                 <div className="flex justify-end">
                   <Button variant="outline" onClick={copy}>
                     <Copy className="size-4" />
-                    Copy to Clipboard
+                    {t("success.copy")}
                   </Button>
                 </div>
               </>
             ) : (
-              <p className="text-sm text-muted-foreground">Ready when you are.</p>
+              <p className="text-sm text-muted-foreground">{t("success.ready")}</p>
             )}
           </CardContent>
         </Card>

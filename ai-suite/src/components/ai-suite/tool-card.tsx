@@ -5,6 +5,7 @@ import { Briefcase, Flame, Mail } from "lucide-react";
 
 import type { ToolName, ToolPayload } from "./tools";
 import { getStripeLink, TOOL_META } from "./tools";
+import { useI18n } from "@/i18n/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +27,7 @@ function savePayload(payload: ToolPayload) {
 
 export function ToolCard({ tool }: { tool: ToolName }) {
   const [busy, setBusy] = React.useState(false);
+  const { t } = useI18n();
 
   const [text, setText] = React.useState("");
   const [jobLink, setJobLink] = React.useState("");
@@ -50,10 +52,10 @@ export function ToolCard({ tool }: { tool: ToolName }) {
 
   const buttonLabel =
     tool === "corporate-whisperer"
-      ? "Translate to Professional - $1.49"
+      ? t("tool.corp.button")
       : tool === "coverletter-ai"
-        ? "Generate Cover Letter - $1.49"
-        : "Roast & Fix My Profile - $1.49";
+        ? t("tool.cover.button")
+        : t("tool.dating.button");
 
   async function onPayAndGenerate() {
     setBusy(true);
@@ -82,10 +84,10 @@ export function ToolCard({ tool }: { tool: ToolName }) {
             <CardTitle className="truncate">{meta.label}</CardTitle>
             <CardDescription className="mt-1">
               {tool === "corporate-whisperer"
-                ? "Want to yell at your boss or client? Don't. Type your angry, unfiltered thoughts here, and we'll turn it into a polite, HR-friendly masterpiece."
+                ? t("tool.corp.desc")
                 : tool === "coverletter-ai"
-                  ? "Tired of writing the same letter for every job? Paste the job URL and your skills. We'll generate a tailored, ATS-beating cover letter that gets interviews."
-                  : "Not getting matches? Our AI will brutally roast your current bio, tell you exactly why it's failing, and write a magnetic new one for you."}
+                  ? t("tool.cover.desc")
+                  : t("tool.dating.desc")}
             </CardDescription>
           </div>
         </div>
@@ -96,26 +98,26 @@ export function ToolCard({ tool }: { tool: ToolName }) {
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder={`Type what you REALLY want to say... (e.g., "This design is garbage and you clearly didn't read my brief.")`}
+            placeholder={t("tool.corp.placeholder")}
           />
         ) : tool === "coverletter-ai" ? (
           <div className="grid gap-3">
             <Input
               value={jobLink}
               onChange={(e) => setJobLink(e.target.value)}
-              placeholder="Paste Job Description or URL..."
+              placeholder={t("tool.cover.placeholder1")}
             />
             <Textarea
               value={resume}
               onChange={(e) => setResume(e.target.value)}
-              placeholder="Paste your resume text or key skills..."
+              placeholder={t("tool.cover.placeholder2")}
             />
           </div>
         ) : (
           <Textarea
             value={profile}
             onChange={(e) => setProfile(e.target.value)}
-            placeholder="Paste your current Tinder/Bumble bio or describe your vibe..."
+            placeholder={t("tool.dating.placeholder")}
           />
         )}
 
