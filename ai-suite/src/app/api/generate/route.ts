@@ -10,8 +10,13 @@ import {
   type ToolName,
   type ToolPayload,
 } from "@/components/ai-suite/tools";
+import {
+  isConcreteModelId,
+  modelMeta,
+  type ConcreteModelId,
+} from "@/models/models";
 
-type RequestBody = ToolPayload;
+type RequestBody = ToolPayload & { model?: string; extra?: string };
 
 type ScopeResult = {
   in_scope: boolean;
@@ -78,6 +83,25 @@ function hasProviderKey(provider: ProviderId) {
   return typeof process.env[key] === "string" && process.env[key]!.trim().length > 0;
 }
 
+function resolveModelOverride(
+  body: RequestBody
+): { provider: ProviderId; client: typeof openai; model: string } | { provider: ProviderId; client: typeof anthropic; model: string } | { provider: ProviderId; client: ReturnType<typeof createOpenAI>; model: string } | null {
+  if (typeof body.model !== "string") return null;
+  if (body.model === "auto") return null;
+  if (!isConcreteModelId(body.model)) return null;
+  const meta = modelMeta(body.model as ConcreteModelId);
+  switch (meta.provider) {
+    case "openai":
+      return { provider: "openai", client: openai, model: meta.id };
+    case "anthropic":
+      return { provider: "anthropic", client: anthropic, model: meta.id };
+    case "groq":
+      return { provider: "groq", client: groq, model: meta.id };
+    case "deepseek":
+      return { provider: "deepseek", client: deepseek, model: meta.id };
+  }
+}
+
 function modelForProvider(provider: ProviderId) {
   switch (provider) {
     case "openai":
@@ -95,7 +119,7 @@ function pickProvider(payload: ToolPayload): ProviderId {
   return getToolDefinition(payload.tool).provider;
 }
 
-async function checkScope(payload: ToolPayload): Promise<ScopeResult> {
+async function checkScope(payload: RequestBody): Promise<ScopeResult> {
   const tool = payload.tool;
   const def = getToolDefinition(tool);
   const rawInput = rawInputFor(payload);
@@ -113,8 +137,9 @@ async function checkScope(payload: ToolPayload): Promise<ScopeResult> {
 
   const allowed = [...TOOLS.map((t) => t.tool), "unknown"].join(", ");
 
-  const provider = pickProvider(payload);
-  const { client, model } = modelForProvider(provider);
+  const override = resolveModelOverride(payload);
+  const provider = override?.provider ?? pickProvider(payload);
+  const { client, model } = override ?? modelForProvider(provider);
 
   // Fail-open if the required key is missing.
   if (!hasProviderKey(provider)) return { in_scope: true };
@@ -161,8 +186,13 @@ async function checkScope(payload: ToolPayload): Promise<ScopeResult> {
   }
 }
 
-function promptFor(payload: ToolPayload) {
+function promptFor(payload: RequestBody) {
   const def = getToolDefinition(payload.tool);
+  const extra = typeof payload.extra === "string" ? payload.extra.trim() : "";
+  const withExtra = (base: string) =>
+    extra.length > 0
+      ? `${base}\n\nExtra instructions (apply on top of the tool):\n${extra}`
+      : base;
   switch (payload.tool) {
     case "corporate-whisperer":
       return {
@@ -172,7 +202,7 @@ function promptFor(payload: ToolPayload) {
           "If the request is not about rewriting a message/email, respond with a short refusal and suggest the correct tool (Cover Letter or Dating Profile) or ask for the message to rewrite.\n" +
           "Keep meaning, remove aggression, add a clear subject, greeting, and closing.\n" +
           "Output only the email.",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     case "coverletter-ai":
       return {
@@ -182,10 +212,11 @@ function promptFor(payload: ToolPayload) {
           "If the request is not about a cover letter, respond with a short refusal and suggest the correct tool (Corporate Whisperer or Dating Profile) or ask for missing inputs.\n" +
           "Be specific, confident, and professional.\n" +
           "Output only the cover letter.",
-        user:
+        user: withExtra(
           "jobLink" in payload && "resume" in payload
             ? `Job posting:\n${payload.jobLink}\n\nCandidate resume:\n${payload.resume}`
-            : "",
+            : ""
+        ),
       };
     case "dating-roast":
       return {
@@ -195,7 +226,7 @@ function promptFor(payload: ToolPayload) {
           "If the request is not about improving a dating bio, respond with a short refusal and suggest the correct tool (Corporate Whisperer or Cover Letter) or ask for the bio.\n" +
           "Keep it kind, practical, and not mean.\n" +
           "Output format:\n1) Quick roast (3-6 bullets)\n2) Improved bio (one version)\n3) Optional variants (2 short alternatives)",
-        user: "text" in payload ? payload.text : payload.profile,
+        user: withExtra("text" in payload ? payload.text : payload.profile),
       };
     case "raise-negotiator":
       return {
@@ -205,7 +236,7 @@ function promptFor(payload: ToolPayload) {
           "Use the user's achievements and quantified impact. Include: subject line, context, impact bullets, clear ask, and a proposed meeting.\n" +
           "Tone: confident, respectful, non-entitled.\n" +
           "Output only the email.",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     case "graceful-quitter":
       return {
@@ -215,7 +246,7 @@ function promptFor(payload: ToolPayload) {
           "Include: subject, resignation statement, last working day, gratitude, transition support.\n" +
           "Avoid oversharing or negativity.\n" +
           "Output only the letter.",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     case "cold-dm-icebreaker":
       return {
@@ -224,7 +255,7 @@ function promptFor(payload: ToolPayload) {
           "Write a short, personalized networking message for LinkedIn/email that maximizes reply rate.\n" +
           "Constraints: 60–120 words, 1 clear ask, 1 personalization detail, zero fluff, no sleazy sales.\n" +
           "Output only the message.",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     case "micromanager-tamer":
       return {
@@ -233,7 +264,7 @@ function promptFor(payload: ToolPayload) {
           "Write a polite but firm message that sets boundaries with a micromanager.\n" +
           "Include: empathy, clear boundary, suggested process (updates cadence), and a calm close.\n" +
           "Output only the message.",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     case "invoice-chaser":
       return {
@@ -243,7 +274,7 @@ function promptFor(payload: ToolPayload) {
           "Include: invoice reference, amount, due date, payment link/request, and a firm but friendly tone.\n" +
           "Avoid shaming; include next step if unpaid.\n" +
           "Output only the email.",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     case "perfect-apology":
       return {
@@ -252,7 +283,7 @@ function promptFor(payload: ToolPayload) {
           "Write a no-excuses apology that takes responsibility.\n" +
           "Include: acknowledgement, ownership, impact, repair plan, and invitation to respond.\n" +
           "No blame, no 'if you felt'. Output only the text.",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     case "refund-demander":
       return {
@@ -261,7 +292,7 @@ function promptFor(payload: ToolPayload) {
           "Write a formal, assertive refund/compensation request.\n" +
           "Include: order details, timeline, what went wrong, what you want, a reasonable deadline, and mention consumer rights in general terms.\n" +
           "Professional, calm, firm. Output only the email.",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     case "deadline-diplomat":
       return {
@@ -270,7 +301,7 @@ function promptFor(payload: ToolPayload) {
           "Write a professional extension request that protects credibility.\n" +
           "Include: current status, reason (without excuses), revised timeline, risk mitigation, and next update date.\n" +
           "Output only the message/email.",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     case "landlord-diplomat":
       return {
@@ -279,7 +310,7 @@ function promptFor(payload: ToolPayload) {
           "Write a diplomatic negotiation message for a landlord/tenant dispute.\n" +
           "Be legally-aware but not giving legal advice; focus on facts, dates, reasonable requests, and de-escalation.\n" +
           "Output only the message.",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     case "review-retaliator":
       return {
@@ -288,7 +319,7 @@ function promptFor(payload: ToolPayload) {
           "Write a calm, professional reply to an unfair negative review.\n" +
           "Acknowledge feelings, state facts without arguing, offer a resolution path, protect brand voice.\n" +
           "Output only the public reply.",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     case "ghosting-resurrector":
       return {
@@ -297,7 +328,7 @@ function promptFor(payload: ToolPayload) {
           "Write 3 short follow-up texts to revive a conversation without pressure.\n" +
           "Constraints: each under 160 characters, light tone, no guilt-tripping.\n" +
           "Output only the 3 messages, numbered 1-3.",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     case "passive-aggressive-decoder":
       return {
@@ -307,7 +338,7 @@ function promptFor(payload: ToolPayload) {
           "Then write 2 smart reply options: one neutral, one firm.\n" +
           "No escalation, no insults.\n" +
           "Output format:\nSubtext:\n- ...\nReply A:\n...\nReply B:\n...",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     case "guilt-free-no":
       return {
@@ -316,7 +347,7 @@ function promptFor(payload: ToolPayload) {
           "Write 3 refusal message options: soft, direct, and very direct.\n" +
           "Be kind, clear, and final. No overexplaining.\n" +
           "Output only the 3 options, labeled Soft/Direct/Very direct.",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     case "delicate-truth":
       return {
@@ -325,7 +356,7 @@ function promptFor(payload: ToolPayload) {
           "Rewrite a difficult truth into a gentle, non-blaming message.\n" +
           "Use 'I' statements, focus on behavior and impact, propose a path forward.\n" +
           "Output only the message.",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     case "co-parenting-peacemaker":
       return {
@@ -334,7 +365,7 @@ function promptFor(payload: ToolPayload) {
           "Rewrite the message to be neutral, logistics-only, and conflict-minimizing.\n" +
           "Remove emotion, accusations, sarcasm. Keep dates, times, responsibilities.\n" +
           "Output only the message.",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     case "friendzone-navigator":
       return {
@@ -343,7 +374,7 @@ function promptFor(payload: ToolPayload) {
           "Write a careful message to confess feelings or set boundaries while preserving friendship.\n" +
           "Be respectful, clear, and low-pressure. Include an easy out.\n" +
           "Output only the message.",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     case "rsvp-diplomat":
       return {
@@ -352,13 +383,13 @@ function promptFor(payload: ToolPayload) {
           "Write a warm, respectful decline for an important invitation without drama.\n" +
           "Include: gratitude, clear decline, brief reason (optional), and well-wishes.\n" +
           "Output only the message.",
-        user: payload.text,
+        user: withExtra(payload.text),
       };
     default: {
       if (payload.tool === "coverletter-ai" && "jobLink" in payload && "resume" in payload) {
         return {
           system: def.systemPrompt,
-          user: `Job posting:\n${payload.jobLink}\n\nCandidate resume:\n${payload.resume}`,
+          user: withExtra(`Job posting:\n${payload.jobLink}\n\nCandidate resume:\n${payload.resume}`),
         };
       }
       const text =
@@ -369,7 +400,7 @@ function promptFor(payload: ToolPayload) {
           : "text" in payload
             ? payload.text
             : "";
-      return { system: def.systemPrompt, user: text };
+      return { system: def.systemPrompt, user: withExtra(text) };
     }
   }
 }
@@ -390,8 +421,9 @@ export async function POST(req: Request) {
   }
 
   const { system, user } = promptFor(body);
-  const provider = pickProvider(body);
-  const { client, model } = modelForProvider(provider);
+  const override = resolveModelOverride(body);
+  const provider = override?.provider ?? pickProvider(body);
+  const { client, model } = override ?? modelForProvider(provider);
   const debugHeaders = {
     "x-ai-provider": provider,
     "x-ai-model": model,

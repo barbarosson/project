@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, Minus, Plus, Sparkles } from "lucide-react";
+import { ArrowRight, Minus, MoveRight, Plus, Sparkles } from "lucide-react";
 
 import { ModeToggle } from "@/components/mode-toggle";
 import { ToolCard } from "@/components/ai-suite/tool-card";
@@ -75,15 +75,45 @@ export function HomeClient() {
       </header>
 
       <main className="mx-auto w-full max-w-6xl px-4 pb-16">
-        <section className="relative overflow-hidden rounded-2xl border bg-card/70 px-6 py-8 shadow-sm backdrop-blur sm:px-10">
-          <div className="absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_50%_0%,hsl(var(--primary)_/_0.16)_0%,transparent_70%)]" />
-          <p className="text-sm font-medium text-muted-foreground">{t("hero.kicker")}</p>
+        <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/40 px-6 py-8 shadow-sm backdrop-blur-md sm:px-10">
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(124,58,237,0.25)_0%,transparent_70%)]" />
+          <p className="text-sm font-medium text-slate-300">{t("hero.kicker")}</p>
           <h1 className="mt-2 text-balance text-2xl font-semibold tracking-tight sm:text-4xl">
-            {t("hero.title")}
+            <span className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+              {t("hero.title")}
+            </span>
           </h1>
-          <p className="mt-3 max-w-3xl text-balance text-sm text-muted-foreground sm:text-base">
+          <p className="mt-3 max-w-3xl text-balance text-sm text-slate-300 sm:text-base">
             {t("hero.subtitle")}
           </p>
+        </section>
+
+        <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md transition-colors">
+          <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
+            <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-4 transition-colors">
+              <p className="text-xs font-semibold text-rose-600 dark:text-rose-400">Before</p>
+              <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/90">
+                This design is garbage, you clearly didn&apos;t read my brief!
+              </p>
+            </div>
+            <div className="hidden items-center justify-center lg:flex">
+              <span className="inline-flex size-9 items-center justify-center rounded-full border bg-background/60 text-muted-foreground">
+                <MoveRight className="size-4" />
+              </span>
+            </div>
+            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 transition-colors">
+              <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">After</p>
+              <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/90">
+                I feel we&apos;ve drifted slightly from the original brief. Could we review the design
+                to ensure it aligns with our initial vision?
+              </p>
+            </div>
+            <div className="flex items-center justify-center lg:hidden">
+              <span className="inline-flex size-9 items-center justify-center rounded-full border bg-background/60 text-muted-foreground">
+                <MoveRight className="size-4" />
+              </span>
+            </div>
+          </div>
         </section>
 
         <section className="mt-6 rounded-2xl border bg-card/70 p-6 shadow-sm backdrop-blur">
@@ -120,7 +150,7 @@ export function HomeClient() {
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[320px_1fr]">
           {/* Left: tool list */}
-          <aside className="rounded-2xl border bg-card/70 p-4 shadow-sm backdrop-blur">
+          <aside className="hidden rounded-2xl border border-white/10 bg-slate-900/40 p-4 shadow-sm backdrop-blur-md lg:block">
             <div className="mb-3 flex items-center justify-between gap-2">
               <p className="text-sm font-semibold">{t("home.sidebar.title")}</p>
               <span className="text-xs text-muted-foreground">{TOOLS.length}</span>
@@ -186,7 +216,70 @@ export function HomeClient() {
           </aside>
 
           {/* Right: workspace */}
-          <section className="rounded-2xl border bg-card/70 p-4 shadow-sm backdrop-blur sm:p-6">
+          <section className="rounded-2xl border border-white/10 bg-slate-900/40 p-4 shadow-sm backdrop-blur-md sm:p-6">
+            <div className="mb-4 lg:hidden">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-semibold">{t("home.sidebar.title")}</p>
+                <span className="text-xs text-muted-foreground">{TOOLS.length}</span>
+              </div>
+              <div className="mt-3 -mx-2 overflow-x-auto whitespace-nowrap px-2">
+                <div className="flex w-max gap-2 pb-1">
+                  {categories.map((cat) => {
+                    const isActive = selectedDef.category === cat;
+                    return (
+                      <button
+                        key={cat}
+                        type="button"
+                        className={cn(
+                          "inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
+                          "focus:outline-none focus:ring-2 focus:ring-primary/30",
+                          isActive
+                            ? "border-primary/30 bg-primary/10 text-foreground"
+                            : "border-border/60 bg-background/60 text-muted-foreground hover:bg-accent/40"
+                        )}
+                        onClick={() => {
+                          const first = TOOLS.find((x) => x.category === cat)?.tool;
+                          if (!first) return;
+                          setSelected(first);
+                          router.replace(`/?tool=${first}`);
+                        }}
+                      >
+                        {t(`category.${cat}.label`)}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-3 -mx-2 overflow-x-auto whitespace-nowrap px-2">
+                <div className="flex w-max gap-2 pb-1">
+                  {TOOLS.filter((x) => x.category === selectedDef.category).map((x) => {
+                    const isActive = x.tool === selected;
+                    return (
+                      <button
+                        key={x.tool}
+                        type="button"
+                        className={cn(
+                          "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-colors",
+                          "focus:outline-none focus:ring-2 focus:ring-primary/30",
+                          isActive
+                            ? "border-primary/30 bg-primary/10 text-foreground"
+                            : "border-border/60 bg-background/60 text-muted-foreground hover:bg-accent/40"
+                        )}
+                        onClick={() => {
+                          setSelected(x.tool);
+                          router.replace(`/?tool=${x.tool}`);
+                        }}
+                      >
+                        <span aria-hidden="true">{x.emoji}</span>
+                        <span className="max-w-[16rem] truncate">{toolTitle(t, x.tool, x.title)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
             <ConciergeChat className="mb-5" />
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0">

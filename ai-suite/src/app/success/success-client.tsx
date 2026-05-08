@@ -9,7 +9,13 @@ import type { ToolName, ToolPayload } from "@/components/ai-suite/tools";
 import { getStripeLinkForModel, getToolDefinition } from "@/components/ai-suite/tools";
 import { useI18n } from "@/i18n/i18n-provider";
 import { toolTitle } from "@/i18n/tool-i18n";
-import { isModelId, type ModelId, DEFAULT_MODEL } from "@/models/models";
+import {
+  defaultConcreteModelForProvider,
+  isModelId,
+  type ConcreteModelId,
+  type ModelId,
+  DEFAULT_MODEL,
+} from "@/models/models";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -18,6 +24,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 type Stored = { v: 1; savedAt: string; payload: ToolPayload };
@@ -111,6 +118,9 @@ export function SuccessClient() {
   const [error, setError] = React.useState<string | null>(null);
   const [versions, setVersions] = React.useState<Version[]>([]);
   const [activeId, setActiveId] = React.useState<string | null>(null);
+  const [altExtra, setAltExtra] = React.useState("");
+  const [stored, setStored] = React.useState<Stored | null>(null);
+  const storageKeyRef = React.useRef<string | null>(null);
   const active = React.useMemo(() => {
     if (!versions.length) return null;
     if (activeId) {
@@ -126,11 +136,29 @@ export function SuccessClient() {
 
   const tool: ToolName | null = isToolName(toolParam) ? toolParam : null;
 
-  async function generate(toolName: ToolName, parsed: Stored, model: ModelId) {
+  const cleanup = React.useCallback(() => {
+    const storageKey = storageKeyRef.current;
+    if (!storageKey) return;
+    try {
+      localStorage.removeItem(storageKey);
+      localStorage.removeItem(`${storageKey}:model`);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  async function generate(toolName: ToolName, parsed: Stored, model: ModelId, extra?: string) {
+    const def = getToolDefinition(toolName);
+    const concreteModel: ConcreteModelId =
+      model === "auto" ? defaultConcreteModelForProvider(def.provider) : (model as ConcreteModelId);
     const res = await fetch("/api/generate", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ...parsed.payload, model }),
+      body: JSON.stringify({
+        ...parsed.payload,
+        model: model === "auto" ? undefined : concreteModel,
+        extra,
+      }),
     });
     const json = (await res.json()) as { result?: string; error?: string };
     if (!res.ok) throw new Error(json?.error || "Generation failed.");
@@ -150,6 +178,7 @@ export function SuccessClient() {
       }
 
       const storageKey = getToolDefinition(tool).storageKey;
+      storageKeyRef.current = storageKey;
       const raw = localStorage.getItem(storageKey);
       if (!raw) {
         setError(t("errors.noSavedInput"));
@@ -172,6 +201,9 @@ export function SuccessClient() {
         setError(t("errors.savedInputInvalid"));
         return;
       }
+
+      // Keep payload in memory for alternatives, then clear localStorage later.
+      setStored(parsed);
 
       const restored = safeLoadVersions(tool);
       setVersions(restored);
@@ -208,6 +240,9 @@ export function SuccessClient() {
         setActiveId(newVersion.id);
         persistVersions(tool, next);
         setPendingAlt(tool, false);
+
+        // Privacy: once we have a result, remove saved input from localStorage.
+        cleanup();
       } catch (e) {
         if (cancelled) return;
         setError(e instanceof Error ? e.message : "Generation failed.");
@@ -220,12 +255,20 @@ export function SuccessClient() {
     return () => {
       cancelled = true;
     };
-  }, [tool, t]);
+  }, [tool, t, cleanup]);
+
+  React.useEffect(() => {
+    if (!active) return;
+    const onBeforeUnload = () => cleanup();
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [active, cleanup]);
 
   async function copy() {
     try {
       if (!active) return;
       await navigator.clipboard.writeText(active.text);
+      cleanup();
     } catch {
       // ignore
     }
@@ -240,24 +283,25 @@ export function SuccessClient() {
     if (versions.length >= 5) return;
 
     const storageKey = getToolDefinition(tool).storageKey;
+    storageKeyRef.current = storageKey;
     const modelRaw = localStorage.getItem(`${storageKey}:model`);
     const model: ModelId = isModelId(modelRaw) ? modelRaw : DEFAULT_MODEL;
 
-    const link = getStripeLinkForModel(tool, model);
+    const concreteModel: ConcreteModelId =
+      model === "auto" ? defaultConcreteModelForProvider(getToolDefinition(tool).provider) : (model as ConcreteModelId);
+    const link = getStripeLinkForModel(tool, concreteModel);
     if (isTest || !link) {
       // Dev/test: generate without redirecting to Stripe.
       setPendingAlt(tool, false);
       setLoading(true);
       setError(null);
       try {
-        const raw = localStorage.getItem(storageKey);
-        if (!raw) throw new Error("No saved input found in localStorage for this tool.");
-        const parsed = JSON.parse(raw) as Stored;
-        if (!parsed?.payload || parsed.payload.tool !== tool)
-          throw new Error("Saved input does not match the requested tool.");
+        const parsed = stored;
+        if (!parsed) throw new Error(t("errors.noSavedInput"));
+        if (!parsed?.payload || parsed.payload.tool !== tool) throw new Error(t("errors.savedInputMismatch"));
         if (!isValidPayload(parsed.payload)) throw new Error(t("errors.savedInputInvalid"));
 
-        const text = await generate(tool, parsed, model);
+        const text = await generate(tool, parsed, model, altExtra);
         const newVersion: Version = {
           v: 1,
           id: crypto.randomUUID(),
@@ -268,6 +312,7 @@ export function SuccessClient() {
         setVersions(next);
         setActiveId(newVersion.id);
         persistVersions(tool, next);
+        cleanup();
       } catch (e) {
         setError(e instanceof Error ? e.message : "Generation failed.");
       } finally {
@@ -286,14 +331,14 @@ export function SuccessClient() {
   return (
     <div className="min-h-full bg-background">
       <main className="mx-auto w-full max-w-3xl px-4 py-12">
-        <div className="mb-4 rounded-xl border bg-card/60 p-4 text-sm text-muted-foreground">
-          <p className="font-medium text-foreground">{t("success.ephemeral.title")}</p>
+        <div className="mb-4 rounded-xl border border-white/10 bg-slate-900/40 p-4 text-sm text-slate-300 shadow-sm backdrop-blur-md">
+          <p className="font-medium text-white">{t("success.ephemeral.title")}</p>
           <p className="mt-1">{t("success.ephemeral.body")}</p>
         </div>
 
         <div className="mb-6 flex items-center gap-2">
           <CheckCircle2 className="size-5 text-emerald-500" />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-slate-300">
             {isTest
               ? t("success.test")
               : t("success.paid")}
@@ -326,7 +371,7 @@ export function SuccessClient() {
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             {loading ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-sm text-slate-300">
                 <Loader2 className="size-4 animate-spin" />
                 {t("success.generating")}
               </div>
@@ -336,7 +381,7 @@ export function SuccessClient() {
               </div>
             ) : active ? (
               <>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-slate-300">
                   {t("success.selectedVersion")}{" "}
                   <span className="font-medium text-foreground">
                     {activeIndex >= 0 ? activeIndex + 1 : 1}/{versions.length}
@@ -350,8 +395,19 @@ export function SuccessClient() {
                 >
                   {active.text}
                 </div>
+                <div className="grid gap-2">
+                  <p className="text-xs font-medium text-slate-300">
+                    {t("success.alt.extra.label")}
+                  </p>
+                  <Textarea
+                    value={altExtra}
+                    onChange={(e) => setAltExtra(e.target.value)}
+                    placeholder={t("success.alt.extra.placeholder")}
+                    className="min-h-20"
+                  />
+                </div>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-slate-300">
                     {t("success.versions")} {versions.length}
                   </p>
                   <div className="flex flex-wrap items-center justify-end gap-2">
@@ -380,7 +436,7 @@ export function SuccessClient() {
                           type="button"
                           className={cn(
                             "rounded-lg border bg-background/50 p-3 text-left text-sm transition-colors hover:bg-accent/40",
-                            v.id === active.id ? "border-primary/30 bg-primary/10" : "border-border/60"
+                            v.id === active.id ? "border-violet-400/30 bg-violet-500/10" : "border-white/10"
                           )}
                           onClick={() => {
                             setActiveId(v.id);
@@ -394,7 +450,7 @@ export function SuccessClient() {
                               className="size-4 accent-[hsl(var(--primary))]"
                               aria-label={t("success.selectedVersion")}
                             />
-                            <p className="text-xs font-semibold text-muted-foreground">
+                            <p className="text-xs font-semibold text-slate-300">
                               {t("success.alt.version")} {versions.length - idx}
                             </p>
                           </div>
@@ -405,13 +461,13 @@ export function SuccessClient() {
                 ) : null}
 
                 {tool && versions.length >= 5 ? (
-                  <div className="rounded-lg border bg-card/60 p-3 text-sm text-muted-foreground">
+                  <div className="rounded-lg border border-white/10 bg-slate-900/40 p-3 text-sm text-slate-300 backdrop-blur-md">
                     {t("success.alt.limit")}
                   </div>
                 ) : null}
               </>
             ) : (
-              <p className="text-sm text-muted-foreground">{t("success.ready")}</p>
+              <p className="text-sm text-slate-300">{t("success.ready")}</p>
             )}
           </CardContent>
         </Card>

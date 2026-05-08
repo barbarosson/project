@@ -1667,6 +1667,29 @@ export const TOOLS_SEED: ToolSeed[] = [
       "Output only the bios.",
   },
 
-  // This file now reaches 100 tool seeds.
+  {
+    tool: "corporate-to-caveman-translator",
+    category: "creators-media",
+    emoji: "🪨",
+    title: "The Corporate-to-Caveman Translator",
+    description:
+      "Paste a long, boring corporate email. We translate it into the brutal, 3-word primitive truth.",
+    actionLabel: "Translate",
+    fields: [TEXT_FIELD("Paste that 5-paragraph email from HR here...")],
+    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_CORPORATE_TO_CAVEMAN_TRANSLATOR",
+    scopeHint:
+      "Translate corporate/jargon-heavy emails or statements into a brutally compressed caveman version (3–6 words).",
+    systemPrompt:
+      "You are a brutal, primitive Caveman.\n" +
+      "The user will give you a long, polite, jargon-filled corporate email or statement.\n" +
+      "You must translate this into the brutal, primitive truth.\n" +
+      "USE EXTREME COMPRESSION. Maximum 3 to 6 words.\n" +
+      "Use very bad, primitive grammar. No polite words.\n" +
+      "Example 1: 'We are restructuring our global workforce to optimize synergies' -> 'Company broke. You fired.'\n" +
+      "Example 2: 'Let's take this offline and circle back next week' -> 'I hate you. Shut up.'\n" +
+      "Output ONLY the caveman translation. Do not add quotes or explanations.",
+  },
+
+  // This file now reaches 101 tool seeds.
 ];
 

@@ -48,7 +48,7 @@ export const DICTS: Record<Locale, Dict> = {
     "how.detailed.2.title": "2) Paste your context",
     "how.detailed.2.body": "Drop your draft, job post, or situation. No formatting needed.",
     "how.detailed.3.title": "3) Select model & pay",
-    "how.detailed.3.body": "Choose the AI model tier and complete checkout via Stripe (or test mode).",
+    "how.detailed.3.body": "Choose the AI model tier and complete checkout via Stripe.",
     "how.detailed.4.title": "4) Review, copy, generate alternatives",
     "how.detailed.4.body": "Copy the result or buy/generate another version (max 5). Closing the tab deletes results.",
 
@@ -105,6 +105,9 @@ export const DICTS: Record<Locale, Dict> = {
     "success.alt.generate": "Generate alternative",
     "success.alt.limit": "You’ve reached the maximum of 5 alternatives for this request.",
     "success.alt.version": "Version",
+    "success.alt.extra.label": "Extra instructions for the next version (optional)",
+    "success.alt.extra.placeholder":
+      "e.g., more human, slightly funny, shorter, more formal, add warmth, etc.",
     "success.versions": "Saved versions:",
     "success.selectedVersion": "Selected version:",
 
@@ -204,7 +207,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Pega tu borrador, oferta o situación. Sin formato necesario.",
     "how.detailed.3.title": "3) Elige modelo y paga",
     "how.detailed.3.body":
-      "Elige el nivel del modelo y completa el pago con Stripe (o modo prueba).",
+      "Elige el nivel del modelo y completa el pago con Stripe.",
     "how.detailed.4.title": "4) Revisa, copia, genera alternativas",
     "how.detailed.4.body":
       "Copia el resultado o compra/genera otra versión (máx. 5). Al cerrar la pestaña se borran los resultados.",
@@ -252,6 +255,9 @@ export const DICTS: Record<Locale, Dict> = {
     "success.alt.generate": "Generar alternativa",
     "success.alt.limit": "Has alcanzado el máximo de 5 alternativas para esta solicitud.",
     "success.alt.version": "Versión",
+    "success.alt.extra.label": "Instrucciones extra para la próxima versión (opcional)",
+    "success.alt.extra.placeholder":
+      "p. ej., más humano, un poco gracioso, más corto, más formal, más cálido, etc.",
     "success.versions": "Versiones guardadas:",
     "success.selectedVersion": "Versión seleccionada:",
 
@@ -350,7 +356,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Collez votre brouillon, offre ou situation. Pas de mise en forme nécessaire.",
     "how.detailed.3.title": "3) Choisissez le modèle & payez",
     "how.detailed.3.body":
-      "Sélectionnez le niveau du modèle et finalisez le paiement via Stripe (ou mode test).",
+      "Sélectionnez le niveau du modèle et finalisez le paiement via Stripe.",
     "how.detailed.4.title": "4) Relisez, copiez, générez des alternatives",
     "how.detailed.4.body":
       "Copiez le résultat ou achetez/générez une autre version (max 5). Fermer l’onglet supprime les résultats.",
@@ -398,6 +404,9 @@ export const DICTS: Record<Locale, Dict> = {
     "success.alt.generate": "Générer une alternative",
     "success.alt.limit": "Vous avez atteint le maximum de 5 alternatives pour cette demande.",
     "success.alt.version": "Version",
+    "success.alt.extra.label": "Consignes supplémentaires pour la prochaine version (optionnel)",
+    "success.alt.extra.placeholder":
+      "ex. plus humain, un peu drôle, plus court, plus formel, plus chaleureux, etc.",
     "success.versions": "Versions enregistrées :",
     "success.selectedVersion": "Version sélectionnée :",
 
@@ -497,7 +506,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Füge Entwurf, Jobpost oder Situation ein. Kein Format nötig.",
     "how.detailed.3.title": "3) Modell wählen & bezahlen",
     "how.detailed.3.body":
-      "Wähle die Modell‑Stufe und schließe den Checkout über Stripe ab (oder Testmodus).",
+      "Wähle die Modell‑Stufe und schließe den Checkout über Stripe ab.",
     "how.detailed.4.title": "4) Prüfen, kopieren, Alternativen erzeugen",
     "how.detailed.4.body":
       "Kopiere das Ergebnis oder kaufe/generiere eine weitere Version (max. 5). Beim Schließen des Tabs werden die Ergebnisse gelöscht.",
@@ -545,6 +554,9 @@ export const DICTS: Record<Locale, Dict> = {
     "success.alt.generate": "Alternative erzeugen",
     "success.alt.limit": "Du hast das Maximum von 5 Alternativen für diese Anfrage erreicht.",
     "success.alt.version": "Version",
+    "success.alt.extra.label": "Extra‑Wünsche für die nächste Version (optional)",
+    "success.alt.extra.placeholder":
+      "z. B. menschlicher, leicht witzig, kürzer, formeller, wärmer, usw.",
     "success.versions": "Gespeicherte Versionen:",
     "success.selectedVersion": "Ausgewählte Version:",
 
@@ -635,7 +647,7 @@ export const DICTS: Record<Locale, Dict> = {
     "how.detailed.2.title": "2) 粘贴你的背景信息",
     "how.detailed.2.body": "粘贴草稿、职位描述或具体情况，无需格式。",
     "how.detailed.3.title": "3) 选择模型并支付",
-    "how.detailed.3.body": "选择模型档位，并通过 Stripe 完成支付（或测试模式）。",
+    "how.detailed.3.body": "选择模型档位，并通过 Stripe 完成支付。",
     "how.detailed.4.title": "4) 查看、复制、生成备选版本",
     "how.detailed.4.body":
       "复制结果，或购买/生成另一版（最多 5 版）。关闭标签页会删除结果。",
@@ -682,6 +694,9 @@ export const DICTS: Record<Locale, Dict> = {
     "success.alt.generate": "生成备选版本",
     "success.alt.limit": "本次请求最多只能生成 5 个备选版本。",
     "success.alt.version": "版本",
+    "success.alt.extra.label": "下一版的额外要求（可选）",
+    "success.alt.extra.placeholder":
+      "例如：更口语、更幽默一些、更短、更正式、更有温度等。",
     "success.versions": "已保存版本：",
     "success.selectedVersion": "已选择版本：",
 
@@ -770,7 +785,7 @@ export const DICTS: Record<Locale, Dict> = {
     "how.detailed.2.title": "2) Bağlamı yapıştır",
     "how.detailed.2.body": "Taslak/ilan/durumunu yaz. Format şart değil.",
     "how.detailed.3.title": "3) Model seç & öde",
-    "how.detailed.3.body": "AI modelini seç ve Stripe ile ödemeyi tamamla (veya test modu).",
+    "how.detailed.3.body": "AI modelini seç ve Stripe ile ödemeyi tamamla.",
     "how.detailed.4.title": "4) İncele, kopyala, alternatif üret",
     "how.detailed.4.body": "Sonucu kopyala veya yeni versiyon üret/satın al (max 5). Sekmeyi kapatırsan sonuçlar silinir.",
     "products.title": "Ürünler (hızlı, net, etkili)",
@@ -817,6 +832,9 @@ export const DICTS: Record<Locale, Dict> = {
     "success.alt.generate": "Alternatif üret",
     "success.alt.limit": "Bu istek için en fazla 5 alternatif üretebilirsin.",
     "success.alt.version": "Versiyon",
+    "success.alt.extra.label": "Bir sonraki versiyon için ek istekler (opsiyonel)",
+    "success.alt.extra.placeholder":
+      "örn. daha insancıl, biraz komik, daha kısa, daha resmi, daha sıcak bir ton, vb.",
     "success.versions": "Kaydedilen versiyon:",
     "success.selectedVersion": "Seçili versiyon:",
 

@@ -21,6 +21,23 @@ type ConciergeScope = {
   in_scope: boolean;
 };
 
+function localeToLanguage(locale: Locale): string {
+  switch (locale) {
+    case "tr":
+      return "Turkish";
+    case "es":
+      return "Spanish";
+    case "fr":
+      return "French";
+    case "de":
+      return "German";
+    case "zh":
+      return "Chinese (Simplified)";
+    default:
+      return "English";
+  }
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -160,7 +177,10 @@ export async function POST(req: Request) {
           "When you recommend a tool, include it as a clickable markdown link in your reply using this format:\n" +
           "- [<emoji> <tool label>](/?tool=<tool id>)\n" +
           "Only use internal links that start with '/'.\n" +
-          `Reply in this language/locale: ${locale}\n\n` +
+          `Language requirement:\n` +
+          `- Output MUST be ONLY in ${localeToLanguage(locale)}.\n` +
+          `- Do NOT switch languages.\n` +
+          `- If user message is in a different language than locale, still follow locale.\n\n` +
           "Return ONLY valid JSON (no markdown) with keys:\n" +
           '- reply: string (your message)\n' +
           "- suggested_tools: array of tool ids (0-3 items)\n\n" +
