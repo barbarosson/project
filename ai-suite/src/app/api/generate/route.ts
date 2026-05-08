@@ -1,29 +1,9 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
-type ModelId = "gpt-4o-mini" | "gpt-4.1-mini" | "gpt-4o";
+import { TOOLS, getToolDefinition, type ToolName } from "@/components/ai-suite/tools";
 
-type ToolName =
-  | "corporate-whisperer"
-  | "coverletter-ai"
-  | "dating-roast"
-  | "raise-negotiator"
-  | "graceful-quitter"
-  | "cold-dm-icebreaker"
-  | "micromanager-tamer"
-  | "invoice-chaser"
-  | "perfect-apology"
-  | "refund-demander"
-  | "deadline-diplomat"
-  | "landlord-diplomat"
-  | "review-retaliator"
-  | "ghosting-resurrector"
-  | "passive-aggressive-decoder"
-  | "guilt-free-no"
-  | "delicate-truth"
-  | "co-parenting-peacemaker"
-  | "friendzone-navigator"
-  | "rsvp-diplomat";
+type ModelId = "gpt-4o-mini" | "gpt-4.1-mini" | "gpt-4o";
 
 type ToolPayload =
   | { tool: "coverletter-ai"; jobLink: string; resume: string }
@@ -39,31 +19,8 @@ type ScopeResult = {
   suggested_tool?: ToolName | "unknown";
 };
 
-const TOOL_NAMES: ToolName[] = [
-  "corporate-whisperer",
-  "coverletter-ai",
-  "dating-roast",
-  "raise-negotiator",
-  "graceful-quitter",
-  "cold-dm-icebreaker",
-  "micromanager-tamer",
-  "invoice-chaser",
-  "perfect-apology",
-  "refund-demander",
-  "deadline-diplomat",
-  "landlord-diplomat",
-  "review-retaliator",
-  "ghosting-resurrector",
-  "passive-aggressive-decoder",
-  "guilt-free-no",
-  "delicate-truth",
-  "co-parenting-peacemaker",
-  "friendzone-navigator",
-  "rsvp-diplomat",
-];
-
 function isToolName(value: string): value is ToolName {
-  return (TOOL_NAMES as readonly string[]).includes(value);
+  return TOOLS.some((t) => t.tool === value);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -86,89 +43,21 @@ function isModelId(value: unknown): value is ModelId {
   return value === "gpt-4o-mini" || value === "gpt-4.1-mini" || value === "gpt-4o";
 }
 
-function scopeInstructionsFor(tool: ToolName) {
-  switch (tool) {
-    case "corporate-whisperer":
-      return (
-        "Rewrite ANY rough/emotional/unprofessional draft into a concise, polite, professional workplace email. " +
-        "Aggressive/confrontational language is explicitly IN SCOPE because the goal is to tone-polish it. " +
-        "Out of scope only if the user is NOT asking for message/email rewriting."
-      );
-    case "coverletter-ai":
-      return "Only writing a tailored cover letter based on job posting + candidate resume.";
-    case "dating-roast":
-      return "Only critique + improve a dating profile bio (kind, constructive).";
-    case "raise-negotiator":
-      return "Only write a persuasive raise/budget increase email based on achievements and impact.";
-    case "graceful-quitter":
-      return "Only write a professional resignation letter that preserves relationships.";
-    case "cold-dm-icebreaker":
-      return "Only write a short, personalized cold DM/icebreaker for professional networking.";
-    case "micromanager-tamer":
-      return "Only write a boundary-setting message to a micromanager in a polite, firm way.";
-    case "invoice-chaser":
-      return "Only write a professional payment reminder for an overdue invoice.";
-    case "perfect-apology":
-      return "Only write a no-excuses apology that takes responsibility and proposes repair steps.";
-    case "refund-demander":
-      return "Only write a formal complaint/refund request email referencing consumer rights.";
-    case "deadline-diplomat":
-      return "Only write a professional extension request for a deadline, with a plan and new timeline.";
-    case "landlord-diplomat":
-      return "Only write diplomatic negotiation messages for landlord/tenant disputes, legally aware.";
-    case "review-retaliator":
-      return "Only write a calm, professional reply to an unfair negative review.";
-    case "ghosting-resurrector":
-      return "Only write a short follow-up message to revive a conversation without pressure.";
-    case "passive-aggressive-decoder":
-      return "Only decode passive-aggressive messages and craft a smart, non-escalating reply.";
-    case "guilt-free-no":
-      return "Only write a clear, kind refusal message without overexplaining.";
-    case "delicate-truth":
-      return "Only rewrite a hard truth into a gentle, non-blaming confrontation message.";
-    case "co-parenting-peacemaker":
-      return "Only write neutral, logistics-focused co-parenting messages that reduce conflict.";
-    case "friendzone-navigator":
-      return "Only write careful messages to confess feelings or set boundaries without harming friendship.";
-    case "rsvp-diplomat":
-      return "Only write a graceful decline for an important invitation without drama.";
-  }
-}
-
 async function checkScope(client: OpenAI, payload: ToolPayload): Promise<ScopeResult> {
   const tool = payload.tool;
+  const def = getToolDefinition(tool);
   const rawInput =
-    tool === "coverletter-ai"
-        ? `Job posting:\n${payload.jobLink}\n\nResume:\n${payload.resume}`
-        : tool === "dating-roast"
-          ? "text" in payload
-            ? payload.text
-            : payload.profile
-          : payload.text;
+    tool === "coverletter-ai" && "jobLink" in payload && "resume" in payload
+      ? `Job posting:\n${payload.jobLink}\n\nResume:\n${payload.resume}`
+      : tool === "dating-roast"
+        ? "text" in payload
+          ? payload.text
+          : payload.profile
+        : "text" in payload
+          ? payload.text
+          : "";
 
-  const allowed = [
-    "corporate-whisperer",
-    "coverletter-ai",
-    "dating-roast",
-    "raise-negotiator",
-    "graceful-quitter",
-    "cold-dm-icebreaker",
-    "micromanager-tamer",
-    "invoice-chaser",
-    "perfect-apology",
-    "refund-demander",
-    "deadline-diplomat",
-    "landlord-diplomat",
-    "review-retaliator",
-    "ghosting-resurrector",
-    "passive-aggressive-decoder",
-    "guilt-free-no",
-    "delicate-truth",
-    "co-parenting-peacemaker",
-    "friendzone-navigator",
-    "rsvp-diplomat",
-    "unknown",
-  ].join(", ");
+  const allowed = [...TOOLS.map((t) => t.tool), "unknown"].join(", ");
 
   const res = await client.chat.completions.create({
     model: "gpt-4o-mini",
@@ -188,7 +77,7 @@ async function checkScope(client: OpenAI, payload: ToolPayload): Promise<ScopeRe
         role: "user",
         content:
           `Selected tool: ${tool}\n` +
-          `Tool scope: ${scopeInstructionsFor(tool)}\n\n` +
+          `Tool scope: ${def.scopeHint}\n\n` +
           "Decide whether the user's input is in scope for the selected tool.\n" +
           "If not, set in_scope=false and suggest the best tool (or unknown).\n\n" +
           `User input:\n${rawInput}`,
@@ -215,6 +104,7 @@ async function checkScope(client: OpenAI, payload: ToolPayload): Promise<ScopeRe
 }
 
 function promptFor(payload: ToolPayload) {
+  const def = getToolDefinition(payload.tool);
   switch (payload.tool) {
     case "corporate-whisperer":
       return {
@@ -234,7 +124,10 @@ function promptFor(payload: ToolPayload) {
           "If the request is not about a cover letter, respond with a short refusal and suggest the correct tool (Corporate Whisperer or Dating Profile) or ask for missing inputs.\n" +
           "Be specific, confident, and professional.\n" +
           "Output only the cover letter.",
-        user: `Job posting:\n${payload.jobLink}\n\nCandidate resume:\n${payload.resume}`,
+        user:
+          "jobLink" in payload && "resume" in payload
+            ? `Job posting:\n${payload.jobLink}\n\nCandidate resume:\n${payload.resume}`
+            : "",
       };
     case "dating-roast":
       return {
@@ -403,6 +296,23 @@ function promptFor(payload: ToolPayload) {
           "Output only the message.",
         user: payload.text,
       };
+    default: {
+      if (payload.tool === "coverletter-ai" && "jobLink" in payload && "resume" in payload) {
+        return {
+          system: def.systemPrompt,
+          user: `Job posting:\n${payload.jobLink}\n\nCandidate resume:\n${payload.resume}`,
+        };
+      }
+      const text =
+        payload.tool === "dating-roast"
+          ? "text" in payload
+            ? payload.text
+            : payload.profile
+          : "text" in payload
+            ? payload.text
+            : "";
+      return { system: def.systemPrompt, user: text };
+    }
   }
 }
 

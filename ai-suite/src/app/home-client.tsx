@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Minus, Plus, Sparkles } from "lucide-react";
 
 import { ModeToggle } from "@/components/mode-toggle";
 import { ToolCard } from "@/components/ai-suite/tool-card";
@@ -34,6 +34,16 @@ export function HomeClient() {
       ? selectedFromUrl
       : defaultTool
   );
+  const [expanded, setExpanded] = React.useState<Record<ToolCategory, boolean>>({
+    "work-career": true,
+    "crisis-money": true,
+    "social-dating": true,
+    "freelance-business": true,
+    "academic-bureaucracy": true,
+    "neighbors-living": true,
+    "creators-media": true,
+    "family-deep-personal": true,
+  });
 
   const selectedDef = getToolDefinition(selected);
 
@@ -69,6 +79,38 @@ export function HomeClient() {
           </p>
         </section>
 
+        <section className="mt-6 rounded-2xl border bg-card/70 p-6 shadow-sm backdrop-blur">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-0">
+              <h2 className="text-pretty text-lg font-semibold tracking-tight">
+                {t("how.detailed.title")}
+              </h2>
+              <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+                {t("how.detailed.subtitle")}
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl border bg-background/50 p-4">
+              <p className="text-sm font-semibold">{t("how.detailed.1.title")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("how.detailed.1.body")}</p>
+            </div>
+            <div className="rounded-xl border bg-background/50 p-4">
+              <p className="text-sm font-semibold">{t("how.detailed.2.title")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("how.detailed.2.body")}</p>
+            </div>
+            <div className="rounded-xl border bg-background/50 p-4">
+              <p className="text-sm font-semibold">{t("how.detailed.3.title")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("how.detailed.3.body")}</p>
+            </div>
+            <div className="rounded-xl border bg-background/50 p-4">
+              <p className="text-sm font-semibold">{t("how.detailed.4.title")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("how.detailed.4.body")}</p>
+            </div>
+          </div>
+        </section>
+
         <section className="mt-8 grid gap-6 lg:grid-cols-[320px_1fr]">
           {/* Left: tool list */}
           <aside className="rounded-2xl border bg-card/70 p-4 shadow-sm backdrop-blur">
@@ -80,38 +122,57 @@ export function HomeClient() {
             <div className="grid gap-4">
               {categories.map((cat) => (
                 <div key={cat}>
-                  <p className="mb-2 text-xs font-semibold text-muted-foreground">
-                    {t(`category.${cat}.label`)}
-                  </p>
-                  <div className="grid gap-1">
-                    {TOOLS.filter((x) => x.category === cat).map((x) => {
-                      const isActive = x.tool === selected;
-                      return (
-                        <button
-                          key={x.tool}
-                          type="button"
-                          className={cn(
-                            "flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm transition-colors",
-                            isActive
-                              ? "border-primary/30 bg-primary/10"
-                              : "border-border/60 bg-background/50 hover:bg-accent/40"
-                          )}
-                          onClick={() => {
-                            setSelected(x.tool);
-                            router.replace(`/?tool=${x.tool}`);
-                          }}
-                        >
-                          <span className="flex min-w-0 items-center gap-2">
-                            <span className="shrink-0" aria-hidden="true">
-                              {x.emoji}
+                  <button
+                    type="button"
+                    className="mb-2 flex w-full items-center justify-between gap-2 text-left"
+                    onClick={() =>
+                      setExpanded((prev) => ({ ...prev, [cat]: !prev[cat] }))
+                    }
+                  >
+                    <p className="text-xs font-semibold text-muted-foreground">
+                      {t(`category.${cat}.label`)}
+                    </p>
+                    <span className="inline-flex size-6 items-center justify-center rounded-md border bg-background/60 text-muted-foreground">
+                      {expanded[cat] ? <Minus className="size-4" /> : <Plus className="size-4" />}
+                    </span>
+                  </button>
+
+                  {expanded[cat] ? (
+                    <div className="grid gap-1">
+                      {TOOLS.filter((x) => x.category === cat).map((x) => {
+                        const isActive = x.tool === selected;
+                        return (
+                          <button
+                            key={x.tool}
+                            type="button"
+                            className={cn(
+                              "flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm transition-colors",
+                              isActive
+                                ? "border-primary/30 bg-primary/10"
+                                : "border-border/60 bg-background/50 hover:bg-accent/40"
+                            )}
+                            onClick={() => {
+                              setSelected(x.tool);
+                              router.replace(`/?tool=${x.tool}`);
+                            }}
+                          >
+                            <span className="flex min-w-0 items-center gap-2">
+                              <span className="shrink-0" aria-hidden="true">
+                                {x.emoji}
+                              </span>
+                              <span className="truncate">{t(`tool.${x.tool}.label`)}</span>
                             </span>
-                            <span className="truncate">{t(`tool.${x.tool}.label`)}</span>
-                          </span>
-                          <ArrowRight className={cn("size-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} />
-                        </button>
-                      );
-                    })}
-                  </div>
+                            <ArrowRight
+                              className={cn(
+                                "size-4 shrink-0",
+                                isActive ? "text-primary" : "text-muted-foreground"
+                              )}
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : null}
                 </div>
               ))}
             </div>

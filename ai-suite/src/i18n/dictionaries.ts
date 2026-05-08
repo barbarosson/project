@@ -40,6 +40,18 @@ export const DICTS: Record<Locale, Dict> = {
     "how.3.title": "3) Copy & send",
     "how.3.body": "Get a clean result with a one-click copy button.",
 
+    "how.detailed.title": "How it works (step-by-step)",
+    "how.detailed.subtitle":
+      "Pick the right micro‑tool, paste your draft, and get a polished output in seconds. You can generate up to 5 alternatives per request.",
+    "how.detailed.1.title": "1) Choose the right tool",
+    "how.detailed.1.body": "Use the left menu or ask the AI Concierge to recommend one.",
+    "how.detailed.2.title": "2) Paste your context",
+    "how.detailed.2.body": "Drop your draft, job post, or situation. No formatting needed.",
+    "how.detailed.3.title": "3) Select model & pay",
+    "how.detailed.3.body": "Choose the AI model tier and complete checkout via Stripe (or test mode).",
+    "how.detailed.4.title": "4) Review, copy, generate alternatives",
+    "how.detailed.4.body": "Copy the result or buy/generate another version (max 5). Closing the tab deletes results.",
+
     "products.title": "The products (quick, punchy, effective)",
     "products.subtitle": "Short tools with one job: make you sound better, faster.",
     "products.corp.title": "The Corporate Whisperer",
@@ -99,7 +111,7 @@ export const DICTS: Record<Locale, Dict> = {
     "home.sidebar.title": "AI Products",
     "home.workspace.hint": "Paste → Generate → Copy",
 
-    "concierge.title": "AI Concierge",
+    "concierge.title": "ISENDAI",
     "concierge.welcome":
       "Hi — what do you need help with today? (e.g., a work email, a cover letter, a refund message, a dating bio)",
     "concierge.placeholder": "Tell me what you’re trying to do…",
@@ -330,7 +342,7 @@ export const DICTS: Record<Locale, Dict> = {
     "category.crisis-money.label": "Crisis y dinero",
     "category.social-dating.label": "Social y citas",
 
-    "concierge.title": "Conserje de IA",
+    "concierge.title": "ISENDAI",
     "concierge.welcome":
       "Hola — ¿en qué necesitas ayuda hoy? (p. ej., un email de trabajo, una carta de presentación, un mensaje de reembolso, una bio de citas)",
     "concierge.placeholder": "Cuéntame qué quieres lograr…",
@@ -436,7 +448,7 @@ export const DICTS: Record<Locale, Dict> = {
     "category.crisis-money.label": "Crise & argent",
     "category.social-dating.label": "Social & rencontres",
 
-    "concierge.title": "Concierge IA",
+    "concierge.title": "ISENDAI",
     "concierge.welcome":
       "Bonjour — de quoi avez-vous besoin aujourd’hui ? (ex. un email pro, une lettre de motivation, une demande de remboursement, une bio de rencontre)",
     "concierge.placeholder": "Dites-moi ce que vous cherchez à faire…",
@@ -543,7 +555,7 @@ export const DICTS: Record<Locale, Dict> = {
     "category.crisis-money.label": "Krise & Geld",
     "category.social-dating.label": "Social & Dating",
 
-    "concierge.title": "KI‑Concierge",
+    "concierge.title": "ISENDAI",
     "concierge.welcome":
       "Hi — wobei brauchst du heute Hilfe? (z. B. eine Business‑Mail, ein Anschreiben, eine Rückerstattungsnachricht, eine Dating‑Bio)",
     "concierge.placeholder": "Sag mir kurz, was du erreichen willst…",
@@ -647,7 +659,7 @@ export const DICTS: Record<Locale, Dict> = {
     "category.crisis-money.label": "危机与金钱",
     "category.social-dating.label": "社交与约会",
 
-    "concierge.title": "AI 引导助手",
+    "concierge.title": "ISENDAI",
     "concierge.welcome":
       "你好 — 你今天需要什么帮助？（例如：工作邮件、求职信、退款消息、约会简介）",
     "concierge.placeholder": "告诉我你想做什么…",
@@ -700,6 +712,18 @@ export const DICTS: Record<Locale, Dict> = {
     "how.2.body": "AI tonu, yapıyı ve netliği güçlendirerek yeniden yazar.",
     "how.3.title": "3) Kopyala & gönder",
     "how.3.body": "Tek tıkla kopyala, direkt gönder.",
+
+    "how.detailed.title": "Nasıl çalışır? (adım adım)",
+    "how.detailed.subtitle":
+      "Doğru micro‑aracı seç, metnini yapıştır ve saniyeler içinde parlatılmış çıktı al. Her istek için en fazla 5 alternatif üretebilirsin.",
+    "how.detailed.1.title": "1) Doğru aracı seç",
+    "how.detailed.1.body": "Soldaki listeden seç veya AI Karşılama Botu’ndan öneri iste.",
+    "how.detailed.2.title": "2) Bağlamı yapıştır",
+    "how.detailed.2.body": "Taslak/ilan/durumunu yaz. Format şart değil.",
+    "how.detailed.3.title": "3) Model seç & öde",
+    "how.detailed.3.body": "AI modelini seç ve Stripe ile ödemeyi tamamla (veya test modu).",
+    "how.detailed.4.title": "4) İncele, kopyala, alternatif üret",
+    "how.detailed.4.body": "Sonucu kopyala veya yeni versiyon üret/satın al (max 5). Sekmeyi kapatırsan sonuçlar silinir.",
     "products.title": "Ürünler (hızlı, net, etkili)",
     "products.subtitle": "Tek işi var: daha iyi görünmeni sağlamak.",
     "products.corp.title": "The Corporate Whisperer",
@@ -750,7 +774,7 @@ export const DICTS: Record<Locale, Dict> = {
     "home.sidebar.title": "AI Ürünleri",
     "home.workspace.hint": "Yapıştır → Üret → Kopyala",
 
-    "concierge.title": "AI Karşılama Botu",
+    "concierge.title": "ISENDAI",
     "concierge.welcome":
       "Merhaba — bugün neye ihtiyacın var? (örn. iş e-postası, ön yazı, iade talebi, flört biyosu)",
     "concierge.placeholder": "Ne yapmak istediğini kısaca yaz…",

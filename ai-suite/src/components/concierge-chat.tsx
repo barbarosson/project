@@ -16,6 +16,38 @@ type UiMsg = { id: string; role: "assistant" | "user"; content: string };
 
 type ApiResponse = { reply: string; suggested_tools: ToolName[] };
 
+function renderMarkdownLinks(text: string) {
+  const parts: React.ReactNode[] = [];
+  const re = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null = null;
+
+  while ((match = re.exec(text)) !== null) {
+    const [full, label, href] = match;
+    const start = match.index;
+    if (start > lastIndex) parts.push(text.slice(lastIndex, start));
+
+    const safeHref = typeof href === "string" && href.startsWith("/") ? href : null;
+    if (safeHref) {
+      parts.push(
+        <a
+          key={`${start}:${safeHref}`}
+          href={safeHref}
+          className="font-medium text-primary underline underline-offset-4"
+        >
+          {label}
+        </a>
+      );
+    } else {
+      parts.push(full);
+    }
+    lastIndex = start + full.length;
+  }
+
+  if (lastIndex < text.length) parts.push(text.slice(lastIndex));
+  return parts;
+}
+
 export function ConciergeChat({ className }: { className?: string }) {
   const router = useRouter();
   const { t, locale } = useI18n();
@@ -63,7 +95,10 @@ export function ConciergeChat({ className }: { className?: string }) {
         content: String(json.reply),
       };
       setMessages((prev) => [...prev, assistantMsg]);
-      setSuggested(Array.isArray(json.suggested_tools) ? (json.suggested_tools as ToolName[]) : []);
+      const suggestedTools = Array.isArray(json.suggested_tools)
+        ? (json.suggested_tools as ToolName[])
+        : [];
+      setSuggested(suggestedTools);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Chat failed.");
     } finally {
@@ -88,7 +123,9 @@ export function ConciergeChat({ className }: { className?: string }) {
                   : "mr-auto w-[92%] border-border/60 bg-card"
               )}
             >
-              <p className="whitespace-pre-wrap">{m.content}</p>
+              <p className="whitespace-pre-wrap">
+                {m.role === "assistant" ? renderMarkdownLinks(m.content) : m.content}
+              </p>
             </div>
           ))}
           {busy ? (
