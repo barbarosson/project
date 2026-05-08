@@ -128,6 +128,8 @@ export const DICTS: Record<Locale, Dict> = {
     "errors.savedInputParse": "Saved input could not be parsed. Please go back and try again.",
     "errors.savedInputMismatch":
       "Saved input does not match the requested tool. Please go back and try again.",
+    "errors.savedInputInvalid":
+      "Saved input is incomplete for this tool. Please go back and enter more details.",
 
     "category.work-career.label": "Career Glow‑Up",
     "category.crisis-money.label": "Money & Oops Fixes",
@@ -163,6 +165,8 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.insurance-claim-letter.title": "Insurance Claim Letter",
     "tool.insurance-claim-letter.desc":
       "Draft a clear claim letter with facts, dates, and requested coverage.",
+
+    "tool.linkedin-headline-smith.title": "LinkedIn Headline Smith",
   },
   es: {
     "brand.name": "isendai",
@@ -188,6 +192,22 @@ export const DICTS: Record<Locale, Dict> = {
     "how.2.body": "La IA reescribe con mejor tono, estructura y claridad.",
     "how.3.title": "3) Copia y envía",
     "how.3.body": "Obtén un resultado limpio con copiar en un clic.",
+
+    "how.detailed.title": "Cómo funciona (paso a paso)",
+    "how.detailed.subtitle":
+      "Elige la microherramienta adecuada, pega tu borrador y obtén un resultado pulido en segundos. Puedes generar hasta 5 alternativas por solicitud.",
+    "how.detailed.1.title": "1) Elige la herramienta correcta",
+    "how.detailed.1.body":
+      "Usa el menú de la izquierda o pide al AI Concierge que te recomiende una.",
+    "how.detailed.2.title": "2) Pega tu contexto",
+    "how.detailed.2.body":
+      "Pega tu borrador, oferta o situación. Sin formato necesario.",
+    "how.detailed.3.title": "3) Elige modelo y paga",
+    "how.detailed.3.body":
+      "Elige el nivel del modelo y completa el pago con Stripe (o modo prueba).",
+    "how.detailed.4.title": "4) Revisa, copia, genera alternativas",
+    "how.detailed.4.body":
+      "Copia el resultado o compra/genera otra versión (máx. 5). Al cerrar la pestaña se borran los resultados.",
     "products.title": "Productos (rápidos y efectivos)",
     "products.subtitle": "Herramientas con una sola misión: sonar mejor, más rápido.",
     "products.corp.title": "The Corporate Whisperer",
@@ -264,6 +284,8 @@ export const DICTS: Record<Locale, Dict> = {
       "No se pudo leer la entrada guardada. Vuelve atrás e inténtalo de nuevo.",
     "errors.savedInputMismatch":
       "La entrada guardada no coincide con la herramienta solicitada. Vuelve atrás e inténtalo de nuevo.",
+    "errors.savedInputInvalid":
+      "La entrada guardada está incompleta para esta herramienta. Vuelve atrás y añade más detalles.",
 
     "tool.corporate-whisperer.title": "El Susurrador Corporativo",
     "tool.coverletter-ai.title": "Carta de Presentación en 1 Click",
@@ -289,6 +311,8 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.insurance-claim-letter.title": "Carta de Reclamación al Seguro",
     "tool.insurance-claim-letter.desc":
       "Redacta una carta de reclamación clara con hechos, fechas y la cobertura solicitada.",
+
+    "tool.linkedin-headline-smith.title": "Herrero de titulares de LinkedIn",
   },
   fr: {
     "brand.name": "isendai",
@@ -314,6 +338,22 @@ export const DICTS: Record<Locale, Dict> = {
     "how.2.body": "L’IA réécrit avec meilleur ton, structure et clarté.",
     "how.3.title": "3) Copiez & envoyez",
     "how.3.body": "Résultat propre avec copie en un clic.",
+
+    "how.detailed.title": "Comment ça marche (étape par étape)",
+    "how.detailed.subtitle":
+      "Choisissez le bon micro‑outil, collez votre brouillon et obtenez un résultat soigné en quelques secondes. Vous pouvez générer jusqu’à 5 alternatives par demande.",
+    "how.detailed.1.title": "1) Choisissez le bon outil",
+    "how.detailed.1.body":
+      "Utilisez le menu à gauche ou demandez une recommandation à l’AI Concierge.",
+    "how.detailed.2.title": "2) Collez le contexte",
+    "how.detailed.2.body":
+      "Collez votre brouillon, offre ou situation. Pas de mise en forme nécessaire.",
+    "how.detailed.3.title": "3) Choisissez le modèle & payez",
+    "how.detailed.3.body":
+      "Sélectionnez le niveau du modèle et finalisez le paiement via Stripe (ou mode test).",
+    "how.detailed.4.title": "4) Relisez, copiez, générez des alternatives",
+    "how.detailed.4.body":
+      "Copiez le résultat ou achetez/générez une autre version (max 5). Fermer l’onglet supprime les résultats.",
     "products.title": "Produits (rapides, efficaces)",
     "products.subtitle": "Des outils simples : mieux écrire, plus vite.",
     "products.corp.title": "The Corporate Whisperer",
@@ -390,6 +430,8 @@ export const DICTS: Record<Locale, Dict> = {
       "Impossible de lire l’entrée enregistrée. Revenez en arrière et réessayez.",
     "errors.savedInputMismatch":
       "L’entrée enregistrée ne correspond pas à l’outil demandé. Revenez en arrière et réessayez.",
+    "errors.savedInputInvalid":
+      "L’entrée enregistrée est incomplète pour cet outil. Revenez en arrière et ajoutez plus de détails.",
 
     "tool.corporate-whisperer.title": "Le Chuchoteur Corporate",
     "tool.coverletter-ai.title": "Lettre de Motivation en 1 Clic",
@@ -415,6 +457,8 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.insurance-claim-letter.title": "Lettre de Réclamation d’Assurance",
     "tool.insurance-claim-letter.desc":
       "Rédigez une lettre de réclamation claire avec les faits, les dates et la prise en charge demandée.",
+
+    "tool.linkedin-headline-smith.title": "Forgeron de titres LinkedIn",
   },
   de: {
     "brand.name": "isendai",
@@ -441,6 +485,22 @@ export const DICTS: Record<Locale, Dict> = {
     "how.2.body": "KI schreibt mit besserem Ton, Struktur und Klarheit um.",
     "how.3.title": "3) Kopieren & senden",
     "how.3.body": "Sauberes Ergebnis mit Copy‑Button.",
+
+    "how.detailed.title": "So funktioniert’s (Schritt für Schritt)",
+    "how.detailed.subtitle":
+      "Wähle das richtige Micro‑Tool, füge deinen Entwurf ein und erhalte in Sekunden ein poliertes Ergebnis. Du kannst pro Anfrage bis zu 5 Alternativen generieren.",
+    "how.detailed.1.title": "1) Das richtige Tool wählen",
+    "how.detailed.1.body":
+      "Nutze das linke Menü oder bitte den AI Concierge um eine Empfehlung.",
+    "how.detailed.2.title": "2) Kontext einfügen",
+    "how.detailed.2.body":
+      "Füge Entwurf, Jobpost oder Situation ein. Kein Format nötig.",
+    "how.detailed.3.title": "3) Modell wählen & bezahlen",
+    "how.detailed.3.body":
+      "Wähle die Modell‑Stufe und schließe den Checkout über Stripe ab (oder Testmodus).",
+    "how.detailed.4.title": "4) Prüfen, kopieren, Alternativen erzeugen",
+    "how.detailed.4.body":
+      "Kopiere das Ergebnis oder kaufe/generiere eine weitere Version (max. 5). Beim Schließen des Tabs werden die Ergebnisse gelöscht.",
     "products.title": "Produkte (kurz, knackig, effektiv)",
     "products.subtitle": "Tools mit einem Ziel: besser klingen – schneller.",
     "products.corp.title": "The Corporate Whisperer",
@@ -517,6 +577,8 @@ export const DICTS: Record<Locale, Dict> = {
       "Gespeicherter Input konnte nicht gelesen werden. Bitte geh zurück und versuche es erneut.",
     "errors.savedInputMismatch":
       "Gespeicherter Input passt nicht zum angeforderten Tool. Bitte geh zurück und versuche es erneut.",
+    "errors.savedInputInvalid":
+      "Der gespeicherte Input ist für dieses Tool unvollständig. Bitte geh zurück und ergänze mehr Details.",
 
     "tool.corporate-whisperer.title": "Der Corporate‑Übersetzer",
     "tool.coverletter-ai.title": "Anschreiben in 1 Klick",
@@ -538,6 +600,8 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.co-parenting-peacemaker.title": "Co‑Parenting Friedensstifter",
     "tool.friendzone-navigator.title": "Friendzone‑Navigator",
     "tool.rsvp-diplomat.title": "RSVP‑Diplomat",
+
+    "tool.linkedin-headline-smith.title": "LinkedIn‑Headline‑Schmied",
   },
   zh: {
     "brand.name": "isendai",
@@ -562,6 +626,19 @@ export const DICTS: Record<Locale, Dict> = {
     "how.2.body": "AI 提升语气、结构与清晰度。",
     "how.3.title": "3) 复制发送",
     "how.3.body": "一键复制，直接发送。",
+
+    "how.detailed.title": "如何使用（分步说明）",
+    "how.detailed.subtitle":
+      "选对微工具，粘贴草稿，几秒内得到更精炼的结果。每次请求最多可生成 5 个备选版本。",
+    "how.detailed.1.title": "1) 选择合适的工具",
+    "how.detailed.1.body": "使用左侧菜单，或让 AI Concierge 帮你推荐。",
+    "how.detailed.2.title": "2) 粘贴你的背景信息",
+    "how.detailed.2.body": "粘贴草稿、职位描述或具体情况，无需格式。",
+    "how.detailed.3.title": "3) 选择模型并支付",
+    "how.detailed.3.body": "选择模型档位，并通过 Stripe 完成支付（或测试模式）。",
+    "how.detailed.4.title": "4) 查看、复制、生成备选版本",
+    "how.detailed.4.body":
+      "复制结果，或购买/生成另一版（最多 5 版）。关闭标签页会删除结果。",
     "products.title": "产品（快速、好用、有效）",
     "products.subtitle": "每个工具只做一件事：让你更会说话。",
     "products.corp.title": "The Corporate Whisperer",
@@ -634,6 +711,7 @@ export const DICTS: Record<Locale, Dict> = {
     "errors.noSavedInput": "未在 localStorage 中找到该工具的已保存输入。请返回后重试。",
     "errors.savedInputParse": "已保存输入解析失败。请返回后重试。",
     "errors.savedInputMismatch": "已保存输入与请求的工具不匹配。请返回后重试。",
+    "errors.savedInputInvalid": "已保存的输入信息不完整。请返回补充更多细节后再试。",
 
     "tool.corporate-whisperer.title": "职场话术润色师",
     "tool.coverletter-ai.title": "一键求职信",
@@ -655,6 +733,8 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.co-parenting-peacemaker.title": "共同育儿沟通助手",
     "tool.friendzone-navigator.title": "朋友区导航",
     "tool.rsvp-diplomat.title": "邀请回复礼貌拒绝",
+
+    "tool.linkedin-headline-smith.title": "LinkedIn 标题锻造师",
   },
   tr: {
     "brand.name": "isendai",
@@ -761,6 +841,8 @@ export const DICTS: Record<Locale, Dict> = {
       "Kayıtlı giriş okunamadı. Lütfen geri dönüp tekrar dene.",
     "errors.savedInputMismatch":
       "Kayıtlı giriş istenen araçla eşleşmiyor. Lütfen geri dönüp tekrar dene.",
+    "errors.savedInputInvalid":
+      "Bu araç için kayıtlı giriş eksik. Lütfen geri dönüp daha fazla detay ekle.",
 
     "category.work-career.label": "Kariyer Parıltısı",
     "category.crisis-money.label": "Para & Kriz Kurtarma",
@@ -892,6 +974,8 @@ export const DICTS: Record<Locale, Dict> = {
       "Önemli bir etkinliğe gidemeyeceğini dram yaratmadan açıklayan sıcak ve net bir mazeret metni yazar.",
     "tool.rsvp-diplomat.action": "Kibarca İptal Et",
     "tool.rsvp-diplomat.placeholder.text": "Etkinlik, davet eden kişi, sebep (opsiyonel), ton tercihi...",
+
+    "tool.linkedin-headline-smith.title": "LinkedIn Başlık Üstadı",
   },
 };
 

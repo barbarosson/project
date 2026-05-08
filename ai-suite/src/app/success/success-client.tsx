@@ -83,6 +83,24 @@ function setPendingAlt(toolName: ToolName, value: boolean) {
   }
 }
 
+function isValidPayload(payload: ToolPayload): boolean {
+  if (payload.tool === "coverletter-ai") {
+    return (
+      "jobLink" in payload &&
+      "resume" in payload &&
+      typeof payload.jobLink === "string" &&
+      typeof payload.resume === "string" &&
+      payload.jobLink.trim().length >= 8 &&
+      payload.resume.trim().length >= 20
+    );
+  }
+  if (payload.tool === "dating-roast") {
+    const text = "text" in payload ? payload.text : payload.profile;
+    return typeof text === "string" && text.trim().length >= 10;
+  }
+  return "text" in payload && typeof payload.text === "string" && payload.text.trim().length >= 10;
+}
+
 export function SuccessClient() {
   const searchParams = useSearchParams();
   const toolParam = searchParams.get("tool");
@@ -148,6 +166,10 @@ export function SuccessClient() {
 
       if (!parsed?.payload || parsed.payload.tool !== tool) {
         setError(t("errors.savedInputMismatch"));
+        return;
+      }
+      if (!isValidPayload(parsed.payload)) {
+        setError(t("errors.savedInputInvalid"));
         return;
       }
 
@@ -233,6 +255,7 @@ export function SuccessClient() {
         const parsed = JSON.parse(raw) as Stored;
         if (!parsed?.payload || parsed.payload.tool !== tool)
           throw new Error("Saved input does not match the requested tool.");
+        if (!isValidPayload(parsed.payload)) throw new Error(t("errors.savedInputInvalid"));
 
         const text = await generate(tool, parsed, model);
         const newVersion: Version = {
