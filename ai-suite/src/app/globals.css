@@ -89,6 +89,22 @@ body {
     linear-gradient(to bottom, hsl(var(--background)), hsl(var(--background)));
 }
 
+.global-bg-image {
+  background-image: url("/bg-wave.png");
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: cover;
+  opacity: 0.55;
+  filter: saturate(1.1) contrast(1.05);
+  mix-blend-mode: multiply;
+}
+
+.dark .global-bg-image {
+  opacity: 0.35;
+  filter: saturate(1.2) contrast(1.1) brightness(0.95);
+  mix-blend-mode: screen;
+}
+
 .global-bg-grid {
   background-image:
     linear-gradient(to right, hsl(var(--border) / 0.55) 1px, transparent 1px),

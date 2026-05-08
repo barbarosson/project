@@ -18,6 +18,8 @@ type UiMsg = { id: string; role: "assistant" | "user"; content: string };
 
 type ApiResponse = { reply: string; suggested_tools: ToolName[] };
 
+const WELCOME_TOKEN = "__ISENDAI_WELCOME__";
+
 function renderMarkdownLinks(text: string) {
   const parts: React.ReactNode[] = [];
   const re = /\[([^\]]+)\]\(([^)]+)\)/g;
@@ -58,7 +60,7 @@ export function ConciergeChat({ className }: { className?: string }) {
     {
       id: crypto.randomUUID(),
       role: "assistant",
-      content: t("concierge.welcome"),
+      content: WELCOME_TOKEN,
     },
   ]);
   const [suggested, setSuggested] = React.useState<ToolName[]>([]);
@@ -84,7 +86,10 @@ export function ConciergeChat({ className }: { className?: string }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           locale,
-          messages: nextMsgs.map((m) => ({ role: m.role, content: m.content })),
+          messages: nextMsgs.map((m) => ({
+            role: m.role,
+            content: m.content === WELCOME_TOKEN ? t("concierge.welcome") : m.content,
+          })),
         }),
       });
       const json = (await res.json()) as Partial<ApiResponse> & { error?: string };
@@ -133,7 +138,9 @@ export function ConciergeChat({ className }: { className?: string }) {
               )}
             >
               <p className="whitespace-pre-wrap">
-                {m.role === "assistant" ? renderMarkdownLinks(m.content) : m.content}
+                {m.role === "assistant"
+                  ? renderMarkdownLinks(m.content === WELCOME_TOKEN ? t("concierge.welcome") : m.content)
+                  : m.content}
               </p>
             </div>
           ))}

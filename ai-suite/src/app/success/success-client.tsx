@@ -127,18 +127,14 @@ export function SuccessClient() {
       setError(null);
 
       if (!tool) {
-        setError(
-          "Missing or invalid tool parameter."
-        );
+        setError(t("errors.toolParamMissing"));
         return;
       }
 
       const storageKey = getToolDefinition(tool).storageKey;
       const raw = localStorage.getItem(storageKey);
       if (!raw) {
-        setError(
-          "No saved input found in localStorage for this tool. Please go back and try again."
-        );
+        setError(t("errors.noSavedInput"));
         return;
       }
 
@@ -146,16 +142,12 @@ export function SuccessClient() {
       try {
         parsed = JSON.parse(raw) as Stored;
       } catch {
-        setError(
-          "Saved input could not be parsed. Please go back and try again."
-        );
+        setError(t("errors.savedInputParse"));
         return;
       }
 
       if (!parsed?.payload || parsed.payload.tool !== tool) {
-        setError(
-          "Saved input does not match the requested tool. Please go back and try again."
-        );
+        setError(t("errors.savedInputMismatch"));
         return;
       }
 
@@ -206,7 +198,7 @@ export function SuccessClient() {
     return () => {
       cancelled = true;
     };
-  }, [tool]);
+  }, [tool, t]);
 
   async function copy() {
     try {
@@ -301,7 +293,7 @@ export function SuccessClient() {
               <Button asChild variant="outline">
                 <Link href="/">
                   <ArrowLeft className="size-4" />
-                  Back to Home
+                  {t("nav.backToHome")}
                 </Link>
               </Button>
             </div>

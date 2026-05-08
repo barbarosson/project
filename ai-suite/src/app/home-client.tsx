@@ -44,14 +44,14 @@ export function HomeClient() {
       : defaultTool
   );
   const [expanded, setExpanded] = React.useState<Record<ToolCategory, boolean>>({
-    "work-career": true,
-    "crisis-money": true,
-    "social-dating": true,
-    "freelance-business": true,
-    "academic-bureaucracy": true,
-    "neighbors-living": true,
-    "creators-media": true,
-    "family-deep-personal": true,
+    "work-career": false,
+    "crisis-money": false,
+    "social-dating": false,
+    "freelance-business": false,
+    "academic-bureaucracy": false,
+    "neighbors-living": false,
+    "creators-media": false,
+    "family-deep-personal": false,
   });
 
   const selectedDef = getToolDefinition(selected);

@@ -119,6 +119,16 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.thinking": "Thinking…",
     "concierge.openTool": "Open tool",
 
+    "nav.backToHome": "Back to Home",
+    "tool.flow.hint": "After payment, you’ll be redirected back and we’ll generate instantly.",
+
+    "errors.toolParamMissing": "Missing or invalid tool parameter.",
+    "errors.noSavedInput":
+      "No saved input found in localStorage for this tool. Please go back and try again.",
+    "errors.savedInputParse": "Saved input could not be parsed. Please go back and try again.",
+    "errors.savedInputMismatch":
+      "Saved input does not match the requested tool. Please go back and try again.",
+
     "category.work-career.label": "Career Glow‑Up",
     "category.crisis-money.label": "Money & Oops Fixes",
     "category.social-dating.label": "Friends & Flings",
@@ -240,6 +250,17 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.send": "Enviar",
     "concierge.thinking": "Pensando…",
 
+    "nav.backToHome": "Volver al inicio",
+    "tool.flow.hint": "Tras el pago volverás aquí y generaremos al instante.",
+
+    "errors.toolParamMissing": "Falta el parámetro de herramienta o no es válido.",
+    "errors.noSavedInput":
+      "No se encontró entrada guardada en localStorage para esta herramienta. Vuelve atrás e inténtalo de nuevo.",
+    "errors.savedInputParse":
+      "No se pudo leer la entrada guardada. Vuelve atrás e inténtalo de nuevo.",
+    "errors.savedInputMismatch":
+      "La entrada guardada no coincide con la herramienta solicitada. Vuelve atrás e inténtalo de nuevo.",
+
     "tool.corporate-whisperer.title": "El Susurrador Corporativo",
     "tool.coverletter-ai.title": "Carta de Presentación en 1 Click",
     "tool.dating-roast.title": "Roast y Mejora de Perfil",
@@ -350,6 +371,17 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.placeholder": "Dites-moi ce que vous cherchez à faire…",
     "concierge.send": "Envoyer",
     "concierge.thinking": "Réflexion…",
+
+    "nav.backToHome": "Retour à l’accueil",
+    "tool.flow.hint": "Après le paiement, vous serez redirigé ici et nous générerons instantanément.",
+
+    "errors.toolParamMissing": "Paramètre d’outil manquant ou invalide.",
+    "errors.noSavedInput":
+      "Aucune entrée enregistrée dans localStorage pour cet outil. Revenez en arrière et réessayez.",
+    "errors.savedInputParse":
+      "Impossible de lire l’entrée enregistrée. Revenez en arrière et réessayez.",
+    "errors.savedInputMismatch":
+      "L’entrée enregistrée ne correspond pas à l’outil demandé. Revenez en arrière et réessayez.",
 
     "tool.corporate-whisperer.title": "Le Chuchoteur Corporate",
     "tool.coverletter-ai.title": "Lettre de Motivation en 1 Clic",
@@ -463,6 +495,17 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.send": "Senden",
     "concierge.thinking": "Denke nach…",
 
+    "nav.backToHome": "Zur Startseite",
+    "tool.flow.hint": "Nach der Zahlung wirst du zurückgeleitet und wir generieren sofort.",
+
+    "errors.toolParamMissing": "Tool‑Parameter fehlt oder ist ungültig.",
+    "errors.noSavedInput":
+      "Kein gespeicherter Input in localStorage für dieses Tool gefunden. Bitte geh zurück und versuche es erneut.",
+    "errors.savedInputParse":
+      "Gespeicherter Input konnte nicht gelesen werden. Bitte geh zurück und versuche es erneut.",
+    "errors.savedInputMismatch":
+      "Gespeicherter Input passt nicht zum angeforderten Tool. Bitte geh zurück und versuche es erneut.",
+
     "tool.corporate-whisperer.title": "Der Corporate‑Übersetzer",
     "tool.coverletter-ai.title": "Anschreiben in 1 Klick",
     "tool.dating-roast.title": "Dating‑Profil Roast & Fix",
@@ -571,6 +614,14 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.placeholder": "告诉我你想做什么…",
     "concierge.send": "发送",
     "concierge.thinking": "思考中…",
+
+    "nav.backToHome": "返回首页",
+    "tool.flow.hint": "支付完成后会自动跳回这里，并立即生成结果。",
+
+    "errors.toolParamMissing": "缺少或无效的工具参数。",
+    "errors.noSavedInput": "未在 localStorage 中找到该工具的已保存输入。请返回后重试。",
+    "errors.savedInputParse": "已保存输入解析失败。请返回后重试。",
+    "errors.savedInputMismatch": "已保存输入与请求的工具不匹配。请返回后重试。",
 
     "tool.corporate-whisperer.title": "职场话术润色师",
     "tool.coverletter-ai.title": "一键求职信",
@@ -687,6 +738,17 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.send": "Gönder",
     "concierge.thinking": "Düşünüyor…",
     "concierge.openTool": "Aracı aç",
+
+    "nav.backToHome": "Ana sayfaya dön",
+    "tool.flow.hint": "Ödeme sonrası buraya geri yönlendirilirsin ve anında üretiriz.",
+
+    "errors.toolParamMissing": "Tool parametresi eksik veya geçersiz.",
+    "errors.noSavedInput":
+      "Bu araç için localStorage içinde kayıtlı giriş bulunamadı. Lütfen geri dönüp tekrar dene.",
+    "errors.savedInputParse":
+      "Kayıtlı giriş okunamadı. Lütfen geri dönüp tekrar dene.",
+    "errors.savedInputMismatch":
+      "Kayıtlı giriş istenen araçla eşleşmiyor. Lütfen geri dönüp tekrar dene.",
 
     "category.work-career.label": "Kariyer Parıltısı",
     "category.crisis-money.label": "Para & Kriz Kurtarma",

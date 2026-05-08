@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import { generateText } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { openai, createOpenAI } from "@ai-sdk/openai";
 import { anthropic } from "@ai-sdk/anthropic";
 
-import { TOOLS, getToolDefinition, type ToolName, type ToolPayload } from "@/components/ai-suite/tools";
+import {
+  TOOLS,
+  getToolDefinition,
+  type ProviderId,
+  type ToolName,
+  type ToolPayload,
+} from "@/components/ai-suite/tools";
 
-type OpenAIModelId = "gpt-4o-mini" | "gpt-4.1-mini" | "gpt-4o";
-type RequestBody = ToolPayload & { model?: OpenAIModelId };
+type RequestBody = ToolPayload;
 
 type ScopeResult = {
   in_scope: boolean;
@@ -34,10 +39,6 @@ function isToolPayload(value: unknown): value is RequestBody {
   return false;
 }
 
-function isOpenAIModelId(value: unknown): value is OpenAIModelId {
-  return value === "gpt-4o-mini" || value === "gpt-4.1-mini" || value === "gpt-4o";
-}
-
 function rawInputFor(payload: ToolPayload) {
   const tool = payload.tool;
   if (tool === "coverletter-ai" && "jobLink" in payload && "resume" in payload) {
@@ -49,22 +50,49 @@ function rawInputFor(payload: ToolPayload) {
   return "text" in payload ? payload.text : "";
 }
 
-function pickProviderAndModel(payload: ToolPayload, requestedOpenAIModel?: OpenAIModelId) {
-  const def = getToolDefinition(payload.tool);
-  const provider = def.provider ?? "openai";
+const groq = createOpenAI({
+  apiKey: process.env.GROQ_API_KEY,
+  baseURL: "https://api.groq.com/openai/v1",
+});
 
-  if (provider === "anthropic") {
-    return {
-      provider: "anthropic" as const,
-      model: def.model ?? "claude-3-5-haiku-latest",
-    };
+const deepseek = createOpenAI({
+  apiKey: process.env.DEEPSEEK_API_KEY,
+  baseURL: "https://api.deepseek.com/v1",
+});
+
+function providerKeyName(provider: ProviderId) {
+  switch (provider) {
+    case "openai":
+      return "OPENAI_API_KEY";
+    case "anthropic":
+      return "ANTHROPIC_API_KEY";
+    case "groq":
+      return "GROQ_API_KEY";
+    case "deepseek":
+      return "DEEPSEEK_API_KEY";
   }
+}
 
-  // openai
-  return {
-    provider: "openai" as const,
-    model: (requestedOpenAIModel ?? (def.model as OpenAIModelId | undefined) ?? "gpt-4o-mini") as OpenAIModelId,
-  };
+function hasProviderKey(provider: ProviderId) {
+  const key = providerKeyName(provider);
+  return typeof process.env[key] === "string" && process.env[key]!.trim().length > 0;
+}
+
+function modelForProvider(provider: ProviderId) {
+  switch (provider) {
+    case "openai":
+      return { client: openai, model: "gpt-4o-mini" };
+    case "anthropic":
+      return { client: anthropic, model: "claude-3-5-haiku-latest" };
+    case "groq":
+      return { client: groq, model: "llama-3.1-8b-instant" };
+    case "deepseek":
+      return { client: deepseek, model: "deepseek-chat" };
+  }
+}
+
+function pickProvider(payload: ToolPayload): ProviderId {
+  return getToolDefinition(payload.tool).provider;
 }
 
 async function checkScope(payload: ToolPayload): Promise<ScopeResult> {
@@ -74,11 +102,11 @@ async function checkScope(payload: ToolPayload): Promise<ScopeResult> {
 
   const allowed = [...TOOLS.map((t) => t.tool), "unknown"].join(", ");
 
-  const { provider, model } = pickProviderAndModel(payload, "gpt-4o-mini");
+  const provider = pickProvider(payload);
+  const { client, model } = modelForProvider(provider);
 
   // Fail-open if the required key is missing.
-  if (provider === "openai" && !process.env.OPENAI_API_KEY) return { in_scope: true };
-  if (provider === "anthropic" && !process.env.ANTHROPIC_API_KEY) return { in_scope: true };
+  if (!hasProviderKey(provider)) return { in_scope: true };
 
   const system =
     "You are a strict classifier for a small AI tools suite.\n" +
@@ -96,7 +124,7 @@ async function checkScope(payload: ToolPayload): Promise<ScopeResult> {
     `User input:\n${rawInput}`;
 
   const result = await generateText({
-    model: provider === "anthropic" ? anthropic(model) : openai(model),
+    model: client(model),
     temperature: 0,
     system,
     prompt,
@@ -349,14 +377,12 @@ export async function POST(req: Request) {
   }
 
   const { system, user } = promptFor(body);
-  const chosen = pickProviderAndModel(body, isOpenAIModelId(body.model) ? body.model : undefined);
+  const provider = pickProvider(body);
+  const { client, model } = modelForProvider(provider);
 
-  if (chosen.provider === "openai" && !process.env.OPENAI_API_KEY) {
-    return NextResponse.json({ error: "Missing OPENAI_API_KEY in environment." }, { status: 500 });
-  }
-  if (chosen.provider === "anthropic" && !process.env.ANTHROPIC_API_KEY) {
+  if (!hasProviderKey(provider)) {
     return NextResponse.json(
-      { error: "Missing ANTHROPIC_API_KEY in environment." },
+      { error: `Missing ${providerKeyName(provider)} in environment.` },
       { status: 500 }
     );
   }
@@ -381,7 +407,7 @@ export async function POST(req: Request) {
     }
 
     const out = await generateText({
-      model: chosen.provider === "anthropic" ? anthropic(chosen.model) : openai(chosen.model),
+      model: client(model),
       temperature: 0.6,
       system,
       prompt: user,

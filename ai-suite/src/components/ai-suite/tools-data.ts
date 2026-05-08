@@ -22,7 +22,9 @@ export type ToolSeed = {
   actionLabel: string;
   fields: ToolField[];
   stripeEnvVar: string;
-  provider?: "openai" | "anthropic";
+  // Provider routing is computed in `tools.ts` based on category + heuristics.
+  // Keeping this optional allows seed data to stay concise.
+  provider?: "openai" | "anthropic" | "groq" | "deepseek";
   model?: string;
   scopeHint: string;
   systemPrompt: string;

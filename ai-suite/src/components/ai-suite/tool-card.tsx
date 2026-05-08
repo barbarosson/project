@@ -122,7 +122,7 @@ export function ToolCard({
 
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
-            After payment, you’ll be redirected back and we’ll generate instantly.
+            {t("tool.flow.hint")}
           </p>
           <Button onClick={onPayAndGenerate} disabled={!isValid || busy}>
             {buttonLabel}

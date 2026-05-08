@@ -4,6 +4,7 @@ export { CATEGORY_META };
 export type { ToolCategory, ToolField };
 
 export type ToolName = (typeof TOOLS_SEED)[number]["tool"];
+export type ProviderId = "openai" | "anthropic" | "groq" | "deepseek";
 
 export type ToolPayload =
   | { tool: "coverletter-ai"; jobLink: string; resume: string }
@@ -22,7 +23,7 @@ export type ToolDefinition = {
   fields: ToolField[];
   storageKey: string;
   stripeEnvVar: string;
-  provider?: "openai" | "anthropic";
+  provider: ProviderId;
   model?: string;
   scopeHint: string;
   systemPrompt: string;
@@ -30,6 +31,29 @@ export type ToolDefinition = {
 
 function mkStorageKey(tool: ToolName) {
   return `ai-suite:payload:${tool}`;
+}
+
+const CATEGORY_PROVIDER: Record<ToolCategory, ProviderId> = {
+  "work-career": "openai",
+  "freelance-business": "openai",
+  "academic-bureaucracy": "openai",
+  "crisis-money": "openai",
+  "neighbors-living": "deepseek",
+  "social-dating": "anthropic",
+  "family-deep-personal": "anthropic",
+  "creators-media": "groq",
+};
+
+const TOOL_PROVIDER_OVERRIDES: Partial<Record<ToolName, ProviderId>> = {
+  // Specific tool overrides (deterministic)
+  "perfect-apology": "anthropic",
+  "dating-roast": "groq",
+  "passive-aggressive-decoder": "groq",
+};
+
+function inferProvider(seed: (typeof TOOLS_SEED)[number]): ProviderId {
+  const tool = seed.tool as ToolName;
+  return TOOL_PROVIDER_OVERRIDES[tool] ?? CATEGORY_PROVIDER[seed.category];
 }
 
 export const TOOLS: ToolDefinition[] = TOOLS_SEED.map((t) => ({
@@ -42,7 +66,7 @@ export const TOOLS: ToolDefinition[] = TOOLS_SEED.map((t) => ({
   fields: t.fields,
   storageKey: mkStorageKey(t.tool as ToolName),
   stripeEnvVar: t.stripeEnvVar,
-  provider: t.provider,
+  provider: inferProvider(t),
   model: t.model,
   scopeHint: t.scopeHint,
   systemPrompt: t.systemPrompt,

@@ -30,6 +30,10 @@ function getInitialLocale(): Locale {
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = React.useState<Locale>(() => getInitialLocale());
 
+  React.useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
   const setLocale = React.useCallback((next: Locale) => {
     setLocaleState(next);
     try {
