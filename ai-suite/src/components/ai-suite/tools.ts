@@ -22,6 +22,8 @@ export type ToolDefinition = {
   fields: ToolField[];
   storageKey: string;
   stripeEnvVar: string;
+  provider?: "openai" | "anthropic";
+  model?: string;
   scopeHint: string;
   systemPrompt: string;
 };
@@ -40,6 +42,8 @@ export const TOOLS: ToolDefinition[] = TOOLS_SEED.map((t) => ({
   fields: t.fields,
   storageKey: mkStorageKey(t.tool as ToolName),
   stripeEnvVar: t.stripeEnvVar,
+  provider: t.provider,
+  model: t.model,
   scopeHint: t.scopeHint,
   systemPrompt: t.systemPrompt,
 }));

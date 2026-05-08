@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
 import { TOOLS, type ToolName } from "@/components/ai-suite/tools";
+import { DICTS, type Locale } from "@/i18n/dictionaries";
+import { toolTitleFromSeed } from "@/i18n/tool-i18n";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -99,12 +101,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
-  const locale = typeof body.locale === "string" ? body.locale : "en";
+  const locale: Locale =
+    typeof body.locale === "string" &&
+    (body.locale === "en" ||
+      body.locale === "tr" ||
+      body.locale === "es" ||
+      body.locale === "fr" ||
+      body.locale === "de" ||
+      body.locale === "zh")
+      ? body.locale
+      : "en";
   const lastUser = [...body.messages].reverse().find((m) => m.role === "user")?.content ?? "";
   const toolCatalog = TOOLS.map((t) => ({
     tool: t.tool,
     emoji: t.emoji,
-    label: t.title,
+    label: toolTitleFromSeed(DICTS, locale, t.tool, t.title),
     category: t.category,
     description: t.description,
   }));

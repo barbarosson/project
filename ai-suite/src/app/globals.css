@@ -80,6 +80,56 @@ body {
   color: hsl(var(--foreground));
 }
 
+/* Global, modern techno background (light + dark) */
+.global-bg-base {
+  background:
+    radial-gradient(1200px circle at 12% 12%, hsl(var(--secondary) / 0.75), transparent 55%),
+    radial-gradient(900px circle at 88% 18%, hsl(var(--primary) / 0.18), transparent 55%),
+    radial-gradient(1000px circle at 70% 86%, hsl(205 95% 60% / 0.14), transparent 55%),
+    linear-gradient(to bottom, hsl(var(--background)), hsl(var(--background)));
+}
+
+.global-bg-grid {
+  background-image:
+    linear-gradient(to right, hsl(var(--border) / 0.55) 1px, transparent 1px),
+    linear-gradient(to bottom, hsl(var(--border) / 0.55) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(closest-side at 50% 30%, black 55%, transparent 90%);
+  opacity: 0.25;
+}
+
+.dark .global-bg-grid {
+  opacity: 0.18;
+}
+
+.global-bg-noise {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      hsl(var(--foreground) / 0.018),
+      hsl(var(--foreground) / 0.018) 1px,
+      transparent 1px,
+      transparent 2px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      hsl(var(--foreground) / 0.014),
+      hsl(var(--foreground) / 0.014) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  opacity: 0.55;
+  mix-blend-mode: overlay;
+}
+
+.dark .global-bg-noise {
+  opacity: 0.45;
+}
+
+.global-bg-vignette {
+  background: radial-gradient(closest-side at 50% 35%, transparent 60%, hsl(var(--background) / 0.7));
+}
+
 /* Animated aurora background blobs */
 .aurora {
   background:

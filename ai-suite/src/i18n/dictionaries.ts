@@ -119,150 +119,36 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.thinking": "Thinking…",
     "concierge.openTool": "Open tool",
 
-    "category.work-career.label": "Work & Career",
-    "category.crisis-money.label": "Crisis & Money",
-    "category.social-dating.label": "Social & Dating",
+    "category.work-career.label": "Career Glow‑Up",
+    "category.crisis-money.label": "Money & Oops Fixes",
+    "category.social-dating.label": "Friends & Flings",
+    "category.freelance-business.label": "Freelance Spark",
+    "category.academic-bureaucracy.label": "Paperwork Wizardry",
+    "category.neighbors-living.label": "Home Harmony",
+    "category.creators-media.label": "Creator Studio",
+    "category.family-deep-personal.label": "Heart‑to‑Heart",
 
-    // Tool labels/descriptions/actions/placeholders (used on homepage + tool cards)
-    "tool.corporate-whisperer.label": "The Corporate Whisperer",
-    "tool.corporate-whisperer.desc":
-      "Want to yell at your boss or client? Don't. Type your angry, unfiltered thoughts here, and we'll turn it into a polite, HR-friendly masterpiece.",
-    "tool.corporate-whisperer.action": "Translate to Professional",
-    "tool.corporate-whisperer.placeholder.text":
-      `Type what you REALLY want to say... (e.g., "This design is garbage and you clearly didn't read my brief.")`,
-
-    "tool.coverletter-ai.label": "Click Cover Letter",
-    "tool.coverletter-ai.desc":
-      "Tired of writing the same letter for every job? Paste the job URL and your skills. We'll generate a tailored, ATS-beating cover letter that gets interviews.",
-    "tool.coverletter-ai.action": "Generate Cover Letter",
-    "tool.coverletter-ai.placeholder.jobLink": "Paste Job Description or URL...",
-    "tool.coverletter-ai.placeholder.resume": "Paste your resume text or key skills...",
-
-    "tool.dating-roast.label": "Dating Profile Roast & Fix",
-    "tool.dating-roast.desc":
-      "Not getting matches? Our AI will brutally roast your current bio, tell you exactly why it's failing, and write a magnetic new one for you.",
-    "tool.dating-roast.action": "Roast & Fix My Profile",
-    "tool.dating-roast.placeholder.text":
-      "Paste your current Tinder/Bumble bio or describe your vibe...",
-
-    "tool.raise-negotiator.label": "The Raise Negotiator",
-    "tool.raise-negotiator.desc":
-      "Turn your wins into a clear, persuasive raise or budget increase email that’s confident, specific, and hard to ignore.",
-    "tool.raise-negotiator.action": "Write My Raise Email",
-    "tool.raise-negotiator.placeholder.text":
-      "Paste your achievements, impact, numbers, and context...",
-
-    "tool.graceful-quitter.label": "The Graceful Quitter",
-    "tool.graceful-quitter.desc":
-      "Draft a professional resignation letter that preserves relationships and avoids burning bridges.",
-    "tool.graceful-quitter.action": "Generate Resignation Letter",
-    "tool.graceful-quitter.placeholder.text":
-      "Role, last day, reason (optional), and any handoff notes...",
-
-    "tool.cold-dm-icebreaker.label": "The Cold DM Icebreaker",
-    "tool.cold-dm-icebreaker.desc":
-      "Create a short, high-reply cold message for LinkedIn/email that feels personal, not spammy.",
-    "tool.cold-dm-icebreaker.action": "Write My Cold DM",
-    "tool.cold-dm-icebreaker.placeholder.text":
-      "Who you’re messaging, why them, what you want, and 1–2 personal details...",
-
-    "tool.micromanager-tamer.label": "The Micromanager Tamer",
-    "tool.micromanager-tamer.desc":
-      "Set firm boundaries with a micromanager—politely, clearly, and without escalating drama.",
-    "tool.micromanager-tamer.action": "Set Boundaries",
-    "tool.micromanager-tamer.placeholder.text":
-      "Describe what they do, what you need instead, and your preferred workflow...",
-
-    "tool.invoice-chaser.label": "The Invoice Chaser",
-    "tool.invoice-chaser.desc":
-      "Write a firm-but-friendly payment reminder that gets you paid without shaming the client.",
-    "tool.invoice-chaser.action": "Chase My Invoice",
-    "tool.invoice-chaser.placeholder.text":
-      "Invoice #, amount, due date, and prior follow-ups (if any)...",
-
-    "tool.perfect-apology.label": "The Perfect Apology",
-    "tool.perfect-apology.desc":
-      "A no-excuses apology that takes responsibility, repairs trust, and proposes a concrete next step.",
-    "tool.perfect-apology.action": "Write My Apology",
-    "tool.perfect-apology.placeholder.text":
-      "What happened, who it impacted, and what you’ll do to fix it...",
-
-    "tool.refund-demander.label": "The Refund Demander",
-    "tool.refund-demander.desc":
-      "A formal, assertive complaint email that cites consumer rights and maximizes your chance of a refund or compensation.",
-    "tool.refund-demander.action": "Demand My Refund",
-    "tool.refund-demander.placeholder.text":
-      "Company, order details, issue, timeline, what you want, and any evidence...",
-
-    "tool.deadline-diplomat.label": "The Deadline Diplomat",
-    "tool.deadline-diplomat.desc":
-      "Ask for more time in a way that stays credible: calm, professional, with a plan and revised timeline.",
-    "tool.deadline-diplomat.action": "Request Extension",
-    "tool.deadline-diplomat.placeholder.text":
-      "Current deadline, what’s blocking, new proposed date, and next milestones...",
-
-    "tool.landlord-diplomat.label": "The Landlord Diplomat",
-    "tool.landlord-diplomat.desc":
-      "Draft diplomatic, legally-aware messages for landlord/tenant disputes without inflaming the situation.",
-    "tool.landlord-diplomat.action": "Draft My Message",
-    "tool.landlord-diplomat.placeholder.text":
-      "Country/city, issue (rent/repairs/deposit), what you want, and any dates...",
-
-    "tool.review-retaliator.label": "The Review Retaliator",
-    "tool.review-retaliator.desc":
-      "Respond to unfair negative reviews with calm professionalism and reputation-saving clarity.",
-    "tool.review-retaliator.action": "Write Review Reply",
-    "tool.review-retaliator.placeholder.text":
-      "Paste the review + any context you can share (facts, policy, what happened)...",
-
-    "tool.ghosting-resurrector.label": "The Ghosting Resurrector",
-    "tool.ghosting-resurrector.desc":
-      "Get a reply without sounding desperate: short, playful, and low-pressure follow-ups.",
-    "tool.ghosting-resurrector.action": "Get Them To Reply",
-    "tool.ghosting-resurrector.placeholder.text":
-      "Paste the last messages and what you want (date / clarity / closure)...",
-
-    "tool.passive-aggressive-decoder.label": "The Passive-Aggressive Decoder",
-    "tool.passive-aggressive-decoder.desc":
-      "Translate toxic subtext into plain English—then craft a smart reply that disarms without escalating.",
-    "tool.passive-aggressive-decoder.action": "Decode & Reply",
-    "tool.passive-aggressive-decoder.placeholder.text":
-      "Paste the message you received and the relationship context...",
-
-    "tool.guilt-free-no.label": 'The Guilt-Free "No"',
-    "tool.guilt-free-no.desc":
-      "Say no clearly and kindly—without overexplaining or feeling guilty.",
-    "tool.guilt-free-no.action": "Write My No",
-    "tool.guilt-free-no.placeholder.text":
-      "What you’re declining, who it is, and how direct you want to be...",
-
-    "tool.delicate-truth.label": "The Delicate Truth",
-    "tool.delicate-truth.desc":
-      "Turn hard truths into gentle, non-blaming messages that still land clearly.",
-    "tool.delicate-truth.action": "Say It Kindly",
-    "tool.delicate-truth.placeholder.text":
-      "What you need to say, why, and what outcome you want...",
-
-    "tool.co-parenting-peacemaker.label": "The Co-Parenting Peacemaker",
-    "tool.co-parenting-peacemaker.desc":
-      "Filter anger and keep it logistics-only: neutral co-parenting messages that reduce conflict.",
-    "tool.co-parenting-peacemaker.action": "Make It Neutral",
-    "tool.co-parenting-peacemaker.placeholder.text":
-      "Situation, schedule details, what you’re requesting, and boundaries...",
-
-    "tool.friendzone-navigator.label": "The Friendzone Navigator",
-    "tool.friendzone-navigator.desc":
-      "Confess feelings or set boundaries without wrecking the friendship—careful, respectful, and clear.",
-    "tool.friendzone-navigator.action": "Write My Message",
-    "tool.friendzone-navigator.placeholder.text":
-      "Context, what you feel, and what you’re asking for (or declining)...",
-
-    "tool.rsvp-diplomat.label": "The RSVP Diplomat",
-    "tool.rsvp-diplomat.desc":
-      "Decline an important invitation without drama: warm, respectful, and final.",
-    "tool.rsvp-diplomat.action": "Decline Gracefully",
-    "tool.rsvp-diplomat.placeholder.text":
-      "Event, who invited you, why you can’t go (optional), and tone preference...",
+    // Tool names (titles) are translated per-locale via tool.<id>.title (fallback: tool seed title)
+    "tool.corporate-whisperer.title": "The Corporate Whisperer",
+    "tool.coverletter-ai.title": "Click Cover Letter",
+    "tool.dating-roast.title": "Dating Profile Roast & Fix",
+    "tool.raise-negotiator.title": "The Raise Negotiator",
+    "tool.graceful-quitter.title": "The Graceful Quitter",
+    "tool.cold-dm-icebreaker.title": "The Cold DM Icebreaker",
+    "tool.micromanager-tamer.title": "The Micromanager Tamer",
+    "tool.invoice-chaser.title": "The Invoice Chaser",
+    "tool.perfect-apology.title": "The Perfect Apology",
+    "tool.refund-demander.title": "The Refund Demander",
+    "tool.deadline-diplomat.title": "The Deadline Diplomat",
+    "tool.landlord-diplomat.title": "The Landlord Diplomat",
+    "tool.review-retaliator.title": "The Review Retaliator",
+    "tool.ghosting-resurrector.title": "The Ghosting Resurrector",
+    "tool.passive-aggressive-decoder.title": "The Passive-Aggressive Decoder",
+    "tool.guilt-free-no.title": 'The Guilt‑Free "No"',
+    "tool.delicate-truth.title": "The Delicate Truth",
+    "tool.co-parenting-peacemaker.title": "The Co‑Parenting Peacemaker",
+    "tool.friendzone-navigator.title": "The Friendzone Navigator",
+    "tool.rsvp-diplomat.title": "The RSVP Diplomat",
   },
   es: {
     "brand.name": "isendai",
@@ -338,9 +224,14 @@ export const DICTS: Record<Locale, Dict> = {
     "home.sidebar.title": "Productos de IA",
     "home.workspace.hint": "Pega → Genera → Copia",
 
-    "category.work-career.label": "Trabajo y carrera",
-    "category.crisis-money.label": "Crisis y dinero",
-    "category.social-dating.label": "Social y citas",
+    "category.work-career.label": "Brillo Profesional",
+    "category.crisis-money.label": "Dinero & Apagafuegos",
+    "category.social-dating.label": "Amigos & Citas",
+    "category.freelance-business.label": "Freelance en Marcha",
+    "category.academic-bureaucracy.label": "Papeleos con Estilo",
+    "category.neighbors-living.label": "Hogar en Paz",
+    "category.creators-media.label": "Estudio Creador",
+    "category.family-deep-personal.label": "De Corazón a Corazón",
 
     "concierge.title": "ISENDAI",
     "concierge.welcome":
@@ -349,26 +240,26 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.send": "Enviar",
     "concierge.thinking": "Pensando…",
 
-    "tool.corporate-whisperer.label": "The Corporate Whisperer",
-    "tool.coverletter-ai.label": "Click Cover Letter",
-    "tool.dating-roast.label": "Dating Profile Roast & Fix",
-    "tool.raise-negotiator.label": "The Raise Negotiator",
-    "tool.graceful-quitter.label": "The Graceful Quitter",
-    "tool.cold-dm-icebreaker.label": "The Cold DM Icebreaker",
-    "tool.micromanager-tamer.label": "The Micromanager Tamer",
-    "tool.invoice-chaser.label": "The Invoice Chaser",
-    "tool.perfect-apology.label": "The Perfect Apology",
-    "tool.refund-demander.label": "The Refund Demander",
-    "tool.deadline-diplomat.label": "The Deadline Diplomat",
-    "tool.landlord-diplomat.label": "The Landlord Diplomat",
-    "tool.review-retaliator.label": "The Review Retaliator",
-    "tool.ghosting-resurrector.label": "The Ghosting Resurrector",
-    "tool.passive-aggressive-decoder.label": "The Passive-Aggressive Decoder",
-    "tool.guilt-free-no.label": 'The Guilt-Free "No"',
-    "tool.delicate-truth.label": "The Delicate Truth",
-    "tool.co-parenting-peacemaker.label": "The Co-Parenting Peacemaker",
-    "tool.friendzone-navigator.label": "The Friendzone Navigator",
-    "tool.rsvp-diplomat.label": "The RSVP Diplomat",
+    "tool.corporate-whisperer.title": "El Susurrador Corporativo",
+    "tool.coverletter-ai.title": "Carta de Presentación en 1 Click",
+    "tool.dating-roast.title": "Roast y Mejora de Perfil",
+    "tool.raise-negotiator.title": "Negociador de Aumento",
+    "tool.graceful-quitter.title": "Renuncia con Clase",
+    "tool.cold-dm-icebreaker.title": "Rompehielos para DM",
+    "tool.micromanager-tamer.title": "Domador de Micromanagers",
+    "tool.invoice-chaser.title": "Cobrador de Facturas",
+    "tool.perfect-apology.title": "La Disculpa Perfecta",
+    "tool.refund-demander.title": "Reclamador de Reembolso",
+    "tool.deadline-diplomat.title": "Diplomático de Plazos",
+    "tool.landlord-diplomat.title": "Diplomático con el Casero",
+    "tool.review-retaliator.title": "Respuesta a Reseñas",
+    "tool.ghosting-resurrector.title": "Resucitador de Ghosting",
+    "tool.passive-aggressive-decoder.title": "Decodificador Pasivo‑Agresivo",
+    "tool.guilt-free-no.title": 'El "No" sin Culpa',
+    "tool.delicate-truth.title": "La Verdad Delicada",
+    "tool.co-parenting-peacemaker.title": "Pacificador de Coparentalidad",
+    "tool.friendzone-navigator.title": "Navegador de Friendzone",
+    "tool.rsvp-diplomat.title": "Diplomático de RSVP",
   },
   fr: {
     "brand.name": "isendai",
@@ -444,9 +335,14 @@ export const DICTS: Record<Locale, Dict> = {
     "home.sidebar.title": "Produits IA",
     "home.workspace.hint": "Coller → Générer → Copier",
 
-    "category.work-career.label": "Travail & carrière",
-    "category.crisis-money.label": "Crise & argent",
-    "category.social-dating.label": "Social & rencontres",
+    "category.work-career.label": "Boost Carrière",
+    "category.crisis-money.label": "SOS Argent",
+    "category.social-dating.label": "Amis & Crushs",
+    "category.freelance-business.label": "Freelance Boost",
+    "category.academic-bureaucracy.label": "Paperasse Zen",
+    "category.neighbors-living.label": "Maison Harmonie",
+    "category.creators-media.label": "Studio Créateur",
+    "category.family-deep-personal.label": "Cœur à Cœur",
 
     "concierge.title": "ISENDAI",
     "concierge.welcome":
@@ -455,26 +351,26 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.send": "Envoyer",
     "concierge.thinking": "Réflexion…",
 
-    "tool.corporate-whisperer.label": "The Corporate Whisperer",
-    "tool.coverletter-ai.label": "Click Cover Letter",
-    "tool.dating-roast.label": "Dating Profile Roast & Fix",
-    "tool.raise-negotiator.label": "The Raise Negotiator",
-    "tool.graceful-quitter.label": "The Graceful Quitter",
-    "tool.cold-dm-icebreaker.label": "The Cold DM Icebreaker",
-    "tool.micromanager-tamer.label": "The Micromanager Tamer",
-    "tool.invoice-chaser.label": "The Invoice Chaser",
-    "tool.perfect-apology.label": "The Perfect Apology",
-    "tool.refund-demander.label": "The Refund Demander",
-    "tool.deadline-diplomat.label": "The Deadline Diplomat",
-    "tool.landlord-diplomat.label": "The Landlord Diplomat",
-    "tool.review-retaliator.label": "The Review Retaliator",
-    "tool.ghosting-resurrector.label": "The Ghosting Resurrector",
-    "tool.passive-aggressive-decoder.label": "The Passive-Aggressive Decoder",
-    "tool.guilt-free-no.label": 'The Guilt-Free "No"',
-    "tool.delicate-truth.label": "The Delicate Truth",
-    "tool.co-parenting-peacemaker.label": "The Co-Parenting Peacemaker",
-    "tool.friendzone-navigator.label": "The Friendzone Navigator",
-    "tool.rsvp-diplomat.label": "The RSVP Diplomat",
+    "tool.corporate-whisperer.title": "Le Chuchoteur Corporate",
+    "tool.coverletter-ai.title": "Lettre de Motivation en 1 Clic",
+    "tool.dating-roast.title": "Roast & Refonte de Profil",
+    "tool.raise-negotiator.title": "Négociateur d’Augmentation",
+    "tool.graceful-quitter.title": "Démission Élégante",
+    "tool.cold-dm-icebreaker.title": "Brise‑glace DM",
+    "tool.micromanager-tamer.title": "Domptage de Micromanager",
+    "tool.invoice-chaser.title": "Relance de Facture",
+    "tool.perfect-apology.title": "L’Excuse Parfaite",
+    "tool.refund-demander.title": "Demande de Remboursement",
+    "tool.deadline-diplomat.title": "Diplomate des Deadlines",
+    "tool.landlord-diplomat.title": "Diplomate Proprio/Locataire",
+    "tool.review-retaliator.title": "Réponse aux Avis",
+    "tool.ghosting-resurrector.title": "Anti‑Ghosting",
+    "tool.passive-aggressive-decoder.title": "Décodeur Passif‑Agressif",
+    "tool.guilt-free-no.title": 'Le "Non" Sans Culpabilité',
+    "tool.delicate-truth.title": "La Vérité Délicate",
+    "tool.co-parenting-peacemaker.title": "Médiateur de Coparentalité",
+    "tool.friendzone-navigator.title": "Navigateur de Friendzone",
+    "tool.rsvp-diplomat.title": "Diplomate RSVP",
   },
   de: {
     "brand.name": "isendai",
@@ -551,9 +447,14 @@ export const DICTS: Record<Locale, Dict> = {
     "home.sidebar.title": "KI‑Produkte",
     "home.workspace.hint": "Einfügen → Generieren → Kopieren",
 
-    "category.work-career.label": "Job & Karriere",
-    "category.crisis-money.label": "Krise & Geld",
-    "category.social-dating.label": "Social & Dating",
+    "category.work-career.label": "Karriere‑Boost",
+    "category.crisis-money.label": "Geld‑SOS",
+    "category.social-dating.label": "Freunde & Dates",
+    "category.freelance-business.label": "Freelance‑Power",
+    "category.academic-bureaucracy.label": "Papierkram‑Profi",
+    "category.neighbors-living.label": "Zuhause‑Harmonie",
+    "category.creators-media.label": "Creator‑Studio",
+    "category.family-deep-personal.label": "Herz‑zu‑Herz",
 
     "concierge.title": "ISENDAI",
     "concierge.welcome":
@@ -562,26 +463,26 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.send": "Senden",
     "concierge.thinking": "Denke nach…",
 
-    "tool.corporate-whisperer.label": "The Corporate Whisperer",
-    "tool.coverletter-ai.label": "Click Cover Letter",
-    "tool.dating-roast.label": "Dating Profile Roast & Fix",
-    "tool.raise-negotiator.label": "The Raise Negotiator",
-    "tool.graceful-quitter.label": "The Graceful Quitter",
-    "tool.cold-dm-icebreaker.label": "The Cold DM Icebreaker",
-    "tool.micromanager-tamer.label": "The Micromanager Tamer",
-    "tool.invoice-chaser.label": "The Invoice Chaser",
-    "tool.perfect-apology.label": "The Perfect Apology",
-    "tool.refund-demander.label": "The Refund Demander",
-    "tool.deadline-diplomat.label": "The Deadline Diplomat",
-    "tool.landlord-diplomat.label": "The Landlord Diplomat",
-    "tool.review-retaliator.label": "The Review Retaliator",
-    "tool.ghosting-resurrector.label": "The Ghosting Resurrector",
-    "tool.passive-aggressive-decoder.label": "The Passive-Aggressive Decoder",
-    "tool.guilt-free-no.label": 'The Guilt-Free "No"',
-    "tool.delicate-truth.label": "The Delicate Truth",
-    "tool.co-parenting-peacemaker.label": "The Co-Parenting Peacemaker",
-    "tool.friendzone-navigator.label": "The Friendzone Navigator",
-    "tool.rsvp-diplomat.label": "The RSVP Diplomat",
+    "tool.corporate-whisperer.title": "Der Corporate‑Übersetzer",
+    "tool.coverletter-ai.title": "Anschreiben in 1 Klick",
+    "tool.dating-roast.title": "Dating‑Profil Roast & Fix",
+    "tool.raise-negotiator.title": "Gehalts‑Verhandler",
+    "tool.graceful-quitter.title": "Die Stilvolle Kündigung",
+    "tool.cold-dm-icebreaker.title": "Cold‑DM Eisbrecher",
+    "tool.micromanager-tamer.title": "Micromanager‑Bändiger",
+    "tool.invoice-chaser.title": "Rechnungs‑Nachfasser",
+    "tool.perfect-apology.title": "Die Perfekte Entschuldigung",
+    "tool.refund-demander.title": "Rückerstattungs‑Forderrer",
+    "tool.deadline-diplomat.title": "Deadline‑Diplomat",
+    "tool.landlord-diplomat.title": "Vermieter‑Diplomat",
+    "tool.review-retaliator.title": "Antwort auf Bewertungen",
+    "tool.ghosting-resurrector.title": "Ghosting‑Wiederbeleber",
+    "tool.passive-aggressive-decoder.title": "Passiv‑Aggressiv‑Decoder",
+    "tool.guilt-free-no.title": 'Das Schuld‑freie "Nein"',
+    "tool.delicate-truth.title": "Die Zarte Wahrheit",
+    "tool.co-parenting-peacemaker.title": "Co‑Parenting Friedensstifter",
+    "tool.friendzone-navigator.title": "Friendzone‑Navigator",
+    "tool.rsvp-diplomat.title": "RSVP‑Diplomat",
   },
   zh: {
     "brand.name": "isendai",
@@ -655,9 +556,14 @@ export const DICTS: Record<Locale, Dict> = {
     "home.sidebar.title": "AI 产品",
     "home.workspace.hint": "粘贴 → 生成 → 复制",
 
-    "category.work-career.label": "工作与职业",
-    "category.crisis-money.label": "危机与金钱",
-    "category.social-dating.label": "社交与约会",
+    "category.work-career.label": "职场加速",
+    "category.crisis-money.label": "钱包急救",
+    "category.social-dating.label": "社交与心动",
+    "category.freelance-business.label": "自由职业加速",
+    "category.academic-bureaucracy.label": "表格与申请",
+    "category.neighbors-living.label": "居家邻里",
+    "category.creators-media.label": "创作者工作室",
+    "category.family-deep-personal.label": "走心对话",
 
     "concierge.title": "ISENDAI",
     "concierge.welcome":
@@ -666,26 +572,26 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.send": "发送",
     "concierge.thinking": "思考中…",
 
-    "tool.corporate-whisperer.label": "The Corporate Whisperer",
-    "tool.coverletter-ai.label": "Click Cover Letter",
-    "tool.dating-roast.label": "Dating Profile Roast & Fix",
-    "tool.raise-negotiator.label": "The Raise Negotiator",
-    "tool.graceful-quitter.label": "The Graceful Quitter",
-    "tool.cold-dm-icebreaker.label": "The Cold DM Icebreaker",
-    "tool.micromanager-tamer.label": "The Micromanager Tamer",
-    "tool.invoice-chaser.label": "The Invoice Chaser",
-    "tool.perfect-apology.label": "The Perfect Apology",
-    "tool.refund-demander.label": "The Refund Demander",
-    "tool.deadline-diplomat.label": "The Deadline Diplomat",
-    "tool.landlord-diplomat.label": "The Landlord Diplomat",
-    "tool.review-retaliator.label": "The Review Retaliator",
-    "tool.ghosting-resurrector.label": "The Ghosting Resurrector",
-    "tool.passive-aggressive-decoder.label": "The Passive-Aggressive Decoder",
-    "tool.guilt-free-no.label": 'The Guilt-Free "No"',
-    "tool.delicate-truth.label": "The Delicate Truth",
-    "tool.co-parenting-peacemaker.label": "The Co-Parenting Peacemaker",
-    "tool.friendzone-navigator.label": "The Friendzone Navigator",
-    "tool.rsvp-diplomat.label": "The RSVP Diplomat",
+    "tool.corporate-whisperer.title": "职场话术润色师",
+    "tool.coverletter-ai.title": "一键求职信",
+    "tool.dating-roast.title": "约会资料吐槽与优化",
+    "tool.raise-negotiator.title": "加薪谈判助手",
+    "tool.graceful-quitter.title": "优雅辞职信",
+    "tool.cold-dm-icebreaker.title": "冷启动私信破冰",
+    "tool.micromanager-tamer.title": "微管理应对助手",
+    "tool.invoice-chaser.title": "催款邮件助手",
+    "tool.perfect-apology.title": "完美道歉稿",
+    "tool.refund-demander.title": "退款申诉助手",
+    "tool.deadline-diplomat.title": "延期沟通助手",
+    "tool.landlord-diplomat.title": "房东沟通助手",
+    "tool.review-retaliator.title": "差评回复助手",
+    "tool.ghosting-resurrector.title": "反消失跟进助手",
+    "tool.passive-aggressive-decoder.title": "被动攻击解码器",
+    "tool.guilt-free-no.title": "无负担说“不”",
+    "tool.delicate-truth.title": "温柔说真话",
+    "tool.co-parenting-peacemaker.title": "共同育儿沟通助手",
+    "tool.friendzone-navigator.title": "朋友区导航",
+    "tool.rsvp-diplomat.title": "邀请回复礼貌拒绝",
   },
   tr: {
     "brand.name": "isendai",
@@ -782,9 +688,14 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.thinking": "Düşünüyor…",
     "concierge.openTool": "Aracı aç",
 
-    "category.work-career.label": "İş & Kariyer",
-    "category.crisis-money.label": "Kriz & Para",
-    "category.social-dating.label": "Sosyal & Flört",
+    "category.work-career.label": "Kariyer Parıltısı",
+    "category.crisis-money.label": "Para & Kriz Kurtarma",
+    "category.social-dating.label": "Sosyal Kıvılcım",
+    "category.freelance-business.label": "Freelance & İş",
+    "category.academic-bureaucracy.label": "Okul & Resmi İşler",
+    "category.neighbors-living.label": "Ev & Komşular",
+    "category.creators-media.label": "Üretici Stüdyosu",
+    "category.family-deep-personal.label": "Kalpten Kalbe",
 
     "tool.corporate-whisperer.label": "Kurumsal Çevirmen",
     "tool.corporate-whisperer.desc":

@@ -8,6 +8,7 @@ import { ArrowLeft, CheckCircle2, Copy, Loader2 } from "lucide-react";
 import type { ToolName, ToolPayload } from "@/components/ai-suite/tools";
 import { getStripeLinkForModel, getToolDefinition } from "@/components/ai-suite/tools";
 import { useI18n } from "@/i18n/i18n-provider";
+import { toolTitle } from "@/i18n/tool-i18n";
 import { isModelId, type ModelId, DEFAULT_MODEL } from "@/models/models";
 import { Button } from "@/components/ui/button";
 import {
@@ -291,7 +292,7 @@ export function SuccessClient() {
                 {tool ? (
                   <span className="inline-flex items-center gap-2">
                     <span aria-hidden="true">{getToolDefinition(tool).emoji}</span>
-                    <span>{t(`tool.${tool}.label`)}</span>
+                    <span>{toolTitle(t, tool, getToolDefinition(tool).title)}</span>
                   </span>
                 ) : (
                   "Success"

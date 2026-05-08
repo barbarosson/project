@@ -1,17 +1,12 @@
 import { NextResponse } from "next/server";
-import OpenAI from "openai";
+import { generateText } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { anthropic } from "@ai-sdk/anthropic";
 
-import { TOOLS, getToolDefinition, type ToolName } from "@/components/ai-suite/tools";
+import { TOOLS, getToolDefinition, type ToolName, type ToolPayload } from "@/components/ai-suite/tools";
 
-type ModelId = "gpt-4o-mini" | "gpt-4.1-mini" | "gpt-4o";
-
-type ToolPayload =
-  | { tool: "coverletter-ai"; jobLink: string; resume: string }
-  | { tool: Exclude<ToolName, "coverletter-ai">; text: string }
-  // Backward-compat: previous versions used `profile` for dating-roast
-  | { tool: "dating-roast"; profile: string };
-
-type RequestBody = ToolPayload & { model?: ModelId };
+type OpenAIModelId = "gpt-4o-mini" | "gpt-4.1-mini" | "gpt-4o";
+type RequestBody = ToolPayload & { model?: OpenAIModelId };
 
 type ScopeResult = {
   in_scope: boolean;
@@ -39,53 +34,75 @@ function isToolPayload(value: unknown): value is RequestBody {
   return false;
 }
 
-function isModelId(value: unknown): value is ModelId {
+function isOpenAIModelId(value: unknown): value is OpenAIModelId {
   return value === "gpt-4o-mini" || value === "gpt-4.1-mini" || value === "gpt-4o";
 }
 
-async function checkScope(client: OpenAI, payload: ToolPayload): Promise<ScopeResult> {
+function rawInputFor(payload: ToolPayload) {
+  const tool = payload.tool;
+  if (tool === "coverletter-ai" && "jobLink" in payload && "resume" in payload) {
+    return `Job posting:\n${payload.jobLink}\n\nResume:\n${payload.resume}`;
+  }
+  if (tool === "dating-roast") {
+    return "text" in payload ? payload.text : payload.profile;
+  }
+  return "text" in payload ? payload.text : "";
+}
+
+function pickProviderAndModel(payload: ToolPayload, requestedOpenAIModel?: OpenAIModelId) {
+  const def = getToolDefinition(payload.tool);
+  const provider = def.provider ?? "openai";
+
+  if (provider === "anthropic") {
+    return {
+      provider: "anthropic" as const,
+      model: def.model ?? "claude-3-5-haiku-latest",
+    };
+  }
+
+  // openai
+  return {
+    provider: "openai" as const,
+    model: (requestedOpenAIModel ?? (def.model as OpenAIModelId | undefined) ?? "gpt-4o-mini") as OpenAIModelId,
+  };
+}
+
+async function checkScope(payload: ToolPayload): Promise<ScopeResult> {
   const tool = payload.tool;
   const def = getToolDefinition(tool);
-  const rawInput =
-    tool === "coverletter-ai" && "jobLink" in payload && "resume" in payload
-      ? `Job posting:\n${payload.jobLink}\n\nResume:\n${payload.resume}`
-      : tool === "dating-roast"
-        ? "text" in payload
-          ? payload.text
-          : payload.profile
-        : "text" in payload
-          ? payload.text
-          : "";
+  const rawInput = rawInputFor(payload);
 
   const allowed = [...TOOLS.map((t) => t.tool), "unknown"].join(", ");
 
-  const res = await client.chat.completions.create({
-    model: "gpt-4o-mini",
+  const { provider, model } = pickProviderAndModel(payload, "gpt-4o-mini");
+
+  // Fail-open if the required key is missing.
+  if (provider === "openai" && !process.env.OPENAI_API_KEY) return { in_scope: true };
+  if (provider === "anthropic" && !process.env.ANTHROPIC_API_KEY) return { in_scope: true };
+
+  const system =
+    "You are a strict classifier for a small AI tools suite.\n" +
+    "Return ONLY valid JSON with keys: in_scope (boolean), reason (string), suggested_tool (string).\n" +
+    `Allowed suggested_tool values: ${allowed}\n` +
+    "IMPORTANT: Classify based on the user's INTENT and TOPIC, not the current tone or quality of writing.\n" +
+    "For corporate-whisperer specifically, rude/angry/unprofessional drafts are IN SCOPE.\n" +
+    "Do not include any extra keys, markdown, or text.";
+
+  const prompt =
+    `Selected tool: ${tool}\n` +
+    `Tool scope: ${def.scopeHint}\n\n` +
+    "Decide whether the user's input is in scope for the selected tool.\n" +
+    "If not, set in_scope=false and suggest the best tool (or unknown).\n\n" +
+    `User input:\n${rawInput}`;
+
+  const result = await generateText({
+    model: provider === "anthropic" ? anthropic(model) : openai(model),
     temperature: 0,
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are a strict classifier for a small AI tools suite.\n" +
-          "Return ONLY valid JSON with keys: in_scope (boolean), reason (string), suggested_tool (string).\n" +
-          `Allowed suggested_tool values: ${allowed}\n` +
-          "IMPORTANT: Classify based on the user's INTENT and TOPIC, not the current tone or quality of writing.\n" +
-          "For corporate-whisperer specifically, rude/angry/unprofessional drafts are IN SCOPE.\n" +
-          "Do not include any extra keys, markdown, or text.",
-      },
-      {
-        role: "user",
-        content:
-          `Selected tool: ${tool}\n` +
-          `Tool scope: ${def.scopeHint}\n\n` +
-          "Decide whether the user's input is in scope for the selected tool.\n" +
-          "If not, set in_scope=false and suggest the best tool (or unknown).\n\n" +
-          `User input:\n${rawInput}`,
-      },
-    ],
+    system,
+    prompt,
   });
 
-  const content = res.choices?.[0]?.message?.content?.trim() ?? "";
+  const content = result.text?.trim() ?? "";
   try {
     const parsed = JSON.parse(content) as ScopeResult;
     if (typeof parsed?.in_scope !== "boolean") throw new Error("bad json");
@@ -317,14 +334,6 @@ function promptFor(payload: ToolPayload) {
 }
 
 export async function POST(req: Request) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: "Missing OPENAI_API_KEY in environment." },
-      { status: 500 }
-    );
-  }
-
   let body: unknown = null;
   try {
     body = (await req.json()) as unknown;
@@ -339,13 +348,22 @@ export async function POST(req: Request) {
     );
   }
 
-  const model: ModelId = isModelId(body.model) ? body.model : "gpt-4o-mini";
   const { system, user } = promptFor(body);
-  const client = new OpenAI({ apiKey });
+  const chosen = pickProviderAndModel(body, isOpenAIModelId(body.model) ? body.model : undefined);
+
+  if (chosen.provider === "openai" && !process.env.OPENAI_API_KEY) {
+    return NextResponse.json({ error: "Missing OPENAI_API_KEY in environment." }, { status: 500 });
+  }
+  if (chosen.provider === "anthropic" && !process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json(
+      { error: "Missing ANTHROPIC_API_KEY in environment." },
+      { status: 500 }
+    );
+  }
 
   try {
     // (2) Hard gate: block out-of-scope inputs before generation.
-    const scope = await checkScope(client, body);
+    const scope = await checkScope(body);
     if (!scope.in_scope) {
       const suggestion =
         scope.suggested_tool && scope.suggested_tool !== "unknown"
@@ -362,16 +380,14 @@ export async function POST(req: Request) {
       );
     }
 
-    const completion = await client.chat.completions.create({
-      model,
+    const out = await generateText({
+      model: chosen.provider === "anthropic" ? anthropic(chosen.model) : openai(chosen.model),
       temperature: 0.6,
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: user },
-      ],
+      system,
+      prompt: user,
     });
 
-    const text = completion.choices?.[0]?.message?.content?.trim();
+    const text = out.text?.trim();
     if (!text) {
       return NextResponse.json(
         { error: "Empty response from model." },
@@ -388,7 +404,7 @@ export async function POST(req: Request) {
       }
     );
   } catch (e) {
-    const message = e instanceof Error ? e.message : "OpenAI request failed.";
+    const message = e instanceof Error ? e.message : "AI request failed.";
     return NextResponse.json({ error: message }, { status: 502 });
   }
 }

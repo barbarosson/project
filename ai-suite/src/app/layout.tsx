@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { I18nProvider } from "@/i18n/i18n-provider";
 import { RouteTransition } from "@/components/route-transition";
 import { ModelProvider } from "@/models/model-provider";
+import { GlobalBackground } from "@/components/global-background";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({
           <I18nProvider>
             <ModelProvider>
               <RouteTransition />
+              <GlobalBackground />
               {children}
             </ModelProvider>
           </I18nProvider>

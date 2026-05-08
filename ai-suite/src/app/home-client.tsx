@@ -6,10 +6,10 @@ import { ArrowRight, Minus, Plus, Sparkles } from "lucide-react";
 
 import { ModeToggle } from "@/components/mode-toggle";
 import { ToolCard } from "@/components/ai-suite/tool-card";
-import { AuroraBackground } from "@/components/aurora-background";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { IsendaiLogo } from "@/components/isendai-logo";
 import { useI18n } from "@/i18n/i18n-provider";
+import { toolTitle } from "@/i18n/tool-i18n";
 import { ModelSwitcher } from "@/components/model-switcher";
 import { ConciergeChat } from "@/components/concierge-chat";
 import {
@@ -23,7 +23,16 @@ import { cn } from "@/lib/utils";
 export function HomeClient() {
   const { t } = useI18n();
 
-  const categories: ToolCategory[] = ["work-career", "crisis-money", "social-dating"];
+  const categories: ToolCategory[] = [
+    "work-career",
+    "crisis-money",
+    "social-dating",
+    "freelance-business",
+    "academic-bureaucracy",
+    "neighbors-living",
+    "creators-media",
+    "family-deep-personal",
+  ];
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -49,8 +58,6 @@ export function HomeClient() {
 
   return (
     <div className="min-h-full bg-background">
-      <AuroraBackground />
-
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-5">
         <div className="flex items-center gap-2">
           <IsendaiLogo
@@ -160,7 +167,7 @@ export function HomeClient() {
                               <span className="shrink-0" aria-hidden="true">
                                 {x.emoji}
                               </span>
-                              <span className="truncate">{t(`tool.${x.tool}.label`)}</span>
+                              <span className="truncate">{toolTitle(t, x.tool, x.title)}</span>
                             </span>
                             <ArrowRight
                               className={cn(
@@ -189,11 +196,11 @@ export function HomeClient() {
                 <h2 className="mt-1 text-pretty text-xl font-semibold tracking-tight">
                   <span className="inline-flex items-center gap-2">
                     <span aria-hidden="true">{selectedDef.emoji}</span>
-                    <span>{t(`tool.${selected}.label`)}</span>
+                    <span>{toolTitle(t, selected, selectedDef.title)}</span>
                   </span>
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {t(`tool.${selected}.desc`)}
+                  {selectedDef.description}
                 </p>
               </div>
               <div className="inline-flex items-center gap-2 rounded-full border bg-background/60 px-3 py-2 text-xs text-muted-foreground">

@@ -6,12 +6,13 @@ import { Briefcase, Flame, Mail } from "lucide-react";
 import type { ToolName, ToolPayload } from "./tools";
 import { getStripeLinkForModel, getToolDefinition } from "./tools";
 import { useModel } from "@/models/model-provider";
-import { useI18n } from "@/i18n/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { toolTitle } from "@/i18n/tool-i18n";
+import { useI18n } from "@/i18n/i18n-provider";
 
 function ToolIcon({ tool, className }: { tool: ToolName; className?: string }) {
   const Icon = tool === "corporate-whisperer" ? Mail : tool === "coverletter-ai" ? Briefcase : Flame;
@@ -36,10 +37,10 @@ export function ToolCard({
   tool: ToolName;
   showHeader?: boolean;
 }) {
+  const { t } = useI18n();
   const [busy, setBusy] = React.useState(false);
   const def = getToolDefinition(tool);
   const { model } = useModel();
-  const { t } = useI18n();
 
   const [text, setText] = React.useState("");
   const [jobLink, setJobLink] = React.useState("");
@@ -57,7 +58,7 @@ export function ToolCard({
 
   const priceLabel =
     model === "gpt-4o-mini" ? "$1.49" : model === "gpt-4.1-mini" ? "$2.49" : "$4.49";
-  const buttonLabel = `${t(`tool.${tool}.action`)} - ${priceLabel}`;
+  const buttonLabel = `${def.actionLabel} - ${priceLabel}`;
 
   async function onPayAndGenerate() {
     setBusy(true);
@@ -88,10 +89,10 @@ export function ToolCard({
               <CardTitle className="truncate">
                 <span className="inline-flex items-center gap-2">
                   <span aria-hidden="true">{def.emoji}</span>
-                  <span>{t(`tool.${tool}.label`)}</span>
+                  <span>{toolTitle(t, tool, def.title)}</span>
                 </span>
               </CardTitle>
-              <CardDescription className="mt-1">{t(`tool.${tool}.desc`)}</CardDescription>
+              <CardDescription className="mt-1">{def.description}</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -103,19 +104,19 @@ export function ToolCard({
             <Input
               value={jobLink}
               onChange={(e) => setJobLink(e.target.value)}
-              placeholder={t(`tool.${tool}.placeholder.jobLink`)}
+              placeholder={def.fields.find((f) => f.key === "jobLink")?.placeholder ?? ""}
             />
             <Textarea
               value={resume}
               onChange={(e) => setResume(e.target.value)}
-              placeholder={t(`tool.${tool}.placeholder.resume`)}
+              placeholder={def.fields.find((f) => f.key === "resume")?.placeholder ?? ""}
             />
           </div>
         ) : (
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder={t(`tool.${tool}.placeholder.text`)}
+            placeholder={def.fields.find((f) => f.key === "text")?.placeholder ?? ""}
           />
         )}
 

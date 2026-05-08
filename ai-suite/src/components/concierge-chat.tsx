@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/i18n/i18n-provider";
 import { IsendaiLogo } from "@/components/isendai-logo";
+import { toolTitle } from "@/i18n/tool-i18n";
 
 type UiMsg = { id: string; role: "assistant" | "user"; content: string };
 
@@ -163,7 +164,7 @@ export function ConciergeChat({ className }: { className?: string }) {
                 <span className="mr-1" aria-hidden="true">
                   {getToolDefinition(tool).emoji}
                 </span>
-                {t(`tool.${tool}.label`)} <ArrowRight className="size-4" />
+                {toolTitle(t, tool, getToolDefinition(tool).title)} <ArrowRight className="size-4" />
               </Button>
             ))}
           </div>
