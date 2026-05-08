@@ -10,6 +10,7 @@ import { AuroraBackground } from "@/components/aurora-background";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { IsendaiLogo } from "@/components/isendai-logo";
 import { useI18n } from "@/i18n/i18n-provider";
+import { ModelSwitcher } from "@/components/model-switcher";
 import {
   CATEGORY_META,
   TOOLS,
@@ -46,6 +47,7 @@ export function HomeClient() {
         </div>
         <div className="flex items-center gap-2">
           <LanguageSwitcher className="hidden sm:inline-flex" />
+          <ModelSwitcher className="hidden sm:inline-flex" />
           <ModeToggle />
         </div>
       </header>
@@ -123,6 +125,10 @@ export function HomeClient() {
                 <Sparkles className="size-4" />
                 Paste → Generate → Copy
               </div>
+            </div>
+
+            <div className="mt-4 sm:hidden">
+              <ModelSwitcher />
             </div>
 
             <div className="mt-5">

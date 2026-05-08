@@ -8,6 +8,7 @@ import { ArrowLeft, CheckCircle2, Copy, Loader2 } from "lucide-react";
 import type { ToolName, ToolPayload } from "@/components/ai-suite/tools";
 import { getToolDefinition } from "@/components/ai-suite/tools";
 import { useI18n } from "@/i18n/i18n-provider";
+import { isModelId, type ModelId, DEFAULT_MODEL } from "@/models/models";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -78,10 +79,12 @@ export function SuccessClient() {
 
       setLoading(true);
       try {
+        const modelRaw = localStorage.getItem(`${storageKey}:model`);
+        const model: ModelId = isModelId(modelRaw) ? modelRaw : DEFAULT_MODEL;
         const res = await fetch("/api/generate", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify(parsed.payload),
+          body: JSON.stringify({ ...parsed.payload, model }),
         });
         const json = (await res.json()) as { result?: string; error?: string };
 

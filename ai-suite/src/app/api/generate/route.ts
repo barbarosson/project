@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
+type ModelId = "gpt-4o-mini" | "gpt-4.1-mini" | "gpt-4o";
+
 type ToolName =
   | "corporate-whisperer"
   | "coverletter-ai"
@@ -28,6 +30,8 @@ type ToolPayload =
   | { tool: Exclude<ToolName, "coverletter-ai">; text: string }
   // Backward-compat: previous versions used `profile` for dating-roast
   | { tool: "dating-roast"; profile: string };
+
+type RequestBody = ToolPayload & { model?: ModelId };
 
 type ScopeResult = {
   in_scope: boolean;
@@ -66,7 +70,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-function isToolPayload(value: unknown): value is ToolPayload {
+function isToolPayload(value: unknown): value is RequestBody {
   if (!isRecord(value)) return false;
   const tool = value.tool;
   if (tool === "coverletter-ai")
@@ -76,6 +80,10 @@ function isToolPayload(value: unknown): value is ToolPayload {
   // all other tools: require `text`
   return typeof value.text === "string";
   return false;
+}
+
+function isModelId(value: unknown): value is ModelId {
+  return value === "gpt-4o-mini" || value === "gpt-4.1-mini" || value === "gpt-4o";
 }
 
 function scopeInstructionsFor(tool: ToolName) {
@@ -415,6 +423,7 @@ export async function POST(req: Request) {
     );
   }
 
+  const model: ModelId = isModelId(body.model) ? body.model : "gpt-4o-mini";
   const { system, user } = promptFor(body);
   const client = new OpenAI({ apiKey });
 
@@ -438,7 +447,7 @@ export async function POST(req: Request) {
     }
 
     const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",
+      model,
       temperature: 0.6,
       messages: [
         { role: "system", content: system },

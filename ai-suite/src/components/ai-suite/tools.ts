@@ -57,7 +57,7 @@ export type ToolDefinition = {
   category: ToolCategory;
   label: string;
   description: string;
-  buttonLabel: string;
+  actionLabel: string;
   fields: ToolField[];
   storageKey: string;
   stripeEnvVar: string;
@@ -78,7 +78,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "The Corporate Whisperer",
     description:
       "Want to yell at your boss or client? Don't. Type your angry, unfiltered thoughts here, and we'll turn it into a polite, HR-friendly masterpiece.",
-    buttonLabel: "Translate to Professional - $1.49",
+    actionLabel: "Translate to Professional",
     fields: [
       {
         kind: "textarea",
@@ -96,7 +96,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "1-Click Cover Letter",
     description:
       "Tired of writing the same letter for every job? Paste the job URL and your skills. We'll generate a tailored, ATS-beating cover letter that gets interviews.",
-    buttonLabel: "Generate Cover Letter - $1.49",
+    actionLabel: "Generate Cover Letter",
     fields: [
       { kind: "input", key: "jobLink", placeholder: "Paste Job Description or URL..." },
       { kind: "textarea", key: "resume", placeholder: "Paste your resume text or key skills..." },
@@ -110,7 +110,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "Dating Profile Roast & Fix",
     description:
       "Not getting matches? Our AI will brutally roast your current bio, tell you exactly why it's failing, and write a magnetic new one for you.",
-    buttonLabel: "Roast & Fix My Profile - $1.49",
+    actionLabel: "Roast & Fix My Profile",
     fields: [
       {
         kind: "textarea",
@@ -129,7 +129,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "The Raise Negotiator",
     description:
       "Turn your wins into a clear, persuasive raise or budget increase email that’s confident, specific, and hard to ignore.",
-    buttonLabel: "Write My Raise Email - $1.49",
+    actionLabel: "Write My Raise Email",
     fields: [{ kind: "textarea", key: "text", placeholder: "Paste your achievements, impact, numbers, and context..." }],
     storageKey: mkStorageKey("raise-negotiator"),
     stripeEnvVar: mkStripeEnv("raise-negotiator"),
@@ -140,7 +140,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "The Graceful Quitter",
     description:
       "Draft a professional resignation letter that preserves relationships and avoids burning bridges.",
-    buttonLabel: "Generate Resignation Letter - $1.49",
+    actionLabel: "Generate Resignation Letter",
     fields: [{ kind: "textarea", key: "text", placeholder: "Role, last day, reason (optional), and any handoff notes..." }],
     storageKey: mkStorageKey("graceful-quitter"),
     stripeEnvVar: mkStripeEnv("graceful-quitter"),
@@ -151,7 +151,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "The Cold DM Icebreaker",
     description:
       "Create a short, high-reply cold message for LinkedIn/email that feels personal, not spammy.",
-    buttonLabel: "Write My Cold DM - $1.49",
+    actionLabel: "Write My Cold DM",
     fields: [{ kind: "textarea", key: "text", placeholder: "Who you’re messaging, why them, what you want, and 1–2 personal details..." }],
     storageKey: mkStorageKey("cold-dm-icebreaker"),
     stripeEnvVar: mkStripeEnv("cold-dm-icebreaker"),
@@ -162,7 +162,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "The Micromanager Tamer",
     description:
       "Set firm boundaries with a micromanager—politely, clearly, and without escalating drama.",
-    buttonLabel: "Set Boundaries - $1.49",
+    actionLabel: "Set Boundaries",
     fields: [{ kind: "textarea", key: "text", placeholder: "Describe what they do, what you need instead, and your preferred workflow..." }],
     storageKey: mkStorageKey("micromanager-tamer"),
     stripeEnvVar: mkStripeEnv("micromanager-tamer"),
@@ -173,7 +173,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "The Invoice Chaser",
     description:
       "Write a firm-but-friendly payment reminder that gets you paid without shaming the client.",
-    buttonLabel: "Chase My Invoice - $1.49",
+    actionLabel: "Chase My Invoice",
     fields: [{ kind: "textarea", key: "text", placeholder: "Invoice #, amount, due date, and prior follow-ups (if any)..." }],
     storageKey: mkStorageKey("invoice-chaser"),
     stripeEnvVar: mkStripeEnv("invoice-chaser"),
@@ -186,7 +186,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "The Perfect Apology",
     description:
       "A no-excuses apology that takes responsibility, repairs trust, and proposes a concrete next step.",
-    buttonLabel: "Write My Apology - $1.49",
+    actionLabel: "Write My Apology",
     fields: [{ kind: "textarea", key: "text", placeholder: "What happened, who it impacted, and what you’ll do to fix it..." }],
     storageKey: mkStorageKey("perfect-apology"),
     stripeEnvVar: mkStripeEnv("perfect-apology"),
@@ -197,7 +197,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "The Refund Demander",
     description:
       "A formal, assertive complaint email that cites consumer rights and maximizes your chance of a refund or compensation.",
-    buttonLabel: "Demand My Refund - $1.49",
+    actionLabel: "Demand My Refund",
     fields: [{ kind: "textarea", key: "text", placeholder: "Company, order details, issue, timeline, what you want, and any evidence..." }],
     storageKey: mkStorageKey("refund-demander"),
     stripeEnvVar: mkStripeEnv("refund-demander"),
@@ -208,7 +208,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "The Deadline Diplomat",
     description:
       "Ask for more time in a way that stays credible: calm, professional, with a plan and revised timeline.",
-    buttonLabel: "Request Extension - $1.49",
+    actionLabel: "Request Extension",
     fields: [{ kind: "textarea", key: "text", placeholder: "Current deadline, what’s blocking, new proposed date, and next milestones..." }],
     storageKey: mkStorageKey("deadline-diplomat"),
     stripeEnvVar: mkStripeEnv("deadline-diplomat"),
@@ -219,7 +219,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "The Landlord Diplomat",
     description:
       "Draft diplomatic, legally-aware messages for landlord/tenant disputes without inflaming the situation.",
-    buttonLabel: "Draft My Message - $1.49",
+    actionLabel: "Draft My Message",
     fields: [{ kind: "textarea", key: "text", placeholder: "Country/city, issue (rent/repairs/deposit), what you want, and any dates..." }],
     storageKey: mkStorageKey("landlord-diplomat"),
     stripeEnvVar: mkStripeEnv("landlord-diplomat"),
@@ -230,7 +230,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "The Review Retaliator",
     description:
       "Respond to unfair negative reviews with calm professionalism and reputation-saving clarity.",
-    buttonLabel: "Write Review Reply - $1.49",
+    actionLabel: "Write Review Reply",
     fields: [{ kind: "textarea", key: "text", placeholder: "Paste the review + any context you can share (facts, policy, what happened)..." }],
     storageKey: mkStorageKey("review-retaliator"),
     stripeEnvVar: mkStripeEnv("review-retaliator"),
@@ -243,7 +243,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "The Ghosting Resurrector",
     description:
       "Get a reply without sounding desperate: short, playful, and low-pressure follow-ups.",
-    buttonLabel: "Get Them To Reply - $1.49",
+    actionLabel: "Get Them To Reply",
     fields: [{ kind: "textarea", key: "text", placeholder: "Paste the last messages and what you want (date / clarity / closure)..." }],
     storageKey: mkStorageKey("ghosting-resurrector"),
     stripeEnvVar: mkStripeEnv("ghosting-resurrector"),
@@ -254,7 +254,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "The Passive-Aggressive Decoder",
     description:
       "Translate toxic subtext into plain English—then craft a smart reply that disarms without escalating.",
-    buttonLabel: "Decode & Reply - $1.49",
+    actionLabel: "Decode & Reply",
     fields: [{ kind: "textarea", key: "text", placeholder: "Paste the message you received and the relationship context..." }],
     storageKey: mkStorageKey("passive-aggressive-decoder"),
     stripeEnvVar: mkStripeEnv("passive-aggressive-decoder"),
@@ -265,7 +265,7 @@ export const TOOLS: ToolDefinition[] = [
     label: 'The Guilt-Free "No"',
     description:
       "Say no clearly and kindly—without overexplaining or feeling guilty.",
-    buttonLabel: "Write My No - $1.49",
+    actionLabel: "Write My No",
     fields: [{ kind: "textarea", key: "text", placeholder: "What you’re declining, who it is, and how direct you want to be..." }],
     storageKey: mkStorageKey("guilt-free-no"),
     stripeEnvVar: mkStripeEnv("guilt-free-no"),
@@ -276,7 +276,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "The Delicate Truth",
     description:
       "Turn hard truths into gentle, non-blaming messages that still land clearly.",
-    buttonLabel: "Say It Kindly - $1.49",
+    actionLabel: "Say It Kindly",
     fields: [{ kind: "textarea", key: "text", placeholder: "What you need to say, why, and what outcome you want..." }],
     storageKey: mkStorageKey("delicate-truth"),
     stripeEnvVar: mkStripeEnv("delicate-truth"),
@@ -287,7 +287,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "The Co-Parenting Peacemaker",
     description:
       "Filter anger and keep it logistics-only: neutral co-parenting messages that reduce conflict.",
-    buttonLabel: "Make It Neutral - $1.49",
+    actionLabel: "Make It Neutral",
     fields: [{ kind: "textarea", key: "text", placeholder: "Situation, schedule details, what you’re requesting, and boundaries..." }],
     storageKey: mkStorageKey("co-parenting-peacemaker"),
     stripeEnvVar: mkStripeEnv("co-parenting-peacemaker"),
@@ -298,7 +298,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "The Friendzone Navigator",
     description:
       "Confess feelings or set boundaries without wrecking the friendship—careful, respectful, and clear.",
-    buttonLabel: "Write My Message - $1.49",
+    actionLabel: "Write My Message",
     fields: [{ kind: "textarea", key: "text", placeholder: "Context, what you feel, and what you’re asking for (or declining)..." }],
     storageKey: mkStorageKey("friendzone-navigator"),
     stripeEnvVar: mkStripeEnv("friendzone-navigator"),
@@ -309,7 +309,7 @@ export const TOOLS: ToolDefinition[] = [
     label: "The RSVP Diplomat",
     description:
       "Decline an important invitation without drama: warm, respectful, and final.",
-    buttonLabel: "Decline Gracefully - $1.49",
+    actionLabel: "Decline Gracefully",
     fields: [{ kind: "textarea", key: "text", placeholder: "Event, who invited you, why you can’t go (optional), and tone preference..." }],
     storageKey: mkStorageKey("rsvp-diplomat"),
     stripeEnvVar: mkStripeEnv("rsvp-diplomat"),
@@ -326,5 +326,16 @@ export function getStripeLink(tool: ToolName): string | null {
   const def = getToolDefinition(tool);
   const value = process.env[def.stripeEnvVar];
   return value && value.trim().length > 0 ? value.trim() : null;
+}
+
+export function getStripeLinkForModel(tool: ToolName, model: string): string | null {
+  // Default/back-compat: if model-specific env is missing, fall back to tool env var.
+  const suffix = model.toUpperCase().replaceAll("-", "_").replaceAll(".", "_");
+  const modelEnv = `NEXT_PUBLIC_STRIPE_LINK_${tool
+    .toUpperCase()
+    .replaceAll("-", "_")}_${suffix}`;
+  const specific = process.env[modelEnv];
+  if (specific && specific.trim().length > 0) return specific.trim();
+  return getStripeLink(tool);
 }
 

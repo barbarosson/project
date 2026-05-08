@@ -4,7 +4,8 @@ import * as React from "react";
 import { Briefcase, Flame, Mail } from "lucide-react";
 
 import type { ToolName, ToolPayload } from "./tools";
-import { getStripeLink, getToolDefinition } from "./tools";
+import { getStripeLinkForModel, getToolDefinition } from "./tools";
+import { useModel } from "@/models/model-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,6 +24,10 @@ function savePayload(storageKey: string, payload: ToolPayload) {
   );
 }
 
+function saveModel(storageKey: string, model: string) {
+  localStorage.setItem(storageKey, model);
+}
+
 export function ToolCard({
   tool,
   showHeader = true,
@@ -32,6 +37,7 @@ export function ToolCard({
 }) {
   const [busy, setBusy] = React.useState(false);
   const def = getToolDefinition(tool);
+  const { model } = useModel();
 
   const [text, setText] = React.useState("");
   const [jobLink, setJobLink] = React.useState("");
@@ -47,13 +53,16 @@ export function ToolCard({
       ? jobLink.trim().length >= 8 && resume.trim().length >= 20
       : text.trim().length >= 10;
 
-  const buttonLabel = def.buttonLabel;
+  const priceLabel =
+    model === "gpt-4o-mini" ? "$1.49" : model === "gpt-4.1-mini" ? "$2.49" : "$4.49";
+  const buttonLabel = `${def.actionLabel} - ${priceLabel}`;
 
   async function onPayAndGenerate() {
     setBusy(true);
     try {
       savePayload(def.storageKey, payload);
-      const link = getStripeLink(tool);
+      saveModel(`${def.storageKey}:model`, model);
+      const link = getStripeLinkForModel(tool, model);
       if (!link) {
         // Stripe not configured yet → allow instant testing via /success
         window.location.href = `/success?tool=${tool}&test=1`;
