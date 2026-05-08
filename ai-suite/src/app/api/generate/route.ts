@@ -100,6 +100,17 @@ async function checkScope(payload: ToolPayload): Promise<ScopeResult> {
   const def = getToolDefinition(tool);
   const rawInput = rawInputFor(payload);
 
+  // Local heuristics to avoid over-blocking for obvious in-scope intents.
+  // This is especially important when the user expresses the intent but doesn't
+  // explicitly ask for the final artifact (e.g. "I want to quit" → resignation letter).
+  if (tool === "graceful-quitter") {
+    const t = rawInput.toLowerCase();
+    const wantsQuit =
+      /\b(quit|resign|resignation|two\s*weeks|notice|leaving|leave\s+my\s+job)\b/.test(t) ||
+      /\b(istifa|ayrılmak|işten\s+ayrıl|iki\s+hafta\s+ihbar|ihbar\s+süresi)\b/.test(t);
+    if (wantsQuit) return { in_scope: true };
+  }
+
   const allowed = [...TOOLS.map((t) => t.tool), "unknown"].join(", ");
 
   const provider = pickProvider(payload);
@@ -109,10 +120,12 @@ async function checkScope(payload: ToolPayload): Promise<ScopeResult> {
   if (!hasProviderKey(provider)) return { in_scope: true };
 
   const system =
-    "You are a strict classifier for a small AI tools suite.\n" +
+    "You are a scope classifier for a small AI tools suite.\n" +
     "Return ONLY valid JSON with keys: in_scope (boolean), reason (string), suggested_tool (string).\n" +
     `Allowed suggested_tool values: ${allowed}\n` +
     "IMPORTANT: Classify based on the user's INTENT and TOPIC, not the current tone or quality of writing.\n" +
+    "Be permissive: if the selected tool can reasonably help with the user's intent, mark in_scope=true even if they didn't explicitly ask for the final artifact.\n" +
+    'Example: graceful-quitter is IN SCOPE for "I want to quit" or "I\'m resigning" even if "write a resignation letter" is not stated.\n' +
     "For corporate-whisperer specifically, rude/angry/unprofessional drafts are IN SCOPE.\n" +
     "Do not include any extra keys, markdown, or text.";
 

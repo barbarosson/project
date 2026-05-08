@@ -4,7 +4,7 @@ Minimal “AI Suite” demo with 3 tools, Stripe Payment Link redirect, and a `/
 
 ## Getting Started
 
-1) Create `.env.local` from the example:
+1) Create `ai-suite/.env.local` from the example:
 
 ```bash
 copy .env.example .env.local
