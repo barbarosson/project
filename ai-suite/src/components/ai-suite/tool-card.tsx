@@ -23,7 +23,13 @@ function savePayload(storageKey: string, payload: ToolPayload) {
   );
 }
 
-export function ToolCard({ tool }: { tool: ToolName }) {
+export function ToolCard({
+  tool,
+  showHeader = true,
+}: {
+  tool: ToolName;
+  showHeader?: boolean;
+}) {
   const [busy, setBusy] = React.useState(false);
   const def = getToolDefinition(tool);
 
@@ -61,19 +67,19 @@ export function ToolCard({ tool }: { tool: ToolName }) {
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <div className="inline-flex size-9 items-center justify-center rounded-lg border bg-background">
-            <ToolIcon tool={tool} />
+      {showHeader ? (
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <div className="inline-flex size-9 items-center justify-center rounded-lg border bg-background">
+              <ToolIcon tool={tool} />
+            </div>
+            <div className="min-w-0">
+              <CardTitle className="truncate">{def.label}</CardTitle>
+              <CardDescription className="mt-1">{def.description}</CardDescription>
+            </div>
           </div>
-          <div className="min-w-0">
-            <CardTitle className="truncate">{def.label}</CardTitle>
-            <CardDescription className="mt-1">
-              {def.description}
-            </CardDescription>
-          </div>
-        </div>
-      </CardHeader>
+        </CardHeader>
+      ) : null}
 
       <CardContent className="flex flex-col gap-4">
         {tool === "coverletter-ai" ? (

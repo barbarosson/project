@@ -1,18 +1,40 @@
 "use client";
 
+import * as React from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowRight, Sparkles } from "lucide-react";
+
 import { ModeToggle } from "@/components/mode-toggle";
 import { ToolCard } from "@/components/ai-suite/tool-card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AuroraBackground } from "@/components/aurora-background";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { IsendaiLogo } from "@/components/isendai-logo";
 import { useI18n } from "@/i18n/i18n-provider";
-import { CATEGORY_META, TOOLS, type ToolCategory } from "@/components/ai-suite/tools";
+import {
+  CATEGORY_META,
+  TOOLS,
+  type ToolCategory,
+  type ToolName,
+  getToolDefinition,
+} from "@/components/ai-suite/tools";
+import { cn } from "@/lib/utils";
 
 export function HomeClient() {
   const { t } = useI18n();
 
   const categories: ToolCategory[] = ["work-career", "crisis-money", "social-dating"];
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const selectedFromUrl = searchParams.get("tool") as ToolName | null;
+  const defaultTool = TOOLS[0]?.tool ?? "corporate-whisperer";
+  const [selected, setSelected] = React.useState<ToolName>(
+    selectedFromUrl && TOOLS.some((x) => x.tool === selectedFromUrl)
+      ? selectedFromUrl
+      : defaultTool
+  );
+
+  const selectedDef = getToolDefinition(selected);
 
   return (
     <div className="min-h-full bg-background">
@@ -29,143 +51,84 @@ export function HomeClient() {
       </header>
 
       <main className="mx-auto w-full max-w-6xl px-4 pb-16">
-        <section className="relative overflow-hidden rounded-2xl border bg-card/80 px-6 py-14 shadow-sm backdrop-blur sm:px-10">
-          <div className="absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_50%_0%,hsl(var(--primary)_/_0.18)_0%,transparent_70%)]" />
-          <p className="text-sm font-medium text-muted-foreground">
-            {t("hero.kicker")}
-          </p>
-          <h1 className="mt-3 text-balance text-3xl font-semibold tracking-tight sm:text-5xl">
+        <section className="relative overflow-hidden rounded-2xl border bg-card/70 px-6 py-8 shadow-sm backdrop-blur sm:px-10">
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_50%_0%,hsl(var(--primary)_/_0.16)_0%,transparent_70%)]" />
+          <p className="text-sm font-medium text-muted-foreground">{t("hero.kicker")}</p>
+          <h1 className="mt-2 text-balance text-2xl font-semibold tracking-tight sm:text-4xl">
             {t("hero.title")}
           </h1>
-          <p className="mt-4 max-w-2xl text-balance text-base text-muted-foreground sm:text-lg">
+          <p className="mt-3 max-w-3xl text-balance text-sm text-muted-foreground sm:text-base">
             {t("hero.subtitle")}
           </p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            <span className="rounded-full border bg-background/70 px-3 py-1 text-xs text-muted-foreground backdrop-blur">
-              {t("hero.badge.noSubscription")}
-            </span>
-            <span className="rounded-full border bg-background/70 px-3 py-1 text-xs text-muted-foreground backdrop-blur">
-              {t("hero.badge.noSignups")}
-            </span>
-            <span className="rounded-full border bg-background/70 px-3 py-1 text-xs text-muted-foreground backdrop-blur">
-              {t("hero.badge.payPerUse")}
-            </span>
-            <span className="rounded-full border bg-background/70 px-3 py-1 text-xs text-muted-foreground backdrop-blur">
-              {t("hero.badge.noStore")}
-            </span>
-          </div>
-
-          <div className="mt-6 sm:hidden">
-            <LanguageSwitcher />
-          </div>
         </section>
 
-        <section className="mt-10 grid gap-10">
-          <div>
-            <div className="mb-4">
-              <h2 className="text-pretty text-xl font-semibold tracking-tight">
-                {t("section.tools.title")}
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {t("section.tools.subtitle")}
-              </p>
+        <section className="mt-8 grid gap-6 lg:grid-cols-[320px_1fr]">
+          {/* Left: tool list */}
+          <aside className="rounded-2xl border bg-card/70 p-4 shadow-sm backdrop-blur">
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold">AI Products</p>
+              <span className="text-xs text-muted-foreground">{TOOLS.length}</span>
             </div>
 
-            <Tabs defaultValue="work-career" className="w-full">
-              <TabsList className="grid h-auto w-full grid-cols-1 gap-2 bg-transparent p-0 sm:grid-cols-3">
-                {categories.map((cat) => (
-                  <TabsTrigger
-                    key={cat}
-                    value={cat}
-                    className="h-10 rounded-md border bg-card/80 backdrop-blur"
-                  >
-                    {CATEGORY_META[cat].label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-
+            <div className="grid gap-4">
               {categories.map((cat) => (
-                <TabsContent key={cat} value={cat}>
-                  <div className="mt-3">
-                    <p className="text-sm text-muted-foreground">
-                      {CATEGORY_META[cat].description}
-                    </p>
+                <div key={cat}>
+                  <p className="mb-2 text-xs font-semibold text-muted-foreground">
+                    {CATEGORY_META[cat].label}
+                  </p>
+                  <div className="grid gap-1">
+                    {TOOLS.filter((x) => x.category === cat).map((x) => {
+                      const isActive = x.tool === selected;
+                      return (
+                        <button
+                          key={x.tool}
+                          type="button"
+                          className={cn(
+                            "flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm transition-colors",
+                            isActive
+                              ? "border-primary/30 bg-primary/10"
+                              : "border-border/60 bg-background/50 hover:bg-accent/40"
+                          )}
+                          onClick={() => {
+                            setSelected(x.tool);
+                            router.replace(`/?tool=${x.tool}`);
+                          }}
+                        >
+                          <span className="truncate">{x.label}</span>
+                          <ArrowRight className={cn("size-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} />
+                        </button>
+                      );
+                    })}
                   </div>
-                  <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {TOOLS.filter((t) => t.category === cat).map((tool) => (
-                      <ToolCard key={tool.tool} tool={tool.tool} />
-                    ))}
-                  </div>
-                </TabsContent>
+                </div>
               ))}
-            </Tabs>
-          </div>
-
-          <div className="grid gap-4 rounded-2xl border bg-card/80 p-6 shadow-sm backdrop-blur sm:grid-cols-3 sm:gap-6 sm:p-8">
-            <div>
-              <p className="text-sm font-semibold">{t("how.1.title")}</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {t("how.1.body")}
-              </p>
             </div>
-            <div>
-              <p className="text-sm font-semibold">{t("how.2.title")}</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {t("how.2.body")}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm font-semibold">{t("how.3.title")}</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {t("how.3.body")}
-              </p>
-            </div>
-          </div>
+          </aside>
 
-          <div>
-            <h2 className="text-pretty text-xl font-semibold tracking-tight">
-              {t("products.title")}
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {t("products.subtitle")}
-            </p>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-xl border bg-card/80 p-4 shadow-sm backdrop-blur">
-                <p className="text-sm font-semibold">{t("products.corp.title")}</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  “{t("products.corp.slogan")}”
+          {/* Right: workspace */}
+          <section className="rounded-2xl border bg-card/70 p-4 shadow-sm backdrop-blur sm:p-6">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-muted-foreground">
+                  {CATEGORY_META[selectedDef.category].label}
+                </p>
+                <h2 className="mt-1 text-pretty text-xl font-semibold tracking-tight">
+                  {selectedDef.label}
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {selectedDef.description}
                 </p>
               </div>
-              <div className="rounded-xl border bg-card/80 p-4 shadow-sm backdrop-blur">
-                <p className="text-sm font-semibold">{t("products.cover.title")}</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  “{t("products.cover.slogan")}”
-                </p>
-              </div>
-              <div className="rounded-xl border bg-card/80 p-4 shadow-sm backdrop-blur">
-                <p className="text-sm font-semibold">{t("products.dating.title")}</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  “{t("products.dating.slogan")}”
-                </p>
+              <div className="inline-flex items-center gap-2 rounded-full border bg-background/60 px-3 py-2 text-xs text-muted-foreground">
+                <Sparkles className="size-4" />
+                Paste → Generate → Copy
               </div>
             </div>
-          </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-xl border bg-card/80 p-4 shadow-sm backdrop-blur">
-              <p className="text-sm font-semibold">{t("faq.q1")}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{t("faq.a1")}</p>
+            <div className="mt-5">
+              <ToolCard tool={selected} showHeader={false} />
             </div>
-            <div className="rounded-xl border bg-card/80 p-4 shadow-sm backdrop-blur">
-              <p className="text-sm font-semibold">{t("faq.q2")}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{t("faq.a2")}</p>
-            </div>
-            <div className="rounded-xl border bg-card/80 p-4 shadow-sm backdrop-blur">
-              <p className="text-sm font-semibold">{t("faq.q3")}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{t("faq.a3")}</p>
-            </div>
-          </div>
+          </section>
         </section>
       </main>
 
