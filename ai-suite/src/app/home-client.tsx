@@ -5,6 +5,7 @@ import { ToolCard } from "@/components/ai-suite/tool-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AuroraBackground } from "@/components/aurora-background";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { IsendaiLogo } from "@/components/isendai-logo";
 import { useI18n } from "@/i18n/i18n-provider";
 import { CATEGORY_META, TOOLS, type ToolCategory } from "@/components/ai-suite/tools";
 
@@ -19,10 +20,7 @@ export function HomeClient() {
 
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-5">
         <div className="flex items-center gap-2">
-          <div className="size-8 rounded-lg border bg-card shadow-sm" />
-          <span className="text-sm font-semibold tracking-tight">
-            {t("brand.name")}
-          </span>
+          <IsendaiLogo withWordmark />
         </div>
         <div className="flex items-center gap-2">
           <LanguageSwitcher className="hidden sm:inline-flex" />
