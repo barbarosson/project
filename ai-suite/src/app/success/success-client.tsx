@@ -129,7 +129,7 @@ export function SuccessClient() {
         <Card>
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <CardTitle>{tool ? getToolDefinition(tool).label : "Success"}</CardTitle>
+              <CardTitle>{tool ? t(`tool.${tool}.label`) : "Success"}</CardTitle>
               <Button asChild variant="outline">
                 <Link href="/">
                   <ArrowLeft className="size-4" />

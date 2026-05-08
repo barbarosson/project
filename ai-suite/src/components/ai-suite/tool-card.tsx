@@ -6,6 +6,7 @@ import { Briefcase, Flame, Mail } from "lucide-react";
 import type { ToolName, ToolPayload } from "./tools";
 import { getStripeLinkForModel, getToolDefinition } from "./tools";
 import { useModel } from "@/models/model-provider";
+import { useI18n } from "@/i18n/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,6 +39,7 @@ export function ToolCard({
   const [busy, setBusy] = React.useState(false);
   const def = getToolDefinition(tool);
   const { model } = useModel();
+  const { t } = useI18n();
 
   const [text, setText] = React.useState("");
   const [jobLink, setJobLink] = React.useState("");
@@ -55,7 +57,7 @@ export function ToolCard({
 
   const priceLabel =
     model === "gpt-4o-mini" ? "$1.49" : model === "gpt-4.1-mini" ? "$2.49" : "$4.49";
-  const buttonLabel = `${def.actionLabel} - ${priceLabel}`;
+  const buttonLabel = `${t(`tool.${tool}.action`)} - ${priceLabel}`;
 
   async function onPayAndGenerate() {
     setBusy(true);
@@ -83,8 +85,8 @@ export function ToolCard({
               <ToolIcon tool={tool} />
             </div>
             <div className="min-w-0">
-              <CardTitle className="truncate">{def.label}</CardTitle>
-              <CardDescription className="mt-1">{def.description}</CardDescription>
+              <CardTitle className="truncate">{t(`tool.${tool}.label`)}</CardTitle>
+              <CardDescription className="mt-1">{t(`tool.${tool}.desc`)}</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -96,19 +98,19 @@ export function ToolCard({
             <Input
               value={jobLink}
               onChange={(e) => setJobLink(e.target.value)}
-              placeholder={def.fields.find((f) => f.key === "jobLink")?.placeholder ?? ""}
+              placeholder={t(`tool.${tool}.placeholder.jobLink`)}
             />
             <Textarea
               value={resume}
               onChange={(e) => setResume(e.target.value)}
-              placeholder={def.fields.find((f) => f.key === "resume")?.placeholder ?? ""}
+              placeholder={t(`tool.${tool}.placeholder.resume`)}
             />
           </div>
         ) : (
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder={def.fields.find((f) => f.key === "text")?.placeholder ?? ""}
+            placeholder={t(`tool.${tool}.placeholder.text`)}
           />
         )}
 

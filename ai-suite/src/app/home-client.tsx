@@ -12,7 +12,6 @@ import { IsendaiLogo } from "@/components/isendai-logo";
 import { useI18n } from "@/i18n/i18n-provider";
 import { ModelSwitcher } from "@/components/model-switcher";
 import {
-  CATEGORY_META,
   TOOLS,
   type ToolCategory,
   type ToolName,
@@ -68,7 +67,7 @@ export function HomeClient() {
           {/* Left: tool list */}
           <aside className="rounded-2xl border bg-card/70 p-4 shadow-sm backdrop-blur">
             <div className="mb-3 flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold">AI Products</p>
+              <p className="text-sm font-semibold">{t("home.sidebar.title")}</p>
               <span className="text-xs text-muted-foreground">{TOOLS.length}</span>
             </div>
 
@@ -76,7 +75,7 @@ export function HomeClient() {
               {categories.map((cat) => (
                 <div key={cat}>
                   <p className="mb-2 text-xs font-semibold text-muted-foreground">
-                    {CATEGORY_META[cat].label}
+                    {t(`category.${cat}.label`)}
                   </p>
                   <div className="grid gap-1">
                     {TOOLS.filter((x) => x.category === cat).map((x) => {
@@ -96,7 +95,7 @@ export function HomeClient() {
                             router.replace(`/?tool=${x.tool}`);
                           }}
                         >
-                          <span className="truncate">{x.label}</span>
+                          <span className="truncate">{t(`tool.${x.tool}.label`)}</span>
                           <ArrowRight className={cn("size-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} />
                         </button>
                       );
@@ -112,18 +111,18 @@ export function HomeClient() {
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-xs font-semibold text-muted-foreground">
-                  {CATEGORY_META[selectedDef.category].label}
+                  {t(`category.${selectedDef.category}.label`)}
                 </p>
                 <h2 className="mt-1 text-pretty text-xl font-semibold tracking-tight">
-                  {selectedDef.label}
+                  {t(`tool.${selected}.label`)}
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {selectedDef.description}
+                  {t(`tool.${selected}.desc`)}
                 </p>
               </div>
               <div className="inline-flex items-center gap-2 rounded-full border bg-background/60 px-3 py-2 text-xs text-muted-foreground">
                 <Sparkles className="size-4" />
-                Paste → Generate → Copy
+                {t("home.workspace.hint")}
               </div>
             </div>
 

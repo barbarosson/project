@@ -93,7 +93,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "coverletter-ai",
     category: "work-career",
-    label: "1-Click Cover Letter",
+    label: "Click Cover Letter",
     description:
       "Tired of writing the same letter for every job? Paste the job URL and your skills. We'll generate a tailored, ATS-beating cover letter that gets interviews.",
     actionLabel: "Generate Cover Letter",

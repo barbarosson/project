@@ -89,7 +89,11 @@ function isModelId(value: unknown): value is ModelId {
 function scopeInstructionsFor(tool: ToolName) {
   switch (tool) {
     case "corporate-whisperer":
-      return "Only corporate/professional email rewriting (tone-polishing).";
+      return (
+        "Rewrite ANY rough/emotional/unprofessional draft into a concise, polite, professional workplace email. " +
+        "Aggressive/confrontational language is explicitly IN SCOPE because the goal is to tone-polish it. " +
+        "Out of scope only if the user is NOT asking for message/email rewriting."
+      );
     case "coverletter-ai":
       return "Only writing a tailored cover letter based on job posting + candidate resume.";
     case "dating-roast":
@@ -174,8 +178,10 @@ async function checkScope(client: OpenAI, payload: ToolPayload): Promise<ScopeRe
         role: "system",
         content:
           "You are a strict classifier for a small AI tools suite.\n" +
-          "Return ONLY valid JSON with keys: in_scope (boolean), reason (string), suggested_tool (one of: corporate-whisperer, coverletter-ai, dating-roast, unknown).\n" +
+          "Return ONLY valid JSON with keys: in_scope (boolean), reason (string), suggested_tool (string).\n" +
           `Allowed suggested_tool values: ${allowed}\n` +
+          "IMPORTANT: Classify based on the user's INTENT and TOPIC, not the current tone or quality of writing.\n" +
+          "For corporate-whisperer specifically, rude/angry/unprofessional drafts are IN SCOPE.\n" +
           "Do not include any extra keys, markdown, or text.",
       },
       {
