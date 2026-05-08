@@ -9,7 +9,7 @@ import { ToolCard } from "@/components/ai-suite/tool-card";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { IsendaiLogo } from "@/components/isendai-logo";
 import { useI18n } from "@/i18n/i18n-provider";
-import { toolTitle } from "@/i18n/tool-i18n";
+import { toolDescription, toolTitle } from "@/i18n/tool-i18n";
 import { ModelSwitcher } from "@/components/model-switcher";
 import { ConciergeChat } from "@/components/concierge-chat";
 import {
@@ -200,7 +200,7 @@ export function HomeClient() {
                   </span>
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {selectedDef.description}
+                  {toolDescription(t, selected, selectedDef.description)}
                 </p>
               </div>
               <div className="inline-flex items-center gap-2 rounded-full border bg-background/60 px-3 py-2 text-xs text-muted-foreground">

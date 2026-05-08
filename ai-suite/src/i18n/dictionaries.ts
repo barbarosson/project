@@ -159,6 +159,10 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.co-parenting-peacemaker.title": "The Co‑Parenting Peacemaker",
     "tool.friendzone-navigator.title": "The Friendzone Navigator",
     "tool.rsvp-diplomat.title": "The RSVP Diplomat",
+
+    "tool.insurance-claim-letter.title": "Insurance Claim Letter",
+    "tool.insurance-claim-letter.desc":
+      "Draft a clear claim letter with facts, dates, and requested coverage.",
   },
   es: {
     "brand.name": "isendai",
@@ -281,6 +285,10 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.co-parenting-peacemaker.title": "Pacificador de Coparentalidad",
     "tool.friendzone-navigator.title": "Navegador de Friendzone",
     "tool.rsvp-diplomat.title": "Diplomático de RSVP",
+
+    "tool.insurance-claim-letter.title": "Carta de Reclamación al Seguro",
+    "tool.insurance-claim-letter.desc":
+      "Redacta una carta de reclamación clara con hechos, fechas y la cobertura solicitada.",
   },
   fr: {
     "brand.name": "isendai",
@@ -403,6 +411,10 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.co-parenting-peacemaker.title": "Médiateur de Coparentalité",
     "tool.friendzone-navigator.title": "Navigateur de Friendzone",
     "tool.rsvp-diplomat.title": "Diplomate RSVP",
+
+    "tool.insurance-claim-letter.title": "Lettre de Réclamation d’Assurance",
+    "tool.insurance-claim-letter.desc":
+      "Rédigez une lettre de réclamation claire avec les faits, les dates et la prise en charge demandée.",
   },
   de: {
     "brand.name": "isendai",

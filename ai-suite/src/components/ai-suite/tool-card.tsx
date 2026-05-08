@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { toolTitle } from "@/i18n/tool-i18n";
+import { toolDescription, toolTitle } from "@/i18n/tool-i18n";
 import { useI18n } from "@/i18n/i18n-provider";
 
 function ToolIcon({ tool, className }: { tool: ToolName; className?: string }) {
@@ -92,7 +92,9 @@ export function ToolCard({
                   <span>{toolTitle(t, tool, def.title)}</span>
                 </span>
               </CardTitle>
-              <CardDescription className="mt-1">{def.description}</CardDescription>
+              <CardDescription className="mt-1">
+                {toolDescription(t, tool, def.description)}
+              </CardDescription>
             </div>
           </div>
         </CardHeader>

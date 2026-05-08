@@ -379,11 +379,15 @@ export async function POST(req: Request) {
   const { system, user } = promptFor(body);
   const provider = pickProvider(body);
   const { client, model } = modelForProvider(provider);
+  const debugHeaders = {
+    "x-ai-provider": provider,
+    "x-ai-model": model,
+  };
 
   if (!hasProviderKey(provider)) {
     return NextResponse.json(
       { error: `Missing ${providerKeyName(provider)} in environment.` },
-      { status: 500 }
+      { status: 500, headers: debugHeaders }
     );
   }
 
@@ -402,7 +406,7 @@ export async function POST(req: Request) {
             (scope.reason ? `${scope.reason}` : "Please use the appropriate tool.") +
             suggestion,
         },
-        { status: 400 }
+        { status: 400, headers: debugHeaders }
       );
     }
 
@@ -417,7 +421,7 @@ export async function POST(req: Request) {
     if (!text) {
       return NextResponse.json(
         { error: "Empty response from model." },
-        { status: 502 }
+        { status: 502, headers: debugHeaders }
       );
     }
 
@@ -426,12 +430,13 @@ export async function POST(req: Request) {
       {
         headers: {
           "cache-control": "no-store",
+          ...debugHeaders,
         },
       }
     );
   } catch (e) {
     const message = e instanceof Error ? e.message : "AI request failed.";
-    return NextResponse.json({ error: message }, { status: 502 });
+    return NextResponse.json({ error: message }, { status: 502, headers: debugHeaders });
   }
 }
 

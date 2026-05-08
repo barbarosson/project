@@ -1,9 +1,12 @@
 "use client";
 
 import * as React from "react";
+import { TOOLS, type ToolName } from "@/components/ai-suite/tools";
 import { DICTS, type Locale } from "./dictionaries";
+import { resolveToolDescription, resolveToolTitle } from "./tool-copy-resolve";
 
 const STORAGE_KEY = "ai-suite:locale";
+const LOCALE_COOKIE = "ai-suite-locale";
 
 type I18nContextValue = {
   locale: Locale;
@@ -13,8 +16,25 @@ type I18nContextValue = {
 
 const I18nContext = React.createContext<I18nContextValue | null>(null);
 
-function getInitialLocale(): Locale {
-  if (typeof window === "undefined") return "en";
+function readCookieLocale(): Locale | null {
+  try {
+    if (typeof document === "undefined") return null;
+    const match = document.cookie
+      .split(";")
+      .map((c) => c.trim())
+      .find((c) => c.startsWith("ai-suite-locale="));
+    if (!match) return null;
+    const value = decodeURIComponent(match.split("=").slice(1).join("="));
+    return (value as Locale) in DICTS ? (value as Locale) : null;
+  } catch {
+    return null;
+  }
+}
+
+function getInitialLocale(initialLocale?: Locale): Locale {
+  if (typeof window === "undefined") return initialLocale ?? "en";
+  const cookie = readCookieLocale();
+  if (cookie) return cookie;
   const saved = window.localStorage.getItem(STORAGE_KEY) as Locale | null;
   if (saved && DICTS[saved]) return saved;
 
@@ -27,8 +47,14 @@ function getInitialLocale(): Locale {
   return "en";
 }
 
-export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = React.useState<Locale>(() => getInitialLocale());
+export function I18nProvider({
+  children,
+  initialLocale,
+}: {
+  children: React.ReactNode;
+  initialLocale?: Locale;
+}) {
+  const [locale, setLocaleState] = React.useState<Locale>(() => getInitialLocale(initialLocale));
 
   React.useEffect(() => {
     document.documentElement.lang = locale;
@@ -41,11 +67,29 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // ignore
     }
+    try {
+      document.cookie = `${LOCALE_COOKIE}=${encodeURIComponent(next)}; path=/; max-age=31536000; samesite=lax`;
+    } catch {
+      // ignore
+    }
     document.documentElement.lang = next;
   }, []);
 
   const t = React.useCallback(
-    (key: string) => DICTS[locale][key] ?? DICTS.en[key] ?? key,
+    (key: string) => {
+      const m = /^tool\.(.+)\.(title|desc)$/.exec(key);
+      if (m) {
+        const id = m[1];
+        const part = m[2];
+        if (TOOLS.some((x) => x.tool === id)) {
+          const tool = id as ToolName;
+          return part === "title"
+            ? resolveToolTitle(locale, tool)
+            : resolveToolDescription(locale, tool);
+        }
+      }
+      return DICTS[locale][key] ?? DICTS.en[key] ?? key;
+    },
     [locale]
   );
 

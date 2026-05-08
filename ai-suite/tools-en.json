@@ -1,0 +1,502 @@
+[
+  {
+    "tool": "corporate-whisperer",
+    "title": "The Corporate Whisperer",
+    "description": "Turn emotional or blunt drafts into polite, concise, HR‑safe workplace emails."
+  },
+  {
+    "tool": "coverletter-ai",
+    "title": "Click Cover Letter",
+    "description": "Generate a tailored, ATS-friendly cover letter from a job post and your resume."
+  },
+  {
+    "tool": "dating-roast",
+    "title": "Dating Profile Roast & Fix",
+    "description": "Get a constructive roast of your bio, then a stronger version that gets matches."
+  },
+  {
+    "tool": "raise-negotiator",
+    "title": "The Raise Negotiator",
+    "description": "Turn your wins into a persuasive raise or budget increase email."
+  },
+  {
+    "tool": "graceful-quitter",
+    "title": "The Graceful Quitter",
+    "description": "Draft a professional resignation letter that preserves relationships."
+  },
+  {
+    "tool": "cold-dm-icebreaker",
+    "title": "The Cold DM Icebreaker",
+    "description": "Write a short, personal cold message that gets replies (not spam)."
+  },
+  {
+    "tool": "micromanager-tamer",
+    "title": "The Micromanager Tamer",
+    "description": "Set calm boundaries with a micromanager without escalating drama."
+  },
+  {
+    "tool": "invoice-chaser",
+    "title": "The Invoice Chaser",
+    "description": "Send a firm-but-friendly payment reminder that gets you paid."
+  },
+  {
+    "tool": "perfect-apology",
+    "title": "The Perfect Apology",
+    "description": "A no-excuses apology that repairs trust and proposes next steps."
+  },
+  {
+    "tool": "refund-demander",
+    "title": "The Refund Demander",
+    "description": "A formal complaint/refund request that maximizes your chance of success."
+  },
+  {
+    "tool": "deadline-diplomat",
+    "title": "The Deadline Diplomat",
+    "description": "Ask for more time credibly, with a plan and revised timeline."
+  },
+  {
+    "tool": "landlord-diplomat",
+    "title": "The Landlord Diplomat",
+    "description": "Draft calm, legally-aware messages for landlord/tenant disputes."
+  },
+  {
+    "tool": "review-retaliator",
+    "title": "The Review Retaliator",
+    "description": "Reply to unfair reviews with calm professionalism and clarity."
+  },
+  {
+    "tool": "ghosting-resurrector",
+    "title": "The Ghosting Resurrector",
+    "description": "Short follow-ups that get replies without sounding desperate."
+  },
+  {
+    "tool": "passive-aggressive-decoder",
+    "title": "The Passive-Aggressive Decoder",
+    "description": "Translate subtext into plain English and craft a smart reply."
+  },
+  {
+    "tool": "guilt-free-no",
+    "title": "The Guilt‑Free \"No\"",
+    "description": "Say no clearly and kindly—without overexplaining."
+  },
+  {
+    "tool": "delicate-truth",
+    "title": "The Delicate Truth",
+    "description": "Say hard truths gently, clearly, without blame."
+  },
+  {
+    "tool": "co-parenting-peacemaker",
+    "title": "The Co‑Parenting Peacemaker",
+    "description": "Neutral, logistics-only co-parenting messages that reduce conflict."
+  },
+  {
+    "tool": "friendzone-navigator",
+    "title": "The Friendzone Navigator",
+    "description": "Confess feelings or set boundaries without wrecking the friendship."
+  },
+  {
+    "tool": "rsvp-diplomat",
+    "title": "The RSVP Diplomat",
+    "description": "Decline invitations warmly—without drama, without guilt."
+  },
+  {
+    "tool": "scope-of-work-wizard",
+    "title": "Scope of Work Wizard",
+    "description": "Turn a messy brief into a clear scope, deliverables, timeline, and assumptions."
+  },
+  {
+    "tool": "proposal-sniper",
+    "title": "Proposal Sniper",
+    "description": "Write a crisp proposal that wins—clear value, pricing logic, and next steps."
+  },
+  {
+    "tool": "client-onboarding-kit",
+    "title": "Client Onboarding Kit",
+    "description": "A friendly kickoff email + checklist to start projects smoothly."
+  },
+  {
+    "tool": "change-request-shield",
+    "title": "Change Request Shield",
+    "description": "Push back on scope creep with a calm change request message."
+  },
+  {
+    "tool": "pricing-justifier",
+    "title": "Pricing Justifier",
+    "description": "Explain your price confidently without sounding defensive."
+  },
+  {
+    "tool": "freelance-followup-nudge",
+    "title": "Freelance Follow‑up Nudge",
+    "description": "Write polite follow-ups that move deals forward without pressure."
+  },
+  {
+    "tool": "payment-terms-clarifier",
+    "title": "Payment Terms Clarifier",
+    "description": "Explain payment terms clearly and confidently in one message."
+  },
+  {
+    "tool": "project-delay-explainer",
+    "title": "Project Delay Explainer",
+    "description": "Communicate delays professionally while keeping trust."
+  },
+  {
+    "tool": "deliverable-handoff-notice",
+    "title": "Deliverable Handoff Notice",
+    "description": "Send a clean delivery email with links, notes, and next steps."
+  },
+  {
+    "tool": "testimonial-asker",
+    "title": "Testimonial Asker",
+    "description": "Request a testimonial in a way that makes it easy to say yes."
+  },
+  {
+    "tool": "scholarship-letter-forger",
+    "title": "Scholarship Letter Builder",
+    "description": "Write a compelling scholarship or grant motivation letter."
+  },
+  {
+    "tool": "email-to-professor",
+    "title": "Email to Professor",
+    "description": "Write a respectful email to a professor (extensions, meetings, research)."
+  },
+  {
+    "tool": "bureaucratic-form-helper",
+    "title": "Bureaucratic Form Helper",
+    "description": "Turn messy answers into clear, formal form responses."
+  },
+  {
+    "tool": "noise-complaint-diplomat",
+    "title": "Noise Complaint Diplomat",
+    "description": "Address noise issues calmly without escalating neighbor drama."
+  },
+  {
+    "tool": "roommate-agreement-maker",
+    "title": "Roommate Agreement Maker",
+    "description": "Create a simple, fair roommate agreement (chores, bills, guests)."
+  },
+  {
+    "tool": "viral-hook-generator",
+    "title": "Viral Hook Generator",
+    "description": "Generate short hooks that stop the scroll (for Reels/TikTok/YouTube)."
+  },
+  {
+    "tool": "caption-polisher",
+    "title": "Caption Polisher",
+    "description": "Rewrite captions to be punchy, on-brand, and engagement-friendly."
+  },
+  {
+    "tool": "boundary-setting-script",
+    "title": "Boundary Setting Script",
+    "description": "Set boundaries with care: clear, kind, and firm scripts."
+  },
+  {
+    "tool": "difficult-conversation-planner",
+    "title": "Difficult Conversation Planner",
+    "description": "Plan a hard talk: what to say, what to avoid, and how to start."
+  },
+  {
+    "tool": "performance-review-writer",
+    "title": "Performance Review Writer",
+    "description": "Turn your achievements into a strong self-review with metrics."
+  },
+  {
+    "tool": "linkedin-headline-smith",
+    "title": "LinkedIn Headline Smith",
+    "description": "Create high-signal headlines that attract the right opportunities."
+  },
+  {
+    "tool": "chargeback-defense-drafter",
+    "title": "Chargeback Defense Drafter",
+    "description": "Draft a clear, evidence-first response to dispute a chargeback."
+  },
+  {
+    "tool": "awkward-text-fixer",
+    "title": "Awkward Text Fixer",
+    "description": "Rewrite awkward messages into smooth, natural texts."
+  },
+  {
+    "tool": "letter-of-recommendation-outline",
+    "title": "Recommendation Letter Outline",
+    "description": "Create a strong, factual outline for a recommendation letter."
+  },
+  {
+    "tool": "statement-of-purpose-editor",
+    "title": "Statement of Purpose Editor",
+    "description": "Polish your SOP to be clear, specific, and admissions-ready."
+  },
+  {
+    "tool": "formal-complaint-letter",
+    "title": "Formal Complaint Letter",
+    "description": "Write a formal complaint to an institution with facts and a clear request."
+  },
+  {
+    "tool": "visa-cover-letter",
+    "title": "Visa Cover Letter",
+    "description": "Draft a clear supporting letter for visa applications (purpose, ties, plan)."
+  },
+  {
+    "tool": "hoa-email-writer",
+    "title": "HOA Email Writer",
+    "description": "Write a calm, structured message to HOA/building management."
+  },
+  {
+    "tool": "repair-request-template",
+    "title": "Repair Request Template",
+    "description": "Request repairs clearly with dates, urgency, and follow-up plan."
+  },
+  {
+    "tool": "neighbor-boundary-note",
+    "title": "Neighbor Boundary Note",
+    "description": "Set boundaries with a neighbor politely but firmly."
+  },
+  {
+    "tool": "youtube-script-starter",
+    "title": "YouTube Script Starter",
+    "description": "Turn a topic into a tight intro + outline + CTA structure."
+  },
+  {
+    "tool": "brand-voice-codifier",
+    "title": "Brand Voice Codifier",
+    "description": "Define your brand voice with rules and examples."
+  },
+  {
+    "tool": "comment-reply-assistant",
+    "title": "Comment Reply Assistant",
+    "description": "Craft replies to comments that boost community and reduce conflict."
+  },
+  {
+    "tool": "supportive-checkin-texts",
+    "title": "Supportive Check‑in Texts",
+    "description": "Send kind check-ins that feel genuine, not performative."
+  },
+  {
+    "tool": "family-therapy-invite",
+    "title": "Family Therapy Invite",
+    "description": "Invite someone to counseling in a respectful, non-blaming way."
+  },
+  {
+    "tool": "promotion-case-builder",
+    "title": "Promotion Case Builder",
+    "description": "Build a crisp case for promotion with impact bullets and evidence."
+  },
+  {
+    "tool": "job-interview-story-bank",
+    "title": "Interview Story Bank",
+    "description": "Turn experiences into STAR stories ready for interviews."
+  },
+  {
+    "tool": "insurance-claim-letter",
+    "title": "Insurance Claim Letter",
+    "description": "Draft a clear claim letter with facts, dates, and requested coverage."
+  },
+  {
+    "tool": "event-invite-texts",
+    "title": "Event Invite Texts",
+    "description": "Invite people to an event with the right vibe (not awkward)."
+  },
+  {
+    "tool": "upsell-suggester",
+    "title": "Upsell Suggester",
+    "description": "Suggest tasteful upsells that feel helpful, not pushy."
+  },
+  {
+    "tool": "discovery-call-questions",
+    "title": "Discovery Call Questions",
+    "description": "Generate sharp questions that uncover real needs and budget."
+  },
+  {
+    "tool": "case-study-writer",
+    "title": "Case Study Writer",
+    "description": "Turn project notes into a clean, credible case study."
+  },
+  {
+    "tool": "resume-bullet-academia",
+    "title": "Academic CV Bullet Builder",
+    "description": "Create impact-focused bullets for academic CVs and applications."
+  },
+  {
+    "tool": "official-request-letter",
+    "title": "Official Request Letter",
+    "description": "Draft a polite, formal request to an institution or authority."
+  },
+  {
+    "tool": "parking-dispute-note",
+    "title": "Parking Dispute Note",
+    "description": "Resolve parking issues politely with a clear ask."
+  },
+  {
+    "tool": "press-release-mini",
+    "title": "Press Release Mini",
+    "description": "Write a short press release announcing a launch or update."
+  },
+  {
+    "tool": "apology-repair-plan",
+    "title": "Apology + Repair Plan",
+    "description": "Apologize sincerely and propose a realistic repair plan."
+  },
+  {
+    "tool": "meeting-agenda-generator",
+    "title": "Meeting Agenda Generator",
+    "description": "Create an agenda that keeps meetings short and productive."
+  },
+  {
+    "tool": "dispute-mediator-email",
+    "title": "Dispute Mediator Email",
+    "description": "De-escalate conflicts and move toward a resolution calmly."
+  },
+  {
+    "tool": "relationship-define-the-talk",
+    "title": "Define‑The‑Relationship Talk",
+    "description": "Start 'what are we?' talks in a confident, low-pressure way."
+  },
+  {
+    "tool": "freelance-rate-card-maker",
+    "title": "Rate Card Maker",
+    "description": "Create a clean rate card with packages, scope, and boundaries."
+  },
+  {
+    "tool": "client-red-flag-detector",
+    "title": "Client Red‑Flag Detector",
+    "description": "Spot risky client behaviors and craft safe responses."
+  },
+  {
+    "tool": "invoice-line-item-writer",
+    "title": "Invoice Line‑Item Writer",
+    "description": "Turn deliverables into clear, professional invoice descriptions."
+  },
+  {
+    "tool": "application-email-writer",
+    "title": "Application Email Writer",
+    "description": "Send a clean application email with attachments and a clear ask."
+  },
+  {
+    "tool": "policy-appeal-letter",
+    "title": "Policy Appeal Letter",
+    "description": "Appeal a decision politely with facts and a reasonable request."
+  },
+  {
+    "tool": "meeting-request-formal",
+    "title": "Formal Meeting Request",
+    "description": "Request a meeting with clear agenda and time options."
+  },
+  {
+    "tool": "neighbor-group-chat-reset",
+    "title": "Neighbor Group‑Chat Reset",
+    "description": "Reset a chaotic building/WhatsApp group with clear rules and tone."
+  },
+  {
+    "tool": "package-theft-report",
+    "title": "Package Theft Report",
+    "description": "Report a missing package clearly to carrier/building/neighbor."
+  },
+  {
+    "tool": "maintenance-followup-escalation",
+    "title": "Maintenance Follow‑up Escalation",
+    "description": "Escalate ignored maintenance requests professionally."
+  },
+  {
+    "tool": "collab-pitch-writer",
+    "title": "Collab Pitch Writer",
+    "description": "Pitch collaborations that feel personal and win replies."
+  },
+  {
+    "tool": "newsletter-intro-writer",
+    "title": "Newsletter Intro Writer",
+    "description": "Write newsletter intros that hook and set the tone."
+  },
+  {
+    "tool": "brand-crisis-reply",
+    "title": "Brand Crisis Reply",
+    "description": "Draft a calm public response during backlash or controversy."
+  },
+  {
+    "tool": "grief-support-message",
+    "title": "Grief Support Message",
+    "description": "Write a compassionate message for someone grieving."
+  },
+  {
+    "tool": "family-boundary-reinforcer",
+    "title": "Family Boundary Reinforcer",
+    "description": "Reinforce boundaries when they get pushed—firm, calm, repeatable."
+  },
+  {
+    "tool": "relationship-repair-text",
+    "title": "Relationship Repair Text",
+    "description": "Send a repair message after conflict without reopening the fight."
+  },
+  {
+    "tool": "work-status-update-writer",
+    "title": "Status Update Writer",
+    "description": "Turn messy progress into a crisp status update (for Slack/email)."
+  },
+  {
+    "tool": "manager-1on1-prep",
+    "title": "1:1 Prep Builder",
+    "description": "Prep for a manager 1:1 with agenda, asks, and talking points."
+  },
+  {
+    "tool": "budget-cut-message",
+    "title": "Budget Cut Message",
+    "description": "Communicate budget cuts with empathy and clarity."
+  },
+  {
+    "tool": "debt-payment-plan-text",
+    "title": "Debt Payment Plan Text",
+    "description": "Propose a realistic payment plan message without shame."
+  },
+  {
+    "tool": "wedding-guest-decline",
+    "title": "Wedding Guest Decline",
+    "description": "Decline a wedding invitation warmly and clearly."
+  },
+  {
+    "tool": "freelance-offer-recap",
+    "title": "Offer Recap Email",
+    "description": "Recap an offer clearly after a call to lock next steps."
+  },
+  {
+    "tool": "grant-abstract-writer",
+    "title": "Grant Abstract Writer",
+    "description": "Turn your idea into a crisp abstract with problem, method, impact."
+  },
+  {
+    "tool": "neighbor-apology-note",
+    "title": "Neighbor Apology Note",
+    "description": "Apologize to a neighbor and prevent future friction."
+  },
+  {
+    "tool": "podcast-guest-pitch",
+    "title": "Podcast Guest Pitch",
+    "description": "Pitch yourself as a guest with a tight angle and topics."
+  },
+  {
+    "tool": "family-announcement-writer",
+    "title": "Family Announcement Writer",
+    "description": "Write a warm announcement for big news with the right tone."
+  },
+  {
+    "tool": "work-escalation-email",
+    "title": "Work Escalation Email",
+    "description": "Escalate an issue without blaming—facts, impact, and options."
+  },
+  {
+    "tool": "refund-followup-sequence",
+    "title": "Refund Follow‑up Sequence",
+    "description": "Follow up for a refund in 3 escalating steps."
+  },
+  {
+    "tool": "first-date-followup",
+    "title": "First Date Follow‑up",
+    "description": "Send a confident follow-up after a first date."
+  },
+  {
+    "tool": "neighborly-favor-ask",
+    "title": "Neighborly Favor Ask",
+    "description": "Ask a neighbor for a favor without awkwardness."
+  },
+  {
+    "tool": "creator-bio-writer",
+    "title": "Creator Bio Writer",
+    "description": "Write a sharp bio for socials and media kits (credible, not cringe)."
+  }
+]

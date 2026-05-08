@@ -1,8 +1,13 @@
 import type { ToolName } from "@/components/ai-suite/tools";
 import type { Locale } from "@/i18n/dictionaries";
+import { resolveToolDescription, resolveToolTitle } from "@/i18n/tool-copy-resolve";
 
 export function toolTitleKey(tool: ToolName) {
   return `tool.${tool}.title`;
+}
+
+export function toolDescKey(tool: ToolName) {
+  return `tool.${tool}.desc`;
 }
 
 export function toolTitle(
@@ -16,17 +21,25 @@ export function toolTitle(
   return resolved === key ? fallback : resolved;
 }
 
-export function toolTitleFromSeed(
-  dicts: Record<Locale, Record<string, string>>,
-  locale: Locale,
+export function toolDescription(
+  t: (key: string) => string,
   tool: ToolName,
   fallback: string
-) {
-  const key = toolTitleKey(tool);
-  const fromLocale = dicts[locale]?.[key];
-  if (typeof fromLocale === "string") return fromLocale;
-  const fromEn = dicts.en?.[key];
-  if (typeof fromEn === "string") return fromEn;
-  return fallback;
+): string {
+  const key = toolDescKey(tool);
+  const resolved = t(key);
+  return resolved === key ? fallback : resolved;
+}
+
+/** @deprecated Prefer resolveToolTitle from tool-copy-resolve; kept for compatibility. */
+export function toolTitleFromSeed(_dicts: unknown, locale: Locale, tool: ToolName) {
+  void _dicts;
+  return resolveToolTitle(locale, tool);
+}
+
+/** @deprecated Prefer resolveToolDescription from tool-copy-resolve. */
+export function toolDescFromSeed(_dicts: unknown, locale: Locale, tool: ToolName) {
+  void _dicts;
+  return resolveToolDescription(locale, tool);
 }
 

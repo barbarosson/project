@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
+import { cookies } from "next/headers";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { I18nProvider } from "@/i18n/i18n-provider";
 import { RouteTransition } from "@/components/route-transition";
 import { ModelProvider } from "@/models/model-provider";
 import { GlobalBackground } from "@/components/global-background";
+import type { Locale } from "@/i18n/dictionaries";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,20 +29,30 @@ export const metadata: Metadata = {
   description: "One-click AI solutions for your daily struggles.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
+  const initialLocale: Locale | undefined =
+    cookieLocale === "en" ||
+    cookieLocale === "tr" ||
+    cookieLocale === "es" ||
+    cookieLocale === "fr" ||
+    cookieLocale === "de" ||
+    cookieLocale === "zh"
+      ? cookieLocale
+      : undefined;
   return (
     <html
-      lang="en"
+      lang={initialLocale ?? "en"}
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <I18nProvider>
+          <I18nProvider initialLocale={initialLocale}>
             <ModelProvider>
               <RouteTransition />
               <GlobalBackground />

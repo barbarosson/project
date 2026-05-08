@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
 import { TOOLS, type ToolName } from "@/components/ai-suite/tools";
-import { DICTS, type Locale } from "@/i18n/dictionaries";
-import { toolTitleFromSeed } from "@/i18n/tool-i18n";
+import { type Locale } from "@/i18n/dictionaries";
+import { resolveToolDescription, resolveToolTitle } from "@/i18n/tool-copy-resolve";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -115,9 +115,9 @@ export async function POST(req: Request) {
   const toolCatalog = TOOLS.map((t) => ({
     tool: t.tool,
     emoji: t.emoji,
-    label: toolTitleFromSeed(DICTS, locale, t.tool, t.title),
+    label: resolveToolTitle(locale, t.tool),
     category: t.category,
-    description: t.description,
+    description: resolveToolDescription(locale, t.tool),
   }));
 
   const client = new OpenAI({ apiKey });
