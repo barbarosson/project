@@ -91,7 +91,19 @@ export function SuccessClient() {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [versions, setVersions] = React.useState<Version[]>([]);
-  const active = versions[versions.length - 1] ?? null;
+  const [activeId, setActiveId] = React.useState<string | null>(null);
+  const active = React.useMemo(() => {
+    if (!versions.length) return null;
+    if (activeId) {
+      const found = versions.find((v) => v.id === activeId);
+      if (found) return found;
+    }
+    return versions[versions.length - 1] ?? null;
+  }, [activeId, versions]);
+  const activeIndex = React.useMemo(() => {
+    if (!active) return -1;
+    return versions.findIndex((v) => v.id === active.id);
+  }, [active, versions]);
 
   const tool: ToolName | null = isToolName(toolParam) ? toolParam : null;
 
@@ -148,6 +160,7 @@ export function SuccessClient() {
 
       const restored = safeLoadVersions(tool);
       setVersions(restored);
+      setActiveId(restored[restored.length - 1]?.id ?? null);
 
       setLoading(true);
       try {
@@ -177,6 +190,7 @@ export function SuccessClient() {
         };
         const next: Version[] = [...restoredNow, newVersion].slice(0, 5);
         setVersions(next);
+        setActiveId(newVersion.id);
         persistVersions(tool, next);
         setPendingAlt(tool, false);
       } catch (e) {
@@ -236,6 +250,7 @@ export function SuccessClient() {
         };
         const next: Version[] = [...versions, newVersion].slice(0, 5);
         setVersions(next);
+        setActiveId(newVersion.id);
         persistVersions(tool, next);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Generation failed.");
@@ -272,7 +287,16 @@ export function SuccessClient() {
         <Card>
           <CardHeader>
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <CardTitle>{tool ? t(`tool.${tool}.label`) : "Success"}</CardTitle>
+              <CardTitle>
+                {tool ? (
+                  <span className="inline-flex items-center gap-2">
+                    <span aria-hidden="true">{getToolDefinition(tool).emoji}</span>
+                    <span>{t(`tool.${tool}.label`)}</span>
+                  </span>
+                ) : (
+                  "Success"
+                )}
+              </CardTitle>
               <Button asChild variant="outline">
                 <Link href="/">
                   <ArrowLeft className="size-4" />
@@ -296,6 +320,12 @@ export function SuccessClient() {
               </div>
             ) : active ? (
               <>
+                <div className="text-xs text-muted-foreground">
+                  {t("success.selectedVersion")}{" "}
+                  <span className="font-medium text-foreground">
+                    {activeIndex >= 0 ? activeIndex + 1 : 1}/{versions.length}
+                  </span>
+                </div>
                 <div
                   className={cn(
                     "whitespace-pre-wrap rounded-xl border bg-card p-4 text-sm leading-relaxed",
@@ -334,17 +364,24 @@ export function SuccessClient() {
                           type="button"
                           className={cn(
                             "rounded-lg border bg-background/50 p-3 text-left text-sm transition-colors hover:bg-accent/40",
-                            idx === 0 ? "border-primary/30 bg-primary/10" : "border-border/60"
+                            v.id === active.id ? "border-primary/30 bg-primary/10" : "border-border/60"
                           )}
                           onClick={() => {
-                            const reordered = [...versions.filter((x) => x.id !== v.id), v];
-                            setVersions(reordered);
-                            if (tool) persistVersions(tool, reordered);
+                            setActiveId(v.id);
                           }}
                         >
-                          <p className="mb-1 text-xs font-semibold text-muted-foreground">
-                            {t("success.alt.version")} {versions.length - idx}
-                          </p>
+                          <div className="mb-1 flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={v.id === active.id}
+                              readOnly
+                              className="size-4 accent-[hsl(var(--primary))]"
+                              aria-label={t("success.selectedVersion")}
+                            />
+                            <p className="text-xs font-semibold text-muted-foreground">
+                              {t("success.alt.version")} {versions.length - idx}
+                            </p>
+                          </div>
                           <p className="line-clamp-3 whitespace-pre-wrap">{v.text}</p>
                         </button>
                       ))}

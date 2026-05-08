@@ -85,7 +85,12 @@ export function ToolCard({
               <ToolIcon tool={tool} />
             </div>
             <div className="min-w-0">
-              <CardTitle className="truncate">{t(`tool.${tool}.label`)}</CardTitle>
+              <CardTitle className="truncate">
+                <span className="inline-flex items-center gap-2">
+                  <span aria-hidden="true">{def.emoji}</span>
+                  <span>{t(`tool.${tool}.label`)}</span>
+                </span>
+              </CardTitle>
               <CardDescription className="mt-1">{t(`tool.${tool}.desc`)}</CardDescription>
             </div>
           </div>

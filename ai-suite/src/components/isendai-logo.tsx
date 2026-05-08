@@ -4,16 +4,20 @@ import { cn } from "@/lib/utils";
 
 export function IsendaiLogo({
   className,
+  iconClassName,
+  wordmarkClassName,
   withWordmark = false,
 }: {
   className?: string;
+  iconClassName?: string;
+  wordmarkClassName?: string;
   withWordmark?: boolean;
 }) {
   return (
     <div className={cn("inline-flex items-center gap-2", className)}>
       <svg
         viewBox="0 0 64 64"
-        className="size-8"
+        className={cn("size-8", iconClassName)}
         role="img"
         aria-label="isendai"
       >
@@ -76,7 +80,9 @@ export function IsendaiLogo({
       </svg>
 
       {withWordmark ? (
-        <span className="text-sm font-semibold tracking-tight">isendai</span>
+        <span className={cn("text-sm font-semibold tracking-tight", wordmarkClassName)}>
+          isendai
+        </span>
       ) : null}
     </div>
   );

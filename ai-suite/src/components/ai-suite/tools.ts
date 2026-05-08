@@ -55,6 +55,7 @@ export type ToolPayload =
 export type ToolDefinition = {
   tool: ToolName;
   category: ToolCategory;
+  emoji: string;
   label: string;
   description: string;
   actionLabel: string;
@@ -75,6 +76,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "corporate-whisperer",
     category: "work-career",
+    emoji: "🧑‍💼",
     label: "The Corporate Whisperer",
     description:
       "Want to yell at your boss or client? Don't. Type your angry, unfiltered thoughts here, and we'll turn it into a polite, HR-friendly masterpiece.",
@@ -93,6 +95,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "coverletter-ai",
     category: "work-career",
+    emoji: "📝",
     label: "Click Cover Letter",
     description:
       "Tired of writing the same letter for every job? Paste the job URL and your skills. We'll generate a tailored, ATS-beating cover letter that gets interviews.",
@@ -107,6 +110,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "dating-roast",
     category: "social-dating",
+    emoji: "🔥",
     label: "Dating Profile Roast & Fix",
     description:
       "Not getting matches? Our AI will brutally roast your current bio, tell you exactly why it's failing, and write a magnetic new one for you.",
@@ -126,6 +130,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "raise-negotiator",
     category: "work-career",
+    emoji: "💰",
     label: "The Raise Negotiator",
     description:
       "Turn your wins into a clear, persuasive raise or budget increase email that’s confident, specific, and hard to ignore.",
@@ -137,6 +142,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "graceful-quitter",
     category: "work-career",
+    emoji: "👋",
     label: "The Graceful Quitter",
     description:
       "Draft a professional resignation letter that preserves relationships and avoids burning bridges.",
@@ -148,6 +154,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "cold-dm-icebreaker",
     category: "work-career",
+    emoji: "🤝",
     label: "The Cold DM Icebreaker",
     description:
       "Create a short, high-reply cold message for LinkedIn/email that feels personal, not spammy.",
@@ -159,6 +166,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "micromanager-tamer",
     category: "work-career",
+    emoji: "🧭",
     label: "The Micromanager Tamer",
     description:
       "Set firm boundaries with a micromanager—politely, clearly, and without escalating drama.",
@@ -170,6 +178,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "invoice-chaser",
     category: "work-career",
+    emoji: "📨",
     label: "The Invoice Chaser",
     description:
       "Write a firm-but-friendly payment reminder that gets you paid without shaming the client.",
@@ -183,6 +192,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "perfect-apology",
     category: "crisis-money",
+    emoji: "🙏",
     label: "The Perfect Apology",
     description:
       "A no-excuses apology that takes responsibility, repairs trust, and proposes a concrete next step.",
@@ -194,6 +204,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "refund-demander",
     category: "crisis-money",
+    emoji: "🧾",
     label: "The Refund Demander",
     description:
       "A formal, assertive complaint email that cites consumer rights and maximizes your chance of a refund or compensation.",
@@ -205,6 +216,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "deadline-diplomat",
     category: "crisis-money",
+    emoji: "⏳",
     label: "The Deadline Diplomat",
     description:
       "Ask for more time in a way that stays credible: calm, professional, with a plan and revised timeline.",
@@ -216,6 +228,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "landlord-diplomat",
     category: "crisis-money",
+    emoji: "🏠",
     label: "The Landlord Diplomat",
     description:
       "Draft diplomatic, legally-aware messages for landlord/tenant disputes without inflaming the situation.",
@@ -227,6 +240,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "review-retaliator",
     category: "crisis-money",
+    emoji: "⭐",
     label: "The Review Retaliator",
     description:
       "Respond to unfair negative reviews with calm professionalism and reputation-saving clarity.",
@@ -240,6 +254,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "ghosting-resurrector",
     category: "social-dating",
+    emoji: "👻",
     label: "The Ghosting Resurrector",
     description:
       "Get a reply without sounding desperate: short, playful, and low-pressure follow-ups.",
@@ -251,6 +266,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "passive-aggressive-decoder",
     category: "social-dating",
+    emoji: "🕵️",
     label: "The Passive-Aggressive Decoder",
     description:
       "Translate toxic subtext into plain English—then craft a smart reply that disarms without escalating.",
@@ -262,6 +278,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "guilt-free-no",
     category: "social-dating",
+    emoji: "🚫",
     label: 'The Guilt-Free "No"',
     description:
       "Say no clearly and kindly—without overexplaining or feeling guilty.",
@@ -273,6 +290,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "delicate-truth",
     category: "social-dating",
+    emoji: "🫧",
     label: "The Delicate Truth",
     description:
       "Turn hard truths into gentle, non-blaming messages that still land clearly.",
@@ -284,6 +302,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "co-parenting-peacemaker",
     category: "social-dating",
+    emoji: "🧸",
     label: "The Co-Parenting Peacemaker",
     description:
       "Filter anger and keep it logistics-only: neutral co-parenting messages that reduce conflict.",
@@ -295,6 +314,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "friendzone-navigator",
     category: "social-dating",
+    emoji: "💬",
     label: "The Friendzone Navigator",
     description:
       "Confess feelings or set boundaries without wrecking the friendship—careful, respectful, and clear.",
@@ -306,6 +326,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     tool: "rsvp-diplomat",
     category: "social-dating",
+    emoji: "📅",
     label: "The RSVP Diplomat",
     description:
       "Decline an important invitation without drama: warm, respectful, and final.",

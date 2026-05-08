@@ -11,6 +11,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { IsendaiLogo } from "@/components/isendai-logo";
 import { useI18n } from "@/i18n/i18n-provider";
 import { ModelSwitcher } from "@/components/model-switcher";
+import { ConciergeChat } from "@/components/concierge-chat";
 import {
   TOOLS,
   type ToolCategory,
@@ -42,7 +43,12 @@ export function HomeClient() {
 
       <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-5">
         <div className="flex items-center gap-2">
-          <IsendaiLogo withWordmark />
+          <IsendaiLogo
+            withWordmark
+            className="gap-3"
+            iconClassName="size-56"
+            wordmarkClassName="text-3xl"
+          />
         </div>
         <div className="flex items-center gap-2">
           <LanguageSwitcher className="hidden sm:inline-flex" />
@@ -95,7 +101,12 @@ export function HomeClient() {
                             router.replace(`/?tool=${x.tool}`);
                           }}
                         >
-                          <span className="truncate">{t(`tool.${x.tool}.label`)}</span>
+                          <span className="flex min-w-0 items-center gap-2">
+                            <span className="shrink-0" aria-hidden="true">
+                              {x.emoji}
+                            </span>
+                            <span className="truncate">{t(`tool.${x.tool}.label`)}</span>
+                          </span>
                           <ArrowRight className={cn("size-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} />
                         </button>
                       );
@@ -108,13 +119,17 @@ export function HomeClient() {
 
           {/* Right: workspace */}
           <section className="rounded-2xl border bg-card/70 p-4 shadow-sm backdrop-blur sm:p-6">
+            <ConciergeChat className="mb-5" />
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-xs font-semibold text-muted-foreground">
                   {t(`category.${selectedDef.category}.label`)}
                 </p>
                 <h2 className="mt-1 text-pretty text-xl font-semibold tracking-tight">
-                  {t(`tool.${selected}.label`)}
+                  <span className="inline-flex items-center gap-2">
+                    <span aria-hidden="true">{selectedDef.emoji}</span>
+                    <span>{t(`tool.${selected}.label`)}</span>
+                  </span>
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {t(`tool.${selected}.desc`)}
