@@ -87,6 +87,14 @@ export const DICTS: Record<Locale, Dict> = {
     "success.copy": "Copy to Clipboard",
     "success.ready": "Ready when you are.",
 
+    "success.ephemeral.title": "Heads up",
+    "success.ephemeral.body":
+      "These results are temporary. If you close this tab/window, they will be deleted and you won’t be able to access them again.",
+    "success.alt.generate": "Generate alternative",
+    "success.alt.limit": "You’ve reached the maximum of 5 alternatives for this request.",
+    "success.alt.version": "Version",
+    "success.versions": "Saved versions:",
+
     "home.sidebar.title": "AI Products",
     "home.workspace.hint": "Paste → Generate → Copy",
 
@@ -544,6 +552,14 @@ export const DICTS: Record<Locale, Dict> = {
     "success.generating": "GPT‑4o‑mini ile üretiliyor…",
     "success.copy": "Kopyala",
     "success.ready": "Hazır olduğunda.",
+
+    "success.ephemeral.title": "Bilgi",
+    "success.ephemeral.body":
+      "Bu sonuçlar geçicidir. Sekmeyi/pencereyi kapatırsan silinir ve tekrar erişemezsin.",
+    "success.alt.generate": "Alternatif üret",
+    "success.alt.limit": "Bu istek için en fazla 5 alternatif üretebilirsin.",
+    "success.alt.version": "Versiyon",
+    "success.versions": "Kaydedilen versiyon:",
 
     "home.sidebar.title": "AI Ürünleri",
     "home.workspace.hint": "Yapıştır → Üret → Kopyala",
