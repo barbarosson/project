@@ -1,6 +1,9 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { DICTS } from "@/i18n/dictionaries";
+import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +22,10 @@ export default async function AccountPage() {
     .eq("owner_id", user.id)
     .maybeSingle();
 
+  const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
+  const locale = resolveLocaleFromCookie(cookieLocale);
+  const d = DICTS[locale];
+
   const { data: requests } = await supabase
     .schema("isendai")
     .from("requests")
@@ -35,7 +42,13 @@ export default async function AccountPage() {
           <h1 className="text-2xl font-semibold tracking-tight">Account</h1>
           <p className="mt-1 text-sm text-slate-300">{user.email}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Link
+            className="rounded-md border border-white/10 bg-slate-900/40 px-4 py-2 text-sm text-slate-200"
+            href="/account/profile"
+          >
+            {d["profile.editLink"]}
+          </Link>
           <Link
             className="rounded-md border border-white/10 bg-slate-900/40 px-4 py-2 text-sm text-slate-200"
             href="/claim"

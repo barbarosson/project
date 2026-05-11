@@ -10,6 +10,7 @@ import { RouteTransition } from "@/components/route-transition";
 import { ModelProvider } from "@/models/model-provider";
 import { GlobalBackground } from "@/components/global-background";
 import type { Locale } from "@/i18n/dictionaries";
+import { SupabaseBrowserConfigProvider } from "@/lib/supabase/browser-config-context";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,6 +53,11 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+  const pe = process.env as Record<string, string | undefined>;
+  const supabaseUrl =
+    pe.NEXT_PUBLIC_SUPABASE_URL?.trim() || pe.SUPABASE_URL?.trim() || null;
+  const supabaseAnonKey =
+    pe.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || pe.SUPABASE_ANON_KEY?.trim() || null;
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   const initialLocale: Locale | undefined =
     cookieLocale === "en" ||
@@ -89,15 +95,17 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
             />
           </>
         ) : null}
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          <I18nProvider initialLocale={initialLocale}>
-            <ModelProvider>
-              <RouteTransition />
-              <GlobalBackground />
-              {children}
-            </ModelProvider>
-          </I18nProvider>
-        </ThemeProvider>
+        <SupabaseBrowserConfigProvider url={supabaseUrl} anonKey={supabaseAnonKey}>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+            <I18nProvider initialLocale={initialLocale}>
+              <ModelProvider>
+                <RouteTransition />
+                <GlobalBackground />
+                {children}
+              </ModelProvider>
+            </I18nProvider>
+          </ThemeProvider>
+        </SupabaseBrowserConfigProvider>
         <Toaster theme="dark" richColors closeButton />
       </body>
     </html>

@@ -104,6 +104,42 @@ function outOfScopeReply(locale: string) {
   }
 }
 
+function fallbackSuggestedTools(lastUser: string): ToolName[] {
+  const t = lastUser.toLowerCase();
+
+  const has = (id: ToolName) => TOOLS.some((x) => x.tool === id);
+  const pick = (ids: ToolName[]) => ids.filter(has).slice(0, 3);
+
+  // Relationship / personal messages
+  if (
+    /\b(wife|husband|girlfriend|boyfriend|partner|spouse|anniversary|gift|present|valentine)\b/.test(t) ||
+    /\b(eşim|karım|kocam|sevgilim|partnerim|hediye|sürpriz|yıldönümü|doğum\s*günü)\b/.test(t)
+  ) {
+    return pick(["awkward-text-fixer", "delicate-truth", "relationship-define-the-talk"]);
+  }
+
+  // Apology/repair
+  if (/\b(apolog|sorry|repair|make up)\b/.test(t) || /\b(özür|pardon|telafi|barış)\b/.test(t)) {
+    return pick(["perfect-apology", "apology-repair-plan", "relationship-repair-text"]);
+  }
+
+  // Work email default
+  if (/\b(boss|manager|client|email|work)\b/.test(t) || /\b(iş|mail|e-?posta|patron|müşteri)\b/.test(t)) {
+    return pick(["corporate-whisperer", "deadline-diplomat", "micromanager-tamer"]);
+  }
+
+  // Generic “write a message” fallback
+  if (
+    /\b(message|text|write|rewrite|draft|ask)\b/.test(t) ||
+    /\b(mesaj|yaz|yazmak|sor|sormak|rica)\b/.test(t)
+  ) {
+    return pick(["awkward-text-fixer", "delicate-truth", "guilt-free-no"]);
+  }
+
+  // Absolute fallback: always return something sensible.
+  return pick(["awkward-text-fixer", "corporate-whisperer", "delicate-truth"]);
+}
+
 export async function POST(req: Request) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -134,7 +170,9 @@ export async function POST(req: Request) {
   // treat it as in-scope even if the classifier is overly strict.
   const looksLikeMessageRequest =
     /\b(message|text|dm|email|write|rewrite|draft)\b/.test(lastUserLower) ||
+    /\b(ask|how do i ask|how can i ask|how to ask|politely)\b/.test(lastUserLower) ||
     /\b(mesaj|yaz|yazmak|metin|dm|e-?posta|mail)\b/.test(lastUserLower) ||
+    /\b(sor|sormak|nasıl sor|kibarca|rica)\b/.test(lastUserLower) ||
     /\b(mensaje|escribir|texto|correo)\b/.test(lastUserLower) ||
     /\b(message|écrire|texte|courriel)\b/.test(lastUserLower) ||
     /\b(nachricht|text|schreib|mail)\b/.test(lastUserLower) ||
@@ -168,7 +206,22 @@ export async function POST(req: Request) {
   const scopeText = scopeRes.choices?.[0]?.message?.content?.trim() ?? "";
   const scope = safeParseScope(scopeText);
   if (scope && scope.in_scope === false && !looksLikeMessageRequest) {
-    return NextResponse.json({ reply: outOfScopeReply(locale), suggested_tools: [] });
+    const suggested_tools = fallbackSuggestedTools(lastUser);
+    const toolLines = suggested_tools
+      .map((id) => {
+        const t = TOOLS.find((x) => x.tool === id);
+        const label = resolveToolTitle(locale, id);
+        const emoji = t?.emoji ?? "✨";
+        return `- [${emoji} ${label}](/?tool=${id})`;
+      })
+      .join("\n");
+
+    const reply =
+      locale === "tr"
+        ? `Bunu isendai ile halledebiliriz: eşine kibarca hediye fikrini sormak için bir mesaj taslağı çıkarabilirim.\n\nŞunları dene:\n${toolLines}`
+        : `We can handle this with isendai: I can draft a polite message to ask for gift ideas.\n\nTry:\n${toolLines}`;
+
+    return NextResponse.json({ reply, suggested_tools });
   }
 
   const res = await client.chat.completions.create({
@@ -205,7 +258,18 @@ export async function POST(req: Request) {
 
   if (!parsed) {
     // Fail soft: return plain text with no suggestions.
-    return NextResponse.json({ reply: content || "OK", suggested_tools: [] });
+    return NextResponse.json({
+      reply: content || "OK",
+      suggested_tools: fallbackSuggestedTools(lastUser),
+    });
+  }
+
+  // Guarantee at least one suggestion for valid in-scope queries.
+  if (!parsed.suggested_tools?.length) {
+    return NextResponse.json({
+      reply: parsed.reply,
+      suggested_tools: fallbackSuggestedTools(lastUser),
+    });
   }
 
   return NextResponse.json(parsed);

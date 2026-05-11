@@ -26,10 +26,25 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "Before",
     "home.demo.after.label": "After",
-    "home.demo.before.body":
+    "home.demo.title": "Before & After (real examples)",
+    "home.demo.subtitle":
+      "Pick a product, see the transformation, and click through to generate yours.",
+    "home.demo.examples.corp.before":
       "This design is garbage, you clearly didn't read my brief!",
-    "home.demo.after.body":
+    "home.demo.examples.corp.after":
       "I feel we've drifted slightly from the original brief. Could we review the design to ensure it aligns with our initial vision?",
+    "home.demo.examples.quit.before":
+      "I'm done. I quit. Don't contact me again.",
+    "home.demo.examples.quit.after":
+      "Hi [Name] — I’m resigning effective [date]. Thank you for the opportunity. I’ll help transition my responsibilities and share documentation before I leave.",
+    "home.demo.examples.gift.before":
+      "I want to get you a gift but I have no idea what you want. Just tell me.",
+    "home.demo.examples.gift.after":
+      "I’d love to surprise you with something you’ll actually enjoy. If you were to pick one thing you’ve been wanting lately, what would it be?",
+    "home.demo.examples.caveman.before":
+      "Let's take this offline and circle back next week.",
+    "home.demo.examples.caveman.after":
+      "I hate this. Later.",
 
     "section.tools.title":
       "Choose a tool. Paste your text. Get a better version instantly.",
@@ -132,6 +147,81 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.openTool": "Open tool",
 
     "nav.backToHome": "Back to Home",
+    "nav.pricing": "Pricing",
+    "nav.login": "Sign in · Membership",
+    "nav.history": "History",
+    "nav.account": "Account",
+    "nav.logout": "Log out",
+    "auth.disabled": "Auth unavailable",
+    "auth.disabledTitle":
+      "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (or SUPABASE_URL and SUPABASE_ANON_KEY), then redeploy or restart dev.",
+    "login.title": "Sign in",
+    "login.subtitle":
+      "Sign in with email or Google. After your first successful sign-in, we collect a short membership profile (name, country, primary use case).",
+    "login.send": "Send link",
+    "login.sending": "Sending…",
+    "login.creditsTitle": "Credits on this device",
+    "login.creditsMax": "Up to {max} versions per request (guest)",
+    "login.creditsHint":
+      "After you sign in, open /claim on this browser to move guest credits & history to your account.",
+    "login.emailDivider": "Or sign in with email",
+    "login.oauthTitle": "Quick sign-in",
+    "login.oauthApple": "Apple",
+    "login.oauthX": "X (Twitter)",
+    "login.oauthLinkedin": "LinkedIn",
+    "login.oauthInstagram": "Instagram",
+    "login.oauthInstagramSub": "Uses Meta (Facebook) login",
+    "login.oauthTiktok": "TikTok",
+    "login.oauthTiktokSub": "Requires a Custom OAuth provider id “tiktok” in Supabase",
+    "login.oauthSetupHint":
+      "Turn on each provider in Supabase → Authentication → Providers. Redirect URL must include /auth/callback",
+    "login.oauthFailed": "Social sign-in failed.",
+    "login.missingSupabase": "Sign-in is not configured (missing Supabase keys).",
+    "login.membershipEmailTitle": "Email",
+    "login.membershipEmailBody":
+      "We send a one-time magic link to your inbox. No password. You will complete your membership profile right after sign-in.",
+    "login.membershipGoogleTitle": "Google account",
+    "login.membershipGoogleBody":
+      "Use your Google identity, then confirm or add membership details on the next screen.",
+    "login.membershipOtherTitle": "Other providers",
+    "login.oauthGoogle": "Continue with Google",
+    "login.oauthOtherTitle": "More sign-in options",
+    "login.emailInvalid": "Please enter a valid email address.",
+    "login.emailSent": "Check your email for the sign-in link.",
+    "login.sendFailed": "Could not send the sign-in link.",
+    "login.emailPlaceholder": "you@domain.com",
+
+    "profile.title": "Membership profile",
+    "profile.subtitle":
+      "These details are stored on your account (Supabase user metadata) to personalize support and product communication.",
+    "profile.backToAccount": "Back to account",
+    "profile.editLink": "Membership details",
+    "profile.emailLabel": "Account email",
+    "profile.fullName": "Full name",
+    "profile.phone": "Phone (optional)",
+    "profile.country": "Country / region",
+    "profile.organization": "Company or school (optional)",
+    "profile.jobTitle": "Role or title (optional)",
+    "profile.useCase": "Primary use case",
+    "profile.useCasePlaceholder": "Select one…",
+    "profile.useCaseWork": "Work & career",
+    "profile.useCasePersonal": "Personal life admin",
+    "profile.useCaseCreator": "Creator / social content",
+    "profile.useCaseStudent": "Student / academic",
+    "profile.useCaseAgency": "Agency / client work",
+    "profile.useCaseOther": "Other",
+    "profile.notes": "Anything else we should know? (optional)",
+    "profile.notesPlaceholder": "Context, goals, languages you write in…",
+    "profile.marketingOptIn": "Email me occasionally about new tools and tips (optional).",
+    "profile.acceptTerms":
+      "I confirm the information is accurate and I accept the Terms of Service and Privacy Policy.",
+    "profile.save": "Save and continue",
+    "profile.saving": "Saving…",
+    "profile.saved": "Profile saved.",
+    "profile.errors.required": "Please fill in all required fields.",
+    "profile.errors.terms": "You must accept the terms to continue.",
+    "profile.errors.save": "Could not save your profile. Try again.",
+
     "tool.flow.hint": "After payment, you’ll be redirected back and we’ll generate instantly.",
 
     "errors.toolParamMissing": "Missing or invalid tool parameter.",
@@ -179,6 +269,10 @@ export const DICTS: Record<Locale, Dict> = {
       "Draft a clear claim letter with facts, dates, and requested coverage.",
 
     "tool.linkedin-headline-smith.title": "LinkedIn Headline Smith",
+
+    "tool.corporate-to-caveman-translator.title": "The Corporate-to-Caveman Translator",
+    "tool.corporate-to-caveman-translator.desc":
+      "Paste a long, boring corporate email. We translate it into the brutal, 3-word primitive truth.",
   },
   es: {
     "brand.name": "isendai",
@@ -194,10 +288,25 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "Antes",
     "home.demo.after.label": "Después",
-    "home.demo.before.body":
+    "home.demo.title": "Antes y después (ejemplos reales)",
+    "home.demo.subtitle":
+      "Elige un producto, mira la transformación y haz clic para generar el tuyo.",
+    "home.demo.examples.corp.before":
       "Este diseño es un desastre, ¡está claro que no leíste mi briefing!",
-    "home.demo.after.body":
+    "home.demo.examples.corp.after":
       "Siento que nos hemos alejado un poco del briefing inicial. ¿Podemos revisar el diseño para asegurarnos de que encaja con la visión inicial?",
+    "home.demo.examples.quit.before":
+      "Ya está. Renuncio. No me contactes más.",
+    "home.demo.examples.quit.after":
+      "Hola [Nombre] — presento mi renuncia con efecto a partir del [fecha]. Gracias por la oportunidad. Ayudaré a hacer una transición ordenada y dejaré documentación antes de irme.",
+    "home.demo.examples.gift.before":
+      "Quiero comprarte un regalo pero no sé qué quieres. Dímelo ya.",
+    "home.demo.examples.gift.after":
+      "Me encantaría sorprenderte con algo que de verdad te guste. Si pudieras elegir una cosa que has estado queriendo últimamente, ¿cuál sería?",
+    "home.demo.examples.caveman.before":
+      "Hablemos de esto fuera de aquí y lo retomamos la próxima semana.",
+    "home.demo.examples.caveman.after":
+      "Odio esto. Luego.",
 
     "section.tools.title": "Elige una herramienta. Pega tu texto. Mejora al instante.",
     "section.tools.subtitle":
@@ -298,6 +407,81 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.thinking": "Pensando…",
 
     "nav.backToHome": "Volver al inicio",
+    "nav.pricing": "Precios",
+    "nav.login": "Acceso · Cuenta",
+    "nav.history": "Historial",
+    "nav.account": "Mi cuenta",
+    "nav.logout": "Cerrar sesión",
+    "auth.disabled": "Acceso no disponible",
+    "auth.disabledTitle":
+      "Supabase no está configurado. Añade NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY (o SUPABASE_URL y SUPABASE_ANON_KEY) y vuelve a desplegar.",
+    "login.title": "Acceso",
+    "login.subtitle":
+      "Entra con email o Google. Tras el primer acceso, pedimos un perfil breve de membresía (nombre, país, caso de uso principal).",
+    "login.send": "Enviar enlace",
+    "login.sending": "Enviando…",
+    "login.creditsTitle": "Créditos en este dispositivo",
+    "login.creditsMax": "Hasta {max} versiones por solicitud (invitado)",
+    "login.creditsHint":
+      "Tras iniciar sesión, abre /claim en este navegador para mover créditos e historial de invitado a tu cuenta.",
+    "login.emailDivider": "O entra con tu email",
+    "login.oauthTitle": "Acceso rápido",
+    "login.oauthApple": "Apple",
+    "login.oauthX": "X (Twitter)",
+    "login.oauthLinkedin": "LinkedIn",
+    "login.oauthInstagram": "Instagram",
+    "login.oauthInstagramSub": "Usa el inicio de sesión de Meta (Facebook)",
+    "login.oauthTiktok": "TikTok",
+    "login.oauthTiktokSub": "Requiere un proveedor OAuth personalizado “tiktok” en Supabase",
+    "login.oauthSetupHint":
+      "Activa cada proveedor en Supabase → Authentication → Providers. Añade la URL de retorno /auth/callback",
+    "login.oauthFailed": "Error al iniciar sesión social.",
+    "login.missingSupabase": "Inicio no configurado (faltan claves de Supabase).",
+    "login.membershipEmailTitle": "Email",
+    "login.membershipEmailBody":
+      "Te enviamos un enlace mágico de un solo uso. Sin contraseña. Después completarás tu perfil de membresía.",
+    "login.membershipGoogleTitle": "Cuenta de Google",
+    "login.membershipGoogleBody":
+      "Usa tu identidad de Google y confirma o añade los datos de membresía en la siguiente pantalla.",
+    "login.membershipOtherTitle": "Otros proveedores",
+    "login.oauthGoogle": "Continuar con Google",
+    "login.oauthOtherTitle": "Más opciones de acceso",
+    "login.emailInvalid": "Introduce un email válido.",
+    "login.emailSent": "Revisa tu correo para el enlace de acceso.",
+    "login.sendFailed": "No se pudo enviar el enlace.",
+    "login.emailPlaceholder": "tu@dominio.com",
+
+    "profile.title": "Perfil de membresía",
+    "profile.subtitle":
+      "Estos datos se guardan en tu cuenta (metadatos de usuario en Supabase) para soporte y comunicación del producto.",
+    "profile.backToAccount": "Volver a mi cuenta",
+    "profile.editLink": "Datos de membresía",
+    "profile.emailLabel": "Email de la cuenta",
+    "profile.fullName": "Nombre completo",
+    "profile.phone": "Teléfono (opcional)",
+    "profile.country": "País o región",
+    "profile.organization": "Empresa o centro (opcional)",
+    "profile.jobTitle": "Puesto o título (opcional)",
+    "profile.useCase": "Caso de uso principal",
+    "profile.useCasePlaceholder": "Elige uno…",
+    "profile.useCaseWork": "Trabajo y carrera",
+    "profile.useCasePersonal": "Gestión personal",
+    "profile.useCaseCreator": "Creador / redes",
+    "profile.useCaseStudent": "Estudiante / académico",
+    "profile.useCaseAgency": "Agencia / clientes",
+    "profile.useCaseOther": "Otro",
+    "profile.notes": "¿Algo más que debamos saber? (opcional)",
+    "profile.notesPlaceholder": "Contexto, objetivos, idiomas…",
+    "profile.marketingOptIn": "Envíame correos ocasionales sobre novedades (opcional).",
+    "profile.acceptTerms":
+      "Confirmo que la información es correcta y acepto los Términos y la Política de privacidad.",
+    "profile.save": "Guardar y continuar",
+    "profile.saving": "Guardando…",
+    "profile.saved": "Perfil guardado.",
+    "profile.errors.required": "Completa todos los campos obligatorios.",
+    "profile.errors.terms": "Debes aceptar los términos para continuar.",
+    "profile.errors.save": "No se pudo guardar el perfil. Inténtalo de nuevo.",
+
     "tool.flow.hint": "Tras el pago volverás aquí y generaremos al instante.",
 
     "errors.toolParamMissing": "Falta el parámetro de herramienta o no es válido.",
@@ -336,6 +520,10 @@ export const DICTS: Record<Locale, Dict> = {
       "Redacta una carta de reclamación clara con hechos, fechas y la cobertura solicitada.",
 
     "tool.linkedin-headline-smith.title": "Herrero de titulares de LinkedIn",
+
+    "tool.corporate-to-caveman-translator.title": "Traductor de corporate a cavernícola",
+    "tool.corporate-to-caveman-translator.desc":
+      "Pega un correo corporativo largo y aburrido. Lo traducimos a la verdad primitiva brutal, en pocas palabras.",
   },
   fr: {
     "brand.name": "isendai",
@@ -351,10 +539,25 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "Avant",
     "home.demo.after.label": "Après",
-    "home.demo.before.body":
+    "home.demo.title": "Avant / Après (exemples réels)",
+    "home.demo.subtitle":
+      "Choisissez un produit, voyez la transformation, puis cliquez pour générer le vôtre.",
+    "home.demo.examples.corp.before":
       "Ce design est nul, vous n’avez clairement pas lu mon brief !",
-    "home.demo.after.body":
+    "home.demo.examples.corp.after":
       "J’ai l’impression qu’on s’est un peu éloignés du brief initial. Pourrions-nous revoir le design pour qu’il colle mieux à notre vision d’origine ?",
+    "home.demo.examples.quit.before":
+      "J’en ai marre. Je démissionne. Ne me contactez plus.",
+    "home.demo.examples.quit.after":
+      "Bonjour [Nom] — je vous informe de ma démission effective le [date]. Merci pour l’opportunité. Je faciliterai la transition et laisserai une documentation avant mon départ.",
+    "home.demo.examples.gift.before":
+      "Je veux t’offrir un cadeau mais je n’ai aucune idée. Dis‑moi ce que tu veux.",
+    "home.demo.examples.gift.after":
+      "J’aimerais te faire une surprise que tu apprécieras vraiment. S’il y a une chose dont tu as envie en ce moment, ce serait quoi ?",
+    "home.demo.examples.caveman.before":
+      "On en reparle hors‑ligne et on y revient la semaine prochaine.",
+    "home.demo.examples.caveman.after":
+      "J’aime pas. Plus tard.",
 
     "section.tools.title": "Choisissez un outil. Collez votre texte. Améliorez instantanément.",
     "section.tools.subtitle":
@@ -455,6 +658,81 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.thinking": "Réflexion…",
 
     "nav.backToHome": "Retour à l’accueil",
+    "nav.pricing": "Tarifs",
+    "nav.login": "Connexion · Compte",
+    "nav.history": "Historique",
+    "nav.account": "Mon compte",
+    "nav.logout": "Se déconnecter",
+    "auth.disabled": "Accès indisponible",
+    "auth.disabledTitle":
+      "Supabase n’est pas configuré. Ajoute NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY (ou SUPABASE_URL et SUPABASE_ANON_KEY), puis redéploie.",
+    "login.title": "Connexion",
+    "login.subtitle":
+      "Connectez-vous par e-mail ou Google. Après la première connexion, nous demandons un court profil d’adhésion (nom, pays, usage principal).",
+    "login.send": "Envoyer le lien",
+    "login.sending": "Envoi…",
+    "login.creditsTitle": "Crédits sur cet appareil",
+    "login.creditsMax": "Jusqu’à {max} versions par demande (invité)",
+    "login.creditsHint":
+      "Après connexion, ouvrez /claim dans ce navigateur pour transférer crédits et historique invité vers votre compte.",
+    "login.emailDivider": "Ou connectez-vous par email",
+    "login.oauthTitle": "Connexion rapide",
+    "login.oauthApple": "Apple",
+    "login.oauthX": "X (Twitter)",
+    "login.oauthLinkedin": "LinkedIn",
+    "login.oauthInstagram": "Instagram",
+    "login.oauthInstagramSub": "Utilise la connexion Meta (Facebook)",
+    "login.oauthTiktok": "TikTok",
+    "login.oauthTiktokSub": "Nécessite un fournisseur OAuth personnalisé « tiktok » dans Supabase",
+    "login.oauthSetupHint":
+      "Activez chaque fournisseur dans Supabase → Authentication → Providers. URL de redirection : /auth/callback",
+    "login.oauthFailed": "Échec de la connexion sociale.",
+    "login.missingSupabase": "Connexion non configurée (clés Supabase manquantes).",
+    "login.membershipEmailTitle": "Email",
+    "login.membershipEmailBody":
+      "Nous envoyons un lien magique à usage unique. Sans mot de passe. Tu compléteras ensuite ton profil d’adhésion.",
+    "login.membershipGoogleTitle": "Compte Google",
+    "login.membershipGoogleBody":
+      "Utilise ton compte Google, puis confirme ou complète les informations d’adhésion à l’écran suivant.",
+    "login.membershipOtherTitle": "Autres fournisseurs",
+    "login.oauthGoogle": "Continuer avec Google",
+    "login.oauthOtherTitle": "Plus d’options de connexion",
+    "login.emailInvalid": "Saisis une adresse email valide.",
+    "login.emailSent": "Vérifie tes emails pour le lien de connexion.",
+    "login.sendFailed": "Impossible d’envoyer le lien.",
+    "login.emailPlaceholder": "toi@domaine.com",
+
+    "profile.title": "Profil d’adhésion",
+    "profile.subtitle":
+      "Ces informations sont stockées sur ton compte (métadonnées utilisateur Supabase) pour le support et les communications produit.",
+    "profile.backToAccount": "Retour au compte",
+    "profile.editLink": "Détails d’adhésion",
+    "profile.emailLabel": "Email du compte",
+    "profile.fullName": "Nom complet",
+    "profile.phone": "Téléphone (optionnel)",
+    "profile.country": "Pays ou région",
+    "profile.organization": "Entreprise ou école (optionnel)",
+    "profile.jobTitle": "Poste ou titre (optionnel)",
+    "profile.useCase": "Usage principal",
+    "profile.useCasePlaceholder": "Choisis…",
+    "profile.useCaseWork": "Travail & carrière",
+    "profile.useCasePersonal": "Administratif perso",
+    "profile.useCaseCreator": "Créateur / réseaux",
+    "profile.useCaseStudent": "Étudiant / académique",
+    "profile.useCaseAgency": "Agence / clients",
+    "profile.useCaseOther": "Autre",
+    "profile.notes": "Autre chose à savoir ? (optionnel)",
+    "profile.notesPlaceholder": "Contexte, objectifs, langues…",
+    "profile.marketingOptIn": "M’envoyer parfois des nouveautés par email (optionnel).",
+    "profile.acceptTerms":
+      "Je confirme que les informations sont exactes et j’accepte les Conditions et la Politique de confidentialité.",
+    "profile.save": "Enregistrer et continuer",
+    "profile.saving": "Enregistrement…",
+    "profile.saved": "Profil enregistré.",
+    "profile.errors.required": "Remplis tous les champs obligatoires.",
+    "profile.errors.terms": "Tu dois accepter les conditions pour continuer.",
+    "profile.errors.save": "Impossible d’enregistrer le profil. Réessaie.",
+
     "tool.flow.hint": "Après le paiement, vous serez redirigé ici et nous générerons instantanément.",
 
     "errors.toolParamMissing": "Paramètre d’outil manquant ou invalide.",
@@ -493,6 +771,10 @@ export const DICTS: Record<Locale, Dict> = {
       "Rédigez une lettre de réclamation claire avec les faits, les dates et la prise en charge demandée.",
 
     "tool.linkedin-headline-smith.title": "Forgeron de titres LinkedIn",
+
+    "tool.corporate-to-caveman-translator.title": "Traducteur corporate → homme des cavernes",
+    "tool.corporate-to-caveman-translator.desc":
+      "Collez un long mail corporate ennuyeux. Nous le traduisons en une vérité primitive brutale, en quelques mots.",
   },
   de: {
     "brand.name": "isendai",
@@ -508,10 +790,25 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "Vorher",
     "home.demo.after.label": "Nachher",
-    "home.demo.before.body":
+    "home.demo.title": "Vorher / Nachher (echte Beispiele)",
+    "home.demo.subtitle":
+      "Produkt wählen, Transformation sehen und direkt klicken, um deine Version zu generieren.",
+    "home.demo.examples.corp.before":
       "Das Design ist Müll, du hast mein Briefing eindeutig nicht gelesen!",
-    "home.demo.after.body":
+    "home.demo.examples.corp.after":
       "Ich habe das Gefühl, wir sind etwas vom ursprünglichen Briefing abgewichen. Können wir das Design prüfen, damit es wieder zur Startvision passt?",
+    "home.demo.examples.quit.before":
+      "Ich bin fertig. Ich kündige. Kontaktiert mich nicht mehr.",
+    "home.demo.examples.quit.after":
+      "Hi [Name] — ich kündige zum [Datum]. Vielen Dank für die Chance. Ich unterstütze eine saubere Übergabe und dokumentiere meine Aufgaben vor meinem letzten Tag.",
+    "home.demo.examples.gift.before":
+      "Ich will dir ein Geschenk kaufen, aber ich hab keine Ahnung. Sag mir einfach, was du willst.",
+    "home.demo.examples.gift.after":
+      "Ich würde dich gern mit etwas überraschen, das dir wirklich gefällt. Wenn du dir gerade eine Sache wünschen dürftest — was wäre das?",
+    "home.demo.examples.caveman.before":
+      "Lass uns das offline besprechen und nächste Woche wieder aufnehmen.",
+    "home.demo.examples.caveman.after":
+      "Ich hasse das. Später.",
 
     "section.tools.title":
       "Tool wählen. Text einfügen. Sofort eine bessere Version erhalten.",
@@ -613,6 +910,81 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.thinking": "Denke nach…",
 
     "nav.backToHome": "Zur Startseite",
+    "nav.pricing": "Preise",
+    "nav.login": "Anmelden · Konto",
+    "nav.history": "Verlauf",
+    "nav.account": "Konto",
+    "nav.logout": "Abmelden",
+    "auth.disabled": "Login nicht verfügbar",
+    "auth.disabledTitle":
+      "Supabase ist nicht konfiguriert. Setze NEXT_PUBLIC_SUPABASE_URL und NEXT_PUBLIC_SUPABASE_ANON_KEY (oder SUPABASE_URL und SUPABASE_ANON_KEY) und deploye neu.",
+    "login.title": "Anmelden",
+    "login.subtitle":
+      "Melde dich per E‑Mail oder Google an. Nach der ersten Anmeldung erfassen wir ein kurzes Mitgliedschaftsprofil (Name, Land, Hauptnutzung).",
+    "login.send": "Link senden",
+    "login.sending": "Senden…",
+    "login.creditsTitle": "Credits auf diesem Gerät",
+    "login.creditsMax": "Bis zu {max} Versionen pro Anfrage (Gast)",
+    "login.creditsHint":
+      "Nach dem Login /claim in diesem Browser öffnen, um Gast‑Credits & Verlauf auf dein Konto zu übernehmen.",
+    "login.emailDivider": "Oder mit E‑Mail anmelden",
+    "login.oauthTitle": "Schnell anmelden",
+    "login.oauthApple": "Apple",
+    "login.oauthX": "X (Twitter)",
+    "login.oauthLinkedin": "LinkedIn",
+    "login.oauthInstagram": "Instagram",
+    "login.oauthInstagramSub": "Nutzt Meta‑Login (Facebook)",
+    "login.oauthTiktok": "TikTok",
+    "login.oauthTiktokSub": "Benötigt Custom OAuth „tiktok“ in Supabase",
+    "login.oauthSetupHint":
+      "Aktiviere die Anbieter in Supabase → Authentication → Providers. Redirect‑URL: /auth/callback",
+    "login.oauthFailed": "Social‑Login fehlgeschlagen.",
+    "login.missingSupabase": "Login nicht konfiguriert (Supabase‑Keys fehlen).",
+    "login.membershipEmailTitle": "E‑Mail",
+    "login.membershipEmailBody":
+      "Wir senden dir einen einmaligen Magic Link. Ohne Passwort. Danach vervollständigst du dein Mitgliedschaftsprofil.",
+    "login.membershipGoogleTitle": "Google‑Konto",
+    "login.membershipGoogleBody":
+      "Nutze dein Google‑Konto und bestätige oder ergänze die Mitgliedschaftsdaten auf der nächsten Seite.",
+    "login.membershipOtherTitle": "Weitere Anbieter",
+    "login.oauthGoogle": "Mit Google fortfahren",
+    "login.oauthOtherTitle": "Weitere Login‑Optionen",
+    "login.emailInvalid": "Bitte eine gültige E‑Mail‑Adresse eingeben.",
+    "login.emailSent": "Prüfe dein Postfach für den Login‑Link.",
+    "login.sendFailed": "Link konnte nicht gesendet werden.",
+    "login.emailPlaceholder": "du@domain.de",
+
+    "profile.title": "Mitgliedschaftsprofil",
+    "profile.subtitle":
+      "Diese Angaben werden in deinem Konto gespeichert (Supabase‑Benutzermetadaten) für Support und Produktkommunikation.",
+    "profile.backToAccount": "Zurück zum Konto",
+    "profile.editLink": "Mitgliedschaftsdaten",
+    "profile.emailLabel": "Konto‑E‑Mail",
+    "profile.fullName": "Vollständiger Name",
+    "profile.phone": "Telefon (optional)",
+    "profile.country": "Land / Region",
+    "profile.organization": "Firma oder Schule (optional)",
+    "profile.jobTitle": "Rolle oder Titel (optional)",
+    "profile.useCase": "Hauptnutzung",
+    "profile.useCasePlaceholder": "Bitte wählen…",
+    "profile.useCaseWork": "Arbeit & Karriere",
+    "profile.useCasePersonal": "Privates / Verwaltung",
+    "profile.useCaseCreator": "Creator / Social",
+    "profile.useCaseStudent": "Student / akademisch",
+    "profile.useCaseAgency": "Agentur / Kunden",
+    "profile.useCaseOther": "Sonstiges",
+    "profile.notes": "Noch etwas Wichtiges? (optional)",
+    "profile.notesPlaceholder": "Kontext, Ziele, Sprachen…",
+    "profile.marketingOptIn": "Gelegentlich Neuigkeiten per E‑Mail (optional).",
+    "profile.acceptTerms":
+      "Ich bestätige, dass die Angaben zutreffen, und akzeptiere die Nutzungsbedingungen und die Datenschutzerklärung.",
+    "profile.save": "Speichern und weiter",
+    "profile.saving": "Speichern…",
+    "profile.saved": "Profil gespeichert.",
+    "profile.errors.required": "Bitte alle Pflichtfelder ausfüllen.",
+    "profile.errors.terms": "Bitte die Bedingungen akzeptieren, um fortzufahren.",
+    "profile.errors.save": "Profil konnte nicht gespeichert werden. Bitte erneut versuchen.",
+
     "tool.flow.hint": "Nach der Zahlung wirst du zurückgeleitet und wir generieren sofort.",
 
     "errors.toolParamMissing": "Tool‑Parameter fehlt oder ist ungültig.",
@@ -647,6 +1019,10 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.rsvp-diplomat.title": "RSVP‑Diplomat",
 
     "tool.linkedin-headline-smith.title": "LinkedIn‑Headline‑Schmied",
+
+    "tool.corporate-to-caveman-translator.title": "Übersetzer: Corporate → Höhlenmensch",
+    "tool.corporate-to-caveman-translator.desc":
+      "Füge eine lange, langweilige Firmen‑Mail ein. Wir übersetzen sie in die brutale, primitive Kurz‑Wahrheit.",
   },
   zh: {
     "brand.name": "isendai",
@@ -662,9 +1038,20 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "改写前",
     "home.demo.after.label": "改写后",
-    "home.demo.before.body": "这设计太烂了，你明显没看我的需求文档！",
-    "home.demo.after.body":
-      "我感觉我们稍微偏离了最初的brief。能否一起过一遍设计，确保它与一开始的愿景一致？",
+    "home.demo.title": "前后对比（真实示例）",
+    "home.demo.subtitle": "按产品查看改写效果，点击即可生成你的版本。",
+    "home.demo.examples.corp.before": "这设计太烂了，你明显没看我的需求文档！",
+    "home.demo.examples.corp.after":
+      "我感觉我们稍微偏离了最初的 brief。能否一起过一遍设计，确保它与一开始的愿景一致？",
+    "home.demo.examples.quit.before": "我受够了。我辞职。别再联系我。",
+    "home.demo.examples.quit.after":
+      "你好，[姓名]——我计划于[日期]正式离职。感谢这段经历与机会。我会在离开前协助交接并整理好相关文档。",
+    "home.demo.examples.gift.before":
+      "我想给你买礼物但完全不知道你想要什么。你直接告诉我吧。",
+    "home.demo.examples.gift.after":
+      "我想给你一个你真的会喜欢的惊喜。最近有没有一件你很想要/很想做的事？",
+    "home.demo.examples.caveman.before": "我们线下再聊，下周再同步一下。",
+    "home.demo.examples.caveman.after": "我讨厌。以后。",
 
     "section.tools.title": "选工具，粘贴文本，立刻得到更好的版本。",
     "section.tools.subtitle": "适用于工作邮件、求职申请与约会简介。",
@@ -760,6 +1147,79 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.thinking": "思考中…",
 
     "nav.backToHome": "返回首页",
+    "nav.pricing": "价格与套餐",
+    "nav.login": "登录 · 会员",
+    "nav.history": "历史记录",
+    "nav.account": "我的账户",
+    "nav.logout": "退出登录",
+    "auth.disabled": "登录不可用",
+    "auth.disabledTitle":
+      "未配置 Supabase。请设置 NEXT_PUBLIC_SUPABASE_URL 与 NEXT_PUBLIC_SUPABASE_ANON_KEY（或 SUPABASE_URL 与 SUPABASE_ANON_KEY），然后重新部署。",
+    "login.title": "登录 / 会员",
+    "login.subtitle":
+      "可使用邮箱或 Google 登录。首次登录成功后，我们会收集简短的会员资料（姓名、国家/地区、主要用途）。",
+    "login.send": "发送登录链接",
+    "login.sending": "发送中…",
+    "login.creditsTitle": "此设备上的额度",
+    "login.creditsMax": "访客：每次请求最多 {max} 个版本",
+    "login.creditsHint": "登录后请在本浏览器打开 /claim，将访客额度与记录合并到账户。",
+    "login.emailDivider": "或使用邮箱登录",
+    "login.oauthTitle": "快捷登录",
+    "login.oauthApple": "Apple",
+    "login.oauthX": "X（Twitter）",
+    "login.oauthLinkedin": "领英",
+    "login.oauthInstagram": "Instagram",
+    "login.oauthInstagramSub": "使用 Meta（Facebook）登录",
+    "login.oauthTiktok": "TikTok",
+    "login.oauthTiktokSub": "需在 Supabase 配置自定义 OAuth，id 为 “tiktok”",
+    "login.oauthSetupHint": "在 Supabase → Authentication → Providers 启用各提供商，回调 URL 需包含 /auth/callback",
+    "login.oauthFailed": "社交登录失败。",
+    "login.missingSupabase": "未配置登录（缺少 Supabase 密钥）。",
+    "login.membershipEmailTitle": "邮箱",
+    "login.membershipEmailBody":
+      "我们会发送一次性魔法链接到你的邮箱，无需密码。登录后请完成会员资料。",
+    "login.membershipGoogleTitle": "Google 账号",
+    "login.membershipGoogleBody":
+      "使用 Google 登录后，在下一页确认或补充会员信息。",
+    "login.membershipOtherTitle": "其他登录方式",
+    "login.oauthGoogle": "使用 Google 继续",
+    "login.oauthOtherTitle": "更多登录选项",
+    "login.emailInvalid": "请输入有效的邮箱地址。",
+    "login.emailSent": "请查收邮件中的登录链接。",
+    "login.sendFailed": "无法发送登录链接。",
+    "login.emailPlaceholder": "you@example.com",
+
+    "profile.title": "会员资料",
+    "profile.subtitle":
+      "这些信息保存在你的账户中（Supabase 用户元数据），用于客服与产品相关沟通。",
+    "profile.backToAccount": "返回账户",
+    "profile.editLink": "会员资料",
+    "profile.emailLabel": "账户邮箱",
+    "profile.fullName": "姓名",
+    "profile.phone": "电话（可选）",
+    "profile.country": "国家 / 地区",
+    "profile.organization": "公司或学校（可选）",
+    "profile.jobTitle": "职位或头衔（可选）",
+    "profile.useCase": "主要使用场景",
+    "profile.useCasePlaceholder": "请选择…",
+    "profile.useCaseWork": "工作与职业",
+    "profile.useCasePersonal": "个人事务",
+    "profile.useCaseCreator": "创作者 / 社交内容",
+    "profile.useCaseStudent": "学生 / 学术",
+    "profile.useCaseAgency": "代理 / 客户服务",
+    "profile.useCaseOther": "其他",
+    "profile.notes": "其他需要说明的信息（可选）",
+    "profile.notesPlaceholder": "背景、目标、常用语言等…",
+    "profile.marketingOptIn": "偶尔通过邮件接收新功能与技巧（可选）。",
+    "profile.acceptTerms":
+      "我确认信息准确，并同意服务条款与隐私政策。",
+    "profile.save": "保存并继续",
+    "profile.saving": "保存中…",
+    "profile.saved": "资料已保存。",
+    "profile.errors.required": "请填写所有必填项。",
+    "profile.errors.terms": "需同意条款才能继续。",
+    "profile.errors.save": "保存失败，请重试。",
+
     "tool.flow.hint": "支付完成后会自动跳回这里，并立即生成结果。",
 
     "errors.toolParamMissing": "缺少或无效的工具参数。",
@@ -790,6 +1250,10 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.rsvp-diplomat.title": "邀请回复礼貌拒绝",
 
     "tool.linkedin-headline-smith.title": "LinkedIn 标题锻造师",
+
+    "tool.corporate-to-caveman-translator.title": "职场邮件→原始人翻译器",
+    "tool.corporate-to-caveman-translator.desc":
+      "粘贴一封又长又无聊的公司邮件。我们把它翻译成简短、粗暴的“原始真相”。",
   },
   tr: {
     "brand.name": "isendai",
@@ -805,10 +1269,25 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "Önce",
     "home.demo.after.label": "Sonra",
-    "home.demo.before.body":
+    "home.demo.title": "Önce / Sonra (ürün bazlı örnekler)",
+    "home.demo.subtitle":
+      "Bir ürün seç, dönüşümü gör, tıkla ve kendi metnini üret.",
+    "home.demo.examples.corp.before":
       "Bu tasarım berbat, brifimi okumamışsınız belli!",
-    "home.demo.after.body":
+    "home.demo.examples.corp.after":
       "Briften biraz sapmış gibi hissediyorum. Tasarımı, ilk vizyonumuzla uyumlu olduğundan emin olmak için birlikte gözden geçirebilir miyiz?",
+    "home.demo.examples.quit.before":
+      "Bıktım. İstifa ediyorum. Bir daha yazmayın.",
+    "home.demo.examples.quit.after":
+      "Merhaba [İsim] — [tarih] itibarıyla görevimden ayrılmak istiyorum. Fırsat için teşekkür ederim. Ayrılmadan önce sorumluluklarımı devretmek ve dokümantasyonu paylaşmak için destek olacağım.",
+    "home.demo.examples.gift.before":
+      "Sana hediye almak istiyorum ama ne istediğini hiç bilmiyorum. Söyle işte.",
+    "home.demo.examples.gift.after":
+      "Seni gerçekten mutlu edecek bir sürpriz yapmak istiyorum. Son zamanlarda aklında olan tek bir şey seçsen, ne olurdu?",
+    "home.demo.examples.caveman.before":
+      "Bunu offline konuşalım, haftaya tekrar dönelim.",
+    "home.demo.examples.caveman.after":
+      "Sevmem. Sonra.",
 
     "section.tools.title":
       "Aracını seç. Metni yapıştır. Daha iyi versiyonu anında al.",
@@ -898,6 +1377,81 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.openTool": "Aracı aç",
 
     "nav.backToHome": "Ana sayfaya dön",
+    "nav.pricing": "Paketler",
+    "nav.login": "Üyelik / Giriş",
+    "nav.history": "Geçmiş",
+    "nav.account": "Hesabım",
+    "nav.logout": "Çıkış",
+    "auth.disabled": "Giriş kapalı",
+    "auth.disabledTitle":
+      "Supabase yapılandırılmadı. NEXT_PUBLIC_SUPABASE_URL ve NEXT_PUBLIC_SUPABASE_ANON_KEY (veya SUPABASE_URL ve SUPABASE_ANON_KEY) ekleyip yeniden deploy et veya dev sunucuyu yeniden başlat.",
+    "login.title": "Üyelik ve giriş",
+    "login.subtitle":
+      "E-posta veya Google ile giriş yap. İlk başarılı oturumdan sonra kısa bir üyelik profili (ad, ülke, ana kullanım) topluyoruz.",
+    "login.send": "Bağlantı gönder",
+    "login.sending": "Gönderiliyor…",
+    "login.creditsTitle": "Bu cihazdaki kontör",
+    "login.creditsMax": "Misafir: istek başına en fazla {max} sürüm",
+    "login.creditsHint":
+      "Giriş yaptıktan sonra bu tarayıcıda /claim sayfasını açarak misafir kontör ve geçmişi hesabına taşıyabilirsin.",
+    "login.emailDivider": "Ya da e-posta ile giriş",
+    "login.oauthTitle": "Hızlı giriş",
+    "login.oauthApple": "Apple",
+    "login.oauthX": "X (Twitter)",
+    "login.oauthLinkedin": "LinkedIn",
+    "login.oauthInstagram": "Instagram",
+    "login.oauthInstagramSub": "Meta (Facebook) ile giriş açılır",
+    "login.oauthTiktok": "TikTok",
+    "login.oauthTiktokSub": "Supabase’te “tiktok” adlı Custom OAuth gerekir",
+    "login.oauthSetupHint":
+      "Her sağlayıcıyı Supabase → Authentication → Providers içinde aç. Yönlendirme URL’si /auth/callback olmalı",
+    "login.oauthFailed": "Sosyal giriş başarısız.",
+    "login.missingSupabase": "Giriş yapılandırılmadı (Supabase anahtarları eksik).",
+    "login.membershipEmailTitle": "E-posta",
+    "login.membershipEmailBody":
+      "Tek kullanımlık sihirli bağlantı göndeririz; şifre yok. Girişten hemen sonra üyelik profilini tamamlarsın.",
+    "login.membershipGoogleTitle": "Google hesabı",
+    "login.membershipGoogleBody":
+      "Google kimliğinle gir; bir sonraki ekranda üyelik bilgilerini onayla veya ekle.",
+    "login.membershipOtherTitle": "Diğer sağlayıcılar",
+    "login.oauthGoogle": "Google ile devam et",
+    "login.oauthOtherTitle": "Diğer giriş seçenekleri",
+    "login.emailInvalid": "Geçerli bir e-posta gir.",
+    "login.emailSent": "Giriş bağlantısı için e-postanı kontrol et.",
+    "login.sendFailed": "Bağlantı gönderilemedi.",
+    "login.emailPlaceholder": "sen@alanadin.com",
+
+    "profile.title": "Üyelik profili",
+    "profile.subtitle":
+      "Bu bilgiler hesabında saklanır (Supabase kullanıcı metadata) — destek ve ürün iletişimi için.",
+    "profile.backToAccount": "Hesaba dön",
+    "profile.editLink": "Üyelik bilgileri",
+    "profile.emailLabel": "Hesap e-postası",
+    "profile.fullName": "Ad soyad",
+    "profile.phone": "Telefon (isteğe bağlı)",
+    "profile.country": "Ülke / bölge",
+    "profile.organization": "Şirket veya okul (isteğe bağlı)",
+    "profile.jobTitle": "Rol veya unvan (isteğe bağlı)",
+    "profile.useCase": "Ana kullanım",
+    "profile.useCasePlaceholder": "Seç…",
+    "profile.useCaseWork": "İş ve kariyer",
+    "profile.useCasePersonal": "Kişisel işler",
+    "profile.useCaseCreator": "İçerik üreticisi / sosyal",
+    "profile.useCaseStudent": "Öğrenci / akademik",
+    "profile.useCaseAgency": "Ajans / müşteri işi",
+    "profile.useCaseOther": "Diğer",
+    "profile.notes": "Bilmemiz gereken başka bir şey? (isteğe bağlı)",
+    "profile.notesPlaceholder": "Bağlam, hedefler, yazdığın diller…",
+    "profile.marketingOptIn": "Ara sıra yeni araçlar ve ipuçları için e-posta gönder (isteğe bağlı).",
+    "profile.acceptTerms":
+      "Bilgilerin doğru olduğunu onaylıyorum; Kullanım Şartları ve Gizlilik Politikası’nı kabul ediyorum.",
+    "profile.save": "Kaydet ve devam et",
+    "profile.saving": "Kaydediliyor…",
+    "profile.saved": "Profil kaydedildi.",
+    "profile.errors.required": "Zorunlu alanları doldur.",
+    "profile.errors.terms": "Devam etmek için şartları kabul etmelisin.",
+    "profile.errors.save": "Profil kaydedilemedi. Tekrar dene.",
+
     "tool.flow.hint": "Ödeme sonrası buraya geri yönlendirilirsin ve anında üretiriz.",
 
     "errors.toolParamMissing": "Tool parametresi eksik veya geçersiz.",
@@ -1041,7 +1595,15 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.rsvp-diplomat.action": "Kibarca İptal Et",
     "tool.rsvp-diplomat.placeholder.text": "Etkinlik, davet eden kişi, sebep (opsiyonel), ton tercihi...",
 
+    "tool.corporate-whisperer.title": "Kurumsal Çevirmen",
+    "tool.graceful-quitter.title": "Nazik İstifacı",
+    "tool.awkward-text-fixer.title": "Garip Metin Düzeltici",
+
     "tool.linkedin-headline-smith.title": "LinkedIn Başlık Üstadı",
+
+    "tool.corporate-to-caveman-translator.title": "Kurumsaldan Mağaraya Çevirmen",
+    "tool.corporate-to-caveman-translator.desc":
+      "Uzun, sıkıcı bir kurumsal e-postayı yapıştır. Onu acımasız, çok kısa bir “ilkel gerçeğe” çeviririz.",
   },
 };
 

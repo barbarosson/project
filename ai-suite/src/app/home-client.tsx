@@ -57,6 +57,12 @@ export function HomeClient() {
   });
 
   const selectedDef = getToolDefinition(selected);
+  const demoExamples: { tool: ToolName; key: string }[] = [
+    { tool: "corporate-whisperer", key: "corp" },
+    { tool: "graceful-quitter", key: "quit" },
+    { tool: "awkward-text-fixer", key: "gift" },
+    { tool: "corporate-to-caveman-translator", key: "caveman" },
+  ];
 
   return (
     <div className="min-h-full bg-background">
@@ -94,10 +100,22 @@ export function HomeClient() {
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <Link
+              href="/login"
+              className="rounded-full border border-violet-500/40 bg-violet-500/15 px-3 py-1.5 text-xs font-semibold text-violet-100 backdrop-blur-md hover:bg-violet-500/25"
+            >
+              {t("nav.login")}
+            </Link>
+            <Link
               href="/history"
               className="rounded-full border border-white/10 bg-slate-950/20 px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-md hover:bg-slate-950/30"
             >
-              Guest history + Credits
+              {t("nav.history")}
+            </Link>
+            <Link
+              href="/pricing"
+              className="rounded-full border border-white/10 bg-slate-950/20 px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-md hover:bg-slate-950/30"
+            >
+              {t("nav.pricing")}
             </Link>
             <span className="rounded-full border border-white/10 bg-slate-950/20 px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-md">
               Anonymous ✅ · Members ✅
@@ -106,33 +124,59 @@ export function HomeClient() {
         </section>
 
         <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md transition-colors">
-          <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
-            <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-4 transition-colors">
-              <p className="text-xs font-semibold text-rose-600 dark:text-rose-400">
-                {t("home.demo.before.label")}
-              </p>
-              <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/90">
-                {t("home.demo.before.body")}
-              </p>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold tracking-tight text-slate-100">{t("home.demo.title")}</p>
+              <p className="mt-1 max-w-3xl text-sm text-slate-300">{t("home.demo.subtitle")}</p>
             </div>
-            <div className="hidden items-center justify-center lg:flex">
-              <span className="inline-flex size-9 items-center justify-center rounded-full border bg-background/60 text-muted-foreground">
-                <MoveRight className="size-4" />
-              </span>
-            </div>
-            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 transition-colors">
-              <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                {t("home.demo.after.label")}
-              </p>
-              <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/90">
-                {t("home.demo.after.body")}
-              </p>
-            </div>
-            <div className="flex items-center justify-center lg:hidden">
-              <span className="inline-flex size-9 items-center justify-center rounded-full border bg-background/60 text-muted-foreground">
-                <MoveRight className="size-4" />
-              </span>
-            </div>
+          </div>
+
+          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            {demoExamples.map(({ tool, key }) => (
+              <div key={tool} className="rounded-2xl border border-white/10 bg-background/40 p-4">
+                <Link
+                  href={`/?tool=${tool}`}
+                  className="group inline-flex items-center gap-2 text-sm font-semibold text-foreground hover:underline"
+                >
+                  <span className="inline-flex size-7 items-center justify-center rounded-full border bg-background/60">
+                    <span aria-hidden="true">{getToolDefinition(tool).emoji}</span>
+                  </span>
+                  <span className="truncate">
+                    {toolTitle(t, tool, getToolDefinition(tool).title)}
+                  </span>
+                  <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                </Link>
+
+                <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
+                  <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-3 transition-colors">
+                    <p className="text-xs font-semibold text-rose-600 dark:text-rose-400">
+                      {t("home.demo.before.label")}
+                    </p>
+                    <p className="mt-1.5 whitespace-pre-wrap text-sm text-foreground/90">
+                      {t(`home.demo.examples.${key}.before`)}
+                    </p>
+                  </div>
+                  <div className="hidden items-center justify-center lg:flex">
+                    <span className="inline-flex size-9 items-center justify-center rounded-full border bg-background/60 text-muted-foreground">
+                      <MoveRight className="size-4" />
+                    </span>
+                  </div>
+                  <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 transition-colors">
+                    <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                      {t("home.demo.after.label")}
+                    </p>
+                    <p className="mt-1.5 whitespace-pre-wrap text-sm text-foreground/90">
+                      {t(`home.demo.examples.${key}.after`)}
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-center lg:hidden">
+                    <span className="inline-flex size-9 items-center justify-center rounded-full border bg-background/60 text-muted-foreground">
+                      <MoveRight className="size-4" />
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
@@ -333,6 +377,19 @@ export function HomeClient() {
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-10 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">{t("footer.copyright")}</p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+            <Link className="font-medium text-foreground/90 hover:text-foreground transition-colors" href="/login">
+              {t("nav.login")}
+            </Link>
+            <Link className="hover:text-foreground transition-colors" href="/account">
+              {t("nav.account")}
+            </Link>
+            <Link className="hover:text-foreground transition-colors" href="/history">
+              {t("nav.history")}
+            </Link>
+            <Link className="hover:text-foreground transition-colors" href="/pricing">
+              {t("nav.pricing")}
+            </Link>
+            <span className="hidden sm:inline">·</span>
             <Link className="hover:text-foreground transition-colors" href="/privacy">
               Privacy
             </Link>

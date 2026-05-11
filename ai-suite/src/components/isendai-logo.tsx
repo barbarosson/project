@@ -15,6 +15,11 @@ export function IsendaiLogo({
   withWordmark?: boolean;
   wordmarkText?: string;
 }) {
+  const normalized = String(wordmarkText || "ISENDAI").trim();
+  const upper = normalized.toUpperCase();
+  const hasTerminalAI = upper.endsWith("AI") && upper.length > 2;
+  const wordPrefix = hasTerminalAI ? normalized.slice(0, -2) : normalized;
+
   return (
     <div className={cn("inline-flex items-center gap-2", className)}>
       <svg
@@ -82,17 +87,36 @@ export function IsendaiLogo({
       </svg>
 
       {withWordmark ? (
-        <span
-          className={cn(
-            "bg-gradient-to-br from-[hsl(255_85%_65%)] via-[hsl(200_95%_55%)] to-[hsl(285_85%_65%)]",
-            "bg-clip-text text-transparent",
-            "[text-shadow:0_0_22px_hsl(255_85%_65%_/_0.15)]",
-            "font-black uppercase leading-none tracking-tight",
-            "[font-family:var(--font-space-grotesk)]",
-            wordmarkClassName
-          )}
-        >
-          {wordmarkText}
+        <span className={cn("font-black uppercase leading-none tracking-tight", "[font-family:var(--font-space-grotesk)]", wordmarkClassName)}>
+          <span
+            className={cn(
+              "bg-gradient-to-br from-[hsl(255_85%_65%)] via-[hsl(200_95%_55%)] to-[hsl(285_85%_65%)]",
+              "bg-clip-text text-transparent",
+              "[text-shadow:0_0_22px_hsl(255_85%_65%_/_0.15)]"
+            )}
+          >
+            {wordPrefix}
+          </span>
+          {hasTerminalAI ? (
+            <>
+              <span className="inline-block w-[0.22em]" aria-hidden="true" />
+              <span className="inline-flex items-center align-baseline">
+                <span
+                  className={cn(
+                    "inline-flex items-center justify-center rounded-full",
+                    // Slightly smaller than 1em so it tucks nicely into the wordmark line-height
+                    "h-[1.35em] min-w-[1.35em] px-[0.38em]",
+                    "text-[0.92em] font-black tracking-[0.08em]",
+                    // High contrast: dark letters on light capsule (reads clearly on dark UI)
+                    "border border-slate-900/20 bg-white text-slate-950",
+                    "shadow-[0_0_20px_hsl(200_95%_55%_/_0.25)]"
+                  )}
+                >
+                  AI
+                </span>
+              </span>
+            </>
+          ) : null}
         </span>
       ) : null}
     </div>
