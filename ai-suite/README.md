@@ -1,28 +1,38 @@
 ## isendai (Next.js + Tailwind)
 
 Production-ready AI tools suite with:
-- Guest + member flows
-- Credits (1 request = 1 credit)
-- Request history + saved versions
-- Multiple AI providers (OpenAI/Anthropic/Groq/DeepSeek/Google)
 
-Stripe subscription/checkout wiring is planned but may be deferred until the Stripe account is ready.
+- Guest + member flows (magic link, Google, other OAuth)
+- Membership profile capture after first sign-in (`/account/profile`)
+- Credits (1 request = 1 credit) with history and saved versions
+- Multiple AI providers (OpenAI / Anthropic / Groq / DeepSeek / Google)
+- In-app generation first; **Stripe checkout is deferred** (Faz 5)
 
-## Getting Started
+## Supabase database
 
-1) Create `ai-suite/.env.local` from the example:
+Apply the bundled migration so RPCs and tables exist:
+
+- File: `supabase/migrations/20260512000000_isendai_core.sql`
+- Overview: `docs/isendai-schema.md`
+
+Without this migration, credit and history features will fail at runtime.
+
+## Getting started
+
+1. Create `ai-suite/.env.local` from the example:
 
 ```bash
 copy .env.example .env.local
 ```
 
-2) Fill:
+2. Fill at minimum:
+
 - `NEXT_PUBLIC_SUPABASE_URL`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (server-only)
-- AI provider keys you want to use (at minimum: `OPENAI_API_KEY`)
+- `OPENAI_API_KEY` (or another provider you enable)
 
-3) Run:
+3. Run:
 
 ```bash
 npm run dev
@@ -30,31 +40,33 @@ npm run dev
 
 Open `http://localhost:3000`.
 
-## Routes
+## Routes (high level)
 
-- `/`: main page
-- `/login`: email magic link
-- `/claim`: link guest data to your account (on this device)
-- `/history`: guest or member history (depending on login)
-- `/account`: account + credits + recent requests
-- `/request/[id]`: request detail + saved versions
-- `/api/generate`: charges 1 credit, generates v1, stores history
-- `/api/isendai/request/version`: generates next version for the same request
-- `/api/dev/topup` (dev only): add credits for testing
+| Path | Purpose |
+|------|---------|
+| `/` | Home + tools; shows live **credits snapshot** when Supabase is configured |
+| `/login` | Email, Google, other OAuth; redirects through `/auth/callback` |
+| `/account/profile` | Membership / profile metadata (required until completed) |
+| `/claim` | Merge **guest** credits + history on this device into the signed-in user |
+| `/history` | Guest or signed-in request list |
+| `/account` | Account, credits, recent requests |
+| `/request/[id]` | Stored input + versions |
+| `/pricing` | Reference tiers + **dev top-up** instructions (non-production) |
+| `/terms`, `/privacy` | Legal (shell localized; body English) |
+| `/success` | Generation step after saving tool input (uses credits, not Stripe redirect) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## API
 
-## Learn More
+- `POST /api/generate` — scope check, **rate limit** (`ISENDAI_GENERATE_RPM`), charge 1 credit, generate v1
+- `POST /api/isendai/request/version` — add alternate version (**rate limit** `ISENDAI_VERSION_RPM`)
+- `POST /api/dev/topup` — add credits (**disabled in production**)
 
-To learn more about Next.js, take a look at the following resources:
+## Credits & growth (no Stripe yet)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Default balances come from your Supabase rows (often `0` until topped up).
+- **Non-production:** use `POST /api/dev/topup` as documented on `/pricing`.
+- **Production:** grant credits via SQL, a future admin tool, or Stripe webhooks (planned).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Learn more
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Next.js Documentation](https://nextjs.org/docs)

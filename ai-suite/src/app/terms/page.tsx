@@ -1,4 +1,10 @@
+import { cookies } from "next/headers";
+import Link from "next/link";
 import type { Metadata } from "next";
+
+import { TermsEnBody } from "@/app/legal/terms-en-body";
+import { DICTS, type Locale } from "@/i18n/dictionaries";
+import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 
 export const metadata: Metadata = {
   title: "Terms of Service | isendai",
@@ -6,67 +12,30 @@ export const metadata: Metadata = {
     "Terms of Service for isendai. AI writing tools with subscriptions and credit packs.",
 };
 
-export default function TermsPage() {
+export default async function TermsPage() {
+  const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
+  const locale = resolveLocaleFromCookie(cookieLocale) as Locale;
+  const d = DICTS[locale];
+  const year = String(new Date().getFullYear());
+
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-12">
-      <h1 className="text-pretty text-3xl font-semibold tracking-tight">Terms of Service</h1>
-      <p className="mt-3 text-sm text-slate-300">
-        Effective date: {new Date().getFullYear()}-01-01
+      <h1 className="text-pretty text-3xl font-semibold tracking-tight">{d["legal.termsTitle"]}</h1>
+      <p className="mt-3 text-sm text-slate-300">{d["legal.effective"].replace("{year}", year)}</p>
+      {locale !== "en" ? (
+        <p className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
+          {d["legal.shellNotice"]}
+        </p>
+      ) : null}
+      <p className="mt-3 text-sm text-slate-400">{d["legal.paymentsStub"]}</p>
+
+      <TermsEnBody />
+
+      <p className="mt-10">
+        <Link className="text-sm text-violet-300 hover:text-violet-200" href="/">
+          {d["nav.backToHome"]}
+        </Link>
       </p>
-
-      <section className="mt-8 space-y-4 text-sm leading-relaxed text-slate-200">
-        <p>
-          By using isendai, you agree to these Terms. If you do not agree, do not use the service.
-        </p>
-
-        <h2 className="text-base font-semibold text-white">Service</h2>
-        <p>
-          isendai provides AI-assisted text generation and rewriting tools. Outputs are generated
-          automatically and may contain errors. You are responsible for reviewing and verifying any
-          result before you use or send it.
-        </p>
-
-        <h2 className="text-base font-semibold text-white">User content and privacy</h2>
-        <p>
-          You retain rights to the text you submit. We process your text to generate results, and we
-          may store your inputs and outputs so you can access your history and versions across
-          devices. You should avoid submitting sensitive personal data unless necessary.
-        </p>
-
-        <h2 className="text-base font-semibold text-white">Payments</h2>
-        <p>
-          The service may be offered via one-time credit packs and subscriptions. Payments are
-          processed by Stripe. We do not store your full payment card details. Fees may be
-          non-refundable except where required by law.
-        </p>
-
-        <h2 className="text-base font-semibold text-white">Acceptable use</h2>
-        <p>
-          You may not use the service to produce illegal content, to harass or defame others, or to
-          violate any applicable law. We may restrict access if we reasonably believe the service is
-          being misused.
-        </p>
-
-        <h2 className="text-base font-semibold text-white">Disclaimer</h2>
-        <p>
-          The service is provided “as is” without warranties of any kind. We do not guarantee that
-          outputs will be accurate, complete, or suitable for any particular purpose.
-        </p>
-
-        <h2 className="text-base font-semibold text-white">Limitation of liability</h2>
-        <p>
-          To the maximum extent permitted by law, isendai will not be liable for indirect, incidental,
-          special, consequential, or punitive damages, or any loss of profits or revenues, arising
-          from your use of the service.
-        </p>
-
-        <h2 className="text-base font-semibold text-white">Contact</h2>
-        <p>
-          Questions about these Terms can be sent via the site owner or support channel listed on
-          your purchase receipt.
-        </p>
-      </section>
     </main>
   );
 }
-

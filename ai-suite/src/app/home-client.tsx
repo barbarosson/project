@@ -22,7 +22,9 @@ import {
 } from "@/components/ai-suite/tools";
 import { cn } from "@/lib/utils";
 
-export function HomeClient() {
+import type { HomeCreditsSnapshot } from "@/app/home-credits-snapshot";
+
+export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSnapshot | null }) {
   const { t } = useI18n();
 
   const categories: ToolCategory[] = [
@@ -118,9 +120,37 @@ export function HomeClient() {
               {t("nav.pricing")}
             </Link>
             <span className="rounded-full border border-white/10 bg-slate-950/20 px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-md">
-              Anonymous ✅ · Members ✅
+              {t("home.guestMemberBadges")}
             </span>
           </div>
+          {creditsSnapshot ? (
+            <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/25 px-4 py-3 text-xs text-slate-200 backdrop-blur-md sm:text-sm">
+              <p className="font-medium text-slate-100">
+                {t("home.creditsSummary")
+                  .replace("{credits}", String(creditsSnapshot.balance))
+                  .replace("{max}", String(creditsSnapshot.maxVersions))
+                  .replace(
+                    "{scope}",
+                    creditsSnapshot.owner === "user"
+                      ? t("home.creditsScopeUser")
+                      : t("home.creditsScopeGuest")
+                  )}
+              </p>
+              {creditsSnapshot.owner === "anon" ? (
+                <p className="mt-2 text-[11px] leading-relaxed text-slate-400 sm:text-xs">
+                  {t("home.creditsGuestHint")}{" "}
+                  <Link href="/login?next=%2Fclaim" className="text-violet-300 underline hover:text-violet-200">
+                    {t("nav.login")}
+                  </Link>
+                </p>
+              ) : null}
+              {creditsSnapshot.balance === 0 ? (
+                <p className="mt-2 text-[11px] leading-relaxed text-amber-200/90 sm:text-xs">
+                  {t("growth.zeroCreditsHint")}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
         </section>
 
         <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md transition-colors">

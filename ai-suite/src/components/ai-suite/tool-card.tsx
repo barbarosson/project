@@ -5,7 +5,7 @@ import { Briefcase, Flame, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 import type { ToolName, ToolPayload } from "./tools";
-import { getStripeLinkForModel, getToolDefinition } from "./tools";
+import { getToolDefinition } from "./tools";
 import { useModel } from "@/models/model-provider";
 import {
   defaultConcreteModelForProvider,
@@ -70,24 +70,18 @@ export function ToolCard({
       : text.trim().length >= 10;
 
   const priceLabel = salesPriceForModel(concreteModel).label;
-  const buttonLabel = `${def.actionLabel} - ${priceLabel}`;
+  const primaryCta = `${def.actionLabel}${t("tool.ctaCreditSuffix")}`;
 
-  async function onPayAndGenerate() {
+  async function onContinueToGenerate() {
     if (!isValid) {
-      toast.error("Please enter some text before generating.");
+      toast.error(t("tool.validation.empty"));
       return;
     }
     setBusy(true);
     try {
       savePayload(def.storageKey, payload);
       saveModel(`${def.storageKey}:model`, model);
-      const link = getStripeLinkForModel(tool, concreteModel);
-      if (!link) {
-        // Stripe not configured yet → allow instant testing via /success
-        window.location.href = `/success?tool=${tool}&test=1`;
-        return;
-      }
-      window.location.href = link;
+      window.location.href = `/success?tool=${encodeURIComponent(tool)}`;
     } finally {
       setBusy(false);
     }
@@ -151,12 +145,13 @@ export function ToolCard({
           />
         )}
 
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-slate-300">
-            {t("tool.flow.hint")}
-          </p>
-          <Button onClick={onPayAndGenerate} disabled={busy}>
-            {buttonLabel}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0 space-y-1">
+            <p className="text-sm text-slate-300">{t("tool.flow.hint")}</p>
+            <p className="text-xs text-slate-500">{t("tool.priceReference").replace("{price}", priceLabel)}</p>
+          </div>
+          <Button className="shrink-0" onClick={onContinueToGenerate} disabled={busy}>
+            {primaryCta}
           </Button>
         </div>
       </CardContent>

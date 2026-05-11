@@ -7,7 +7,7 @@ import { ArrowLeft, CheckCircle2, Copy, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import type { ToolName, ToolPayload } from "@/components/ai-suite/tools";
-import { getStripeLinkForModel, getToolDefinition } from "@/components/ai-suite/tools";
+import { getToolDefinition } from "@/components/ai-suite/tools";
 import { useI18n } from "@/i18n/i18n-provider";
 import { toolTitle } from "@/i18n/tool-i18n";
 import {
@@ -138,10 +138,12 @@ export function SuccessClient() {
   const searchParams = useSearchParams();
   const toolParam = searchParams.get("tool");
   const isTest = searchParams.get("test") === "1";
+  const isPaidReturn = searchParams.get("paid") === "1";
   const { t } = useI18n();
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [insufficientCredits, setInsufficientCredits] = React.useState(false);
   const [versions, setVersions] = React.useState<Version[]>([]);
   const [activeId, setActiveId] = React.useState<string | null>(null);
   const [altExtra, setAltExtra] = React.useState("");
@@ -187,19 +189,25 @@ export function SuccessClient() {
       }),
     });
     const raw = await res.text();
-    let json: { result?: string; request_id?: string; error?: string } | null = null;
+    let json: { result?: string; request_id?: string; error?: string; code?: string } | null = null;
     try {
-      json = JSON.parse(raw) as { result?: string; error?: string };
+      json = JSON.parse(raw) as { result?: string; error?: string; code?: string };
     } catch {
       json = null;
     }
 
     if (!res.ok) {
-      if (res.status >= 500) toast.error("Server error. Please try again in a moment.");
-      throw new Error(json?.error || "Generation failed.");
+      if (res.status >= 500) toast.error(t("errors.serverToast"));
+      if (res.status === 429 || json?.code === "rate_limited") {
+        throw new Error(`RATELIMIT:${json?.error || ""}`);
+      }
+      if (res.status === 402 || json?.code === "insufficient_credits") {
+        throw new Error(`INSUFFICIENT:${json?.error || ""}`);
+      }
+      throw new Error(json?.error || t("errors.generationFailed"));
     }
 
-    if (!json?.result) throw new Error("No result returned.");
+    if (!json?.result) throw new Error(t("errors.noModelResult"));
     if (json.request_id && toolName) persistRequest(toolName, json.request_id);
     return json.result;
   }
@@ -211,17 +219,23 @@ export function SuccessClient() {
       body: JSON.stringify({ request_id: requestId, extra }),
     });
     const raw = await res.text();
-    let json: { ok?: boolean; text?: string; idx?: number; error?: string } | null = null;
+    let json: { ok?: boolean; text?: string; idx?: number; error?: string; code?: string } | null = null;
     try {
       json = JSON.parse(raw) as any;
     } catch {
       json = null;
     }
     if (!res.ok) {
-      if (res.status >= 500) toast.error("Server error. Please try again in a moment.");
-      throw new Error(json?.error || "Generation failed.");
+      if (res.status >= 500) toast.error(t("errors.serverToast"));
+      if (res.status === 429 || json?.code === "rate_limited") {
+        throw new Error(`RATELIMIT:${json?.error || ""}`);
+      }
+      if (res.status === 402 || json?.code === "insufficient_credits") {
+        throw new Error(`INSUFFICIENT:${json?.error || ""}`);
+      }
+      throw new Error(json?.error || t("errors.generationFailed"));
     }
-    if (!json?.text) throw new Error("No result returned.");
+    if (!json?.text) throw new Error(t("errors.noModelResult"));
     return json.text;
   }
 
@@ -230,6 +244,7 @@ export function SuccessClient() {
 
     async function run() {
       setError(null);
+      setInsufficientCredits(false);
 
       if (!tool) {
         setError(t("errors.toolParamMissing"));
@@ -304,7 +319,19 @@ export function SuccessClient() {
         cleanup();
       } catch (e) {
         if (cancelled) return;
-        setError(e instanceof Error ? e.message : "Generation failed.");
+        const msg = e instanceof Error ? e.message : t("errors.generationFailed");
+        if (msg.startsWith("RATELIMIT:")) {
+          setInsufficientCredits(false);
+          const detail = msg.slice("RATELIMIT:".length).trim();
+          setError(detail.length > 0 ? detail : t("errors.rateLimit"));
+        } else if (msg.startsWith("INSUFFICIENT:")) {
+          setInsufficientCredits(true);
+          const detail = msg.slice("INSUFFICIENT:".length).trim();
+          setError(detail.length > 0 ? detail : t("success.insufficientFallback"));
+        } else {
+          setInsufficientCredits(false);
+          setError(msg);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -346,48 +373,48 @@ export function SuccessClient() {
     const modelRaw = localStorage.getItem(`${storageKey}:model`);
     const model: ModelId = isModelId(modelRaw) ? modelRaw : DEFAULT_MODEL;
 
-    const concreteModel: ConcreteModelId =
-      model === "auto" ? defaultConcreteModelForProvider(getToolDefinition(tool).provider) : (model as ConcreteModelId);
-    const link = getStripeLinkForModel(tool, concreteModel);
-    if (isTest || !link) {
-      // Dev/test: generate without redirecting to Stripe.
-      setPendingAlt(tool, false);
-      setLoading(true);
-      setError(null);
-      try {
-        const parsed = stored;
-        if (!parsed) throw new Error(t("errors.noSavedInput"));
-        if (!parsed?.payload || parsed.payload.tool !== tool) throw new Error(t("errors.savedInputMismatch"));
-        if (!isValidPayload(parsed.payload)) throw new Error(t("errors.savedInputInvalid"));
+    setPendingAlt(tool, false);
+    setLoading(true);
+    setError(null);
+    setInsufficientCredits(false);
+    try {
+      const parsed = stored;
+      if (!parsed) throw new Error(t("errors.noSavedInput"));
+      if (!parsed?.payload || parsed.payload.tool !== tool) throw new Error(t("errors.savedInputMismatch"));
+      if (!isValidPayload(parsed.payload)) throw new Error(t("errors.savedInputInvalid"));
 
-        const reqRef = safeLoadRequest(tool);
-        const text = reqRef
-          ? await generateAltFromRequest(tool, reqRef.requestId, altExtra)
-          : await generate(tool, parsed, model, altExtra);
-        const newVersion: Version = {
-          v: 1,
-          id: crypto.randomUUID(),
-          createdAt: new Date().toISOString(),
-          text,
-        };
-        const next: Version[] = [...versions, newVersion].slice(0, 5);
-        setVersions(next);
-        setActiveId(newVersion.id);
-        persistVersions(tool, next);
-        cleanup();
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Generation failed.");
-      } finally {
-        setLoading(false);
+      const reqRef = safeLoadRequest(tool);
+      const text = reqRef
+        ? await generateAltFromRequest(tool, reqRef.requestId, altExtra)
+        : await generate(tool, parsed, model, altExtra);
+      const newVersion: Version = {
+        v: 1,
+        id: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+        text,
+      };
+      const next: Version[] = [...versions, newVersion].slice(0, 5);
+      setVersions(next);
+      setActiveId(newVersion.id);
+      persistVersions(tool, next);
+      cleanup();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : t("errors.generationFailed");
+      if (msg.startsWith("RATELIMIT:")) {
+        setInsufficientCredits(false);
+        const detail = msg.slice("RATELIMIT:".length).trim();
+        setError(detail.length > 0 ? detail : t("errors.rateLimit"));
+      } else if (msg.startsWith("INSUFFICIENT:")) {
+        setInsufficientCredits(true);
+        const detail = msg.slice("INSUFFICIENT:".length).trim();
+        setError(detail.length > 0 ? detail : t("success.insufficientFallback"));
+      } else {
+        setInsufficientCredits(false);
+        setError(msg);
       }
-      return;
+    } finally {
+      setLoading(false);
     }
-
-    // Persist current results and set a flag, so after Stripe redirects back,
-    // we auto-generate one more alternative while keeping previous versions.
-    persistVersions(tool, versions);
-    setPendingAlt(tool, true);
-    window.location.href = link;
   }
 
   return (
@@ -401,9 +428,7 @@ export function SuccessClient() {
         <div className="mb-6 flex items-center gap-2">
           <CheckCircle2 className="size-5 text-emerald-500" />
           <p className="text-sm text-slate-300">
-            {isTest
-              ? t("success.test")
-              : t("success.paid")}
+            {isTest ? t("success.test") : isPaidReturn ? t("success.paid") : t("success.introCredits")}
           </p>
         </div>
 
@@ -417,7 +442,7 @@ export function SuccessClient() {
                     <span>{toolTitle(t, tool, getToolDefinition(tool).title)}</span>
                   </span>
                 ) : (
-                  "Success"
+                  t("success.pageFallbackTitle")
                 )}
               </CardTitle>
               <Button asChild variant="outline">
@@ -438,8 +463,27 @@ export function SuccessClient() {
                 {t("success.generating")}
               </div>
             ) : error ? (
-              <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
-                {error}
+              <div className="grid gap-3">
+                <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+                  {error}
+                </div>
+                {insufficientCredits ? (
+                  <div className="rounded-lg border border-violet-500/25 bg-violet-500/10 p-4 text-sm text-slate-200">
+                    <p className="font-medium text-white">{t("success.insufficientTitle")}</p>
+                    <p className="mt-1 text-slate-300">{t("success.insufficientBody")}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <Button asChild variant="outline" size="sm">
+                        <Link href="/pricing">{t("nav.pricing")}</Link>
+                      </Button>
+                      <Button asChild variant="outline" size="sm">
+                        <Link href="/login">{t("nav.login")}</Link>
+                      </Button>
+                      <Button asChild variant="outline" size="sm">
+                        <Link href="/account">{t("nav.account")}</Link>
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             ) : active ? (
               <>

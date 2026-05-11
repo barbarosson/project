@@ -6,6 +6,7 @@ import { google } from "@ai-sdk/google";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateAnonId } from "@/lib/isendai/owner";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 import {
   TOOLS,
@@ -435,6 +436,15 @@ export async function POST(req: Request) {
     );
   }
 
+  const rpm = Math.min(300, Math.max(10, Number(process.env.ISENDAI_GENERATE_RPM ?? "60")));
+  const rl = enforceRateLimit(req, "generate", rpm, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait and try again.", code: "rate_limited" },
+      { status: 429, headers: { "retry-after": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
+  }
+
   const { system, user } = promptFor(body);
   const override = resolveModelOverride(body);
   const provider = override?.provider ?? pickProvider(body);
@@ -508,7 +518,10 @@ export async function POST(req: Request) {
       const msg = String(chargeErr.message || "");
       if (msg.includes("insufficient_credits")) {
         return NextResponse.json(
-          { error: "Insufficient credits. Please buy credits or subscribe." },
+          {
+            error: "Insufficient credits. Top up credits or sign in to use an account balance.",
+            code: "insufficient_credits",
+          },
           { status: 402, headers: debugHeaders }
         );
       }

@@ -12,7 +12,7 @@ export default async function AccountPage() {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase.auth.getUser();
   const user = data.user;
-  if (!user) redirect("/");
+  if (!user) redirect("/login?next=%2Faccount");
 
   const { data: ent } = await supabase
     .schema("isendai")
@@ -39,7 +39,7 @@ export default async function AccountPage() {
     <main className="mx-auto w-full max-w-4xl px-4 py-12">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Account</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{d["account.pageTitle"]}</h1>
           <p className="mt-1 text-sm text-slate-300">{user.email}</p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -53,30 +53,30 @@ export default async function AccountPage() {
             className="rounded-md border border-white/10 bg-slate-900/40 px-4 py-2 text-sm text-slate-200"
             href="/claim"
           >
-            Link guest data
+            {d["account.linkGuest"]}
           </Link>
           <Link
             className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-slate-950"
             href="/"
           >
-            Back home
+            {d["nav.backToHome"]}
           </Link>
         </div>
       </div>
 
       <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md">
-        <h2 className="text-sm font-semibold text-white">Credits</h2>
+        <h2 className="text-sm font-semibold text-white">{d["usage.creditsHeading"]}</h2>
         <p className="mt-2 text-3xl font-semibold tracking-tight">
           {ent?.credits_balance ?? 0}
         </p>
         <p className="mt-2 text-sm text-slate-300">
-          Versions per request: <span className="font-semibold text-white">{ent?.max_versions_per_request ?? 5}</span>
+          {d["usage.versionsLine"].replace("{max}", String(ent?.max_versions_per_request ?? 5))}
         </p>
       </section>
 
       <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold text-white">Recent requests</h2>
+          <h2 className="text-sm font-semibold text-white">{d["account.recentRequests"]}</h2>
           <span className="text-xs text-slate-400">{requests?.length ?? 0}</span>
         </div>
 
@@ -91,22 +91,26 @@ export default async function AccountPage() {
                   <div className="flex items-center gap-3">
                     <p className="font-semibold text-white">{r.tool_id}</p>
                     <Link className="text-xs text-violet-300 hover:text-violet-200" href={`/request/${r.id}`}>
-                      Open
+                      {d["usage.open"]}
                     </Link>
                   </div>
                   <p className="text-xs text-slate-400">
                     {new Date(r.created_at).toLocaleString()}
                   </p>
                 </div>
-                <p className="mt-1 text-xs text-slate-400">Model: {r.model_id}</p>
+                <p className="mt-1 text-xs text-slate-400">
+                  {d["usage.modelLabel"]}: {r.model_id}
+                </p>
                 <p className="mt-2 text-xs text-slate-300">
-                  Charged: {r.credits_charged} credit · Max versions: {r.max_versions}
+                  {d["usage.chargedLine"]
+                    .replace("{charged}", String(r.credits_charged))
+                    .replace("{max}", String(r.max_versions))}
                 </p>
               </div>
             ))}
           </div>
         ) : (
-          <p className="mt-3 text-sm text-slate-300">No requests yet.</p>
+          <p className="mt-3 text-sm text-slate-300">{d["usage.emptyRequests"]}</p>
         )}
       </section>
     </main>

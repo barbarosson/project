@@ -9,6 +9,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import { isConcreteModelId, modelMeta } from "@/models/models";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 type Body = {
   request_id?: string;
@@ -78,6 +79,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing request_id." }, { status: 400 });
   }
   const extra = typeof body?.extra === "string" ? body.extra.trim() : "";
+
+  const rpm = Math.min(300, Math.max(10, Number(process.env.ISENDAI_VERSION_RPM ?? "90")));
+  const rl = enforceRateLimit(req, "request-version", rpm, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait and try again.", code: "rate_limited" },
+      { status: 429, headers: { "retry-after": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
+  }
 
   // Resolve owner
   const supabase = await createSupabaseServerClient();
