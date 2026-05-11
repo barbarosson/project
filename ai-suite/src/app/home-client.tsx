@@ -59,18 +59,18 @@ export function HomeClient() {
 
   return (
     <div className="min-h-full bg-background">
-      <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-5">
-        <div className="flex items-center gap-2">
+      <header className="mx-auto flex w-full max-w-6xl flex-wrap items-start justify-between gap-3 px-4 py-4 sm:items-center sm:py-5">
+        <div className="flex min-w-0 flex-1 items-center">
           <IsendaiLogo
             withWordmark
-            className="gap-3"
-            iconClassName="size-56"
-            wordmarkClassName="text-5xl sm:text-6xl"
+            className="min-w-0 gap-2 sm:gap-3"
+            iconClassName="size-10 shrink-0 sm:size-12 md:size-14 lg:size-16 xl:size-20"
+            wordmarkClassName="block min-w-0 truncate text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl"
           />
         </div>
-        <div className="flex items-center gap-2">
-          <LanguageSwitcher className="hidden sm:inline-flex" />
-          <ModelSwitcher className="hidden sm:inline-flex" />
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+          <LanguageSwitcher className="px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm" />
+          <ModelSwitcher className="min-w-0 max-w-[10.5rem] px-2 py-1.5 text-xs sm:max-w-none sm:px-3 sm:py-2 sm:text-sm" />
           <ModeToggle />
         </div>
       </header>
@@ -92,9 +92,11 @@ export function HomeClient() {
         <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md transition-colors">
           <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
             <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-4 transition-colors">
-              <p className="text-xs font-semibold text-rose-600 dark:text-rose-400">Before</p>
+              <p className="text-xs font-semibold text-rose-600 dark:text-rose-400">
+                {t("home.demo.before.label")}
+              </p>
               <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/90">
-                This design is garbage, you clearly didn&apos;t read my brief!
+                {t("home.demo.before.body")}
               </p>
             </div>
             <div className="hidden items-center justify-center lg:flex">
@@ -103,10 +105,11 @@ export function HomeClient() {
               </span>
             </div>
             <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 transition-colors">
-              <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">After</p>
+              <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                {t("home.demo.after.label")}
+              </p>
               <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/90">
-                I feel we&apos;ve drifted slightly from the original brief. Could we review the design
-                to ensure it aligns with our initial vision?
+                {t("home.demo.after.body")}
               </p>
             </div>
             <div className="flex items-center justify-center lg:hidden">
@@ -301,10 +304,6 @@ export function HomeClient() {
                 <Sparkles className="size-4" />
                 {t("home.workspace.hint")}
               </div>
-            </div>
-
-            <div className="mt-4 sm:hidden">
-              <ModelSwitcher />
             </div>
 
             <div className="mt-5">

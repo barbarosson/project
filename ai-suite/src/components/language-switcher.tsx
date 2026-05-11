@@ -13,13 +13,13 @@ export function LanguageSwitcher({ className }: { className?: string }) {
   return (
     <label
       className={cn(
-        "inline-flex items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm",
+        "inline-flex min-w-0 items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm",
         className
       )}
     >
       <Languages className="size-4 text-muted-foreground" />
       <select
-        className="bg-transparent outline-none"
+        className="min-w-0 max-w-full bg-transparent outline-none"
         value={locale}
         onChange={(e) => setLocale(e.target.value as Locale)}
         aria-label="Language"

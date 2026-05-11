@@ -24,6 +24,13 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.badge.payPerUse": "Pay per use",
     "hero.badge.noStore": "We don’t store your text",
 
+    "home.demo.before.label": "Before",
+    "home.demo.after.label": "After",
+    "home.demo.before.body":
+      "This design is garbage, you clearly didn't read my brief!",
+    "home.demo.after.body":
+      "I feel we've drifted slightly from the original brief. Could we review the design to ensure it aligns with our initial vision?",
+
     "section.tools.title":
       "Choose a tool. Paste your text. Get a better version instantly.",
     "section.tools.subtitle":
@@ -182,6 +189,14 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.badge.noSignups": "Sin registro",
     "hero.badge.payPerUse": "Pago por uso",
     "hero.badge.noStore": "No guardamos tu texto",
+
+    "home.demo.before.label": "Antes",
+    "home.demo.after.label": "Después",
+    "home.demo.before.body":
+      "Este diseño es un desastre, ¡está claro que no leíste mi briefing!",
+    "home.demo.after.body":
+      "Siento que nos hemos alejado un poco del briefing inicial. ¿Podemos revisar el diseño para asegurarnos de que encaja con la visión inicial?",
+
     "section.tools.title": "Elige una herramienta. Pega tu texto. Mejora al instante.",
     "section.tools.subtitle":
       "Para la vida real: correos de trabajo, solicitudes y biografías de citas.",
@@ -331,6 +346,14 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.badge.noSignups": "Sans inscription",
     "hero.badge.payPerUse": "Paiement à l’usage",
     "hero.badge.noStore": "Nous ne stockons pas votre texte",
+
+    "home.demo.before.label": "Avant",
+    "home.demo.after.label": "Après",
+    "home.demo.before.body":
+      "Ce design est nul, vous n’avez clairement pas lu mon brief !",
+    "home.demo.after.body":
+      "J’ai l’impression qu’on s’est un peu éloignés du brief initial. Pourrions-nous revoir le design pour qu’il colle mieux à notre vision d’origine ?",
+
     "section.tools.title": "Choisissez un outil. Collez votre texte. Améliorez instantanément.",
     "section.tools.subtitle":
       "Pour la vraie vie : emails pro, candidatures, bios de rencontre.",
@@ -480,6 +503,14 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.badge.noSignups": "Kein Signup",
     "hero.badge.payPerUse": "Pay‑per‑use",
     "hero.badge.noStore": "Wir speichern deinen Text nicht",
+
+    "home.demo.before.label": "Vorher",
+    "home.demo.after.label": "Nachher",
+    "home.demo.before.body":
+      "Das Design ist Müll, du hast mein Briefing eindeutig nicht gelesen!",
+    "home.demo.after.body":
+      "Ich habe das Gefühl, wir sind etwas vom ursprünglichen Briefing abgewichen. Können wir das Design prüfen, damit es wieder zur Startvision passt?",
+
     "section.tools.title":
       "Tool wählen. Text einfügen. Sofort eine bessere Version erhalten.",
     "section.tools.subtitle":
@@ -626,6 +657,13 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.badge.noSignups": "无需注册",
     "hero.badge.payPerUse": "按次付费",
     "hero.badge.noStore": "不保存你的文本",
+
+    "home.demo.before.label": "改写前",
+    "home.demo.after.label": "改写后",
+    "home.demo.before.body": "这设计太烂了，你明显没看我的需求文档！",
+    "home.demo.after.body":
+      "我感觉我们稍微偏离了最初的brief。能否一起过一遍设计，确保它与一开始的愿景一致？",
+
     "section.tools.title": "选工具，粘贴文本，立刻得到更好的版本。",
     "section.tools.subtitle": "适用于工作邮件、求职申请与约会简介。",
     "tabs.corporate": "职场",
@@ -762,6 +800,14 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.badge.noSignups": "Kayıt yok",
     "hero.badge.payPerUse": "Kullandıkça öde",
     "hero.badge.noStore": "Metnini saklamayız",
+
+    "home.demo.before.label": "Önce",
+    "home.demo.after.label": "Sonra",
+    "home.demo.before.body":
+      "Bu tasarım berbat, brifimi okumamışsınız belli!",
+    "home.demo.after.body":
+      "Briften biraz sapmış gibi hissediyorum. Tasarımı, ilk vizyonumuzla uyumlu olduğundan emin olmak için birlikte gözden geçirebilir miyiz?",
+
     "section.tools.title":
       "Aracını seç. Metni yapıştır. Daha iyi versiyonu anında al.",
     "section.tools.subtitle":
