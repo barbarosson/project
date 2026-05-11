@@ -3,6 +3,9 @@ import { generateText } from "ai";
 import { openai, createOpenAI } from "@ai-sdk/openai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { google } from "@ai-sdk/google";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getOrCreateAnonId } from "@/lib/isendai/owner";
 
 import {
   TOOLS,
@@ -449,6 +452,24 @@ export async function POST(req: Request) {
   }
 
   try {
+    // Resolve owner (authenticated user or device-anon).
+    const supabase = await createSupabaseServerClient();
+    const { data: authData } = await supabase.auth.getUser();
+    const userId = authData?.user?.id ?? null;
+    const userEmail = authData?.user?.email ?? null;
+    const ownerType: "user" | "anon" = userId ? "user" : "anon";
+    const ownerId = userId ?? (await getOrCreateAnonId());
+
+    // Ensure entitlement row exists (defaults: anon=0 credits, user=0 credits; max_versions differs by plan later).
+    // Credit top-ups are handled elsewhere (Stripe later, dev endpoint now).
+    const admin = createSupabaseAdminClient();
+    await admin.rpc("ensure_entitlement", {
+      p_owner_type: ownerType,
+      p_owner_id: ownerId,
+      p_default_credits: 0,
+      p_default_max_versions: ownerType === "anon" ? 2 : 5,
+    });
+
     // (2) Hard gate: block out-of-scope inputs before generation.
     const scope = await checkScope(body);
     if (!scope.in_scope) {
@@ -467,6 +488,33 @@ export async function POST(req: Request) {
       );
     }
 
+    // Charge 1 credit and create request row BEFORE generation.
+    // If this fails (insufficient credits), we stop early.
+    const inputJson = body.tool === "coverletter-ai"
+      ? { ...body }
+      : body.tool === "dating-roast"
+        ? { ...body }
+        : { ...body };
+
+    const { data: requestId, error: chargeErr } = await admin.rpc("charge_and_create_request", {
+      p_owner_type: ownerType,
+      p_owner_id: ownerId,
+      p_tool_id: body.tool,
+      p_model_id: model,
+      p_input_json: inputJson,
+      p_price_paid_usd: null,
+    });
+    if (chargeErr) {
+      const msg = String(chargeErr.message || "");
+      if (msg.includes("insufficient_credits")) {
+        return NextResponse.json(
+          { error: "Insufficient credits. Please buy credits or subscribe." },
+          { status: 402, headers: debugHeaders }
+        );
+      }
+      return NextResponse.json({ error: "Billing error." }, { status: 500, headers: debugHeaders });
+    }
+
     const out = await generateText({
       model: client(model),
       temperature: 0.6,
@@ -482,8 +530,11 @@ export async function POST(req: Request) {
       );
     }
 
+    // Store version 1 for history
+    await admin.rpc("add_request_version", { p_request_id: requestId, p_text: text });
+
     return NextResponse.json(
-      { result: text },
+      { result: text, request_id: requestId, owner: { type: ownerType, id: ownerId, email: userEmail } },
       {
         headers: {
           "cache-control": "no-store",

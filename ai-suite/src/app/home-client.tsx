@@ -69,6 +69,12 @@ export function HomeClient() {
           />
         </div>
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+          <Link
+            href="/account"
+            className="rounded-md border border-white/10 bg-slate-900/40 px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-md hover:bg-slate-900/55 sm:px-3 sm:py-2 sm:text-sm"
+          >
+            Account
+          </Link>
           <LanguageSwitcher className="px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm" />
           <ModelSwitcher
             tool={selected}
