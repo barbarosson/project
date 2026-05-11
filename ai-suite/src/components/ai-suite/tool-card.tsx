@@ -7,7 +7,11 @@ import { toast } from "sonner";
 import type { ToolName, ToolPayload } from "./tools";
 import { getStripeLinkForModel, getToolDefinition } from "./tools";
 import { useModel } from "@/models/model-provider";
-import { defaultConcreteModelForProvider, type ConcreteModelId } from "@/models/models";
+import {
+  defaultConcreteModelForProvider,
+  salesPriceForModel,
+  type ConcreteModelId,
+} from "@/models/models";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -65,13 +69,7 @@ export function ToolCard({
       ? jobLink.trim().length >= 8 && resume.trim().length >= 20
       : text.trim().length >= 10;
 
-  const priceLabel =
-    concreteModel === "gpt-4o-mini" ||
-    concreteModel === "claude-3-5-haiku-latest" ||
-    concreteModel === "llama-3.1-8b-instant" ||
-    concreteModel === "deepseek-chat"
-      ? "$1.49"
-      : "$2.49";
+  const priceLabel = salesPriceForModel(concreteModel).label;
   const buttonLabel = `${def.actionLabel} - ${priceLabel}`;
 
   async function onPayAndGenerate() {

@@ -19,7 +19,11 @@ export function LanguageSwitcher({ className }: { className?: string }) {
     >
       <Languages className="size-4 text-muted-foreground" />
       <select
-        className="min-w-0 max-w-full bg-transparent outline-none"
+        className={cn(
+          "min-w-0 max-w-full rounded-md px-2 py-1 outline-none",
+          "bg-white text-slate-950",
+          "focus:ring-2 focus:ring-violet-500/30"
+        )}
         value={locale}
         onChange={(e) => setLocale(e.target.value as Locale)}
         aria-label="Language"

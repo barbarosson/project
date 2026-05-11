@@ -129,6 +129,16 @@ export async function POST(req: Request) {
       ? body.locale
       : "en";
   const lastUser = [...body.messages].reverse().find((m) => m.role === "user")?.content ?? "";
+  const lastUserLower = lastUser.toLowerCase();
+  // Heuristic: if the user is clearly asking to write/rewrite a message (which our tools do),
+  // treat it as in-scope even if the classifier is overly strict.
+  const looksLikeMessageRequest =
+    /\b(message|text|dm|email|write|rewrite|draft)\b/.test(lastUserLower) ||
+    /\b(mesaj|yaz|yazmak|metin|dm|e-?posta|mail)\b/.test(lastUserLower) ||
+    /\b(mensaje|escribir|texto|correo)\b/.test(lastUserLower) ||
+    /\b(message|écrire|texte|courriel)\b/.test(lastUserLower) ||
+    /\b(nachricht|text|schreib|mail)\b/.test(lastUserLower) ||
+    /消息|短信|写|邮件/.test(lastUser);
   const toolCatalog = TOOLS.map((t) => ({
     tool: t.tool,
     emoji: t.emoji,
@@ -147,9 +157,9 @@ export async function POST(req: Request) {
       {
         role: "system",
         content:
-          "You are a strict scope classifier for a homepage concierge.\n" +
-          "IN SCOPE: questions about the isendai product suite, tools, categories, what each tool does, which tool to use, how it works, pricing, models, payment flow, privacy/data storage.\n" +
-          "OUT OF SCOPE: general knowledge, coding help, news, personal advice beyond selecting/using the tools, unrelated chit-chat.\n" +
+          "You are a scope classifier for a homepage concierge.\n" +
+          "IN SCOPE: anything that can be handled by recommending an isendai tool from the catalog (including requests to write/rewrite a message using a tool), plus questions about tools, categories, how it works, pricing/models, payment flow, privacy/data storage.\n" +
+          "OUT OF SCOPE: general knowledge, coding help, news, and unrelated chit-chat.\n" +
           "Return ONLY valid JSON with key: in_scope (boolean). No extra keys.",
       },
       { role: "user", content: lastUser },
@@ -157,7 +167,7 @@ export async function POST(req: Request) {
   });
   const scopeText = scopeRes.choices?.[0]?.message?.content?.trim() ?? "";
   const scope = safeParseScope(scopeText);
-  if (scope && scope.in_scope === false) {
+  if (scope && scope.in_scope === false && !looksLikeMessageRequest) {
     return NextResponse.json({ reply: outOfScopeReply(locale), suggested_tools: [] });
   }
 

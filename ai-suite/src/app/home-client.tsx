@@ -70,7 +70,10 @@ export function HomeClient() {
         </div>
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
           <LanguageSwitcher className="px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm" />
-          <ModelSwitcher className="min-w-0 max-w-[10.5rem] px-2 py-1.5 text-xs sm:max-w-none sm:px-3 sm:py-2 sm:text-sm" />
+          <ModelSwitcher
+            tool={selected}
+            className="min-w-0 max-w-[10.5rem] px-2 py-1.5 text-xs sm:max-w-none sm:px-3 sm:py-2 sm:text-sm"
+          />
           <ModeToggle />
         </div>
       </header>

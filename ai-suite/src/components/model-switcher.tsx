@@ -2,32 +2,36 @@
 
 import { SlidersHorizontal } from "lucide-react";
 
-import { MODELS, type ModelId } from "@/models/models";
+import type { ToolName } from "@/components/ai-suite/tools";
+import { MODELS, salesPriceForModel, type ModelId } from "@/models/models";
 import { useModel } from "@/models/model-provider";
 import { cn } from "@/lib/utils";
 
-const ALLOWED: ModelId[] = ["gpt-4o-mini", "claude-3-5-haiku-latest", "gpt-4o"];
-
-export function ModelSwitcher({ className }: { className?: string }) {
+export function ModelSwitcher({ className, tool }: { className?: string; tool?: ToolName }) {
   const { model, setModel } = useModel();
+  void tool;
 
   return (
     <label
       className={cn(
-        "inline-flex min-w-0 items-center gap-2 rounded-md border border-white/10 bg-slate-900/40 px-3 py-2 text-sm text-slate-200 backdrop-blur-md",
+        "inline-flex min-w-0 items-center gap-2 rounded-md border border-white/10 bg-slate-900/40 px-3 py-2 text-sm backdrop-blur-md",
         className
       )}
     >
       <SlidersHorizontal className="size-4 text-violet-400" />
       <select
-        className="min-w-0 max-w-full bg-transparent text-slate-200 outline-none"
+        className={cn(
+          "min-w-0 max-w-full rounded-md px-2 py-1 outline-none",
+          "bg-white text-slate-950",
+          "focus:ring-2 focus:ring-violet-500/30"
+        )}
         value={model}
         onChange={(e) => setModel(e.target.value as ModelId)}
         aria-label="Model"
       >
-        {MODELS.filter((m) => ALLOWED.includes(m.id)).map((m) => (
+        {MODELS.map((m) => (
           <option key={m.id} value={m.id}>
-            {m.label}
+            {m.label} · {salesPriceForModel(m.id).label}
           </option>
         ))}
       </select>

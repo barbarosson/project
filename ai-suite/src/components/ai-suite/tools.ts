@@ -4,7 +4,7 @@ export { CATEGORY_META };
 export type { ToolCategory, ToolField };
 
 export type ToolName = (typeof TOOLS_SEED)[number]["tool"];
-export type ProviderId = "openai" | "anthropic" | "groq" | "deepseek";
+export type ProviderId = "openai" | "anthropic" | "groq" | "deepseek" | "google";
 
 export type ToolPayload =
   | { tool: "coverletter-ai"; jobLink: string; resume: string }

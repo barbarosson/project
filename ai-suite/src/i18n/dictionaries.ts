@@ -49,15 +49,17 @@ export const DICTS: Record<Locale, Dict> = {
 
     "how.detailed.title": "How it works (step-by-step)",
     "how.detailed.subtitle":
-      "Pick the right micro‑tool, paste your draft, and get a polished output in seconds. You can generate up to 5 alternatives per request.",
+      "Pick the right micro‑tool, paste your draft, and get a polished output in seconds. Your purchase includes up to 5 versions for the same request.",
     "how.detailed.1.title": "1) Choose the right tool",
     "how.detailed.1.body": "Use the left menu or ask the AI Concierge to recommend one.",
     "how.detailed.2.title": "2) Paste your context",
     "how.detailed.2.body": "Drop your draft, job post, or situation. No formatting needed.",
     "how.detailed.3.title": "3) Select model & pay",
-    "how.detailed.3.body": "Choose the AI model tier and complete checkout via Stripe.",
+    "how.detailed.3.body":
+      "Choose a model tier ($1.00 / $1.49 / $1.99) and complete checkout via Stripe. The price includes up to 5 versions for the same request.",
     "how.detailed.4.title": "4) Review, copy, generate alternatives",
-    "how.detailed.4.body": "Copy the result or buy/generate another version (max 5). Closing the tab deletes results.",
+    "how.detailed.4.body":
+      "Review and copy your favorite version. You can generate up to 5 total versions for the same request (included in your purchase). Closing the tab deletes results.",
 
     "products.title": "The products (quick, punchy, effective)",
     "products.subtitle": "Short tools with one job: make you sound better, faster.",
@@ -213,7 +215,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "how.detailed.title": "Cómo funciona (paso a paso)",
     "how.detailed.subtitle":
-      "Elige la microherramienta adecuada, pega tu borrador y obtén un resultado pulido en segundos. Puedes generar hasta 5 alternativas por solicitud.",
+      "Elige la microherramienta adecuada, pega tu borrador y obtén un resultado pulido en segundos. Tu compra incluye hasta 5 versiones para la misma solicitud.",
     "how.detailed.1.title": "1) Elige la herramienta correcta",
     "how.detailed.1.body":
       "Usa el menú de la izquierda o pide al AI Concierge que te recomiende una.",
@@ -222,10 +224,10 @@ export const DICTS: Record<Locale, Dict> = {
       "Pega tu borrador, oferta o situación. Sin formato necesario.",
     "how.detailed.3.title": "3) Elige modelo y paga",
     "how.detailed.3.body":
-      "Elige el nivel del modelo y completa el pago con Stripe.",
+      "Elige el nivel de modelo ($1.00 / $1.49 / $1.99) y completa el pago con Stripe. El precio incluye hasta 5 versiones para la misma solicitud.",
     "how.detailed.4.title": "4) Revisa, copia, genera alternativas",
     "how.detailed.4.body":
-      "Copia el resultado o compra/genera otra versión (máx. 5). Al cerrar la pestaña se borran los resultados.",
+      "Revisa y copia tu versión favorita. Puedes generar hasta 5 versiones en total para la misma solicitud (incluido en tu compra). Al cerrar la pestaña se borran los resultados.",
     "products.title": "Productos (rápidos y efectivos)",
     "products.subtitle": "Herramientas con una sola misión: sonar mejor, más rápido.",
     "products.corp.title": "The Corporate Whisperer",

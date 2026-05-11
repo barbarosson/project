@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { generateText } from "ai";
 import { openai, createOpenAI } from "@ai-sdk/openai";
 import { anthropic } from "@ai-sdk/anthropic";
+import { google } from "@ai-sdk/google";
 
 import {
   TOOLS,
@@ -75,6 +76,8 @@ function providerKeyName(provider: ProviderId) {
       return "GROQ_API_KEY";
     case "deepseek":
       return "DEEPSEEK_API_KEY";
+    case "google":
+      return "GOOGLE_GENERATIVE_AI_API_KEY";
   }
 }
 
@@ -85,7 +88,12 @@ function hasProviderKey(provider: ProviderId) {
 
 function resolveModelOverride(
   body: RequestBody
-): { provider: ProviderId; client: typeof openai; model: string } | { provider: ProviderId; client: typeof anthropic; model: string } | { provider: ProviderId; client: ReturnType<typeof createOpenAI>; model: string } | null {
+):
+  | { provider: ProviderId; client: typeof openai; model: string }
+  | { provider: ProviderId; client: typeof anthropic; model: string }
+  | { provider: ProviderId; client: ReturnType<typeof createOpenAI>; model: string }
+  | { provider: ProviderId; client: typeof google; model: string }
+  | null {
   if (typeof body.model !== "string") return null;
   if (body.model === "auto") return null;
   if (!isConcreteModelId(body.model)) return null;
@@ -99,6 +107,8 @@ function resolveModelOverride(
       return { provider: "groq", client: groq, model: meta.id };
     case "deepseek":
       return { provider: "deepseek", client: deepseek, model: meta.id };
+    case "google":
+      return { provider: "google", client: google, model: meta.id };
   }
 }
 
@@ -112,6 +122,8 @@ function modelForProvider(provider: ProviderId) {
       return { client: groq, model: "llama-3.1-8b-instant" };
     case "deepseek":
       return { client: deepseek, model: "deepseek-chat" };
+    case "google":
+      return { client: google, model: "gemini-2.5-flash" };
   }
 }
 
