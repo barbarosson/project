@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 
 type Stored = { v: 1; savedAt: string; payload: ToolPayload };
 type Version = { v: 1; id: string; createdAt: string; text: string };
+type RequestRef = { v: 1; requestId: string };
 
 function isToolName(value: string | null): value is ToolName {
   return typeof value === "string" && value.length > 0;
@@ -41,6 +42,30 @@ function resultsKey(toolName: ToolName) {
 
 function pendingAltKey(toolName: ToolName) {
   return `ai-suite:pending-alt:${toolName}`;
+}
+
+function requestKey(toolName: ToolName) {
+  return `ai-suite:request:${toolName}`;
+}
+
+function safeLoadRequest(toolName: ToolName): RequestRef | null {
+  try {
+    const raw = sessionStorage.getItem(requestKey(toolName));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<RequestRef>;
+    if (parsed.v !== 1 || typeof parsed.requestId !== "string" || parsed.requestId.length < 10) return null;
+    return { v: 1, requestId: parsed.requestId };
+  } catch {
+    return null;
+  }
+}
+
+function persistRequest(toolName: ToolName, requestId: string) {
+  try {
+    sessionStorage.setItem(requestKey(toolName), JSON.stringify({ v: 1, requestId }));
+  } catch {
+    // ignore
+  }
 }
 
 function safeLoadVersions(toolName: ToolName): Version[] {
@@ -162,7 +187,7 @@ export function SuccessClient() {
       }),
     });
     const raw = await res.text();
-    let json: { result?: string; error?: string } | null = null;
+    let json: { result?: string; request_id?: string; error?: string } | null = null;
     try {
       json = JSON.parse(raw) as { result?: string; error?: string };
     } catch {
@@ -175,7 +200,29 @@ export function SuccessClient() {
     }
 
     if (!json?.result) throw new Error("No result returned.");
+    if (json.request_id && toolName) persistRequest(toolName, json.request_id);
     return json.result;
+  }
+
+  async function generateAltFromRequest(toolName: ToolName, requestId: string, extra?: string) {
+    const res = await fetch("/api/isendai/request/version", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ request_id: requestId, extra }),
+    });
+    const raw = await res.text();
+    let json: { ok?: boolean; text?: string; idx?: number; error?: string } | null = null;
+    try {
+      json = JSON.parse(raw) as any;
+    } catch {
+      json = null;
+    }
+    if (!res.ok) {
+      if (res.status >= 500) toast.error("Server error. Please try again in a moment.");
+      throw new Error(json?.error || "Generation failed.");
+    }
+    if (!json?.text) throw new Error("No result returned.");
+    return json.text;
   }
 
   React.useEffect(() => {
@@ -313,7 +360,10 @@ export function SuccessClient() {
         if (!parsed?.payload || parsed.payload.tool !== tool) throw new Error(t("errors.savedInputMismatch"));
         if (!isValidPayload(parsed.payload)) throw new Error(t("errors.savedInputInvalid"));
 
-        const text = await generate(tool, parsed, model, altExtra);
+        const reqRef = safeLoadRequest(tool);
+        const text = reqRef
+          ? await generateAltFromRequest(tool, reqRef.requestId, altExtra)
+          : await generate(tool, parsed, model, altExtra);
         const newVersion: Version = {
           v: 1,
           id: crypto.randomUUID(),

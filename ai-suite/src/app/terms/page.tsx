@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Terms of Service | isendai",
   description:
-    "Terms of Service for isendai. Pay-per-use AI writing tools with no subscriptions.",
+    "Terms of Service for isendai. AI writing tools with subscriptions and credit packs.",
 };
 
 export default function TermsPage() {
@@ -28,15 +28,16 @@ export default function TermsPage() {
 
         <h2 className="text-base font-semibold text-white">User content and privacy</h2>
         <p>
-          You retain rights to the text you submit. We process your text only to generate your
-          result and do not intentionally store it after completion. You should avoid submitting
-          sensitive personal data unless necessary.
+          You retain rights to the text you submit. We process your text to generate results, and we
+          may store your inputs and outputs so you can access your history and versions across
+          devices. You should avoid submitting sensitive personal data unless necessary.
         </p>
 
         <h2 className="text-base font-semibold text-white">Payments</h2>
         <p>
-          The service is pay-per-use. Payments are processed by Stripe. We do not store your full
-          payment card details. Fees may be non-refundable except where required by law.
+          The service may be offered via one-time credit packs and subscriptions. Payments are
+          processed by Stripe. We do not store your full payment card details. Fees may be
+          non-refundable except where required by law.
         </p>
 
         <h2 className="text-base font-semibold text-white">Acceptable use</h2>

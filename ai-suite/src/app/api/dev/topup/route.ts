@@ -37,24 +37,12 @@ export async function POST(req: Request) {
     p_default_max_versions: ownerType === "anon" ? 2 : 5,
   });
 
-  const { data: before, error: readErr } = await admin
-    .schema("isendai")
-    .from("entitlements")
-    .select("credits_balance")
-    .eq("owner_type", ownerType)
-    .eq("owner_id", ownerId)
-    .maybeSingle();
-  if (readErr || !before) {
-    return NextResponse.json({ error: "Topup failed." }, { status: 500 });
-  }
-
-  const { error: writeErr } = await admin
-    .schema("isendai")
-    .from("entitlements")
-    .update({ credits_balance: before.credits_balance + amount })
-    .eq("owner_type", ownerType)
-    .eq("owner_id", ownerId);
-  if (writeErr) return NextResponse.json({ error: "Topup failed." }, { status: 500 });
+  const { data: newBalance, error: incErr } = await admin.rpc("add_credits", {
+    p_owner_type: ownerType,
+    p_owner_id: ownerId,
+    p_amount: amount,
+  });
+  if (incErr) return NextResponse.json({ error: "Topup failed." }, { status: 500 });
 
   const { data: ent } = await admin
     .schema("isendai")
@@ -67,6 +55,7 @@ export async function POST(req: Request) {
   return NextResponse.json({
     ok: true,
     owner: { type: ownerType, id: ownerId },
+    credits_balance: newBalance ?? null,
     entitlements: ent ?? null,
   });
 }

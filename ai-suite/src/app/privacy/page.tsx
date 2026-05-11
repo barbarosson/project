@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Privacy Policy | isendai",
   description:
-    "Privacy Policy for isendai. We process your text only to generate your result and do not store it after completion.",
+    "Privacy Policy for isendai. We may store your inputs and generated results so you can access your history across devices.",
 };
 
 export default function PrivacyPage() {
@@ -27,12 +27,16 @@ export default function PrivacyPage() {
           timestamps) for security and performance monitoring.
         </p>
 
-        <h2 className="text-base font-semibold text-white">How we use your text (no storage)</h2>
+        <h2 className="text-base font-semibold text-white">How we use and store your text</h2>
         <p>
           The text you submit is used <strong>only during processing</strong> to generate your
-          result. We do <strong>not</strong> intentionally store your submitted text after your
-          result is returned. We also clear client-side saved inputs as soon as a result is produced
-          or copied.
+          result. We may also store your submitted text and generated outputs so you can access your
+          history, versions, and credits across devices.
+        </p>
+        <p>
+          You can request deletion of your stored content by deleting your account or contacting
+          support. We aim to delete requested data within a reasonable timeframe, subject to legal
+          and operational requirements.
         </p>
 
         <h2 className="text-base font-semibold text-white">Payments</h2>
@@ -44,8 +48,8 @@ export default function PrivacyPage() {
         <h2 className="text-base font-semibold text-white">Third-party processors</h2>
         <p>
           To generate outputs, we may send your input text to AI providers (such as OpenAI,
-          Anthropic, Groq, or DeepSeek) strictly for processing. These providers act as service
-          processors for the generation request.
+          Anthropic, Groq, DeepSeek, or Google) strictly for processing. These providers act as
+          service processors for the generation request.
         </p>
 
         <h2 className="text-base font-semibold text-white">Security</h2>

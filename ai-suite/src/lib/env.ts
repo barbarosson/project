@@ -6,3 +6,8 @@ export function requiredEnv(name: string): string {
   return v;
 }
 
+export function optionalEnv(name: string): string | null {
+  const v = process.env[name];
+  return v && v.trim().length > 0 ? v : null;
+}
+

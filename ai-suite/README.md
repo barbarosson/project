@@ -1,6 +1,12 @@
-## AI Suite (Next.js + Tailwind + shadcn-style UI)
+## isendai (Next.js + Tailwind)
 
-Minimal “AI Suite” demo with 3 tools, Stripe Payment Link redirect, and a `/success` page that calls an OpenAI-powered backend route.
+Production-ready AI tools suite with:
+- Guest + member flows
+- Credits (1 request = 1 credit)
+- Request history + saved versions
+- Multiple AI providers (OpenAI/Anthropic/Groq/DeepSeek/Google)
+
+Stripe subscription/checkout wiring is planned but may be deferred until the Stripe account is ready.
 
 ## Getting Started
 
@@ -11,8 +17,10 @@ copy .env.example .env.local
 ```
 
 2) Fill:
-- `OPENAI_API_KEY`
-- `NEXT_PUBLIC_STRIPE_LINK_*` payment link URLs
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (server-only)
+- AI provider keys you want to use (at minimum: `OPENAI_API_KEY`)
 
 3) Run:
 
@@ -24,9 +32,15 @@ Open `http://localhost:3000`.
 
 ## Routes
 
-- `/`: main “AI Suite” page (3 tools)
-- `/success?tool=...`: reads localStorage, calls `/api/generate`, shows result + copy button
-- `/api/generate`: OpenAI GPT‑4o‑mini
+- `/`: main page
+- `/login`: email magic link
+- `/claim`: link guest data to your account (on this device)
+- `/history`: guest or member history (depending on login)
+- `/account`: account + credits + recent requests
+- `/request/[id]`: request detail + saved versions
+- `/api/generate`: charges 1 credit, generates v1, stores history
+- `/api/isendai/request/version`: generates next version for the same request
+- `/api/dev/topup` (dev only): add credits for testing
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 

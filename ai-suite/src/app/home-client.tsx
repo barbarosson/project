@@ -13,6 +13,7 @@ import { useI18n } from "@/i18n/i18n-provider";
 import { toolDescription, toolTitle } from "@/i18n/tool-i18n";
 import { ModelSwitcher } from "@/components/model-switcher";
 import { ConciergeChat } from "@/components/concierge-chat";
+import { AuthStatus } from "@/components/auth-status";
 import {
   TOOLS,
   type ToolCategory,
@@ -69,12 +70,7 @@ export function HomeClient() {
           />
         </div>
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
-          <Link
-            href="/account"
-            className="rounded-md border border-white/10 bg-slate-900/40 px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-md hover:bg-slate-900/55 sm:px-3 sm:py-2 sm:text-sm"
-          >
-            Account
-          </Link>
+          <AuthStatus />
           <LanguageSwitcher className="px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm" />
           <ModelSwitcher
             tool={selected}
@@ -96,6 +92,17 @@ export function HomeClient() {
           <p className="mt-3 max-w-3xl text-balance text-sm text-slate-300 sm:text-base">
             {t("hero.subtitle")}
           </p>
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            <Link
+              href="/history"
+              className="rounded-full border border-white/10 bg-slate-950/20 px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-md hover:bg-slate-950/30"
+            >
+              Guest history + Credits
+            </Link>
+            <span className="rounded-full border border-white/10 bg-slate-950/20 px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-md">
+              Anonymous ✅ · Members ✅
+            </span>
+          </div>
         </section>
 
         <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md transition-colors">
