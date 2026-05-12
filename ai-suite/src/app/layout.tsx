@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
+import { Geist, Space_Grotesk } from "next/font/google";
 import Script from "next/script";
 import { cookies } from "next/headers";
 import { Toaster } from "sonner";
@@ -10,6 +10,8 @@ import { ModelProvider } from "@/models/model-provider";
 import { GlobalBackground } from "@/components/global-background";
 import { SocialProof } from "@/components/SocialProof";
 import type { Locale } from "@/i18n/dictionaries";
+import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { rootMetadataForLocale } from "@/lib/site-metadata";
 import { SupabaseBrowserConfigProvider } from "@/lib/supabase/browser-config-context";
 import { PricingModalProvider } from "@/components/pricing/pricing-modal";
 
@@ -18,35 +20,15 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://isendai.netlify.app"),
-  title: "isendai | Perfect Your Message Before You Hit Send",
-  description:
-    "Stop overthinking. Let AI transform your angry emails, write your cover letters, and handle your communication stress in seconds. Pay per use, no subscriptions.",
-  openGraph: {
-    type: "website",
-    title: "isendai | Perfect Your Message Before You Hit Send",
-    description:
-      "Stop overthinking. Let AI transform your angry emails, write your cover letters, and handle your communication stress in seconds. Pay per use, no subscriptions.",
-    siteName: "isendai",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "isendai | Perfect Your Message Before You Hit Send",
-    description:
-      "Stop overthinking. Let AI transform your angry emails, write your cover letters, and handle your communication stress in seconds. Pay per use, no subscriptions.",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
+  return rootMetadataForLocale(resolveLocaleFromCookie(cookieLocale));
+}
 
 export default async function RootLayout({
   children,
@@ -73,7 +55,7 @@ export default async function RootLayout({
     <html
       lang={initialLocale ?? "en"}
       suppressHydrationWarning
-      className={`dark ${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} h-full antialiased`}
+      className={`dark ${geistSans.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-[#09090b] text-slate-50 antialiased">
         {GA_ID ? (

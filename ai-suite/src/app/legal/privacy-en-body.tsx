@@ -28,7 +28,7 @@ export function PrivacyEnBody() {
 
       <h2 className="text-base font-semibold text-white">Payments</h2>
       <p>
-        Payments are handled by Stripe. We do not store your full payment card details. Stripe may
+        Payments are handled by Lemon Squeezy. We do not store your full payment card details. Lemon Squeezy may
         collect and process payment information according to their policies.
       </p>
 

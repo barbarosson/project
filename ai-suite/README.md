@@ -4,9 +4,9 @@ Production-ready AI tools suite with:
 
 - Guest + member flows (magic link, Google, Facebook, other OAuth)
 - Membership profile capture after first sign-in (`/account/profile`)
-- Credits (1 request = 1 credit) with history and saved versions
+- **Credits** — billed by **model tier × 500-character chunks** (rounded up); history and saved versions
 - Multiple AI providers (OpenAI / Anthropic / Groq / DeepSeek / Google)
-- In-app generation first; **Stripe checkout is deferred** (Faz 5)
+- **Lemon Squeezy** checkout + webhooks for packs (see `src/app/api/webhook/route.ts` and env vars)
 
 ## Supabase database
 
@@ -53,19 +53,20 @@ Open `http://localhost:3000`.
 | `/request/[id]` | Stored input + versions |
 | `/pricing` | Reference tiers + **dev top-up** instructions (non-production) |
 | `/terms`, `/privacy` | Legal (shell localized; body English) |
-| `/success` | Generation step after saving tool input (uses credits, not Stripe redirect) |
+| `/success` | Generation step after saving tool input (uses credits from balance; chunk-based billing) |
 
 ## API
 
-- `POST /api/generate` — scope check, **rate limit** (`ISENDAI_GENERATE_RPM`), charge 1 credit, generate v1
+- `POST /api/generate` — scope check, **rate limit** (`ISENDAI_GENERATE_RPM`), **credit charge** from `creditsForGeneration(model, inputLength)`, generate v1
 - `POST /api/isendai/request/version` — add alternate version (**rate limit** `ISENDAI_VERSION_RPM`)
-- `POST /api/dev/topup` — add credits (**disabled in production**)
+- `POST /api/dev/topup` — add credits (**disabled in production**); optional `DEV_TOPUP_SECRET` + header `X-Dev-Topup-Secret` or `Authorization: Bearer`
 
-## Credits & growth (no Stripe yet)
+## Credits & billing
 
-- Default balances come from your Supabase rows (often `0` until topped up).
+- Generation cost = **chunks × per-chunk rate**, where **chunks = ceil(input chars / 500)** (see `src/models/models.ts`: `creditsForGeneration`, `billableChunks500`).
+- **Economy** models + **GPT‑4o mini**: **1** credit per chunk; **Standard**: **15**; **Premium**: **25**.
+- **Production:** Lemon Squeezy orders + webhooks grant credits; operators can also adjust via SQL.
 - **Non-production:** use `POST /api/dev/topup` as documented on `/pricing`.
-- **Production:** grant credits via SQL, a future admin tool, or Stripe webhooks (planned).
 
 ### Planned pricing (see `/pricing`)
 
@@ -83,7 +84,7 @@ Open `http://localhost:3000`.
 - **$1.49** → **25 credits**; **budget + standard** (`$1.49` band). ~**$0.060**/credit. **Standard** models: **15 credits per 500-character chunk** (rounded up).
 - **$1.99** → **50 credits**; **full catalog** (`$1.99` band). ~**$0.040**/credit. **Premium** models: **25 credits per 500-character chunk** (rounded up).
 
-Stripe checkout and entitlement enforcement are not wired yet; see `src/models/models.ts` (`salesPriceForModel`, `PAYGO_PACK_CREDITS`, `creditsForGeneration`).
+Configure Lemon Squeezy keys and variant IDs in `.env.local`. See `src/models/models.ts` (`salesPriceForModel`, `PAYGO_PACK_CREDITS`, `creditsForGeneration`).
 
 ## Learn more
 

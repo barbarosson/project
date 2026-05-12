@@ -4,7 +4,7 @@ import { createServerClient } from "@supabase/ssr";
 import { requiredEnv } from "@/lib/env";
 
 export async function middleware(req: NextRequest) {
-  let res = NextResponse.next({ request: { headers: req.headers } });
+  const res = NextResponse.next({ request: { headers: req.headers } });
 
   const supabase = createServerClient(
     requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
@@ -36,7 +36,7 @@ export const config = {
      * - static files
      * - Next.js internals
      */
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2)$).*)",
   ],
 };
 

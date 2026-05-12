@@ -4,7 +4,12 @@ import { openai, createOpenAI } from "@ai-sdk/openai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { google } from "@ai-sdk/google";
 
-import { getToolDefinition, type ProviderId, type ToolPayload } from "@/components/ai-suite/tools";
+import {
+  getToolDefinition,
+  isToolName,
+  type ProviderId,
+  type ToolPayload,
+} from "@/components/ai-suite/tools";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { billingAddRequestVersion, billingDeductCredits } from "@/lib/isendai/billing-rpc";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -118,17 +123,21 @@ export async function POST(req: Request) {
   }
 
   // Parse original payload
-  const inputJson = reqRow.input_json as any;
-  if (!inputJson || typeof inputJson !== "object" || typeof inputJson.tool !== "string") {
+  const rawInput = reqRow.input_json as unknown;
+  if (!rawInput || typeof rawInput !== "object" || rawInput === null) {
     return NextResponse.json({ error: "Stored input missing." }, { status: 500 });
   }
-  const payload = inputJson as ToolPayload;
+  const toolField = (rawInput as Record<string, unknown>).tool;
+  if (typeof toolField !== "string" || !isToolName(toolField)) {
+    return NextResponse.json({ error: "Stored input missing." }, { status: 500 });
+  }
+  const payload = rawInput as ToolPayload;
   const toolId = reqRow.tool_id as ToolPayload["tool"];
   if (payload.tool !== toolId) {
     return NextResponse.json({ error: "Stored input mismatch." }, { status: 500 });
   }
 
-  const def = getToolDefinition(payload.tool as any);
+  const def = getToolDefinition(toolField);
   const modelId = String(reqRow.model_id || "");
   const normalizedStored = normalizeModelIdString(modelId);
   const provider: ProviderId =

@@ -619,7 +619,7 @@ export async function POST(req: Request) {
       appliedMarketingGrant = true;
     }
 
-    // Charge 1 credit and create request row BEFORE generation.
+    // Charge credits (amount from creditsForGeneration) and create request row BEFORE generation.
     // If this fails (insufficient credits), we stop early.
     const inputJson = storedInputJson;
 

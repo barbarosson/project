@@ -225,9 +225,16 @@ export function SuccessClient() {
       body: JSON.stringify({ request_id: requestId, extra }),
     });
     const raw = await res.text();
-    let json: { ok?: boolean; text?: string; idx?: number; error?: string; code?: string } | null = null;
+    type VersionApiJson = {
+      ok?: boolean;
+      text?: string;
+      idx?: number;
+      error?: string;
+      code?: string;
+    };
+    let json: VersionApiJson | null = null;
     try {
-      json = JSON.parse(raw) as any;
+      json = JSON.parse(raw) as VersionApiJson;
     } catch {
       json = null;
     }

@@ -23,7 +23,7 @@ export function TermsEnBody() {
       <h2 className="text-base font-semibold text-white">Payments</h2>
       <p>
         The service may be offered via one-time credit packs and subscriptions. Payments are
-        processed by Stripe. We do not store your full payment card details. Fees may be
+        processed by Lemon Squeezy (Merchant of Record). We do not store your full payment card details. Fees may be
         non-refundable except where required by law.
       </p>
 

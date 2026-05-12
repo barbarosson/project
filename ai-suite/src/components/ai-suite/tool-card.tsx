@@ -77,8 +77,10 @@ export function ToolCard({
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
-    setMounted(true);
-    setTrialUsed(readFreeTrialUsed());
+    queueMicrotask(() => {
+      setMounted(true);
+      setTrialUsed(readFreeTrialUsed());
+    });
   }, []);
 
   const def = getToolDefinition(tool);

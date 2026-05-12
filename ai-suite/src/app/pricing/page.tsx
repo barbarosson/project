@@ -28,6 +28,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function PricingPage() {
   const isProd = process.env.NODE_ENV === "production";
+  const devTopupSecretRequired = Boolean(process.env.DEV_TOPUP_SECRET?.trim());
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   const locale = resolveLocaleFromCookie(cookieLocale);
   const d = DICTS[locale];
@@ -145,6 +146,9 @@ Content-Type: application/json
 
 { "credits": 10 }`}
           </pre>
+          {devTopupSecretRequired ? (
+            <p className="mt-2 text-xs leading-relaxed text-amber-200/90">{d["pricing.dev.secretHint"]}</p>
+          ) : null}
           <p className="mt-2 text-xs text-slate-400">{d["pricing.dev.disabled"]}</p>
         </section>
       ) : null}

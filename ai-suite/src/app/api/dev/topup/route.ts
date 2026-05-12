@@ -10,14 +10,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Not available." }, { status: 404 });
   }
 
+  const secret = process.env.DEV_TOPUP_SECRET?.trim();
+  if (secret) {
+    const bearer = req.headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim();
+    const headerSecret = req.headers.get("x-dev-topup-secret")?.trim();
+    const provided = headerSecret ?? bearer ?? "";
+    if (provided !== secret) {
+      return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+    }
+  }
+
   const body = (await req.json().catch(() => null)) as unknown;
-  const amount =
-    typeof body === "object" &&
-    body !== null &&
-    "credits" in body &&
-    typeof (body as any).credits === "number"
-      ? Math.floor((body as any).credits)
-      : 0;
+  let amount = 0;
+  if (typeof body === "object" && body !== null && "credits" in body) {
+    const c = (body as { credits?: unknown }).credits;
+    if (typeof c === "number") amount = Math.floor(c);
+  }
 
   if (amount <= 0 || amount > 10000) {
     return NextResponse.json({ error: "Invalid credits amount." }, { status: 400 });

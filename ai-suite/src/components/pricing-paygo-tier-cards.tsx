@@ -33,6 +33,16 @@ export function PricingPaygoTierCards({
   closeLabel,
 }: Props) {
   const [openId, setOpenId] = React.useState<string | null>(null);
+  const dialogPanelRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!openId) return;
+    const el = dialogPanelRef.current;
+    if (!el) return;
+    window.requestAnimationFrame(() => {
+      el.focus();
+    });
+  }, [openId]);
 
   React.useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -92,6 +102,8 @@ export function PricingPaygoTierCards({
             onClick={() => setOpenId(null)}
           />
           <div
+            ref={dialogPanelRef}
+            tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-labelledby="paygo-detail-title"

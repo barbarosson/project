@@ -32,14 +32,13 @@ export function FreeTrialEmailDialog({
   const [email, setEmail] = React.useState("");
   const [busy, setBusy] = React.useState(false);
 
-  React.useEffect(() => {
-    if (!open) {
-      setEmail("");
-      setBusy(false);
-    }
-  }, [open]);
-
   if (!open) return null;
+
+  function handleClose() {
+    setEmail("");
+    setBusy(false);
+    onClose();
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,18 +53,16 @@ export function FreeTrialEmailDialog({
   }
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      role="presentation"
-      aria-modal="true"
-    >
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <button
         type="button"
         className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
         aria-label="Close"
-        onClick={onClose}
+        onClick={handleClose}
       />
       <div
+        role="dialog"
+        aria-modal="true"
         className={cn(
           "relative z-[101] w-full max-w-md rounded-2xl p-6 shadow-2xl transition-opacity duration-200",
           glassSurface
@@ -93,7 +90,7 @@ export function FreeTrialEmailDialog({
             required
           />
           <div className="flex flex-wrap justify-end gap-2 pt-1">
-            <Button type="button" variant="outline" onClick={onClose} disabled={busy}>
+            <Button type="button" variant="outline" onClick={handleClose} disabled={busy}>
               {cancelLabel}
             </Button>
             <Button type="submit" disabled={busy || !email.trim()}>

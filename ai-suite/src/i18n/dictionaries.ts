@@ -89,14 +89,14 @@ export const DICTS: Record<Locale, Dict> = {
     "faq.a1":
       "No. Your input is kept in your browser (localStorage) to complete the flow.",
     "faq.q2": "How does payment work?",
-    "faq.a2": "Pay per use. Secure checkout via Stripe. No subscription traps.",
+    "faq.a2": "Pay per use. Secure checkout via Lemon Squeezy. No subscription traps.",
     "faq.q3": "What do I get?",
     "faq.a3":
       "A polished output you can copy immediately—email, cover letter, or bio.",
 
     "footer.copyright": "© 2026 isendai.com. Crafted for better communication.",
     "footer.trust":
-      "🔒 Secure Payments via Stripe | ⚡ Powered by AI | 🚫 We do not store your data.",
+      "🔒 Secure Payments via Lemon Squeezy | ⚡ Powered by AI | 🚫 We do not store your data.",
 
     "tool.corp.desc":
       "Want to yell at your boss or client? Don't. Type your angry, unfiltered thoughts here, and we'll turn it into a polite, HR-friendly masterpiece.",
@@ -118,7 +118,8 @@ export const DICTS: Record<Locale, Dict> = {
 
     "success.test": "Test mode. Generating your result…",
     "success.paid": "Payment received. Generating your result…",
-    "success.introCredits": "Using 1 credit from your balance for this generation.",
+    "success.introCredits":
+      "Credits are deducted from your balance based on the model and input length (500-character chunks).",
     "success.insufficientFallback": "Not enough credits to run this generation.",
     "success.insufficientTitle": "You’re out of credits",
     "success.insufficientBody":
@@ -223,7 +224,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.hero.footerJump": "How credits work",
     "pricing.monthly.sectionTitle": "Monthly credit bundles",
     "pricing.monthly.sectionLead":
-      "Renews each billing cycle once Stripe is enabled. Effective cost per credit in the bundle: ~$0.016 (500 credits), ~$0.010 (1,000), ~$0.004 (5,000).",
+      "Renews each billing cycle once Lemon Squeezy is enabled. Effective cost per credit in the bundle: ~$0.016 (500 credits), ~$0.010 (1,000), ~$0.004 (5,000).",
     "pricing.monthly.starter.name": "Starter",
     "pricing.monthly.starter.price": "$7.99",
     "pricing.monthly.starter.credits": "500 credits / month",
@@ -301,9 +302,11 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.usageGuide.footer":
       "When you click Generate, we calculate credits from your real prompt (paste + tool context). Each alternate version runs the same check again.",
     "pricing.sectionFootnote":
-      "Version limits per generation still follow your account entitlements. Stripe checkout for monthly bundles ships in a later phase.",
+      "Version limits per generation still follow your account entitlements. Lemon Squeezy checkout for monthly bundles ships in a later phase.",
     "pricing.dev.title": "Developer mode",
-    "pricing.dev.body": "Top up credits locally while Stripe is disabled:",
+    "pricing.dev.body": "Add credits locally during development (non-production only):",
+    "pricing.dev.secretHint":
+      "If DEV_TOPUP_SECRET is set in .env.local, send header X-Dev-Topup-Secret or Authorization: Bearer with that value.",
     "pricing.dev.disabled": "This endpoint is disabled in production.",
     "notFound.title": "Page not found",
     "notFound.description": "The page you’re looking for doesn’t exist.",
@@ -316,7 +319,7 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.effective": "Effective date: {year}-01-01",
     "legal.shellNotice": "Binding legal text is in English below.",
     "legal.paymentsStub":
-      "Paid packs and subscriptions will be enabled with Stripe; until then, use credits from dev top-up (non-prod) or your operator.",
+      "Paid packs and subscriptions will be enabled with Lemon Squeezy; until then, use credits from dev top-up (non-prod) or your operator.",
     "growth.zeroCreditsHint":
       "Balance is 0 — use the dev top-up on Pricing (local only), sign in, or ask your admin to add credits.",
     "growth.freeTrial.ctaButton": "Generate 1st Message for Free 🎁",
@@ -417,7 +420,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "Next we open the result page and generate using your credit balance. Paying to buy credits comes in a later release.",
-    "tool.ctaCreditSuffix": " — 1 credit",
+    "tool.ctaCreditSuffix": " — varies by model & length",
     "tool.priceReference":
       "This model’s tier uses the 10-credit pack rates: {price}",
     "tool.pricePackFlex":
@@ -548,12 +551,12 @@ export const DICTS: Record<Locale, Dict> = {
     "faq.q1": "¿Guardan mi texto?",
     "faq.a1": "No. Se guarda en tu navegador (localStorage) para completar el flujo.",
     "faq.q2": "¿Cómo funciona el pago?",
-    "faq.a2": "Pago por uso. Checkout seguro con Stripe. Sin trampas.",
+    "faq.a2": "Pago por uso. Checkout seguro con Lemon Squeezy. Sin trampas.",
     "faq.q3": "¿Qué recibo?",
     "faq.a3": "Un texto pulido que puedes copiar al instante.",
     "footer.copyright": "© 2026 isendai.com. Hecho para comunicar mejor.",
     "footer.trust":
-      "🔒 Pagos seguros con Stripe | ⚡ Impulsado por IA | 🚫 No guardamos tus datos.",
+      "🔒 Pagos seguros con Lemon Squeezy | ⚡ Impulsado por IA | 🚫 No guardamos tus datos.",
     "tool.corp.desc":
       "¿Quieres gritarle a tu jefe o cliente? No lo hagas. Escribe lo que piensas y lo convertimos en un correo educado y apto para RR. HH.",
     "tool.corp.placeholder":
@@ -570,7 +573,8 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.dating.button": "Roast y arreglar",
     "success.test": "Modo test. Generando…",
     "success.paid": "Pago recibido. Generando…",
-    "success.introCredits": "Usando 1 crédito de tu saldo para esta generación.",
+    "success.introCredits":
+      "Se descontarán créditos de tu saldo según el modelo y la longitud del texto (bloques de 500 caracteres).",
     "success.insufficientFallback": "No hay créditos suficientes para generar.",
     "success.insufficientTitle": "Sin créditos",
     "success.insufficientBody":
@@ -683,7 +687,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.hero.footerJump": "Cómo se usan los créditos",
     "pricing.monthly.sectionTitle": "Paquetes mensuales de créditos",
     "pricing.monthly.sectionLead":
-      "Se renueva cada ciclo cuando Stripe esté activo. Coste aproximado por crédito en el paquete: ~$0.016 (500 créditos), ~$0.010 (1.000), ~$0.004 (5.000).",
+      "Se renueva cada ciclo cuando Lemon Squeezy esté activo. Coste aproximado por crédito en el paquete: ~$0.016 (500 créditos), ~$0.010 (1.000), ~$0.004 (5.000).",
     "pricing.monthly.starter.name": "Inicial",
     "pricing.monthly.starter.price": "$7.99",
     "pricing.monthly.starter.credits": "500 créditos / mes",
@@ -761,9 +765,11 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.usageGuide.footer":
       "Al pulsar Generar calculamos los créditos con tu prompt real (texto pegado + contexto). Cada variante alternativa vuelve a aplicar la misma regla.",
     "pricing.sectionFootnote":
-      "El límite de versiones por generación sigue tu cuenta. El checkout Stripe para paquetes mensuales llegará después.",
+      "El límite de versiones por generación sigue tu cuenta. El checkout Lemon Squeezy para paquetes mensuales llegará después.",
     "pricing.dev.title": "Modo desarrollador",
-    "pricing.dev.body": "Recarga créditos en local mientras Stripe está desactivado:",
+    "pricing.dev.body": "Añade créditos en local durante el desarrollo (solo no producción):",
+    "pricing.dev.secretHint":
+      "Si DEV_TOPUP_SECRET está en .env.local, envía la cabecera X-Dev-Topup-Secret o Authorization: Bearer con ese valor.",
     "pricing.dev.disabled": "Este endpoint está desactivado en producción.",
     "notFound.title": "Página no encontrada",
     "notFound.description": "La página que buscas no existe.",
@@ -776,7 +782,7 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.effective": "Vigencia: {year}-01-01",
     "legal.shellNotice": "El texto legal vinculante está en inglés a continuación.",
     "legal.paymentsStub":
-      "Los pagos con Stripe llegarán más adelante; hasta entonces usa la recarga dev (no prod) o tu operador.",
+      "Los pagos con Lemon Squeezy llegarán más adelante; hasta entonces usa la recarga dev (no prod) o tu operador.",
     "growth.zeroCreditsHint":
       "Saldo 0: usa la recarga dev en Precios (solo local), inicia sesión o pide créditos al administrador.",
     "growth.freeTrial.ctaButton": "Genera tu 1.er mensaje gratis 🎁",
@@ -877,7 +883,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "A continuación abrimos la página de resultado y generamos con tu saldo de créditos. Comprar créditos llegará más adelante.",
-    "tool.ctaCreditSuffix": " — 1 crédito",
+    "tool.ctaCreditSuffix": " — según modelo y longitud",
     "tool.priceReference":
       "Tarifa típica en este nivel: {price} (ejemplo: recargas habituales de 10 créditos a $1 / $1.49 / $1.99 por paquete).",
     "tool.pricePackFlex":
@@ -999,12 +1005,12 @@ export const DICTS: Record<Locale, Dict> = {
     "faq.q1": "Stockez-vous mon texte ?",
     "faq.a1": "Non. Il reste dans votre navigateur (localStorage) pour terminer le flux.",
     "faq.q2": "Comment fonctionne le paiement ?",
-    "faq.a2": "Paiement à l’usage. Paiement sécurisé via Stripe. Pas de pièges.",
+    "faq.a2": "Paiement à l’usage. Paiement sécurisé via Lemon Squeezy. Pas de pièges.",
     "faq.q3": "Qu’est-ce que je reçois ?",
     "faq.a3": "Un texte peaufiné que vous pouvez copier immédiatement.",
     "footer.copyright": "© 2026 isendai.com. Conçu pour mieux communiquer.",
     "footer.trust":
-      "🔒 Paiements sécurisés via Stripe | ⚡ Propulsé par l’IA | 🚫 Nous ne stockons pas vos données.",
+      "🔒 Paiements sécurisés via Lemon Squeezy | ⚡ Propulsé par l’IA | 🚫 Nous ne stockons pas vos données.",
     "tool.corp.desc":
       "Envie de crier sur votre boss ou client ? Ne le faites pas. Écrivez tout, on le transforme en email poli et OK RH.",
     "tool.corp.placeholder":
@@ -1021,7 +1027,8 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.dating.button": "Roast & corriger",
     "success.test": "Mode test. Génération…",
     "success.paid": "Paiement reçu. Génération…",
-    "success.introCredits": "Utilisation d’1 crédit de votre solde pour cette génération.",
+    "success.introCredits":
+      "Des crédits sont prélevés selon le modèle et la longueur du texte (tranches de 500 caractères).",
     "success.insufficientFallback": "Crédits insuffisants pour lancer la génération.",
     "success.insufficientTitle": "Plus de crédits",
     "success.insufficientBody":
@@ -1134,7 +1141,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.hero.footerJump": "Utilisation des crédits",
     "pricing.monthly.sectionTitle": "Forfaits mensuels de crédits",
     "pricing.monthly.sectionLead":
-      "Renouvellement à chaque cycle une fois Stripe activé. Coût indicatif par crédit dans le forfait : ~$0.016 (500 crédits), ~$0.010 (1 000), ~$0.004 (5 000).",
+      "Renouvellement à chaque cycle une fois Lemon Squeezy activé. Coût indicatif par crédit dans le forfait : ~$0.016 (500 crédits), ~$0.010 (1 000), ~$0.004 (5 000).",
     "pricing.monthly.starter.name": "Starter",
     "pricing.monthly.starter.price": "7,99 $",
     "pricing.monthly.starter.credits": "500 crédits / mois",
@@ -1212,9 +1219,11 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.usageGuide.footer":
       "Au clic sur Générer, le montant est calculé sur votre prompt réel (collage + contexte). Chaque variante refait le même calcul.",
     "pricing.sectionFootnote":
-      "La limite de versions par génération suit ton compte. Le checkout Stripe pour les offres mensuelles arrive ensuite.",
+      "La limite de versions par génération suit ton compte. Le checkout Lemon Squeezy pour les offres mensuelles arrive ensuite.",
     "pricing.dev.title": "Mode développeur",
-    "pricing.dev.body": "Rechargez des crédits en local tant que Stripe est désactivé :",
+    "pricing.dev.body": "Ajoute des crédits en local pendant le développement (hors production) :",
+    "pricing.dev.secretHint":
+      "Si DEV_TOPUP_SECRET est défini dans .env.local, envoie l’en-tête X-Dev-Topup-Secret ou Authorization: Bearer avec cette valeur.",
     "pricing.dev.disabled": "Ce point de terminaison est désactivé en production.",
     "notFound.title": "Page introuvable",
     "notFound.description": "La page demandée n’existe pas.",
@@ -1227,7 +1236,7 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.effective": "Date d’effet : {year}-01-01",
     "legal.shellNotice": "Le texte juridique faisant foi est en anglais ci-dessous.",
     "legal.paymentsStub":
-      "Paiement Stripe plus tard ; en attendant utilise la recharge dev (hors prod) ou ton opérateur.",
+      "Paiement Lemon Squeezy plus tard ; en attendant utilise la recharge dev (hors prod) ou ton opérateur.",
     "growth.zeroCreditsHint":
       "Solde 0 : recharge dev sur Tarifs (local), connecte-toi ou demande des crédits à l’admin.",
     "growth.freeTrial.ctaButton": "Générez votre 1er message gratuitement 🎁",
@@ -1328,7 +1337,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "Ensuite nous ouvrons la page de résultat et générons avec votre solde de crédits. L’achat de crédits arrivera plus tard.",
-    "tool.ctaCreditSuffix": " — 1 crédit",
+    "tool.ctaCreditSuffix": " — selon modèle et longueur",
     "tool.priceReference":
       "Tarif indicatif pour ce palier : {price} (ex. : recharges courantes de 10 crédits à $1 / $1.49 / $1.99 le pack).",
     "tool.pricePackFlex":
@@ -1451,12 +1460,12 @@ export const DICTS: Record<Locale, Dict> = {
     "faq.q1": "Speichert ihr meinen Text?",
     "faq.a1": "Nein. Er bleibt in deinem Browser (localStorage) für den Flow.",
     "faq.q2": "Wie funktioniert die Zahlung?",
-    "faq.a2": "Pay‑per‑use. Sicher via Stripe. Kein Abo‑Trick.",
+    "faq.a2": "Pay‑per‑use. Sicher via Lemon Squeezy. Kein Abo‑Trick.",
     "faq.q3": "Was bekomme ich?",
     "faq.a3": "Einen polierten Text zum sofortigen Kopieren.",
     "footer.copyright": "© 2026 isendai.com. Für bessere Kommunikation.",
     "footer.trust":
-      "🔒 Sichere Zahlungen via Stripe | ⚡ Powered by AI | 🚫 Wir speichern deine Daten nicht.",
+      "🔒 Sichere Zahlungen via Lemon Squeezy | ⚡ Powered by AI | 🚫 Wir speichern deine Daten nicht.",
     "tool.corp.desc":
       "Du willst deinen Chef/Client anschreien? Tu’s nicht. Schreib’s hier rein – wir machen daraus eine höfliche, HR‑taugliche Mail.",
     "tool.corp.placeholder":
@@ -1473,7 +1482,8 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.dating.button": "Roast & Fix",
     "success.test": "Testmodus. Generiere…",
     "success.paid": "Zahlung erhalten. Generiere…",
-    "success.introCredits": "Es wird 1 Credit von deinem Kontostand für diese Generierung genutzt.",
+    "success.introCredits":
+      "Credits werden je nach Modell und Eingabelänge von deinem Kontostand abgebucht (500-Zeichen-Abschnitte).",
     "success.insufficientFallback": "Nicht genug Credits für diese Generierung.",
     "success.insufficientTitle": "Keine Credits mehr",
     "success.insufficientBody":
@@ -1586,7 +1596,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.hero.footerJump": "Credit‑Nutzung",
     "pricing.monthly.sectionTitle": "Monatliche Credit‑Pakete",
     "pricing.monthly.sectionLead":
-      "Verlängert sich pro Abrechnungszyklus mit Stripe. Ca. Kosten pro Credit im Paket: ~$0.016 (500 Credits), ~$0.010 (1.000), ~$0.004 (5.000).",
+      "Verlängert sich pro Abrechnungszyklus mit Lemon Squeezy. Ca. Kosten pro Credit im Paket: ~$0.016 (500 Credits), ~$0.010 (1.000), ~$0.004 (5.000).",
     "pricing.monthly.starter.name": "Starter",
     "pricing.monthly.starter.price": "7,99 $",
     "pricing.monthly.starter.credits": "500 Credits / Monat",
@@ -1664,9 +1674,11 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.usageGuide.footer":
       "Beim Klick auf Generieren berechnen wir Credits aus deinem echten Prompt (Einfügen + Kontext). Jede Alternativversion läuft durch dieselbe Regel.",
     "pricing.sectionFootnote":
-      "Versionslimit pro Generierung weiterhin über Berechtigungen. Stripe für Monatspakete folgt später.",
+      "Versionslimit pro Generierung weiterhin über Berechtigungen. Lemon Squeezy für Monatspakete folgt später.",
     "pricing.dev.title": "Entwicklermodus",
-    "pricing.dev.body": "Credits lokal aufladen, solange Stripe aus ist:",
+    "pricing.dev.body": "Credits in der Entwicklung lokal hinzufügen (nur Nicht-Produktion):",
+    "pricing.dev.secretHint":
+      "Wenn DEV_TOPUP_SECRET in .env.local gesetzt ist, Header X-Dev-Topup-Secret oder Authorization: Bearer mitsenden.",
     "pricing.dev.disabled": "In Produktion deaktiviert.",
     "notFound.title": "Seite nicht gefunden",
     "notFound.description": "Diese Seite existiert nicht.",
@@ -1679,7 +1691,7 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.effective": "Gültig ab: {year}-01-01",
     "legal.shellNotice": "Verbindlicher Rechtstext steht unten auf Englisch.",
     "legal.paymentsStub":
-      "Stripe-Zahlung folgt; bis dahin Dev-Top-up (nicht prod) oder Betreiber-Credits.",
+      "Lemon Squeezy-Zahlung folgt; bis dahin Dev-Top-up (nicht prod) oder Betreiber-Credits.",
     "growth.zeroCreditsHint":
       "Stand 0: Dev-Top-up unter Preise (nur lokal), anmelden oder Admin um Credits bitten.",
     "growth.freeTrial.ctaButton": "Erste Nachricht gratis generieren 🎁",
@@ -1780,7 +1792,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "Als Nächstes öffnen wir die Ergebnisseite und generieren mit deinem Credit‑Kontostand. Credits kaufen kommt später.",
-    "tool.ctaCreditSuffix": " — 1 Credit",
+    "tool.ctaCreditSuffix": " — je nach Modell und Länge",
     "tool.priceReference":
       "Richtpreis für diese Stufe: {price} (Beispiel: übliche 10‑Credit‑Pakete zu $1 / $1.49 / $1.99).",
     "tool.pricePackFlex":
@@ -1890,11 +1902,11 @@ export const DICTS: Record<Locale, Dict> = {
     "faq.q1": "会保存我的文本吗？",
     "faq.a1": "不会。文本仅保存在你的浏览器（localStorage）以完成流程。",
     "faq.q2": "支付如何进行？",
-    "faq.a2": "按次付费。Stripe 安全支付。没有订阅套路。",
+    "faq.a2": "按次付费。Lemon Squeezy 安全支付。没有订阅套路。",
     "faq.q3": "我会得到什么？",
     "faq.a3": "可立即复制的优化结果：邮件/求职信/简介。",
     "footer.copyright": "© 2026 isendai.com. 为更好的沟通而生。",
-    "footer.trust": "🔒 Stripe 安全支付 | ⚡ AI 驱动 | 🚫 不存储你的数据",
+    "footer.trust": "🔒 Lemon Squeezy 安全支付 | ⚡ AI 驱动 | 🚫 不存储你的数据",
     "tool.corp.desc":
       "想对老板/客户发火？别。把真实想法写下来，我们帮你变成礼貌、HR 友好的邮件。",
     "tool.corp.placeholder":
@@ -1911,7 +1923,7 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.dating.button": "吐槽并修复",
     "success.test": "测试模式：生成中…",
     "success.paid": "支付成功：生成中…",
-    "success.introCredits": "本次生成将使用你余额中的 1 个额度。",
+    "success.introCredits": "将根据模型与输入长度从余额扣减额度（每 500 字为一段，向上取整）。",
     "success.insufficientFallback": "额度不足，无法完成生成。",
     "success.insufficientTitle": "额度已用完",
     "success.insufficientBody":
@@ -2019,7 +2031,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.hero.footerJump": "额度怎么扣",
     "pricing.monthly.sectionTitle": "月度额度套餐",
     "pricing.monthly.sectionLead":
-      "Stripe 开通后按账单周期续订。套餐内每额度参考成本：约 $0.016（500 额度）、$0.010（1,000）、$0.004（5,000）。",
+      "Lemon Squeezy 开通后按账单周期续订。套餐内每额度参考成本：约 $0.016（500 额度）、$0.010（1,000）、$0.004（5,000）。",
     "pricing.monthly.starter.name": "入门",
     "pricing.monthly.starter.price": "$7.99",
     "pricing.monthly.starter.credits": "每月 500 额度",
@@ -2097,9 +2109,10 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.usageGuide.footer":
       "点击「生成」时，会按你的真实提示（粘贴 + 工具上下文）计算额度。每个备选版本再跑一次同样规则。",
     "pricing.sectionFootnote":
-      "每次生成可保存的版本数仍以账户权益为准。月度套餐的 Stripe 结账稍后上线。",
+      "每次生成可保存的版本数仍以账户权益为准。月度套餐的 Lemon Squeezy 结账稍后上线。",
     "pricing.dev.title": "开发者模式",
-    "pricing.dev.body": "Stripe 未接入时可在本地为额度充值：",
+    "pricing.dev.body": "开发环境（非生产）可在本地充值额度：",
+    "pricing.dev.secretHint": "若在 .env.local 设置了 DEV_TOPUP_SECRET，请附带请求头 X-Dev-Topup-Secret 或 Authorization: Bearer。",
     "pricing.dev.disabled": "生产环境已禁用此接口。",
     "notFound.title": "页面未找到",
     "notFound.description": "你要访问的页面不存在。",
@@ -2111,7 +2124,7 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.privacyTitle": "隐私政策",
     "legal.effective": "生效日期：{year}-01-01",
     "legal.shellNotice": "具有法律效力的正文以下方英文为准。",
-    "legal.paymentsStub": "付费套餐将在 Stripe 就绪后启用；此前请用本地 dev 充值或管理员加额度。",
+    "legal.paymentsStub": "付费套餐将在 Lemon Squeezy 就绪后启用；此前请用本地 dev 充值或管理员加额度。",
     "growth.zeroCreditsHint": "额度为 0：在「价格」页查看本地 dev 充值说明，或登录/联系管理员。",
     "growth.freeTrial.ctaButton": "免费生成第一条消息 🎁",
     "growth.freeTrial.modalTitle": "解锁首次免费生成",
@@ -2208,7 +2221,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "接下来会打开结果页，并用你的额度余额尝试生成。购买额度的流程会在后续版本接入。",
-    "tool.ctaCreditSuffix": " — 1 额度",
+    "tool.ctaCreditSuffix": " — 按模型与长度计费",
     "tool.priceReference":
       "该档位常见换算：{price}（示例：常见的 10 额度充值包价位为 $1 / $1.49 / $1.99）。",
     "tool.pricePackFlex": "不强制购买恰好 10 额度——价格页的套餐规格可灵活选择。",
@@ -2319,12 +2332,12 @@ export const DICTS: Record<Locale, Dict> = {
     "faq.q1": "Metnimi saklıyor musunuz?",
     "faq.a1": "Hayır. Akışı tamamlamak için tarayıcında (localStorage) tutulur.",
     "faq.q2": "Ödeme nasıl çalışıyor?",
-    "faq.a2": "Kullandıkça öde. Stripe ile güvenli ödeme. Abonelik tuzağı yok.",
+    "faq.a2": "Kullandıkça öde. Lemon Squeezy ile güvenli ödeme. Abonelik tuzağı yok.",
     "faq.q3": "Ne elde edeceğim?",
     "faq.a3": "Hemen kopyalayabileceğin parlatılmış bir çıktı.",
     "footer.copyright": "© 2026 isendai.com. Daha iyi iletişim için üretildi.",
     "footer.trust":
-      "🔒 Stripe ile güvenli ödeme | ⚡ AI destekli | 🚫 Verini saklamayız.",
+      "🔒 Lemon Squeezy ile güvenli ödeme | ⚡ AI destekli | 🚫 Verini saklamayız.",
     "tool.corp.desc":
       "Patronuna/müşterine bağırmak mı istiyorsun? Sakın. Buraya yaz; biz de kibar, HR-dostu bir e-postaya çevirelim.",
     "tool.corp.placeholder":
@@ -2341,7 +2354,8 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.dating.button": "Roastla & düzelt",
     "success.test": "Test modu. Sonuç hazırlanıyor…",
     "success.paid": "Ödeme alındı. Sonuç hazırlanıyor…",
-    "success.introCredits": "Bu üretim için bakiyenden 1 kontör kullanılacak.",
+    "success.introCredits":
+      "Kontör, seçilen model ve giriş uzunluğuna göre bakiyenden düşülür (500 karakterlik dilimler).",
     "success.insufficientFallback": "Bu üretim için yeterli kontör yok.",
     "success.insufficientTitle": "Kontör bitti",
     "success.insufficientBody":
@@ -2446,7 +2460,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.hero.footerJump": "Kontör kullanımı",
     "pricing.monthly.sectionTitle": "Aylık kontör paketleri",
     "pricing.monthly.sectionLead":
-      "Stripe açılınca her fatura döneminde yenilenir. Paket içi kontör başına yaklaşık maliyet: ~$0.016 (500 kontör), ~$0.010 (1.000), ~$0.004 (5.000).",
+      "Lemon Squeezy açılınca her fatura döneminde yenilenir. Paket içi kontör başına yaklaşık maliyet: ~$0.016 (500 kontör), ~$0.010 (1.000), ~$0.004 (5.000).",
     "pricing.monthly.starter.name": "Başlangıç",
     "pricing.monthly.starter.price": "$7.99",
     "pricing.monthly.starter.credits": "Ayda 500 kontör",
@@ -2524,9 +2538,11 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.usageGuide.footer":
       "Üret’e bastığında kesin tutarı gerçek isteminden (yapıştırma + bağlam) hesaplarız. Her alternatif sürüm aynı kuralı yeniden uygular.",
     "pricing.sectionFootnote":
-      "Üretim başına sürüm limiti hesap haklarından gelir. Aylık paketler için Stripe ödemesi sonraki aşamada.",
+      "Üretim başına sürüm limiti hesap haklarından gelir. Aylık paketler için Lemon Squeezy ödemesi sonraki aşamada.",
     "pricing.dev.title": "Geliştirici modu",
-    "pricing.dev.body": "Stripe kapalıyken yerelde kontör eklemek için:",
+    "pricing.dev.body": "Geliştirme sırasında yerelde kontör ekleyin (yalnızca üretim dışı):",
+    "pricing.dev.secretHint":
+      ".env.local içinde DEV_TOPUP_SECRET tanımlıysa X-Dev-Topup-Secret veya Authorization: Bearer başlığını gönderin.",
     "pricing.dev.disabled": "Üretimde bu uç devre dışı.",
     "notFound.title": "Sayfa bulunamadı",
     "notFound.description": "Aradığın sayfa yok.",
@@ -2539,7 +2555,7 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.effective": "Yürürlük: {year}-01-01",
     "legal.shellNotice": "Bağlayıcı hukuki metin aşağıda İngilizcedir.",
     "legal.paymentsStub":
-      "Stripe ödemesi sonra; şimdilik dev top-up (prod dışı) veya operatör kontörü.",
+      "Lemon Squeezy ödemesi sonra; şimdilik dev top-up (prod dışı) veya operatör kontörü.",
     "growth.zeroCreditsHint":
       "Bakiye 0: Paketler’deki dev top-up (yalnızca lokal), giriş veya yöneticiden kontör iste.",
     "growth.freeTrial.ctaButton": "İlk mesajını ücretsiz oluştur 🎁",
@@ -2640,7 +2656,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "Sırada sonuç sayfası var; üretim kontör bakiyenden düşer. Kontör satın alma akışı sonraki sürümde.",
-    "tool.ctaCreditSuffix": " — 1 kontör",
+    "tool.ctaCreditSuffix": " — modele ve uzunluğa göre",
     "tool.priceReference":
       "Bu kademe için tipik oran: {price} (örnek: yaygın 10 kontörlük paket fiyatları $1 / $1.49 / $1.99).",
     "tool.pricePackFlex":

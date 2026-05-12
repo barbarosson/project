@@ -1,0 +1,40 @@
+name: CI (ai-suite)
+
+on:
+  push:
+    paths:
+      - "ai-suite/**"
+      - ".github/workflows/ci-ai-suite.yml"
+  pull_request:
+    paths:
+      - "ai-suite/**"
+      - ".github/workflows/ci-ai-suite.yml"
+
+defaults:
+  run:
+    working-directory: ai-suite
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: ai-suite/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm run test
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: anon-test-key
+          SUPABASE_SERVICE_ROLE_KEY: service-role-test-key

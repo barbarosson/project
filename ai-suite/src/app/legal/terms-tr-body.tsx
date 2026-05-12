@@ -23,7 +23,7 @@ export function TermsTrBody() {
 
       <h2 className="text-base font-semibold text-white">Ödemeler</h2>
       <p>
-        Hizmet tek seferlik kontör paketleri ve aboneliklerle sunulabilir. Ödemeler Stripe
+        Hizmet tek seferlik kontör paketleri ve aboneliklerle sunulabilir. Ödemeler Lemon Squeezy
         üzerinden işlenir. Tam kart bilgilerinizi saklamayız. Ücretler, kanunun gerektirdiği
         durumlar dışında iade edilmeyebilir.
       </p>
