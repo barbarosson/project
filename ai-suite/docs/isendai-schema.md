@@ -7,15 +7,29 @@ The Next.js app expects schema `isendai` with tables `entitlements`, `requests`,
 - `charge_and_create_request(p_owner_type, p_owner_id, p_tool_id, p_model_id, p_input_json, p_price_paid_usd)` → returns new `requests.id`
 - `add_request_version(p_request_id, p_text)` → returns version `idx`
 
-Apply migrations in this repo (order matters):
+### Quick fix (recommended): one SQL file
 
-1. `supabase/migrations/20260512000000_isendai_core.sql` — tables + `isendai.*` RPCs  
-2. `supabase/migrations/20260512100000_isendai_public_rpc_wrappers.sql` — `public.*` wrappers so `supabase.rpc("charge_and_create_request", …)` resolves (PostgREST uses `public` by default)
+If you see **`Could not find the function public.charge_and_create_request`** you have not applied the DB objects on this Supabase project yet.
 
-Using Supabase CLI from `ai-suite/` (or paste into the SQL editor):
+1. Open **Supabase Dashboard → SQL Editor**.
+2. Paste the full contents of **`supabase/APPLY_BILLING_ONCE.sql`** (in this repo under `ai-suite/`) and click **Run**.
+3. Wait a few seconds, then retry the app (PostgREST reloads its schema cache).
+
+That file creates the **`isendai`** tables/RPCs **and** the **`public`** wrapper functions the Next.js app calls via `admin.rpc(...)`.
+
+### Or: migrations via CLI
+
+Apply migrations **in order**:
+
+1. `supabase/migrations/20260512000000_isendai_core.sql`
+2. `supabase/migrations/20260512100000_isendai_public_rpc_wrappers.sql`
 
 ```bash
-supabase db push
+cd ai-suite && supabase db push
 ```
+
+The app calls **`admin.rpc("charge_and_create_request", …)`** on the **`public`** schema (no `.schema("isendai")`), because hosted Supabase often does **not** expose custom schemas to PostgREST unless you add **`isendai`** under **Project Settings → API → Exposed schemas**.
+
+For **`.schema("isendai").from(...)`** in dev/topup/claim, add **`isendai`** to **Exposed schemas** or adjust those reads.
 
 The migration enables RLS without policies so **only the service role** (used by server routes with `SUPABASE_SERVICE_ROLE_KEY`) can read/write. The browser anon key must not expose direct table access for these tables.

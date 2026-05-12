@@ -70,3 +70,10 @@ GRANT EXECUTE ON FUNCTION public.ensure_entitlement(text, text, integer, integer
 GRANT EXECUTE ON FUNCTION public.add_credits(text, text, integer) TO service_role;
 GRANT EXECUTE ON FUNCTION public.charge_and_create_request(text, text, text, text, jsonb, numeric) TO service_role;
 GRANT EXECUTE ON FUNCTION public.add_request_version(uuid, text) TO service_role;
+
+GRANT EXECUTE ON FUNCTION public.ensure_entitlement(text, text, integer, integer) TO postgres;
+GRANT EXECUTE ON FUNCTION public.add_credits(text, text, integer) TO postgres;
+GRANT EXECUTE ON FUNCTION public.charge_and_create_request(text, text, text, text, jsonb, numeric) TO postgres;
+GRANT EXECUTE ON FUNCTION public.add_request_version(uuid, text) TO postgres;
+
+NOTIFY pgrst, 'reload schema';
