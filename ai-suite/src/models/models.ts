@@ -40,7 +40,7 @@ export function estimateTokensForTool(tool: string): { inputTokens: number; outp
 
 /**
  * Sales price is what we charge the user (not raw API cost).
- * Currently we use two tiers to match Stripe pricing links.
+ * Three tiers ($1 / $1.49 / $1.99) match planned 10-credit packs on `/pricing`.
  */
 export function salesPriceForModel(model: ModelId): SalesPrice {
   // Tier C (premium): best quality / biggest models / reasoning.
@@ -248,6 +248,16 @@ export function isModelId(value: unknown): value is ModelId {
 
 export function isConcreteModelId(value: unknown): value is ConcreteModelId {
   return typeof value === "string" && value !== "auto" && MODELS.some((m) => m.id === value);
+}
+
+/** Customer-facing price band for a concrete model ($1 / $1.49 / $1.99 sales tiers). */
+export type ModelSalesTier = "budget" | "standard" | "premium";
+
+export function modelSalesTier(model: ConcreteModelId): ModelSalesTier {
+  const usd = salesPriceForModel(model).usd;
+  if (usd === 1) return "budget";
+  if (usd === 1.49) return "standard";
+  return "premium";
 }
 
 export function modelMeta(id: ConcreteModelId) {

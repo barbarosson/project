@@ -51,11 +51,15 @@ export default async function PricingPage() {
             <p className="mt-2 text-3xl font-semibold tracking-tight text-white">
               {d[`pricing.tier.${tier}Price`]}
             </p>
-            <p className="mt-2 text-sm text-slate-300">{d[`pricing.tier.${tier}Desc`]}</p>
-            <p className="mt-4 text-xs text-slate-400">{d["pricing.tier.footnote"]}</p>
+            <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-violet-300/85">
+              {d["pricing.pack.requests"]}
+            </p>
+            <p className="mt-3 text-sm text-slate-300">{d[`pricing.tier.${tier}Desc`]}</p>
           </div>
         ))}
       </section>
+
+      <p className="mt-8 text-xs leading-relaxed text-slate-400">{d["pricing.sectionFootnote"]}</p>
 
       {!isProd ? (
         <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md">

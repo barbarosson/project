@@ -71,7 +71,7 @@ export const DICTS: Record<Locale, Dict> = {
     "how.detailed.2.body": "Drop your draft, job post, or situation. No formatting needed.",
     "how.detailed.3.title": "3) Select model & pay",
     "how.detailed.3.body":
-      "Choose a model tier ($1.00 / $1.49 / $1.99) and complete checkout via Stripe. The price includes up to 5 versions for the same request.",
+      "Choose a credit pack ($1 / $1.49 / $1.99 for 10 requests each). Higher tiers unlock more AI models. Checkout via Stripe when enabled; each run still uses 1 credit.",
     "how.detailed.4.title": "4) Review, copy, generate alternatives",
     "how.detailed.4.body":
       "Review and copy your favorite version. You can generate up to 5 total versions for the same request (included in your purchase). Closing the tab deletes results.",
@@ -197,17 +197,22 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricing.title": "Pricing",
     "pricing.subtitle":
-      "One run uses 1 credit from your balance. Checkout for packs will ship with Stripe in a later phase.",
+      "Credit packs bundle 10 generations (10 credits). Each run uses 1 credit. The pack tier sets which AI models you can select — budget-only, budget+standard, or full catalog including premium.",
+    "pricing.pack.requests": "10 requests per pack",
     "pricing.tier.budget": "Budget",
     "pricing.tier.standard": "Standard",
     "pricing.tier.premium": "Premium",
-    "pricing.tier.budgetPrice": "$1.00",
+    "pricing.tier.budgetPrice": "$1",
     "pricing.tier.standardPrice": "$1.49",
     "pricing.tier.premiumPrice": "$1.99",
-    "pricing.tier.budgetDesc": "Fast, economical models.",
-    "pricing.tier.standardDesc": "Balanced quality and speed.",
-    "pricing.tier.premiumDesc": "Higher quality and reasoning.",
-    "pricing.tier.footnote": "Reference prices; your version cap comes from entitlements.",
+    "pricing.tier.budgetDesc":
+      "Budget-tier models only — fastest, lowest-cost endpoints (see model picker pricing bands).",
+    "pricing.tier.standardDesc":
+      "Budget + standard tiers — mid-range models included; premium / heavy reasoning models stay locked.",
+    "pricing.tier.premiumDesc":
+      "Full access — every model tier including premium and reasoning across providers.",
+    "pricing.sectionFootnote":
+      "Per-request version limits still follow your account entitlements. Stripe checkout for packs ships in a later phase.",
     "pricing.dev.title": "Developer mode",
     "pricing.dev.body": "Top up credits locally while Stripe is disabled:",
     "pricing.dev.disabled": "This endpoint is disabled in production.",
@@ -419,7 +424,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Pega tu borrador, oferta o situación. Sin formato necesario.",
     "how.detailed.3.title": "3) Elige modelo y paga",
     "how.detailed.3.body":
-      "Elige el nivel de modelo ($1.00 / $1.49 / $1.99) y completa el pago con Stripe. El precio incluye hasta 5 versiones para la misma solicitud.",
+      "Elige un paquete de créditos ($1 / $1.49 / $1.99, cada uno con 10 solicitudes). Los niveles más altos desbloquean más modelos. Pago con Stripe cuando esté activo; cada ejecución sigue usando 1 crédito.",
     "how.detailed.4.title": "4) Revisa, copia, genera alternativas",
     "how.detailed.4.body":
       "Revisa y copia tu versión favorita. Puedes generar hasta 5 versiones en total para la misma solicitud (incluido en tu compra). Al cerrar la pestaña se borran los resultados.",
@@ -543,17 +548,22 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricing.title": "Precios",
     "pricing.subtitle":
-      "Cada ejecución usa 1 crédito. El checkout de paquetes llegará con Stripe más adelante.",
+      "Los paquetes incluyen 10 créditos (10 generaciones). Cada ejecución usa 1 crédito. El nivel del paquete define qué modelos de IA puedes usar: solo económicos, económicos+estándar, o catálogo completo con premium.",
+    "pricing.pack.requests": "10 solicitudes por paquete",
     "pricing.tier.budget": "Económico",
     "pricing.tier.standard": "Estándar",
     "pricing.tier.premium": "Premium",
-    "pricing.tier.budgetPrice": "$1.00",
+    "pricing.tier.budgetPrice": "$1",
     "pricing.tier.standardPrice": "$1.49",
     "pricing.tier.premiumPrice": "$1.99",
-    "pricing.tier.budgetDesc": "Modelos rápidos y baratos.",
-    "pricing.tier.standardDesc": "Equilibrio calidad y velocidad.",
-    "pricing.tier.premiumDesc": "Más calidad y razonamiento.",
-    "pricing.tier.footnote": "Precios orientativos; el límite de versiones viene de tus derechos.",
+    "pricing.tier.budgetDesc":
+      "Solo modelos económicos — los más rápidos y baratos (banda “budget” del selector).",
+    "pricing.tier.standardDesc":
+      "Modelos económicos + estándar; los premium / razonamiento avanzado siguen bloqueados.",
+    "pricing.tier.premiumDesc":
+      "Acceso total — todos los niveles de modelo, incluidos premium y razonamiento.",
+    "pricing.sectionFootnote":
+      "El límite de versiones por solicitud sigue tu cuenta. El checkout Stripe para paquetes llegará después.",
     "pricing.dev.title": "Modo desarrollador",
     "pricing.dev.body": "Recarga créditos en local mientras Stripe está desactivado:",
     "pricing.dev.disabled": "Este endpoint está desactivado en producción.",
@@ -756,7 +766,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Collez votre brouillon, offre ou situation. Pas de mise en forme nécessaire.",
     "how.detailed.3.title": "3) Choisissez le modèle & payez",
     "how.detailed.3.body":
-      "Sélectionnez le niveau du modèle et finalisez le paiement via Stripe.",
+      "Choisis un pack de crédits ($1 / $1.49 / $1.99, 10 requêtes chacun). Les niveaux supérieurs débloquent plus de modèles. Paiement Stripe quand il sera activé ; chaque exécution utilise 1 crédit.",
     "how.detailed.4.title": "4) Relisez, copiez, générez des alternatives",
     "how.detailed.4.body":
       "Copiez le résultat ou achetez/générez une autre version (max 5). Fermer l’onglet supprime les résultats.",
@@ -880,17 +890,22 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricing.title": "Tarifs",
     "pricing.subtitle":
-      "Chaque exécution utilise 1 crédit. Le paiement des packs arrivera avec Stripe plus tard.",
+      "Chaque pack contient 10 crédits (10 générations). Chaque exécution utilise 1 crédit. Le palier choisi définit les modèles IA disponibles : économiques uniquement, économiques + standard, ou catalogue complet avec premium.",
+    "pricing.pack.requests": "10 requêtes par pack",
     "pricing.tier.budget": "Économique",
     "pricing.tier.standard": "Standard",
     "pricing.tier.premium": "Premium",
-    "pricing.tier.budgetPrice": "1,00 $",
+    "pricing.tier.budgetPrice": "1 $",
     "pricing.tier.standardPrice": "1,49 $",
     "pricing.tier.premiumPrice": "1,99 $",
-    "pricing.tier.budgetDesc": "Modèles rapides et économiques.",
-    "pricing.tier.standardDesc": "Qualité et vitesse équilibrées.",
-    "pricing.tier.premiumDesc": "Meilleure qualité et raisonnement.",
-    "pricing.tier.footnote": "Prix indicatifs ; la limite de versions vient de vos droits.",
+    "pricing.tier.budgetDesc":
+      "Modèles « budget » uniquement — les plus rapides et les moins chers (bande du sélecteur).",
+    "pricing.tier.standardDesc":
+      "Budget + standard ; les modèles premium / raisonnement avancé restent verrouillés.",
+    "pricing.tier.premiumDesc":
+      "Accès complet — tous les paliers de modèles, premium et raisonnement inclus.",
+    "pricing.sectionFootnote":
+      "La limite de versions par demande suit ton compte. Le checkout Stripe pour les packs arrive dans une phase ultérieure.",
     "pricing.dev.title": "Mode développeur",
     "pricing.dev.body": "Rechargez des crédits en local tant que Stripe est désactivé :",
     "pricing.dev.disabled": "Ce point de terminaison est désactivé en production.",
@@ -1094,7 +1109,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Füge Entwurf, Jobpost oder Situation ein. Kein Format nötig.",
     "how.detailed.3.title": "3) Modell wählen & bezahlen",
     "how.detailed.3.body":
-      "Wähle die Modell‑Stufe und schließe den Checkout über Stripe ab.",
+      "Wähle ein Credit‑Paket ($1 / $1.49 / $1.99, jeweils 10 Runs). Höhere Stufen schalten mehr Modelle frei. Stripe‑Checkout sobald live; jede Ausführung kostet 1 Credit.",
     "how.detailed.4.title": "4) Prüfen, kopieren, Alternativen erzeugen",
     "how.detailed.4.body":
       "Kopiere das Ergebnis oder kaufe/generiere eine weitere Version (max. 5). Beim Schließen des Tabs werden die Ergebnisse gelöscht.",
@@ -1218,17 +1233,22 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricing.title": "Preise",
     "pricing.subtitle":
-      "Ein Lauf verbraucht 1 Credit. Checkout für Pakete kommt später mit Stripe.",
+      "Pakete enthalten 10 Credits (10 Generierungen). Ein Lauf = 1 Credit. Die Paketstufe legt fest, welche KI‑Modelle wählbar sind — nur Budget, Budget+Standard oder alle inkl. Premium.",
+    "pricing.pack.requests": "10 Requests pro Paket",
     "pricing.tier.budget": "Budget",
     "pricing.tier.standard": "Standard",
     "pricing.tier.premium": "Premium",
-    "pricing.tier.budgetPrice": "1,00 $",
+    "pricing.tier.budgetPrice": "1 $",
     "pricing.tier.standardPrice": "1,49 $",
     "pricing.tier.premiumPrice": "1,99 $",
-    "pricing.tier.budgetDesc": "Schnelle, günstige Modelle.",
-    "pricing.tier.standardDesc": "Ausgewogen Qualität & Tempo.",
-    "pricing.tier.premiumDesc": "Mehr Qualität & Reasoning.",
-    "pricing.tier.footnote": "Orientierungspreise; Versionslimit aus Berechtigung.",
+    "pricing.tier.budgetDesc":
+      "Nur Budget‑Modelle — schnellste, günstigste Endpunkte (Preisbänder im Modell‑Picker).",
+    "pricing.tier.standardDesc":
+      "Budget + Standard; Premium‑ und Heavy‑Reasoning‑Modelle bleiben gesperrt.",
+    "pricing.tier.premiumDesc":
+      "Voller Zugriff — alle Modellstufen inkl. Premium & Reasoning bei allen Anbietern.",
+    "pricing.sectionFootnote":
+      "Versionslimit pro Anfrage weiterhin über Berechtigungen. Stripe‑Paket‑Checkout folgt später.",
     "pricing.dev.title": "Entwicklermodus",
     "pricing.dev.body": "Credits lokal aufladen, solange Stripe aus ist:",
     "pricing.dev.disabled": "In Produktion deaktiviert.",
@@ -1418,7 +1438,8 @@ export const DICTS: Record<Locale, Dict> = {
     "how.detailed.2.title": "2) 粘贴你的背景信息",
     "how.detailed.2.body": "粘贴草稿、职位描述或具体情况，无需格式。",
     "how.detailed.3.title": "3) 选择模型并支付",
-    "how.detailed.3.body": "选择模型档位，并通过 Stripe 完成支付。",
+    "how.detailed.3.body":
+      "选择额度套餐（$1 / $1.49 / $1.99，各含 10 次）。更高档位解锁更多模型；Stripe 开通后结账；每次生成仍消耗 1 额度。",
     "how.detailed.4.title": "4) 查看、复制、生成备选版本",
     "how.detailed.4.body":
       "复制结果，或购买/生成另一版（最多 5 版）。关闭标签页会删除结果。",
@@ -1537,17 +1558,19 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copyFailed": "复制失败。",
 
     "pricing.title": "价格与套餐",
-    "pricing.subtitle": "每次生成消耗 1 个额度。套餐结账将在后续接入 Stripe 时启用。",
+    "pricing.subtitle":
+      "套餐含 10 个额度（10 次生成）。每次生成消耗 1 个额度。套餐档位决定可选模型：仅经济档、经济+标准档，或包含高级与推理的完整目录。",
+    "pricing.pack.requests": "每包 10 次请求",
     "pricing.tier.budget": "经济",
     "pricing.tier.standard": "标准",
     "pricing.tier.premium": "高级",
-    "pricing.tier.budgetPrice": "$1.00",
+    "pricing.tier.budgetPrice": "$1",
     "pricing.tier.standardPrice": "$1.49",
     "pricing.tier.premiumPrice": "$1.99",
-    "pricing.tier.budgetDesc": "快速、省额度模型。",
-    "pricing.tier.standardDesc": "质量与速度平衡。",
-    "pricing.tier.premiumDesc": "更高质量与推理。",
-    "pricing.tier.footnote": "参考价；版本上限以权益表为准。",
+    "pricing.tier.budgetDesc": "仅经济档模型 — 最快、最低成本（与模型选择器价位一致）。",
+    "pricing.tier.standardDesc": "经济 + 标准档；高级 / 强推理模型仍不可用。",
+    "pricing.tier.premiumDesc": "全量可用 — 包含所有提供商的高级与推理模型。",
+    "pricing.sectionFootnote": "每次请求的版本上限仍以账户权益为准。Stripe 套餐结账稍后上线。",
     "pricing.dev.title": "开发者模式",
     "pricing.dev.body": "Stripe 未接入时可在本地为额度充值：",
     "pricing.dev.disabled": "生产环境已禁用此接口。",
@@ -1736,7 +1759,8 @@ export const DICTS: Record<Locale, Dict> = {
     "how.detailed.2.title": "2) Bağlamı yapıştır",
     "how.detailed.2.body": "Taslak/ilan/durumunu yaz. Format şart değil.",
     "how.detailed.3.title": "3) Model seç & öde",
-    "how.detailed.3.body": "AI modelini seç ve Stripe ile ödemeyi tamamla.",
+    "how.detailed.3.body":
+      "Kontör paketi seç ($1 / $1,49 / $1,99; her biri 10 istek). Üst paketler daha fazla model açar. Stripe açıldığında ödeme; her çalıştırma yine 1 kontör.",
     "how.detailed.4.title": "4) İncele, kopyala, alternatif üret",
     "how.detailed.4.body": "Sonucu kopyala veya yeni versiyon üret/satın al (max 5). Sekmeyi kapatırsan sonuçlar silinir.",
     "products.title": "Ürünler (hızlı, net, etkili)",
@@ -1851,17 +1875,22 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricing.title": "Paketler",
     "pricing.subtitle":
-      "Her çalıştırma 1 kontör kullanır. Paket ödemesi Stripe ile sonraki aşamada açılacak.",
+      "Paketler 10 kontörlük (10 üretim). Her çalıştırma 1 kontör yer. Paket seviyesi hangi yapay zeka modellerini seçebileceğini belirler: yalnız ekonomik; ekonomik+standart; veya premium/akıl yürütme dahil tam erişim.",
+    "pricing.pack.requests": "Paket başına 10 istek",
     "pricing.tier.budget": "Ekonomik",
     "pricing.tier.standard": "Standart",
     "pricing.tier.premium": "Premium",
-    "pricing.tier.budgetPrice": "$1,00",
+    "pricing.tier.budgetPrice": "$1",
     "pricing.tier.standardPrice": "$1,49",
     "pricing.tier.premiumPrice": "$1,99",
-    "pricing.tier.budgetDesc": "Hızlı, uygun maliyetli modeller.",
-    "pricing.tier.standardDesc": "Kalite ve hız dengesi.",
-    "pricing.tier.premiumDesc": "Daha yüksek kalite ve akıl yürütme.",
-    "pricing.tier.footnote": "Referans fiyatlar; sürüm limiti hak satırından gelir.",
+    "pricing.tier.budgetDesc":
+      "Yalnızca ekonomik (budget) modeller — en hızlı ve düşük maliyetli uçlar (model seçicideki bantla uyumlu).",
+    "pricing.tier.standardDesc":
+      "Ekonomik + standart modeller; ücretli / ağır akıl yürütme modelleri kilitli kalır.",
+    "pricing.tier.premiumDesc":
+      "Tam erişim — tüm sağlayıcılarda üst düzey ve akıl yürütme modelleri dahil.",
+    "pricing.sectionFootnote":
+      "İstek başına sürüm limiti hesap haklarından gelir. Stripe paket ödemesi sonraki aşamada.",
     "pricing.dev.title": "Geliştirici modu",
     "pricing.dev.body": "Stripe kapalıyken yerelde kontör eklemek için:",
     "pricing.dev.disabled": "Üretimde bu uç devre dışı.",

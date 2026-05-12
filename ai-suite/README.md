@@ -67,6 +67,14 @@ Open `http://localhost:3000`.
 - **Non-production:** use `POST /api/dev/topup` as documented on `/pricing`.
 - **Production:** grant credits via SQL, a future admin tool, or Stripe webhooks (planned).
 
+### Planned credit packs (pricing page)
+
+- **$1** — 10 credits; **budget-tier models only** (matches `salesPriceForModel` → `$1.00` band).
+- **$1.49** — 10 credits; **budget + standard** models (`$1.49` band).
+- **$1.99** — 10 credits; **full model catalog** including premium / reasoning (`$1.99` band).
+
+Each generation still consumes **1 credit**. Pack purchase enforcement (locking the model picker by tier) is not wired until Stripe + entitlement flags land; today the UI bands match `src/models/models.ts` (`salesPriceForModel` / `modelSalesTier`).
+
 ## Learn more
 
 - [Next.js Documentation](https://nextjs.org/docs)
