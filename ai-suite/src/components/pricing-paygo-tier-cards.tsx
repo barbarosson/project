@@ -4,7 +4,7 @@ import * as React from "react";
 import { Info, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { glassInteractive, glassSurface } from "@/lib/premium-ui";
+import { glassInteractive, glassSurface, premiumCta } from "@/lib/premium-ui";
 import { Button } from "@/components/ui/button";
 
 export type PaygoTierRow = {
@@ -95,8 +95,7 @@ export function PricingPaygoTierCards({
             {buyButtonLabel && onBuyTier ? (
               <Button
                 type="button"
-                variant="outline"
-                className="mt-4 w-full border-white/[0.14] bg-white/[0.06] font-semibold text-slate-100 hover:bg-white/[0.1]"
+                className={cn("mt-5 w-full font-semibold", premiumCta)}
                 disabled={busyTierId !== null && busyTierId !== undefined}
                 onClick={() => void onBuyTier(tier.id)}
               >

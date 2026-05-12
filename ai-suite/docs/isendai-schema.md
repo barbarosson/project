@@ -4,18 +4,21 @@ The Next.js app expects schema `isendai` with tables `entitlements`, `requests`,
 
 - `ensure_entitlement(p_owner_type, p_owner_id, p_default_credits, p_default_max_versions)`
 - `add_credits(p_owner_type, p_owner_id, p_amount)` → returns new balance
-- `charge_and_create_request(p_owner_type, p_owner_id, p_tool_id, p_model_id, p_input_json, p_price_paid_usd)` → returns new `requests.id`
+- `charge_and_create_request(p_owner_type, p_owner_id, p_tool_id, p_model_id, p_input_json, p_price_paid_usd, p_credit_cost)` → returns new `requests.id` (`p_credit_cost` defaults to `1`)
+- `deduct_credits(p_owner_type, p_owner_id, p_amount)` → new balance (extra versions)
+- `set_credits_balance(p_owner_type, p_owner_id, p_balance)` → void (admin / webhooks)
 - `add_request_version(p_request_id, p_text)` → returns version `idx`
 
 ### Quick fix (recommended): one SQL file
 
-If you see **`Could not find the function public.charge_and_create_request`** you have not applied the DB objects on this Supabase project yet.
+If you see **`Could not find the function public.charge_and_create_request`** (often mentioning **`p_credit_cost`**), PostgREST does not have a matching RPC: either billing SQL was never applied, or you still have the **old 6-argument** function while the app calls the **7-argument** version.
 
 1. Open **Supabase Dashboard → SQL Editor**.
-2. Paste the full contents of **`supabase/APPLY_BILLING_ONCE.sql`** (in this repo under `ai-suite/`) and click **Run**.
-3. Wait a few seconds, then retry the app (PostgREST reloads its schema cache).
+2. **New project / first install:** paste **`supabase/APPLY_BILLING_ONCE.sql`** and **Run**.
+3. **Already ran an old `APPLY_BILLING_ONCE` (6 args):** paste **`supabase/APPLY_VARIABLE_CREDITS_RPC.sql`** (or migration **`20260514100000_isendai_variable_credits_and_billing_meta.sql`**) and **Run**.
+4. Wait ~10 seconds, then retry the app (PostgREST reloads its schema cache).
 
-That file creates the **`isendai`** tables/RPCs **and** the **`public`** wrapper functions the Next.js app calls via `admin.rpc(...)`.
+`APPLY_BILLING_ONCE.sql` creates the **`isendai`** tables/RPCs **and** the **`public`** wrapper functions the Next.js app calls via `admin.rpc(...)`.
 
 **Still seeing PostgREST “schema cache” errors after applying SQL?** Add **`SUPABASE_DATABASE_URL`** or **`DIRECT_POSTGRES_URL`** in `.env.local` (Supabase Dashboard → **Database** → **Connection string** → URI). Server billing code will call **`isendai.*` functions over Postgres directly**, bypassing the API layer.
 
@@ -25,6 +28,8 @@ Apply migrations **in order**:
 
 1. `supabase/migrations/20260512000000_isendai_core.sql`
 2. `supabase/migrations/20260512100000_isendai_public_rpc_wrappers.sql`
+3. `supabase/migrations/20260513120000_lemon_processed_orders.sql` (optional, Lemon idempotency)
+4. `supabase/migrations/20260514100000_isendai_variable_credits_and_billing_meta.sql` (**required** for current `billingChargeAndCreateRequest` / variable credits)
 
 ```bash
 cd ai-suite && supabase db push
