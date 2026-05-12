@@ -17,7 +17,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { toolDescription, toolTitle } from "@/i18n/tool-i18n";
+import { toolDescription, toolPrimaryActionLabel, toolTitle } from "@/i18n/tool-i18n";
 import { useI18n } from "@/i18n/i18n-provider";
 
 function ToolIcon({ tool, className }: { tool: ToolName; className?: string }) {
@@ -70,7 +70,7 @@ export function ToolCard({
       : text.trim().length >= 10;
 
   const priceLabel = salesPriceForModel(concreteModel).label;
-  const primaryCta = `${def.actionLabel}${t("tool.ctaCreditSuffix")}`;
+  const primaryCta = `${toolPrimaryActionLabel(t, tool, def.actionLabel)}${t("tool.ctaCreditSuffix")}`;
 
   async function onContinueToGenerate() {
     if (!isValid) {

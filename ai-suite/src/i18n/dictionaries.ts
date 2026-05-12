@@ -102,19 +102,19 @@ export const DICTS: Record<Locale, Dict> = {
       "Want to yell at your boss or client? Don't. Type your angry, unfiltered thoughts here, and we'll turn it into a polite, HR-friendly masterpiece.",
     "tool.corp.placeholder":
       `Type what you REALLY want to say... (e.g., "This design is garbage and you clearly didn't read my brief.")`,
-    "tool.corp.button": "Translate to Professional - $1.49",
+    "tool.corp.button": "Translate to Professional",
 
     "tool.cover.desc":
       "Tired of writing the same letter for every job? Paste the job URL and your skills. We'll generate a tailored, ATS-beating cover letter that gets interviews.",
     "tool.cover.placeholder1": "Paste Job Description or URL...",
     "tool.cover.placeholder2": "Paste your resume text or key skills...",
-    "tool.cover.button": "Generate Cover Letter - $1.49",
+    "tool.cover.button": "Generate Cover Letter",
 
     "tool.dating.desc":
       "Not getting matches? Our AI will brutally roast your current bio, tell you exactly why it's failing, and write a magnetic new one for you.",
     "tool.dating.placeholder":
       "Paste your current Tinder/Bumble bio or describe your vibe...",
-    "tool.dating.button": "Roast & Fix My Profile - $1.49",
+    "tool.dating.button": "Roast & Fix My Profile",
 
     "success.test": "Test mode. Generating your result…",
     "success.paid": "Payment received. Generating your result…",
@@ -439,16 +439,16 @@ export const DICTS: Record<Locale, Dict> = {
       "¿Quieres gritarle a tu jefe o cliente? No lo hagas. Escribe lo que piensas y lo convertimos en un correo educado y apto para RR. HH.",
     "tool.corp.placeholder":
       `Escribe lo que REALMENTE quieres decir... (p. ej., "Este diseño es basura y ni leíste el brief.")`,
-    "tool.corp.button": "Traducir a profesional - $1.49",
+    "tool.corp.button": "Traducir a profesional",
     "tool.cover.desc":
       "¿Cansado de la misma carta para cada puesto? Pega la URL/oferta y tus habilidades. Generamos una carta a medida que consigue entrevistas.",
     "tool.cover.placeholder1": "Pega la descripción o URL del trabajo...",
     "tool.cover.placeholder2": "Pega tu CV o habilidades clave...",
-    "tool.cover.button": "Generar carta - $1.49",
+    "tool.cover.button": "Generar carta",
     "tool.dating.desc":
       "¿Pocos matches? La IA critica tu bio, te dice por qué falla y escribe una nueva y magnética.",
     "tool.dating.placeholder": "Pega tu bio de Tinder/Bumble o describe tu vibra...",
-    "tool.dating.button": "Roast y arreglar - $1.49",
+    "tool.dating.button": "Roast y arreglar",
     "success.test": "Modo test. Generando…",
     "success.paid": "Pago recibido. Generando…",
     "success.introCredits": "Usando 1 crédito de tu saldo para esta generación.",
@@ -771,16 +771,16 @@ export const DICTS: Record<Locale, Dict> = {
       "Envie de crier sur votre boss ou client ? Ne le faites pas. Écrivez tout, on le transforme en email poli et OK RH.",
     "tool.corp.placeholder":
       `Tapez ce que vous voulez VRAIMENT dire... (ex. "Ce design est nul et vous n’avez pas lu le brief.")`,
-    "tool.corp.button": "Traduire en pro - $1.49",
+    "tool.corp.button": "Traduire en pro",
     "tool.cover.desc":
       "Marre de la même lettre ? Collez l’URL/offre et vos compétences. On génère une lettre ciblée qui décroche des entretiens.",
     "tool.cover.placeholder1": "Collez l’offre ou l’URL...",
     "tool.cover.placeholder2": "Collez votre CV ou compétences clés...",
-    "tool.cover.button": "Générer la lettre - $1.49",
+    "tool.cover.button": "Générer la lettre",
     "tool.dating.desc":
       "Pas assez de matchs ? L’IA roast votre bio, explique pourquoi ça bloque, puis écrit une nouvelle bio magnétique.",
     "tool.dating.placeholder": "Collez votre bio Tinder/Bumble ou décrivez votre vibe...",
-    "tool.dating.button": "Roast & corriger - $1.49",
+    "tool.dating.button": "Roast & corriger",
     "success.test": "Mode test. Génération…",
     "success.paid": "Paiement reçu. Génération…",
     "success.introCredits": "Utilisation d’1 crédit de votre solde pour cette génération.",
@@ -1104,16 +1104,16 @@ export const DICTS: Record<Locale, Dict> = {
       "Du willst deinen Chef/Client anschreien? Tu’s nicht. Schreib’s hier rein – wir machen daraus eine höfliche, HR‑taugliche Mail.",
     "tool.corp.placeholder":
       `Schreib, was du WIRKLICH sagen willst... (z. B. "Dieses Design ist Müll und du hast mein Briefing nicht gelesen.")`,
-    "tool.corp.button": "Professionell umschreiben - $1.49",
+    "tool.corp.button": "Professionell umschreiben",
     "tool.cover.desc":
       "Keine Lust auf Copy‑Paste‑Anschreiben? Job‑URL und Skills einfügen – wir generieren ein passendes, ATS‑starkes Anschreiben.",
     "tool.cover.placeholder1": "Jobbeschreibung oder URL einfügen...",
     "tool.cover.placeholder2": "Lebenslauf oder Skills einfügen...",
-    "tool.cover.button": "Anschreiben generieren - $1.49",
+    "tool.cover.button": "Anschreiben generieren",
     "tool.dating.desc":
       "Zu wenig Matches? KI roastet deine Bio, sagt dir warum’s nicht klappt, und schreibt eine neue, magnetische Version.",
     "tool.dating.placeholder": "Tinder/Bumble Bio einfügen oder deinen Vibe beschreiben...",
-    "tool.dating.button": "Roast & Fix - $1.49",
+    "tool.dating.button": "Roast & Fix",
     "success.test": "Testmodus. Generiere…",
     "success.paid": "Zahlung erhalten. Generiere…",
     "success.introCredits": "Es wird 1 Credit von deinem Kontostand für diese Generierung genutzt.",
@@ -1422,16 +1422,16 @@ export const DICTS: Record<Locale, Dict> = {
       "想对老板/客户发火？别。把真实想法写下来，我们帮你变成礼貌、HR 友好的邮件。",
     "tool.corp.placeholder":
       `写下你“真正”想说的话…（例如：“这个设计太烂了，你根本没看 brief。”）`,
-    "tool.corp.button": "改写成职场语气 - $1.49",
+    "tool.corp.button": "改写成职场语气",
     "tool.cover.desc":
       "厌倦每次都写一遍？粘贴职位 URL/描述和你的技能，我们生成定制的求职信。",
     "tool.cover.placeholder1": "粘贴职位描述或 URL…",
     "tool.cover.placeholder2": "粘贴简历内容或关键技能…",
-    "tool.cover.button": "生成求职信 - $1.49",
+    "tool.cover.button": "生成求职信",
     "tool.dating.desc":
       "匹配太少？AI 会吐槽你的简介、指出问题，并给你一版更有吸引力的新简介。",
     "tool.dating.placeholder": "粘贴你的 Tinder/Bumble 简介或描述你的风格…",
-    "tool.dating.button": "吐槽并修复 - $1.49",
+    "tool.dating.button": "吐槽并修复",
     "success.test": "测试模式：生成中…",
     "success.paid": "支付成功：生成中…",
     "success.introCredits": "本次生成将使用你余额中的 1 个额度。",
@@ -1735,16 +1735,16 @@ export const DICTS: Record<Locale, Dict> = {
       "Patronuna/müşterine bağırmak mı istiyorsun? Sakın. Buraya yaz; biz de kibar, HR-dostu bir e-postaya çevirelim.",
     "tool.corp.placeholder":
       `GERÇEKTEN söylemek istediğini yaz... (örn. "Bu tasarım berbat ve brief’i hiç okumamışsın.")`,
-    "tool.corp.button": "Kurumsala çevir - $1.49",
+    "tool.corp.button": "Kurumsala çevir",
     "tool.cover.desc":
       "Her ilana aynı ön yazıyı yazmaktan yoruldun mu? İlan URL/metnini ve becerilerini yapıştır. Özel bir ön yazı üretelim.",
     "tool.cover.placeholder1": "İlan metni veya URL yapıştır...",
     "tool.cover.placeholder2": "CV metnini veya ana becerilerini yapıştır...",
-    "tool.cover.button": "Ön yazı üret - $1.49",
+    "tool.cover.button": "Ön yazı üret",
     "tool.dating.desc":
       "Match yok mu? AI biyonu roastlar, neden olmadığını söyler ve daha çekici bir biyo yazar.",
     "tool.dating.placeholder": "Tinder/Bumble biyonu yapıştır ya da tarzını anlat...",
-    "tool.dating.button": "Roastla & düzelt - $1.49",
+    "tool.dating.button": "Roastla & düzelt",
     "success.test": "Test modu. Sonuç hazırlanıyor…",
     "success.paid": "Ödeme alındı. Sonuç hazırlanıyor…",
     "success.introCredits": "Bu üretim için bakiyenden 1 kontör kullanılacak.",

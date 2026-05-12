@@ -31,6 +31,24 @@ export function toolDescription(
   return resolved === key ? fallback : resolved;
 }
 
+/** Primary CTA verb phrase (before credit suffix); only tools with dict keys are localized. */
+const TOOL_PRIMARY_ACTION_KEYS: Partial<Record<ToolName, string>> = {
+  "corporate-whisperer": "tool.corp.button",
+  "coverletter-ai": "tool.cover.button",
+  "dating-roast": "tool.dating.button",
+};
+
+export function toolPrimaryActionLabel(
+  t: (key: string) => string,
+  tool: ToolName,
+  fallback: string
+): string {
+  const key = TOOL_PRIMARY_ACTION_KEYS[tool];
+  if (!key) return fallback;
+  const resolved = t(key);
+  return resolved === key ? fallback : resolved;
+}
+
 /** @deprecated Prefer resolveToolTitle from tool-copy-resolve; kept for compatibility. */
 export function toolTitleFromSeed(_dicts: unknown, locale: Locale, tool: ToolName) {
   void _dicts;
