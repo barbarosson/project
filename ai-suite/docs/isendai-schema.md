@@ -17,6 +17,8 @@ If you see **`Could not find the function public.charge_and_create_request`** yo
 
 That file creates the **`isendai`** tables/RPCs **and** the **`public`** wrapper functions the Next.js app calls via `admin.rpc(...)`.
 
+**Still seeing PostgREST “schema cache” errors after applying SQL?** Add **`SUPABASE_DATABASE_URL`** or **`DIRECT_POSTGRES_URL`** in `.env.local` (Supabase Dashboard → **Database** → **Connection string** → URI). Server billing code will call **`isendai.*` functions over Postgres directly**, bypassing the API layer.
+
 ### Or: migrations via CLI
 
 Apply migrations **in order**:

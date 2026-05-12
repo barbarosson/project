@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { billingAddCredits, billingEnsureEntitlement } from "@/lib/isendai/billing-rpc";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateAnonId } from "@/lib/isendai/owner";
 
@@ -30,14 +31,15 @@ export async function POST(req: Request) {
   const ownerId = userId ?? (await getOrCreateAnonId());
 
   const admin = createSupabaseAdminClient();
-  await admin.rpc("ensure_entitlement", {
+  const { error: entErr } = await billingEnsureEntitlement(admin, {
     p_owner_type: ownerType,
     p_owner_id: ownerId,
     p_default_credits: 0,
     p_default_max_versions: ownerType === "anon" ? 2 : 5,
   });
+  if (entErr) return NextResponse.json({ error: entErr.message }, { status: 500 });
 
-  const { data: newBalance, error: incErr } = await admin.rpc("add_credits", {
+  const { data: newBalance, error: incErr } = await billingAddCredits(admin, {
     p_owner_type: ownerType,
     p_owner_id: ownerId,
     p_amount: amount,

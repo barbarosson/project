@@ -5,6 +5,12 @@ import { openai, createOpenAI } from "@ai-sdk/openai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { google } from "@ai-sdk/google";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  billingAddCredits,
+  billingAddRequestVersion,
+  billingChargeAndCreateRequest,
+  billingEnsureEntitlement,
+} from "@/lib/isendai/billing-rpc";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -494,12 +500,21 @@ export async function POST(req: Request) {
     // Ensure entitlement row exists (defaults: anon=0 credits, user=0 credits; max_versions differs by plan later).
     // Credit top-ups are handled elsewhere (Stripe later, dev endpoint now).
     const admin = createSupabaseAdminClient();
-    await admin.rpc("ensure_entitlement", {
+    const { error: entErr } = await billingEnsureEntitlement(admin, {
       p_owner_type: ownerType,
       p_owner_id: ownerId,
       p_default_credits: 0,
       p_default_max_versions: ownerType === "anon" ? 2 : 5,
     });
+    if (entErr) {
+      return NextResponse.json(
+        {
+          error: `Billing error: ${entErr.message}`,
+          code: "billing_error",
+        },
+        { status: 503, headers: debugHeaders }
+      );
+    }
 
     // (2) Hard gate: block out-of-scope inputs before generation.
     const scope = await checkScope(body);
@@ -553,7 +568,7 @@ export async function POST(req: Request) {
           { status: 400, headers: debugHeaders }
         );
       }
-      const { error: grantErr } = await admin.rpc("add_credits", {
+      const { error: grantErr } = await billingAddCredits(admin, {
         p_owner_type: ownerType,
         p_owner_id: ownerId,
         p_amount: 1,
@@ -574,7 +589,7 @@ export async function POST(req: Request) {
     // If this fails (insufficient credits), we stop early.
     const inputJson = storedInputJson;
 
-    const { data: requestId, error: chargeErr } = await admin.rpc("charge_and_create_request", {
+    const { data: requestId, error: chargeErr } = await billingChargeAndCreateRequest(admin, {
       p_owner_type: ownerType,
       p_owner_id: ownerId,
       p_tool_id: body.tool,
@@ -602,6 +617,16 @@ export async function POST(req: Request) {
       );
     }
 
+    if (!requestId) {
+      return NextResponse.json(
+        {
+          error: "Billing error: could not create request row.",
+          code: "billing_error",
+        },
+        { status: 503, headers: debugHeaders }
+      );
+    }
+
     const out = await generateText({
       model: client(model),
       temperature: 0.6,
@@ -618,7 +643,19 @@ export async function POST(req: Request) {
     }
 
     // Store version 1 for history
-    await admin.rpc("add_request_version", { p_request_id: requestId, p_text: text });
+    const { error: verErr } = await billingAddRequestVersion(admin, {
+      p_request_id: requestId,
+      p_text: text,
+    });
+    if (verErr) {
+      return NextResponse.json(
+        {
+          error: `Billing error: ${verErr.message}`,
+          code: "billing_error",
+        },
+        { status: 503, headers: debugHeaders }
+      );
+    }
 
     const response = NextResponse.json(
       { result: text, request_id: requestId, owner: { type: ownerType, id: ownerId, email: userEmail } },

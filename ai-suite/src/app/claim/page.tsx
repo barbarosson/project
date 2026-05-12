@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { billingEnsureEntitlement } from "@/lib/isendai/billing-rpc";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -34,12 +35,15 @@ export default async function ClaimPage() {
     .eq("owner_id", anonId)
     .maybeSingle();
 
-  await admin.rpc("ensure_entitlement", {
+  const { error: entErr } = await billingEnsureEntitlement(admin, {
     p_owner_type: "user",
     p_owner_id: user.id,
     p_default_credits: 0,
     p_default_max_versions: 5,
   });
+  if (entErr) {
+    throw new Error(`Billing setup failed: ${entErr.message}`);
+  }
 
   if (anonEnt && anonEnt.credits_balance > 0) {
     const { data: userEnt } = await admin

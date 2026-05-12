@@ -6,6 +6,7 @@ import { google } from "@ai-sdk/google";
 
 import { getToolDefinition, type ProviderId, type ToolPayload } from "@/components/ai-suite/tools";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { billingAddRequestVersion } from "@/lib/isendai/billing-rpc";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import { isConcreteModelId, modelMeta } from "@/models/models";
@@ -152,7 +153,7 @@ export async function POST(req: Request) {
   const text = out.text?.trim();
   if (!text) return NextResponse.json({ error: "Empty response." }, { status: 502 });
 
-  const { data: idx, error: addErr } = await admin.rpc("add_request_version", {
+  const { data: idx, error: addErr } = await billingAddRequestVersion(admin, {
     p_request_id: requestId,
     p_text: text,
   });
