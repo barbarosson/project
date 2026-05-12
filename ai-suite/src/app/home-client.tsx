@@ -421,10 +421,10 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
             </Link>
             <span className="hidden sm:inline">·</span>
             <Link className="hover:text-foreground transition-colors" href="/privacy">
-              Privacy
+              {t("nav.privacy")}
             </Link>
             <Link className="hover:text-foreground transition-colors" href="/terms">
-              Terms
+              {t("nav.terms")}
             </Link>
             <span className="hidden sm:inline">·</span>
             <span>{t("footer.trust")}</span>

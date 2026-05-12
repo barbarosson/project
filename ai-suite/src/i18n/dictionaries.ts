@@ -153,6 +153,8 @@ export const DICTS: Record<Locale, Dict> = {
 
     "nav.backToHome": "Back to Home",
     "nav.pricing": "Pricing",
+    "nav.privacy": "Privacy",
+    "nav.terms": "Terms",
     "nav.login": "Sign in · Membership",
     "nav.history": "History",
     "nav.account": "Account",
@@ -267,6 +269,9 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailSent": "Check your email for the sign-in link.",
     "login.sendFailed": "Could not send the sign-in link.",
     "login.emailPlaceholder": "you@domain.com",
+    "login.legalLead": "By continuing, you agree to our",
+    "login.legalMid": "and",
+    "login.legalEnd": ".",
 
     "profile.title": "Membership profile",
     "profile.subtitle":
@@ -494,6 +499,8 @@ export const DICTS: Record<Locale, Dict> = {
 
     "nav.backToHome": "Volver al inicio",
     "nav.pricing": "Precios",
+    "nav.privacy": "Privacidad",
+    "nav.terms": "Términos",
     "nav.login": "Acceso · Cuenta",
     "nav.history": "Historial",
     "nav.account": "Mi cuenta",
@@ -608,6 +615,9 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailSent": "Revisa tu correo para el enlace de acceso.",
     "login.sendFailed": "No se pudo enviar el enlace.",
     "login.emailPlaceholder": "tu@dominio.com",
+    "login.legalLead": "Al continuar, aceptas nuestros",
+    "login.legalMid": "y",
+    "login.legalEnd": ".",
 
     "profile.title": "Perfil de membresía",
     "profile.subtitle":
@@ -826,6 +836,8 @@ export const DICTS: Record<Locale, Dict> = {
 
     "nav.backToHome": "Retour à l’accueil",
     "nav.pricing": "Tarifs",
+    "nav.privacy": "Confidentialité",
+    "nav.terms": "Conditions",
     "nav.login": "Connexion · Compte",
     "nav.history": "Historique",
     "nav.account": "Mon compte",
@@ -940,6 +952,9 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailSent": "Vérifie tes emails pour le lien de connexion.",
     "login.sendFailed": "Impossible d’envoyer le lien.",
     "login.emailPlaceholder": "toi@domaine.com",
+    "login.legalLead": "En continuant, vous acceptez nos",
+    "login.legalMid": "et",
+    "login.legalEnd": ".",
 
     "profile.title": "Profil d’adhésion",
     "profile.subtitle":
@@ -1159,6 +1174,8 @@ export const DICTS: Record<Locale, Dict> = {
 
     "nav.backToHome": "Zur Startseite",
     "nav.pricing": "Preise",
+    "nav.privacy": "Datenschutz",
+    "nav.terms": "AGB",
     "nav.login": "Anmelden · Konto",
     "nav.history": "Verlauf",
     "nav.account": "Konto",
@@ -1273,6 +1290,9 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailSent": "Prüfe dein Postfach für den Login‑Link.",
     "login.sendFailed": "Link konnte nicht gesendet werden.",
     "login.emailPlaceholder": "du@domain.de",
+    "login.legalLead": "Mit Fortfahren akzeptierst du unsere",
+    "login.legalMid": "und",
+    "login.legalEnd": ".",
 
     "profile.title": "Mitgliedschaftsprofil",
     "profile.subtitle":
@@ -1477,6 +1497,8 @@ export const DICTS: Record<Locale, Dict> = {
 
     "nav.backToHome": "返回首页",
     "nav.pricing": "价格与套餐",
+    "nav.privacy": "隐私",
+    "nav.terms": "条款",
     "nav.login": "登录 · 会员",
     "nav.history": "历史记录",
     "nav.account": "我的账户",
@@ -1583,6 +1605,9 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailSent": "请查收邮件中的登录链接。",
     "login.sendFailed": "无法发送登录链接。",
     "login.emailPlaceholder": "you@example.com",
+    "login.legalLead": "继续即表示你同意我们的",
+    "login.legalMid": "与",
+    "login.legalEnd": "。",
 
     "profile.title": "会员资料",
     "profile.subtitle":
@@ -1782,6 +1807,8 @@ export const DICTS: Record<Locale, Dict> = {
 
     "nav.backToHome": "Ana sayfaya dön",
     "nav.pricing": "Paketler",
+    "nav.privacy": "Gizlilik",
+    "nav.terms": "Şartlar",
     "nav.login": "Üyelik / Giriş",
     "nav.history": "Geçmiş",
     "nav.account": "Hesabım",
@@ -1896,6 +1923,9 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailSent": "Giriş bağlantısı için e-postanı kontrol et.",
     "login.sendFailed": "Bağlantı gönderilemedi.",
     "login.emailPlaceholder": "sen@alanadin.com",
+    "login.legalLead": "Devam ederek",
+    "login.legalMid": "ve",
+    "login.legalEnd": " kabul etmiş olursun.",
 
     "profile.title": "Üyelik profili",
     "profile.subtitle":

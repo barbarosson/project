@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { TOOLS, type ToolName } from "@/components/ai-suite/tools";
 import { DICTS, type Locale } from "./dictionaries";
 import { resolveToolDescription, resolveToolTitle } from "./tool-copy-resolve";
@@ -54,26 +55,31 @@ export function I18nProvider({
   children: React.ReactNode;
   initialLocale?: Locale;
 }) {
+  const router = useRouter();
   const [locale, setLocaleState] = React.useState<Locale>(() => getInitialLocale(initialLocale));
 
   React.useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
 
-  const setLocale = React.useCallback((next: Locale) => {
-    setLocaleState(next);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      // ignore
-    }
-    try {
-      document.cookie = `${LOCALE_COOKIE}=${encodeURIComponent(next)}; path=/; max-age=31536000; samesite=lax`;
-    } catch {
-      // ignore
-    }
-    document.documentElement.lang = next;
-  }, []);
+  const setLocale = React.useCallback(
+    (next: Locale) => {
+      setLocaleState(next);
+      try {
+        window.localStorage.setItem(STORAGE_KEY, next);
+      } catch {
+        // ignore
+      }
+      try {
+        document.cookie = `${LOCALE_COOKIE}=${encodeURIComponent(next)}; path=/; max-age=31536000; samesite=lax`;
+      } catch {
+        // ignore
+      }
+      document.documentElement.lang = next;
+      router.refresh();
+    },
+    [router]
+  );
 
   const t = React.useCallback(
     (key: string) => {

@@ -93,15 +93,15 @@ export default async function LoginPage() {
           </div>
         </div>
         <p className="mt-5 text-xs text-slate-400">
-          By continuing, you agree to our{" "}
+          {d["login.legalLead"]}{" "}
           <Link className="text-violet-300 hover:text-violet-200" href="/terms">
-            Terms
+            {d["legal.termsTitle"]}
           </Link>{" "}
-          and{" "}
+          {d["login.legalMid"]}{" "}
           <Link className="text-violet-300 hover:text-violet-200" href="/privacy">
-            Privacy Policy
+            {d["legal.privacyTitle"]}
           </Link>
-          .
+          {d["login.legalEnd"]}
         </p>
         <p className="mt-4 text-center text-sm">
           <Link className="text-violet-300 hover:text-violet-200" href="/">
