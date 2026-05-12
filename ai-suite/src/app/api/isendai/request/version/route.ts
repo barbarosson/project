@@ -23,6 +23,7 @@ import {
   type ConcreteModelId,
 } from "@/models/models";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { generateTextGoogleWithFlashFallback } from "@/lib/ai/gemini-flash-fallback";
 
 type Body = {
   request_id?: string;
@@ -197,12 +198,26 @@ export async function POST(req: Request) {
   }
 
   // Generate
-  const out = await generateText({
-    model: modelFor(provider, normalizedStored || def.model || "gpt-4o-mini"),
-    temperature: 0.6,
-    system: def.systemPrompt,
-    prompt,
-  });
+  let out: Awaited<ReturnType<typeof generateText>>;
+  if (provider === "google") {
+    let mid = normalizedStored.trim();
+    if (!isConcreteModelId(mid) || modelMeta(mid as ConcreteModelId).provider !== "google") {
+      mid = defaultConcreteModelForProvider("google");
+    }
+    const { result } = await generateTextGoogleWithFlashFallback(mid, {
+      temperature: 0.6,
+      system: def.systemPrompt,
+      prompt,
+    });
+    out = result;
+  } else {
+    out = await generateText({
+      model: modelFor(provider, normalizedStored || def.model || "gpt-4o-mini"),
+      temperature: 0.6,
+      system: def.systemPrompt,
+      prompt,
+    });
+  }
   const text = out.text?.trim();
   if (!text) return NextResponse.json({ error: "Empty response." }, { status: 502 });
 

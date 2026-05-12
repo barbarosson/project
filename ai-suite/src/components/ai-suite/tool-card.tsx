@@ -6,14 +6,17 @@ import { toast } from "sonner";
 
 import type { ToolName, ToolPayload } from "./tools";
 import { getToolDefinition } from "./tools";
-import { useModel } from "@/models/model-provider";
 import {
   defaultConcreteModelForProvider,
   creditsForGeneration,
+  isModelId,
   modelSalesTier,
+  normalizeModelIdString,
   tierTenPackSummary,
   type ConcreteModelId,
+  type ModelId,
 } from "@/models/models";
+import { ModelSwitcher } from "@/components/model-switcher";
 import { openPricingModal } from "@/components/pricing/pricing-modal";
 import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
 import { Button } from "@/components/ui/button";
@@ -84,7 +87,28 @@ export function ToolCard({
   }, []);
 
   const def = getToolDefinition(tool);
-  const { model } = useModel();
+  const modelStorageKey = `${def.storageKey}:model`;
+  const [model, setModel] = React.useState<ModelId>("auto");
+
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem(modelStorageKey);
+      const normalized = raw ? normalizeModelIdString(raw) : "";
+      setModel(isModelId(normalized) ? normalized : "auto");
+    } catch {
+      setModel("auto");
+    }
+  }, [modelStorageKey]);
+
+  function persistModel(next: ModelId) {
+    setModel(next);
+    try {
+      localStorage.setItem(modelStorageKey, next);
+    } catch {
+      // ignore
+    }
+  }
+
   const concreteModel: ConcreteModelId =
     model === "auto" ? defaultConcreteModelForProvider(def.provider) : (model as ConcreteModelId);
 
@@ -116,8 +140,11 @@ export function ToolCard({
       ? jobLink.trim().length + resume.trim().length
       : text.trim().length;
   const genCost = creditsForGeneration(concreteModel, Math.max(inputCharLen, 1));
-  const costLabel = genCost === 1 ? "1 Credit" : `${genCost} Credits`;
-  const paidGenerateLabel = `${toolPrimaryActionLabel(t, tool, def.actionLabel)} (Costs ${costLabel})`;
+  const costAmount =
+    genCost === 1 ? t("tool.billing.creditOne") : t("tool.billing.creditsMany").replace("{n}", String(genCost));
+  const paidGenerateLabel = t("tool.billing.paidButton")
+    .replace("{action}", toolPrimaryActionLabel(t, tool, def.actionLabel))
+    .replace("{amount}", costAmount);
   const showFreeCta = mounted && enableMarketingFreeTrial && !trialUsed;
 
   async function runPaidGeneration() {
@@ -128,7 +155,7 @@ export function ToolCard({
     setBusy(true);
     try {
       savePayload(def.storageKey, payload);
-      saveModel(`${def.storageKey}:model`, model);
+      saveModel(modelStorageKey, model);
 
       const body: Record<string, unknown> = {
         ...payload,
@@ -187,7 +214,7 @@ export function ToolCard({
     setBusy(true);
     try {
       savePayload(def.storageKey, payload);
-      saveModel(`${def.storageKey}:model`, model);
+      saveModel(modelStorageKey, model);
 
       const body: Record<string, unknown> = {
         ...payload,
@@ -315,6 +342,16 @@ export function ToolCard({
               )}
             />
           )}
+
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-medium text-slate-400">{t("tool.modelSelectLabel")}</p>
+            <ModelSwitcher
+              tool={tool}
+              model={model}
+              onModelChange={persistModel}
+              className="w-full max-w-md px-3 py-2 text-sm"
+            />
+          </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div className="min-w-0 space-y-1">

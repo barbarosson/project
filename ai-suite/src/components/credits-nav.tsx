@@ -3,6 +3,17 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import type { Locale } from "@/i18n/dictionaries";
+import { useI18n } from "@/i18n/i18n-provider";
+
+const LOCALE_TAG: Record<Locale, string> = {
+  en: "en-US",
+  es: "es-ES",
+  fr: "fr-FR",
+  de: "de-DE",
+  zh: "zh-CN",
+  tr: "tr-TR",
+};
 
 type Wallet = {
   credits: number;
@@ -11,6 +22,7 @@ type Wallet = {
 };
 
 export function CreditsNav({ className }: { className?: string }) {
+  const { t, locale } = useI18n();
   const [data, setData] = React.useState<Wallet | null>(null);
 
   React.useEffect(() => {
@@ -39,6 +51,8 @@ export function CreditsNav({ className }: { className?: string }) {
   }, []);
 
   const credits = data?.credits ?? null;
+  const creditsDisplay =
+    credits === null ? "…" : credits.toLocaleString(LOCALE_TAG[locale]);
   const trial =
     typeof data?.trial_days_left === "number" &&
     data.subscription_status === "trialing" &&
@@ -55,15 +69,17 @@ export function CreditsNav({ className }: { className?: string }) {
     >
       <span
         className="inline-flex items-center gap-1 rounded-lg border border-amber-400/25 bg-amber-500/10 px-2 py-1 text-amber-100 backdrop-blur-xl sm:px-3"
-        title="Credits balance"
+        title={t("creditsNav.title")}
       >
         <span aria-hidden>🪙</span>
-        <span>{credits === null ? "…" : credits}</span>
-        <span className="hidden text-slate-400 sm:inline">Credits</span>
+        <span>{creditsDisplay}</span>
+        <span className="hidden text-slate-400 sm:inline">{t("creditsNav.unit")}</span>
       </span>
       {trial !== null ? (
         <span className="rounded-lg border border-violet-400/25 bg-violet-500/10 px-2 py-1 text-violet-100 backdrop-blur-xl sm:px-3">
-          Trial: {trial} day{trial === 1 ? "" : "s"} left
+          {trial === 1
+            ? t("creditsNav.trialOne")
+            : t("creditsNav.trialMany").replace("{days}", String(trial))}
         </span>
       ) : null}
     </div>

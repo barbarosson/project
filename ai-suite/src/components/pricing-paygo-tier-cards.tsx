@@ -5,6 +5,7 @@ import { Info, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { glassInteractive, glassSurface } from "@/lib/premium-ui";
+import { Button } from "@/components/ui/button";
 
 export type PaygoTierRow = {
   id: string;
@@ -20,6 +21,9 @@ type Props = {
   detailModalTitle: string;
   infoButtonAria: string;
   closeLabel: string;
+  buyButtonLabel?: string;
+  busyTierId?: string | null;
+  onBuyTier?: (tierId: string) => void | Promise<void>;
 };
 
 function fillTier(template: string, tierLabel: string) {
@@ -31,6 +35,9 @@ export function PricingPaygoTierCards({
   detailModalTitle,
   infoButtonAria,
   closeLabel,
+  buyButtonLabel,
+  busyTierId,
+  onBuyTier,
 }: Props) {
   const [openId, setOpenId] = React.useState<string | null>(null);
   const dialogPanelRef = React.useRef<HTMLDivElement>(null);
@@ -85,6 +92,17 @@ export function PricingPaygoTierCards({
             <p className="mt-2 text-3xl font-semibold tracking-tight text-white">{tier.price}</p>
             <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-violet-300/85">{tier.pack}</p>
             <p className="mt-3 text-sm leading-snug text-slate-400">{tier.summary}</p>
+            {buyButtonLabel && onBuyTier ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="mt-4 w-full border-white/[0.14] bg-white/[0.06] font-semibold text-slate-100 hover:bg-white/[0.1]"
+                disabled={busyTierId !== null && busyTierId !== undefined}
+                onClick={() => void onBuyTier(tier.id)}
+              >
+                {busyTierId === tier.id ? "…" : buyButtonLabel}
+              </Button>
+            ) : null}
           </div>
         ))}
       </div>

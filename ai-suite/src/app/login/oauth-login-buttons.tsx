@@ -14,14 +14,13 @@ import { cn } from "@/lib/utils";
 type Row = {
   provider: Provider;
   labelKey: string;
-  subKey?: string;
 };
 
 const OAUTH_ROWS: Row[] = [
   { provider: "apple", labelKey: "login.oauthApple" },
   { provider: "x", labelKey: "login.oauthX" },
   { provider: "linkedin_oidc", labelKey: "login.oauthLinkedin" },
-  { provider: "custom:tiktok" as Provider, labelKey: "login.oauthTiktok", subKey: "login.oauthTiktokSub" },
+  { provider: "custom:tiktok" as Provider, labelKey: "login.oauthTiktok" },
 ];
 
 export function OAuthLoginButtons() {
@@ -58,34 +57,29 @@ export function OAuthLoginButtons() {
       </p>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {OAUTH_ROWS.map((row) => (
-          <div key={row.provider} className="grid gap-0.5">
-            <Button
-              type="button"
-              variant="outline"
-              className={cn(
-                "h-11 justify-center border-white/15 bg-slate-950/40 text-sm font-semibold text-slate-100 hover:bg-slate-950/60",
-                row.provider === "apple" && "border-white/20",
-                row.provider === "x" && "border-sky-500/30",
-                row.provider === "linkedin_oidc" && "border-sky-600/30",
-                String(row.provider).includes("tiktok") && "border-black/40 bg-black/30"
-              )}
-              disabled={busy !== null}
-              onClick={() => void signIn(row.provider)}
-            >
-              <span className="inline-flex items-center justify-center gap-2">
-                <OauthProviderMark provider={row.provider} />
-                <span className="truncate">
-                  {busy === row.provider ? t("login.sending") : t(row.labelKey)}
-                </span>
+          <Button
+            key={row.provider}
+            type="button"
+            variant="outline"
+            className={cn(
+              "h-11 justify-center border-white/15 bg-slate-950/40 text-sm font-semibold text-slate-100 hover:bg-slate-950/60",
+              row.provider === "apple" && "border-white/20",
+              row.provider === "x" && "border-sky-500/30",
+              (row.provider === "linkedin_oidc" || String(row.provider).includes("tiktok")) &&
+                "border-sky-600/30"
+            )}
+            disabled={busy !== null}
+            onClick={() => void signIn(row.provider)}
+          >
+            <span className="inline-flex items-center justify-center gap-2">
+              <OauthProviderMark provider={row.provider} />
+              <span className="truncate">
+                {busy === row.provider ? t("login.sending") : t(row.labelKey)}
               </span>
-            </Button>
-            {row.subKey ? (
-              <p className="px-1 text-[10px] leading-snug text-slate-500">{t(row.subKey)}</p>
-            ) : null}
-          </div>
+            </span>
+          </Button>
         ))}
       </div>
-      <p className="text-center text-[11px] leading-relaxed text-slate-500">{t("login.oauthSetupHint")}</p>
     </div>
   );
 }

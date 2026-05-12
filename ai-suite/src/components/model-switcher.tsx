@@ -12,14 +12,31 @@ import {
   type ModelSalesTier,
 } from "@/models/models";
 import { useModel } from "@/models/model-provider";
+import { useI18n } from "@/i18n/i18n-provider";
 import { cn } from "@/lib/utils";
 import { glassSurface } from "@/lib/premium-ui";
 
 const TIER_ORDER: ModelSalesTier[] = ["budget", "standard", "premium"];
 
-export function ModelSwitcher({ className, tool }: { className?: string; tool?: ToolName }) {
-  const { model, setModel } = useModel();
+export function ModelSwitcher({
+  className,
+  tool,
+  model: controlledModel,
+  onModelChange,
+}: {
+  className?: string;
+  tool?: ToolName;
+  /** When both are set, the switcher is controlled and ignores global `useModel`. */
+  model?: ModelId;
+  onModelChange?: (model: ModelId) => void;
+}) {
+  const { t } = useI18n();
+  const global = useModel();
   void tool;
+
+  const controlled = controlledModel !== undefined && onModelChange !== undefined;
+  const model = controlled ? controlledModel : global.model;
+  const setModel = controlled ? onModelChange : global.setModel;
 
   const autoEntry = MODELS.find((m) => m.id === "auto");
   const concrete = MODELS.filter((m) => m.id !== "auto");
@@ -40,7 +57,7 @@ export function ModelSwitcher({ className, tool }: { className?: string; tool?: 
         )}
         value={model}
         onChange={(e) => setModel(e.target.value as ModelId)}
-        aria-label="Model"
+        aria-label={t("modelSwitcher.ariaLabel")}
       >
         {autoEntry ? (
           <option key={autoEntry.id} value={autoEntry.id}>

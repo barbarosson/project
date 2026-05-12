@@ -2,7 +2,7 @@ import { createCheckout, lemonSqueezySetup } from "@lemonsqueezy/lemonsqueezy.js
 import { NextResponse } from "next/server";
 
 import { getToolDefinition, isToolName } from "@/components/ai-suite/tools";
-import { resolveVariantId, type CheckoutPackKey } from "@/lib/lemonsqueezy/catalog";
+import { resolveVariantId, type CheckoutPackKey, type PaygoTierKey } from "@/lib/lemonsqueezy/catalog";
 import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -43,6 +43,11 @@ export async function POST(request: Request) {
   if (rec.pack === "subscription" && (rec.plan === "basic" || rec.plan === "pro" || rec.plan === "ultra")) {
     const interval = rec.billing_interval === "yearly" ? "yearly" : "monthly";
     pack = { kind: "subscription", plan: rec.plan, interval };
+  } else if (
+    rec.pack === "paygo" &&
+    (rec.tier === "budget" || rec.tier === "standard" || rec.tier === "premium")
+  ) {
+    pack = { kind: "paygo", tier: rec.tier as PaygoTierKey };
   } else {
     pack = { kind: "one_time_trial" };
   }
@@ -132,6 +137,7 @@ export async function POST(request: Request) {
       model_storage_key: modelStorageKey,
       checkout_pack: pack.kind,
       ...(pack.kind === "subscription" ? { plan: pack.plan, billing_interval: pack.interval } : {}),
+      ...(pack.kind === "paygo" ? { paygo_tier: pack.tier } : {}),
       ...(clientModel ? { selected_model: clientModel } : {}),
     },
   };

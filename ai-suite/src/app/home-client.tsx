@@ -10,7 +10,6 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { IsendaiLogo } from "@/components/isendai-logo";
 import { useI18n } from "@/i18n/i18n-provider";
 import { toolDescription, toolTitle } from "@/i18n/tool-i18n";
-import { ModelSwitcher } from "@/components/model-switcher";
 import { ConciergeChat } from "@/components/concierge-chat";
 import { AuthStatus } from "@/components/auth-status";
 import { CreditsNav } from "@/components/credits-nav";
@@ -82,10 +81,6 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
           <CreditsNav />
           <AuthStatus />
           <LanguageSwitcher className="px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm" />
-          <ModelSwitcher
-            tool={selected}
-            className="min-w-0 max-w-[10.5rem] px-2 py-1.5 text-xs sm:max-w-none sm:px-3 sm:py-2 sm:text-sm"
-          />
         </div>
       </header>
 
@@ -165,6 +160,13 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
               ) : null}
             </div>
           ) : null}
+        </section>
+
+        <section className={cn("mt-6 rounded-2xl p-5 sm:p-6", glassSurface)}>
+          <h2 className={cn("text-base font-semibold tracking-tight sm:text-lg", textGradientHero)}>
+            {t("home.aiStack.title")}
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-slate-400">{t("home.aiStack.body")}</p>
         </section>
 
         <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>

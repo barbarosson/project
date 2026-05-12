@@ -6,6 +6,8 @@ import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import type { Locale } from "@/i18n/dictionaries";
+import { useI18n } from "@/i18n/i18n-provider";
 
 type BillingToggle = "monthly" | "yearly";
 
@@ -17,6 +19,15 @@ type PricingModalContextValue = {
 
 const PricingModalContext = React.createContext<PricingModalContextValue | null>(null);
 
+const LOCALE_TAG: Record<Locale, string> = {
+  en: "en-US",
+  es: "es-ES",
+  fr: "fr-FR",
+  de: "de-DE",
+  zh: "zh-CN",
+  tr: "tr-TR",
+};
+
 export function usePricingModal(): PricingModalContextValue {
   const ctx = React.useContext(PricingModalContext);
   if (!ctx) {
@@ -27,21 +38,28 @@ export function usePricingModal(): PricingModalContextValue {
 
 const LS_TRIAL_KEY = "isendai_ls_subscription_trial_used";
 
-function monthlyThenLabel(plan: "basic" | "pro" | "ultra", interval: BillingToggle): string {
+function monthlyThenLabel(
+  t: (key: string) => string,
+  plan: "basic" | "pro" | "ultra",
+  interval: BillingToggle
+): string {
   const base = plan === "basic" ? 7.99 : plan === "pro" ? 9.99 : 19.99;
-  if (interval === "monthly") return `Then $${base.toFixed(2)}/mo. Cancel anytime.`;
+  if (interval === "monthly") {
+    return t("pricingModal.thenMonthly").replace("{price}", `$${base.toFixed(2)}`);
+  }
   const perMo = base * 0.8;
-  return `Then ~$${perMo.toFixed(2)}/mo equivalent (20% off yearly). Cancel anytime.`;
+  return t("pricingModal.thenYearly").replace("{price}", `$${perMo.toFixed(2)}`);
 }
 
 async function startCheckout(
+  t: (key: string) => string,
   plan: "basic" | "pro" | "ultra",
   interval: BillingToggle,
   toolId: string
 ) {
   try {
     if (typeof window !== "undefined" && window.localStorage.getItem(LS_TRIAL_KEY) === "1") {
-      toast.message("You’ve already started a subscription trial from this browser.");
+      toast.message(t("pricingModal.trialAlreadyUsedToast"));
     }
   } catch {
     // ignore
@@ -66,7 +84,7 @@ async function startCheckout(
   }
 
   if (!res.ok || !json?.checkout_url) {
-    toast.error(json?.error ?? "Could not start checkout.");
+    toast.error(json?.error ?? t("pricingModal.checkoutFailed"));
     return;
   }
 
@@ -79,7 +97,7 @@ async function startCheckout(
   window.location.href = json.checkout_url;
 }
 
-async function startOneTime(toolId: string) {
+async function startOneTime(t: (key: string) => string, toolId: string) {
   const res = await fetch("/api/checkout", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -93,21 +111,56 @@ async function startOneTime(toolId: string) {
     json = null;
   }
   if (!res.ok || !json?.checkout_url) {
-    toast.error(json?.error ?? "Could not start checkout.");
+    toast.error(json?.error ?? t("pricingModal.checkoutFailed"));
     return;
   }
   window.location.href = json.checkout_url;
 }
 
-function PlanCard({
+function InnerPlan({
   title,
+  credits,
+  badge,
+  t,
+  locale,
+}: {
+  title: string;
+  credits: number;
+  badge?: string;
+  t: (key: string) => string;
+  locale: Locale;
+}) {
+  const creditsStr = credits.toLocaleString(LOCALE_TAG[locale]);
+  return (
+    <>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-lg font-semibold text-white">{title}</h3>
+        {badge ? (
+          <span className="rounded-full border border-amber-400/40 bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-200">
+            {badge}
+          </span>
+        ) : null}
+      </div>
+      <p className="mt-2 text-sm text-slate-300">
+        {t("pricingModal.planCreditsLine").replace("{credits}", creditsStr)}
+      </p>
+    </>
+  );
+}
+
+function PlanCard({
+  t,
+  locale,
+  planTitle,
   credits,
   highlight,
   plan,
   interval,
   toolId,
 }: {
-  title: string;
+  t: (key: string) => string;
+  locale: Locale;
+  planTitle: string;
   credits: number;
   highlight?: boolean;
   plan: "basic" | "pro" | "ultra";
@@ -118,7 +171,13 @@ function PlanCard({
 
   const body = (
     <>
-      <InnerPlan title={title} credits={credits} badge={plan === "pro" ? "🔥 Most Popular" : undefined} />
+      <InnerPlan
+        title={planTitle}
+        credits={credits}
+        badge={plan === "pro" ? t("pricingModal.mostPopular") : undefined}
+        t={t}
+        locale={locale}
+      />
       <Button
         className={cn(
           "mt-4 w-full font-semibold",
@@ -130,12 +189,12 @@ function PlanCard({
         variant={highlight ? "default" : "outline"}
         onClick={() => {
           setBusy(true);
-          void startCheckout(plan, interval, toolId).finally(() => setBusy(false));
+          void startCheckout(t, plan, interval, toolId).finally(() => setBusy(false));
         }}
       >
-        Start 7-Day Free Trial
+        {t("pricingModal.startTrial")}
       </Button>
-      <p className="mt-2 text-center text-xs text-slate-400">{monthlyThenLabel(plan, interval)}</p>
+      <p className="mt-2 text-center text-xs text-slate-400">{monthlyThenLabel(t, plan, interval)}</p>
     </>
   );
 
@@ -154,30 +213,6 @@ function PlanCard({
   );
 }
 
-function InnerPlan({
-  title,
-  credits,
-  badge,
-}: {
-  title: string;
-  credits: number;
-  badge?: string;
-}) {
-  return (
-    <>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-lg font-semibold text-white">{title}</h3>
-        {badge ? (
-          <span className="rounded-full border border-amber-400/40 bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-200">
-            {badge}
-          </span>
-        ) : null}
-      </div>
-      <p className="mt-2 text-sm text-slate-300">{credits.toLocaleString()} credits / month after trial billing</p>
-    </>
-  );
-}
-
 export function PricingModalShell({
   open,
   onClose,
@@ -187,6 +222,7 @@ export function PricingModalShell({
   onClose: () => void;
   toolId: string;
 }) {
+  const { t, locale } = useI18n();
   const [interval, setInterval] = React.useState<BillingToggle>("monthly");
 
   if (!open) return null;
@@ -201,7 +237,7 @@ export function PricingModalShell({
       <button
         type="button"
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        aria-label="Close"
+        aria-label={t("pricingModal.closeAria")}
         onClick={onClose}
       />
       <div
@@ -213,16 +249,15 @@ export function PricingModalShell({
         <div className="flex items-start justify-between gap-4 border-b border-white/[0.08] px-6 py-5">
           <div>
             <h2 id="pricing-title" className="text-xl font-semibold tracking-tight text-white">
-              Upgrade your credits
+              {t("pricingModal.title")}
             </h2>
-            <p className="mt-1 text-sm text-slate-400">
-              7-day free trial on subscriptions — then your plan renews. Credits reset each billing cycle.
-            </p>
+            <p className="mt-1 text-sm text-slate-400">{t("pricingModal.subtitle")}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
             className="rounded-lg p-2 text-slate-400 transition hover:bg-white/[0.08] hover:text-white"
+            aria-label={t("pricingModal.closeAria")}
           >
             <X className="size-5" />
           </button>
@@ -238,7 +273,7 @@ export function PricingModalShell({
               )}
               onClick={() => setInterval("monthly")}
             >
-              Monthly
+              {t("pricingModal.monthly")}
             </button>
             <button
               type="button"
@@ -248,30 +283,48 @@ export function PricingModalShell({
               )}
               onClick={() => setInterval("yearly")}
             >
-              Yearly <span className="text-emerald-400/90">(-20%)</span>
+              {t("pricingModal.yearly")} <span className="text-emerald-400/90">(-20%)</span>
             </button>
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
-            <PlanCard title="Basic" credits={500} plan="basic" interval={interval} toolId={toolId} />
             <PlanCard
-              title="Pro"
+              t={t}
+              locale={locale}
+              planTitle={t("pricingModal.plan.basic")}
+              credits={500}
+              plan="basic"
+              interval={interval}
+              toolId={toolId}
+            />
+            <PlanCard
+              t={t}
+              locale={locale}
+              planTitle={t("pricingModal.plan.pro")}
               credits={1000}
               highlight
               plan="pro"
               interval={interval}
               toolId={toolId}
             />
-            <PlanCard title="Ultra" credits={5000} plan="ultra" interval={interval} toolId={toolId} />
+            <PlanCard
+              t={t}
+              locale={locale}
+              planTitle={t("pricingModal.plan.ultra")}
+              credits={5000}
+              plan="ultra"
+              interval={interval}
+              toolId={toolId}
+            />
           </div>
 
           <div className="mt-8 flex justify-center border-t border-white/[0.06] pt-6">
             <Button
               variant="ghost"
               className="text-sm text-slate-500 hover:bg-white/[0.06] hover:text-slate-300"
-              onClick={() => void startOneTime(toolId)}
+              onClick={() => void startOneTime(t, toolId)}
             >
-              $1.49 One-time Trial (25 credits)
+              {t("pricingModal.oneTimeTrial").replace("{credits}", "25")}
             </Button>
           </div>
         </div>

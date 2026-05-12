@@ -155,6 +155,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "AI Products",
     "home.workspace.hint": "Paste → Generate → Copy",
+    "home.aiStack.title": "AI versions you run on",
+    "home.aiStack.body":
+      "Requests are routed across OpenAI, Anthropic, Groq, DeepSeek, and Google. Choose Auto for smart defaults per tool, or pick a concrete model from the list on each tool — credit use follows the tier on Pricing.",
 
     "concierge.title": "ISENDAI",
     "concierge.welcome":
@@ -173,6 +176,13 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.history": "History",
     "nav.account": "Account",
     "nav.logout": "Log out",
+
+    "creditsNav.title": "Credits balance",
+    "creditsNav.unit": "Credits",
+    "creditsNav.trialOne": "Trial: 1 day left",
+    "creditsNav.trialMany": "Trial: {days} days left",
+
+    "modelSwitcher.ariaLabel": "AI model version",
 
     "usage.creditsHeading": "Credits",
     "usage.versionsLine": "Versions per generation: {max}",
@@ -258,6 +268,9 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.paygo.detailModalTitle": "{tier} — usage details",
     "pricing.paygo.infoButtonAria": "Usage details for {tier}",
     "pricing.paygo.closeDetails": "Close",
+    "pricing.buyNow": "Buy now",
+    "pricing.checkoutFailed": "Could not start checkout. Configure Lemon Squeezy variants or try again.",
+    "pricing.checkoutSignInRequired": "Sign in to purchase a subscription.",
     "pricing.pack.budget": "10 credits · $1",
     "pricing.pack.standard": "25 credits · $1.49",
     "pricing.pack.premium": "50 credits · $1.99",
@@ -308,6 +321,26 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.dev.secretHint":
       "If DEV_TOPUP_SECRET is set in .env.local, send header X-Dev-Topup-Secret or Authorization: Bearer with that value.",
     "pricing.dev.disabled": "This endpoint is disabled in production.",
+
+    "pricingModal.title": "Upgrade your credits",
+    "pricingModal.subtitle":
+      "7-day free trial on subscriptions — then your plan renews. Credits reset each billing cycle.",
+    "pricingModal.monthly": "Monthly",
+    "pricingModal.yearly": "Yearly",
+    "pricingModal.closeAria": "Close",
+    "pricingModal.plan.basic": "Basic",
+    "pricingModal.plan.pro": "Pro",
+    "pricingModal.plan.ultra": "Ultra",
+    "pricingModal.mostPopular": "Most popular",
+    "pricingModal.planCreditsLine": "{credits} credits / month after trial billing",
+    "pricingModal.startTrial": "Start 7-day free trial",
+    "pricingModal.thenMonthly": "Then {price}/mo. Cancel anytime.",
+    "pricingModal.thenYearly": "Then ~{price}/mo equivalent (20% off yearly). Cancel anytime.",
+    "pricingModal.oneTimeTrial": "$1.49 one-time trial ({credits} credits)",
+    "pricingModal.checkoutFailed": "Could not start checkout.",
+    "pricingModal.trialAlreadyUsedToast":
+      "You’ve already started a subscription trial from this browser.",
+
     "notFound.title": "Page not found",
     "notFound.description": "The page you’re looking for doesn’t exist.",
     "errors.serverToast": "Server error. Please try again shortly.",
@@ -420,12 +453,15 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "Next we open the result page and generate using your credit balance. Paying to buy credits comes in a later release.",
-    "tool.ctaCreditSuffix": " — varies by model & length",
+    "tool.modelSelectLabel": "AI model for this request",
     "tool.priceReference":
       "This model’s tier uses the 10-credit pack rates: {price}",
     "tool.pricePackFlex":
       "Checkout packs match Pricing ($1→10 / $1.49→25 / $1.99→50 credits); usage scales with model and text length.",
     "tool.validation.empty": "Please fill in the required fields before continuing.",
+    "tool.billing.creditOne": "1 credit",
+    "tool.billing.creditsMany": "{n} credits",
+    "tool.billing.paidButton": "{action} · {amount}",
 
     "errors.toolParamMissing": "Missing or invalid tool parameter.",
     "errors.noSavedInput":
@@ -610,6 +646,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "Productos de IA",
     "home.workspace.hint": "Pega → Genera → Copia",
+    "home.aiStack.title": "Versiones de IA que usas",
+    "home.aiStack.body":
+      "Enrutamos peticiones entre OpenAI, Anthropic, Groq, DeepSeek y Google. Elige Auto para valores por defecto según la herramienta, o un modelo concreto en cada tarjeta — el uso de créditos sigue el nivel en Precios.",
 
     "category.work-career.label": "Brillo Profesional",
     "category.crisis-money.label": "Dinero & Apagafuegos",
@@ -636,6 +675,13 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.history": "Historial",
     "nav.account": "Mi cuenta",
     "nav.logout": "Cerrar sesión",
+
+    "creditsNav.title": "Saldo de créditos",
+    "creditsNav.unit": "Créditos",
+    "creditsNav.trialOne": "Prueba: queda 1 día",
+    "creditsNav.trialMany": "Prueba: quedan {days} días",
+
+    "modelSwitcher.ariaLabel": "Versión del modelo de IA",
 
     "usage.creditsHeading": "Créditos",
     "usage.versionsLine": "Versiones por generación: {max}",
@@ -721,6 +767,9 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.paygo.detailModalTitle": "{tier} — detalles de uso",
     "pricing.paygo.infoButtonAria": "Detalles de uso para {tier}",
     "pricing.paygo.closeDetails": "Cerrar",
+    "pricing.buyNow": "Comprar",
+    "pricing.checkoutFailed": "No se pudo iniciar el pago. Configura las variantes de Lemon Squeezy o inténtalo de nuevo.",
+    "pricing.checkoutSignInRequired": "Inicia sesión para comprar una suscripción.",
     "pricing.pack.budget": "10 créditos · $1",
     "pricing.pack.standard": "25 créditos · $1.49",
     "pricing.pack.premium": "50 créditos · $1.99",
@@ -771,6 +820,27 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.dev.secretHint":
       "Si DEV_TOPUP_SECRET está en .env.local, envía la cabecera X-Dev-Topup-Secret o Authorization: Bearer con ese valor.",
     "pricing.dev.disabled": "Este endpoint está desactivado en producción.",
+
+    "pricingModal.title": "Mejora tus créditos",
+    "pricingModal.subtitle":
+      "Prueba gratuita de 7 días en suscripciones; luego se renueva el plan. Los créditos se reinician en cada ciclo de facturación.",
+    "pricingModal.monthly": "Mensual",
+    "pricingModal.yearly": "Anual",
+    "pricingModal.closeAria": "Cerrar",
+    "pricingModal.plan.basic": "Básico",
+    "pricingModal.plan.pro": "Pro",
+    "pricingModal.plan.ultra": "Ultra",
+    "pricingModal.mostPopular": "Más popular",
+    "pricingModal.planCreditsLine": "{credits} créditos / mes tras la facturación de la prueba",
+    "pricingModal.startTrial": "Empezar prueba gratuita de 7 días",
+    "pricingModal.thenMonthly": "Luego {price}/mes. Cancela cuando quieras.",
+    "pricingModal.thenYearly":
+      "Luego ~{price}/mes equivalente (20 % menos en anual). Cancela cuando quieras.",
+    "pricingModal.oneTimeTrial": "Prueba única de $1.49 ({credits} créditos)",
+    "pricingModal.checkoutFailed": "No se pudo iniciar el pago.",
+    "pricingModal.trialAlreadyUsedToast":
+      "Ya iniciaste una prueba de suscripción desde este navegador.",
+
     "notFound.title": "Página no encontrada",
     "notFound.description": "La página que buscas no existe.",
     "errors.serverToast": "Error del servidor. Inténtalo de nuevo en un momento.",
@@ -883,12 +953,16 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "A continuación abrimos la página de resultado y generamos con tu saldo de créditos. Comprar créditos llegará más adelante.",
+    "tool.modelSelectLabel": "Modelo de IA para esta solicitud",
     "tool.ctaCreditSuffix": " — según modelo y longitud",
     "tool.priceReference":
       "Tarifa típica en este nivel: {price} (ejemplo: recargas habituales de 10 créditos a $1 / $1.49 / $1.99 por paquete).",
     "tool.pricePackFlex":
       "No estás obligado a comprar exactamente 10 créditos — los tamaños de paquete en Precios son flexibles.",
     "tool.validation.empty": "Completa los campos obligatorios antes de continuar.",
+    "tool.billing.creditOne": "1 crédito",
+    "tool.billing.creditsMany": "{n} créditos",
+    "tool.billing.paidButton": "{action} · {amount}",
 
     "errors.toolParamMissing": "Falta el parámetro de herramienta o no es válido.",
     "errors.noSavedInput":
@@ -1064,6 +1138,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "Produits IA",
     "home.workspace.hint": "Coller → Générer → Copier",
+    "home.aiStack.title": "Versions d’IA utilisées",
+    "home.aiStack.body":
+      "Les requêtes passent par OpenAI, Anthropic, Groq, DeepSeek et Google. Choisis Auto pour des réglages adaptés à l’outil, ou un modèle précis sur chaque fiche — les crédits suivent le palier sous Tarifs.",
 
     "category.work-career.label": "Boost Carrière",
     "category.crisis-money.label": "SOS Argent",
@@ -1090,6 +1167,13 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.history": "Historique",
     "nav.account": "Mon compte",
     "nav.logout": "Se déconnecter",
+
+    "creditsNav.title": "Solde de crédits",
+    "creditsNav.unit": "Crédits",
+    "creditsNav.trialOne": "Essai : il reste 1 jour",
+    "creditsNav.trialMany": "Essai : il reste {days} jours",
+
+    "modelSwitcher.ariaLabel": "Version du modèle IA",
 
     "usage.creditsHeading": "Crédits",
     "usage.versionsLine": "Versions par génération : {max}",
@@ -1175,6 +1259,9 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.paygo.detailModalTitle": "{tier} — détails d’utilisation",
     "pricing.paygo.infoButtonAria": "Détails d’utilisation pour {tier}",
     "pricing.paygo.closeDetails": "Fermer",
+    "pricing.buyNow": "Acheter",
+    "pricing.checkoutFailed": "Impossible de démarrer le paiement. Configure les variantes Lemon Squeezy ou réessaie.",
+    "pricing.checkoutSignInRequired": "Connecte-toi pour acheter un abonnement.",
     "pricing.pack.budget": "10 crédits · 1 $",
     "pricing.pack.standard": "25 crédits · 1,49 $",
     "pricing.pack.premium": "50 crédits · 1,99 $",
@@ -1225,6 +1312,27 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.dev.secretHint":
       "Si DEV_TOPUP_SECRET est défini dans .env.local, envoie l’en-tête X-Dev-Topup-Secret ou Authorization: Bearer avec cette valeur.",
     "pricing.dev.disabled": "Ce point de terminaison est désactivé en production.",
+
+    "pricingModal.title": "Augmenter tes crédits",
+    "pricingModal.subtitle":
+      "Essai gratuit 7 jours sur les abonnements, puis renouvellement. Les crédits sont réinitialisés à chaque cycle de facturation.",
+    "pricingModal.monthly": "Mensuel",
+    "pricingModal.yearly": "Annuel",
+    "pricingModal.closeAria": "Fermer",
+    "pricingModal.plan.basic": "Basique",
+    "pricingModal.plan.pro": "Pro",
+    "pricingModal.plan.ultra": "Ultra",
+    "pricingModal.mostPopular": "Le plus populaire",
+    "pricingModal.planCreditsLine": "{credits} crédits / mois après facturation d’essai",
+    "pricingModal.startTrial": "Démarrer l’essai gratuit 7 jours",
+    "pricingModal.thenMonthly": "Puis {price}/mois. Annule quand tu veux.",
+    "pricingModal.thenYearly":
+      "Puis ~{price}/mois équivalent (-20 % sur l’annuel). Annule quand tu veux.",
+    "pricingModal.oneTimeTrial": "Essai unique à $1.49 ({credits} crédits)",
+    "pricingModal.checkoutFailed": "Impossible de démarrer le paiement.",
+    "pricingModal.trialAlreadyUsedToast":
+      "Tu as déjà commencé un essai d’abonnement depuis ce navigateur.",
+
     "notFound.title": "Page introuvable",
     "notFound.description": "La page demandée n’existe pas.",
     "errors.serverToast": "Erreur serveur. Réessaie dans un instant.",
@@ -1337,12 +1445,16 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "Ensuite nous ouvrons la page de résultat et générons avec votre solde de crédits. L’achat de crédits arrivera plus tard.",
+    "tool.modelSelectLabel": "Modèle IA pour cette requête",
     "tool.ctaCreditSuffix": " — selon modèle et longueur",
     "tool.priceReference":
       "Tarif indicatif pour ce palier : {price} (ex. : recharges courantes de 10 crédits à $1 / $1.49 / $1.99 le pack).",
     "tool.pricePackFlex":
       "Aucune obligation d’acheter exactement 10 crédits — les formats proposés sous Tarifs restent flexibles.",
     "tool.validation.empty": "Remplissez les champs requis avant de continuer.",
+    "tool.billing.creditOne": "1 crédit",
+    "tool.billing.creditsMany": "{n} crédits",
+    "tool.billing.paidButton": "{action} · {amount}",
 
     "errors.toolParamMissing": "Paramètre d’outil manquant ou invalide.",
     "errors.noSavedInput":
@@ -1519,6 +1631,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "KI‑Produkte",
     "home.workspace.hint": "Einfügen → Generieren → Kopieren",
+    "home.aiStack.title": "KI‑Versionen in der App",
+    "home.aiStack.body":
+      "Anfragen laufen über OpenAI, Anthropic, Groq, DeepSeek und Google. Wähle Auto für sinnvolle Standard‑Modelle pro Tool oder ein konkretes Modell auf jeder Karte — die Credits folgen dem Tarif unter Preise.",
 
     "category.work-career.label": "Karriere‑Boost",
     "category.crisis-money.label": "Geld‑SOS",
@@ -1545,6 +1660,13 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.history": "Verlauf",
     "nav.account": "Konto",
     "nav.logout": "Abmelden",
+
+    "creditsNav.title": "Credit‑Kontostand",
+    "creditsNav.unit": "Credits",
+    "creditsNav.trialOne": "Testphase: noch 1 Tag",
+    "creditsNav.trialMany": "Testphase: noch {days} Tage",
+
+    "modelSwitcher.ariaLabel": "KI‑Modellversion",
 
     "usage.creditsHeading": "Credits",
     "usage.versionsLine": "Versionen pro Generierung: {max}",
@@ -1630,6 +1752,9 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.paygo.detailModalTitle": "{tier} — Nutzungsdetails",
     "pricing.paygo.infoButtonAria": "Nutzungsdetails für {tier}",
     "pricing.paygo.closeDetails": "Schließen",
+    "pricing.buyNow": "Jetzt kaufen",
+    "pricing.checkoutFailed": "Checkout konnte nicht gestartet werden. Lemon‑Squeezy‑Varianten prüfen oder erneut versuchen.",
+    "pricing.checkoutSignInRequired": "Zum Kauf eines Abos anmelden.",
     "pricing.pack.budget": "10 Credits · 1 $",
     "pricing.pack.standard": "25 Credits · 1,49 $",
     "pricing.pack.premium": "50 Credits · 1,99 $",
@@ -1680,6 +1805,27 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.dev.secretHint":
       "Wenn DEV_TOPUP_SECRET in .env.local gesetzt ist, Header X-Dev-Topup-Secret oder Authorization: Bearer mitsenden.",
     "pricing.dev.disabled": "In Produktion deaktiviert.",
+
+    "pricingModal.title": "Credits aufstocken",
+    "pricingModal.subtitle":
+      "7‑tägige Testphase bei Abos, danach Verlängerung. Credits werden pro Abrechnungszyklus zurückgesetzt.",
+    "pricingModal.monthly": "Monatlich",
+    "pricingModal.yearly": "Jährlich",
+    "pricingModal.closeAria": "Schließen",
+    "pricingModal.plan.basic": "Basic",
+    "pricingModal.plan.pro": "Pro",
+    "pricingModal.plan.ultra": "Ultra",
+    "pricingModal.mostPopular": "Am beliebtesten",
+    "pricingModal.planCreditsLine": "{credits} Credits / Monat nach Test‑Abrechnung",
+    "pricingModal.startTrial": "7‑Tage‑Test starten",
+    "pricingModal.thenMonthly": "Danach {price}/Monat. Jederzeit kündbar.",
+    "pricingModal.thenYearly":
+      "Danach ~{price}/Monat effektiv (20 % Rabatt jährlich). Jederzeit kündbar.",
+    "pricingModal.oneTimeTrial": "$1.49 Einmal‑Test ({credits} Credits)",
+    "pricingModal.checkoutFailed": "Checkout konnte nicht gestartet werden.",
+    "pricingModal.trialAlreadyUsedToast":
+      "Du hast von diesem Browser schon ein Abo‑Test gestartet.",
+
     "notFound.title": "Seite nicht gefunden",
     "notFound.description": "Diese Seite existiert nicht.",
     "errors.serverToast": "Serverfehler. Bitte kurz warten und erneut versuchen.",
@@ -1792,12 +1938,16 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "Als Nächstes öffnen wir die Ergebnisseite und generieren mit deinem Credit‑Kontostand. Credits kaufen kommt später.",
+    "tool.modelSelectLabel": "KI‑Modell für diese Anfrage",
     "tool.ctaCreditSuffix": " — je nach Modell und Länge",
     "tool.priceReference":
       "Richtpreis für diese Stufe: {price} (Beispiel: übliche 10‑Credit‑Pakete zu $1 / $1.49 / $1.99).",
     "tool.pricePackFlex":
       "Du musst nicht genau 10 Credits kaufen — Paketgrößen unter Preise sind flexibel.",
     "tool.validation.empty": "Bitte fülle die Pflichtfelder aus, bevor du fortfährst.",
+    "tool.billing.creditOne": "1 Credit",
+    "tool.billing.creditsMany": "{n} Credits",
+    "tool.billing.paidButton": "{action} · {amount}",
 
     "errors.toolParamMissing": "Tool‑Parameter fehlt oder ist ungültig.",
     "errors.noSavedInput":
@@ -1957,6 +2107,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "AI 产品",
     "home.workspace.hint": "粘贴 → 生成 → 复制",
+    "home.aiStack.title": "应用使用的 AI 版本",
+    "home.aiStack.body":
+      "请求会路由到 OpenAI、Anthropic、Groq、DeepSeek 与 Google。每个工具可选「自动」智能默认，或在卡片上选择具体模型——额度消耗见「价格与套餐」中的档位说明。",
 
     "category.work-career.label": "职场加速",
     "category.crisis-money.label": "钱包急救",
@@ -1983,6 +2136,13 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.history": "历史记录",
     "nav.account": "我的账户",
     "nav.logout": "退出登录",
+
+    "creditsNav.title": "额度余额",
+    "creditsNav.unit": "额度",
+    "creditsNav.trialOne": "试用：还剩 1 天",
+    "creditsNav.trialMany": "试用：还剩 {days} 天",
+
+    "modelSwitcher.ariaLabel": "AI 模型版本",
 
     "usage.creditsHeading": "额度",
     "usage.versionsLine": "每次生成最多版本数：{max}",
@@ -2065,6 +2225,9 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.paygo.detailModalTitle": "{tier} — 使用说明",
     "pricing.paygo.infoButtonAria": "{tier} 的使用说明",
     "pricing.paygo.closeDetails": "关闭",
+    "pricing.buyNow": "立即购买",
+    "pricing.checkoutFailed": "无法开始结账。请配置 Lemon Squeezy 商品变体或稍后重试。",
+    "pricing.checkoutSignInRequired": "购买订阅请先登录。",
     "pricing.pack.budget": "10 额度 · $1",
     "pricing.pack.standard": "25 额度 · $1.49",
     "pricing.pack.premium": "50 额度 · $1.99",
@@ -2114,6 +2277,25 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.dev.body": "开发环境（非生产）可在本地充值额度：",
     "pricing.dev.secretHint": "若在 .env.local 设置了 DEV_TOPUP_SECRET，请附带请求头 X-Dev-Topup-Secret 或 Authorization: Bearer。",
     "pricing.dev.disabled": "生产环境已禁用此接口。",
+
+    "pricingModal.title": "升级额度",
+    "pricingModal.subtitle":
+      "订阅享 7 天免费试用，之后按套餐续费。每个账单周期额度会重置。",
+    "pricingModal.monthly": "按月",
+    "pricingModal.yearly": "按年",
+    "pricingModal.closeAria": "关闭",
+    "pricingModal.plan.basic": "基础版",
+    "pricingModal.plan.pro": "专业版",
+    "pricingModal.plan.ultra": "旗舰版",
+    "pricingModal.mostPopular": "最受欢迎",
+    "pricingModal.planCreditsLine": "试用计费后每月 {credits} 额度",
+    "pricingModal.startTrial": "开始 7 天免费试用",
+    "pricingModal.thenMonthly": "之后 {price}/月。可随时取消。",
+    "pricingModal.thenYearly": "之后约合 {price}/月（年付约省 20%）。可随时取消。",
+    "pricingModal.oneTimeTrial": "$1.49 一次性试用（{credits} 额度）",
+    "pricingModal.checkoutFailed": "无法开始结账。",
+    "pricingModal.trialAlreadyUsedToast": "你已在此浏览器开始过订阅试用。",
+
     "notFound.title": "页面未找到",
     "notFound.description": "你要访问的页面不存在。",
     "errors.serverToast": "服务器错误，请稍后重试。",
@@ -2221,11 +2403,15 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "接下来会打开结果页，并用你的额度余额尝试生成。购买额度的流程会在后续版本接入。",
+    "tool.modelSelectLabel": "本次请求使用的 AI 模型",
     "tool.ctaCreditSuffix": " — 按模型与长度计费",
     "tool.priceReference":
       "该档位常见换算：{price}（示例：常见的 10 额度充值包价位为 $1 / $1.49 / $1.99）。",
     "tool.pricePackFlex": "不强制购买恰好 10 额度——价格页的套餐规格可灵活选择。",
     "tool.validation.empty": "请先填写必填内容再继续。",
+    "tool.billing.creditOne": "1 额度",
+    "tool.billing.creditsMany": "{n} 额度",
+    "tool.billing.paidButton": "{action} · {amount}",
 
     "errors.toolParamMissing": "缺少或无效的工具参数。",
     "errors.noSavedInput": "未在 localStorage 中找到该工具的已保存输入。请返回后重试。",
@@ -2391,6 +2577,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "AI Ürünleri",
     "home.workspace.hint": "Yapıştır → Üret → Kopyala",
+    "home.aiStack.title": "Uygulamanın çalıştırdığı yapay zeka sürümleri",
+    "home.aiStack.body":
+      "İstekler OpenAI, Anthropic, Groq, DeepSeek ve Google üzerinden yönlendirilir. Araç başına Akıllı seçim için Otomatik’i kullan veya listeden somut model seç — kontör kullanımı Paketler’deki kademeye göre hesaplanır.",
 
     "concierge.title": "ISENDAI",
     "concierge.welcome":
@@ -2409,6 +2598,13 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.history": "Geçmiş",
     "nav.account": "Hesabım",
     "nav.logout": "Çıkış",
+
+    "creditsNav.title": "Kontör bakiyesi",
+    "creditsNav.unit": "Kontör",
+    "creditsNav.trialOne": "Deneme: 1 gün kaldı",
+    "creditsNav.trialMany": "Deneme: {days} gün kaldı",
+
+    "modelSwitcher.ariaLabel": "Yapay zeka model sürümü",
 
     "usage.creditsHeading": "Kontör",
     "usage.versionsLine": "Üretim başına en fazla sürüm: {max}",
@@ -2494,6 +2690,9 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.paygo.detailModalTitle": "{tier} — kullanım detayı",
     "pricing.paygo.infoButtonAria": "{tier} için kullanım detayı",
     "pricing.paygo.closeDetails": "Kapat",
+    "pricing.buyNow": "Satın al",
+    "pricing.checkoutFailed": "Ödeme başlatılamadı. Lemon Squeezy varyantlarını yapılandır veya tekrar dene.",
+    "pricing.checkoutSignInRequired": "Abonelik satın almak için giriş yap.",
     "pricing.pack.budget": "10 kontör · $1",
     "pricing.pack.standard": "25 kontör · $1,49",
     "pricing.pack.premium": "50 kontör · $1,99",
@@ -2544,6 +2743,27 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.dev.secretHint":
       ".env.local içinde DEV_TOPUP_SECRET tanımlıysa X-Dev-Topup-Secret veya Authorization: Bearer başlığını gönderin.",
     "pricing.dev.disabled": "Üretimde bu uç devre dışı.",
+
+    "pricingModal.title": "Kontörünü artır",
+    "pricingModal.subtitle":
+      "Aboneliklerde 7 günlük ücretsiz deneme; ardından plan yenilenir. Kontörler her fatura döneminde sıfırlanır.",
+    "pricingModal.monthly": "Aylık",
+    "pricingModal.yearly": "Yıllık",
+    "pricingModal.closeAria": "Kapat",
+    "pricingModal.plan.basic": "Temel",
+    "pricingModal.plan.pro": "Pro",
+    "pricingModal.plan.ultra": "Ultra",
+    "pricingModal.mostPopular": "En çok tercih edilen",
+    "pricingModal.planCreditsLine": "Deneme faturalandırmasından sonra ayda {credits} kontör",
+    "pricingModal.startTrial": "7 günlük ücretsiz denemeyi başlat",
+    "pricingModal.thenMonthly": "Ardından {price}/ay. İstediğin zaman iptal.",
+    "pricingModal.thenYearly":
+      "Ardından yaklaşık {price}/ay (yıllıkta %20 indirim). İstediğin zaman iptal.",
+    "pricingModal.oneTimeTrial": "$1,49 tek seferlik deneme ({credits} kontör)",
+    "pricingModal.checkoutFailed": "Ödeme başlatılamadı.",
+    "pricingModal.trialAlreadyUsedToast":
+      "Bu tarayıcıdan zaten bir abonelik denemesi başlattın.",
+
     "notFound.title": "Sayfa bulunamadı",
     "notFound.description": "Aradığın sayfa yok.",
     "errors.serverToast": "Sunucu hatası. Kısa süre sonra tekrar dene.",
@@ -2656,12 +2876,16 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "Sırada sonuç sayfası var; üretim kontör bakiyenden düşer. Kontör satın alma akışı sonraki sürümde.",
+    "tool.modelSelectLabel": "Bu istek için yapay zeka modeli",
     "tool.ctaCreditSuffix": " — modele ve uzunluğa göre",
     "tool.priceReference":
       "Bu kademe için tipik oran: {price} (örnek: yaygın 10 kontörlük paket fiyatları $1 / $1.49 / $1.99).",
     "tool.pricePackFlex":
       "Tam 10 kontörlük paket almak zorunda değilsiniz — Paketler sayfasındaki seçenekler esnektir.",
     "tool.validation.empty": "Devam etmeden önce gerekli alanları doldur.",
+    "tool.billing.creditOne": "1 kontör",
+    "tool.billing.creditsMany": "{n} kontör",
+    "tool.billing.paidButton": "{action} · {amount}",
 
     "errors.toolParamMissing": "Tool parametresi eksik veya geçersiz.",
     "errors.noSavedInput":

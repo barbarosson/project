@@ -3,12 +3,16 @@
  * Yearly variants optional — enable when products exist (same credits per billing reset).
  */
 
+import { PAYGO_PACK_CREDITS, type ModelSalesTier } from "@/models/models";
+
 export type SubscriptionPlanKey = "basic" | "pro" | "ultra";
 export type BillingIntervalKey = "monthly" | "yearly";
+export type PaygoTierKey = ModelSalesTier;
 
 export type CheckoutPackKey =
   | { kind: "subscription"; plan: SubscriptionPlanKey; interval: BillingIntervalKey }
-  | { kind: "one_time_trial" };
+  | { kind: "one_time_trial" }
+  | { kind: "paygo"; tier: PaygoTierKey };
 
 const TRIAL_CREDITS_ON_SUB_START = 10;
 
@@ -32,6 +36,15 @@ function envTrim(key: string): string | null {
 function variantEnvKey(pack: CheckoutPackKey): string | null {
   if (pack.kind === "one_time_trial") {
     return envTrim("LEMON_SQUEEZY_VARIANT_ONE_TIME_TRIAL") ?? envTrim("LEMON_SQUEEZY_VARIANT_ID");
+  }
+  if (pack.kind === "paygo") {
+    const key =
+      pack.tier === "budget"
+        ? "LEMON_SQUEEZY_VARIANT_PAYGO_BUDGET"
+        : pack.tier === "standard"
+          ? "LEMON_SQUEEZY_VARIANT_PAYGO_STANDARD"
+          : "LEMON_SQUEEZY_VARIANT_PAYGO_PREMIUM";
+    return envTrim(key);
   }
   const suffix =
     pack.interval === "monthly"
@@ -73,6 +86,26 @@ export function subscriptionCreditsForVariantId(variantId: string): number | nul
 export function oneTimeCreditsForVariantId(variantId: string): number | null {
   const one = envTrim("LEMON_SQUEEZY_VARIANT_ONE_TIME_TRIAL") ?? envTrim("LEMON_SQUEEZY_VARIANT_ID");
   if (one && one === variantId.trim()) return ONE_TIME_TRIAL_CREDITS;
+  return null;
+}
+
+/** Credits for one-time pay-as-you-go pack variants (separate Lemon products per tier). */
+export function paygoCreditsForVariantId(variantId: string): number | null {
+  const tier = paygoTierForVariantId(variantId);
+  return tier ? PAYGO_PACK_CREDITS[tier] : null;
+}
+
+export function paygoTierForVariantId(variantId: string): PaygoTierKey | null {
+  const v = variantId.trim();
+  const rows: Array<{ env: string; tier: PaygoTierKey }> = [
+    { env: "LEMON_SQUEEZY_VARIANT_PAYGO_BUDGET", tier: "budget" },
+    { env: "LEMON_SQUEEZY_VARIANT_PAYGO_STANDARD", tier: "standard" },
+    { env: "LEMON_SQUEEZY_VARIANT_PAYGO_PREMIUM", tier: "premium" },
+  ];
+  for (const { env, tier } of rows) {
+    const ev = envTrim(env);
+    if (ev && ev === v) return tier;
+  }
   return null;
 }
 

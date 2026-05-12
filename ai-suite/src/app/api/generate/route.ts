@@ -31,6 +31,7 @@ import {
   type ConcreteModelId,
 } from "@/models/models";
 import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
+import { generateTextGoogleWithFlashFallback } from "@/lib/ai/gemini-flash-fallback";
 
 type RequestBody = ToolPayload & { model?: string; extra?: string };
 
@@ -219,12 +220,19 @@ async function checkScope(payload: RequestBody): Promise<ScopeResult> {
     "If not, set in_scope=false and suggest the best tool (or unknown).\n\n" +
     `User input:\n${rawInput}`;
 
-  const result = await generateText({
-    model: client(model),
-    temperature: 0,
-    system,
-    prompt,
-  });
+  const result =
+    provider === "google"
+      ? (await generateTextGoogleWithFlashFallback(model, {
+          temperature: 0,
+          system,
+          prompt,
+        })).result
+      : await generateText({
+          model: client(model),
+          temperature: 0,
+          system,
+          prompt,
+        });
 
   const content = result.text?.trim() ?? "";
   try {
@@ -503,7 +511,7 @@ export async function POST(req: Request) {
   const concreteForCredits: ConcreteModelId =
     midRaw !== "auto" && isConcreteModelId(midRaw) ? midRaw : defaultConcreteModelForProvider(provider);
   const creditCost = creditsForGeneration(concreteForCredits, user.length);
-  const debugHeaders = {
+  const debugHeaders: Record<string, string> = {
     "x-ai-provider": provider,
     "x-ai-model": model,
     "x-credits-required": String(creditCost),
@@ -671,12 +679,28 @@ export async function POST(req: Request) {
       );
     }
 
-    const out = await generateText({
-      model: client(model),
-      temperature: 0.6,
-      system,
-      prompt: user,
-    });
+    let usedGeminiFlashFallback = false;
+    let out: Awaited<ReturnType<typeof generateText>>;
+    if (provider === "google") {
+      const { result, usedFlashFallback } = await generateTextGoogleWithFlashFallback(model, {
+        temperature: 0.6,
+        system,
+        prompt: user,
+      });
+      out = result;
+      usedGeminiFlashFallback = usedFlashFallback;
+    } else {
+      out = await generateText({
+        model: client(model),
+        temperature: 0.6,
+        system,
+        prompt: user,
+      });
+    }
+
+    if (usedGeminiFlashFallback) {
+      debugHeaders["x-ai-gemini-flash-fallback"] = "1";
+    }
 
     const text = out.text?.trim();
     if (!text) {

@@ -10,6 +10,7 @@ import {
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   oneTimeCreditsForVariantId,
+  paygoCreditsForVariantId,
   planKeyFromVariantId,
   subscriptionCreditsForVariantId,
   trialCreditsForSubscriptionStart,
@@ -309,6 +310,9 @@ export async function POST(request: Request) {
 
     let credits =
       variantId !== null ? oneTimeCreditsForVariantId(variantId) : null;
+    if (credits === null && variantId !== null) {
+      credits = paygoCreditsForVariantId(variantId);
+    }
     if (credits === null) {
       const raw = process.env.LEMON_SQUEEZY_CREDITS_PER_ORDER?.trim();
       const n = raw ? Number.parseInt(raw, 10) : 10;
