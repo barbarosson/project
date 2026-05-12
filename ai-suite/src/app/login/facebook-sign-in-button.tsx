@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/i18n/i18n-provider";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSupabaseBrowserRuntimeConfig } from "@/lib/supabase/browser-config-context";
+import { FacebookMark } from "@/components/oauth-brand-icons";
 import { cn } from "@/lib/utils";
 
 export function FacebookSignInButton() {
@@ -47,7 +48,10 @@ export function FacebookSignInButton() {
       disabled={busy}
       onClick={() => void signInWithFacebook()}
     >
-      {busy ? t("login.sending") : t("login.oauthFacebook")}
+      <span className="inline-flex items-center justify-center gap-3">
+        <FacebookMark className="size-5" />
+        <span>{busy ? t("login.sending") : t("login.oauthFacebook")}</span>
+      </span>
     </Button>
   );
 }

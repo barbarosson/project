@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/i18n/i18n-provider";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSupabaseBrowserRuntimeConfig } from "@/lib/supabase/browser-config-context";
+import { OauthProviderMark } from "@/components/oauth-brand-icons";
 import { cn } from "@/lib/utils";
 
 type Row = {
@@ -71,7 +72,12 @@ export function OAuthLoginButtons() {
               disabled={busy !== null}
               onClick={() => void signIn(row.provider)}
             >
-              {busy === row.provider ? t("login.sending") : t(row.labelKey)}
+              <span className="inline-flex items-center justify-center gap-2">
+                <OauthProviderMark provider={row.provider} />
+                <span className="truncate">
+                  {busy === row.provider ? t("login.sending") : t(row.labelKey)}
+                </span>
+              </span>
             </Button>
             {row.subKey ? (
               <p className="px-1 text-[10px] leading-snug text-slate-500">{t(row.subKey)}</p>
