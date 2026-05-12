@@ -342,7 +342,7 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.flow.hint":
       "Next we open the result page and generate using your credit balance. Paying to buy credits comes in a later release.",
     "tool.ctaCreditSuffix": " — 1 credit",
-    "tool.priceReference": "Reference price ≈ {price} (see Pricing).",
+    "tool.priceReference": "Pay-as-you-go: {price} per 10-credit pack at this model tier (monthly bundles on Pricing).",
     "tool.validation.empty": "Please fill in the required fields before continuing.",
 
     "errors.toolParamMissing": "Missing or invalid tool parameter.",
@@ -723,7 +723,7 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.flow.hint":
       "A continuación abrimos la página de resultado y generamos con tu saldo de créditos. Comprar créditos llegará más adelante.",
     "tool.ctaCreditSuffix": " — 1 crédito",
-    "tool.priceReference": "Precio orientativo ≈ {price} (ver Precios).",
+    "tool.priceReference": "Pago por uso: {price} por paquete de 10 créditos en esta banda (planes mensuales en Precios).",
     "tool.validation.empty": "Completa los campos obligatorios antes de continuar.",
 
     "errors.toolParamMissing": "Falta el parámetro de herramienta o no es válido.",
@@ -1095,7 +1095,7 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.flow.hint":
       "Ensuite nous ouvrons la page de résultat et générons avec votre solde de crédits. L’achat de crédits arrivera plus tard.",
     "tool.ctaCreditSuffix": " — 1 crédit",
-    "tool.priceReference": "Prix indicatif ≈ {price} (voir Tarifs).",
+    "tool.priceReference": "Paiement à l’usage : {price} par pack de 10 crédits pour ce palier (offres mensuelles sous Tarifs).",
     "tool.validation.empty": "Remplissez les champs requis avant de continuer.",
 
     "errors.toolParamMissing": "Paramètre d’outil manquant ou invalide.",
@@ -1468,7 +1468,7 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.flow.hint":
       "Als Nächstes öffnen wir die Ergebnisseite und generieren mit deinem Credit‑Kontostand. Credits kaufen kommt später.",
     "tool.ctaCreditSuffix": " — 1 Credit",
-    "tool.priceReference": "Orientierungspreis ≈ {price} (siehe Preise).",
+    "tool.priceReference": "Pay-as-you-go: {price} pro 10‑Credit‑Paket für diese Modellstufe (Monatspakete unter Preise).",
     "tool.validation.empty": "Bitte fülle die Pflichtfelder aus, bevor du fortfährst.",
 
     "errors.toolParamMissing": "Tool‑Parameter fehlt oder ist ungültig.",
@@ -1817,7 +1817,7 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.flow.hint":
       "接下来会打开结果页，并用你的额度余额尝试生成。购买额度的流程会在后续版本接入。",
     "tool.ctaCreditSuffix": " — 1 额度",
-    "tool.priceReference": "参考单价约 {price}（详见价格与套餐）。",
+    "tool.priceReference": "按次：该模型档位对应 {price}/10 额度包（月付套餐见价格与套餐）。",
     "tool.validation.empty": "请先填写必填内容再继续。",
 
     "errors.toolParamMissing": "缺少或无效的工具参数。",
@@ -2171,7 +2171,7 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.flow.hint":
       "Sırada sonuç sayfası var; üretim kontör bakiyenden düşer. Kontör satın alma akışı sonraki sürümde.",
     "tool.ctaCreditSuffix": " — 1 kontör",
-    "tool.priceReference": "Yaklaşık referans fiyat ≈ {price} (Paketler’e bak).",
+    "tool.priceReference": "Kullandıkça öde: Bu model için {price} / 10 kontörlük paket (aylık planlar Paketler sayfasında).",
     "tool.validation.empty": "Devam etmeden önce gerekli alanları doldur.",
 
     "errors.toolParamMissing": "Tool parametresi eksik veya geçersiz.",
