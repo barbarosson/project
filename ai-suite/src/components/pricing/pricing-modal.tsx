@@ -271,7 +271,7 @@ export function PricingModalShell({
               className="text-sm text-slate-500 hover:bg-white/[0.06] hover:text-slate-300"
               onClick={() => void startOneTime(toolId)}
             >
-              $1.49 One-time Trial (10 credits)
+              $1.49 One-time Trial (25 credits)
             </Button>
           </div>
         </div>

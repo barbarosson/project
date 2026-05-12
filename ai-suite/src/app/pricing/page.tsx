@@ -2,7 +2,9 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import type { Metadata } from "next";
 
-import { CustomMonthlyPack } from "@/app/pricing/custom-monthly-pack";
+import { PricingHeroOverview } from "@/components/pricing-hero-overview";
+import { PricingCreditUsageGuide } from "@/components/pricing-credit-usage-guide";
+import { PricingPaygoTierCards } from "@/components/pricing-paygo-tier-cards";
 import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
 import { cn } from "@/lib/utils";
 import { glassInteractive, premiumCta, textGradientHero } from "@/lib/premium-ui";
@@ -33,12 +35,14 @@ export default async function PricingPage() {
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-12">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
-            {d["pricing.title"]}
-          </h1>
-          <p className="mt-2 text-sm text-slate-400">{d["pricing.subtitle"]}</p>
-        </div>
+        <h1
+          className={cn(
+            "min-w-0 flex-1 text-2xl font-semibold tracking-tight sm:text-3xl",
+            textGradientHero
+          )}
+        >
+          {d["pricing.title"]}
+        </h1>
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
           <SiteLocaleToolbar />
           <Link className={premiumCta} href="/">
@@ -46,6 +50,7 @@ export default async function PricingPage() {
           </Link>
         </div>
       </div>
+      <PricingHeroOverview d={d} />
 
       <section className="mt-10">
         <h2 className={cn("text-lg font-semibold tracking-tight", textGradientHero)}>
@@ -62,7 +67,7 @@ export default async function PricingPage() {
                 {d[`pricing.monthly.${plan}.price`]}
               </p>
               <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-violet-300/85">
-                {d[`pricing.monthly.${plan}.requests`]}
+                {d[`pricing.monthly.${plan}.credits`]}
               </p>
               <p className="mt-3 text-sm text-slate-400">{d[`pricing.monthly.${plan}.desc`]}</p>
             </div>
@@ -92,7 +97,7 @@ export default async function PricingPage() {
                 {d[`pricing.yearly.${plan}.price`]}
               </p>
               <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-violet-300/85">
-                {d[`pricing.yearly.${plan}.requests`]}
+                {d[`pricing.yearly.${plan}.credits`]}
               </p>
               <p className="mt-3 text-sm text-slate-400">{d[`pricing.yearly.${plan}.desc`]}</p>
               <p className="mt-3 text-xs font-medium text-emerald-400/90">{d[`pricing.yearly.${plan}.savings`]}</p>
@@ -101,27 +106,31 @@ export default async function PricingPage() {
         </div>
       </section>
 
-      <CustomMonthlyPack className="mt-10" />
-
       <section className="mt-10">
         <h2 className={cn("text-lg font-semibold tracking-tight", textGradientHero)}>
           {d["pricing.paygo.sectionTitle"]}
         </h2>
         <p className="mt-2 text-sm text-slate-400">{d["pricing.paygo.sectionLead"]}</p>
-        <div className="mt-5 grid gap-4 md:grid-cols-3">
-          {PAYGO_TIERS.map((tier) => (
-            <div key={tier} className={cn("rounded-2xl p-6", glassInteractive)}>
-              <p className="text-xs font-semibold text-slate-300">{d[`pricing.tier.${tier}`]}</p>
-              <p className="mt-2 text-3xl font-semibold tracking-tight text-white">
-                {d[`pricing.tier.${tier}Price`]}
-              </p>
-              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-violet-300/85">
-                {d["pricing.pack.requests"]}
-              </p>
-              <p className="mt-3 text-sm text-slate-400">{d[`pricing.tier.${tier}Desc`]}</p>
-            </div>
-          ))}
-        </div>
+        <PricingPaygoTierCards
+          tiers={PAYGO_TIERS.map((tier) => ({
+            id: tier,
+            label: d[`pricing.tier.${tier}`],
+            price: d[`pricing.tier.${tier}Price`],
+            pack: d[`pricing.pack.${tier}`],
+            summary: d[`pricing.tier.${tier}Summary`],
+            detail: d[`pricing.tier.${tier}Desc`],
+          }))}
+          detailModalTitle={d["pricing.paygo.detailModalTitle"]}
+          infoButtonAria={d["pricing.paygo.infoButtonAria"]}
+          closeLabel={d["pricing.paygo.closeDetails"]}
+        />
+      </section>
+
+      <section id="how-credits-work" className="mt-10 scroll-mt-24">
+        <h2 className={cn("text-lg font-semibold tracking-tight", textGradientHero)}>
+          {d["pricing.usageGuide.sectionTitle"]}
+        </h2>
+        <PricingCreditUsageGuide d={d} />
       </section>
 
       <p className="mt-10 text-xs leading-relaxed text-slate-500">{d["pricing.sectionFootnote"]}</p>

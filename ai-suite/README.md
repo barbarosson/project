@@ -71,25 +71,19 @@ Open `http://localhost:3000`.
 
 **Monthly bundles (USD)**
 
-| Price   | Requests / month |
-|---------|------------------|
-| $7.99   | 500              |
-| $9.99   | 1,000            |
-| $19.99  | 5,000            |
+| Price   | Credits / month |
+|---------|-----------------|
+| $7.99   | 500             |
+| $9.99   | 1,000           |
+| $19.99  | 5,000           |
 
-**Custom monthly mix (estimated total)** — per-request rates aligned with those bundles (`src/lib/pricing-rates.ts`):
+**Pay-as-you-go packs**
 
-- Low / budget AI: `$19.99 / 5000`
-- Mid / standard AI: `$9.99 / 1000`
-- High / premium AI: `$7.99 / 500`
+- **$1** → **10 credits**; **budget-tier models only** (`salesPriceForModel` → `$1.00` band). ~**$0.10**/credit. **Economy models + GPT‑4o mini**: **1 credit per 500-character chunk** (rounded up).
+- **$1.49** → **25 credits**; **budget + standard** (`$1.49` band). ~**$0.060**/credit. **Standard** models: **15 credits per 500-character chunk** (rounded up).
+- **$1.99** → **50 credits**; **full catalog** (`$1.99` band). ~**$0.040**/credit. **Premium** models: **25 credits per 500-character chunk** (rounded up).
 
-**Pay-as-you-go 10-request packs**
-
-- **$1** — 10 credits; **budget-tier models only** (`salesPriceForModel` → `$1.00` band).
-- **$1.49** — 10 credits; **budget + standard** (`$1.49` band).
-- **$1.99** — 10 credits; **full catalog** (`$1.99` band).
-
-Each generation consumes **1 credit**. Stripe checkout and entitlement enforcement are not wired yet; model price bands today match `src/models/models.ts` (`salesPriceForModel` / `modelSalesTier`).
+Stripe checkout and entitlement enforcement are not wired yet; see `src/models/models.ts` (`salesPriceForModel`, `PAYGO_PACK_CREDITS`, `creditsForGeneration`).
 
 ## Learn more
 

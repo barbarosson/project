@@ -9,7 +9,7 @@ import { getToolDefinition } from "./tools";
 import { useModel } from "@/models/model-provider";
 import {
   defaultConcreteModelForProvider,
-  generationCreditsForConcreteModel,
+  creditsForGeneration,
   modelSalesTier,
   tierTenPackSummary,
   type ConcreteModelId,
@@ -109,7 +109,11 @@ export function ToolCard({
       : text.trim().length >= 10;
 
   const priceListLabel = tierTenPackSummary(modelSalesTier(concreteModel));
-  const genCost = generationCreditsForConcreteModel(concreteModel);
+  const inputCharLen =
+    tool === "coverletter-ai"
+      ? jobLink.trim().length + resume.trim().length
+      : text.trim().length;
+  const genCost = creditsForGeneration(concreteModel, Math.max(inputCharLen, 1));
   const costLabel = genCost === 1 ? "1 Credit" : `${genCost} Credits`;
   const paidGenerateLabel = `${toolPrimaryActionLabel(t, tool, def.actionLabel)} (Costs ${costLabel})`;
   const showFreeCta = mounted && enableMarketingFreeTrial && !trialUsed;

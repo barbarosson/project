@@ -11,7 +11,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import {
   defaultConcreteModelForProvider,
-  generationCreditsForConcreteModel,
+  creditsForGeneration,
   isConcreteModelId,
   modelMeta,
   normalizeModelIdString,
@@ -157,7 +157,7 @@ export async function POST(req: Request) {
     normalizedStored !== "auto" && isConcreteModelId(normalizedStored)
       ? normalizedStored
       : defaultConcreteModelForProvider(provider);
-  const creditCost = generationCreditsForConcreteModel(concreteForCost);
+  const creditCost = creditsForGeneration(concreteForCost, prompt.length);
 
   const { error: deductErr } = await billingDeductCredits(admin, {
     p_owner_type: ownerType,

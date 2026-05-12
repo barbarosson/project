@@ -24,7 +24,7 @@ import {
 } from "@/components/ai-suite/tools";
 import {
   defaultConcreteModelForProvider,
-  generationCreditsForConcreteModel,
+  creditsForGeneration,
   isConcreteModelId,
   modelMeta,
   normalizeModelIdString,
@@ -502,7 +502,7 @@ export async function POST(req: Request) {
       : "auto";
   const concreteForCredits: ConcreteModelId =
     midRaw !== "auto" && isConcreteModelId(midRaw) ? midRaw : defaultConcreteModelForProvider(provider);
-  const creditCost = generationCreditsForConcreteModel(concreteForCredits);
+  const creditCost = creditsForGeneration(concreteForCredits, user.length);
   const debugHeaders = {
     "x-ai-provider": provider,
     "x-ai-model": model,
