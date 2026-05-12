@@ -72,9 +72,9 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
         <div className="flex min-w-0 flex-1 items-center">
           <IsendaiLogo
             withWordmark
-            className="min-w-0 gap-2 sm:gap-3"
+            className="shrink-0 gap-2 sm:gap-3"
             iconClassName="size-10 shrink-0 sm:size-12 md:size-14 lg:size-16 xl:size-20"
-            wordmarkClassName="block min-w-0 truncate text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl"
+            wordmarkClassName="inline-flex items-baseline whitespace-nowrap text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl"
           />
         </div>
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
