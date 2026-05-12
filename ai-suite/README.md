@@ -67,13 +67,29 @@ Open `http://localhost:3000`.
 - **Non-production:** use `POST /api/dev/topup` as documented on `/pricing`.
 - **Production:** grant credits via SQL, a future admin tool, or Stripe webhooks (planned).
 
-### Planned credit packs (pricing page)
+### Planned pricing (see `/pricing`)
 
-- **$1** — 10 credits; **budget-tier models only** (matches `salesPriceForModel` → `$1.00` band).
-- **$1.49** — 10 credits; **budget + standard** models (`$1.49` band).
-- **$1.99** — 10 credits; **full model catalog** including premium / reasoning (`$1.99` band).
+**Monthly bundles (USD)**
 
-Each generation still consumes **1 credit**. Pack purchase enforcement (locking the model picker by tier) is not wired until Stripe + entitlement flags land; today the UI bands match `src/models/models.ts` (`salesPriceForModel` / `modelSalesTier`).
+| Price   | Requests / month |
+|---------|------------------|
+| $7.99   | 100              |
+| $9.99   | 300              |
+| $19.99  | 1000             |
+
+**Custom monthly mix (estimated total)** — per-request rates aligned with those bundles (`src/lib/pricing-rates.ts`):
+
+- Low / budget AI: `$19.99 / 1000`
+- Mid / standard AI: `$9.99 / 300`
+- High / premium AI: `$7.99 / 100`
+
+**Pay-as-you-go 10-request packs**
+
+- **$1** — 10 credits; **budget-tier models only** (`salesPriceForModel` → `$1.00` band).
+- **$1.49** — 10 credits; **budget + standard** (`$1.49` band).
+- **$1.99** — 10 credits; **full catalog** (`$1.99` band).
+
+Each generation consumes **1 credit**. Stripe checkout and entitlement enforcement are not wired yet; model price bands today match `src/models/models.ts` (`salesPriceForModel` / `modelSalesTier`).
 
 ## Learn more
 

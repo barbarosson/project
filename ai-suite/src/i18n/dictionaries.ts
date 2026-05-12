@@ -197,7 +197,37 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricing.title": "Pricing",
     "pricing.subtitle":
-      "Credit packs bundle 10 generations (10 credits). Each run uses 1 credit. The pack tier sets which AI models you can select — budget-only, budget+standard, or full catalog including premium.",
+      "Monthly bundles include 100 / 300 / 1000 requests at $7.99 / $9.99 / $19.99. Custom mixes estimate price from those rates. Pay-as-you-go 10-request packs still gate model tiers. Each run uses 1 credit.",
+    "pricing.monthly.sectionTitle": "Monthly request bundles",
+    "pricing.monthly.sectionLead":
+      "Renews each billing cycle once Stripe is enabled. Effective per-request rates: ~$0.0799 (100), ~$0.0333 (300), ~$0.0200 (1000).",
+    "pricing.monthly.starter.name": "Starter",
+    "pricing.monthly.starter.price": "$7.99",
+    "pricing.monthly.starter.requests": "100 requests / month",
+    "pricing.monthly.starter.desc": "Entry monthly volume for individuals.",
+    "pricing.monthly.growth.name": "Growth",
+    "pricing.monthly.growth.price": "$9.99",
+    "pricing.monthly.growth.requests": "300 requests / month",
+    "pricing.monthly.growth.desc": "Best for steady daily use.",
+    "pricing.monthly.scale.name": "Scale",
+    "pricing.monthly.scale.price": "$19.99",
+    "pricing.monthly.scale.requests": "1000 requests / month",
+    "pricing.monthly.scale.desc": "Heavy usage and automation-friendly pricing.",
+    "pricing.custom.title": "Custom monthly mix",
+    "pricing.custom.subtitle":
+      "Split monthly requests across low / mid / high AI tiers. Totals use per-request rates derived from our bundles: $19.99÷1000 (low), $9.99÷300 (mid), $7.99÷100 (high).",
+    "pricing.custom.lowLabel": "Low-tier AI requests",
+    "pricing.custom.midLabel": "Mid-tier AI requests",
+    "pricing.custom.highLabel": "High-tier AI requests",
+    "pricing.custom.lowRateHint": "≈ {rate} / request (from $19.99 / 1000)",
+    "pricing.custom.midRateHint": "≈ {rate} / request (from $9.99 / 300)",
+    "pricing.custom.highRateHint": "≈ {rate} / request (from $7.99 / 100)",
+    "pricing.custom.totalLabel": "Estimated monthly total",
+    "pricing.custom.disclaimer":
+      "Indicative total until Stripe checkout ships; taxes may apply. Align tier counts with how you plan to use budget vs premium models.",
+    "pricing.paygo.sectionTitle": "Pay-as-you-go (10-request packs)",
+    "pricing.paygo.sectionLead":
+      "One-off credits. Tier matches model access in the picker ($1 / $1.49 / $1.99 per 10 credits).",
     "pricing.pack.requests": "10 requests per pack",
     "pricing.tier.budget": "Budget",
     "pricing.tier.standard": "Standard",
@@ -212,7 +242,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.tier.premiumDesc":
       "Full access — every model tier including premium and reasoning across providers.",
     "pricing.sectionFootnote":
-      "Per-request version limits still follow your account entitlements. Stripe checkout for packs ships in a later phase.",
+      "Per-request version limits still follow your account entitlements. Stripe checkout for monthly bundles and custom mixes ships in a later phase.",
     "pricing.dev.title": "Developer mode",
     "pricing.dev.body": "Top up credits locally while Stripe is disabled:",
     "pricing.dev.disabled": "This endpoint is disabled in production.",
@@ -548,7 +578,37 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricing.title": "Precios",
     "pricing.subtitle":
-      "Los paquetes incluyen 10 créditos (10 generaciones). Cada ejecución usa 1 crédito. El nivel del paquete define qué modelos de IA puedes usar: solo económicos, económicos+estándar, o catálogo completo con premium.",
+      "Los paquetes mensuales incluyen 100 / 300 / 1000 solicitudes por $7.99 / $9.99 / $19.99. Las mezclas personalizadas usan esas tarifas. Los paquetes de 10 solicitudes siguen limitando el acceso a modelos. Cada ejecución usa 1 crédito.",
+    "pricing.monthly.sectionTitle": "Paquetes mensuales de solicitudes",
+    "pricing.monthly.sectionLead":
+      "Se renueva cada ciclo cuando Stripe esté activo. Precios por solicitud aprox.: ~$0.0799 (100), ~$0.0333 (300), ~$0.0200 (1000).",
+    "pricing.monthly.starter.name": "Inicial",
+    "pricing.monthly.starter.price": "$7.99",
+    "pricing.monthly.starter.requests": "100 solicitudes / mes",
+    "pricing.monthly.starter.desc": "Volumen mensual de entrada.",
+    "pricing.monthly.growth.name": "Crecimiento",
+    "pricing.monthly.growth.price": "$9.99",
+    "pricing.monthly.growth.requests": "300 solicitudes / mes",
+    "pricing.monthly.growth.desc": "Uso diario constante.",
+    "pricing.monthly.scale.name": "Escala",
+    "pricing.monthly.scale.price": "$19.99",
+    "pricing.monthly.scale.requests": "1000 solicitudes / mes",
+    "pricing.monthly.scale.desc": "Alto volumen y mejor precio por solicitud.",
+    "pricing.custom.title": "Mezcla mensual personalizada",
+    "pricing.custom.subtitle":
+      "Reparte solicitudes mensuales entre niveles bajo / medio / alto. Total con tasas de $19.99÷1000 (bajo), $9.99÷300 (medio), $7.99÷100 (alto).",
+    "pricing.custom.lowLabel": "Solicitudes IA nivel bajo",
+    "pricing.custom.midLabel": "Solicitudes IA nivel medio",
+    "pricing.custom.highLabel": "Solicitudes IA nivel alto",
+    "pricing.custom.lowRateHint": "≈ {rate} / solicitud (de $19.99 / 1000)",
+    "pricing.custom.midRateHint": "≈ {rate} / solicitud (de $9.99 / 300)",
+    "pricing.custom.highRateHint": "≈ {rate} / solicitud (de $7.99 / 100)",
+    "pricing.custom.totalLabel": "Total mensual estimado",
+    "pricing.custom.disclaimer":
+      "Total orientativo hasta activar Stripe; pueden aplicarse impuestos. Ajusta los niveles según tu uso real de modelos.",
+    "pricing.paygo.sectionTitle": "Pago por uso (paquetes de 10 solicitudes)",
+    "pricing.paygo.sectionLead":
+      "Créditos puntuales. El nivel define qué modelos ves ($1 / $1.49 / $1.99 por 10 créditos).",
     "pricing.pack.requests": "10 solicitudes por paquete",
     "pricing.tier.budget": "Económico",
     "pricing.tier.standard": "Estándar",
@@ -563,7 +623,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.tier.premiumDesc":
       "Acceso total — todos los niveles de modelo, incluidos premium y razonamiento.",
     "pricing.sectionFootnote":
-      "El límite de versiones por solicitud sigue tu cuenta. El checkout Stripe para paquetes llegará después.",
+      "El límite de versiones por solicitud sigue tu cuenta. El checkout Stripe para paquetes mensuales y mezclas personalizadas llegará después.",
     "pricing.dev.title": "Modo desarrollador",
     "pricing.dev.body": "Recarga créditos en local mientras Stripe está desactivado:",
     "pricing.dev.disabled": "Este endpoint está desactivado en producción.",
@@ -890,7 +950,37 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricing.title": "Tarifs",
     "pricing.subtitle":
-      "Chaque pack contient 10 crédits (10 générations). Chaque exécution utilise 1 crédit. Le palier choisi définit les modèles IA disponibles : économiques uniquement, économiques + standard, ou catalogue complet avec premium.",
+      "Les offres mensuelles incluent 100 / 300 / 1000 requêtes pour $7.99 / $9.99 / $19.99. Le mix personnalisé reprend ces tarifs unitaires. Les packs de 10 requêtes limitent toujours les modèles. Chaque exécution utilise 1 crédit.",
+    "pricing.monthly.sectionTitle": "Forfaits mensuels de requêtes",
+    "pricing.monthly.sectionLead":
+      "Renouvellement à chaque cycle une fois Stripe activé. Tarifs par requête indicatifs : ~$0.0799 (100), ~$0.0333 (300), ~$0.0200 (1000).",
+    "pricing.monthly.starter.name": "Starter",
+    "pricing.monthly.starter.price": "7,99 $",
+    "pricing.monthly.starter.requests": "100 requêtes / mois",
+    "pricing.monthly.starter.desc": "Volume mensuel d’entrée.",
+    "pricing.monthly.growth.name": "Croissance",
+    "pricing.monthly.growth.price": "9,99 $",
+    "pricing.monthly.growth.requests": "300 requêtes / mois",
+    "pricing.monthly.growth.desc": "Usage quotidien régulier.",
+    "pricing.monthly.scale.name": "Échelle",
+    "pricing.monthly.scale.price": "19,99 $",
+    "pricing.monthly.scale.requests": "1000 requêtes / mois",
+    "pricing.monthly.scale.desc": "Gros volume et meilleur prix par requête.",
+    "pricing.custom.title": "Mix mensuel personnalisé",
+    "pricing.custom.subtitle":
+      "Répartis tes requêtes mensuelles entre niveaux bas / moyen / haut. Total basé sur $19.99÷1000 (bas), $9.99÷300 (moyen), $7.99÷100 (haut).",
+    "pricing.custom.lowLabel": "Requêtes IA niveau bas",
+    "pricing.custom.midLabel": "Requêtes IA niveau moyen",
+    "pricing.custom.highLabel": "Requêtes IA niveau haut",
+    "pricing.custom.lowRateHint": "≈ {rate} / requête (à partir de $19.99 / 1000)",
+    "pricing.custom.midRateHint": "≈ {rate} / requête (à partir de $9.99 / 300)",
+    "pricing.custom.highRateHint": "≈ {rate} / requête (à partir de $7.99 / 100)",
+    "pricing.custom.totalLabel": "Total mensuel estimé",
+    "pricing.custom.disclaimer":
+      "Estimation indicative jusqu’à l’activation Stripe ; taxes possibles. Adapte les niveaux à ton usage réel.",
+    "pricing.paygo.sectionTitle": "Paiement à l’usage (packs de 10 requêtes)",
+    "pricing.paygo.sectionLead":
+      "Crédits ponctuels. Le palier détermine les modèles dans le sélecteur ($1 / $1.49 / $1.99 pour 10 crédits).",
     "pricing.pack.requests": "10 requêtes par pack",
     "pricing.tier.budget": "Économique",
     "pricing.tier.standard": "Standard",
@@ -905,7 +995,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.tier.premiumDesc":
       "Accès complet — tous les paliers de modèles, premium et raisonnement inclus.",
     "pricing.sectionFootnote":
-      "La limite de versions par demande suit ton compte. Le checkout Stripe pour les packs arrive dans une phase ultérieure.",
+      "La limite de versions par demande suit ton compte. Le checkout Stripe pour les offres mensuelles et le mix personnalisé arrive ensuite.",
     "pricing.dev.title": "Mode développeur",
     "pricing.dev.body": "Rechargez des crédits en local tant que Stripe est désactivé :",
     "pricing.dev.disabled": "Ce point de terminaison est désactivé en production.",
@@ -1233,7 +1323,37 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricing.title": "Preise",
     "pricing.subtitle":
-      "Pakete enthalten 10 Credits (10 Generierungen). Ein Lauf = 1 Credit. Die Paketstufe legt fest, welche KI‑Modelle wählbar sind — nur Budget, Budget+Standard oder alle inkl. Premium.",
+      "Monatspakete: 100 / 300 / 1000 Requests für $7.99 / $9.99 / $19.99. Individuelle Mixe nutzen dieselben Stückpreise. 10er‑Packs begrenzen weiter die Modellwahl. Ein Lauf = 1 Credit.",
+    "pricing.monthly.sectionTitle": "Monatliche Request‑Pakete",
+    "pricing.monthly.sectionLead":
+      "Verlängert sich pro Abrechnungszyklus mit Stripe. Ca. Preis pro Request: ~$0.0799 (100), ~$0.0333 (300), ~$0.0200 (1000).",
+    "pricing.monthly.starter.name": "Starter",
+    "pricing.monthly.starter.price": "7,99 $",
+    "pricing.monthly.starter.requests": "100 Requests / Monat",
+    "pricing.monthly.starter.desc": "Einstieg für wenig Volumen.",
+    "pricing.monthly.growth.name": "Growth",
+    "pricing.monthly.growth.price": "9,99 $",
+    "pricing.monthly.growth.requests": "300 Requests / Monat",
+    "pricing.monthly.growth.desc": "Regelmäßige tägliche Nutzung.",
+    "pricing.monthly.scale.name": "Scale",
+    "pricing.monthly.scale.price": "19,99 $",
+    "pricing.monthly.scale.requests": "1000 Requests / Monat",
+    "pricing.monthly.scale.desc": "Hohes Volumen, bester Stückpreis.",
+    "pricing.custom.title": "Individueller Monats‑Mix",
+    "pricing.custom.subtitle":
+      "Verteile monatliche Requests auf niedrige / mittlere / hohe KI‑Stufen. Summe aus $19.99÷1000 (niedrig), $9.99÷300 (mittel), $7.99÷100 (hoch).",
+    "pricing.custom.lowLabel": "Requests niedrige KI‑Stufe",
+    "pricing.custom.midLabel": "Requests mittlere KI‑Stufe",
+    "pricing.custom.highLabel": "Requests hohe KI‑Stufe",
+    "pricing.custom.lowRateHint": "≈ {rate} / Request (aus $19.99 / 1000)",
+    "pricing.custom.midRateHint": "≈ {rate} / Request (aus $9.99 / 300)",
+    "pricing.custom.highRateHint": "≈ {rate} / Request (aus $7.99 / 100)",
+    "pricing.custom.totalLabel": "Geschätzte Monatssumme",
+    "pricing.custom.disclaimer":
+      "Richtwert bis Stripe live ist; Steuern möglich. Passe die Anteile an dein reales Modell‑Split an.",
+    "pricing.paygo.sectionTitle": "Pay‑as‑you‑go (10‑Request‑Packs)",
+    "pricing.paygo.sectionLead":
+      "Einmal‑Credits. Die Stufe steuert die Modelle im Picker ($1 / $1.49 / $1.99 je 10 Credits).",
     "pricing.pack.requests": "10 Requests pro Paket",
     "pricing.tier.budget": "Budget",
     "pricing.tier.standard": "Standard",
@@ -1248,7 +1368,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.tier.premiumDesc":
       "Voller Zugriff — alle Modellstufen inkl. Premium & Reasoning bei allen Anbietern.",
     "pricing.sectionFootnote":
-      "Versionslimit pro Anfrage weiterhin über Berechtigungen. Stripe‑Paket‑Checkout folgt später.",
+      "Versionslimit pro Anfrage weiterhin über Berechtigungen. Stripe für Monatspakete und Mix folgt später.",
     "pricing.dev.title": "Entwicklermodus",
     "pricing.dev.body": "Credits lokal aufladen, solange Stripe aus ist:",
     "pricing.dev.disabled": "In Produktion deaktiviert.",
@@ -1559,7 +1679,37 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricing.title": "价格与套餐",
     "pricing.subtitle":
-      "套餐含 10 个额度（10 次生成）。每次生成消耗 1 个额度。套餐档位决定可选模型：仅经济档、经济+标准档，或包含高级与推理的完整目录。",
+      "月付套餐含 100 / 300 / 1000 次请求（$7.99 / $9.99 / $19.99）。自定义配比按相同单价推算。按次 10 额度包仍会限制模型档位。每次生成消耗 1 额度。",
+    "pricing.monthly.sectionTitle": "月度请求套餐",
+    "pricing.monthly.sectionLead":
+      "Stripe 开通后按账单周期续订。单次参考成本：约 $0.0799（100）、$0.0333（300）、$0.0200（1000）。",
+    "pricing.monthly.starter.name": "入门",
+    "pricing.monthly.starter.price": "$7.99",
+    "pricing.monthly.starter.requests": "每月 100 次请求",
+    "pricing.monthly.starter.desc": "轻量个人使用。",
+    "pricing.monthly.growth.name": "成长",
+    "pricing.monthly.growth.price": "$9.99",
+    "pricing.monthly.growth.requests": "每月 300 次请求",
+    "pricing.monthly.growth.desc": "稳定日常使用。",
+    "pricing.monthly.scale.name": "规模",
+    "pricing.monthly.scale.price": "$19.99",
+    "pricing.monthly.scale.requests": "每月 1000 次请求",
+    "pricing.monthly.scale.desc": "高频与自动化场景，单次成本更低。",
+    "pricing.custom.title": "自定义月度配比",
+    "pricing.custom.subtitle":
+      "把月度请求分配到低 / 中 / 高三档模型用量。总价按 $19.99÷1000（低）、$9.99÷300（中）、$7.99÷100（高）估算。",
+    "pricing.custom.lowLabel": "低档 AI 请求次数",
+    "pricing.custom.midLabel": "中档 AI 请求次数",
+    "pricing.custom.highLabel": "高档 AI 请求次数",
+    "pricing.custom.lowRateHint": "≈ {rate} / 次（来自 $19.99 / 1000）",
+    "pricing.custom.midRateHint": "≈ {rate} / 次（来自 $9.99 / 300）",
+    "pricing.custom.highRateHint": "≈ {rate} / 次（来自 $7.99 / 100）",
+    "pricing.custom.totalLabel": "预估月费用",
+    "pricing.custom.disclaimer":
+      "Stripe 上架前为估算；不含税费。请按你在各档模型的真实占比填写。",
+    "pricing.paygo.sectionTitle": "按次购买（10 次额度包）",
+    "pricing.paygo.sectionLead":
+      "一次性额度；档位决定模型选择器范围（每 10 额度 $1 / $1.49 / $1.99）。",
     "pricing.pack.requests": "每包 10 次请求",
     "pricing.tier.budget": "经济",
     "pricing.tier.standard": "标准",
@@ -1570,7 +1720,8 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.tier.budgetDesc": "仅经济档模型 — 最快、最低成本（与模型选择器价位一致）。",
     "pricing.tier.standardDesc": "经济 + 标准档；高级 / 强推理模型仍不可用。",
     "pricing.tier.premiumDesc": "全量可用 — 包含所有提供商的高级与推理模型。",
-    "pricing.sectionFootnote": "每次请求的版本上限仍以账户权益为准。Stripe 套餐结账稍后上线。",
+    "pricing.sectionFootnote":
+      "每次请求的版本上限仍以账户权益为准。月度套餐与自定义配比的 Stripe 结账稍后上线。",
     "pricing.dev.title": "开发者模式",
     "pricing.dev.body": "Stripe 未接入时可在本地为额度充值：",
     "pricing.dev.disabled": "生产环境已禁用此接口。",
@@ -1875,7 +2026,37 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricing.title": "Paketler",
     "pricing.subtitle":
-      "Paketler 10 kontörlük (10 üretim). Her çalıştırma 1 kontör yer. Paket seviyesi hangi yapay zeka modellerini seçebileceğini belirler: yalnız ekonomik; ekonomik+standart; veya premium/akıl yürütme dahil tam erişim.",
+      "Aylık paketler 100 / 300 / 1000 istek ($7.99 / $9.99 / $19.99). Özel dağılım aynı birim fiyatlarla hesaplanır. 10’luk kontör paketleri model erişimini sınırlamaya devam eder. Her çalıştırma 1 kontör.",
+    "pricing.monthly.sectionTitle": "Aylık istek paketleri",
+    "pricing.monthly.sectionLead":
+      "Stripe açılınca her fatura döneminde yenilenir. Yaklaşık istek başı: ~$0.0799 (100), ~$0.0333 (300), ~$0.0200 (1000).",
+    "pricing.monthly.starter.name": "Başlangıç",
+    "pricing.monthly.starter.price": "$7.99",
+    "pricing.monthly.starter.requests": "Ayda 100 istek",
+    "pricing.monthly.starter.desc": "Bireysel hafif kullanım.",
+    "pricing.monthly.growth.name": "Büyüme",
+    "pricing.monthly.growth.price": "$9.99",
+    "pricing.monthly.growth.requests": "Ayda 300 istek",
+    "pricing.monthly.growth.desc": "Düzenli günlük kullanım.",
+    "pricing.monthly.scale.name": "Ölçek",
+    "pricing.monthly.scale.price": "$19.99",
+    "pricing.monthly.scale.requests": "Ayda 1000 istek",
+    "pricing.monthly.scale.desc": "Yoğun kullanım ve otomasyon için en uygun istek başı maliyet.",
+    "pricing.custom.title": "Özel aylık dağılım",
+    "pricing.custom.subtitle":
+      "Düşük / orta / yüksek model katmanlarına aylık istek sayılarını böl. Toplam: $19.99÷1000 (düşük), $9.99÷300 (orta), $7.99÷100 (yüksek) birim fiyatlarıyla.",
+    "pricing.custom.lowLabel": "Düşük seviye AI istekleri",
+    "pricing.custom.midLabel": "Orta seviye AI istekleri",
+    "pricing.custom.highLabel": "Yüksek seviye AI istekleri",
+    "pricing.custom.lowRateHint": "≈ {rate} / istek ($19.99 / 1000)",
+    "pricing.custom.midRateHint": "≈ {rate} / istek ($9.99 / 300)",
+    "pricing.custom.highRateHint": "≈ {rate} / istek ($7.99 / 100)",
+    "pricing.custom.totalLabel": "Tahmini aylık toplam",
+    "pricing.custom.disclaimer":
+      "Stripe canlı olana kadar gösterge niteliğinde; vergi hariç. Katmanları gerçek kullanımına göre ayarla.",
+    "pricing.paygo.sectionTitle": "Kullandıkça öde (10 isteklik paketler)",
+    "pricing.paygo.sectionLead":
+      "Tek seferlik kontör; kademe model seçicide hangi modellerin açılacağını belirler ($1 / $1,49 / $1,99 / 10 kontör).",
     "pricing.pack.requests": "Paket başına 10 istek",
     "pricing.tier.budget": "Ekonomik",
     "pricing.tier.standard": "Standart",
@@ -1890,7 +2071,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.tier.premiumDesc":
       "Tam erişim — tüm sağlayıcılarda üst düzey ve akıl yürütme modelleri dahil.",
     "pricing.sectionFootnote":
-      "İstek başına sürüm limiti hesap haklarından gelir. Stripe paket ödemesi sonraki aşamada.",
+      "İstek başına sürüm limiti hesap haklarından gelir. Aylık paket ve özel dağılım için Stripe ödemesi sonraki aşamada.",
     "pricing.dev.title": "Geliştirici modu",
     "pricing.dev.body": "Stripe kapalıyken yerelde kontör eklemek için:",
     "pricing.dev.disabled": "Üretimde bu uç devre dışı.",

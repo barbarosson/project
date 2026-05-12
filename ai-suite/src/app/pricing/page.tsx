@@ -2,13 +2,15 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import type { Metadata } from "next";
 
+import { CustomMonthlyPack } from "@/app/pricing/custom-monthly-pack";
 import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
 import { DICTS, type Locale } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 
 export const dynamic = "force-dynamic";
 
-const TIERS = ["budget", "standard", "premium"] as const;
+const PAYGO_TIERS = ["budget", "standard", "premium"] as const;
+const MONTHLY_PLANS = ["starter", "growth", "scale"] as const;
 
 export async function generateMetadata(): Promise<Metadata> {
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
@@ -41,25 +43,55 @@ export default async function PricingPage() {
         </div>
       </div>
 
-      <section className="mt-6 grid gap-4 md:grid-cols-3">
-        {TIERS.map((tier) => (
-          <div
-            key={tier}
-            className="rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md"
-          >
-            <p className="text-xs font-semibold text-slate-300">{d[`pricing.tier.${tier}`]}</p>
-            <p className="mt-2 text-3xl font-semibold tracking-tight text-white">
-              {d[`pricing.tier.${tier}Price`]}
-            </p>
-            <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-violet-300/85">
-              {d["pricing.pack.requests"]}
-            </p>
-            <p className="mt-3 text-sm text-slate-300">{d[`pricing.tier.${tier}Desc`]}</p>
-          </div>
-        ))}
+      <section className="mt-10">
+        <h2 className="text-lg font-semibold tracking-tight text-white">{d["pricing.monthly.sectionTitle"]}</h2>
+        <p className="mt-2 text-sm text-slate-300">{d["pricing.monthly.sectionLead"]}</p>
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          {MONTHLY_PLANS.map((plan) => (
+            <div
+              key={plan}
+              className="rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md"
+            >
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                {d[`pricing.monthly.${plan}.name`]}
+              </p>
+              <p className="mt-2 text-3xl font-semibold tracking-tight text-white">
+                {d[`pricing.monthly.${plan}.price`]}
+              </p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-violet-300/85">
+                {d[`pricing.monthly.${plan}.requests`]}
+              </p>
+              <p className="mt-3 text-sm text-slate-300">{d[`pricing.monthly.${plan}.desc`]}</p>
+            </div>
+          ))}
+        </div>
       </section>
 
-      <p className="mt-8 text-xs leading-relaxed text-slate-400">{d["pricing.sectionFootnote"]}</p>
+      <CustomMonthlyPack className="mt-10" />
+
+      <section className="mt-10">
+        <h2 className="text-lg font-semibold tracking-tight text-white">{d["pricing.paygo.sectionTitle"]}</h2>
+        <p className="mt-2 text-sm text-slate-300">{d["pricing.paygo.sectionLead"]}</p>
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          {PAYGO_TIERS.map((tier) => (
+            <div
+              key={tier}
+              className="rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md"
+            >
+              <p className="text-xs font-semibold text-slate-300">{d[`pricing.tier.${tier}`]}</p>
+              <p className="mt-2 text-3xl font-semibold tracking-tight text-white">
+                {d[`pricing.tier.${tier}Price`]}
+              </p>
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-violet-300/85">
+                {d["pricing.pack.requests"]}
+              </p>
+              <p className="mt-3 text-sm text-slate-300">{d[`pricing.tier.${tier}Desc`]}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <p className="mt-10 text-xs leading-relaxed text-slate-400">{d["pricing.sectionFootnote"]}</p>
 
       {!isProd ? (
         <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md">
