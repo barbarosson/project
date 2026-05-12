@@ -78,6 +78,11 @@ export function getToolDefinition(tool: ToolName): ToolDefinition {
   return found;
 }
 
+export function isToolName(value: string | null | undefined): value is ToolName {
+  if (value == null || value === "") return false;
+  return TOOLS.some((t) => t.tool === value);
+}
+
 export function getStripeLink(tool: ToolName): string | null {
   const def = getToolDefinition(tool);
   const value = process.env[def.stripeEnvVar];

@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { cn } from "@/lib/utils";
+import { glassInteractive, glassSurface, premiumCta, textGradientHero } from "@/lib/premium-ui";
 
 export const dynamic = "force-dynamic";
 
@@ -39,54 +41,50 @@ export default async function AccountPage() {
     <main className="mx-auto w-full max-w-4xl px-4 py-12">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{d["account.pageTitle"]}</h1>
-          <p className="mt-1 text-sm text-slate-300">{user.email}</p>
+          <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
+            {d["account.pageTitle"]}
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">{user.email}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
-            className="rounded-md border border-white/10 bg-slate-900/40 px-4 py-2 text-sm text-slate-200"
+            className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
             href="/account/profile"
           >
             {d["profile.editLink"]}
           </Link>
           <Link
-            className="rounded-md border border-white/10 bg-slate-900/40 px-4 py-2 text-sm text-slate-200"
+            className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
             href="/claim"
           >
             {d["account.linkGuest"]}
           </Link>
-          <Link
-            className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-slate-950"
-            href="/"
-          >
+          <Link className={premiumCta} href="/">
             {d["nav.backToHome"]}
           </Link>
         </div>
       </div>
 
-      <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md">
-        <h2 className="text-sm font-semibold text-white">{d["usage.creditsHeading"]}</h2>
-        <p className="mt-2 text-3xl font-semibold tracking-tight">
+      <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>
+        <h2 className={cn("text-sm font-semibold", textGradientHero)}>{d["usage.creditsHeading"]}</h2>
+        <p className="mt-2 text-3xl font-semibold tracking-tight text-white">
           {ent?.credits_balance ?? 0}
         </p>
-        <p className="mt-2 text-sm text-slate-300">
+        <p className="mt-2 text-sm text-slate-400">
           {d["usage.versionsLine"].replace("{max}", String(ent?.max_versions_per_request ?? 5))}
         </p>
       </section>
 
-      <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md">
+      <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold text-white">{d["account.recentRequests"]}</h2>
+          <h2 className={cn("text-sm font-semibold", textGradientHero)}>{d["account.recentRequests"]}</h2>
           <span className="text-xs text-slate-400">{requests?.length ?? 0}</span>
         </div>
 
         {requests && requests.length > 0 ? (
           <div className="mt-4 grid gap-2">
             {requests.map((r) => (
-              <div
-                key={r.id}
-                className="rounded-xl border border-white/10 bg-slate-950/30 p-4 text-sm text-slate-200"
-              >
+              <div key={r.id} className={cn("rounded-xl p-4 text-sm text-slate-300", glassSurface)}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-3">
                     <p className="font-semibold text-white">{r.tool_id}</p>

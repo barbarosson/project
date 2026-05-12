@@ -7,6 +7,8 @@ import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { cn } from "@/lib/utils";
+import { glassInteractive, premiumCta, textGradientHero } from "@/lib/premium-ui";
 
 export const dynamic = "force-dynamic";
 
@@ -75,15 +77,22 @@ export default async function ClaimPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-12">
-      <h1 className="text-2xl font-semibold tracking-tight">{d["claim.title"]}</h1>
-      <p className="mt-2 text-sm text-slate-300">{d["claim.description"]}</p>
-      <div className="mt-6 flex flex-wrap gap-3">
-        <Link className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-slate-950" href="/account">
-          {d["nav.account"]}
-        </Link>
-        <Link className="rounded-md border border-white/10 bg-slate-900/40 px-4 py-2 text-sm text-slate-200" href="/">
-          {d["nav.backToHome"]}
-        </Link>
+      <div className={cn("rounded-2xl p-6", glassInteractive)}>
+        <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
+          {d["claim.title"]}
+        </h1>
+        <p className="mt-2 text-sm text-slate-400">{d["claim.description"]}</p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link className={premiumCta} href="/account">
+            {d["nav.account"]}
+          </Link>
+          <Link
+            className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
+            href="/"
+          >
+            {d["nav.backToHome"]}
+          </Link>
+        </div>
       </div>
     </main>
   );

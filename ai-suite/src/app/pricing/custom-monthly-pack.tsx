@@ -10,6 +10,7 @@ import {
   formatUsd,
 } from "@/lib/pricing-rates";
 import { cn } from "@/lib/utils";
+import { glassInteractive, textGradientHero } from "@/lib/premium-ui";
 
 const LOCALE_MAP: Record<string, string> = {
   en: "en-US",
@@ -36,14 +37,11 @@ export function CustomMonthlyPack({ className }: { className?: string }) {
   }
 
   return (
-    <div
-      className={cn(
-        "rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md",
-        className
-      )}
-    >
-      <h2 className="text-lg font-semibold tracking-tight text-white">{t("pricing.custom.title")}</h2>
-      <p className="mt-2 text-sm text-slate-300">{t("pricing.custom.subtitle")}</p>
+    <div className={cn("rounded-2xl p-6", glassInteractive, className)}>
+      <h2 className={cn("text-lg font-semibold tracking-tight", textGradientHero)}>
+        {t("pricing.custom.title")}
+      </h2>
+      <p className="mt-2 text-sm text-slate-400">{t("pricing.custom.subtitle")}</p>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-3">
         <label className="grid gap-2">
@@ -56,7 +54,6 @@ export function CustomMonthlyPack({ className }: { className?: string }) {
             min={0}
             value={low || ""}
             onChange={(e) => setLow(parseNonNegInt(e.target.value))}
-            className="border-white/15 bg-slate-950/50"
           />
           <span className="text-[11px] leading-snug text-slate-500">
             {t("pricing.custom.lowRateHint").replace(
@@ -75,7 +72,6 @@ export function CustomMonthlyPack({ className }: { className?: string }) {
             min={0}
             value={mid || ""}
             onChange={(e) => setMid(parseNonNegInt(e.target.value))}
-            className="border-white/15 bg-slate-950/50"
           />
           <span className="text-[11px] leading-snug text-slate-500">
             {t("pricing.custom.midRateHint").replace(
@@ -94,7 +90,6 @@ export function CustomMonthlyPack({ className }: { className?: string }) {
             min={0}
             value={high || ""}
             onChange={(e) => setHigh(parseNonNegInt(e.target.value))}
-            className="border-white/15 bg-slate-950/50"
           />
           <span className="text-[11px] leading-snug text-slate-500">
             {t("pricing.custom.highRateHint").replace(
@@ -105,7 +100,7 @@ export function CustomMonthlyPack({ className }: { className?: string }) {
         </label>
       </div>
 
-      <div className="mt-6 flex flex-wrap items-end justify-between gap-3 border-t border-white/10 pt-4">
+      <div className="mt-6 flex flex-wrap items-end justify-between gap-3 border-t border-white/[0.08] pt-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-violet-300/90">
             {t("pricing.custom.totalLabel")}

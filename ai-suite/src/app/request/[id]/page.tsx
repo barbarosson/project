@@ -9,6 +9,8 @@ import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import { CopyVersionButton } from "./copy-buttons";
+import { cn } from "@/lib/utils";
+import { glassInteractive, glassSurface, premiumCta, textGradientHero } from "@/lib/premium-ui";
 
 export const dynamic = "force-dynamic";
 
@@ -50,8 +52,10 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
     <main className="mx-auto w-full max-w-4xl px-4 py-12">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{d["request.pageTitle"]}</h1>
-          <p className="mt-1 text-sm text-slate-300">
+          <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
+            {d["request.pageTitle"]}
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
             {reqRow.tool_id} · {reqRow.model_id}
           </p>
           <p className="mt-1 text-xs text-slate-400">
@@ -63,30 +67,30 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
-            className="rounded-md border border-white/10 bg-slate-900/40 px-4 py-2 text-sm text-slate-200"
+            className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
             href="/account"
           >
             {d["nav.account"]}
           </Link>
-          <Link className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-slate-950" href="/">
+          <Link className={premiumCta} href="/">
             {d["nav.backToHome"]}
           </Link>
         </div>
       </div>
 
-      <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md">
-        <h2 className="text-sm font-semibold text-white">{d["request.inputStored"]}</h2>
-        <pre className="mt-3 max-h-[360px] overflow-auto whitespace-pre-wrap rounded-xl border border-white/10 bg-slate-950/30 p-4 text-xs text-slate-200">
+      <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>
+        <h2 className={cn("text-sm font-semibold", textGradientHero)}>{d["request.inputStored"]}</h2>
+        <pre className="mt-3 max-h-[360px] overflow-auto whitespace-pre-wrap rounded-xl border border-white/[0.08] bg-black/35 p-4 text-xs text-slate-300 backdrop-blur-md">
           {JSON.stringify(reqRow.input_json, null, 2)}
         </pre>
       </section>
 
-      <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md">
-        <h2 className="text-sm font-semibold text-white">{d["request.versions"]}</h2>
+      <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>
+        <h2 className={cn("text-sm font-semibold", textGradientHero)}>{d["request.versions"]}</h2>
         {versions && versions.length > 0 ? (
           <div className="mt-4 grid gap-3">
             {versions.map((v) => (
-              <div key={v.idx} className="rounded-xl border border-white/10 bg-slate-950/30 p-4">
+              <div key={v.idx} className={cn("rounded-xl p-4", glassSurface)}>
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-xs font-semibold text-slate-300">
                     {d["request.versionLine"].replace("{idx}", String(v.idx))}

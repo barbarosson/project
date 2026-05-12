@@ -1,33 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  /* Light, modern: blue + pink + gray */
-  --background: 220 40% 98%;
-  --foreground: 230 20% 12%;
-  --card: 0 0% 100%;
-  --card-foreground: 230 20% 12%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 230 20% 12%;
-  --primary: 330 85% 62%;
-  --primary-foreground: 0 0% 98%;
-  --secondary: 205 95% 92%;
-  --secondary-foreground: 230 20% 12%;
-  --muted: 220 18% 95%;
-  --muted-foreground: 230 10% 42%;
-  --accent: 330 90% 95%;
-  --accent-foreground: 230 20% 12%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 220 14% 88%;
-  --input: 220 14% 88%;
-  --ring: 330 85% 62%;
-  --radius: 0.9rem;
-}
-
-.dark {
-  --background: 230 18% 7%;
+  /* Single theme: dark abyss (#09090b family) */
+  --background: 240 6% 4%;
   --foreground: 0 0% 98%;
-  --card: 230 18% 9%;
+  --card: 240 6% 6%;
   --card-foreground: 0 0% 98%;
   --popover: 230 18% 9%;
   --popover-foreground: 0 0% 98%;
@@ -44,6 +21,7 @@
   --border: 230 12% 18%;
   --input: 230 12% 18%;
   --ring: 330 85% 68%;
+  --radius: 0.9rem;
 }
 
 @theme inline {
@@ -80,7 +58,90 @@ body {
   color: hsl(var(--foreground));
 }
 
-/* Global, modern techno background (light + dark) */
+/* Native selects: OS dropdowns often render light surfaces; keep text/contrast consistent */
+select {
+  color-scheme: dark;
+}
+
+option {
+  background-color: rgb(24 24 27);
+  color: rgb(244 244 245);
+}
+
+/* Sonner: error toasts — readable rose on zinc (app is dark-only) */
+[data-sonner-toast][data-type="error"] {
+  background-color: rgb(39 39 42 / 0.96) !important;
+  border-color: rgb(251 113 133 / 0.45) !important;
+  color: rgb(254 205 211) !important;
+}
+[data-sonner-toast][data-type="error"] [data-title],
+[data-sonner-toast][data-type="error"] [data-description] {
+  color: rgb(254 205 211) !important;
+}
+
+/* Lucide: thinner strokes for a refined tech look */
+svg.lucide {
+  stroke-width: 1.5 !important;
+}
+
+@layer utilities {
+  .text-gradient-hero {
+    background-image: linear-gradient(to bottom, rgb(255 255 255), rgb(255 255 255 / 0.6));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+@keyframes ambientPulse {
+  0%,
+  100% {
+    opacity: 0.88;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(2%, -1.5%, 0) scale(1.06);
+  }
+}
+
+/* Stripe-like slow rotating geometry (hero backdrop) */
+@keyframes tech-orbit-cw {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+@keyframes tech-orbit-ccw {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(-360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .animate-tech-orbit-cw {
+    animation: tech-orbit-cw 260s linear infinite;
+  }
+
+  .animate-tech-orbit-ccw {
+    animation: tech-orbit-ccw 190s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-tech-orbit-cw,
+  .animate-tech-orbit-ccw {
+    animation: none;
+  }
+}
+
+/* Global techno background (dark only) */
 .global-bg-base {
   background:
     radial-gradient(1200px circle at 12% 12%, hsl(var(--secondary) / 0.75), transparent 55%),
@@ -94,12 +155,6 @@ body {
   background-repeat: no-repeat;
   background-position: center bottom;
   background-size: cover;
-  opacity: 0.55;
-  filter: saturate(1.1) contrast(1.05);
-  mix-blend-mode: multiply;
-}
-
-.dark .global-bg-image {
   opacity: 0.35;
   filter: saturate(1.2) contrast(1.1) brightness(0.95);
   mix-blend-mode: screen;
@@ -111,10 +166,6 @@ body {
     linear-gradient(to bottom, hsl(var(--border) / 0.55) 1px, transparent 1px);
   background-size: 64px 64px;
   mask-image: radial-gradient(closest-side at 50% 30%, black 55%, transparent 90%);
-  opacity: 0.25;
-}
-
-.dark .global-bg-grid {
   opacity: 0.18;
 }
 
@@ -134,12 +185,8 @@ body {
       transparent 1px,
       transparent 3px
     );
-  opacity: 0.55;
-  mix-blend-mode: overlay;
-}
-
-.dark .global-bg-noise {
   opacity: 0.45;
+  mix-blend-mode: overlay;
 }
 
 .global-bg-vignette {

@@ -3,6 +3,8 @@ import Link from "next/link";
 
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { cn } from "@/lib/utils";
+import { glassInteractive, glassSurface, premiumCta, textGradientHero } from "@/lib/premium-ui";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -46,54 +48,53 @@ export default async function HistoryPage() {
     <main className="mx-auto w-full max-w-4xl px-4 py-12">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{d["history.title"]}</h1>
-          <p className="mt-1 text-sm text-slate-300">
+          <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
+            {d["history.title"]}
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
             {ownerType === "user" ? d["history.subtitleUser"] : d["history.subtitleGuest"]}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           {ownerType === "user" ? (
             <Link
-              className="rounded-md border border-white/10 bg-slate-900/40 px-4 py-2 text-sm text-slate-200"
+              className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
               href="/account"
             >
               {d["nav.account"]}
             </Link>
           ) : (
             <Link
-              className="rounded-md border border-white/10 bg-slate-900/40 px-4 py-2 text-sm text-slate-200"
+              className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
               href="/login?next=%2Fhistory"
             >
               {d["history.loginToSync"]}
             </Link>
           )}
-          <Link className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-slate-950" href="/">
+          <Link className={premiumCta} href="/">
             {d["nav.backToHome"]}
           </Link>
         </div>
       </div>
 
-      <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md">
-        <h2 className="text-sm font-semibold text-white">{d["usage.creditsHeading"]}</h2>
-        <p className="mt-2 text-3xl font-semibold tracking-tight">{ent?.credits_balance ?? 0}</p>
-        <p className="mt-2 text-sm text-slate-300">
+      <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>
+        <h2 className={cn("text-sm font-semibold", textGradientHero)}>{d["usage.creditsHeading"]}</h2>
+        <p className="mt-2 text-3xl font-semibold tracking-tight text-white">{ent?.credits_balance ?? 0}</p>
+        <p className="mt-2 text-sm text-slate-400">
           {d["usage.versionsLine"].replace("{max}", String(maxV))}
         </p>
       </section>
 
-      <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md">
+      <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold text-white">{d["usage.requestsHeading"]}</h2>
+          <h2 className={cn("text-sm font-semibold", textGradientHero)}>{d["usage.requestsHeading"]}</h2>
           <span className="text-xs text-slate-400">{requests?.length ?? 0}</span>
         </div>
 
         {requests && requests.length > 0 ? (
           <div className="mt-4 grid gap-2">
             {requests.map((r) => (
-              <div
-                key={r.id}
-                className="rounded-xl border border-white/10 bg-slate-950/30 p-4 text-sm text-slate-200"
-              >
+              <div key={r.id} className={cn("rounded-xl p-4 text-sm text-slate-300", glassSurface)}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center gap-3">
                     <p className="font-semibold text-white">{r.tool_id}</p>

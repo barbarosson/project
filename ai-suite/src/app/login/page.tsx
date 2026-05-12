@@ -3,6 +3,8 @@ import Link from "next/link";
 
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { cn } from "@/lib/utils";
+import { glassInteractive, textGradientHero } from "@/lib/premium-ui";
 import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { FacebookSignInButton } from "./facebook-sign-in-button";
@@ -40,9 +42,11 @@ export default async function LoginPage() {
 
   return (
     <main className="mx-auto w-full max-w-md px-4 py-14">
-      <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md">
-        <h1 className="text-2xl font-semibold tracking-tight">{d["login.title"]}</h1>
-        <p className="mt-2 text-sm text-slate-300">{d["login.subtitle"]}</p>
+      <div className={cn("rounded-2xl p-6", glassInteractive)}>
+        <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
+          {d["login.title"]}
+        </h1>
+        <p className="mt-2 text-sm text-slate-400">{d["login.subtitle"]}</p>
         {guest ? (
           <div className="mt-4 rounded-xl border border-violet-500/25 bg-violet-500/10 p-4">
             <p className="text-xs font-semibold uppercase tracking-wide text-violet-200/90">
@@ -57,7 +61,7 @@ export default async function LoginPage() {
             <p className="mt-2 text-xs leading-relaxed text-slate-400">{d["login.creditsHint"]}</p>
           </div>
         ) : null}
-        <div className="mt-6 border-t border-white/10 pt-6">
+        <div className="mt-6 border-t border-white/[0.08] pt-6">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90">
             {d["login.membershipEmailTitle"]}
           </h2>
@@ -66,7 +70,7 @@ export default async function LoginPage() {
             <LoginClient />
           </div>
         </div>
-        <div className="mt-6 border-t border-white/10 pt-6">
+        <div className="mt-6 border-t border-white/[0.08] pt-6">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90">
             {d["login.membershipGoogleTitle"]}
           </h2>
@@ -75,7 +79,7 @@ export default async function LoginPage() {
             <GoogleSignInButton />
           </div>
         </div>
-        <div className="mt-6 border-t border-white/10 pt-6">
+        <div className="mt-6 border-t border-white/[0.08] pt-6">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90">
             {d["login.membershipFacebookTitle"]}
           </h2>
@@ -84,7 +88,7 @@ export default async function LoginPage() {
             <FacebookSignInButton />
           </div>
         </div>
-        <div className="mt-6 border-t border-white/10 pt-6">
+        <div className="mt-6 border-t border-white/[0.08] pt-6">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90">
             {d["login.membershipOtherTitle"]}
           </h2>

@@ -41,7 +41,7 @@ export function AuthStatus({ className }: { className?: string }) {
     return (
       <span
         className={cn(
-          "inline-flex items-center rounded-md border border-white/10 bg-slate-900/20 px-2 py-1.5 text-xs font-semibold text-slate-400 backdrop-blur-md sm:px-3 sm:py-2 sm:text-sm",
+          "inline-flex items-center rounded-lg border border-white/[0.1] bg-white/[0.04] px-2 py-1.5 text-xs font-semibold text-slate-400 backdrop-blur-xl sm:px-3 sm:py-2 sm:text-sm",
           className
         )}
         title={t("auth.disabledTitle")}
@@ -56,19 +56,19 @@ export function AuthStatus({ className }: { className?: string }) {
       <div className={cn("flex items-center gap-2", className)}>
         <Link
           href="/account"
-          className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-slate-900/40 px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-md hover:bg-slate-900/55 sm:px-3 sm:py-2 sm:text-sm"
+          className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] bg-white/[0.05] px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.09] sm:px-3 sm:py-2 sm:text-sm"
           title={email}
         >
-          <User className="size-4 text-violet-300" />
+          <User className="size-4 text-indigo-400" strokeWidth={1.5} />
           {t("nav.account")}
         </Link>
         <button
           type="button"
           onClick={signOut}
           disabled={busy}
-          className="inline-flex items-center gap-2 rounded-md border border-white/10 bg-slate-900/40 px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-md hover:bg-slate-900/55 disabled:opacity-60 sm:px-3 sm:py-2 sm:text-sm"
+          className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] bg-white/[0.05] px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.09] disabled:opacity-60 sm:px-3 sm:py-2 sm:text-sm"
         >
-          <LogOut className="size-4 text-slate-300" />
+          <LogOut className="size-4 text-indigo-400" strokeWidth={1.5} />
           {t("nav.logout")}
         </button>
       </div>
@@ -79,7 +79,7 @@ export function AuthStatus({ className }: { className?: string }) {
     <Link
       href="/login"
       className={cn(
-        "inline-flex items-center rounded-md border border-white/10 bg-slate-900/40 px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-md hover:bg-slate-900/55 sm:px-3 sm:py-2 sm:text-sm",
+        "inline-flex items-center rounded-lg border border-white/[0.12] bg-white/[0.05] px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.09] sm:px-3 sm:py-2 sm:text-sm",
         className
       )}
     >

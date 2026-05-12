@@ -4,11 +4,11 @@ import Script from "next/script";
 import { cookies } from "next/headers";
 import { Toaster } from "sonner";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
 import { I18nProvider } from "@/i18n/i18n-provider";
 import { RouteTransition } from "@/components/route-transition";
 import { ModelProvider } from "@/models/model-provider";
 import { GlobalBackground } from "@/components/global-background";
+import { SocialProof } from "@/components/SocialProof";
 import type { Locale } from "@/i18n/dictionaries";
 import { SupabaseBrowserConfigProvider } from "@/lib/supabase/browser-config-context";
 
@@ -72,9 +72,9 @@ export default async function RootLayout({
     <html
       lang={initialLocale ?? "en"}
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} h-full antialiased`}
+      className={`dark ${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-slate-950 text-slate-50">
+      <body className="flex min-h-full flex-col bg-[#09090b] text-slate-50 antialiased">
         {GA_ID ? (
           <>
             <Script
@@ -96,15 +96,14 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
           </>
         ) : null}
         <SupabaseBrowserConfigProvider url={supabaseUrl} anonKey={supabaseAnonKey}>
-          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-            <I18nProvider initialLocale={initialLocale}>
-              <ModelProvider>
-                <RouteTransition />
-                <GlobalBackground />
-                {children}
-              </ModelProvider>
-            </I18nProvider>
-          </ThemeProvider>
+          <I18nProvider initialLocale={initialLocale}>
+            <ModelProvider>
+              <RouteTransition />
+              <GlobalBackground />
+              <SocialProof />
+              {children}
+            </ModelProvider>
+          </I18nProvider>
         </SupabaseBrowserConfigProvider>
         <Toaster theme="dark" richColors closeButton />
       </body>

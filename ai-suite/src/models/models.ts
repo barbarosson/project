@@ -7,8 +7,22 @@ export type ModelPricing = {
 
 export type SalesPrice = {
   usd: number;
+  /** Pack price tier for billing logic / pricing page ($1 / $1.49 / $1.99 per 10 credits). */
   label: "$1.00" | "$1.49" | "$1.99";
+  /** Shown in AI model lists: approximate cost per credit (pack ÷ 10). */
+  listLabel: string;
 };
+
+function formatPerCreditListLabel(packUsd: number): string {
+  const per = packUsd / 10;
+  const fmt = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(per);
+  return `≈ ${fmt}/credit`;
+}
 
 export function estimateCostUSD(
   pricing: ModelPricing,
@@ -53,7 +67,7 @@ export function salesPriceForModel(model: ModelId): SalesPrice {
     model === "deepseek-v4-pro" ||
     model === "gemini-2.5-pro"
   ) {
-    return { usd: 1.99, label: "$1.99" };
+    return { usd: 1.99, label: "$1.99", listLabel: formatPerCreditListLabel(1.99) };
   }
 
   // Tier A (budget): very cheap providers/models for high-volume usage.
@@ -66,11 +80,11 @@ export function salesPriceForModel(model: ModelId): SalesPrice {
     model === "deepseek-v4-flash" ||
     model === "gemini-2.5-flash-lite"
   ) {
-    return { usd: 1.0, label: "$1.00" };
+    return { usd: 1.0, label: "$1.00", listLabel: formatPerCreditListLabel(1.0) };
   }
 
   // Tier B (standard): everything else.
-  return { usd: 1.49, label: "$1.49" };
+  return { usd: 1.49, label: "$1.49", listLabel: formatPerCreditListLabel(1.49) };
 }
 
 export const MODELS = [
@@ -127,17 +141,11 @@ export const MODELS = [
     provider: "openai",
   },
 
-  // Anthropic (active IDs)
-  {
-    id: "claude-3-5-haiku-latest",
-    label: "Anthropic · Claude 3.5 Haiku (legacy id)",
-    pricing: { inputPer1MTokensUSD: 0.8, outputPer1MTokensUSD: 4.0 },
-    provider: "anthropic",
-  },
+  // Anthropic (active IDs — use aliases Anthropic documents, not deprecated -latest slugs)
   {
     id: "claude-haiku-4-5",
     label: "Anthropic · Claude Haiku 4.5",
-    pricing: { inputPer1MTokensUSD: 0.0, outputPer1MTokensUSD: 0.0 },
+    pricing: { inputPer1MTokensUSD: 0.8, outputPer1MTokensUSD: 4.0 },
     provider: "anthropic",
   },
   {
@@ -242,6 +250,16 @@ export type ConcreteModelId = Exclude<ModelId, "auto">;
 
 export const DEFAULT_MODEL: ModelId = "auto";
 
+/** Retired ids still stored in localStorage or sent by old clients → map to current MODELS ids. */
+const LEGACY_MODEL_ALIASES: Partial<Record<string, ConcreteModelId>> = {
+  "claude-3-5-haiku-latest": "claude-haiku-4-5",
+};
+
+export function normalizeModelIdString(raw: string): string {
+  const mapped = LEGACY_MODEL_ALIASES[raw];
+  return mapped ?? raw;
+}
+
 export function isModelId(value: unknown): value is ModelId {
   return typeof value === "string" && MODELS.some((m) => m.id === value);
 }
@@ -271,7 +289,7 @@ export function defaultConcreteModelForProvider(provider: ProviderId): ConcreteM
     case "openai":
       return "gpt-4o-mini";
     case "anthropic":
-      return "claude-3-5-haiku-latest";
+      return "claude-haiku-4-5";
     case "groq":
       return "llama-3.1-8b-instant";
     case "deepseek":

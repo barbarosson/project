@@ -1,14 +1,86 @@
 import { NextResponse } from "next/server";
+import { generateText } from "ai";
+import { openai, createOpenAI } from "@ai-sdk/openai";
+import { anthropic } from "@ai-sdk/anthropic";
+import { google } from "@ai-sdk/google";
 import OpenAI from "openai";
 
-import { TOOLS, type ToolName } from "@/components/ai-suite/tools";
+import { TOOLS, type ProviderId, type ToolName } from "@/components/ai-suite/tools";
 import { type Locale } from "@/i18n/dictionaries";
 import { resolveToolDescription, resolveToolTitle } from "@/i18n/tool-copy-resolve";
+import {
+  isConcreteModelId,
+  isModelId,
+  modelMeta,
+  normalizeModelIdString,
+  type ModelId,
+} from "@/models/models";
+
+const groq = createOpenAI({
+  apiKey: process.env.GROQ_API_KEY,
+  baseURL: "https://api.groq.com/openai/v1",
+});
+
+const deepseek = createOpenAI({
+  apiKey: process.env.DEEPSEEK_API_KEY,
+  baseURL: "https://api.deepseek.com/v1",
+});
+
+function providerKeyName(provider: ProviderId) {
+  switch (provider) {
+    case "openai":
+      return "OPENAI_API_KEY";
+    case "anthropic":
+      return "ANTHROPIC_API_KEY";
+    case "groq":
+      return "GROQ_API_KEY";
+    case "deepseek":
+      return "DEEPSEEK_API_KEY";
+    case "google":
+      return "GOOGLE_GENERATIVE_AI_API_KEY";
+  }
+}
+
+function hasProviderKey(provider: ProviderId) {
+  const key = providerKeyName(provider);
+  return typeof process.env[key] === "string" && process.env[key]!.trim().length > 0;
+}
+
+function resolveConciergeLanguageModel(modelId: ModelId): {
+  provider: ProviderId;
+  model:
+    | ReturnType<typeof openai>
+    | ReturnType<typeof anthropic>
+    | ReturnType<typeof groq>
+    | ReturnType<typeof deepseek>
+    | ReturnType<typeof google>;
+} | null {
+  if (modelId === "auto") {
+    return { provider: "openai", model: openai("gpt-4o-mini") };
+  }
+  if (!isConcreteModelId(modelId)) return null;
+  const meta = modelMeta(modelId);
+  switch (meta.provider) {
+    case "openai":
+      return { provider: "openai", model: openai(meta.id) };
+    case "anthropic":
+      return { provider: "anthropic", model: anthropic(meta.id) };
+    case "groq":
+      return { provider: "groq", model: groq(meta.id) };
+    case "deepseek":
+      return { provider: "deepseek", model: deepseek(meta.id) };
+    case "google":
+      return { provider: "google", model: google(meta.id) };
+    default:
+      return null;
+  }
+}
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 type RequestBody = {
   locale?: string;
+  model?: string;
   messages: ChatMessage[];
 };
 
@@ -53,7 +125,9 @@ function isChatMessage(value: unknown): value is ChatMessage {
 function isRequestBody(value: unknown): value is RequestBody {
   if (!isRecord(value)) return false;
   if (!Array.isArray(value.messages)) return false;
-  return value.messages.every(isChatMessage);
+  if (!value.messages.every(isChatMessage)) return false;
+  if (value.model !== undefined && typeof value.model !== "string") return false;
+  return true;
 }
 
 function isToolName(value: unknown): value is ToolName {
@@ -145,10 +219,11 @@ export async function POST(req: Request) {
   if (!apiKey) {
     return NextResponse.json(
       { error: "Missing OPENAI_API_KEY." },
-      { status: 500 }
+      { status: 503 }
     );
   }
 
+  try {
   const body = (await req.json().catch(() => null)) as unknown;
   if (!isRequestBody(body)) {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
@@ -188,23 +263,29 @@ export async function POST(req: Request) {
   const client = new OpenAI({ apiKey });
 
   // Hard gate: concierge should only answer questions about isendai tools and how to use them.
-  const scopeRes = await client.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: 0,
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are a scope classifier for a homepage concierge.\n" +
-          "IN SCOPE: anything that can be handled by recommending an isendai tool from the catalog (including requests to write/rewrite a message using a tool), plus questions about tools, categories, how it works, pricing/models, payment flow, privacy/data storage.\n" +
-          "OUT OF SCOPE: general knowledge, coding help, news, and unrelated chit-chat.\n" +
-          "Return ONLY valid JSON with key: in_scope (boolean). No extra keys.",
-      },
-      { role: "user", content: lastUser },
-    ],
-  });
-  const scopeText = scopeRes.choices?.[0]?.message?.content?.trim() ?? "";
-  const scope = safeParseScope(scopeText);
+  let scope: ConciergeScope | null = null;
+  try {
+    const scopeRes = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a scope classifier for a homepage concierge.\n" +
+            "IN SCOPE: anything that can be handled by recommending an isendai tool from the catalog (including requests to write/rewrite a message using a tool), plus questions about tools, categories, how it works, pricing/models, payment flow, privacy/data storage.\n" +
+            "OUT OF SCOPE: general knowledge, coding help, news, and unrelated chit-chat.\n" +
+            "Return ONLY valid JSON with key: in_scope (boolean). No extra keys.",
+        },
+        { role: "user", content: lastUser },
+      ],
+    });
+    const scopeText = scopeRes.choices?.[0]?.message?.content?.trim() ?? "";
+    scope = safeParseScope(scopeText);
+  } catch {
+    // Network/provider failure: do not block the main concierge reply.
+    scope = { in_scope: true };
+  }
   if (scope && scope.in_scope === false && !looksLikeMessageRequest) {
     const suggested_tools = fallbackSuggestedTools(lastUser);
     const toolLines = suggested_tools
@@ -224,36 +305,56 @@ export async function POST(req: Request) {
     return NextResponse.json({ reply, suggested_tools });
   }
 
-  const res = await client.chat.completions.create({
-    model: "gpt-4o-mini",
-    temperature: 0.3,
-    messages: [
-      {
-        role: "system",
-        content:
-          "You are the homepage concierge for an AI tools suite.\n" +
-          "Your job: ask what the user needs, then recommend the best tool(s) from the catalog.\n" +
-          "Explain briefly WHY, and what the tool will output.\n" +
-          "If the user asks about available products, summarize the catalog.\n" +
-          "Be friendly, concise, and practical.\n" +
-          "IMPORTANT: Only discuss the isendai tools suite (tools, how it works, pricing/models, payments, privacy). If asked anything else, refuse briefly and redirect back to choosing a tool.\n" +
-          "When you recommend a tool, include it as a clickable markdown link in your reply using this format:\n" +
-          "- [<emoji> <tool label>](/?tool=<tool id>)\n" +
-          "Only use internal links that start with '/'.\n" +
-          `Language requirement:\n` +
-          `- Output MUST be ONLY in ${localeToLanguage(locale)}.\n` +
-          `- Do NOT switch languages.\n` +
-          `- If user message is in a different language than locale, still follow locale.\n\n` +
-          "Return ONLY valid JSON (no markdown) with keys:\n" +
-          '- reply: string (your message)\n' +
-          "- suggested_tools: array of tool ids (0-3 items)\n\n" +
-          `Tool catalog: ${JSON.stringify(toolCatalog)}`,
-      },
-      ...body.messages.map((m) => ({ role: m.role, content: m.content })),
-    ],
-  });
+  const rawModel =
+    typeof body.model === "string" ? normalizeModelIdString(body.model) : undefined;
+  const modelId: ModelId =
+    rawModel !== undefined && isModelId(rawModel) ? rawModel : "auto";
 
-  const content = res.choices?.[0]?.message?.content?.trim() ?? "";
+  const lmBinding = resolveConciergeLanguageModel(modelId);
+  if (!lmBinding) {
+    return NextResponse.json({ error: "Invalid model." }, { status: 400 });
+  }
+  if (!hasProviderKey(lmBinding.provider)) {
+    return NextResponse.json(
+      { error: `Missing API credentials for ${lmBinding.provider}.` },
+      { status: 503 }
+    );
+  }
+
+  const mainSystem =
+    "You are the homepage concierge for an AI tools suite.\n" +
+    "Your job: ask what the user needs, then recommend the best tool(s) from the catalog.\n" +
+    "Explain briefly WHY, and what the tool will output.\n" +
+    "If the user asks about available products, summarize the catalog.\n" +
+    "Be friendly, concise, and practical.\n" +
+    "IMPORTANT: Only discuss the isendai tools suite (tools, how it works, pricing/models, payments, privacy). If asked anything else, refuse briefly and redirect back to choosing a tool.\n" +
+    "When you recommend a tool, include it as a clickable markdown link in your reply using this format:\n" +
+    "- [<emoji> <tool label>](/?tool=<tool id>)\n" +
+    "Only use internal links that start with '/'.\n" +
+    `Language requirement:\n` +
+    `- Output MUST be ONLY in ${localeToLanguage(locale)}.\n` +
+    `- Do NOT switch languages.\n` +
+    `- If user message is in a different language than locale, still follow locale.\n\n` +
+    "Return ONLY valid JSON (no markdown) with keys:\n" +
+    '- reply: string (your message)\n' +
+    "- suggested_tools: array of tool ids (0-3 items)\n\n" +
+    `Tool catalog: ${JSON.stringify(toolCatalog)}`;
+
+  let result;
+  try {
+    // AI SDK: use `system` option — a system role inside `messages` can throw unless allowSystemInMessages is set.
+    result = await generateText({
+      model: lmBinding.model,
+      temperature: 0.3,
+      system: mainSystem,
+      messages: body.messages.map((m) => ({ role: m.role, content: m.content })),
+    });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "AI request failed.";
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
+
+  const content = result.text?.trim() ?? "";
   const parsed = safeParseResponse(content);
 
   if (!parsed) {
@@ -273,5 +374,10 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json(parsed);
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Concierge request failed.";
+    console.error("[concierge] POST error:", e);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
 

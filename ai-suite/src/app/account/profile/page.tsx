@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { cn } from "@/lib/utils";
+import { glassInteractive, textGradientHero } from "@/lib/premium-ui";
 import { safeNext } from "@/lib/auth/safe-next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -39,18 +41,20 @@ export default async function AccountProfilePage({
     <main className="mx-auto w-full max-w-3xl px-4 py-12">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-white">{d["profile.title"]}</h1>
-          <p className="mt-1 text-sm text-slate-300">{d["profile.subtitle"]}</p>
+          <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
+            {d["profile.title"]}
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">{d["profile.subtitle"]}</p>
         </div>
         <Link
-          className="rounded-md border border-white/10 bg-slate-900/40 px-4 py-2 text-sm text-slate-200"
+          className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
           href="/account"
         >
           {d["profile.backToAccount"]}
         </Link>
       </div>
 
-      <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md">
+      <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>
         <ProfileForm nextPath={next} email={user.email ?? ""} initialMeta={meta} />
       </section>
     </main>

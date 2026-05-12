@@ -164,7 +164,7 @@ export function ProfileForm({ nextPath, email, initialMeta }: Props) {
         </label>
         <select
           id="use_case"
-          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex h-10 w-full rounded-md border border-input bg-zinc-950/95 px-3 py-2 text-sm text-zinc-100 shadow-inner ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           value={useCase}
           onChange={(e) => setUseCase(e.target.value as UseCase)}
           required

@@ -7,9 +7,10 @@ The Next.js app expects schema `isendai` with tables `entitlements`, `requests`,
 - `charge_and_create_request(p_owner_type, p_owner_id, p_tool_id, p_model_id, p_input_json, p_price_paid_usd)` → returns new `requests.id`
 - `add_request_version(p_request_id, p_text)` → returns version `idx`
 
-Apply the migration in this repo:
+Apply migrations in this repo (order matters):
 
-`supabase/migrations/20260512000000_isendai_core.sql`
+1. `supabase/migrations/20260512000000_isendai_core.sql` — tables + `isendai.*` RPCs  
+2. `supabase/migrations/20260512100000_isendai_public_rpc_wrappers.sql` — `public.*` wrappers so `supabase.rpc("charge_and_create_request", …)` resolves (PostgREST uses `public` by default)
 
 Using Supabase CLI from `ai-suite/` (or paste into the SQL editor):
 

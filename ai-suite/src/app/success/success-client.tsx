@@ -3,8 +3,10 @@
 import * as React from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, Copy, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+
+import { AiResultShareBar } from "@/components/ai-result-share-bar";
 
 import type { ToolName, ToolPayload } from "@/components/ai-suite/tools";
 import { getToolDefinition } from "@/components/ai-suite/tools";
@@ -27,6 +29,7 @@ import {
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { glassSurface } from "@/lib/premium-ui";
 
 type Stored = { v: 1; savedAt: string; payload: ToolPayload };
 type Version = { v: 1; id: string; createdAt: string; text: string };
@@ -197,7 +200,9 @@ export function SuccessClient() {
     }
 
     if (!res.ok) {
-      if (res.status >= 500) toast.error(t("errors.serverToast"));
+      if (res.status >= 500 && res.status <= 599) {
+        toast.error(json?.error ?? t("errors.serverToast"));
+      }
       if (res.status === 429 || json?.code === "rate_limited") {
         throw new Error(`RATELIMIT:${json?.error || ""}`);
       }
@@ -226,7 +231,9 @@ export function SuccessClient() {
       json = null;
     }
     if (!res.ok) {
-      if (res.status >= 500) toast.error(t("errors.serverToast"));
+      if (res.status >= 500 && res.status <= 599) {
+        toast.error(json?.error ?? t("errors.serverToast"));
+      }
       if (res.status === 429 || json?.code === "rate_limited") {
         throw new Error(`RATELIMIT:${json?.error || ""}`);
       }
@@ -350,16 +357,6 @@ export function SuccessClient() {
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [active, cleanup]);
 
-  async function copy() {
-    try {
-      if (!active) return;
-      await navigator.clipboard.writeText(active.text);
-      cleanup();
-    } catch {
-      // ignore
-    }
-  }
-
   function canGenerateAnother() {
     return tool && versions.length < 5 && !loading;
   }
@@ -418,16 +415,25 @@ export function SuccessClient() {
   }
 
   return (
-    <div className="min-h-full bg-background">
+    <div className="min-h-full">
       <main className="mx-auto w-full max-w-3xl px-4 py-12">
-        <div className="mb-4 rounded-xl border border-white/10 bg-slate-900/40 p-4 text-sm text-slate-300 shadow-sm backdrop-blur-md">
+        <div
+          className={cn(
+            "mb-4 rounded-xl p-4 text-sm text-slate-400 shadow-2xl backdrop-blur-xl",
+            glassSurface
+          )}
+        >
           <p className="font-medium text-white">{t("success.ephemeral.title")}</p>
           <p className="mt-1">{t("success.ephemeral.body")}</p>
         </div>
 
-        <div className="mb-6 flex items-center gap-2">
-          <CheckCircle2 className="size-5 text-emerald-500" />
-          <p className="text-sm text-slate-300">
+        <div className="mb-6 flex items-center gap-3">
+          <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/45" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.65)]" />
+          </span>
+          <CheckCircle2 className="size-5 text-emerald-400" strokeWidth={1.5} />
+          <p className="text-sm text-slate-400">
             {isTest ? t("success.test") : isPaidReturn ? t("success.paid") : t("success.introCredits")}
           </p>
         </div>
@@ -458,13 +464,13 @@ export function SuccessClient() {
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             {loading ? (
-                <div className="flex items-center gap-2 text-sm text-slate-300">
-                <Loader2 className="size-4 animate-spin" />
+                <div className="flex items-center gap-2 text-sm text-slate-400">
+                <Loader2 className="size-4 animate-spin text-indigo-400" strokeWidth={1.5} />
                 {t("success.generating")}
               </div>
             ) : error ? (
               <div className="grid gap-3">
-                <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+                <div className="rounded-lg border border-rose-400/35 bg-rose-950/55 p-4 text-sm leading-relaxed text-rose-100 shadow-[inset_0_1px_0_0_rgb(255_255_255/0.06)]">
                   {error}
                 </div>
                 {insufficientCredits ? (
@@ -493,13 +499,16 @@ export function SuccessClient() {
                     {activeIndex >= 0 ? activeIndex + 1 : 1}/{versions.length}
                   </span>
                 </div>
-                <div
-                  className={cn(
-                    "whitespace-pre-wrap rounded-xl border bg-card p-4 text-sm leading-relaxed",
-                    "selection:bg-primary/20"
-                  )}
-                >
-                  {active.text}
+                <div className={cn("relative overflow-hidden rounded-xl", glassSurface)}>
+                  <AiResultShareBar text={active.text} onCopied={cleanup} />
+                  <div
+                    className={cn(
+                      "min-h-[8rem] whitespace-pre-wrap p-4 pt-14 pr-[12rem] text-sm leading-relaxed text-slate-300 sm:pr-52",
+                      "selection:bg-primary/20"
+                    )}
+                  >
+                    {active.text}
+                  </div>
                 </div>
                 <div className="grid gap-2">
                   <p className="text-xs font-medium text-slate-300">
@@ -524,10 +533,6 @@ export function SuccessClient() {
                     >
                       {t("success.alt.generate")}
                     </Button>
-                    <Button variant="outline" onClick={copy}>
-                      <Copy className="size-4" />
-                      {t("success.copy")}
-                    </Button>
                   </div>
                 </div>
 
@@ -541,8 +546,11 @@ export function SuccessClient() {
                           key={v.id}
                           type="button"
                           className={cn(
-                            "rounded-lg border bg-background/50 p-3 text-left text-sm transition-colors hover:bg-accent/40",
-                            v.id === active.id ? "border-violet-400/30 bg-violet-500/10" : "border-white/10"
+                            "rounded-lg border border-white/[0.08] bg-white/[0.03] p-3 text-left text-sm text-slate-300 shadow-inner backdrop-blur-xl transition-all duration-300",
+                            "hover:border-violet-500/35 hover:bg-white/[0.06]",
+                            v.id === active.id
+                              ? "border-violet-500/45 bg-violet-500/10 shadow-[0_0_16px_rgba(139,92,246,0.12)]"
+                              : ""
                           )}
                           onClick={() => {
                             setActiveId(v.id);
@@ -567,7 +575,7 @@ export function SuccessClient() {
                 ) : null}
 
                 {tool && versions.length >= 5 ? (
-                  <div className="rounded-lg border border-white/10 bg-slate-900/40 p-3 text-sm text-slate-300 backdrop-blur-md">
+                  <div className={cn("rounded-lg p-3 text-sm text-slate-400", glassSurface)}>
                     {t("success.alt.limit")}
                   </div>
                 ) : null}

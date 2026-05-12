@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { generateText } from "ai";
 import { openai, createOpenAI } from "@ai-sdk/openai";
 import { anthropic } from "@ai-sdk/anthropic";
@@ -18,10 +19,23 @@ import {
 import {
   isConcreteModelId,
   modelMeta,
+  normalizeModelIdString,
   type ConcreteModelId,
 } from "@/models/models";
 
 type RequestBody = ToolPayload & { model?: string; extra?: string };
+
+function stripMarketingFields<T extends Record<string, unknown>>(b: T): Omit<T, "leadEmail" | "marketingFreeTrial"> {
+  const { leadEmail: _e, marketingFreeTrial: _m, ...rest } = b as T & {
+    leadEmail?: unknown;
+    marketingFreeTrial?: unknown;
+  };
+  return rest as Omit<T, "leadEmail" | "marketingFreeTrial">;
+}
+
+function isValidLeadEmail(s: string): boolean {
+  return s.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+}
 
 type ScopeResult = {
   in_scope: boolean;
@@ -99,9 +113,10 @@ function resolveModelOverride(
   | { provider: ProviderId; client: typeof google; model: string }
   | null {
   if (typeof body.model !== "string") return null;
-  if (body.model === "auto") return null;
-  if (!isConcreteModelId(body.model)) return null;
-  const meta = modelMeta(body.model as ConcreteModelId);
+  const mid = normalizeModelIdString(body.model);
+  if (mid === "auto") return null;
+  if (!isConcreteModelId(mid)) return null;
+  const meta = modelMeta(mid as ConcreteModelId);
   switch (meta.provider) {
     case "openai":
       return { provider: "openai", client: openai, model: meta.id };
@@ -121,7 +136,7 @@ function modelForProvider(provider: ProviderId) {
     case "openai":
       return { client: openai, model: "gpt-4o-mini" };
     case "anthropic":
-      return { client: anthropic, model: "claude-3-5-haiku-latest" };
+      return { client: anthropic, model: "claude-haiku-4-5" };
     case "groq":
       return { client: groq, model: "llama-3.1-8b-instant" };
     case "deepseek":
@@ -455,9 +470,15 @@ export async function POST(req: Request) {
   };
 
   if (!hasProviderKey(provider)) {
+    const env = providerKeyName(provider);
     return NextResponse.json(
-      { error: `Missing ${providerKeyName(provider)} in environment.` },
-      { status: 500, headers: debugHeaders }
+      {
+        error: `AI is not configured: add ${env} to .env.local (or deployment secrets) and restart the dev server.`,
+        code: "missing_api_key",
+        provider,
+        env,
+      },
+      { status: 503, headers: debugHeaders }
     );
   }
 
@@ -498,13 +519,60 @@ export async function POST(req: Request) {
       );
     }
 
+    const rawBody = body as RequestBody & Record<string, unknown>;
+    const marketingFreeTrial = rawBody.marketingFreeTrial === true;
+    const leadEmail =
+      typeof rawBody.leadEmail === "string" ? rawBody.leadEmail.trim() : "";
+
+    const sanitized = stripMarketingFields(rawBody) as RequestBody;
+    const storedInputJson: Record<string, unknown> =
+      sanitized.tool === "coverletter-ai"
+        ? { ...sanitized }
+        : sanitized.tool === "dating-roast"
+          ? { ...sanitized }
+          : { ...sanitized };
+
+    let appliedMarketingGrant = false;
+    if (marketingFreeTrial) {
+      const cookieStore = await cookies();
+      if (cookieStore.get("isendai_ft_consumed")?.value === "1") {
+        return NextResponse.json(
+          {
+            error: "Free trial already used on this device.",
+            code: "free_trial_used",
+          },
+          { status: 403, headers: debugHeaders }
+        );
+      }
+      if (!leadEmail || !isValidLeadEmail(leadEmail)) {
+        return NextResponse.json(
+          {
+            error: "Enter a valid email to unlock your free generation.",
+            code: "invalid_lead_email",
+          },
+          { status: 400, headers: debugHeaders }
+        );
+      }
+      const { error: grantErr } = await admin.rpc("add_credits", {
+        p_owner_type: ownerType,
+        p_owner_id: ownerId,
+        p_amount: 1,
+      });
+      if (grantErr) {
+        return NextResponse.json(
+          {
+            error: grantErr.message.length > 0 ? grantErr.message : "Could not apply free trial grant.",
+            code: "billing_error",
+          },
+          { status: 503, headers: debugHeaders }
+        );
+      }
+      appliedMarketingGrant = true;
+    }
+
     // Charge 1 credit and create request row BEFORE generation.
     // If this fails (insufficient credits), we stop early.
-    const inputJson = body.tool === "coverletter-ai"
-      ? { ...body }
-      : body.tool === "dating-roast"
-        ? { ...body }
-        : { ...body };
+    const inputJson = storedInputJson;
 
     const { data: requestId, error: chargeErr } = await admin.rpc("charge_and_create_request", {
       p_owner_type: ownerType,
@@ -525,7 +593,13 @@ export async function POST(req: Request) {
           { status: 402, headers: debugHeaders }
         );
       }
-      return NextResponse.json({ error: "Billing error." }, { status: 500, headers: debugHeaders });
+      return NextResponse.json(
+        {
+          error: msg.length > 0 ? `Billing error: ${msg}` : "Billing error (database).",
+          code: "billing_error",
+        },
+        { status: 503, headers: debugHeaders }
+      );
     }
 
     const out = await generateText({
@@ -546,7 +620,7 @@ export async function POST(req: Request) {
     // Store version 1 for history
     await admin.rpc("add_request_version", { p_request_id: requestId, p_text: text });
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       { result: text, request_id: requestId, owner: { type: ownerType, id: ownerId, email: userEmail } },
       {
         headers: {
@@ -555,6 +629,16 @@ export async function POST(req: Request) {
         },
       }
     );
+    if (appliedMarketingGrant) {
+      response.cookies.set("isendai_ft_consumed", "1", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 60 * 60 * 24 * 365 * 10,
+      });
+    }
+    return response;
   } catch (e) {
     const message = e instanceof Error ? e.message : "AI request failed.";
     return NextResponse.json({ error: message }, { status: 502, headers: debugHeaders });

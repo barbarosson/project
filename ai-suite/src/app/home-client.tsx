@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Minus, MoveRight, Plus, Sparkles } from "lucide-react";
 
-import { ModeToggle } from "@/components/mode-toggle";
 import { ToolCard } from "@/components/ai-suite/tool-card";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { IsendaiLogo } from "@/components/isendai-logo";
@@ -21,6 +20,7 @@ import {
   getToolDefinition,
 } from "@/components/ai-suite/tools";
 import { cn } from "@/lib/utils";
+import { glassInteractive, glassSurface, textGradientHero } from "@/lib/premium-ui";
 
 import type { HomeCreditsSnapshot } from "@/app/home-credits-snapshot";
 
@@ -67,7 +67,7 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
   ];
 
   return (
-    <div className="min-h-full bg-background">
+    <div className="min-h-full">
       <header className="mx-auto flex w-full max-w-6xl flex-wrap items-start justify-between gap-3 px-4 py-4 sm:items-center sm:py-5">
         <div className="flex min-w-0 flex-1 items-center">
           <IsendaiLogo
@@ -84,47 +84,59 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
             tool={selected}
             className="min-w-0 max-w-[10.5rem] px-2 py-1.5 text-xs sm:max-w-none sm:px-3 sm:py-2 sm:text-sm"
           />
-          <ModeToggle />
         </div>
       </header>
 
       <main className="mx-auto w-full max-w-6xl px-4 pb-16">
-        <section className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/40 px-6 py-8 shadow-sm backdrop-blur-md sm:px-10">
-          <div className="absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(124,58,237,0.25)_0%,transparent_70%)]" />
-          <p className="text-sm font-medium text-slate-300">{t("hero.kicker")}</p>
-          <h1 className="mt-2 text-balance text-2xl font-semibold tracking-tight sm:text-4xl">
-            <span className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-              {t("hero.title")}
-            </span>
+        <section
+          className={cn(
+            "relative overflow-hidden rounded-2xl px-6 py-8 sm:px-10",
+            glassInteractive
+          )}
+        >
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(124,58,237,0.18)_0%,transparent_70%)]" />
+          <p className="text-sm font-medium text-slate-400">{t("hero.kicker")}</p>
+          <h1
+            className={cn(
+              "mt-2 text-balance text-2xl font-semibold tracking-tight sm:text-4xl",
+              textGradientHero
+            )}
+          >
+            {t("hero.title")}
           </h1>
-          <p className="mt-3 max-w-3xl text-balance text-sm text-slate-300 sm:text-base">
+          <p className="mt-3 max-w-3xl text-balance text-sm text-slate-400 sm:text-base">
             {t("hero.subtitle")}
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <Link
               href="/login"
-              className="rounded-full border border-violet-500/40 bg-violet-500/15 px-3 py-1.5 text-xs font-semibold text-violet-100 backdrop-blur-md hover:bg-violet-500/25"
+              className="rounded-full border border-violet-500/35 bg-gradient-to-r from-indigo-500/20 via-purple-500/15 to-pink-500/15 px-3 py-1.5 text-xs font-semibold text-violet-100 shadow-sm backdrop-blur-md transition-all duration-300 hover:border-violet-400/50 hover:shadow-[0_0_18px_rgba(168,85,247,0.25)] active:scale-95"
             >
               {t("nav.login")}
             </Link>
             <Link
               href="/history"
-              className="rounded-full border border-white/10 bg-slate-950/20 px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-md hover:bg-slate-950/30"
+              className="rounded-full border border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl transition-all duration-300 hover:border-violet-500/35 hover:bg-white/[0.07] active:scale-95"
             >
               {t("nav.history")}
             </Link>
             <Link
               href="/pricing"
-              className="rounded-full border border-white/10 bg-slate-950/20 px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-md hover:bg-slate-950/30"
+              className="rounded-full border border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl transition-all duration-300 hover:border-violet-500/35 hover:bg-white/[0.07] active:scale-95"
             >
               {t("nav.pricing")}
             </Link>
-            <span className="rounded-full border border-white/10 bg-slate-950/20 px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-md">
+            <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-slate-300 backdrop-blur-xl">
               {t("home.guestMemberBadges")}
             </span>
           </div>
           {creditsSnapshot ? (
-            <div className="mt-4 rounded-xl border border-white/10 bg-slate-950/25 px-4 py-3 text-xs text-slate-200 backdrop-blur-md sm:text-sm">
+            <div
+              className={cn(
+                "mt-4 rounded-xl px-4 py-3 text-xs text-slate-300 sm:text-sm",
+                glassSurface
+              )}
+            >
               <p className="font-medium text-slate-100">
                 {t("home.creditsSummary")
                   .replace("{credits}", String(creditsSnapshot.balance))
@@ -153,54 +165,59 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
           ) : null}
         </section>
 
-        <section className="mt-6 rounded-2xl border border-white/10 bg-slate-900/40 p-6 shadow-sm backdrop-blur-md transition-colors">
+        <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-sm font-semibold tracking-tight text-slate-100">{t("home.demo.title")}</p>
-              <p className="mt-1 max-w-3xl text-sm text-slate-300">{t("home.demo.subtitle")}</p>
+              <p className={cn("text-sm font-semibold tracking-tight", textGradientHero)}>
+                {t("home.demo.title")}
+              </p>
+              <p className="mt-1 max-w-3xl text-sm text-slate-400">{t("home.demo.subtitle")}</p>
             </div>
           </div>
 
           <div className="mt-5 grid gap-4 lg:grid-cols-2">
             {demoExamples.map(({ tool, key }) => (
-              <div key={tool} className="rounded-2xl border border-white/10 bg-background/40 p-4">
+              <div
+                key={tool}
+                className={cn("rounded-2xl p-4 transition-all duration-300 hover:-translate-y-0.5", glassSurface)}
+              >
                 <Link
                   href={`/?tool=${tool}`}
-                  className="group inline-flex items-center gap-2 text-sm font-semibold text-foreground hover:underline"
+                  className="group inline-flex items-center gap-2 text-sm font-semibold text-slate-100 hover:underline"
                 >
-                  <span className="inline-flex size-7 items-center justify-center rounded-full border bg-background/60">
+                  <span className="inline-flex size-7 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.04]">
                     <span aria-hidden="true">{getToolDefinition(tool).emoji}</span>
                   </span>
                   <span className="truncate">
                     {toolTitle(t, tool, getToolDefinition(tool).title)}
                   </span>
-                  <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                  <ArrowRight className="size-4 text-indigo-400 transition-transform group-hover:translate-x-0.5" />
                 </Link>
 
                 <div className="mt-3 grid gap-3 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
                   <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-3 transition-colors">
-                    <p className="text-xs font-semibold text-rose-600 dark:text-rose-400">
+                    <p className="text-xs font-semibold text-rose-400">
                       {t("home.demo.before.label")}
                     </p>
-                    <p className="mt-1.5 whitespace-pre-wrap text-sm text-foreground/90">
+                    <p className="mt-1.5 whitespace-pre-wrap text-sm text-slate-200">
                       {t(`home.demo.examples.${key}.before`)}
                     </p>
                   </div>
                   <div className="hidden items-center justify-center lg:flex">
-                    <span className="inline-flex size-9 items-center justify-center rounded-full border bg-background/60 text-muted-foreground">
+                    <span className="inline-flex size-9 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.04] text-indigo-400">
                       <MoveRight className="size-4" />
                     </span>
                   </div>
                   <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 transition-colors">
-                    <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                    <p className="text-xs font-semibold text-emerald-400">
                       {t("home.demo.after.label")}
                     </p>
-                    <p className="mt-1.5 whitespace-pre-wrap text-sm text-foreground/90">
+                    <p className="mt-1.5 whitespace-pre-wrap text-sm text-slate-200">
                       {t(`home.demo.examples.${key}.after`)}
                     </p>
                   </div>
                   <div className="flex items-center justify-center lg:hidden">
-                    <span className="inline-flex size-9 items-center justify-center rounded-full border bg-background/60 text-muted-foreground">
+                    <span className="inline-flex size-9 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.04] text-indigo-400">
                       <MoveRight className="size-4" />
                     </span>
                   </div>
@@ -210,43 +227,43 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
           </div>
         </section>
 
-        <section className="mt-6 rounded-2xl border bg-card/70 p-6 shadow-sm backdrop-blur">
+        <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
-              <h2 className="text-pretty text-lg font-semibold tracking-tight">
+              <h2 className={cn("text-pretty text-lg font-semibold tracking-tight", textGradientHero)}>
                 {t("how.detailed.title")}
               </h2>
-              <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+              <p className="mt-1 max-w-3xl text-sm text-slate-400">
                 {t("how.detailed.subtitle")}
               </p>
             </div>
           </div>
 
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="rounded-xl border bg-background/50 p-4">
-              <p className="text-sm font-semibold">{t("how.detailed.1.title")}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{t("how.detailed.1.body")}</p>
+            <div className={cn("rounded-xl p-4 transition-all duration-300 hover:border-violet-500/40", glassSurface)}>
+              <p className="text-sm font-semibold text-white">{t("how.detailed.1.title")}</p>
+              <p className="mt-1 text-sm text-slate-400">{t("how.detailed.1.body")}</p>
             </div>
-            <div className="rounded-xl border bg-background/50 p-4">
-              <p className="text-sm font-semibold">{t("how.detailed.2.title")}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{t("how.detailed.2.body")}</p>
+            <div className={cn("rounded-xl p-4 transition-all duration-300 hover:border-violet-500/40", glassSurface)}>
+              <p className="text-sm font-semibold text-white">{t("how.detailed.2.title")}</p>
+              <p className="mt-1 text-sm text-slate-400">{t("how.detailed.2.body")}</p>
             </div>
-            <div className="rounded-xl border bg-background/50 p-4">
-              <p className="text-sm font-semibold">{t("how.detailed.3.title")}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{t("how.detailed.3.body")}</p>
+            <div className={cn("rounded-xl p-4 transition-all duration-300 hover:border-violet-500/40", glassSurface)}>
+              <p className="text-sm font-semibold text-white">{t("how.detailed.3.title")}</p>
+              <p className="mt-1 text-sm text-slate-400">{t("how.detailed.3.body")}</p>
             </div>
-            <div className="rounded-xl border bg-background/50 p-4">
-              <p className="text-sm font-semibold">{t("how.detailed.4.title")}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{t("how.detailed.4.body")}</p>
+            <div className={cn("rounded-xl p-4 transition-all duration-300 hover:border-violet-500/40", glassSurface)}>
+              <p className="text-sm font-semibold text-white">{t("how.detailed.4.title")}</p>
+              <p className="mt-1 text-sm text-slate-400">{t("how.detailed.4.body")}</p>
             </div>
           </div>
         </section>
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[320px_1fr]">
           {/* Left: tool list */}
-          <aside className="hidden rounded-2xl border border-white/10 bg-slate-900/40 p-4 shadow-sm backdrop-blur-md lg:block">
+          <aside className={cn("hidden rounded-2xl p-4 lg:block", glassSurface)}>
             <div className="mb-3 flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold">{t("home.sidebar.title")}</p>
+              <p className="text-sm font-semibold text-slate-100">{t("home.sidebar.title")}</p>
               <span className="text-xs text-muted-foreground">{TOOLS.length}</span>
             </div>
 
@@ -260,10 +277,10 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
                       setExpanded((prev) => ({ ...prev, [cat]: !prev[cat] }))
                     }
                   >
-                    <p className="text-xs font-semibold text-muted-foreground">
+                    <p className="text-xs font-semibold text-slate-400">
                       {t(`category.${cat}.label`)}
                     </p>
-                    <span className="inline-flex size-6 items-center justify-center rounded-md border bg-background/60 text-muted-foreground">
+                    <span className="inline-flex size-6 items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.04] text-indigo-400">
                       {expanded[cat] ? <Minus className="size-4" /> : <Plus className="size-4" />}
                     </span>
                   </button>
@@ -277,10 +294,10 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
                             key={x.tool}
                             type="button"
                             className={cn(
-                              "flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm transition-colors",
+                              "flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm transition-all duration-300",
                               isActive
-                                ? "border-primary/30 bg-primary/10"
-                                : "border-border/60 bg-background/50 hover:bg-accent/40"
+                                ? "border-violet-500/40 bg-violet-500/10 text-white shadow-[0_0_16px_rgba(139,92,246,0.12)]"
+                                : "border-white/[0.08] bg-white/[0.03] text-slate-100 hover:border-violet-500/30 hover:bg-white/[0.06]"
                             )}
                             onClick={() => {
                               setSelected(x.tool);
@@ -296,7 +313,7 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
                             <ArrowRight
                               className={cn(
                                 "size-4 shrink-0",
-                                isActive ? "text-primary" : "text-muted-foreground"
+                                isActive ? "text-violet-300" : "text-indigo-400"
                               )}
                             />
                           </button>
@@ -310,10 +327,10 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
           </aside>
 
           {/* Right: workspace */}
-          <section className="rounded-2xl border border-white/10 bg-slate-900/40 p-4 shadow-sm backdrop-blur-md sm:p-6">
+          <section className={cn("rounded-2xl p-4 sm:p-6", glassInteractive)}>
             <div className="mb-4 lg:hidden">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-sm font-semibold">{t("home.sidebar.title")}</p>
+                <p className="text-sm font-semibold text-slate-100">{t("home.sidebar.title")}</p>
                 <span className="text-xs text-muted-foreground">{TOOLS.length}</span>
               </div>
               <div className="mt-3 -mx-2 overflow-x-auto whitespace-nowrap px-2">
@@ -325,11 +342,11 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
                         key={cat}
                         type="button"
                         className={cn(
-                          "inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors",
-                          "focus:outline-none focus:ring-2 focus:ring-primary/30",
+                          "inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-300",
+                          "focus:outline-none focus:ring-2 focus:ring-violet-500/35",
                           isActive
-                            ? "border-primary/30 bg-primary/10 text-foreground"
-                            : "border-border/60 bg-background/60 text-muted-foreground hover:bg-accent/40"
+                            ? "border-violet-500/40 bg-violet-500/15 text-white shadow-[0_0_14px_rgba(139,92,246,0.2)]"
+                            : "border-white/[0.1] bg-white/[0.04] text-slate-200 hover:border-violet-500/30 hover:bg-white/[0.07]"
                         )}
                         onClick={() => {
                           const first = TOOLS.find((x) => x.category === cat)?.tool;
@@ -354,11 +371,11 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
                         key={x.tool}
                         type="button"
                         className={cn(
-                          "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-colors",
-                          "focus:outline-none focus:ring-2 focus:ring-primary/30",
+                          "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-all duration-300",
+                          "focus:outline-none focus:ring-2 focus:ring-violet-500/35",
                           isActive
-                            ? "border-primary/30 bg-primary/10 text-foreground"
-                            : "border-border/60 bg-background/60 text-muted-foreground hover:bg-accent/40"
+                            ? "border-violet-500/40 bg-violet-500/15 text-white shadow-[0_0_14px_rgba(139,92,246,0.2)]"
+                            : "border-white/[0.1] bg-white/[0.04] text-slate-200 hover:border-violet-500/30 hover:bg-white/[0.07]"
                         )}
                         onClick={() => {
                           setSelected(x.tool);
@@ -377,21 +394,26 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
             <ConciergeChat className="mb-5" />
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0">
-                <p className="text-xs font-semibold text-muted-foreground">
+                <p className="text-xs font-semibold text-slate-500">
                   {t(`category.${selectedDef.category}.label`)}
                 </p>
-                <h2 className="mt-1 text-pretty text-xl font-semibold tracking-tight">
+                <h2
+                  className={cn(
+                    "mt-1 text-pretty text-xl font-semibold tracking-tight",
+                    textGradientHero
+                  )}
+                >
                   <span className="inline-flex items-center gap-2">
                     <span aria-hidden="true">{selectedDef.emoji}</span>
                     <span>{toolTitle(t, selected, selectedDef.title)}</span>
                   </span>
                 </h2>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-2 text-sm text-slate-400">
                   {toolDescription(t, selected, selectedDef.description)}
                 </p>
               </div>
-              <div className="inline-flex items-center gap-2 rounded-full border bg-background/60 px-3 py-2 text-xs text-muted-foreground">
-                <Sparkles className="size-4" />
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.04] px-3 py-2 text-xs text-slate-400 backdrop-blur-xl">
+                <Sparkles className="size-4 text-indigo-400" />
                 {t("home.workspace.hint")}
               </div>
             </div>
@@ -403,7 +425,7 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
         </section>
       </main>
 
-      <footer className="border-t bg-background/70 backdrop-blur">
+      <footer className="border-t border-white/[0.08] bg-white/[0.02] backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-10 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">{t("footer.copyright")}</p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">

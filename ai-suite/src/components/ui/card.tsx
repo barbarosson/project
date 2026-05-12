@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { glassInteractive } from "@/lib/premium-ui";
 
 export function Card({
   className,
@@ -8,7 +9,8 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-white/10 bg-slate-900/50 text-card-foreground shadow-sm backdrop-blur-md",
+        "rounded-2xl text-card-foreground",
+        glassInteractive,
         className
       )}
       {...props}
@@ -31,7 +33,10 @@ export function CardTitle({
 }: React.HTMLAttributes<HTMLHeadingElement>) {
   return (
     <h3
-      className={cn("text-lg font-semibold leading-none tracking-tight", className)}
+      className={cn(
+        "text-lg font-semibold leading-none tracking-tight text-white",
+        className
+      )}
       {...props}
     />
   );
@@ -43,7 +48,7 @@ export function CardDescription({
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
     <p
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn("text-sm text-slate-400", className)}
       {...props}
     />
   );

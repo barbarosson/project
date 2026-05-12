@@ -4,8 +4,12 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2, SendHorizonal } from "lucide-react";
 
+import { glassSurface } from "@/lib/premium-ui";
+
 import type { ToolName } from "@/components/ai-suite/tools";
 import { getToolDefinition } from "@/components/ai-suite/tools";
+import { MODELS, salesPriceForModel, type ModelId } from "@/models/models";
+import { useModel } from "@/models/model-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -55,6 +59,12 @@ function renderMarkdownLinks(text: string) {
 export function ConciergeChat({ className }: { className?: string }) {
   const router = useRouter();
   const { t, locale } = useI18n();
+  const { model: homepageModel } = useModel();
+  const [pickedModel, setPickedModel] = React.useState<ModelId>(homepageModel);
+
+  React.useEffect(() => {
+    setPickedModel(homepageModel);
+  }, [homepageModel]);
 
   const [messages, setMessages] = React.useState<UiMsg[]>(() => [
     {
@@ -86,6 +96,7 @@ export function ConciergeChat({ className }: { className?: string }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           locale,
+          model: pickedModel,
           messages: nextMsgs.map((m) => ({
             role: m.role,
             content: m.content === WELCOME_TOKEN ? t("concierge.welcome") : m.content,
@@ -114,9 +125,13 @@ export function ConciergeChat({ className }: { className?: string }) {
   }
 
   return (
-    <Card className={cn("bg-card/70 backdrop-blur", className)}>
+    <Card className={className}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">
+        <CardTitle className="flex items-center gap-2 text-base font-semibold">
+          <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/50" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
+          </span>
           <IsendaiLogo
             withWordmark
             className="gap-2"
@@ -126,7 +141,12 @@ export function ConciergeChat({ className }: { className?: string }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="grid gap-3">
-        <div className="max-h-56 space-y-2 overflow-auto rounded-xl border bg-background/50 p-3 text-sm">
+        <div
+          className={cn(
+            "max-h-56 space-y-2 overflow-auto rounded-xl p-3 text-sm text-slate-300",
+            glassSurface
+          )}
+        >
           {messages.map((m) => (
             <div
               key={m.id}
@@ -145,15 +165,22 @@ export function ConciergeChat({ className }: { className?: string }) {
             </div>
           ))}
           {busy ? (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Loader2 className="size-3 animate-spin" />
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <span className="relative flex h-1.5 w-1.5 shrink-0" aria-hidden>
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/60" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              </span>
+              <Loader2 className="size-3 animate-spin text-indigo-400" />
               {t("concierge.thinking")}
             </div>
           ) : null}
         </div>
 
         {error ? (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+          <div
+            className="rounded-lg border border-rose-400/35 bg-rose-950/55 p-3 text-sm leading-relaxed text-rose-100 shadow-[inset_0_1px_0_0_rgb(255_255_255/0.06)]"
+            role="alert"
+          >
             {error}
           </div>
         ) : null}
@@ -171,11 +198,32 @@ export function ConciergeChat({ className }: { className?: string }) {
                 <span className="mr-1" aria-hidden="true">
                   {getToolDefinition(tool).emoji}
                 </span>
-                {toolTitle(t, tool, getToolDefinition(tool).title)} <ArrowRight className="size-4" />
+                {toolTitle(t, tool, getToolDefinition(tool).title)}{" "}
+                <ArrowRight className="size-4 text-indigo-400" />
               </Button>
             ))}
           </div>
         ) : null}
+
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-muted-foreground" htmlFor="concierge-model">
+            {t("concierge.modelLabel")}
+          </label>
+          <select
+            id="concierge-model"
+            className="w-full rounded-xl border border-white/[0.12] bg-zinc-950/95 px-3 py-2 text-sm text-zinc-100 shadow-inner outline-none backdrop-blur-xl focus:ring-2 focus:ring-violet-500/35"
+            value={pickedModel}
+            onChange={(e) => setPickedModel(e.target.value as ModelId)}
+            disabled={busy}
+            aria-label={t("concierge.modelLabel")}
+          >
+            {MODELS.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.label} · {salesPriceForModel(m.id).listLabel}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="flex gap-2">
           <Input
@@ -188,7 +236,7 @@ export function ConciergeChat({ className }: { className?: string }) {
             disabled={busy}
           />
           <Button type="button" onClick={send} disabled={busy || !input.trim()}>
-            <SendHorizonal className="size-4" />
+            <SendHorizonal className="size-4 text-white" />
             {t("concierge.send")}
           </Button>
         </div>

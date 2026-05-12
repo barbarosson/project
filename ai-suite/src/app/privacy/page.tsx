@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 
 import { PrivacyEnBody } from "@/app/legal/privacy-en-body";
 import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
+import { cn } from "@/lib/utils";
+import { textGradientHero } from "@/lib/premium-ui";
 import { DICTS, type Locale } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 
@@ -32,8 +34,10 @@ export default async function PrivacyPage() {
         </Link>
         <SiteLocaleToolbar />
       </div>
-      <h1 className="text-pretty text-3xl font-semibold tracking-tight">{d["legal.privacyTitle"]}</h1>
-      <p className="mt-3 text-sm text-slate-300">{d["legal.effective"].replace("{year}", year)}</p>
+      <h1 className={cn("text-pretty text-3xl font-semibold tracking-tight", textGradientHero)}>
+        {d["legal.privacyTitle"]}
+      </h1>
+      <p className="mt-3 text-sm text-slate-400">{d["legal.effective"].replace("{year}", year)}</p>
       {locale !== "en" ? (
         <p className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-100">
           {d["legal.shellNotice"]}

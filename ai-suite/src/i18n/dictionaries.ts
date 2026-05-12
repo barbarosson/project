@@ -126,6 +126,18 @@ export const DICTS: Record<Locale, Dict> = {
     "success.usingSaved": "We’re using your saved input from localStorage.",
     "success.generating": "Generating with GPT‑4o‑mini…",
     "success.copy": "Copy to Clipboard",
+    "success.shareOnX": "Share on X",
+    "success.shareOnXAria": "Share this result on X",
+    "success.downloadSocial": "Download for IG/TikTok",
+    "success.downloadSocialAria": "Download share image for Instagram or TikTok",
+    "success.downloadSocialToast": "Image downloaded — ready to post!",
+    "success.downloadSocialFailed": "Could not create the image.",
+    "success.shareOnLinkedIn": "Share on LinkedIn",
+    "success.shareOnLinkedInAria": "Share this result on LinkedIn",
+    "success.shareLinkedInToast":
+      "Text copied! Paste it in your LinkedIn post.",
+    "success.shareLinkedInCopyFailed":
+      "Couldn't copy to clipboard. Try copying the text manually.",
     "success.ready": "Ready when you are.",
 
     "success.ephemeral.title": "Heads up",
@@ -149,6 +161,7 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.placeholder": "Tell me what you’re trying to do…",
     "concierge.send": "Send",
     "concierge.thinking": "Thinking…",
+    "concierge.modelLabel": "AI model for replies",
     "concierge.openTool": "Open tool",
 
     "nav.backToHome": "Back to Home",
@@ -193,11 +206,12 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copy": "Copy",
     "ui.copying": "Copying…",
     "ui.copied": "Copied.",
+    "ui.copySuccessToast": "Copied to clipboard! 📋",
     "ui.copyFailed": "Could not copy.",
 
     "pricing.title": "Pricing",
     "pricing.subtitle":
-      "Monthly bundles include 100 / 300 / 1000 requests at $7.99 / $9.99 / $19.99. Custom mixes estimate price from those rates. Pay-as-you-go 10-request packs still gate model tiers. Each run uses 1 credit.",
+      "Monthly bundles: 100 / 300 / 1000 requests at $7.99 / $9.99 / $19.99 per month. Annual options: $79 / $99 / $199 per year (same tiers, ~17% vs paying monthly). Custom mixes estimate price from those rates. Pay-as-you-go 10-request packs gate model tiers. Each run uses 1 credit.",
     "pricing.monthly.sectionTitle": "Monthly request bundles",
     "pricing.monthly.sectionLead":
       "Renews each billing cycle once Stripe is enabled. Effective per-request rates: ~$0.0799 (100), ~$0.0333 (300), ~$0.0200 (1000).",
@@ -213,6 +227,21 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.monthly.scale.price": "$19.99",
     "pricing.monthly.scale.requests": "1000 requests / month",
     "pricing.monthly.scale.desc": "Heavy usage and automation-friendly pricing.",
+    "pricing.yearly.sectionTitle": "Annual bundles",
+    "pricing.yearly.sectionLead":
+      "Same three tiers as monthly, billed once per year. Yearly totals: 1,200 / 3,600 / 12,000 requests (equivalent to 100 / 300 / 1,000 per month).",
+    "pricing.yearly.starter.price": "$79 / year",
+    "pricing.yearly.starter.requests": "1,200 requests / year",
+    "pricing.yearly.starter.desc": "Matches Starter monthly volume with a lower effective monthly rate.",
+    "pricing.yearly.starter.savings": "~17% less than paying monthly for 12 months",
+    "pricing.yearly.growth.price": "$99 / year",
+    "pricing.yearly.growth.requests": "3,600 requests / year",
+    "pricing.yearly.growth.desc": "Matches Growth monthly volume — best for teams that commit annually.",
+    "pricing.yearly.growth.savings": "~17% less than paying monthly for 12 months",
+    "pricing.yearly.scale.price": "$199 / year",
+    "pricing.yearly.scale.requests": "12,000 requests / year",
+    "pricing.yearly.scale.desc": "Matches Scale monthly volume — lowest per-request cost when prepaid yearly.",
+    "pricing.yearly.scale.savings": "~17% less than paying monthly for 12 months",
     "pricing.custom.title": "Custom monthly mix",
     "pricing.custom.subtitle":
       "Split monthly requests across low / mid / high AI tiers. Totals use per-request rates derived from our bundles: $19.99÷1000 (low), $9.99÷300 (mid), $7.99÷100 (high).",
@@ -260,6 +289,15 @@ export const DICTS: Record<Locale, Dict> = {
       "Paid packs and subscriptions will be enabled with Stripe; until then, use credits from dev top-up (non-prod) or your operator.",
     "growth.zeroCreditsHint":
       "Balance is 0 — use the dev top-up on Pricing (local only), sign in, or ask your admin to add credits.",
+    "growth.freeTrial.ctaButton": "Generate 1st Message for Free 🎁",
+    "growth.freeTrial.modalTitle": "Unlock your first free generation",
+    "growth.freeTrial.modalBody":
+      "Enter your email to unlock your first free AI generation on this device.",
+    "growth.freeTrial.placeholder": "you@company.com",
+    "growth.freeTrial.submit": "Unlock & generate",
+    "growth.freeTrial.cancel": "Cancel",
+    "growth.freeTrial.invalidEmail": "Please enter a valid email address.",
+    "growth.freeTrial.deviceAlreadyUsed": "Free trial already used on this device.",
     "success.pageFallbackTitle": "Result",
 
     "auth.disabled": "Auth unavailable",
@@ -289,7 +327,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.missingSupabase": "Sign-in is not configured (missing Supabase keys).",
     "login.membershipEmailTitle": "Email",
     "login.membershipEmailBody":
-      "We send a one-time magic link to your inbox. No password. You will complete your membership profile right after sign-in.",
+      "Use your personal email: create an account with a password, sign in with password, or request a one-time magic link (no password). After sign-in, you complete your membership profile.",
     "login.membershipGoogleTitle": "Google account",
     "login.membershipGoogleBody":
       "Use your Google identity, then confirm or add membership details on the next screen.",
@@ -304,6 +342,14 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailSent": "Check your email for the sign-in link.",
     "login.sendFailed": "Could not send the sign-in link.",
     "login.emailPlaceholder": "you@domain.com",
+    "login.passwordPlaceholder": "Password",
+    "login.registerButton": "Create account",
+    "login.signInPasswordButton": "Sign in with password",
+    "login.passwordTooShort": "Password must be at least 6 characters.",
+    "login.passwordRequired": "Enter your password.",
+    "login.confirmEmailSent": "Check your email to confirm your account, then sign in.",
+    "login.authFailed": "Could not complete sign-in.",
+    "login.magicLinkDivider": "Or sign in without a password",
     "login.legalLead": "By continuing, you agree to our",
     "login.legalMid": "and",
     "login.legalEnd": ".",
@@ -342,7 +388,10 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.flow.hint":
       "Next we open the result page and generate using your credit balance. Paying to buy credits comes in a later release.",
     "tool.ctaCreditSuffix": " — 1 credit",
-    "tool.priceReference": "Pay-as-you-go: {price} per 10-credit pack at this model tier (monthly bundles on Pricing).",
+    "tool.priceReference":
+      "Typical rate at this tier: {price} (example: common 10-credit top-ups priced at $1 / $1.49 / $1.99 per pack).",
+    "tool.pricePackFlex":
+      "You are not required to buy exactly 10 credits — bundle sizes on Pricing are flexible.",
     "tool.validation.empty": "Please fill in the required fields before continuing.",
 
     "errors.toolParamMissing": "Missing or invalid tool parameter.",
@@ -499,6 +548,18 @@ export const DICTS: Record<Locale, Dict> = {
     "success.usingSaved": "Usamos tu texto guardado en localStorage.",
     "success.generating": "Generando con GPT‑4o‑mini…",
     "success.copy": "Copiar",
+    "success.shareOnX": "Compartir en X",
+    "success.shareOnXAria": "Compartir este resultado en X",
+    "success.downloadSocial": "Descargar para IG/TikTok",
+    "success.downloadSocialAria": "Descargar imagen para Instagram o TikTok",
+    "success.downloadSocialToast": "Imagen descargada — ¡lista para publicar!",
+    "success.downloadSocialFailed": "No se pudo crear la imagen.",
+    "success.shareOnLinkedIn": "Compartir en LinkedIn",
+    "success.shareOnLinkedInAria": "Compartir este resultado en LinkedIn",
+    "success.shareLinkedInToast":
+      "¡Texto copiado! Pégalo en tu publicación de LinkedIn.",
+    "success.shareLinkedInCopyFailed":
+      "No se pudo copiar al portapapeles. Intenta copiar el texto manualmente.",
     "success.ready": "Listo cuando tú lo estés.",
 
     "success.ephemeral.title": "Aviso",
@@ -531,6 +592,7 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.placeholder": "Cuéntame qué quieres lograr…",
     "concierge.send": "Enviar",
     "concierge.thinking": "Pensando…",
+    "concierge.modelLabel": "Modelo de IA para respuestas",
 
     "nav.backToHome": "Volver al inicio",
     "nav.pricing": "Precios",
@@ -574,11 +636,12 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copy": "Copiar",
     "ui.copying": "Copiando…",
     "ui.copied": "Copiado.",
+    "ui.copySuccessToast": "¡Copiado al portapapeles! 📋",
     "ui.copyFailed": "No se pudo copiar.",
 
     "pricing.title": "Precios",
     "pricing.subtitle":
-      "Los paquetes mensuales incluyen 100 / 300 / 1000 solicitudes por $7.99 / $9.99 / $19.99. Las mezclas personalizadas usan esas tarifas. Los paquetes de 10 solicitudes siguen limitando el acceso a modelos. Cada ejecución usa 1 crédito.",
+      "Mensual: 100 / 300 / 1000 solicitudes por $7.99 / $9.99 / $19.99 al mes. Anual: $79 / $99 / $199 al año (mismos niveles, ~17 % menos que pagar mensual). Las mezclas personalizadas usan esas tarifas. Los packs de 10 solicitudes limitan modelos. Cada ejecución usa 1 crédito.",
     "pricing.monthly.sectionTitle": "Paquetes mensuales de solicitudes",
     "pricing.monthly.sectionLead":
       "Se renueva cada ciclo cuando Stripe esté activo. Precios por solicitud aprox.: ~$0.0799 (100), ~$0.0333 (300), ~$0.0200 (1000).",
@@ -594,6 +657,21 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.monthly.scale.price": "$19.99",
     "pricing.monthly.scale.requests": "1000 solicitudes / mes",
     "pricing.monthly.scale.desc": "Alto volumen y mejor precio por solicitud.",
+    "pricing.yearly.sectionTitle": "Paquetes anuales",
+    "pricing.yearly.sectionLead":
+      "Los mismos tres niveles que el mensual, facturados una vez al año. Totales anuales: 1.200 / 3.600 / 12.000 solicitudes (equivalente a 100 / 300 / 1.000 al mes).",
+    "pricing.yearly.starter.price": "$79 / año",
+    "pricing.yearly.starter.requests": "1.200 solicitudes / año",
+    "pricing.yearly.starter.desc": "Equivale al plan Starter mensual con una cuota mensual efectiva menor.",
+    "pricing.yearly.starter.savings": "~17 % menos que pagar mensual durante 12 meses",
+    "pricing.yearly.growth.price": "$99 / año",
+    "pricing.yearly.growth.requests": "3.600 solicitudes / año",
+    "pricing.yearly.growth.desc": "Equivale al Growth mensual — ideal si te comprometes anualmente.",
+    "pricing.yearly.growth.savings": "~17 % menos que pagar mensual durante 12 meses",
+    "pricing.yearly.scale.price": "$199 / año",
+    "pricing.yearly.scale.requests": "12.000 solicitudes / año",
+    "pricing.yearly.scale.desc": "Equivale al Scale mensual — mejor precio por solicitud pagando el año.",
+    "pricing.yearly.scale.savings": "~17 % menos que pagar mensual durante 12 meses",
     "pricing.custom.title": "Mezcla mensual personalizada",
     "pricing.custom.subtitle":
       "Reparte solicitudes mensuales entre niveles bajo / medio / alto. Total con tasas de $19.99÷1000 (bajo), $9.99÷300 (medio), $7.99÷100 (alto).",
@@ -641,6 +719,15 @@ export const DICTS: Record<Locale, Dict> = {
       "Los pagos con Stripe llegarán más adelante; hasta entonces usa la recarga dev (no prod) o tu operador.",
     "growth.zeroCreditsHint":
       "Saldo 0: usa la recarga dev en Precios (solo local), inicia sesión o pide créditos al administrador.",
+    "growth.freeTrial.ctaButton": "Genera tu 1.er mensaje gratis 🎁",
+    "growth.freeTrial.modalTitle": "Desbloquea tu primera generación gratis",
+    "growth.freeTrial.modalBody":
+      "Introduce tu email para desbloquear tu primera generación IA gratis en este dispositivo.",
+    "growth.freeTrial.placeholder": "tu@email.com",
+    "growth.freeTrial.submit": "Desbloquear y generar",
+    "growth.freeTrial.cancel": "Cancelar",
+    "growth.freeTrial.invalidEmail": "Introduce un email válido.",
+    "growth.freeTrial.deviceAlreadyUsed": "La prueba gratis ya se usó en este dispositivo.",
     "success.pageFallbackTitle": "Resultado",
 
     "auth.disabled": "Acceso no disponible",
@@ -670,7 +757,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.missingSupabase": "Inicio no configurado (faltan claves de Supabase).",
     "login.membershipEmailTitle": "Email",
     "login.membershipEmailBody":
-      "Te enviamos un enlace mágico de un solo uso. Sin contraseña. Después completarás tu perfil de membresía.",
+      "Usa tu email personal: crea una cuenta con contraseña, entra con contraseña o pide un enlace mágico de un solo uso. Después del acceso completas tu perfil de membresía.",
     "login.membershipGoogleTitle": "Cuenta de Google",
     "login.membershipGoogleBody":
       "Usa tu identidad de Google y confirma o añade los datos de membresía en la siguiente pantalla.",
@@ -685,6 +772,14 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailSent": "Revisa tu correo para el enlace de acceso.",
     "login.sendFailed": "No se pudo enviar el enlace.",
     "login.emailPlaceholder": "tu@dominio.com",
+    "login.passwordPlaceholder": "Contraseña",
+    "login.registerButton": "Crear cuenta",
+    "login.signInPasswordButton": "Entrar con contraseña",
+    "login.passwordTooShort": "La contraseña debe tener al menos 6 caracteres.",
+    "login.passwordRequired": "Introduce tu contraseña.",
+    "login.confirmEmailSent": "Revisa tu correo para confirmar la cuenta y luego entra.",
+    "login.authFailed": "No se pudo completar el acceso.",
+    "login.magicLinkDivider": "O entrar sin contraseña",
     "login.legalLead": "Al continuar, aceptas nuestros",
     "login.legalMid": "y",
     "login.legalEnd": ".",
@@ -723,7 +818,10 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.flow.hint":
       "A continuación abrimos la página de resultado y generamos con tu saldo de créditos. Comprar créditos llegará más adelante.",
     "tool.ctaCreditSuffix": " — 1 crédito",
-    "tool.priceReference": "Pago por uso: {price} por paquete de 10 créditos en esta banda (planes mensuales en Precios).",
+    "tool.priceReference":
+      "Tarifa típica en este nivel: {price} (ejemplo: recargas habituales de 10 créditos a $1 / $1.49 / $1.99 por paquete).",
+    "tool.pricePackFlex":
+      "No estás obligado a comprar exactamente 10 créditos — los tamaños de paquete en Precios son flexibles.",
     "tool.validation.empty": "Completa los campos obligatorios antes de continuar.",
 
     "errors.toolParamMissing": "Falta el parámetro de herramienta o no es válido.",
@@ -871,6 +969,18 @@ export const DICTS: Record<Locale, Dict> = {
     "success.usingSaved": "Nous utilisons votre texte sauvegardé (localStorage).",
     "success.generating": "Génération avec GPT‑4o‑mini…",
     "success.copy": "Copier",
+    "success.shareOnX": "Partager sur X",
+    "success.shareOnXAria": "Partager ce résultat sur X",
+    "success.downloadSocial": "Télécharger pour IG/TikTok",
+    "success.downloadSocialAria": "Télécharger l’image pour Instagram ou TikTok",
+    "success.downloadSocialToast": "Image téléchargée — prêt à publier !",
+    "success.downloadSocialFailed": "Impossible de créer l’image.",
+    "success.shareOnLinkedIn": "Partager sur LinkedIn",
+    "success.shareOnLinkedInAria": "Partager ce résultat sur LinkedIn",
+    "success.shareLinkedInToast":
+      "Texte copié ! Collez-le dans votre publication LinkedIn.",
+    "success.shareLinkedInCopyFailed":
+      "Impossible de copier dans le presse-papiers. Copiez le texte manuellement.",
     "success.ready": "Quand vous voulez.",
 
     "success.ephemeral.title": "Info",
@@ -903,6 +1013,7 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.placeholder": "Dites-moi ce que vous cherchez à faire…",
     "concierge.send": "Envoyer",
     "concierge.thinking": "Réflexion…",
+    "concierge.modelLabel": "Modèle IA pour les réponses",
 
     "nav.backToHome": "Retour à l’accueil",
     "nav.pricing": "Tarifs",
@@ -946,11 +1057,12 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copy": "Copier",
     "ui.copying": "En cours…",
     "ui.copied": "Copié.",
+    "ui.copySuccessToast": "Copié dans le presse-papiers ! 📋",
     "ui.copyFailed": "Impossible de copier.",
 
     "pricing.title": "Tarifs",
     "pricing.subtitle":
-      "Les offres mensuelles incluent 100 / 300 / 1000 requêtes pour $7.99 / $9.99 / $19.99. Le mix personnalisé reprend ces tarifs unitaires. Les packs de 10 requêtes limitent toujours les modèles. Chaque exécution utilise 1 crédit.",
+      "Mensuel : 100 / 300 / 1000 requêtes pour $7.99 / $9.99 / $19.99 par mois. Annuel : $79 / $99 / $199 par an (mêmes niveaux, ~17 % de moins que le mensuel sur 12 mois). Le mix personnalisé reprend ces tarifs. Les packs de 10 requêtes limitent les modèles. Chaque exécution utilise 1 crédit.",
     "pricing.monthly.sectionTitle": "Forfaits mensuels de requêtes",
     "pricing.monthly.sectionLead":
       "Renouvellement à chaque cycle une fois Stripe activé. Tarifs par requête indicatifs : ~$0.0799 (100), ~$0.0333 (300), ~$0.0200 (1000).",
@@ -966,6 +1078,21 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.monthly.scale.price": "19,99 $",
     "pricing.monthly.scale.requests": "1000 requêtes / mois",
     "pricing.monthly.scale.desc": "Gros volume et meilleur prix par requête.",
+    "pricing.yearly.sectionTitle": "Forfaits annuels",
+    "pricing.yearly.sectionLead":
+      "Les trois mêmes niveaux qu’en mensuel, facturés une fois par an. Totaux annuels : 1 200 / 3 600 / 12 000 requêtes (équivalent à 100 / 300 / 1 000 par mois).",
+    "pricing.yearly.starter.price": "79 $ / an",
+    "pricing.yearly.starter.requests": "1 200 requêtes / an",
+    "pricing.yearly.starter.desc": "Équivalent au Starter mensuel avec un coût mensuel effectif plus bas.",
+    "pricing.yearly.starter.savings": "~17 % de moins que 12 mois au tarif mensuel",
+    "pricing.yearly.growth.price": "99 $ / an",
+    "pricing.yearly.growth.requests": "3 600 requêtes / an",
+    "pricing.yearly.growth.desc": "Équivalent au Growth mensuel — idéal si vous vous engagez sur l’année.",
+    "pricing.yearly.growth.savings": "~17 % de moins que 12 mois au tarif mensuel",
+    "pricing.yearly.scale.price": "199 $ / an",
+    "pricing.yearly.scale.requests": "12 000 requêtes / an",
+    "pricing.yearly.scale.desc": "Équivalent au Scale mensuel — meilleur prix par requête en prépayant l’année.",
+    "pricing.yearly.scale.savings": "~17 % de moins que 12 mois au tarif mensuel",
     "pricing.custom.title": "Mix mensuel personnalisé",
     "pricing.custom.subtitle":
       "Répartis tes requêtes mensuelles entre niveaux bas / moyen / haut. Total basé sur $19.99÷1000 (bas), $9.99÷300 (moyen), $7.99÷100 (haut).",
@@ -1013,6 +1140,15 @@ export const DICTS: Record<Locale, Dict> = {
       "Paiement Stripe plus tard ; en attendant utilise la recharge dev (hors prod) ou ton opérateur.",
     "growth.zeroCreditsHint":
       "Solde 0 : recharge dev sur Tarifs (local), connecte-toi ou demande des crédits à l’admin.",
+    "growth.freeTrial.ctaButton": "Générez votre 1er message gratuitement 🎁",
+    "growth.freeTrial.modalTitle": "Débloquez votre première génération gratuite",
+    "growth.freeTrial.modalBody":
+      "Entrez votre e-mail pour débloquer votre première génération IA gratuite sur cet appareil.",
+    "growth.freeTrial.placeholder": "vous@entreprise.com",
+    "growth.freeTrial.submit": "Débloquer et générer",
+    "growth.freeTrial.cancel": "Annuler",
+    "growth.freeTrial.invalidEmail": "Veuillez entrer une adresse e-mail valide.",
+    "growth.freeTrial.deviceAlreadyUsed": "L’essai gratuit a déjà été utilisé sur cet appareil.",
     "success.pageFallbackTitle": "Résultat",
 
     "auth.disabled": "Accès indisponible",
@@ -1042,7 +1178,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.missingSupabase": "Connexion non configurée (clés Supabase manquantes).",
     "login.membershipEmailTitle": "Email",
     "login.membershipEmailBody":
-      "Nous envoyons un lien magique à usage unique. Sans mot de passe. Tu compléteras ensuite ton profil d’adhésion.",
+      "Utilise ton email personnel : crée un compte avec mot de passe, connecte-toi avec mot de passe ou demande un lien magique à usage unique. Après connexion, tu complètes ton profil d’adhésion.",
     "login.membershipGoogleTitle": "Compte Google",
     "login.membershipGoogleBody":
       "Utilise ton compte Google, puis confirme ou complète les informations d’adhésion à l’écran suivant.",
@@ -1057,6 +1193,14 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailSent": "Vérifie tes emails pour le lien de connexion.",
     "login.sendFailed": "Impossible d’envoyer le lien.",
     "login.emailPlaceholder": "toi@domaine.com",
+    "login.passwordPlaceholder": "Mot de passe",
+    "login.registerButton": "Créer un compte",
+    "login.signInPasswordButton": "Se connecter avec mot de passe",
+    "login.passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères.",
+    "login.passwordRequired": "Saisis ton mot de passe.",
+    "login.confirmEmailSent": "Vérifie tes emails pour confirmer le compte, puis connecte-toi.",
+    "login.authFailed": "Connexion impossible.",
+    "login.magicLinkDivider": "Ou te connecter sans mot de passe",
     "login.legalLead": "En continuant, vous acceptez nos",
     "login.legalMid": "et",
     "login.legalEnd": ".",
@@ -1095,7 +1239,10 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.flow.hint":
       "Ensuite nous ouvrons la page de résultat et générons avec votre solde de crédits. L’achat de crédits arrivera plus tard.",
     "tool.ctaCreditSuffix": " — 1 crédit",
-    "tool.priceReference": "Paiement à l’usage : {price} par pack de 10 crédits pour ce palier (offres mensuelles sous Tarifs).",
+    "tool.priceReference":
+      "Tarif indicatif pour ce palier : {price} (ex. : recharges courantes de 10 crédits à $1 / $1.49 / $1.99 le pack).",
+    "tool.pricePackFlex":
+      "Aucune obligation d’acheter exactement 10 crédits — les formats proposés sous Tarifs restent flexibles.",
     "tool.validation.empty": "Remplissez les champs requis avant de continuer.",
 
     "errors.toolParamMissing": "Paramètre d’outil manquant ou invalide.",
@@ -1244,6 +1391,18 @@ export const DICTS: Record<Locale, Dict> = {
     "success.usingSaved": "Wir nutzen deinen gespeicherten Input (localStorage).",
     "success.generating": "Generiere mit GPT‑4o‑mini…",
     "success.copy": "Kopieren",
+    "success.shareOnX": "Auf X teilen",
+    "success.shareOnXAria": "Dieses Ergebnis auf X teilen",
+    "success.downloadSocial": "Für IG/TikTok laden",
+    "success.downloadSocialAria": "Teilen‑Bild für Instagram oder TikTok herunterladen",
+    "success.downloadSocialToast": "Bild geladen — bereit zum Posten!",
+    "success.downloadSocialFailed": "Bild konnte nicht erstellt werden.",
+    "success.shareOnLinkedIn": "Auf LinkedIn teilen",
+    "success.shareOnLinkedInAria": "Dieses Ergebnis auf LinkedIn teilen",
+    "success.shareLinkedInToast":
+      "Text kopiert! Füge ihn in deinen LinkedIn‑Beitrag ein.",
+    "success.shareLinkedInCopyFailed":
+      "Konnte nicht in die Zwischenablage kopieren. Kopiere den Text manuell.",
     "success.ready": "Bereit, wenn du es bist.",
 
     "success.ephemeral.title": "Hinweis",
@@ -1276,6 +1435,7 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.placeholder": "Sag mir kurz, was du erreichen willst…",
     "concierge.send": "Senden",
     "concierge.thinking": "Denke nach…",
+    "concierge.modelLabel": "KI-Modell für Antworten",
 
     "nav.backToHome": "Zur Startseite",
     "nav.pricing": "Preise",
@@ -1319,11 +1479,12 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copy": "Kopieren",
     "ui.copying": "Kopiere…",
     "ui.copied": "Kopiert.",
+    "ui.copySuccessToast": "In die Zwischenablage kopiert! 📋",
     "ui.copyFailed": "Kopieren fehlgeschlagen.",
 
     "pricing.title": "Preise",
     "pricing.subtitle":
-      "Monatspakete: 100 / 300 / 1000 Requests für $7.99 / $9.99 / $19.99. Individuelle Mixe nutzen dieselben Stückpreise. 10er‑Packs begrenzen weiter die Modellwahl. Ein Lauf = 1 Credit.",
+      "Monatlich: 100 / 300 / 1000 Requests für $7.99 / $9.99 / $19.99 pro Monat. Jährlich: $79 / $99 / $199 pro Jahr (gleiche Stufen, ~17 % weniger als 12× Monatspreis). Individuelle Mixe nutzen dieselben Stückpreise. 10er‑Packs begrenzen die Modellwahl. Ein Lauf = 1 Credit.",
     "pricing.monthly.sectionTitle": "Monatliche Request‑Pakete",
     "pricing.monthly.sectionLead":
       "Verlängert sich pro Abrechnungszyklus mit Stripe. Ca. Preis pro Request: ~$0.0799 (100), ~$0.0333 (300), ~$0.0200 (1000).",
@@ -1339,6 +1500,21 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.monthly.scale.price": "19,99 $",
     "pricing.monthly.scale.requests": "1000 Requests / Monat",
     "pricing.monthly.scale.desc": "Hohes Volumen, bester Stückpreis.",
+    "pricing.yearly.sectionTitle": "Jahrespakete",
+    "pricing.yearly.sectionLead":
+      "Dieselben drei Stufen wie monatlich, einmal pro Jahr abgerechnet. Jahresgesamt: 1.200 / 3.600 / 12.000 Requests (wie 100 / 300 / 1.000 pro Monat).",
+    "pricing.yearly.starter.price": "79 $ / Jahr",
+    "pricing.yearly.starter.requests": "1.200 Requests / Jahr",
+    "pricing.yearly.starter.desc": "Entspricht Starter monatlich mit niedrigeren effektiven Monatskosten.",
+    "pricing.yearly.starter.savings": "~17 % weniger als 12× Monatspreis",
+    "pricing.yearly.growth.price": "99 $ / Jahr",
+    "pricing.yearly.growth.requests": "3.600 Requests / Jahr",
+    "pricing.yearly.growth.desc": "Entspricht Growth monatlich — ideal bei Jahresbindung.",
+    "pricing.yearly.growth.savings": "~17 % weniger als 12× Monatspreis",
+    "pricing.yearly.scale.price": "199 $ / Jahr",
+    "pricing.yearly.scale.requests": "12.000 Requests / Jahr",
+    "pricing.yearly.scale.desc": "Entspricht Scale monatlich — bester Stückpreis bei Jahreszahlung.",
+    "pricing.yearly.scale.savings": "~17 % weniger als 12× Monatspreis",
     "pricing.custom.title": "Individueller Monats‑Mix",
     "pricing.custom.subtitle":
       "Verteile monatliche Requests auf niedrige / mittlere / hohe KI‑Stufen. Summe aus $19.99÷1000 (niedrig), $9.99÷300 (mittel), $7.99÷100 (hoch).",
@@ -1386,6 +1562,15 @@ export const DICTS: Record<Locale, Dict> = {
       "Stripe-Zahlung folgt; bis dahin Dev-Top-up (nicht prod) oder Betreiber-Credits.",
     "growth.zeroCreditsHint":
       "Stand 0: Dev-Top-up unter Preise (nur lokal), anmelden oder Admin um Credits bitten.",
+    "growth.freeTrial.ctaButton": "Erste Nachricht gratis generieren 🎁",
+    "growth.freeTrial.modalTitle": "Erste kostenlose Generierung freischalten",
+    "growth.freeTrial.modalBody":
+      "Gib deine E-Mail ein, um deine erste kostenlose KI-Generierung auf diesem Gerät freizuschalten.",
+    "growth.freeTrial.placeholder": "du@firma.de",
+    "growth.freeTrial.submit": "Freischalten & generieren",
+    "growth.freeTrial.cancel": "Abbrechen",
+    "growth.freeTrial.invalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein.",
+    "growth.freeTrial.deviceAlreadyUsed": "Die Gratis-Testversion wurde auf diesem Gerät bereits genutzt.",
     "success.pageFallbackTitle": "Ergebnis",
 
     "auth.disabled": "Login nicht verfügbar",
@@ -1415,7 +1600,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.missingSupabase": "Login nicht konfiguriert (Supabase‑Keys fehlen).",
     "login.membershipEmailTitle": "E‑Mail",
     "login.membershipEmailBody":
-      "Wir senden dir einen einmaligen Magic Link. Ohne Passwort. Danach vervollständigst du dein Mitgliedschaftsprofil.",
+      "Nutze deine persönliche E‑Mail: Konto mit Passwort anlegen, mit Passwort anmelden oder einen einmaligen Magic Link anfordern. Nach der Anmeldung vervollständigst du dein Mitgliedschaftsprofil.",
     "login.membershipGoogleTitle": "Google‑Konto",
     "login.membershipGoogleBody":
       "Nutze dein Google‑Konto und bestätige oder ergänze die Mitgliedschaftsdaten auf der nächsten Seite.",
@@ -1430,6 +1615,14 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailSent": "Prüfe dein Postfach für den Login‑Link.",
     "login.sendFailed": "Link konnte nicht gesendet werden.",
     "login.emailPlaceholder": "du@domain.de",
+    "login.passwordPlaceholder": "Passwort",
+    "login.registerButton": "Konto erstellen",
+    "login.signInPasswordButton": "Mit Passwort anmelden",
+    "login.passwordTooShort": "Das Passwort muss mindestens 6 Zeichen haben.",
+    "login.passwordRequired": "Passwort eingeben.",
+    "login.confirmEmailSent": "Bitte E‑Mail zur Bestätigung prüfen, danach anmelden.",
+    "login.authFailed": "Anmeldung fehlgeschlagen.",
+    "login.magicLinkDivider": "Oder ohne Passwort anmelden",
     "login.legalLead": "Mit Fortfahren akzeptierst du unsere",
     "login.legalMid": "und",
     "login.legalEnd": ".",
@@ -1468,7 +1661,10 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.flow.hint":
       "Als Nächstes öffnen wir die Ergebnisseite und generieren mit deinem Credit‑Kontostand. Credits kaufen kommt später.",
     "tool.ctaCreditSuffix": " — 1 Credit",
-    "tool.priceReference": "Pay-as-you-go: {price} pro 10‑Credit‑Paket für diese Modellstufe (Monatspakete unter Preise).",
+    "tool.priceReference":
+      "Richtpreis für diese Stufe: {price} (Beispiel: übliche 10‑Credit‑Pakete zu $1 / $1.49 / $1.99).",
+    "tool.pricePackFlex":
+      "Du musst nicht genau 10 Credits kaufen — Paketgrößen unter Preise sind flexibel.",
     "tool.validation.empty": "Bitte fülle die Pflichtfelder aus, bevor du fortfährst.",
 
     "errors.toolParamMissing": "Tool‑Parameter fehlt oder ist ungültig.",
@@ -1603,6 +1799,16 @@ export const DICTS: Record<Locale, Dict> = {
     "success.usingSaved": "正在使用你在 localStorage 中保存的输入。",
     "success.generating": "使用 GPT‑4o‑mini 生成中…",
     "success.copy": "复制",
+    "success.shareOnX": "分享到 X",
+    "success.shareOnXAria": "在 X 上分享此结果",
+    "success.downloadSocial": "下载（IG/TikTok）",
+    "success.downloadSocialAria": "下载适用于 Instagram 或 TikTok 的分享图",
+    "success.downloadSocialToast": "图片已下载，可以发布！",
+    "success.downloadSocialFailed": "无法生成图片。",
+    "success.shareOnLinkedIn": "分享到 LinkedIn",
+    "success.shareOnLinkedInAria": "在 LinkedIn 上分享此结果",
+    "success.shareLinkedInToast": "文本已复制！请粘贴到 LinkedIn 帖子中。",
+    "success.shareLinkedInCopyFailed": "无法复制到剪贴板，请手动复制文本。",
     "success.ready": "准备就绪。",
 
     "success.ephemeral.title": "提示",
@@ -1635,6 +1841,7 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.placeholder": "告诉我你想做什么…",
     "concierge.send": "发送",
     "concierge.thinking": "思考中…",
+    "concierge.modelLabel": "回复所用的 AI 模型",
 
     "nav.backToHome": "返回首页",
     "nav.pricing": "价格与套餐",
@@ -1675,11 +1882,12 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copy": "复制",
     "ui.copying": "复制中…",
     "ui.copied": "已复制。",
+    "ui.copySuccessToast": "已复制到剪贴板！📋",
     "ui.copyFailed": "复制失败。",
 
     "pricing.title": "价格与套餐",
     "pricing.subtitle":
-      "月付套餐含 100 / 300 / 1000 次请求（$7.99 / $9.99 / $19.99）。自定义配比按相同单价推算。按次 10 额度包仍会限制模型档位。每次生成消耗 1 额度。",
+      "月付：100 / 300 / 1000 次请求（$7.99 / $9.99 / $19.99 / 月）。年付：$79 / $99 / $199 / 年（同档，约比连续月付省 17%）。自定义配比按相同单价推算。10 次额度包限制模型档位。每次生成消耗 1 额度。",
     "pricing.monthly.sectionTitle": "月度请求套餐",
     "pricing.monthly.sectionLead":
       "Stripe 开通后按账单周期续订。单次参考成本：约 $0.0799（100）、$0.0333（300）、$0.0200（1000）。",
@@ -1695,6 +1903,21 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.monthly.scale.price": "$19.99",
     "pricing.monthly.scale.requests": "每月 1000 次请求",
     "pricing.monthly.scale.desc": "高频与自动化场景，单次成本更低。",
+    "pricing.yearly.sectionTitle": "年度套餐",
+    "pricing.yearly.sectionLead":
+      "与月度三档一致，按年计费。年度总量：1,200 / 3,600 / 12,000 次请求（相当于每月 100 / 300 / 1,000）。",
+    "pricing.yearly.starter.price": "$79 / 年",
+    "pricing.yearly.starter.requests": "每年 1,200 次请求",
+    "pricing.yearly.starter.desc": "与 Starter 月度用量一致，折算月成本更低。",
+    "pricing.yearly.starter.savings": "比连续 12 个月按月付费约省 17%",
+    "pricing.yearly.growth.price": "$99 / 年",
+    "pricing.yearly.growth.requests": "每年 3,600 次请求",
+    "pricing.yearly.growth.desc": "与 Growth 月度一致，适合愿意年付的团队。",
+    "pricing.yearly.growth.savings": "比连续 12 个月按月付费约省 17%",
+    "pricing.yearly.scale.price": "$199 / 年",
+    "pricing.yearly.scale.requests": "每年 12,000 次请求",
+    "pricing.yearly.scale.desc": "与 Scale 月度一致，年付单次成本最低。",
+    "pricing.yearly.scale.savings": "比连续 12 个月按月付费约省 17%",
     "pricing.custom.title": "自定义月度配比",
     "pricing.custom.subtitle":
       "把月度请求分配到低 / 中 / 高三档模型用量。总价按 $19.99÷1000（低）、$9.99÷300（中）、$7.99÷100（高）估算。",
@@ -1737,6 +1960,14 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.shellNotice": "具有法律效力的正文以下方英文为准。",
     "legal.paymentsStub": "付费套餐将在 Stripe 就绪后启用；此前请用本地 dev 充值或管理员加额度。",
     "growth.zeroCreditsHint": "额度为 0：在「价格」页查看本地 dev 充值说明，或登录/联系管理员。",
+    "growth.freeTrial.ctaButton": "免费生成第一条消息 🎁",
+    "growth.freeTrial.modalTitle": "解锁首次免费生成",
+    "growth.freeTrial.modalBody": "输入邮箱以在本设备解锁首次免费 AI 生成。",
+    "growth.freeTrial.placeholder": "you@company.com",
+    "growth.freeTrial.submit": "解锁并生成",
+    "growth.freeTrial.cancel": "取消",
+    "growth.freeTrial.invalidEmail": "请输入有效的邮箱地址。",
+    "growth.freeTrial.deviceAlreadyUsed": "此设备已使用过免费试用。",
     "success.pageFallbackTitle": "结果",
 
     "auth.disabled": "登录不可用",
@@ -1764,7 +1995,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.missingSupabase": "未配置登录（缺少 Supabase 密钥）。",
     "login.membershipEmailTitle": "邮箱",
     "login.membershipEmailBody":
-      "我们会发送一次性魔法链接到你的邮箱，无需密码。登录后请完成会员资料。",
+      "使用个人邮箱：可用密码注册账户、用密码登录，或索取一次性魔法链接（无需密码）。登录后完成会员资料。",
     "login.membershipGoogleTitle": "Google 账号",
     "login.membershipGoogleBody":
       "使用 Google 登录后，在下一页确认或补充会员信息。",
@@ -1779,6 +2010,14 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailSent": "请查收邮件中的登录链接。",
     "login.sendFailed": "无法发送登录链接。",
     "login.emailPlaceholder": "you@example.com",
+    "login.passwordPlaceholder": "密码",
+    "login.registerButton": "注册账户",
+    "login.signInPasswordButton": "密码登录",
+    "login.passwordTooShort": "密码至少 6 个字符。",
+    "login.passwordRequired": "请输入密码。",
+    "login.confirmEmailSent": "请查收邮件确认账户后再登录。",
+    "login.authFailed": "无法完成登录。",
+    "login.magicLinkDivider": "或不使用密码登录",
     "login.legalLead": "继续即表示你同意我们的",
     "login.legalMid": "与",
     "login.legalEnd": "。",
@@ -1817,7 +2056,9 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.flow.hint":
       "接下来会打开结果页，并用你的额度余额尝试生成。购买额度的流程会在后续版本接入。",
     "tool.ctaCreditSuffix": " — 1 额度",
-    "tool.priceReference": "按次：该模型档位对应 {price}/10 额度包（月付套餐见价格与套餐）。",
+    "tool.priceReference":
+      "该档位常见换算：{price}（示例：常见的 10 额度充值包价位为 $1 / $1.49 / $1.99）。",
+    "tool.pricePackFlex": "不强制购买恰好 10 额度——价格页的套餐规格可灵活选择。",
     "tool.validation.empty": "请先填写必填内容再继续。",
 
     "errors.toolParamMissing": "缺少或无效的工具参数。",
@@ -1955,6 +2196,18 @@ export const DICTS: Record<Locale, Dict> = {
     "success.usingSaved": "localStorage’daki kaydını kullanıyoruz.",
     "success.generating": "GPT‑4o‑mini ile üretiliyor…",
     "success.copy": "Kopyala",
+    "success.shareOnX": "X’te paylaş",
+    "success.shareOnXAria": "Sonucu X’te paylaş",
+    "success.downloadSocial": "IG/TikTok için indir",
+    "success.downloadSocialAria": "Instagram veya TikTok için görsel indir",
+    "success.downloadSocialToast": "Görsel indirildi — paylaşıma hazır!",
+    "success.downloadSocialFailed": "Görsel oluşturulamadı.",
+    "success.shareOnLinkedIn": "LinkedIn'de paylaş",
+    "success.shareOnLinkedInAria": "Sonucu LinkedIn'de paylaş",
+    "success.shareLinkedInToast":
+      "Metin kopyalandı! LinkedIn gönderinize yapıştırın.",
+    "success.shareLinkedInCopyFailed":
+      "Panoya kopyalanamadı. Metni elle kopyalamayı deneyin.",
     "success.ready": "Hazır olduğunda.",
 
     "success.ephemeral.title": "Bilgi",
@@ -1978,6 +2231,7 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.placeholder": "Ne yapmak istediğini kısaca yaz…",
     "concierge.send": "Gönder",
     "concierge.thinking": "Düşünüyor…",
+    "concierge.modelLabel": "Yanıtlar için yapay zeka modeli",
     "concierge.openTool": "Aracı aç",
 
     "nav.backToHome": "Ana sayfaya dön",
@@ -2022,11 +2276,12 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copy": "Kopyala",
     "ui.copying": "Kopyalanıyor…",
     "ui.copied": "Kopyalandı.",
+    "ui.copySuccessToast": "Panoya kopyalandı! 📋",
     "ui.copyFailed": "Kopyalanamadı.",
 
     "pricing.title": "Paketler",
     "pricing.subtitle":
-      "Aylık paketler 100 / 300 / 1000 istek ($7.99 / $9.99 / $19.99). Özel dağılım aynı birim fiyatlarla hesaplanır. 10’luk kontör paketleri model erişimini sınırlamaya devam eder. Her çalıştırma 1 kontör.",
+      "Aylık: 100 / 300 / 1000 istek ($7.99 / $9.99 / $19.99 / ay). Yıllık: $79 / $99 / $199 / yıl (aynı kademeler, aylığa göre ~%17 daha uygun). Özel dağılım aynı birim fiyatlarla hesaplanır. 10’luk paketler model erişimini sınırlar. Her çalıştırma 1 kontör.",
     "pricing.monthly.sectionTitle": "Aylık istek paketleri",
     "pricing.monthly.sectionLead":
       "Stripe açılınca her fatura döneminde yenilenir. Yaklaşık istek başı: ~$0.0799 (100), ~$0.0333 (300), ~$0.0200 (1000).",
@@ -2042,6 +2297,21 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.monthly.scale.price": "$19.99",
     "pricing.monthly.scale.requests": "Ayda 1000 istek",
     "pricing.monthly.scale.desc": "Yoğun kullanım ve otomasyon için en uygun istek başı maliyet.",
+    "pricing.yearly.sectionTitle": "Yıllık paketler",
+    "pricing.yearly.sectionLead":
+      "Aylık üç kademeyle aynı; yılda bir kez faturalanır. Yıllık toplamlar: 1.200 / 3.600 / 12.000 istek (ayda 100 / 300 / 1.000 ile eşdeğer).",
+    "pricing.yearly.starter.price": "$79 / yıl",
+    "pricing.yearly.starter.requests": "Yılda 1.200 istek",
+    "pricing.yearly.starter.desc": "Starter aylıkla aynı hacim; efektif aylık maliyet daha düşük.",
+    "pricing.yearly.starter.savings": "12 ay boyunca aylık ödemeye göre ~%17 daha az",
+    "pricing.yearly.growth.price": "$99 / yıl",
+    "pricing.yearly.growth.requests": "Yılda 3.600 istek",
+    "pricing.yearly.growth.desc": "Growth aylıkla aynı — yıllık taahhüt için uygun.",
+    "pricing.yearly.growth.savings": "12 ay boyunca aylık ödemeye göre ~%17 daha az",
+    "pricing.yearly.scale.price": "$199 / yıl",
+    "pricing.yearly.scale.requests": "Yılda 12.000 istek",
+    "pricing.yearly.scale.desc": "Scale aylıkla aynı — yıllık ön ödemede en düşük istek başı maliyet.",
+    "pricing.yearly.scale.savings": "12 ay boyunca aylık ödemeye göre ~%17 daha az",
     "pricing.custom.title": "Özel aylık dağılım",
     "pricing.custom.subtitle":
       "Düşük / orta / yüksek model katmanlarına aylık istek sayılarını böl. Toplam: $19.99÷1000 (düşük), $9.99÷300 (orta), $7.99÷100 (yüksek) birim fiyatlarıyla.",
@@ -2089,6 +2359,15 @@ export const DICTS: Record<Locale, Dict> = {
       "Stripe ödemesi sonra; şimdilik dev top-up (prod dışı) veya operatör kontörü.",
     "growth.zeroCreditsHint":
       "Bakiye 0: Paketler’deki dev top-up (yalnızca lokal), giriş veya yöneticiden kontör iste.",
+    "growth.freeTrial.ctaButton": "İlk mesajını ücretsiz oluştur 🎁",
+    "growth.freeTrial.modalTitle": "İlk ücretsiz üretiminizi açın",
+    "growth.freeTrial.modalBody":
+      "Bu cihazda ilk ücretsiz yapay zeka üretiminizi açmak için e-postanızı girin.",
+    "growth.freeTrial.placeholder": "siz@sirket.com",
+    "growth.freeTrial.submit": "Aç ve oluştur",
+    "growth.freeTrial.cancel": "İptal",
+    "growth.freeTrial.invalidEmail": "Lütfen geçerli bir e-posta girin.",
+    "growth.freeTrial.deviceAlreadyUsed": "Bu cihazda ücretsiz deneme zaten kullanıldı.",
     "success.pageFallbackTitle": "Sonuç",
 
     "auth.disabled": "Giriş kapalı",
@@ -2118,7 +2397,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.missingSupabase": "Giriş yapılandırılmadı (Supabase anahtarları eksik).",
     "login.membershipEmailTitle": "E-posta",
     "login.membershipEmailBody":
-      "Tek kullanımlık sihirli bağlantı göndeririz; şifre yok. Girişten hemen sonra üyelik profilini tamamlarsın.",
+      "Kişisel e-postanı kullan: şifreyle hesap oluştur, şifreyle giriş yap veya tek kullanımlık sihirli bağlantı iste (şifresiz). Girişten sonra üyelik profilini tamamlarsın.",
     "login.membershipGoogleTitle": "Google hesabı",
     "login.membershipGoogleBody":
       "Google kimliğinle gir; bir sonraki ekranda üyelik bilgilerini onayla veya ekle.",
@@ -2133,6 +2412,14 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailSent": "Giriş bağlantısı için e-postanı kontrol et.",
     "login.sendFailed": "Bağlantı gönderilemedi.",
     "login.emailPlaceholder": "sen@alanadin.com",
+    "login.passwordPlaceholder": "Şifre",
+    "login.registerButton": "Hesap oluştur",
+    "login.signInPasswordButton": "Şifreyle giriş",
+    "login.passwordTooShort": "Şifre en az 6 karakter olmalı.",
+    "login.passwordRequired": "Şifreni gir.",
+    "login.confirmEmailSent": "Hesabı onaylamak için e-postanı kontrol et, sonra giriş yap.",
+    "login.authFailed": "Giriş tamamlanamadı.",
+    "login.magicLinkDivider": "Ya da şifresiz giriş",
     "login.legalLead": "Devam ederek",
     "login.legalMid": "ve",
     "login.legalEnd": " kabul etmiş olursun.",
@@ -2171,7 +2458,10 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.flow.hint":
       "Sırada sonuç sayfası var; üretim kontör bakiyenden düşer. Kontör satın alma akışı sonraki sürümde.",
     "tool.ctaCreditSuffix": " — 1 kontör",
-    "tool.priceReference": "Kullandıkça öde: Bu model için {price} / 10 kontörlük paket (aylık planlar Paketler sayfasında).",
+    "tool.priceReference":
+      "Bu kademe için tipik oran: {price} (örnek: yaygın 10 kontörlük paket fiyatları $1 / $1.49 / $1.99).",
+    "tool.pricePackFlex":
+      "Tam 10 kontörlük paket almak zorunda değilsiniz — Paketler sayfasındaki seçenekler esnektir.",
     "tool.validation.empty": "Devam etmeden önce gerekli alanları doldur.",
 
     "errors.toolParamMissing": "Tool parametresi eksik veya geçersiz.",

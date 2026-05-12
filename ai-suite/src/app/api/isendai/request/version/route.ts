@@ -126,9 +126,15 @@ export async function POST(req: Request) {
     isConcreteModelId(modelId) ? (modelMeta(modelId as any).provider as ProviderId) : def.provider;
 
   if (!hasProviderKey(provider)) {
+    const env = providerKeyName(provider);
     return NextResponse.json(
-      { error: `Missing ${providerKeyName(provider)} in environment.` },
-      { status: 500 }
+      {
+        error: `AI is not configured: add ${env} to .env.local (or deployment secrets) and restart the dev server.`,
+        code: "missing_api_key",
+        provider,
+        env,
+      },
+      { status: 503 }
     );
   }
 
