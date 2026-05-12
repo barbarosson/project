@@ -3,14 +3,26 @@
 import { SlidersHorizontal } from "lucide-react";
 
 import type { ToolName } from "@/components/ai-suite/tools";
-import { MODELS, salesPriceForModel, type ModelId } from "@/models/models";
+import {
+  MODELS,
+  modelSalesTier,
+  modelTierOptgroupLabel,
+  type ConcreteModelId,
+  type ModelId,
+  type ModelSalesTier,
+} from "@/models/models";
 import { useModel } from "@/models/model-provider";
 import { cn } from "@/lib/utils";
 import { glassSurface } from "@/lib/premium-ui";
 
+const TIER_ORDER: ModelSalesTier[] = ["budget", "standard", "premium"];
+
 export function ModelSwitcher({ className, tool }: { className?: string; tool?: ToolName }) {
   const { model, setModel } = useModel();
   void tool;
+
+  const autoEntry = MODELS.find((m) => m.id === "auto");
+  const concrete = MODELS.filter((m) => m.id !== "auto");
 
   return (
     <label
@@ -30,13 +42,23 @@ export function ModelSwitcher({ className, tool }: { className?: string; tool?: 
         onChange={(e) => setModel(e.target.value as ModelId)}
         aria-label="Model"
       >
-        {MODELS.map((m) => (
-          <option key={m.id} value={m.id}>
-            {m.label} · {salesPriceForModel(m.id).listLabel}
+        {autoEntry ? (
+          <option key={autoEntry.id} value={autoEntry.id}>
+            {autoEntry.label}
           </option>
+        ) : null}
+        {TIER_ORDER.map((tier) => (
+          <optgroup key={tier} label={modelTierOptgroupLabel(tier)}>
+            {concrete
+              .filter((m) => modelSalesTier(m.id as ConcreteModelId) === tier)
+              .map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+          </optgroup>
         ))}
       </select>
     </label>
   );
 }
-

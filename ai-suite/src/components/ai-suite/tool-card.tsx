@@ -9,9 +9,13 @@ import { getToolDefinition } from "./tools";
 import { useModel } from "@/models/model-provider";
 import {
   defaultConcreteModelForProvider,
-  salesPriceForModel,
+  generationCreditsForConcreteModel,
+  modelSalesTier,
+  tierTenPackSummary,
   type ConcreteModelId,
 } from "@/models/models";
+import { openPricingModal } from "@/components/pricing/pricing-modal";
+import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -104,11 +108,13 @@ export function ToolCard({
       ? jobLink.trim().length >= 8 && resume.trim().length >= 20
       : text.trim().length >= 10;
 
-  const priceListLabel = salesPriceForModel(concreteModel).listLabel;
-  const primaryCta = `${toolPrimaryActionLabel(t, tool, def.actionLabel)}${t("tool.ctaCreditSuffix")}`;
+  const priceListLabel = tierTenPackSummary(modelSalesTier(concreteModel));
+  const genCost = generationCreditsForConcreteModel(concreteModel);
+  const costLabel = genCost === 1 ? "1 Credit" : `${genCost} Credits`;
+  const paidGenerateLabel = `${toolPrimaryActionLabel(t, tool, def.actionLabel)} (Costs ${costLabel})`;
   const showFreeCta = mounted && enableMarketingFreeTrial && !trialUsed;
 
-  async function continuePaidFlow() {
+  async function runPaidGeneration() {
     if (!isValid) {
       toast.error(t("tool.validation.empty"));
       return;
@@ -117,6 +123,50 @@ export function ToolCard({
     try {
       savePayload(def.storageKey, payload);
       saveModel(`${def.storageKey}:model`, model);
+
+      const body: Record<string, unknown> = {
+        ...payload,
+        ...(model === "auto" ? {} : { model: concreteModel }),
+      };
+
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const rawText = await res.text();
+      type GenJson = {
+        result?: string;
+        request_id?: string;
+        error?: string;
+        code?: string;
+        credits_required?: number;
+        credits_balance?: number;
+      };
+      let json: GenJson | null = null;
+      try {
+        json = JSON.parse(rawText) as GenJson;
+      } catch {
+        json = null;
+      }
+
+      if (res.status === 402 || json?.code === "insufficient_credits") {
+        openPricingModal(tool);
+        toast.error(json?.error ?? t("errors.generationFailed"));
+        return;
+      }
+
+      if (!res.ok) {
+        toast.error(json?.error ?? t("errors.generationFailed"));
+        return;
+      }
+
+      if (!json?.result || !json.request_id) {
+        toast.error(t("errors.noModelResult"));
+        return;
+      }
+
+      primeSuccessSession(tool, json.result, json.request_id);
       window.location.href = `/success?tool=${encodeURIComponent(tool)}`;
     } finally {
       setBusy(false);
@@ -155,6 +205,11 @@ export function ToolCard({
       }
 
       if (!res.ok) {
+        if (res.status === 402 || json?.code === "insufficient_credits") {
+          openPricingModal(tool);
+          toast.error(json?.error ?? t("errors.generationFailed"));
+          return;
+        }
         if (json?.code === "free_trial_used") {
           setFreeTrialUsed(true);
           setTrialUsed(true);
@@ -192,7 +247,7 @@ export function ToolCard({
       setDialogOpen(true);
       return;
     }
-    await continuePaidFlow();
+    await runPaidGeneration();
   }
 
   return (
@@ -242,6 +297,7 @@ export function ToolCard({
           ) : (
             <Textarea
               value={text}
+              maxLength={TOOL_INPUT_MAX_CHARS}
               onChange={(e) => setText(e.target.value)}
               placeholder={localizedPlaceholder(
                 tool === "corporate-whisperer"
@@ -263,7 +319,7 @@ export function ToolCard({
               </div>
             </div>
             <Button className="shrink-0" onClick={() => void onPrimaryClick()} disabled={busy}>
-              {showFreeCta ? t("growth.freeTrial.ctaButton") : primaryCta}
+              {showFreeCta ? t("growth.freeTrial.ctaButton") : paidGenerateLabel}
             </Button>
           </div>
         </CardContent>

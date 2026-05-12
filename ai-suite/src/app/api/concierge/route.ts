@@ -8,13 +8,7 @@ import OpenAI from "openai";
 import { TOOLS, type ProviderId, type ToolName } from "@/components/ai-suite/tools";
 import { type Locale } from "@/i18n/dictionaries";
 import { resolveToolDescription, resolveToolTitle } from "@/i18n/tool-copy-resolve";
-import {
-  isConcreteModelId,
-  isModelId,
-  modelMeta,
-  normalizeModelIdString,
-  type ModelId,
-} from "@/models/models";
+import { isConcreteModelId, modelMeta, type ModelId } from "@/models/models";
 
 const groq = createOpenAI({
   apiKey: process.env.GROQ_API_KEY,
@@ -80,7 +74,6 @@ type ChatMessage = { role: "user" | "assistant"; content: string };
 
 type RequestBody = {
   locale?: string;
-  model?: string;
   messages: ChatMessage[];
 };
 
@@ -305,10 +298,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ reply, suggested_tools });
   }
 
-  const rawModel =
-    typeof body.model === "string" ? normalizeModelIdString(body.model) : undefined;
-  const modelId: ModelId =
-    rawModel !== undefined && isModelId(rawModel) ? rawModel : "auto";
+  /** Homepage concierge uses a fixed routing model (no client picker); generations use the header model selector. */
+  const modelId: ModelId = "auto";
 
   const lmBinding = resolveConciergeLanguageModel(modelId);
   if (!lmBinding) {

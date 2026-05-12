@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { AuthStatus } from "@/components/auth-status";
+import { CreditsNav } from "@/components/credits-nav";
 import { IsendaiLogo } from "@/components/isendai-logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ToolCard } from "@/components/ai-suite/tool-card";
@@ -12,7 +13,7 @@ import { SEO_CATEGORY_TITLE } from "@/lib/seo/category-public-title";
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 
-const MAX_PREFILL_CHARS = 50_000;
+const MAX_PREFILL_CHARS = 2000;
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +71,7 @@ export default async function ToolDeepLinkPage({
           />
         </Link>
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+          <CreditsNav />
           <AuthStatus />
           <LanguageSwitcher className="px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm" />
         </div>

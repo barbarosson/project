@@ -8,12 +8,11 @@ import { glassSurface } from "@/lib/premium-ui";
 
 import type { ToolName } from "@/components/ai-suite/tools";
 import { getToolDefinition } from "@/components/ai-suite/tools";
-import { MODELS, salesPriceForModel, type ModelId } from "@/models/models";
-import { useModel } from "@/models/model-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
 import { useI18n } from "@/i18n/i18n-provider";
 import { IsendaiLogo } from "@/components/isendai-logo";
 import { toolTitle } from "@/i18n/tool-i18n";
@@ -59,12 +58,6 @@ function renderMarkdownLinks(text: string) {
 export function ConciergeChat({ className }: { className?: string }) {
   const router = useRouter();
   const { t, locale } = useI18n();
-  const { model: homepageModel } = useModel();
-  const [pickedModel, setPickedModel] = React.useState<ModelId>(homepageModel);
-
-  React.useEffect(() => {
-    setPickedModel(homepageModel);
-  }, [homepageModel]);
 
   const [messages, setMessages] = React.useState<UiMsg[]>(() => [
     {
@@ -96,7 +89,6 @@ export function ConciergeChat({ className }: { className?: string }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           locale,
-          model: pickedModel,
           messages: nextMsgs.map((m) => ({
             role: m.role,
             content: m.content === WELCOME_TOKEN ? t("concierge.welcome") : m.content,
@@ -205,29 +197,10 @@ export function ConciergeChat({ className }: { className?: string }) {
           </div>
         ) : null}
 
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-muted-foreground" htmlFor="concierge-model">
-            {t("concierge.modelLabel")}
-          </label>
-          <select
-            id="concierge-model"
-            className="w-full rounded-xl border border-white/[0.12] bg-zinc-950/95 px-3 py-2 text-sm text-zinc-100 shadow-inner outline-none backdrop-blur-xl focus:ring-2 focus:ring-violet-500/35"
-            value={pickedModel}
-            onChange={(e) => setPickedModel(e.target.value as ModelId)}
-            disabled={busy}
-            aria-label={t("concierge.modelLabel")}
-          >
-            {MODELS.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.label} · {salesPriceForModel(m.id).listLabel}
-              </option>
-            ))}
-          </select>
-        </div>
-
         <div className="flex gap-2">
           <Input
             value={input}
+            maxLength={TOOL_INPUT_MAX_CHARS}
             onChange={(e) => setInput(e.target.value)}
             placeholder={t("concierge.placeholder")}
             onKeyDown={(e) => {
@@ -244,4 +217,3 @@ export function ConciergeChat({ className }: { className?: string }) {
     </Card>
   );
 }
-

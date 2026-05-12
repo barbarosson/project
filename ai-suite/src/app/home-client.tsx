@@ -13,6 +13,7 @@ import { toolDescription, toolTitle } from "@/i18n/tool-i18n";
 import { ModelSwitcher } from "@/components/model-switcher";
 import { ConciergeChat } from "@/components/concierge-chat";
 import { AuthStatus } from "@/components/auth-status";
+import { CreditsNav } from "@/components/credits-nav";
 import {
   TOOLS,
   type ToolCategory,
@@ -78,6 +79,7 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
           />
         </div>
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+          <CreditsNav />
           <AuthStatus />
           <LanguageSwitcher className="px-2 py-1.5 text-xs sm:px-3 sm:py-2 sm:text-sm" />
           <ModelSwitcher

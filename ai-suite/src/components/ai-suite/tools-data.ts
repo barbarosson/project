@@ -21,7 +21,6 @@ export type ToolSeed = {
   description: string;
   actionLabel: string;
   fields: ToolField[];
-  stripeEnvVar: string;
   // Provider routing is computed in `tools.ts` based on category + heuristics.
   // Keeping this optional allows seed data to stay concise.
   provider?: "openai" | "anthropic" | "groq" | "deepseek";
@@ -86,7 +85,6 @@ export const TOOLS_SEED: ToolSeed[] = [
         `Type what you REALLY want to say... (e.g., "This design is garbage and you clearly didn't read my brief.")`
       ),
     ],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_CORPORATE_WHISPERER",
     scopeHint: "Rewrite a rough message into a professional corporate email.",
     systemPrompt:
       "You are Corporate Whisperer.\n" +
@@ -108,7 +106,6 @@ export const TOOLS_SEED: ToolSeed[] = [
       { kind: "input", key: "jobLink", placeholder: "Paste Job Description or URL..." },
       { kind: "textarea", key: "resume", placeholder: "Paste your resume text or key skills..." },
     ],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_COVERLETTER_AI",
     scopeHint: "Write a cover letter using the job posting and candidate resume.",
     systemPrompt:
       "You are CoverLetter AI.\n" +
@@ -126,7 +123,6 @@ export const TOOLS_SEED: ToolSeed[] = [
       "Get a constructive roast of your bio, then a stronger version that gets matches.",
     actionLabel: "Roast & Fix My Profile",
     fields: [TEXT_FIELD("Paste your current Tinder/Bumble bio or describe your vibe...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_DATING_ROAST",
     scopeHint: "Critique and improve a dating bio (kind, practical).",
     systemPrompt:
       "You are Dating Roast.\n" +
@@ -142,7 +138,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Turn your wins into a persuasive raise or budget increase email.",
     actionLabel: "Write My Raise Email",
     fields: [TEXT_FIELD("Paste your achievements, impact, numbers, and context...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_RAISE_NEGOTIATOR",
     scopeHint: "Ask for a raise/budget increase using achievements and impact.",
     systemPrompt:
       "You are The Raise Negotiator.\n" +
@@ -159,7 +154,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Draft a professional resignation letter that preserves relationships.",
     actionLabel: "Generate Resignation Letter",
     fields: [TEXT_FIELD("Role, last day, reason (optional), and any handoff notes...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_GRACEFUL_QUITTER",
     scopeHint: "Write a resignation letter.",
     systemPrompt:
       "You are The Graceful Quitter.\n" +
@@ -176,7 +170,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Write a short, personal cold message that gets replies (not spam).",
     actionLabel: "Write My Cold DM",
     fields: [TEXT_FIELD("Who you’re messaging, why them, what you want, and 1–2 personal details...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_COLD_DM_ICEBREAKER",
     scopeHint: "Write a professional cold DM.",
     systemPrompt:
       "You are The Cold DM Icebreaker.\n" +
@@ -192,7 +185,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Set calm boundaries with a micromanager without escalating drama.",
     actionLabel: "Set Boundaries",
     fields: [TEXT_FIELD("Describe what they do, what you need instead, and your preferred workflow...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_MICROMANAGER_TAMER",
     scopeHint: "Write a boundary-setting message to a micromanager.",
     systemPrompt:
       "You are The Micromanager Tamer.\n" +
@@ -208,7 +200,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Send a firm-but-friendly payment reminder that gets you paid.",
     actionLabel: "Chase My Invoice",
     fields: [TEXT_FIELD("Invoice #, amount, due date, and prior follow-ups (if any)...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_INVOICE_CHASER",
     scopeHint: "Write an overdue invoice reminder.",
     systemPrompt:
       "You are The Invoice Chaser.\n" +
@@ -225,7 +216,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "A no-excuses apology that repairs trust and proposes next steps.",
     actionLabel: "Write My Apology",
     fields: [TEXT_FIELD("What happened, who it impacted, and what you’ll do to fix it...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_PERFECT_APOLOGY",
     scopeHint: "Write an apology message.",
     systemPrompt:
       "You are The Perfect Apology.\n" +
@@ -241,7 +231,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "A formal complaint/refund request that maximizes your chance of success.",
     actionLabel: "Demand My Refund",
     fields: [TEXT_FIELD("Company, order details, issue, timeline, what you want, and any evidence...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_REFUND_DEMANDER",
     scopeHint: "Write a refund request / complaint email.",
     systemPrompt:
       "You are The Refund Demander.\n" +
@@ -257,7 +246,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Ask for more time credibly, with a plan and revised timeline.",
     actionLabel: "Request Extension",
     fields: [TEXT_FIELD("Current deadline, what’s blocking, new proposed date, and next milestones...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_DEADLINE_DIPLOMAT",
     scopeHint: "Request a deadline extension professionally.",
     systemPrompt:
       "You are The Deadline Diplomat.\n" +
@@ -273,7 +261,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Draft calm, legally-aware messages for landlord/tenant disputes.",
     actionLabel: "Draft My Message",
     fields: [TEXT_FIELD("Country/city, issue (rent/repairs/deposit), what you want, and any dates...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_LANDLORD_DIPLOMAT",
     scopeHint: "Landlord/tenant dispute messaging.",
     systemPrompt:
       "You are The Landlord Diplomat.\n" +
@@ -289,7 +276,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Reply to unfair reviews with calm professionalism and clarity.",
     actionLabel: "Write Review Reply",
     fields: [TEXT_FIELD("Paste the review + any context you can share (facts, policy, what happened)...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_REVIEW_RETALIATOR",
     scopeHint: "Respond to a negative review.",
     systemPrompt:
       "You are The Review Retaliator.\n" +
@@ -305,7 +291,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Short follow-ups that get replies without sounding desperate.",
     actionLabel: "Get Them To Reply",
     fields: [TEXT_FIELD("Paste the last messages and what you want (date / clarity / closure)...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_GHOSTING_RESURRECTOR",
     scopeHint: "Write a follow-up message after ghosting.",
     systemPrompt:
       "You are The Ghosting Resurrector.\n" +
@@ -321,7 +306,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Translate subtext into plain English and craft a smart reply.",
     actionLabel: "Decode & Reply",
     fields: [TEXT_FIELD("Paste the message you received and the relationship context...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_PASSIVE_AGGRESSIVE_DECODER",
     scopeHint: "Decode a passive-aggressive message and reply calmly.",
     systemPrompt:
       "You are The Passive‑Aggressive Decoder.\n" +
@@ -336,7 +320,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Say no clearly and kindly—without overexplaining.",
     actionLabel: "Write My No",
     fields: [TEXT_FIELD("What you’re declining, who it is, and how direct you want to be...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_GUILT_FREE_NO",
     scopeHint: "Write a refusal message.",
     systemPrompt:
       "You are The Guilt‑Free No.\n" +
@@ -352,7 +335,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Say hard truths gently, clearly, without blame.",
     actionLabel: "Say It Kindly",
     fields: [TEXT_FIELD("What you need to say, why, and what outcome you want...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_DELICATE_TRUTH",
     scopeHint: "Rewrite a difficult message with care.",
     systemPrompt:
       "You are The Delicate Truth.\n" +
@@ -368,7 +350,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Neutral, logistics-only co-parenting messages that reduce conflict.",
     actionLabel: "Make It Neutral",
     fields: [TEXT_FIELD("Situation, schedule details, what you’re requesting, and boundaries...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_CO_PARENTING_PEACEMAKER",
     scopeHint: "Write neutral co-parenting logistics messages.",
     systemPrompt:
       "You are The Co‑Parenting Peacemaker.\n" +
@@ -384,7 +365,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Confess feelings or set boundaries without wrecking the friendship.",
     actionLabel: "Write My Message",
     fields: [TEXT_FIELD("Context, what you feel, and what you’re asking for (or declining)...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_FRIENDZONE_NAVIGATOR",
     scopeHint: "Write a careful message about feelings/boundaries in friendship.",
     systemPrompt:
       "You are The Friendzone Navigator.\n" +
@@ -400,7 +380,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Decline invitations warmly—without drama, without guilt.",
     actionLabel: "Decline Gracefully",
     fields: [TEXT_FIELD("Event, who invited you, why you can’t go (optional), and tone preference...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_RSVP_DIPLOMAT",
     scopeHint: "Decline an invitation politely.",
     systemPrompt:
       "You are The RSVP Diplomat.\n" +
@@ -419,7 +398,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Turn a messy brief into a clear scope, deliverables, timeline, and assumptions.",
     actionLabel: "Draft Scope",
     fields: [TEXT_FIELD("Paste the client brief, deliverables, constraints, and your proposed approach...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_SCOPE_OF_WORK_WIZARD",
     scopeHint: "Draft a scope of work document summary.",
     systemPrompt:
       "You are Scope of Work Wizard.\n" +
@@ -434,7 +412,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Write a crisp proposal that wins—clear value, pricing logic, and next steps.",
     actionLabel: "Write Proposal",
     fields: [TEXT_FIELD("Client, project summary, constraints, your offer, and any pricing notes...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_PROPOSAL_SNIPER",
     scopeHint: "Write a project proposal.",
     systemPrompt:
       "You are Proposal Sniper.\n" +
@@ -449,7 +426,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "A friendly kickoff email + checklist to start projects smoothly.",
     actionLabel: "Create Onboarding",
     fields: [TEXT_FIELD("Project type, timeline, what you need from the client, tools you use...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_CLIENT_ONBOARDING_KIT",
     scopeHint: "Kickoff/onboarding email and checklist.",
     systemPrompt:
       "You are Client Onboarding Kit.\n" +
@@ -464,7 +440,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Push back on scope creep with a calm change request message.",
     actionLabel: "Handle Scope Creep",
     fields: [TEXT_FIELD("What changed, what was agreed, impact on timeline/cost, options...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_CHANGE_REQUEST_SHIELD",
     scopeHint: "Message about scope change and revised estimate.",
     systemPrompt:
       "You are Change Request Shield.\n" +
@@ -479,7 +454,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Explain your price confidently without sounding defensive.",
     actionLabel: "Justify Pricing",
     fields: [TEXT_FIELD("Your price, what's included, alternatives, client objection...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_PRICING_JUSTIFIER",
     scopeHint: "Defend pricing and value.",
     systemPrompt:
       "You are Pricing Justifier.\n" +
@@ -494,7 +468,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Write polite follow-ups that move deals forward without pressure.",
     actionLabel: "Write Follow‑up",
     fields: [TEXT_FIELD("What you’re following up on, timeline, and what you want as the next step...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_FREELANCE_FOLLOWUP_NUDGE",
     scopeHint: "Write a professional follow-up message for a client/prospect.",
     systemPrompt:
       "You are Freelance Follow‑up Nudge.\n" +
@@ -509,7 +482,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Explain payment terms clearly and confidently in one message.",
     actionLabel: "Clarify Terms",
     fields: [TEXT_FIELD("Your terms (deposit/milestones/net days), and the situation/question...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_PAYMENT_TERMS_CLARIFIER",
     scopeHint: "Clarify payment terms for a freelance project.",
     systemPrompt:
       "You are Payment Terms Clarifier.\n" +
@@ -524,7 +496,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Communicate delays professionally while keeping trust.",
     actionLabel: "Explain Delay",
     fields: [TEXT_FIELD("What’s delayed, why (brief), what’s done, new ETA, mitigation...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_PROJECT_DELAY_EXPLAINER",
     scopeHint: "Explain a project delay and propose a revised timeline.",
     systemPrompt:
       "You are Project Delay Explainer.\n" +
@@ -539,7 +510,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Send a clean delivery email with links, notes, and next steps.",
     actionLabel: "Send Handoff",
     fields: [TEXT_FIELD("What you’re delivering, links/files, instructions, and what you need from the client...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_DELIVERABLE_HANDOFF_NOTICE",
     scopeHint: "Write a deliverable handoff email.",
     systemPrompt:
       "You are Deliverable Handoff Notice.\n" +
@@ -554,7 +524,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Request a testimonial in a way that makes it easy to say yes.",
     actionLabel: "Ask for Testimonial",
     fields: [TEXT_FIELD("Project outcome, client relationship, and preferred platform (LinkedIn/email/site)...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_TESTIMONIAL_ASKER",
     scopeHint: "Ask a client for a testimonial.",
     systemPrompt:
       "You are Testimonial Asker.\n" +
@@ -571,7 +540,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Write a compelling scholarship or grant motivation letter.",
     actionLabel: "Write Letter",
     fields: [TEXT_FIELD("Program details, your background, achievements, and motivation...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_SCHOLARSHIP_LETTER_BUILDER",
     scopeHint: "Write a scholarship/grant motivation letter.",
     systemPrompt:
       "You are Scholarship Letter Builder.\n" +
@@ -586,7 +554,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Write a respectful email to a professor (extensions, meetings, research).",
     actionLabel: "Draft Email",
     fields: [TEXT_FIELD("Context, request, deadlines, and any constraints...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_EMAIL_TO_PROFESSOR",
     scopeHint: "Write an academic email to a professor/TA.",
     systemPrompt:
       "You are Email to Professor.\n" +
@@ -601,7 +568,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Turn messy answers into clear, formal form responses.",
     actionLabel: "Rewrite Answers",
     fields: [TEXT_FIELD("Paste the questions and your rough answers...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_BUREAUCRATIC_FORM_HELPER",
     scopeHint: "Rewrite text for official forms.",
     systemPrompt:
       "You are Bureaucratic Form Helper.\n" +
@@ -618,7 +584,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Address noise issues calmly without escalating neighbor drama.",
     actionLabel: "Write Note",
     fields: [TEXT_FIELD("Situation, times, how often, and the tone you want...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_NOISE_COMPLAINT_DIPLOMAT",
     scopeHint: "Write a polite message about noise.",
     systemPrompt:
       "You are Noise Complaint Diplomat.\n" +
@@ -633,7 +598,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Create a simple, fair roommate agreement (chores, bills, guests).",
     actionLabel: "Create Agreement",
     fields: [TEXT_FIELD("House rules you want, pain points, and any non-negotiables...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_ROOMMATE_AGREEMENT_MAKER",
     scopeHint: "Draft a roommate agreement.",
     systemPrompt:
       "You are Roommate Agreement Maker.\n" +
@@ -650,7 +614,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Generate short hooks that stop the scroll (for Reels/TikTok/YouTube).",
     actionLabel: "Generate Hooks",
     fields: [TEXT_FIELD("Topic, audience, platform, and your tone...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_VIRAL_HOOK_GENERATOR",
     scopeHint: "Generate hooks for short-form content.",
     systemPrompt:
       "You are Viral Hook Generator.\n" +
@@ -665,7 +628,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Rewrite captions to be punchy, on-brand, and engagement-friendly.",
     actionLabel: "Polish Caption",
     fields: [TEXT_FIELD("Paste your caption and tell me your vibe (funny, premium, calm)...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_CAPTION_POLISHER",
     scopeHint: "Rewrite a social caption.",
     systemPrompt:
       "You are Caption Polisher.\n" +
@@ -682,7 +644,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Set boundaries with care: clear, kind, and firm scripts.",
     actionLabel: "Write Boundary",
     fields: [TEXT_FIELD("Who, what boundary, history, and how direct you want to be...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_BOUNDARY_SETTING_SCRIPT",
     scopeHint: "Write a boundary-setting message for a personal relationship.",
     systemPrompt:
       "You are Boundary Setting Script.\n" +
@@ -697,7 +658,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Plan a hard talk: what to say, what to avoid, and how to start.",
     actionLabel: "Plan Conversation",
     fields: [TEXT_FIELD("Who you’re talking to, the issue, your goal, and constraints...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_DIFFICULT_CONVERSATION_PLANNER",
     scopeHint: "Plan a difficult personal conversation.",
     systemPrompt:
       "You are Difficult Conversation Planner.\n" +
@@ -714,7 +674,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Turn your achievements into a strong self-review with metrics.",
     actionLabel: "Write Review",
     fields: [TEXT_FIELD("Role, achievements, metrics, feedback, and goals...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_PERFORMANCE_REVIEW_WRITER",
     scopeHint: "Write a self-performance review.",
     systemPrompt:
       "You are Performance Review Writer.\n" +
@@ -729,7 +688,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Create high-signal headlines that attract the right opportunities.",
     actionLabel: "Write Headlines",
     fields: [TEXT_FIELD("Role, niche, strengths, target jobs, keywords...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_LINKEDIN_HEADLINE_SMITH",
     scopeHint: "Generate LinkedIn headlines.",
     systemPrompt:
       "You are LinkedIn Headline Smith.\n" +
@@ -746,7 +704,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Draft a clear, evidence-first response to dispute a chargeback.",
     actionLabel: "Draft Defense",
     fields: [TEXT_FIELD("Transaction details, timeline, evidence, and what was delivered...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_CHARGEBACK_DEFENSE_DRAFTER",
     scopeHint: "Write a response to a payment dispute/chargeback (business).",
     systemPrompt:
       "You are Chargeback Defense Drafter.\n" +
@@ -763,7 +720,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Rewrite awkward messages into smooth, natural texts.",
     actionLabel: "Fix My Text",
     fields: [TEXT_FIELD("Paste the awkward message and tell me the relationship/context...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_AWKWARD_TEXT_FIXER",
     scopeHint: "Rewrite awkward texts for social/dating situations.",
     systemPrompt:
       "You are Awkward Text Fixer.\n" +
@@ -780,7 +736,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Create a strong, factual outline for a recommendation letter.",
     actionLabel: "Outline Letter",
     fields: [TEXT_FIELD("Candidate background, achievements, relationship, and target program/job...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_LETTER_OF_RECOMMENDATION_OUTLINE",
     scopeHint: "Outline a recommendation letter (structure + bullet evidence).",
     systemPrompt:
       "You are Recommendation Letter Outline.\n" +
@@ -795,7 +750,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Polish your SOP to be clear, specific, and admissions-ready.",
     actionLabel: "Edit SOP",
     fields: [TEXT_FIELD("Paste your statement of purpose draft...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_STATEMENT_OF_PURPOSE_EDITOR",
     scopeHint: "Edit and improve a statement of purpose.",
     systemPrompt:
       "You are Statement of Purpose Editor.\n" +
@@ -810,7 +764,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Write a formal complaint to an institution with facts and a clear request.",
     actionLabel: "Write Complaint",
     fields: [TEXT_FIELD("Institution, issue, timeline, evidence, and desired resolution...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_FORMAL_COMPLAINT_LETTER",
     scopeHint: "Write a formal complaint letter to an institution.",
     systemPrompt:
       "You are Formal Complaint Letter.\n" +
@@ -825,7 +778,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Draft a clear supporting letter for visa applications (purpose, ties, plan).",
     actionLabel: "Draft Visa Letter",
     fields: [TEXT_FIELD("Destination, dates, purpose, itinerary, finances, and ties to home...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_VISA_COVER_LETTER",
     scopeHint: "Draft a visa cover letter.",
     systemPrompt:
       "You are Visa Cover Letter.\n" +
@@ -842,7 +794,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Write a calm, structured message to HOA/building management.",
     actionLabel: "Draft HOA Email",
     fields: [TEXT_FIELD("Issue, dates, what you tried, and what you want them to do...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_HOA_EMAIL_WRITER",
     scopeHint: "Write an email to building management/HOA.",
     systemPrompt:
       "You are HOA Email Writer.\n" +
@@ -857,7 +808,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Request repairs clearly with dates, urgency, and follow-up plan.",
     actionLabel: "Request Repair",
     fields: [TEXT_FIELD("What’s broken, when it started, impact, photos/evidence notes, and urgency...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_REPAIR_REQUEST_TEMPLATE",
     scopeHint: "Write a repair request to landlord/maintenance.",
     systemPrompt:
       "You are Repair Request Template.\n" +
@@ -872,7 +822,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Set boundaries with a neighbor politely but firmly.",
     actionLabel: "Write Note",
     fields: [TEXT_FIELD("Boundary issue, examples, and how direct you want to be...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_NEIGHBOR_BOUNDARY_NOTE",
     scopeHint: "Write a boundary-setting note to a neighbor.",
     systemPrompt:
       "You are Neighbor Boundary Note.\n" +
@@ -889,7 +838,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Turn a topic into a tight intro + outline + CTA structure.",
     actionLabel: "Start Script",
     fields: [TEXT_FIELD("Topic, audience level, and desired length...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_YOUTUBE_SCRIPT_STARTER",
     scopeHint: "Create a YouTube script outline and intro.",
     systemPrompt:
       "You are YouTube Script Starter.\n" +
@@ -904,7 +852,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Define your brand voice with rules and examples.",
     actionLabel: "Define Voice",
     fields: [TEXT_FIELD("Describe your brand, audience, competitors, and 3 example posts you like...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_BRAND_VOICE_CODIFIER",
     scopeHint: "Define a brand voice guide.",
     systemPrompt:
       "You are Brand Voice Codifier.\n" +
@@ -919,7 +866,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Craft replies to comments that boost community and reduce conflict.",
     actionLabel: "Write Replies",
     fields: [TEXT_FIELD("Paste 5-20 comments and your preferred tone...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_COMMENT_REPLY_ASSISTANT",
     scopeHint: "Write replies to social media comments.",
     systemPrompt:
       "You are Comment Reply Assistant.\n" +
@@ -936,7 +882,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Send kind check-ins that feel genuine, not performative.",
     actionLabel: "Write Check‑ins",
     fields: [TEXT_FIELD("Who you’re texting, what they’re going through, and your relationship...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_SUPPORTIVE_CHECKIN_TEXTS",
     scopeHint: "Write supportive personal check-in messages.",
     systemPrompt:
       "You are Supportive Check‑in Texts.\n" +
@@ -951,7 +896,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Invite someone to counseling in a respectful, non-blaming way.",
     actionLabel: "Write Invite",
     fields: [TEXT_FIELD("Who, why, what you hope to improve, and their likely concerns...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_FAMILY_THERAPY_INVITE",
     scopeHint: "Write a message inviting someone to therapy/counseling.",
     systemPrompt:
       "You are Family Therapy Invite.\n" +
@@ -968,7 +912,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Build a crisp case for promotion with impact bullets and evidence.",
     actionLabel: "Build Case",
     fields: [TEXT_FIELD("Role, achievements, leadership examples, and target level...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_PROMOTION_CASE_BUILDER",
     scopeHint: "Write a promotion case summary.",
     systemPrompt:
       "You are Promotion Case Builder.\n" +
@@ -983,7 +926,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Turn experiences into STAR stories ready for interviews.",
     actionLabel: "Create Stories",
     fields: [TEXT_FIELD("Paste experiences/achievements and the role you're applying for...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_JOB_INTERVIEW_STORY_BANK",
     scopeHint: "Generate STAR interview stories.",
     systemPrompt:
       "You are Interview Story Bank.\n" +
@@ -1000,7 +942,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Draft a clear claim letter with facts, dates, and requested coverage.",
     actionLabel: "Draft Claim",
     fields: [TEXT_FIELD("Insurer, policy details, incident timeline, damages, and requested outcome...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_INSURANCE_CLAIM_LETTER",
     scopeHint: "Write an insurance claim letter.",
     systemPrompt:
       "You are Insurance Claim Letter.\n" +
@@ -1017,7 +958,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Invite people to an event with the right vibe (not awkward).",
     actionLabel: "Write Invites",
     fields: [TEXT_FIELD("Event details, audience, and tone (casual, classy, funny)...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_EVENT_INVITE_TEXTS",
     scopeHint: "Write invitation messages for an event.",
     systemPrompt:
       "You are Event Invite Texts.\n" +
@@ -1034,7 +974,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Suggest tasteful upsells that feel helpful, not pushy.",
     actionLabel: "Suggest Upsells",
     fields: [TEXT_FIELD("What the client bought, goals, constraints, and what you can additionally offer...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_UPSELL_SUGGESTER",
     scopeHint: "Propose upsells for a client project.",
     systemPrompt:
       "You are Upsell Suggester.\n" +
@@ -1049,7 +988,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Generate sharp questions that uncover real needs and budget.",
     actionLabel: "Generate Questions",
     fields: [TEXT_FIELD("Client type, project idea, and what you already know...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_DISCOVERY_CALL_QUESTIONS",
     scopeHint: "Prepare discovery call questions.",
     systemPrompt:
       "You are Discovery Call Questions.\n" +
@@ -1064,7 +1002,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Turn project notes into a clean, credible case study.",
     actionLabel: "Write Case Study",
     fields: [TEXT_FIELD("Client, problem, approach, deliverables, and results/metrics...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_CASE_STUDY_WRITER",
     scopeHint: "Write a project case study.",
     systemPrompt:
       "You are Case Study Writer.\n" +
@@ -1081,7 +1018,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Create impact-focused bullets for academic CVs and applications.",
     actionLabel: "Write Bullets",
     fields: [TEXT_FIELD("Role, responsibilities, publications/projects, and outcomes...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_RESUME_BULLET_ACADEMIA",
     scopeHint: "Write academic CV bullets.",
     systemPrompt:
       "You are Academic CV Bullet Builder.\n" +
@@ -1096,7 +1032,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Draft a polite, formal request to an institution or authority.",
     actionLabel: "Draft Request",
     fields: [TEXT_FIELD("Who you're writing to, what you request, relevant facts/dates, and urgency...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_OFFICIAL_REQUEST_LETTER",
     scopeHint: "Write a formal request letter.",
     systemPrompt:
       "You are Official Request Letter.\n" +
@@ -1113,7 +1048,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Resolve parking issues politely with a clear ask.",
     actionLabel: "Write Note",
     fields: [TEXT_FIELD("What happened, where, how often, and what you want to change...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_PARKING_DISPUTE_NOTE",
     scopeHint: "Write a note about parking conflict.",
     systemPrompt:
       "You are Parking Dispute Note.\n" +
@@ -1130,7 +1064,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Write a short press release announcing a launch or update.",
     actionLabel: "Write Release",
     fields: [TEXT_FIELD("What you're launching, who it's for, key benefits, and date...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_PRESS_RELEASE_MINI",
     scopeHint: "Write a press release.",
     systemPrompt:
       "You are Press Release Mini.\n" +
@@ -1147,7 +1080,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Apologize sincerely and propose a realistic repair plan.",
     actionLabel: "Write Apology",
     fields: [TEXT_FIELD("What happened, who was hurt, what you’re changing, and next steps...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_APOLOGY_REPAIR_PLAN",
     scopeHint: "Write an apology with a repair plan.",
     systemPrompt:
       "You are Apology + Repair Plan.\n" +
@@ -1164,7 +1096,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Create an agenda that keeps meetings short and productive.",
     actionLabel: "Create Agenda",
     fields: [TEXT_FIELD("Meeting purpose, attendees, topics, and desired outcomes...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_MEETING_AGENDA_GENERATOR",
     scopeHint: "Create a meeting agenda.",
     systemPrompt:
       "You are Meeting Agenda Generator.\n" +
@@ -1181,7 +1112,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "De-escalate conflicts and move toward a resolution calmly.",
     actionLabel: "Draft Mediation",
     fields: [TEXT_FIELD("What happened, parties involved, what you want, and what you can concede...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_DISPUTE_MEDIATOR_EMAIL",
     scopeHint: "Write a de-escalating dispute email.",
     systemPrompt:
       "You are Dispute Mediator Email.\n" +
@@ -1198,7 +1128,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Start 'what are we?' talks in a confident, low-pressure way.",
     actionLabel: "Draft Message",
     fields: [TEXT_FIELD("Context, what you want, what you fear, and how direct to be...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_RELATIONSHIP_DEFINE_THE_TALK",
     scopeHint: "Draft a message to define the relationship.",
     systemPrompt:
       "You are Define‑The‑Relationship Talk.\n" +
@@ -1215,7 +1144,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Create a clean rate card with packages, scope, and boundaries.",
     actionLabel: "Create Rate Card",
     fields: [TEXT_FIELD("Your services, typical deliverables, and pricing preferences...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_FREELANCE_RATE_CARD_MAKER",
     scopeHint: "Create a freelance rate card.",
     systemPrompt:
       "You are Rate Card Maker.\n" +
@@ -1230,7 +1158,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Spot risky client behaviors and craft safe responses.",
     actionLabel: "Detect Red Flags",
     fields: [TEXT_FIELD("Paste the client message / situation and your concerns...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_CLIENT_RED_FLAG_DETECTOR",
     scopeHint: "Assess client risk and suggest a response.",
     systemPrompt:
       "You are Client Red‑Flag Detector.\n" +
@@ -1245,7 +1172,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Turn deliverables into clear, professional invoice descriptions.",
     actionLabel: "Write Line Items",
     fields: [TEXT_FIELD("Deliverables list, hours, and any milestones...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_INVOICE_LINE_ITEM_WRITER",
     scopeHint: "Write invoice line items.",
     systemPrompt:
       "You are Invoice Line‑Item Writer.\n" +
@@ -1261,7 +1187,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Send a clean application email with attachments and a clear ask.",
     actionLabel: "Draft Email",
     fields: [TEXT_FIELD("Role/program, attachments, brief pitch, and any deadlines...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_APPLICATION_EMAIL_WRITER",
     scopeHint: "Write an application email.",
     systemPrompt:
       "You are Application Email Writer.\n" +
@@ -1276,7 +1201,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Appeal a decision politely with facts and a reasonable request.",
     actionLabel: "Write Appeal",
     fields: [TEXT_FIELD("Decision, policy, your circumstances, evidence, and desired outcome...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_POLICY_APPEAL_LETTER",
     scopeHint: "Write a policy appeal letter.",
     systemPrompt:
       "You are Policy Appeal Letter.\n" +
@@ -1291,7 +1215,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Request a meeting with clear agenda and time options.",
     actionLabel: "Request Meeting",
     fields: [TEXT_FIELD("Who, why you need the meeting, urgency, and your availability...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_MEETING_REQUEST_FORMAL",
     scopeHint: "Write a formal meeting request email.",
     systemPrompt:
       "You are Formal Meeting Request.\n" +
@@ -1307,7 +1230,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Reset a chaotic building/WhatsApp group with clear rules and tone.",
     actionLabel: "Reset Chat",
     fields: [TEXT_FIELD("What’s going wrong in the group and the rules you want...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_NEIGHBOR_GROUP_CHAT_RESET",
     scopeHint: "Write a group message to reset norms.",
     systemPrompt:
       "You are Neighbor Group‑Chat Reset.\n" +
@@ -1322,7 +1244,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Report a missing package clearly to carrier/building/neighbor.",
     actionLabel: "Write Report",
     fields: [TEXT_FIELD("Tracking info, dates, location, and what you’ve tried...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_PACKAGE_THEFT_REPORT",
     scopeHint: "Write a report about a missing package.",
     systemPrompt:
       "You are Package Theft Report.\n" +
@@ -1337,7 +1258,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Escalate ignored maintenance requests professionally.",
     actionLabel: "Escalate Request",
     fields: [TEXT_FIELD("Original request, dates, lack of response, impact, and what you need now...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_MAINTENANCE_FOLLOWUP_ESCALATION",
     scopeHint: "Escalate a maintenance request.",
     systemPrompt:
       "You are Maintenance Follow‑up Escalation.\n" +
@@ -1353,7 +1273,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Pitch collaborations that feel personal and win replies.",
     actionLabel: "Write Pitch",
     fields: [TEXT_FIELD("Creator/brand you're pitching, why it's a fit, and your idea...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_COLLAB_PITCH_WRITER",
     scopeHint: "Write a creator collaboration pitch message.",
     systemPrompt:
       "You are Collab Pitch Writer.\n" +
@@ -1368,7 +1287,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Write newsletter intros that hook and set the tone.",
     actionLabel: "Write Intro",
     fields: [TEXT_FIELD("Newsletter topic, audience, and tone...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_NEWSLETTER_INTRO_WRITER",
     scopeHint: "Write a newsletter intro.",
     systemPrompt:
       "You are Newsletter Intro Writer.\n" +
@@ -1383,7 +1301,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Draft a calm public response during backlash or controversy.",
     actionLabel: "Draft Response",
     fields: [TEXT_FIELD("What happened, what you can admit, what you can't, and desired outcome...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_BRAND_CRISIS_REPLY",
     scopeHint: "Write a public crisis response statement.",
     systemPrompt:
       "You are Brand Crisis Reply.\n" +
@@ -1399,7 +1316,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Write a compassionate message for someone grieving.",
     actionLabel: "Write Message",
     fields: [TEXT_FIELD("Who, what happened (optional), your relationship, and what you want to convey...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_GRIEF_SUPPORT_MESSAGE",
     scopeHint: "Write a condolence/support message.",
     systemPrompt:
       "You are Grief Support Message.\n" +
@@ -1414,7 +1330,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Reinforce boundaries when they get pushed—firm, calm, repeatable.",
     actionLabel: "Reinforce Boundary",
     fields: [TEXT_FIELD("Boundary, recent pushback, and how firm you want to be...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_FAMILY_BOUNDARY_REINFORCER",
     scopeHint: "Reinforce boundaries with family.",
     systemPrompt:
       "You are Family Boundary Reinforcer.\n" +
@@ -1429,7 +1344,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Send a repair message after conflict without reopening the fight.",
     actionLabel: "Write Repair Text",
     fields: [TEXT_FIELD("What happened, your part, what you want, and the tone...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_RELATIONSHIP_REPAIR_TEXT",
     scopeHint: "Write a repair message after conflict.",
     systemPrompt:
       "You are Relationship Repair Text.\n" +
@@ -1445,7 +1359,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Turn messy progress into a crisp status update (for Slack/email).",
     actionLabel: "Write Update",
     fields: [TEXT_FIELD("What you did, what's blocked, next steps, and stakeholders...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_WORK_STATUS_UPDATE_WRITER",
     scopeHint: "Write a status update message.",
     systemPrompt:
       "You are Status Update Writer.\n" +
@@ -1460,7 +1373,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Prep for a manager 1:1 with agenda, asks, and talking points.",
     actionLabel: "Prep 1:1",
     fields: [TEXT_FIELD("Context, what you want, recent wins, blockers, and concerns...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_MANAGER_1ON1_PREP",
     scopeHint: "Prepare an agenda for a 1:1 meeting.",
     systemPrompt:
       "You are 1:1 Prep Builder.\n" +
@@ -1476,7 +1388,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Communicate budget cuts with empathy and clarity.",
     actionLabel: "Draft Message",
     fields: [TEXT_FIELD("Who you're messaging, what's changing, and any alternatives/support...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_BUDGET_CUT_MESSAGE",
     scopeHint: "Write a message announcing budget cuts.",
     systemPrompt:
       "You are Budget Cut Message.\n" +
@@ -1491,7 +1402,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Propose a realistic payment plan message without shame.",
     actionLabel: "Propose Plan",
     fields: [TEXT_FIELD("Amount owed, what you can pay, schedule, and context...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_DEBT_PAYMENT_PLAN_TEXT",
     scopeHint: "Write a payment plan proposal message.",
     systemPrompt:
       "You are Debt Payment Plan Text.\n" +
@@ -1507,7 +1417,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Decline a wedding invitation warmly and clearly.",
     actionLabel: "Decline Invite",
     fields: [TEXT_FIELD("Who invited you, your relationship, and your reason (optional)...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_WEDDING_GUEST_DECLINE",
     scopeHint: "Decline a wedding invitation politely.",
     systemPrompt:
       "You are Wedding Guest Decline.\n" +
@@ -1524,7 +1433,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Recap an offer clearly after a call to lock next steps.",
     actionLabel: "Write Recap",
     fields: [TEXT_FIELD("What was agreed: scope, timeline, price, and next step...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_FREELANCE_OFFER_RECAP",
     scopeHint: "Write a recap email after a sales/discovery call.",
     systemPrompt:
       "You are Offer Recap Email.\n" +
@@ -1539,7 +1447,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Turn your idea into a crisp abstract with problem, method, impact.",
     actionLabel: "Write Abstract",
     fields: [TEXT_FIELD("Research idea, target audience, method, novelty, and impact...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_GRANT_ABSTRACT_WRITER",
     scopeHint: "Write a grant abstract.",
     systemPrompt:
       "You are Grant Abstract Writer.\n" +
@@ -1554,7 +1461,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Apologize to a neighbor and prevent future friction.",
     actionLabel: "Write Apology",
     fields: [TEXT_FIELD("What happened, impact, and what you'll do differently...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_NEIGHBOR_APOLOGY_NOTE",
     scopeHint: "Write an apology note to a neighbor.",
     systemPrompt:
       "You are Neighbor Apology Note.\n" +
@@ -1569,7 +1475,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Pitch yourself as a guest with a tight angle and topics.",
     actionLabel: "Pitch Podcast",
     fields: [TEXT_FIELD("Podcast, your bio, your angle, and 3 topic ideas...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_PODCAST_GUEST_PITCH",
     scopeHint: "Write a podcast guest pitch.",
     systemPrompt:
       "You are Podcast Guest Pitch.\n" +
@@ -1584,7 +1489,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Write a warm announcement for big news with the right tone.",
     actionLabel: "Write Announcement",
     fields: [TEXT_FIELD("What you're announcing, audience, and tone (funny, heartfelt, formal)...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_FAMILY_ANNOUNCEMENT_WRITER",
     scopeHint: "Write a family announcement message.",
     systemPrompt:
       "You are Family Announcement Writer.\n" +
@@ -1599,7 +1503,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Escalate an issue without blaming—facts, impact, and options.",
     actionLabel: "Escalate Issue",
     fields: [TEXT_FIELD("Issue, timeline, impact, what you tried, and what you need...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_WORK_ESCALATION_EMAIL",
     scopeHint: "Write an escalation email for a workplace issue.",
     systemPrompt:
       "You are Work Escalation Email.\n" +
@@ -1614,7 +1517,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Follow up for a refund in 3 escalating steps.",
     actionLabel: "Write Sequence",
     fields: [TEXT_FIELD("Company, order, dates, previous replies, and what you want...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_REFUND_FOLLOWUP_SEQUENCE",
     scopeHint: "Write a refund follow-up email sequence.",
     systemPrompt:
       "You are Refund Follow‑up Sequence.\n" +
@@ -1629,7 +1531,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Send a confident follow-up after a first date.",
     actionLabel: "Write Follow‑up",
     fields: [TEXT_FIELD("How the date went, what you want next, and your tone...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_FIRST_DATE_FOLLOWUP",
     scopeHint: "Write a follow-up text after a first date.",
     systemPrompt:
       "You are First Date Follow‑up.\n" +
@@ -1644,7 +1545,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Ask a neighbor for a favor without awkwardness.",
     actionLabel: "Ask Favor",
     fields: [TEXT_FIELD("What you need, dates/times, and how close you are...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_NEIGHBORLY_FAVOR_ASK",
     scopeHint: "Ask a neighbor for a favor politely.",
     systemPrompt:
       "You are Neighborly Favor Ask.\n" +
@@ -1659,7 +1559,6 @@ export const TOOLS_SEED: ToolSeed[] = [
     description: "Write a sharp bio for socials and media kits (credible, not cringe).",
     actionLabel: "Write Bio",
     fields: [TEXT_FIELD("Who you are, niche, proof points, and desired vibe...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_CREATOR_BIO_WRITER",
     scopeHint: "Write a creator bio.",
     systemPrompt:
       "You are Creator Bio Writer.\n" +
@@ -1676,7 +1575,6 @@ export const TOOLS_SEED: ToolSeed[] = [
       "Paste a long, boring corporate email. We translate it into the brutal, 3-word primitive truth.",
     actionLabel: "Translate",
     fields: [TEXT_FIELD("Paste that 5-paragraph email from HR here...")],
-    stripeEnvVar: "NEXT_PUBLIC_STRIPE_LINK_CORPORATE_TO_CAVEMAN_TRANSLATOR",
     scopeHint:
       "Translate corporate/jargon-heavy emails or statements into a brutally compressed caveman version (3–6 words).",
     systemPrompt:

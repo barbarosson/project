@@ -73,15 +73,15 @@ Open `http://localhost:3000`.
 
 | Price   | Requests / month |
 |---------|------------------|
-| $7.99   | 100              |
-| $9.99   | 300              |
-| $19.99  | 1000             |
+| $7.99   | 500              |
+| $9.99   | 1,000            |
+| $19.99  | 5,000            |
 
 **Custom monthly mix (estimated total)** — per-request rates aligned with those bundles (`src/lib/pricing-rates.ts`):
 
-- Low / budget AI: `$19.99 / 1000`
-- Mid / standard AI: `$9.99 / 300`
-- High / premium AI: `$7.99 / 100`
+- Low / budget AI: `$19.99 / 5000`
+- Mid / standard AI: `$9.99 / 1000`
+- High / premium AI: `$7.99 / 500`
 
 **Pay-as-you-go 10-request packs**
 

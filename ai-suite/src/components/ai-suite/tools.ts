@@ -22,7 +22,6 @@ export type ToolDefinition = {
   actionLabel: string;
   fields: ToolField[];
   storageKey: string;
-  stripeEnvVar: string;
   provider: ProviderId;
   model?: string;
   scopeHint: string;
@@ -65,7 +64,6 @@ export const TOOLS: ToolDefinition[] = TOOLS_SEED.map((t) => ({
   actionLabel: t.actionLabel,
   fields: t.fields,
   storageKey: mkStorageKey(t.tool as ToolName),
-  stripeEnvVar: t.stripeEnvVar,
   provider: inferProvider(t),
   model: t.model,
   scopeHint: t.scopeHint,
@@ -82,21 +80,3 @@ export function isToolName(value: string | null | undefined): value is ToolName 
   if (value == null || value === "") return false;
   return TOOLS.some((t) => t.tool === value);
 }
-
-export function getStripeLink(tool: ToolName): string | null {
-  const def = getToolDefinition(tool);
-  const value = process.env[def.stripeEnvVar];
-  return value && value.trim().length > 0 ? value.trim() : null;
-}
-
-export function getStripeLinkForModel(tool: ToolName, model: string): string | null {
-  // Default/back-compat: if model-specific env is missing, fall back to tool env var.
-  const suffix = model.toUpperCase().replaceAll("-", "_").replaceAll(".", "_");
-  const modelEnv = `NEXT_PUBLIC_STRIPE_LINK_${tool
-    .toUpperCase()
-    .replaceAll("-", "_")}_${suffix}`;
-  const specific = process.env[modelEnv];
-  if (specific && specific.trim().length > 0) return specific.trim();
-  return getStripeLink(tool);
-}
-

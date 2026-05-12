@@ -23,11 +23,14 @@ import {
   type ToolPayload,
 } from "@/components/ai-suite/tools";
 import {
+  defaultConcreteModelForProvider,
+  generationCreditsForConcreteModel,
   isConcreteModelId,
   modelMeta,
   normalizeModelIdString,
   type ConcreteModelId,
 } from "@/models/models";
+import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
 
 type RequestBody = ToolPayload & { model?: string; extra?: string };
 
@@ -66,7 +69,25 @@ function isToolPayload(value: unknown): value is RequestBody {
     return typeof value.text === "string" || typeof value.profile === "string";
   // all other tools: require `text`
   return typeof value.text === "string";
-  return false;
+}
+
+function payloadLengthError(payload: ToolPayload): string | null {
+  if (payload.tool === "coverletter-ai") {
+    const p = payload as Extract<ToolPayload, { tool: "coverletter-ai" }>;
+    if (p.jobLink.length > TOOL_INPUT_MAX_CHARS || p.resume.length > TOOL_INPUT_MAX_CHARS) {
+      return `Each field must be at most ${TOOL_INPUT_MAX_CHARS} characters.`;
+    }
+  } else if (payload.tool === "dating-roast") {
+    const s = "text" in payload ? payload.text : payload.profile;
+    if (s.length > TOOL_INPUT_MAX_CHARS) {
+      return `Input must be at most ${TOOL_INPUT_MAX_CHARS} characters.`;
+    }
+  } else if ("text" in payload && typeof payload.text === "string") {
+    if (payload.text.length > TOOL_INPUT_MAX_CHARS) {
+      return `Input must be at most ${TOOL_INPUT_MAX_CHARS} characters.`;
+    }
+  }
+  return null;
 }
 
 function rawInputFor(payload: ToolPayload) {
@@ -457,6 +478,11 @@ export async function POST(req: Request) {
     );
   }
 
+  const lenErr = payloadLengthError(body);
+  if (lenErr) {
+    return NextResponse.json({ error: lenErr, code: "input_too_long" }, { status: 400 });
+  }
+
   const rpm = Math.min(300, Math.max(10, Number(process.env.ISENDAI_GENERATE_RPM ?? "60")));
   const rl = enforceRateLimit(req, "generate", rpm, 60_000);
   if (!rl.ok) {
@@ -470,9 +496,17 @@ export async function POST(req: Request) {
   const override = resolveModelOverride(body);
   const provider = override?.provider ?? pickProvider(body);
   const { client, model } = override ?? modelForProvider(provider);
+  const midRaw =
+    typeof (body as RequestBody).model === "string"
+      ? normalizeModelIdString((body as RequestBody).model as string)
+      : "auto";
+  const concreteForCredits: ConcreteModelId =
+    midRaw !== "auto" && isConcreteModelId(midRaw) ? midRaw : defaultConcreteModelForProvider(provider);
+  const creditCost = generationCreditsForConcreteModel(concreteForCredits);
   const debugHeaders = {
     "x-ai-provider": provider,
     "x-ai-model": model,
+    "x-credits-required": String(creditCost),
   };
 
   if (!hasProviderKey(provider)) {
@@ -498,7 +532,7 @@ export async function POST(req: Request) {
     const ownerId = userId ?? (await getOrCreateAnonId());
 
     // Ensure entitlement row exists (defaults: anon=0 credits, user=0 credits; max_versions differs by plan later).
-    // Credit top-ups are handled elsewhere (Stripe later, dev endpoint now).
+    // Credit top-ups are handled elsewhere (Lemon Squeezy webhooks, dev endpoint).
     const admin = createSupabaseAdminClient();
     const { error: entErr } = await billingEnsureEntitlement(admin, {
       p_owner_type: ownerType,
@@ -571,7 +605,7 @@ export async function POST(req: Request) {
       const { error: grantErr } = await billingAddCredits(admin, {
         p_owner_type: ownerType,
         p_owner_id: ownerId,
-        p_amount: 1,
+        p_amount: creditCost,
       });
       if (grantErr) {
         return NextResponse.json(
@@ -596,14 +630,24 @@ export async function POST(req: Request) {
       p_model_id: model,
       p_input_json: inputJson,
       p_price_paid_usd: null,
+      p_credit_cost: creditCost,
     });
     if (chargeErr) {
       const msg = String(chargeErr.message || "");
       if (msg.includes("insufficient_credits")) {
+        const { data: balRow } = await admin
+          .schema("isendai")
+          .from("entitlements")
+          .select("credits_balance")
+          .eq("owner_type", ownerType)
+          .eq("owner_id", ownerId)
+          .maybeSingle();
         return NextResponse.json(
           {
-            error: "Insufficient credits. Top up credits or sign in to use an account balance.",
+            error: "Insufficient credits for this model. Upgrade or add credits.",
             code: "insufficient_credits",
+            credits_required: creditCost,
+            credits_balance: balRow?.credits_balance ?? 0,
           },
           { status: 402, headers: debugHeaders }
         );

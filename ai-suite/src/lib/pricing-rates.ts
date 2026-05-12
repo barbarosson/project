@@ -3,22 +3,32 @@
  * with these bundles: high volume → low $/req, entry bundle → higher $/req.
  */
 export const MONTHLY_BUNDLE_USD = {
-  /** 100 requests */
+  /** Starter tier price */
   entry: 7.99,
-  /** 300 requests */
+  /** Growth tier price */
   mid: 9.99,
-  /** 1000 requests */
+  /** Scale tier price */
   bulk: 19.99,
+} as const;
+
+/** Included monthly requests per bundle tier (same USD prices, higher volumes). */
+export const MONTHLY_REQUEST_COUNTS = {
+  /** Starter — $7.99 */
+  entry: 500,
+  /** Growth — $9.99 */
+  mid: 1000,
+  /** Scale — $19.99 */
+  bulk: 5000,
 } as const;
 
 /** Per-request USD rates for custom monthly mix (maps AI tier → closest bundle economics). */
 export const CUSTOM_MIX_RATE_USD = {
   /** Low-tier / budget models — bulk endpoint pricing */
-  low: MONTHLY_BUNDLE_USD.bulk / 1000,
+  low: MONTHLY_BUNDLE_USD.bulk / MONTHLY_REQUEST_COUNTS.bulk,
   /** Mid-tier models — middle bundle */
-  mid: MONTHLY_BUNDLE_USD.mid / 300,
+  mid: MONTHLY_BUNDLE_USD.mid / MONTHLY_REQUEST_COUNTS.mid,
   /** High-tier / premium models — entry bundle (smallest volume, highest $/req) */
-  high: MONTHLY_BUNDLE_USD.entry / 100,
+  high: MONTHLY_BUNDLE_USD.entry / MONTHLY_REQUEST_COUNTS.entry,
 } as const;
 
 export function estimateCustomMonthlyUsd(low: number, mid: number, high: number): number {

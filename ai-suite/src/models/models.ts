@@ -271,11 +271,82 @@ export function isConcreteModelId(value: unknown): value is ConcreteModelId {
 /** Customer-facing price band for a concrete model ($1 / $1.49 / $1.99 sales tiers). */
 export type ModelSalesTier = "budget" | "standard" | "premium";
 
+/** Subscription billing: fast/mini-style models burn 1 credit per generation; premium burns 25. */
+export const GENERATION_CREDITS_FAST = 1;
+export const GENERATION_CREDITS_PREMIUM = 25;
+
+const PREMIUM_GENERATION_MODELS = new Set<ConcreteModelId>([
+  "gpt-4o",
+  "gpt-4.1",
+  "o1",
+  "claude-sonnet-4-6",
+  "claude-opus-4-7",
+  "llama-3.3-70b-versatile",
+  "deepseek-v4-pro",
+  "gemini-2.5-pro",
+]);
+
+export function generationCreditsForConcreteModel(model: ConcreteModelId): number {
+  return PREMIUM_GENERATION_MODELS.has(model) ? GENERATION_CREDITS_PREMIUM : GENERATION_CREDITS_FAST;
+}
+
+/**
+ * Credits for one generation (initial or alternate version), given resolved concrete model id.
+ * Use after resolving `auto` to the tool/provider default.
+ */
+export function generationCreditsForResolvedModel(modelId: string): number {
+  const mid = normalizeModelIdString(modelId);
+  if (mid === "auto") return GENERATION_CREDITS_FAST;
+  if (!isConcreteModelId(mid)) return GENERATION_CREDITS_FAST;
+  return generationCreditsForConcreteModel(mid);
+}
+
 export function modelSalesTier(model: ConcreteModelId): ModelSalesTier {
   const usd = salesPriceForModel(model).usd;
   if (usd === 1) return "budget";
   if (usd === 1.49) return "standard";
   return "premium";
+}
+
+/** Pay-as-you-go 10-credit pack price (USD) per sales tier — matches `/pricing` packs. */
+export const TEN_CREDIT_PACK_USD: Record<ModelSalesTier, number> = {
+  budget: 1,
+  standard: 1.49,
+  premium: 1.99,
+};
+
+const TIER_DISPLAY_NAME: Record<ModelSalesTier, string> = {
+  budget: "Economy",
+  standard: "Standard",
+  premium: "Premium",
+};
+
+function formatMoneyUsd(amount: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 3,
+  }).format(amount);
+}
+
+/** Unit $/credit implied by the tier’s 10-credit pack (pack price ÷ 10). */
+export function unitUsdPerCreditFromTenPack(tier: ModelSalesTier): number {
+  return TEN_CREDIT_PACK_USD[tier] / 10;
+}
+
+/** One line per tier: unit rate from 10-pack + pack price (no per-model “≈ …/credit”). */
+export function tierTenPackSummary(tier: ModelSalesTier): string {
+  const per = unitUsdPerCreditFromTenPack(tier);
+  const pack = TEN_CREDIT_PACK_USD[tier];
+  return `${TIER_DISPLAY_NAME[tier]}: ${formatMoneyUsd(per)}/credit · $${pack.toFixed(2)} / 10 credits`;
+}
+
+/** `<optgroup label>` text for the model dropdown (three tiers). */
+export function modelTierOptgroupLabel(tier: ModelSalesTier): string {
+  const per = unitUsdPerCreditFromTenPack(tier);
+  const pack = TEN_CREDIT_PACK_USD[tier];
+  return `${TIER_DISPLAY_NAME[tier]} · ${formatMoneyUsd(per)}/credit ($${pack.toFixed(2)} ÷ 10)`;
 }
 
 export function modelMeta(id: ConcreteModelId) {

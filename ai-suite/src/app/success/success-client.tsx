@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
 import { glassSurface } from "@/lib/premium-ui";
 
 type Stored = { v: 1; savedAt: string; payload: ToolPayload };
@@ -516,6 +517,7 @@ export function SuccessClient() {
                   </p>
                   <Textarea
                     value={altExtra}
+                    maxLength={TOOL_INPUT_MAX_CHARS}
                     onChange={(e) => setAltExtra(e.target.value)}
                     placeholder={t("success.alt.extra.placeholder")}
                     className="min-h-20"

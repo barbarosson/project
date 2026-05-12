@@ -131,8 +131,10 @@ export async function billingChargeAndCreateRequest(
     p_model_id: string;
     p_input_json: Record<string, unknown>;
     p_price_paid_usd: number | null;
+    p_credit_cost?: number;
   }
 ): Promise<{ data: string | null; error: BillingRpcError | null }> {
+  const creditCost = Math.max(1, Math.floor(Number(params.p_credit_cost ?? 1)));
   const sql = getDirectSql();
   if (sql) {
     try {
@@ -144,7 +146,8 @@ export async function billingChargeAndCreateRequest(
           ${params.p_tool_id},
           ${params.p_model_id},
           ${sql.json(jsonPayload)},
-          ${params.p_price_paid_usd}
+          ${params.p_price_paid_usd},
+          ${creditCost}
         ) AS request_id
       `;
       const id = rows[0]?.request_id;
@@ -154,11 +157,83 @@ export async function billingChargeAndCreateRequest(
     }
   }
 
-  const { data, error } = await admin.rpc("charge_and_create_request", params);
+  const { data, error } = await admin.rpc("charge_and_create_request", {
+    p_owner_type: params.p_owner_type,
+    p_owner_id: params.p_owner_id,
+    p_tool_id: params.p_tool_id,
+    p_model_id: params.p_model_id,
+    p_input_json: params.p_input_json,
+    p_price_paid_usd: params.p_price_paid_usd,
+    p_credit_cost: creditCost,
+  });
   return {
     data: data !== undefined && data !== null ? String(data) : null,
     error: error ? errShape(error.message) : null,
   };
+}
+
+export async function billingDeductCredits(
+  admin: SupabaseClient,
+  params: { p_owner_type: string; p_owner_id: string; p_amount: number }
+): Promise<{ data: number | null; error: BillingRpcError | null }> {
+  const amt = Math.max(1, Math.floor(Number(params.p_amount)));
+  const sql = getDirectSql();
+  if (sql) {
+    try {
+      const rows = await sql<{ balance: number }[]>`
+        SELECT isendai.deduct_credits(
+          ${params.p_owner_type},
+          ${params.p_owner_id},
+          ${amt}
+        ) AS balance
+      `;
+      const balance = rows[0]?.balance;
+      if (balance !== undefined && balance !== null) {
+        return { data: Number(balance), error: null };
+      }
+    } catch (e) {
+      console.warn("[billing] direct deduct_credits failed, trying PostgREST:", e);
+    }
+  }
+
+  const { data, error } = await admin.rpc("deduct_credits", {
+    p_owner_type: params.p_owner_type,
+    p_owner_id: params.p_owner_id,
+    p_amount: amt,
+  });
+  return {
+    data: data !== undefined && data !== null ? Number(data) : null,
+    error: error ? errShape(error.message) : null,
+  };
+}
+
+export async function billingSetCreditsBalance(
+  admin: SupabaseClient,
+  params: { p_owner_type: string; p_owner_id: string; p_balance: number }
+): Promise<{ error: BillingRpcError | null }> {
+  const bal = Math.max(0, Math.floor(Number(params.p_balance)));
+  const sql = getDirectSql();
+  if (sql) {
+    try {
+      await sql`
+        SELECT isendai.set_credits_balance(
+          ${params.p_owner_type},
+          ${params.p_owner_id},
+          ${bal}
+        )
+      `;
+      return { error: null };
+    } catch (e) {
+      console.warn("[billing] direct set_credits_balance failed, trying PostgREST:", e);
+    }
+  }
+
+  const { error } = await admin.rpc("set_credits_balance", {
+    p_owner_type: params.p_owner_type,
+    p_owner_id: params.p_owner_id,
+    p_balance: bal,
+  });
+  return { error: error ? errShape(error.message) : null };
 }
 
 export async function billingAddRequestVersion(

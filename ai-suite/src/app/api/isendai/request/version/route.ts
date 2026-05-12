@@ -6,10 +6,17 @@ import { google } from "@ai-sdk/google";
 
 import { getToolDefinition, type ProviderId, type ToolPayload } from "@/components/ai-suite/tools";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { billingAddRequestVersion } from "@/lib/isendai/billing-rpc";
+import { billingAddRequestVersion, billingDeductCredits } from "@/lib/isendai/billing-rpc";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateAnonId } from "@/lib/isendai/owner";
-import { isConcreteModelId, modelMeta } from "@/models/models";
+import {
+  defaultConcreteModelForProvider,
+  generationCreditsForConcreteModel,
+  isConcreteModelId,
+  modelMeta,
+  normalizeModelIdString,
+  type ConcreteModelId,
+} from "@/models/models";
 import { enforceRateLimit } from "@/lib/rate-limit";
 
 type Body = {
@@ -123,8 +130,11 @@ export async function POST(req: Request) {
 
   const def = getToolDefinition(payload.tool as any);
   const modelId = String(reqRow.model_id || "");
+  const normalizedStored = normalizeModelIdString(modelId);
   const provider: ProviderId =
-    isConcreteModelId(modelId) ? (modelMeta(modelId as any).provider as ProviderId) : def.provider;
+    isConcreteModelId(normalizedStored)
+      ? (modelMeta(normalizedStored as ConcreteModelId).provider as ProviderId)
+      : def.provider;
 
   if (!hasProviderKey(provider)) {
     const env = providerKeyName(provider);
@@ -143,9 +153,43 @@ export async function POST(req: Request) {
   const prompt =
     extra.length > 0 ? `${base}\n\nExtra instructions (apply on top of the tool):\n${extra}` : base;
 
+  const concreteForCost: ConcreteModelId =
+    normalizedStored !== "auto" && isConcreteModelId(normalizedStored)
+      ? normalizedStored
+      : defaultConcreteModelForProvider(provider);
+  const creditCost = generationCreditsForConcreteModel(concreteForCost);
+
+  const { error: deductErr } = await billingDeductCredits(admin, {
+    p_owner_type: ownerType,
+    p_owner_id: ownerId,
+    p_amount: creditCost,
+  });
+  if (deductErr) {
+    const msg = String(deductErr.message || "");
+    if (msg.includes("insufficient_credits")) {
+      const { data: balRow } = await admin
+        .schema("isendai")
+        .from("entitlements")
+        .select("credits_balance")
+        .eq("owner_type", ownerType)
+        .eq("owner_id", ownerId)
+        .maybeSingle();
+      return NextResponse.json(
+        {
+          error: "Insufficient credits for another version.",
+          code: "insufficient_credits",
+          credits_required: creditCost,
+          credits_balance: balRow?.credits_balance ?? 0,
+        },
+        { status: 402 }
+      );
+    }
+    return NextResponse.json({ error: "Billing error." }, { status: 503 });
+  }
+
   // Generate
   const out = await generateText({
-    model: modelFor(provider, modelId || def.model || "gpt-4o-mini"),
+    model: modelFor(provider, normalizedStored || def.model || "gpt-4o-mini"),
     temperature: 0.6,
     system: def.systemPrompt,
     prompt,

@@ -11,6 +11,7 @@ import { GlobalBackground } from "@/components/global-background";
 import { SocialProof } from "@/components/SocialProof";
 import type { Locale } from "@/i18n/dictionaries";
 import { SupabaseBrowserConfigProvider } from "@/lib/supabase/browser-config-context";
+import { PricingModalProvider } from "@/components/pricing/pricing-modal";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -98,10 +99,12 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
         <SupabaseBrowserConfigProvider url={supabaseUrl} anonKey={supabaseAnonKey}>
           <I18nProvider initialLocale={initialLocale}>
             <ModelProvider>
-              <RouteTransition />
-              <GlobalBackground />
-              <SocialProof />
-              {children}
+              <PricingModalProvider>
+                <RouteTransition />
+                <GlobalBackground />
+                <SocialProof />
+                {children}
+              </PricingModalProvider>
             </ModelProvider>
           </I18nProvider>
         </SupabaseBrowserConfigProvider>
