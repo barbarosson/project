@@ -230,7 +230,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (or SUPABASE_URL and SUPABASE_ANON_KEY), then redeploy or restart dev.",
     "login.title": "Sign in",
     "login.subtitle":
-      "Sign in with email or Google. After your first successful sign-in, we collect a short membership profile (name, country, primary use case).",
+      "Sign in with email, Google, or Facebook. After your first successful sign-in, we collect a short membership profile (name, country, primary use case).",
     "login.send": "Send link",
     "login.sending": "Sending…",
     "login.creditsTitle": "Credits on this device",
@@ -256,8 +256,12 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipGoogleTitle": "Google account",
     "login.membershipGoogleBody":
       "Use your Google identity, then confirm or add membership details on the next screen.",
+    "login.membershipFacebookTitle": "Facebook account",
+    "login.membershipFacebookBody":
+      "Use your Facebook identity, then confirm or add membership details on the next screen.",
     "login.membershipOtherTitle": "Other providers",
     "login.oauthGoogle": "Continue with Google",
+    "login.oauthFacebook": "Continue with Facebook",
     "login.oauthOtherTitle": "More sign-in options",
     "login.emailInvalid": "Please enter a valid email address.",
     "login.emailSent": "Check your email for the sign-in link.",
@@ -567,7 +571,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Supabase no está configurado. Añade NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY (o SUPABASE_URL y SUPABASE_ANON_KEY) y vuelve a desplegar.",
     "login.title": "Acceso",
     "login.subtitle":
-      "Entra con email o Google. Tras el primer acceso, pedimos un perfil breve de membresía (nombre, país, caso de uso principal).",
+      "Entra con email, Google o Facebook. Tras el primer acceso, pedimos un perfil breve de membresía (nombre, país, caso de uso principal).",
     "login.send": "Enviar enlace",
     "login.sending": "Enviando…",
     "login.creditsTitle": "Créditos en este dispositivo",
@@ -593,8 +597,12 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipGoogleTitle": "Cuenta de Google",
     "login.membershipGoogleBody":
       "Usa tu identidad de Google y confirma o añade los datos de membresía en la siguiente pantalla.",
+    "login.membershipFacebookTitle": "Cuenta de Facebook",
+    "login.membershipFacebookBody":
+      "Usa tu identidad de Facebook y confirma o añade los datos de membresía en la siguiente pantalla.",
     "login.membershipOtherTitle": "Otros proveedores",
     "login.oauthGoogle": "Continuar con Google",
+    "login.oauthFacebook": "Continuar con Facebook",
     "login.oauthOtherTitle": "Más opciones de acceso",
     "login.emailInvalid": "Introduce un email válido.",
     "login.emailSent": "Revisa tu correo para el enlace de acceso.",
@@ -895,7 +903,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Supabase n’est pas configuré. Ajoute NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY (ou SUPABASE_URL et SUPABASE_ANON_KEY), puis redéploie.",
     "login.title": "Connexion",
     "login.subtitle":
-      "Connectez-vous par e-mail ou Google. Après la première connexion, nous demandons un court profil d’adhésion (nom, pays, usage principal).",
+      "Connectez-vous par e-mail, Google ou Facebook. Après la première connexion, nous demandons un court profil d’adhésion (nom, pays, usage principal).",
     "login.send": "Envoyer le lien",
     "login.sending": "Envoi…",
     "login.creditsTitle": "Crédits sur cet appareil",
@@ -921,8 +929,12 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipGoogleTitle": "Compte Google",
     "login.membershipGoogleBody":
       "Utilise ton compte Google, puis confirme ou complète les informations d’adhésion à l’écran suivant.",
+    "login.membershipFacebookTitle": "Compte Facebook",
+    "login.membershipFacebookBody":
+      "Utilise ton compte Facebook, puis confirme ou complète les informations d’adhésion à l’écran suivant.",
     "login.membershipOtherTitle": "Autres fournisseurs",
     "login.oauthGoogle": "Continuer avec Google",
+    "login.oauthFacebook": "Continuer avec Facebook",
     "login.oauthOtherTitle": "Plus d’options de connexion",
     "login.emailInvalid": "Saisis une adresse email valide.",
     "login.emailSent": "Vérifie tes emails pour le lien de connexion.",
@@ -1224,7 +1236,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Supabase ist nicht konfiguriert. Setze NEXT_PUBLIC_SUPABASE_URL und NEXT_PUBLIC_SUPABASE_ANON_KEY (oder SUPABASE_URL und SUPABASE_ANON_KEY) und deploye neu.",
     "login.title": "Anmelden",
     "login.subtitle":
-      "Melde dich per E‑Mail oder Google an. Nach der ersten Anmeldung erfassen wir ein kurzes Mitgliedschaftsprofil (Name, Land, Hauptnutzung).",
+      "Melde dich per E‑Mail, Google oder Facebook an. Nach der ersten Anmeldung erfassen wir ein kurzes Mitgliedschaftsprofil (Name, Land, Hauptnutzung).",
     "login.send": "Link senden",
     "login.sending": "Senden…",
     "login.creditsTitle": "Credits auf diesem Gerät",
@@ -1250,8 +1262,12 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipGoogleTitle": "Google‑Konto",
     "login.membershipGoogleBody":
       "Nutze dein Google‑Konto und bestätige oder ergänze die Mitgliedschaftsdaten auf der nächsten Seite.",
+    "login.membershipFacebookTitle": "Facebook‑Konto",
+    "login.membershipFacebookBody":
+      "Nutze dein Facebook‑Konto und bestätige oder ergänze die Mitgliedschaftsdaten auf der nächsten Seite.",
     "login.membershipOtherTitle": "Weitere Anbieter",
     "login.oauthGoogle": "Mit Google fortfahren",
+    "login.oauthFacebook": "Mit Facebook fortfahren",
     "login.oauthOtherTitle": "Weitere Login‑Optionen",
     "login.emailInvalid": "Bitte eine gültige E‑Mail‑Adresse eingeben.",
     "login.emailSent": "Prüfe dein Postfach für den Login‑Link.",
@@ -1532,7 +1548,7 @@ export const DICTS: Record<Locale, Dict> = {
       "未配置 Supabase。请设置 NEXT_PUBLIC_SUPABASE_URL 与 NEXT_PUBLIC_SUPABASE_ANON_KEY（或 SUPABASE_URL 与 SUPABASE_ANON_KEY），然后重新部署。",
     "login.title": "登录 / 会员",
     "login.subtitle":
-      "可使用邮箱或 Google 登录。首次登录成功后，我们会收集简短的会员资料（姓名、国家/地区、主要用途）。",
+      "可使用邮箱、Google 或 Facebook 登录。首次登录成功后，我们会收集简短的会员资料（姓名、国家/地区、主要用途）。",
     "login.send": "发送登录链接",
     "login.sending": "发送中…",
     "login.creditsTitle": "此设备上的额度",
@@ -1556,8 +1572,12 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipGoogleTitle": "Google 账号",
     "login.membershipGoogleBody":
       "使用 Google 登录后，在下一页确认或补充会员信息。",
+    "login.membershipFacebookTitle": "Facebook 账号",
+    "login.membershipFacebookBody":
+      "使用 Facebook 登录后，在下一页确认或补充会员信息。",
     "login.membershipOtherTitle": "其他登录方式",
     "login.oauthGoogle": "使用 Google 继续",
+    "login.oauthFacebook": "使用 Facebook 继续",
     "login.oauthOtherTitle": "更多登录选项",
     "login.emailInvalid": "请输入有效的邮箱地址。",
     "login.emailSent": "请查收邮件中的登录链接。",
@@ -1839,7 +1859,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Supabase yapılandırılmadı. NEXT_PUBLIC_SUPABASE_URL ve NEXT_PUBLIC_SUPABASE_ANON_KEY (veya SUPABASE_URL ve SUPABASE_ANON_KEY) ekleyip yeniden deploy et veya dev sunucuyu yeniden başlat.",
     "login.title": "Üyelik ve giriş",
     "login.subtitle":
-      "E-posta veya Google ile giriş yap. İlk başarılı oturumdan sonra kısa bir üyelik profili (ad, ülke, ana kullanım) topluyoruz.",
+      "E-posta, Google veya Facebook ile giriş yap. İlk başarılı oturumdan sonra kısa bir üyelik profili (ad, ülke, ana kullanım) topluyoruz.",
     "login.send": "Bağlantı gönder",
     "login.sending": "Gönderiliyor…",
     "login.creditsTitle": "Bu cihazdaki kontör",
@@ -1865,8 +1885,12 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipGoogleTitle": "Google hesabı",
     "login.membershipGoogleBody":
       "Google kimliğinle gir; bir sonraki ekranda üyelik bilgilerini onayla veya ekle.",
+    "login.membershipFacebookTitle": "Facebook hesabı",
+    "login.membershipFacebookBody":
+      "Facebook kimliğinle gir; bir sonraki ekranda üyelik bilgilerini onayla veya ekle.",
     "login.membershipOtherTitle": "Diğer sağlayıcılar",
     "login.oauthGoogle": "Google ile devam et",
+    "login.oauthFacebook": "Facebook ile devam et",
     "login.oauthOtherTitle": "Diğer giriş seçenekleri",
     "login.emailInvalid": "Geçerli bir e-posta gir.",
     "login.emailSent": "Giriş bağlantısı için e-postanı kontrol et.",

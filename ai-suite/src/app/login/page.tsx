@@ -5,6 +5,7 @@ import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { FacebookSignInButton } from "./facebook-sign-in-button";
 import { GoogleSignInButton } from "./google-sign-in-button";
 import { OAuthLoginButtons } from "./oauth-login-buttons";
 import { LoginClient } from "./ui";
@@ -72,6 +73,15 @@ export default async function LoginPage() {
           <p className="mt-1 text-sm text-slate-400">{d["login.membershipGoogleBody"]}</p>
           <div className="mt-4">
             <GoogleSignInButton />
+          </div>
+        </div>
+        <div className="mt-6 border-t border-white/10 pt-6">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90">
+            {d["login.membershipFacebookTitle"]}
+          </h2>
+          <p className="mt-1 text-sm text-slate-400">{d["login.membershipFacebookBody"]}</p>
+          <div className="mt-4">
+            <FacebookSignInButton />
           </div>
         </div>
         <div className="mt-6 border-t border-white/10 pt-6">

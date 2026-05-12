@@ -2,7 +2,7 @@
 
 Production-ready AI tools suite with:
 
-- Guest + member flows (magic link, Google, other OAuth)
+- Guest + member flows (magic link, Google, Facebook, other OAuth)
 - Membership profile capture after first sign-in (`/account/profile`)
 - Credits (1 request = 1 credit) with history and saved versions
 - Multiple AI providers (OpenAI / Anthropic / Groq / DeepSeek / Google)
@@ -45,7 +45,7 @@ Open `http://localhost:3000`.
 | Path | Purpose |
 |------|---------|
 | `/` | Home + tools; shows live **credits snapshot** when Supabase is configured |
-| `/login` | Email, Google, other OAuth; redirects through `/auth/callback` |
+| `/login` | Email, Google, Facebook, other OAuth; redirects through `/auth/callback` |
 | `/account/profile` | Membership / profile metadata (required until completed) |
 | `/claim` | Merge **guest** credits + history on this device into the signed-in user |
 | `/history` | Guest or signed-in request list |

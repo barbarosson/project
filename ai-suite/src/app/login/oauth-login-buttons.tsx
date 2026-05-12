@@ -20,7 +20,6 @@ const OAUTH_ROWS: Row[] = [
   { provider: "apple", labelKey: "login.oauthApple" },
   { provider: "x", labelKey: "login.oauthX" },
   { provider: "linkedin_oidc", labelKey: "login.oauthLinkedin" },
-  { provider: "facebook", labelKey: "login.oauthInstagram", subKey: "login.oauthInstagramSub" },
   { provider: "custom:tiktok" as Provider, labelKey: "login.oauthTiktok", subKey: "login.oauthTiktokSub" },
 ];
 
@@ -67,8 +66,6 @@ export function OAuthLoginButtons() {
                 row.provider === "apple" && "border-white/20",
                 row.provider === "x" && "border-sky-500/30",
                 row.provider === "linkedin_oidc" && "border-sky-600/30",
-                row.provider === "facebook" &&
-                  "border-fuchsia-500/30 bg-gradient-to-r from-fuchsia-950/40 to-orange-950/30",
                 String(row.provider).includes("tiktok") && "border-black/40 bg-black/30"
               )}
               disabled={busy !== null}
