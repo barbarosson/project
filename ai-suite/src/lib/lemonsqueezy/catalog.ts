@@ -14,7 +14,8 @@ export type CheckoutPackKey =
   | { kind: "one_time_trial" }
   | { kind: "paygo"; tier: PaygoTierKey };
 
-const TRIAL_CREDITS_ON_SUB_START = 10;
+/** Granted on `subscription_created` while the subscription is on trial (see webhook). */
+export const SUBSCRIPTION_TRIAL_CREDITS = 100;
 
 export const SUBSCRIPTION_MONTHLY_CREDITS: Record<SubscriptionPlanKey, number> = {
   basic: 500,
@@ -25,7 +26,7 @@ export const SUBSCRIPTION_MONTHLY_CREDITS: Record<SubscriptionPlanKey, number> =
 export const ONE_TIME_TRIAL_CREDITS = 10;
 
 export function trialCreditsForSubscriptionStart(): number {
-  return TRIAL_CREDITS_ON_SUB_START;
+  return SUBSCRIPTION_TRIAL_CREDITS;
 }
 
 function envTrim(key: string): string | null {

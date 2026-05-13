@@ -5,11 +5,15 @@ import { toast } from "sonner";
 import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { premiumCta } from "@/lib/premium-ui";
 import { Button } from "@/components/ui/button";
 import type { Locale } from "@/i18n/dictionaries";
 import { useI18n } from "@/i18n/i18n-provider";
+import { SUBSCRIPTION_TRIAL_CREDITS } from "@/lib/lemonsqueezy/catalog";
 
 type BillingToggle = "monthly" | "yearly";
+
+const PAYGO_TIERS = ["budget", "standard", "premium"] as const;
 
 type PricingModalContextValue = {
   open: () => void;
@@ -38,12 +42,30 @@ export function usePricingModal(): PricingModalContextValue {
 
 const LS_TRIAL_KEY = "isendai_ls_subscription_trial_used";
 
+function planBaseMonthlyUsd(plan: "basic" | "pro" | "ultra"): number {
+  return plan === "basic" ? 7.99 : plan === "pro" ? 9.99 : 19.99;
+}
+
+function yearlyRenewalTotalUsd(plan: "basic" | "pro" | "ultra"): number {
+  const perMoDiscounted = planBaseMonthlyUsd(plan) * 0.8;
+  return Math.round(perMoDiscounted * 12 * 100) / 100;
+}
+
+function formatUsd(amount: number, locale: Locale): string {
+  return new Intl.NumberFormat(LOCALE_TAG[locale], {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
 function monthlyThenLabel(
   t: (key: string) => string,
   plan: "basic" | "pro" | "ultra",
   interval: BillingToggle
 ): string {
-  const base = plan === "basic" ? 7.99 : plan === "pro" ? 9.99 : 19.99;
+  const base = planBaseMonthlyUsd(plan);
   if (interval === "monthly") {
     return t("pricingModal.thenMonthly").replace("{price}", `$${base.toFixed(2)}`);
   }
@@ -97,18 +119,26 @@ async function startCheckout(
   window.location.href = json.checkout_url;
 }
 
-async function startOneTime(t: (key: string) => string, toolId: string) {
+async function startPaygoCheckout(
+  t: (key: string) => string,
+  toolId: string,
+  tier: (typeof PAYGO_TIERS)[number]
+) {
   const res = await fetch("/api/checkout", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ pack: "one_time_trial", tool_id: toolId }),
+    body: JSON.stringify({ pack: "paygo", tier, tool_id: toolId }),
   });
   const raw = await res.text();
-  let json: { checkout_url?: string; error?: string } | null = null;
+  let json: { checkout_url?: string; error?: string; code?: string } | null = null;
   try {
-    json = JSON.parse(raw) as { checkout_url?: string; error?: string };
+    json = JSON.parse(raw) as { checkout_url?: string; error?: string; code?: string };
   } catch {
     json = null;
+  }
+  if (res.status === 401 || json?.code === "auth_required") {
+    toast.error(t("pricing.checkoutSignInRequired"));
+    return;
   }
   if (!res.ok || !json?.checkout_url) {
     toast.error(json?.error ?? t("pricingModal.checkoutFailed"));
@@ -168,6 +198,8 @@ function PlanCard({
   toolId: string;
 }) {
   const [busy, setBusy] = React.useState(false);
+  const perMoAfterTrial = planBaseMonthlyUsd(plan) * (interval === "yearly" ? 0.8 : 1);
+  const yearTotal = yearlyRenewalTotalUsd(plan);
 
   const body = (
     <>
@@ -178,6 +210,13 @@ function PlanCard({
         t={t}
         locale={locale}
       />
+      <p className="mt-2 text-xs font-medium text-emerald-200/90">
+        {t("pricingModal.trialGiftLine").replace(
+          "{credits}",
+          SUBSCRIPTION_TRIAL_CREDITS.toLocaleString(LOCALE_TAG[locale])
+        )}
+      </p>
+      <p className="mt-1 text-[11px] leading-snug text-slate-500">{t("pricingModal.afterTrialNote")}</p>
       <Button
         className={cn(
           "mt-4 w-full font-semibold",
@@ -195,6 +234,13 @@ function PlanCard({
         {t("pricingModal.startTrial")}
       </Button>
       <p className="mt-2 text-center text-xs text-slate-400">{monthlyThenLabel(t, plan, interval)}</p>
+      {interval === "yearly" ? (
+        <p className="mt-1.5 text-center text-xs text-slate-300">
+          {t("pricingModal.yearSingleCharge")
+            .replace("{total}", formatUsd(yearTotal, locale))
+            .replace("{perMonth}", formatUsd(perMoAfterTrial, locale))}
+        </p>
+      ) : null}
     </>
   );
 
@@ -224,6 +270,7 @@ export function PricingModalShell({
 }) {
   const { t, locale } = useI18n();
   const [interval, setInterval] = React.useState<BillingToggle>("monthly");
+  const [busyPaygo, setBusyPaygo] = React.useState<string | null>(null);
 
   if (!open) return null;
 
@@ -318,14 +365,38 @@ export function PricingModalShell({
             />
           </div>
 
-          <div className="mt-8 flex justify-center border-t border-white/[0.06] pt-6">
-            <Button
-              variant="ghost"
-              className="text-sm text-slate-500 hover:bg-white/[0.06] hover:text-slate-300"
-              onClick={() => void startOneTime(t, toolId)}
-            >
-              {t("pricingModal.oneTimeTrial").replace("{credits}", "25")}
-            </Button>
+          <div className="mt-8 border-t border-white/[0.06] pt-6">
+            <p className="text-center text-sm font-semibold text-slate-100">
+              {t("pricingModal.oneTimePacksTitle")}
+            </p>
+            <p className="mt-1 text-center text-xs text-slate-500">{t("pricingModal.oneTimePacksLead")}</p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-3">
+              {PAYGO_TIERS.map((tier) => (
+                <div
+                  key={tier}
+                  className="flex flex-col rounded-xl border border-white/[0.1] bg-white/[0.04] p-4 shadow-inner backdrop-blur-md"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wide text-violet-300/90">
+                    {t(`pricing.tier.${tier}`)}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-white">{t(`pricing.pack.${tier}`)}</p>
+                  <p className="mt-2 line-clamp-3 flex-1 text-[11px] leading-snug text-slate-400">
+                    {t(`pricing.tier.${tier}Summary`)}
+                  </p>
+                  <Button
+                    type="button"
+                    className={cn("mt-3 w-full font-semibold", premiumCta)}
+                    disabled={busyPaygo !== null}
+                    onClick={() => {
+                      setBusyPaygo(tier);
+                      void startPaygoCheckout(t, toolId, tier).finally(() => setBusyPaygo(null));
+                    }}
+                  >
+                    {busyPaygo === tier ? "…" : t("pricing.buyNow")}
+                  </Button>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

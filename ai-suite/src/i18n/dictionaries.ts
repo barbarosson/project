@@ -234,7 +234,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.hero.footerJump": "How credits work",
     "pricing.monthly.sectionTitle": "Monthly credit bundles",
     "pricing.monthly.sectionLead":
-      "Renews each billing cycle once Lemon Squeezy is enabled. Effective cost per credit in the bundle: ~$0.016 (500 credits), ~$0.010 (1,000), ~$0.004 (5,000).",
+      "Once Lemon Squeezy checkout is enabled, subscriptions renew each billing period. Pick Starter, Growth, or Scale to match how much you generate.",
     "pricing.monthly.starter.name": "Starter",
     "pricing.monthly.starter.price": "$7.99",
     "pricing.monthly.starter.credits": "500 credits / month",
@@ -246,7 +246,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.monthly.scale.name": "Scale",
     "pricing.monthly.scale.price": "$19.99",
     "pricing.monthly.scale.credits": "5,000 credits / month",
-    "pricing.monthly.scale.desc": "Heavy usage and automation-friendly pricing.",
+    "pricing.monthly.scale.desc": "Heavy usage, automation, and high monthly volume.",
     "pricing.yearly.sectionTitle": "Annual bundles",
     "pricing.yearly.sectionLead":
       "Same three tiers as monthly, billed once per year. Yearly allowance: 6,000 / 12,000 / 60,000 credits (equivalent to 500 / 1,000 / 5,000 per month).",
@@ -260,11 +260,11 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.yearly.growth.savings": "~17% less than paying monthly for 12 months",
     "pricing.yearly.scale.price": "$199 / year",
     "pricing.yearly.scale.credits": "60,000 credits / year",
-    "pricing.yearly.scale.desc": "Matches Scale monthly volume — lowest cost per credit when prepaid yearly.",
+    "pricing.yearly.scale.desc": "Matches Scale monthly volume — best value when you pay yearly upfront.",
     "pricing.yearly.scale.savings": "~17% less than paying monthly for 12 months",
     "pricing.paygo.sectionTitle": "Pay-as-you-go packs",
     "pricing.paygo.sectionLead":
-      "One-off credits; pack size and model access differ by tier. Price per credit ≈ pack price ÷ credits included (~$0.100 / ~$0.060 / ~$0.040).",
+      "One-time top-ups—no subscription. Larger packs unlock Standard and Premium model tiers.",
     "pricing.paygo.detailModalTitle": "{tier} — usage details",
     "pricing.paygo.infoButtonAria": "Usage details for {tier}",
     "pricing.paygo.closeDetails": "Close",
@@ -291,7 +291,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.tier.standardDesc":
       "$1.49 band models: ceil(characters ÷ 500) × 15 credits per generation. Example: 1,000 characters → 30 credits. Flagship models require a Premium pack.",
     "pricing.tier.premiumDesc":
-      "Full flagship catalog: ceil(characters ÷ 500) × 25 credits. Example: 1,000 characters → 50 credits. Same 500-character chunk math as Standard; higher rate per chunk (~$0.040/credit in the $1.99 pack).",
+      "Full flagship catalog: ceil(characters ÷ 500) × 25 credits. Example: 1,000 characters → 50 credits. Same 500-character chunk rule as Standard, with a higher credit rate per chunk.",
     "pricing.usageGuide.sectionTitle": "How credits work (each generation)",
     "pricing.usageGuide.intro":
       "We bill in 500-character chunks (rounded up). Your pasted text plus any tool context counts toward the length.",
@@ -324,7 +324,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricingModal.title": "Upgrade your credits",
     "pricingModal.subtitle":
-      "7-day free trial on subscriptions — then your plan renews. Credits reset each billing cycle.",
+      "7-day trial with bonus credits. If you don’t cancel before it ends, your paid subscription starts automatically. Yearly renewals are one payment for the full year. Credits reset each billing period.",
     "pricingModal.monthly": "Monthly",
     "pricingModal.yearly": "Yearly",
     "pricingModal.closeAria": "Close",
@@ -332,7 +332,12 @@ export const DICTS: Record<Locale, Dict> = {
     "pricingModal.plan.pro": "Pro",
     "pricingModal.plan.ultra": "Ultra",
     "pricingModal.mostPopular": "Most popular",
-    "pricingModal.planCreditsLine": "{credits} credits / month after trial billing",
+    "pricingModal.planCreditsLine": "{credits} credits / month after the trial (each billing period)",
+    "pricingModal.trialGiftLine": "{credits} bonus credits during the 7-day trial.",
+    "pricingModal.afterTrialNote":
+      "Cancel before the trial ends to avoid being charged; otherwise Lemon Squeezy renews into your paid plan automatically.",
+    "pricingModal.yearSingleCharge":
+      "Yearly after trial: each renewal is one charge of {total} (≈ {perMonth}/mo equivalent).",
     "pricingModal.startTrial": "Start 7-day free trial",
     "pricingModal.thenMonthly": "Then {price}/mo. Cancel anytime.",
     "pricingModal.thenYearly": "Then ~{price}/mo equivalent (20% off yearly). Cancel anytime.",
@@ -340,6 +345,8 @@ export const DICTS: Record<Locale, Dict> = {
     "pricingModal.checkoutFailed": "Could not start checkout.",
     "pricingModal.trialAlreadyUsedToast":
       "You’ve already started a subscription trial from this browser.",
+    "pricingModal.oneTimePacksTitle": "One-time credit packs",
+    "pricingModal.oneTimePacksLead": "No subscription. Pay once — credits are added when the order is paid.",
 
     "notFound.title": "Page not found",
     "notFound.description": "The page you’re looking for doesn’t exist.",
@@ -733,7 +740,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.hero.footerJump": "Cómo se usan los créditos",
     "pricing.monthly.sectionTitle": "Paquetes mensuales de créditos",
     "pricing.monthly.sectionLead":
-      "Se renueva cada ciclo cuando Lemon Squeezy esté activo. Coste aproximado por crédito en el paquete: ~$0.016 (500 créditos), ~$0.010 (1.000), ~$0.004 (5.000).",
+      "Con Lemon Squeezy activo, la suscripción se renueva en cada ciclo de facturación. Elige el nivel que mejor encaje con tu uso.",
     "pricing.monthly.starter.name": "Inicial",
     "pricing.monthly.starter.price": "$7.99",
     "pricing.monthly.starter.credits": "500 créditos / mes",
@@ -745,7 +752,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.monthly.scale.name": "Escala",
     "pricing.monthly.scale.price": "$19.99",
     "pricing.monthly.scale.credits": "5.000 créditos / mes",
-    "pricing.monthly.scale.desc": "Alto volumen y mejor precio por crédito.",
+    "pricing.monthly.scale.desc": "Alto volumen, automatización y uso mensual intenso.",
     "pricing.yearly.sectionTitle": "Paquetes anuales",
     "pricing.yearly.sectionLead":
       "Los mismos tres niveles que el mensual, facturados una vez al año. Cupo anual: 6.000 / 12.000 / 60.000 créditos (equivalente a 500 / 1.000 / 5.000 al mes).",
@@ -759,11 +766,11 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.yearly.growth.savings": "~17 % menos que pagar mensual durante 12 meses",
     "pricing.yearly.scale.price": "$199 / año",
     "pricing.yearly.scale.credits": "60.000 créditos / año",
-    "pricing.yearly.scale.desc": "Equivale al Scale mensual — mejor precio por crédito pagando el año.",
+    "pricing.yearly.scale.desc": "Equivale al Scale mensual — ideal si pagas el año por adelantado y tienes mucho volumen.",
     "pricing.yearly.scale.savings": "~17 % menos que pagar mensual durante 12 meses",
     "pricing.paygo.sectionTitle": "Pago por uso (packs)",
     "pricing.paygo.sectionLead":
-      "Créditos puntuales; el tamaño del pack y el acceso a modelos cambian por nivel. Precio por crédito ≈ precio del pack ÷ créditos (~$0.100 / ~$0.060 / ~$0.040).",
+      "Créditos puntuales, sin suscripción. Los packs más grandes desbloquean modelos Estándar y Premium.",
     "pricing.paygo.detailModalTitle": "{tier} — detalles de uso",
     "pricing.paygo.infoButtonAria": "Detalles de uso para {tier}",
     "pricing.paygo.closeDetails": "Cerrar",
@@ -790,7 +797,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.tier.standardDesc":
       "Banda $1.49: redondeo_superior(caracteres ÷ 500) × 15 créditos. Ej.: 1.000 caracteres → 30 créditos. Los insignia requieren pack Premium.",
     "pricing.tier.premiumDesc":
-      "Catálogo insignia completo: redondeo_superior(caracteres ÷ 500) × 25 créditos. Ej.: 1.000 caracteres → 50 créditos. Misma base de 500 caracteres que Estándar; tarifa mayor (~$0.040/crédito en el pack $1.99).",
+      "Catálogo insignia completo: redondeo_superior(caracteres ÷ 500) × 25 créditos. Ej.: 1.000 caracteres → 50 créditos. Misma regla de bloques de 500 caracteres que Estándar, con mayor gasto por bloque.",
     "pricing.usageGuide.sectionTitle": "Cómo se usan los créditos (cada generación)",
     "pricing.usageGuide.intro":
       "Cobramos en bloques de 500 caracteres (redondeo superior). Cuenta tu texto pegado más el contexto de la herramienta.",
@@ -823,7 +830,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricingModal.title": "Mejora tus créditos",
     "pricingModal.subtitle":
-      "Prueba gratuita de 7 días en suscripciones; luego se renueva el plan. Los créditos se reinician en cada ciclo de facturación.",
+      "Suscripción con 7 días de prueba y créditos de regalo. Si no cancelas antes de que termine, el plan de pago empieza solo. La renovación anual es un único cargo anual. Los créditos se reinician cada periodo.",
     "pricingModal.monthly": "Mensual",
     "pricingModal.yearly": "Anual",
     "pricingModal.closeAria": "Cerrar",
@@ -831,7 +838,12 @@ export const DICTS: Record<Locale, Dict> = {
     "pricingModal.plan.pro": "Pro",
     "pricingModal.plan.ultra": "Ultra",
     "pricingModal.mostPopular": "Más popular",
-    "pricingModal.planCreditsLine": "{credits} créditos / mes tras la facturación de la prueba",
+    "pricingModal.planCreditsLine": "{credits} créditos / mes tras la prueba (en cada periodo de facturación)",
+    "pricingModal.trialGiftLine": "{credits} créditos de regalo durante la prueba de 7 días.",
+    "pricingModal.afterTrialNote":
+      "Cancela antes de que termine la prueba para no pagar; si no, Lemon Squeezy pasa automáticamente al plan de pago.",
+    "pricingModal.yearSingleCharge":
+      "Anual tras la prueba: cada renovación es un único cargo de {total} (≈ {perMonth}/mes).",
     "pricingModal.startTrial": "Empezar prueba gratuita de 7 días",
     "pricingModal.thenMonthly": "Luego {price}/mes. Cancela cuando quieras.",
     "pricingModal.thenYearly":
@@ -840,6 +852,8 @@ export const DICTS: Record<Locale, Dict> = {
     "pricingModal.checkoutFailed": "No se pudo iniciar el pago.",
     "pricingModal.trialAlreadyUsedToast":
       "Ya iniciaste una prueba de suscripción desde este navegador.",
+    "pricingModal.oneTimePacksTitle": "Paquetes de crédito de un solo pago",
+    "pricingModal.oneTimePacksLead": "Sin suscripción. Pagas una vez; los créditos se añaden al pagar el pedido.",
 
     "notFound.title": "Página no encontrada",
     "notFound.description": "La página que buscas no existe.",
@@ -1225,7 +1239,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.hero.footerJump": "Utilisation des crédits",
     "pricing.monthly.sectionTitle": "Forfaits mensuels de crédits",
     "pricing.monthly.sectionLead":
-      "Renouvellement à chaque cycle une fois Lemon Squeezy activé. Coût indicatif par crédit dans le forfait : ~$0.016 (500 crédits), ~$0.010 (1 000), ~$0.004 (5 000).",
+      "Une fois Lemon Squeezy activé, l’abonnement se renouvelle à chaque période de facturation. Choisis le palier (Starter, Croissance, Échelle) adapté à ton usage.",
     "pricing.monthly.starter.name": "Starter",
     "pricing.monthly.starter.price": "7,99 $",
     "pricing.monthly.starter.credits": "500 crédits / mois",
@@ -1237,7 +1251,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.monthly.scale.name": "Échelle",
     "pricing.monthly.scale.price": "19,99 $",
     "pricing.monthly.scale.credits": "5 000 crédits / mois",
-    "pricing.monthly.scale.desc": "Gros volume et meilleur prix par crédit.",
+    "pricing.monthly.scale.desc": "Gros volumes et automatisation.",
     "pricing.yearly.sectionTitle": "Forfaits annuels",
     "pricing.yearly.sectionLead":
       "Les trois mêmes niveaux qu’en mensuel, facturés une fois par an. Enveloppe annuelle : 6 000 / 12 000 / 60 000 crédits (équivalent à 500 / 1 000 / 5 000 par mois).",
@@ -1251,11 +1265,11 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.yearly.growth.savings": "~17 % de moins que 12 mois au tarif mensuel",
     "pricing.yearly.scale.price": "199 $ / an",
     "pricing.yearly.scale.credits": "60 000 crédits / an",
-    "pricing.yearly.scale.desc": "Équivalent au Scale mensuel — meilleur prix par crédit en prépayant l’année.",
+    "pricing.yearly.scale.desc": "Équivalent au Scale mensuel — le plus adapté en paiement annuel si ton volume est élevé.",
     "pricing.yearly.scale.savings": "~17 % de moins que 12 mois au tarif mensuel",
     "pricing.paygo.sectionTitle": "Paiement à l’usage (packs)",
     "pricing.paygo.sectionLead":
-      "Crédits ponctuels ; taille du pack et accès aux modèles varient par palier. Prix par crédit ≈ prix du pack ÷ crédits inclus (~$0.100 / ~$0.060 / ~$0.040).",
+      "Recharge ponctuelle, sans abonnement. Les packs plus grands débloquent les modèles Standard et Premium.",
     "pricing.paygo.detailModalTitle": "{tier} — détails d’utilisation",
     "pricing.paygo.infoButtonAria": "Détails d’utilisation pour {tier}",
     "pricing.paygo.closeDetails": "Fermer",
@@ -1282,7 +1296,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.tier.standardDesc":
       "Palier $1,49 : arrondi_supérieur(caractères ÷ 500) × 15 crédits. Ex. : 1 000 caractères → 30 crédits. Les phares nécessitent un pack Premium.",
     "pricing.tier.premiumDesc":
-      "Catalogue phares : arrondi_supérieur(caractères ÷ 500) × 25 crédits. Ex. : 1 000 caractères → 50 crédits. Même pas de 500 caractères que Standard ; tarif par bloc plus élevé (~$0.040/crédit avec le pack $1,99).",
+      "Catalogue phares : arrondi_supérieur(caractères ÷ 500) × 25 crédits. Ex. : 1 000 caractères → 50 crédits. Même règle de blocs de 500 caractères que Standard, avec un coût en crédits plus élevé par bloc.",
     "pricing.usageGuide.sectionTitle": "Comment les crédits sont utilisés (chaque génération)",
     "pricing.usageGuide.intro":
       "Facturation par blocs de 500 caractères (arrondi supérieur). Votre collage et le contexte de l’outil comptent dans la longueur.",
@@ -1315,7 +1329,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricingModal.title": "Augmenter tes crédits",
     "pricingModal.subtitle":
-      "Essai gratuit 7 jours sur les abonnements, puis renouvellement. Les crédits sont réinitialisés à chaque cycle de facturation.",
+      "Abonnement avec 7 jours d’essai et crédits bonus. Sans annulation avant la fin, l’abonnement payant démarre tout seul. L’annuel se facture en un seul paiement par renouvellement. Crédits remis à zéro chaque cycle.",
     "pricingModal.monthly": "Mensuel",
     "pricingModal.yearly": "Annuel",
     "pricingModal.closeAria": "Fermer",
@@ -1323,7 +1337,12 @@ export const DICTS: Record<Locale, Dict> = {
     "pricingModal.plan.pro": "Pro",
     "pricingModal.plan.ultra": "Ultra",
     "pricingModal.mostPopular": "Le plus populaire",
-    "pricingModal.planCreditsLine": "{credits} crédits / mois après facturation d’essai",
+    "pricingModal.planCreditsLine": "{credits} crédits / mois après l’essai (chaque période de facturation)",
+    "pricingModal.trialGiftLine": "{credits} crédits bonus pendant les 7 jours d’essai.",
+    "pricingModal.afterTrialNote":
+      "Annule avant la fin de l’essai pour ne pas être débité·e ; sinon Lemon Squeezy enchaîne sur le plan payant.",
+    "pricingModal.yearSingleCharge":
+      "Annuel après essai : chaque renouvellement = un paiement unique de {total} (≈ {perMonth}/mois).",
     "pricingModal.startTrial": "Démarrer l’essai gratuit 7 jours",
     "pricingModal.thenMonthly": "Puis {price}/mois. Annule quand tu veux.",
     "pricingModal.thenYearly":
@@ -1332,6 +1351,8 @@ export const DICTS: Record<Locale, Dict> = {
     "pricingModal.checkoutFailed": "Impossible de démarrer le paiement.",
     "pricingModal.trialAlreadyUsedToast":
       "Tu as déjà commencé un essai d’abonnement depuis ce navigateur.",
+    "pricingModal.oneTimePacksTitle": "Packs de crédits ponctuels",
+    "pricingModal.oneTimePacksLead": "Sans abonnement. Un seul paiement — les crédits sont ajoutés quand la commande est payée.",
 
     "notFound.title": "Page introuvable",
     "notFound.description": "La page demandée n’existe pas.",
@@ -1718,7 +1739,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.hero.footerJump": "Credit‑Nutzung",
     "pricing.monthly.sectionTitle": "Monatliche Credit‑Pakete",
     "pricing.monthly.sectionLead":
-      "Verlängert sich pro Abrechnungszyklus mit Lemon Squeezy. Ca. Kosten pro Credit im Paket: ~$0.016 (500 Credits), ~$0.010 (1.000), ~$0.004 (5.000).",
+      "Mit aktivem Lemon‑Squeezy‑Checkout verlängert sich das Abo jeweils zur Abrechnungsperiode. Wähle Starter, Growth oder Scale passend zu deinem Nutzungsvolumen.",
     "pricing.monthly.starter.name": "Starter",
     "pricing.monthly.starter.price": "7,99 $",
     "pricing.monthly.starter.credits": "500 Credits / Monat",
@@ -1730,7 +1751,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.monthly.scale.name": "Scale",
     "pricing.monthly.scale.price": "19,99 $",
     "pricing.monthly.scale.credits": "5.000 Credits / Monat",
-    "pricing.monthly.scale.desc": "Hohes Volumen, bester Preis pro Credit.",
+    "pricing.monthly.scale.desc": "Hohes Volumen und Automatisierung.",
     "pricing.yearly.sectionTitle": "Jahrespakete",
     "pricing.yearly.sectionLead":
       "Dieselben drei Stufen wie monatlich, einmal pro Jahr abgerechnet. Jahreskontingent: 6.000 / 12.000 / 60.000 Credits (wie 500 / 1.000 / 5.000 pro Monat).",
@@ -1744,11 +1765,11 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.yearly.growth.savings": "~17 % weniger als 12× Monatspreis",
     "pricing.yearly.scale.price": "199 $ / Jahr",
     "pricing.yearly.scale.credits": "60.000 Credits / Jahr",
-    "pricing.yearly.scale.desc": "Entspricht Scale monatlich — bester Preis pro Credit bei Jahreszahlung.",
+    "pricing.yearly.scale.desc": "Entspricht Scale monatlich — besonders sinnvoll bei Jahreszahlung und hohem Verbrauch.",
     "pricing.yearly.scale.savings": "~17 % weniger als 12× Monatspreis",
     "pricing.paygo.sectionTitle": "Pay‑as‑you‑go‑Pakete",
     "pricing.paygo.sectionLead":
-      "Einmal‑Credits; Packgröße und Modellzugriff variieren pro Stufe. Preis pro Credit ≈ Packpreis ÷ enthaltene Credits (~$0.100 / ~$0.060 / ~$0.040).",
+      "Einmal‑Aufladung ohne Abo. Größere Pakete schalten Standard‑ und Premium‑Modelle frei.",
     "pricing.paygo.detailModalTitle": "{tier} — Nutzungsdetails",
     "pricing.paygo.infoButtonAria": "Nutzungsdetails für {tier}",
     "pricing.paygo.closeDetails": "Schließen",
@@ -1775,7 +1796,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.tier.standardDesc":
       "$1,49‑Band: aufrunden(Zeichen ÷ 500) × 15 Credits. Bsp.: 1.000 Zeichen → 30 Credits. Flaggschiffe benötigen ein Premium‑Paket.",
     "pricing.tier.premiumDesc":
-      "Voller Flaggschiff‑Katalog: aufrunden(Zeichen ÷ 500) × 25 Credits. Bsp.: 1.000 Zeichen → 50 Credits. Gleiche 500‑Zeichen‑Logik wie Standard; höherer Satz pro Block (~$0.040/Credit im $1,99‑Paket).",
+      "Voller Flaggschiff‑Katalog: aufrunden(Zeichen ÷ 500) × 25 Credits. Bsp.: 1.000 Zeichen → 50 Credits. Gleiche 500‑Zeichen‑Regel wie Standard, höherer Credit‑Verbrauch pro Block.",
     "pricing.usageGuide.sectionTitle": "So werden Credits verbraucht (pro Generierung)",
     "pricing.usageGuide.intro":
       "Abrechnung in 500‑Zeichen‑Blöcken (aufgerundet). Dein eingefügter Text plus Tool‑Kontext zählt zur Länge.",
@@ -1808,7 +1829,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricingModal.title": "Credits aufstocken",
     "pricingModal.subtitle":
-      "7‑tägige Testphase bei Abos, danach Verlängerung. Credits werden pro Abrechnungszyklus zurückgesetzt.",
+      "Abo mit 7‑Tage‑Test und Bonus‑Credits. Ohne Kündigung vor Ende startet das bezahlte Abo automatisch. Jährlich wird pro Verlängerung einmal der volle Jahresbetrag abgebucht. Credits werden pro Abrechnungszeitraum zurückgesetzt.",
     "pricingModal.monthly": "Monatlich",
     "pricingModal.yearly": "Jährlich",
     "pricingModal.closeAria": "Schließen",
@@ -1816,7 +1837,12 @@ export const DICTS: Record<Locale, Dict> = {
     "pricingModal.plan.pro": "Pro",
     "pricingModal.plan.ultra": "Ultra",
     "pricingModal.mostPopular": "Am beliebtesten",
-    "pricingModal.planCreditsLine": "{credits} Credits / Monat nach Test‑Abrechnung",
+    "pricingModal.planCreditsLine": "{credits} Credits / Monat nach dem Test (pro Abrechnungszeitraum)",
+    "pricingModal.trialGiftLine": "{credits} Bonus‑Credits während der 7‑Tage‑Testphase.",
+    "pricingModal.afterTrialNote":
+      "Vor Testende kündigen, um keine Abbuchung zu bekommen; sonst wechselt Lemon Squeezy automatisch ins bezahlte Abo.",
+    "pricingModal.yearSingleCharge":
+      "Jährlich nach Test: jede Verlängerung = eine Abbuchung von {total} (≈ {perMonth}/Monat).",
     "pricingModal.startTrial": "7‑Tage‑Test starten",
     "pricingModal.thenMonthly": "Danach {price}/Monat. Jederzeit kündbar.",
     "pricingModal.thenYearly":
@@ -1825,6 +1851,8 @@ export const DICTS: Record<Locale, Dict> = {
     "pricingModal.checkoutFailed": "Checkout konnte nicht gestartet werden.",
     "pricingModal.trialAlreadyUsedToast":
       "Du hast von diesem Browser schon ein Abo‑Test gestartet.",
+    "pricingModal.oneTimePacksTitle": "Einmalige Credit‑Pakete",
+    "pricingModal.oneTimePacksLead": "Kein Abo. Einmal zahlen — Credits werden gutgeschrieben, sobald die Bestellung bezahlt ist.",
 
     "notFound.title": "Seite nicht gefunden",
     "notFound.description": "Diese Seite existiert nicht.",
@@ -2191,7 +2219,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.hero.footerJump": "额度怎么扣",
     "pricing.monthly.sectionTitle": "月度额度套餐",
     "pricing.monthly.sectionLead":
-      "Lemon Squeezy 开通后按账单周期续订。套餐内每额度参考成本：约 $0.016（500 额度）、$0.010（1,000）、$0.004（5,000）。",
+      "开通 Lemon Squeezy 结账后，订阅会按每个账单周期自动续费。请按用量选择入门、成长或规模档。",
     "pricing.monthly.starter.name": "入门",
     "pricing.monthly.starter.price": "$7.99",
     "pricing.monthly.starter.credits": "每月 500 额度",
@@ -2203,7 +2231,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.monthly.scale.name": "规模",
     "pricing.monthly.scale.price": "$19.99",
     "pricing.monthly.scale.credits": "每月 5,000 额度",
-    "pricing.monthly.scale.desc": "高频与自动化场景，单额度成本更低。",
+    "pricing.monthly.scale.desc": "高频使用、自动化与高月度用量。",
     "pricing.yearly.sectionTitle": "年度套餐",
     "pricing.yearly.sectionLead":
       "与月度三档一致，按年计费。年度额度总量：6,000 / 12,000 / 60,000（相当于每月 500 / 1,000 / 5,000）。",
@@ -2217,11 +2245,11 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.yearly.growth.savings": "比连续 12 个月按月付费约省 17%",
     "pricing.yearly.scale.price": "$199 / 年",
     "pricing.yearly.scale.credits": "每年 60,000 额度",
-    "pricing.yearly.scale.desc": "与 Scale 月度一致，年付单额度成本最低。",
+    "pricing.yearly.scale.desc": "与 Scale 月度用量一致，适合年付且用量很大的场景。",
     "pricing.yearly.scale.savings": "比连续 12 个月按月付费约省 17%",
     "pricing.paygo.sectionTitle": "按次购买（额度包）",
     "pricing.paygo.sectionLead":
-      "一次性额度；每档包含的额度数量与可解锁模型不同。单额度参考价 ≈ 包价 ÷ 包含额度（约 $0.100 / $0.060 / $0.040）。",
+      "一次性充值额度，无需订阅。更大的额度包可解锁标准档与高级档模型。",
     "pricing.paygo.detailModalTitle": "{tier} — 使用说明",
     "pricing.paygo.infoButtonAria": "{tier} 的使用说明",
     "pricing.paygo.closeDetails": "关闭",
@@ -2248,7 +2276,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.tier.standardDesc":
       "$1.49 档位：⌈字符数÷500⌉×15 额度。例：1,000 字 → 30 额度。旗舰模型需高级额度包。",
     "pricing.tier.premiumDesc":
-      "旗舰完整目录：⌈字符数÷500⌉×25 额度。例：1,000 字 → 50 额度。与标准档同为 500 字分块；每块费率更高（$1.99 包约合 $0.040/额度）。",
+      "旗舰完整目录：⌈字符数÷500⌉×25 额度。例：1,000 字 → 50 额度。与标准档同为 500 字分块；每块扣费更高。",
     "pricing.usageGuide.sectionTitle": "额度怎么扣（每次生成）",
     "pricing.usageGuide.intro":
       "按 500 字一块计费（向上取整）。粘贴内容与工具上下文一并计入长度。",
@@ -2280,7 +2308,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricingModal.title": "升级额度",
     "pricingModal.subtitle":
-      "订阅享 7 天免费试用，之后按套餐续费。每个账单周期额度会重置。",
+      "订阅含 7 天试用与赠送额度；试用结束前不取消则自动进入付费方案。年付每次续费为一次性扣全年金额。每个账单周期额度会重置。",
     "pricingModal.monthly": "按月",
     "pricingModal.yearly": "按年",
     "pricingModal.closeAria": "关闭",
@@ -2288,13 +2316,20 @@ export const DICTS: Record<Locale, Dict> = {
     "pricingModal.plan.pro": "专业版",
     "pricingModal.plan.ultra": "旗舰版",
     "pricingModal.mostPopular": "最受欢迎",
-    "pricingModal.planCreditsLine": "试用计费后每月 {credits} 额度",
+    "pricingModal.planCreditsLine": "试用结束后每个账单周期每月 {credits} 额度",
+    "pricingModal.trialGiftLine": "7 天试用期内赠送 {credits} 额度。",
+    "pricingModal.afterTrialNote":
+      "请在试用结束前取消以免扣款；否则 Lemon Squeezy 会自动续为付费订阅。",
+    "pricingModal.yearSingleCharge":
+      "年付（试用后）：每次续费一次性扣款 {total}（约合 {perMonth}/月）。",
     "pricingModal.startTrial": "开始 7 天免费试用",
     "pricingModal.thenMonthly": "之后 {price}/月。可随时取消。",
     "pricingModal.thenYearly": "之后约合 {price}/月（年付约省 20%）。可随时取消。",
     "pricingModal.oneTimeTrial": "$1.49 一次性试用（{credits} 额度）",
     "pricingModal.checkoutFailed": "无法开始结账。",
     "pricingModal.trialAlreadyUsedToast": "你已在此浏览器开始过订阅试用。",
+    "pricingModal.oneTimePacksTitle": "一次性额度包",
+    "pricingModal.oneTimePacksLead": "无需订阅，单次付款；订单支付成功后额度入账。",
 
     "notFound.title": "页面未找到",
     "notFound.description": "你要访问的页面不存在。",
@@ -2656,7 +2691,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.hero.footerJump": "Kontör kullanımı",
     "pricing.monthly.sectionTitle": "Aylık kontör paketleri",
     "pricing.monthly.sectionLead":
-      "Lemon Squeezy açılınca her fatura döneminde yenilenir. Paket içi kontör başına yaklaşık maliyet: ~$0.016 (500 kontör), ~$0.010 (1.000), ~$0.004 (5.000).",
+      "Lemon Squeezy ödemesi aktifleştikten sonra abonelik her fatura döneminde yenilenir. Kullanımına uygun paketi (Başlangıç, Büyüme veya Ölçek) seç.",
     "pricing.monthly.starter.name": "Başlangıç",
     "pricing.monthly.starter.price": "$7.99",
     "pricing.monthly.starter.credits": "Ayda 500 kontör",
@@ -2668,7 +2703,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.monthly.scale.name": "Ölçek",
     "pricing.monthly.scale.price": "$19.99",
     "pricing.monthly.scale.credits": "Ayda 5.000 kontör",
-    "pricing.monthly.scale.desc": "Yoğun kullanım ve otomasyon için en uygun kontör başı maliyet.",
+    "pricing.monthly.scale.desc": "Yoğun kullanım, otomasyon ve yüksek aylık hacim.",
     "pricing.yearly.sectionTitle": "Yıllık paketler",
     "pricing.yearly.sectionLead":
       "Aylık üç kademeyle aynı; yılda bir kez faturalanır. Yıllık kontör toplamı: 6.000 / 12.000 / 60.000 (ayda 500 / 1.000 / 5.000 ile eşdeğer).",
@@ -2682,11 +2717,11 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.yearly.growth.savings": "12 ay boyunca aylık ödemeye göre ~%17 daha az",
     "pricing.yearly.scale.price": "$199 / yıl",
     "pricing.yearly.scale.credits": "Yılda 60.000 kontör",
-    "pricing.yearly.scale.desc": "Scale aylıkla aynı — yıllık ön ödemede en düşük kontör başı maliyet.",
+    "pricing.yearly.scale.desc": "Scale aylık paketle aynı hacim — yüksek kullanımda yıllık ön ödeme için uygun.",
     "pricing.yearly.scale.savings": "12 ay boyunca aylık ödemeye göre ~%17 daha az",
     "pricing.paygo.sectionTitle": "Kullandıkça öde (paketler)",
     "pricing.paygo.sectionLead":
-      "Tek seferlik kontör; paketteki kontör sayısı ve model erişimi kademeye göre değişir. Kontör başı maliyet ≈ paket fiyatı ÷ kontör adedi (~$0.100 / ~$0.060 / ~$0.040).",
+      "Tek seferlik kontör; abonelik yok. Daha büyük paketler Standart ve Premium modellere erişim sağlar.",
     "pricing.paygo.detailModalTitle": "{tier} — kullanım detayı",
     "pricing.paygo.infoButtonAria": "{tier} için kullanım detayı",
     "pricing.paygo.closeDetails": "Kapat",
@@ -2713,7 +2748,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.tier.standardDesc":
       "$1,49 bandı: ceil(karakter ÷ 500) × 15 kontör. Ör.: 1.000 karakter → 30 kontör. Amiral gemisi için Premium paket gerekir.",
     "pricing.tier.premiumDesc":
-      "Tam amiral gemisi katalog: ceil(karakter ÷ 500) × 25 kontör. Ör.: 1.000 karakter → 50 kontör. Standart ile aynı 500’lük blok mantığı; blok başına daha yüksek oran (~$0.040/kontör, $1,99 paket).",
+      "Tam amiral gemisi katalog: ceil(karakter ÷ 500) × 25 kontör. Ör.: 1.000 karakter → 50 kontör. Standart ile aynı 500’lük blok mantığı; blok başına daha fazla kontör harcanır.",
     "pricing.usageGuide.sectionTitle": "Kontör nasıl harcanır (her üretim)",
     "pricing.usageGuide.intro":
       "500 karakterlik bloklar halinde ücret (yukarı yuvarlanır). Yapıştırdığın metin ve araç bağlamı uzunluğa dahil.",
@@ -2746,7 +2781,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricingModal.title": "Kontörünü artır",
     "pricingModal.subtitle":
-      "Aboneliklerde 7 günlük ücretsiz deneme; ardından plan yenilenir. Kontörler her fatura döneminde sıfırlanır.",
+      "Aboneliklerde 7 günlük deneme ve hediye kontör. Denemeyi bitirmeden iptal etmezsen ücretli plan otomatik başlar. Yıllıkta her yenileme yıllık tutarın tek çekimidir. Kontörler her fatura döneminde sıfırlanır.",
     "pricingModal.monthly": "Aylık",
     "pricingModal.yearly": "Yıllık",
     "pricingModal.closeAria": "Kapat",
@@ -2754,7 +2789,12 @@ export const DICTS: Record<Locale, Dict> = {
     "pricingModal.plan.pro": "Pro",
     "pricingModal.plan.ultra": "Ultra",
     "pricingModal.mostPopular": "En çok tercih edilen",
-    "pricingModal.planCreditsLine": "Deneme faturalandırmasından sonra ayda {credits} kontör",
+    "pricingModal.planCreditsLine": "Denemeden sonra her fatura döneminde ayda {credits} kontör",
+    "pricingModal.trialGiftLine": "7 günlük denemede {credits} kontör hediye.",
+    "pricingModal.afterTrialNote":
+      "Deneme bitmeden iptal etmezsen ücretli abonelik otomatik başlar (Lemon Squeezy yenilemeyi yürütür).",
+    "pricingModal.yearSingleCharge":
+      "Yıllık: denemeden sonra her yenilemede tek seferde tahsil edilen toplam {total} (≈ {perMonth}/ay).",
     "pricingModal.startTrial": "7 günlük ücretsiz denemeyi başlat",
     "pricingModal.thenMonthly": "Ardından {price}/ay. İstediğin zaman iptal.",
     "pricingModal.thenYearly":
@@ -2763,6 +2803,8 @@ export const DICTS: Record<Locale, Dict> = {
     "pricingModal.checkoutFailed": "Ödeme başlatılamadı.",
     "pricingModal.trialAlreadyUsedToast":
       "Bu tarayıcıdan zaten bir abonelik denemesi başlattın.",
+    "pricingModal.oneTimePacksTitle": "Tek seferlik kontör paketleri",
+    "pricingModal.oneTimePacksLead": "Abonelik yok. Tek ödeme; sipariş ödendikten sonra kontör yüklenir.",
 
     "notFound.title": "Sayfa bulunamadı",
     "notFound.description": "Aradığın sayfa yok.",

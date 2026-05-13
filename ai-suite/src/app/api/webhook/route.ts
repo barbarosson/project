@@ -117,7 +117,7 @@ export async function POST(request: Request) {
 
   const attrs = isRecord(data.attributes) ? data.attributes : {};
 
-  // --- subscription_created (trial → 10 credits) ---
+  // --- subscription_created (trial → SUBSCRIPTION_TRIAL_CREDITS) ---
   if (eventName === "subscription_created") {
     const { owner_type, owner_id } = extractCustom(root);
     if (!owner_type || !owner_id) {
