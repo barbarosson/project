@@ -12,6 +12,14 @@
 -- 0) İsteğe bağlı: e-posta ile kullanıcı UUID doğrula
 -- -----------------------------------------------------------------------------
 -- SELECT id, email, created_at FROM auth.users WHERE email = 'REPLACE_EMAIL';
+-- Çıkan `id` (ör. f873cde8-627a-48ab-beaf-4a8ca045b2b6) = auth.users birincil anahtarıdır;
+-- isendai.entitlements.owner_id bu UUID ile AYNI metin olmalı (ülke kodu DEĞİL).
+
+-- Alt sorgu yerine sabit UUID kullanacaksanız (e-posta ile alt SELECT sorun çıkarırsa):
+-- SELECT public.ensure_entitlement('user', 'f873cde8-627a-48ab-beaf-4a8ca045b2b6', 0, 5);
+-- SELECT public.add_credits('user', 'f873cde8-627a-48ab-beaf-4a8ca045b2b6', 100);
+-- SELECT owner_type, owner_id, credits_balance FROM isendai.entitlements
+--   WHERE owner_type = 'user' AND owner_id = 'f873cde8-627a-48ab-beaf-4a8ca045b2b6';
 
 -- -----------------------------------------------------------------------------
 -- 1) Şifre güncelleme (bcrypt — pgcrypto)

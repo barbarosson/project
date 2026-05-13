@@ -115,9 +115,14 @@ export function getSortedRegionOptions(locale: Locale): RegionOption[] {
 }
 
 /** Map stored value to ISO alpha-2: already a code, or legacy localized country name. */
+const UUID_LIKE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export function legacyCountryToCode(raw: string | undefined, locale: Locale): string {
   const s = (raw ?? "").trim();
   if (!s) return "";
+  /** Yanlışlıkla user id veya başka UUID country alanına yazıldıysa ülke seçimini bozmasın. */
+  if (UUID_LIKE.test(s)) return "";
   if (/^[a-z]{2}$/i.test(s)) {
     const up = s.toUpperCase();
     if (listAlpha2RegionCodes().includes(up)) return up;
