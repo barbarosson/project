@@ -414,6 +414,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailInvalid": "Please enter a valid email address.",
     "login.emailSent": "Check your email for the sign-in link.",
     "login.sendFailed": "Could not send the sign-in link.",
+    "login.emailRateLimit":
+      "Too many emails were sent too quickly (Supabase limit). Wait several minutes and try again; project admins can raise limits or connect custom SMTP in Supabase Auth settings.",
     "login.emailPlaceholder": "you@domain.com",
     "login.passwordPlaceholder": "Password",
     "login.registerButton": "Create account",
@@ -938,6 +940,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailInvalid": "Introduce un email válido.",
     "login.emailSent": "Revisa tu correo para el enlace de acceso.",
     "login.sendFailed": "No se pudo enviar el enlace.",
+    "login.emailRateLimit":
+      "Demasiados correos en poco tiempo (límite de Supabase). Espera varios minutos e inténtalo de nuevo; en Auth puedes subir límites o usar SMTP propio.",
     "login.emailPlaceholder": "tu@dominio.com",
     "login.passwordPlaceholder": "Contraseña",
     "login.registerButton": "Crear cuenta",
@@ -1454,6 +1458,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailInvalid": "Saisis une adresse email valide.",
     "login.emailSent": "Vérifie tes emails pour le lien de connexion.",
     "login.sendFailed": "Impossible d’envoyer le lien.",
+    "login.emailRateLimit":
+      "Trop d’emails envoyés trop vite (limite Supabase). Réessaie dans quelques minutes ; un admin peut augmenter la limite ou configurer un SMTP dédié dans Auth.",
     "login.emailPlaceholder": "toi@domaine.com",
     "login.passwordPlaceholder": "Mot de passe",
     "login.registerButton": "Créer un compte",
@@ -1971,6 +1977,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailInvalid": "Bitte eine gültige E‑Mail‑Adresse eingeben.",
     "login.emailSent": "Prüfe dein Postfach für den Login‑Link.",
     "login.sendFailed": "Link konnte nicht gesendet werden.",
+    "login.emailRateLimit":
+      "Zu viele E‑Mails in kurzer Zeit (Supabase‑Limit). Einige Minuten warten und erneut versuchen; im Auth‑Dashboard Limits anpassen oder eigenes SMTP nutzen.",
     "login.emailPlaceholder": "du@domain.de",
     "login.passwordPlaceholder": "Passwort",
     "login.registerButton": "Konto erstellen",
@@ -2460,6 +2468,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailInvalid": "请输入有效的邮箱地址。",
     "login.emailSent": "请查收邮件中的登录链接。",
     "login.sendFailed": "无法发送登录链接。",
+    "login.emailRateLimit":
+      "短时间内发送邮件过多（Supabase 限制）。请等待几分钟后重试；可在 Supabase Auth 中提高限额或使用自定义 SMTP。",
     "login.emailPlaceholder": "you@example.com",
     "login.passwordPlaceholder": "密码",
     "login.registerButton": "注册账户",
@@ -2955,6 +2965,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.emailInvalid": "Geçerli bir e-posta gir.",
     "login.emailSent": "Giriş bağlantısı için e-postanı kontrol et.",
     "login.sendFailed": "Bağlantı gönderilemedi.",
+    "login.emailRateLimit":
+      "Çok kısa sürede çok fazla e-posta isteği gönderildi (Supabase sınırı). Birkaç dakika bekleyip tekrar dene; proje ayarlarında limit artırılabilir veya özel SMTP kullanılabilir.",
     "login.emailPlaceholder": "sen@alanadin.com",
     "login.passwordPlaceholder": "Şifre",
     "login.registerButton": "Hesap oluştur",

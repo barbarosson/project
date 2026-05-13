@@ -12,6 +12,25 @@ import { useSupabaseBrowserRuntimeConfig } from "@/lib/supabase/browser-config-c
 
 const MIN_PASSWORD_LEN = 6;
 
+function mapAuthEmailErrorToMessage(
+  t: (key: string) => string,
+  e: unknown,
+  fallbackKey: string = "login.sendFailed"
+): string {
+  const msg = e instanceof Error ? e.message : "";
+  const lower = msg.toLowerCase();
+  if (
+    lower.includes("rate limit") ||
+    lower.includes("over_request") ||
+    lower.includes("email rate") ||
+    lower.includes("too many requests") ||
+    lower.includes("too many emails")
+  ) {
+    return t("login.emailRateLimit");
+  }
+  return msg || t(fallbackKey);
+}
+
 export function LoginClient() {
   const { t } = useI18n();
   const router = useRouter();
@@ -76,7 +95,7 @@ export function LoginClient() {
       }
       toast.success(t("login.confirmEmailSent"));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("login.authFailed"));
+      toast.error(mapAuthEmailErrorToMessage(t, e, "login.authFailed"));
     } finally {
       setBusy(null);
     }
@@ -139,7 +158,7 @@ export function LoginClient() {
       if (error) throw error;
       toast.success(t("login.resendConfirmToast"));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("login.sendFailed"));
+      toast.error(mapAuthEmailErrorToMessage(t, e));
     } finally {
       setBusy(null);
     }
@@ -161,7 +180,7 @@ export function LoginClient() {
       if (error) throw error;
       toast.success(t("login.resetEmailSent"));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("login.sendFailed"));
+      toast.error(mapAuthEmailErrorToMessage(t, e));
     } finally {
       setBusy(null);
     }
@@ -186,7 +205,7 @@ export function LoginClient() {
       if (error) throw error;
       toast.success(t("login.emailSent"));
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("login.sendFailed"));
+      toast.error(mapAuthEmailErrorToMessage(t, e));
     } finally {
       setBusy(null);
     }
