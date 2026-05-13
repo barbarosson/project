@@ -1,14 +1,13 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import crypto from "crypto";
 
-export const ANON_COOKIE = "isendai_anon_id";
+import { ANON_COOKIE, ANON_ID_REQUEST_HEADER } from "@/lib/isendai/anon-cookie";
 
 export type Owner =
   | { owner_type: "user"; owner_id: string; email?: string | null }
   | { owner_type: "anon"; owner_id: string; email?: string | null };
 
 function uuid() {
-  // Node 18+ supports crypto.randomUUID; keep a fallback.
   return typeof crypto.randomUUID === "function"
     ? crypto.randomUUID()
     : "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -18,18 +17,25 @@ function uuid() {
       });
 }
 
+/**
+ * Anonymous owner id for this request.
+ * Middleware sets {@link ANON_ID_REQUEST_HEADER} and the {@link ANON_COOKIE} when missing
+ * (Server Components must not call `cookies().set` — it breaks on Netlify / Next App Router).
+ */
 export async function getOrCreateAnonId(): Promise<string> {
+  const h = await headers();
+  const fromMiddleware = h.get(ANON_ID_REQUEST_HEADER)?.trim();
+  if (fromMiddleware && fromMiddleware.length > 10) {
+    return fromMiddleware;
+  }
+
   const store = await cookies();
-  const existing = store.get(ANON_COOKIE)?.value;
-  if (existing && existing.length > 10) return existing;
-  const id = uuid();
-  store.set(ANON_COOKIE, id, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: true,
-    path: "/",
-    maxAge: 60 * 60 * 24 * 365,
-  });
-  return id;
+  const existing = store.get(ANON_COOKIE)?.value?.trim();
+  if (existing && existing.length > 10) {
+    return existing;
+  }
+
+  return uuid();
 }
 
+export { ANON_COOKIE } from "@/lib/isendai/anon-cookie";

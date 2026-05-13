@@ -198,6 +198,11 @@ export const DICTS: Record<Locale, Dict> = {
     "claim.title": "Account linked",
     "claim.description":
       "Guest credits and history from this browser are now linked to your account.",
+    "claim.errorTitle": "Could not link guest data",
+    "claim.errorGeneric":
+      "Something went wrong while merging guest credits. Try again, or go home and use “Link guest data” from your account.",
+    "claim.errorServiceRole":
+      "Server configuration: SUPABASE_SERVICE_ROLE_KEY is not set on this deployment. Add it in Netlify (Site settings → Environment variables) so billing can run.",
     "account.pageTitle": "Account",
     "account.linkGuest": "Link guest data",
     "account.recentRequests": "Recent generations",
@@ -727,6 +732,11 @@ export const DICTS: Record<Locale, Dict> = {
     "claim.title": "Cuenta vinculada",
     "claim.description":
       "Los créditos e historial de invitado de este navegador ya están en tu cuenta.",
+    "claim.errorTitle": "No se pudo vincular",
+    "claim.errorGeneric":
+      "Algo salió mal al fusionar créditos de invitado. Inténtalo de nuevo o usa “Vincular datos de invitado” en tu cuenta.",
+    "claim.errorServiceRole":
+      "Falta SUPABASE_SERVICE_ROLE_KEY en el servidor (p. ej. Netlify → Variables de entorno). Sin ella no puede ejecutarse la facturación.",
     "account.pageTitle": "Cuenta",
     "account.linkGuest": "Vincular datos de invitado",
     "account.recentRequests": "Generaciones recientes",
@@ -1249,6 +1259,11 @@ export const DICTS: Record<Locale, Dict> = {
     "claim.title": "Compte relié",
     "claim.description":
       "Les crédits et l’historique invité de ce navigateur sont maintenant sur ton compte.",
+    "claim.errorTitle": "Échec de la liaison",
+    "claim.errorGeneric":
+      "Une erreur s’est produite lors de la fusion des crédits invité. Réessaie ou utilise « Relier les données invité » depuis ton compte.",
+    "claim.errorServiceRole":
+      "Variable SUPABASE_SERVICE_ROLE_KEY absente sur ce déploiement (ex. Netlify → Environment variables). La facturation ne peut pas s’exécuter.",
     "account.pageTitle": "Compte",
     "account.linkGuest": "Relier les données invité",
     "account.recentRequests": "Générations récentes",
@@ -1772,6 +1787,11 @@ export const DICTS: Record<Locale, Dict> = {
     "claim.title": "Konto verknüpft",
     "claim.description":
       "Gast‑Credits und Verlauf aus diesem Browser sind jetzt mit deinem Konto verknüpft.",
+    "claim.errorTitle": "Verknüpfung fehlgeschlagen",
+    "claim.errorGeneric":
+      "Beim Zusammenführen der Gast-Credits ist ein Fehler aufgetreten. Bitte erneut versuchen oder „Gastdaten verknüpfen“ im Konto nutzen.",
+    "claim.errorServiceRole":
+      "SUPABASE_SERVICE_ROLE_KEY fehlt auf diesem Server (z. B. Netlify → Environment variables). Ohne diesen Schlüssel funktioniert die Abrechnung nicht.",
     "account.pageTitle": "Konto",
     "account.linkGuest": "Gastdaten verknüpfen",
     "account.recentRequests": "Letzte Generierungen",
@@ -2277,6 +2297,10 @@ export const DICTS: Record<Locale, Dict> = {
     "history.loginToSync": "登录以同步",
     "claim.title": "账户已关联",
     "claim.description": "此浏览器的访客额度与记录已合并到你的账户。",
+    "claim.errorTitle": "无法完成关联",
+    "claim.errorGeneric": "合并访客额度时出错。请重试，或在账户中使用“合并访客数据”。",
+    "claim.errorServiceRole":
+      "服务器未配置 SUPABASE_SERVICE_ROLE_KEY（例如 Netlify → 环境变量）。没有它无法执行计费。",
     "account.pageTitle": "我的账户",
     "account.linkGuest": "合并访客数据",
     "account.recentRequests": "最近生成",
@@ -2768,6 +2792,11 @@ export const DICTS: Record<Locale, Dict> = {
     "claim.title": "Hesap bağlandı",
     "claim.description":
       "Bu tarayıcıdaki misafir kontör ve geçmiş artık hesabına bağlı.",
+    "claim.errorTitle": "Misafir verisi bağlanamadı",
+    "claim.errorGeneric":
+      "Misafir kontör birleştirilirken hata oluştu. Tekrar deneyin veya hesaptan “Misafir verisini bağla”yı kullanın.",
+    "claim.errorServiceRole":
+      "Sunucuda SUPABASE_SERVICE_ROLE_KEY tanımlı değil (Netlify → Environment variables). Bu olmadan kontör işlemleri çalışmaz.",
     "account.pageTitle": "Hesabım",
     "account.linkGuest": "Misafir verisini bağla",
     "account.recentRequests": "Son üretimler",

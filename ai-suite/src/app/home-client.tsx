@@ -78,7 +78,7 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
         </div>
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
           <CreditsNav />
-          <AuthStatus />
+          <AuthStatus className="shrink-0" />
         </div>
       </header>
 

@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -31,9 +30,19 @@ function mapAuthEmailErrorToMessage(
   return msg || t(fallbackKey);
 }
 
-export function LoginClient() {
+function emailAuthRedirectUrl(authCallbackUrl: string, nextAfterAuth: string): string {
+  const trimmed = authCallbackUrl.trim();
+  if (trimmed) return trimmed;
+  return `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextAfterAuth)}`;
+}
+
+type LoginClientProps = {
+  authCallbackUrl: string;
+  nextAfterAuth: string;
+};
+
+export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps) {
   const { t } = useI18n();
-  const router = useRouter();
   const runtime = useSupabaseBrowserRuntimeConfig();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
@@ -51,14 +60,20 @@ export function LoginClient() {
   }
 
   async function navigateAfterSession(supabase: NonNullable<ReturnType<typeof createSupabaseBrowserClient>>) {
-    const { data } = await supabase.auth.getUser();
-    const meta = data.user?.user_metadata as Record<string, unknown> | undefined;
+    const { data: sessionWrap } = await supabase.auth.getSession();
+    const { data: userWrap } = await supabase.auth.getUser();
+    const user = userWrap.user ?? sessionWrap.session?.user ?? null;
+    if (!user) {
+      toast.error(t("login.authFailed"));
+      return;
+    }
+    const meta = user.user_metadata as Record<string, unknown> | undefined;
     const completed =
       typeof meta?.profile_completed_at === "string" && meta.profile_completed_at.length > 0;
-    const next = "/claim";
-    const dest = completed ? next : `/account/profile?next=${encodeURIComponent(next)}`;
-    router.push(dest);
-    router.refresh();
+    const dest = completed
+      ? nextAfterAuth
+      : `/account/profile?next=${encodeURIComponent(nextAfterAuth)}`;
+    window.location.assign(dest);
   }
 
   async function registerWithPassword() {
@@ -79,7 +94,7 @@ export function LoginClient() {
         email: value,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/claim`,
+          emailRedirectTo: emailAuthRedirectUrl(authCallbackUrl, nextAfterAuth),
         },
       });
       if (error) throw error;
@@ -152,7 +167,7 @@ export function LoginClient() {
         type: "signup",
         email: value,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/claim`,
+          emailRedirectTo: emailAuthRedirectUrl(authCallbackUrl, nextAfterAuth),
         },
       });
       if (error) throw error;
@@ -199,7 +214,7 @@ export function LoginClient() {
       const { error } = await supabase.auth.signInWithOtp({
         email: value,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/claim`,
+          emailRedirectTo: emailAuthRedirectUrl(authCallbackUrl, nextAfterAuth),
         },
       });
       if (error) throw error;

@@ -1,8 +1,11 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { resolvePostLoginNext } from "@/lib/auth/safe-next";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { glassInteractive, textGradientHero } from "@/lib/premium-ui";
 import { getOrCreateAnonId } from "@/lib/isendai/owner";
@@ -34,11 +37,36 @@ async function loadGuestCreditsSnapshot(): Promise<{ credits: number; max: numbe
   }
 }
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string }>;
+}) {
+  const sp = await searchParams;
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   const locale = resolveLocaleFromCookie(cookieLocale);
   const d = DICTS[locale];
   const guest = await loadGuestCreditsSnapshot();
+
+  const supabase = await createSupabaseServerClient();
+  const { data: auth } = await supabase.auth.getUser();
+  if (auth.user) {
+    const nextAfter = resolvePostLoginNext(sp.next);
+    const meta = auth.user.user_metadata as Record<string, unknown> | undefined;
+    const completed =
+      typeof meta?.profile_completed_at === "string" && meta.profile_completed_at.length > 0;
+    const dest = completed ? nextAfter : `/account/profile?next=${encodeURIComponent(nextAfter)}`;
+    redirect(dest);
+  }
+
+  const h = await headers();
+  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "";
+  const proto = h.get("x-forwarded-proto") ?? "http";
+  const origin = host ? `${proto}://${host}` : "";
+  const nextAfterAuth = resolvePostLoginNext(sp.next);
+  const authCallbackUrl = origin
+    ? `${origin}/auth/callback?next=${encodeURIComponent(nextAfterAuth)}`
+    : "";
 
   return (
     <main className="mx-auto w-full max-w-md px-4 py-14">
@@ -67,7 +95,7 @@ export default async function LoginPage() {
           </h2>
           <p className="mt-1 text-sm text-slate-400">{d["login.membershipEmailBody"]}</p>
           <div className="mt-4">
-            <LoginClient />
+            <LoginClient authCallbackUrl={authCallbackUrl} nextAfterAuth={nextAfterAuth} />
           </div>
         </div>
         <div className="mt-6 border-t border-white/[0.08] pt-6">
@@ -76,7 +104,7 @@ export default async function LoginPage() {
           </h2>
           <p className="mt-1 text-sm text-slate-400">{d["login.membershipGoogleBody"]}</p>
           <div className="mt-4">
-            <GoogleSignInButton />
+            <GoogleSignInButton authCallbackUrl={authCallbackUrl} />
           </div>
         </div>
         <div className="mt-6 border-t border-white/[0.08] pt-6">
@@ -85,7 +113,7 @@ export default async function LoginPage() {
           </h2>
           <p className="mt-1 text-sm text-slate-400">{d["login.membershipFacebookBody"]}</p>
           <div className="mt-4">
-            <FacebookSignInButton />
+            <FacebookSignInButton authCallbackUrl={authCallbackUrl} />
           </div>
         </div>
         <div className="mt-6 border-t border-white/[0.08] pt-6">
@@ -93,7 +121,7 @@ export default async function LoginPage() {
             {d["login.membershipOtherTitle"]}
           </h2>
           <div className="mt-4">
-            <OAuthLoginButtons />
+            <OAuthLoginButtons authCallbackUrl={authCallbackUrl} />
           </div>
         </div>
         <p className="mt-5 text-xs text-slate-400">

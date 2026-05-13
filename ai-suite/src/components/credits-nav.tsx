@@ -28,7 +28,7 @@ export function CreditsNav({ className }: { className?: string }) {
   React.useEffect(() => {
     let cancelled = false;
     function load() {
-      void fetch("/api/me/wallet", { cache: "no-store" })
+      void fetch("/api/me/wallet", { cache: "no-store", credentials: "same-origin" })
         .then((r) => r.json() as Promise<Wallet>)
         .then((j) => {
           if (!cancelled) setData(j);

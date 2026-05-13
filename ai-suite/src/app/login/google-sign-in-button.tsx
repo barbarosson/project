@@ -8,9 +8,10 @@ import { useI18n } from "@/i18n/i18n-provider";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSupabaseBrowserRuntimeConfig } from "@/lib/supabase/browser-config-context";
 import { GoogleMark } from "@/components/oauth-brand-icons";
+import { oauthCallbackRedirectUrl } from "@/lib/auth/oauth-callback-url";
 import { cn } from "@/lib/utils";
 
-export function GoogleSignInButton() {
+export function GoogleSignInButton({ authCallbackUrl }: { authCallbackUrl: string }) {
   const { t } = useI18n();
   const runtime = useSupabaseBrowserRuntimeConfig();
   const [busy, setBusy] = React.useState(false);
@@ -26,7 +27,7 @@ export function GoogleSignInButton() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/claim`,
+          redirectTo: oauthCallbackRedirectUrl(authCallbackUrl),
         },
       });
       if (error) throw error;

@@ -10,3 +10,12 @@ export function safeNext(raw: string | null | undefined): string {
   if (trimmed.includes("@")) return "/";
   return trimmed;
 }
+
+/** Default when `next` query is missing or `/` (matches post-login client flows). */
+export const DEFAULT_POST_LOGIN_NEXT = "/claim";
+
+export function resolvePostLoginNext(raw: string | null | undefined): string {
+  const n = safeNext(raw);
+  if (n === "/") return DEFAULT_POST_LOGIN_NEXT;
+  return n;
+}

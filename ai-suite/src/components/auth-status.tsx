@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LogOut, User } from "lucide-react";
 
 import { createSupabaseBrowserClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client";
@@ -9,8 +10,15 @@ import { useSupabaseBrowserRuntimeConfig } from "@/lib/supabase/browser-config-c
 import { useI18n } from "@/i18n/i18n-provider";
 import { cn } from "@/lib/utils";
 
-export function AuthStatus({ className }: { className?: string }) {
+type AuthStatusProps = {
+  className?: string;
+  /** On /account: show only log out (avoid duplicate “Account” link). */
+  omitAccountLink?: boolean;
+};
+
+export function AuthStatus({ className, omitAccountLink }: AuthStatusProps) {
   const { t } = useI18n();
+  const router = useRouter();
   const runtime = useSupabaseBrowserRuntimeConfig();
   const [email, setEmail] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
@@ -19,9 +27,17 @@ export function AuthStatus({ className }: { className?: string }) {
     if (!isSupabaseBrowserConfigured(runtime)) return;
     const supabase = createSupabaseBrowserClient(runtime);
     if (!supabase) return;
-    supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+
+    function setFromSession(session: { user?: { email?: string | null } } | null) {
       setEmail(session?.user?.email ?? null);
+    }
+
+    void supabase.auth.getSession().then(({ data }) => {
+      setFromSession(data.session);
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      setFromSession(session);
     });
     return () => sub.subscription.unsubscribe();
   }, [runtime]);
@@ -32,6 +48,8 @@ export function AuthStatus({ className }: { className?: string }) {
       const supabase = createSupabaseBrowserClient(runtime);
       if (!supabase) return;
       await supabase.auth.signOut();
+      router.refresh();
+      router.push("/");
     } finally {
       setBusy(false);
     }
@@ -52,6 +70,23 @@ export function AuthStatus({ className }: { className?: string }) {
   }
 
   if (email) {
+    const logoutBtn = (
+      <button
+        type="button"
+        onClick={signOut}
+        disabled={busy}
+        title={email}
+        className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] bg-white/[0.05] px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.09] disabled:opacity-60 sm:px-3 sm:py-2 sm:text-sm"
+      >
+        <LogOut className="size-4 text-indigo-400" strokeWidth={1.5} />
+        {t("nav.logout")}
+      </button>
+    );
+
+    if (omitAccountLink) {
+      return <div className={cn("flex items-center gap-2", className)}>{logoutBtn}</div>;
+    }
+
     return (
       <div className={cn("flex items-center gap-2", className)}>
         <Link
@@ -62,15 +97,7 @@ export function AuthStatus({ className }: { className?: string }) {
           <User className="size-4 text-indigo-400" strokeWidth={1.5} />
           {t("nav.account")}
         </Link>
-        <button
-          type="button"
-          onClick={signOut}
-          disabled={busy}
-          className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] bg-white/[0.05] px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.09] disabled:opacity-60 sm:px-3 sm:py-2 sm:text-sm"
-        >
-          <LogOut className="size-4 text-indigo-400" strokeWidth={1.5} />
-          {t("nav.logout")}
-        </button>
+        {logoutBtn}
       </div>
     );
   }

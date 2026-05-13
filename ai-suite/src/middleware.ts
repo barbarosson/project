@@ -1,10 +1,32 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+import { ANON_COOKIE, ANON_COOKIE_MAX_AGE, ANON_ID_REQUEST_HEADER } from "@/lib/isendai/anon-cookie";
 import { requiredEnv } from "@/lib/env";
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next({ request: { headers: req.headers } });
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.delete(ANON_ID_REQUEST_HEADER);
+
+  const cookieAnon = req.cookies.get(ANON_COOKIE)?.value?.trim();
+  const anonForThisRequest =
+    cookieAnon && cookieAnon.length > 10 ? cookieAnon : crypto.randomUUID();
+
+  requestHeaders.set(ANON_ID_REQUEST_HEADER, anonForThisRequest);
+
+  const res = NextResponse.next({ request: { headers: requestHeaders } });
+
+  const needSetCookie =
+    !cookieAnon || cookieAnon.length < 10 || anonForThisRequest !== cookieAnon;
+  if (needSetCookie) {
+    res.cookies.set(ANON_COOKIE, anonForThisRequest, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: req.nextUrl.protocol === "https:",
+      path: "/",
+      maxAge: ANON_COOKIE_MAX_AGE,
+    });
+  }
 
   const supabase = createServerClient(
     requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),

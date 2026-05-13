@@ -2,83 +2,112 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import { DICTS } from "@/i18n/dictionaries";
+import { ClaimErrorPanel } from "@/app/claim/claim-error-panel";
+import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
+import { DICTS, type Locale } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { billingEnsureEntitlement } from "@/lib/isendai/billing-rpc";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateAnonId } from "@/lib/isendai/owner";
+import { optionalEnv } from "@/lib/env";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
 import { cn } from "@/lib/utils";
 import { glassInteractive, premiumCta, textGradientHero } from "@/lib/premium-ui";
 
 export const dynamic = "force-dynamic";
 
-export default async function ClaimPage() {
-  const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
-  const locale = resolveLocaleFromCookie(cookieLocale);
-  const d = DICTS[locale];
+async function runGuestToUserClaim(userId: string): Promise<{ ok: true } | { ok: false; message: string }> {
+  try {
+    const anonId = await getOrCreateAnonId();
+    const admin = createSupabaseAdminClient();
 
-  const supabase = await createSupabaseServerClient();
-  const { data } = await supabase.auth.getUser();
-  const user = data.user;
-  if (!user) redirect("/login?next=%2Fclaim");
-
-  const anonId = await getOrCreateAnonId();
-  const admin = createSupabaseAdminClient();
-
-  // Move anon credits to user credits.
-  const { data: anonEnt } = await admin
-    .schema("isendai")
-    .from("entitlements")
-    .select("credits_balance,max_versions_per_request")
-    .eq("owner_type", "anon")
-    .eq("owner_id", anonId)
-    .maybeSingle();
-
-  const { error: entErr } = await billingEnsureEntitlement(admin, {
-    p_owner_type: "user",
-    p_owner_id: user.id,
-    p_default_credits: 0,
-    p_default_max_versions: 5,
-  });
-  if (entErr) {
-    throw new Error(`Billing setup failed: ${entErr.message}`);
-  }
-
-  if (anonEnt && anonEnt.credits_balance > 0) {
-    const { data: userEnt } = await admin
+    const { data: anonEnt } = await admin
       .schema("isendai")
       .from("entitlements")
-      .select("credits_balance")
-      .eq("owner_type", "user")
-      .eq("owner_id", user.id)
+      .select("credits_balance,max_versions_per_request")
+      .eq("owner_type", "anon")
+      .eq("owner_id", anonId)
       .maybeSingle();
-    const nextCredits = (userEnt?.credits_balance ?? 0) + anonEnt.credits_balance;
+
+    const { error: entErr } = await billingEnsureEntitlement(admin, {
+      p_owner_type: "user",
+      p_owner_id: userId,
+      p_default_credits: 0,
+      p_default_max_versions: 5,
+    });
+    if (entErr) {
+      return { ok: false, message: entErr.message };
+    }
+
+    if (anonEnt && anonEnt.credits_balance > 0) {
+      const { data: userEnt } = await admin
+        .schema("isendai")
+        .from("entitlements")
+        .select("credits_balance")
+        .eq("owner_type", "user")
+        .eq("owner_id", userId)
+        .maybeSingle();
+      const nextCredits = (userEnt?.credits_balance ?? 0) + anonEnt.credits_balance;
+
+      await admin
+        .schema("isendai")
+        .from("entitlements")
+        .update({ credits_balance: nextCredits })
+        .eq("owner_type", "user")
+        .eq("owner_id", userId);
+
+      await admin
+        .schema("isendai")
+        .from("entitlements")
+        .update({ credits_balance: 0 })
+        .eq("owner_type", "anon")
+        .eq("owner_id", anonId);
+    }
 
     await admin
       .schema("isendai")
-      .from("entitlements")
-      .update({ credits_balance: nextCredits })
-      .eq("owner_type", "user")
-      .eq("owner_id", user.id);
-
-    // Zero out anon credits to avoid double-spend.
-    await admin
-      .schema("isendai")
-      .from("entitlements")
-      .update({ credits_balance: 0 })
+      .from("requests")
+      .update({ owner_type: "user", owner_id: userId })
       .eq("owner_type", "anon")
       .eq("owner_id", anonId);
+
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, message: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+export default async function ClaimPage() {
+  const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
+  const locale = resolveLocaleFromCookie(cookieLocale) as Locale;
+  const d = DICTS[locale];
+
+  if (!optionalEnv("SUPABASE_SERVICE_ROLE_KEY")) {
+    return (
+      <ClaimErrorPanel
+        locale={locale}
+        title={d["claim.errorTitle"]}
+        detail={d["claim.errorServiceRole"]}
+      />
+    );
   }
 
-  // Move anon requests to user (history + versions).
-  await admin
-    .schema("isendai")
-    .from("requests")
-    .update({ owner_type: "user", owner_id: user.id })
-    .eq("owner_type", "anon")
-    .eq("owner_id", anonId);
+  const supabase = await createSupabaseServerClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const { data: sess } = await supabase.auth.getSession();
+  const user = auth.user ?? sess.session?.user ?? null;
+  if (!user) redirect("/login?next=%2Fclaim");
+
+  const result = await runGuestToUserClaim(user.id);
+  if (!result.ok) {
+    return (
+      <ClaimErrorPanel
+        locale={locale}
+        title={d["claim.errorTitle"]}
+        detail={`${d["claim.errorGeneric"]}\n\n${result.message}`}
+      />
+    );
+  }
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-12">

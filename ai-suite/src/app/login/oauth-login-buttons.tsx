@@ -9,6 +9,7 @@ import { useI18n } from "@/i18n/i18n-provider";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSupabaseBrowserRuntimeConfig } from "@/lib/supabase/browser-config-context";
 import { OauthProviderMark } from "@/components/oauth-brand-icons";
+import { oauthCallbackRedirectUrl } from "@/lib/auth/oauth-callback-url";
 import { cn } from "@/lib/utils";
 
 type Row = {
@@ -23,7 +24,7 @@ const OAUTH_ROWS: Row[] = [
   { provider: "custom:tiktok" as Provider, labelKey: "login.oauthTiktok" },
 ];
 
-export function OAuthLoginButtons() {
+export function OAuthLoginButtons({ authCallbackUrl }: { authCallbackUrl: string }) {
   const { t } = useI18n();
   const runtime = useSupabaseBrowserRuntimeConfig();
   const [busy, setBusy] = React.useState<Provider | null>(null);
@@ -39,7 +40,7 @@ export function OAuthLoginButtons() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/claim`,
+          redirectTo: oauthCallbackRedirectUrl(authCallbackUrl),
         },
       });
       if (error) throw error;

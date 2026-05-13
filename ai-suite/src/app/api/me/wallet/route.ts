@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { ANON_COOKIE } from "@/lib/isendai/owner";
+import { ANON_COOKIE } from "@/lib/isendai/anon-cookie";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { cookies } from "next/headers";
 
@@ -20,9 +20,11 @@ export async function GET() {
   try {
     const supabase = await createSupabaseServerClient();
     const { data: auth } = await supabase.auth.getUser();
-    const ownerType: "user" | "anon" = auth.user ? "user" : "anon";
+    const { data: sess } = await supabase.auth.getSession();
+    const user = auth.user ?? sess.session?.user ?? null;
+    const ownerType: "user" | "anon" = user ? "user" : "anon";
     const anonFromCookie = (await cookies()).get(ANON_COOKIE)?.value;
-    const ownerId = auth.user?.id ?? anonFromCookie;
+    const ownerId = user?.id ?? anonFromCookie;
     if (!ownerId) {
       return NextResponse.json({
         credits: 0,
