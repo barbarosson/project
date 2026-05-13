@@ -421,6 +421,23 @@ export const DICTS: Record<Locale, Dict> = {
     "login.passwordTooShort": "Password must be at least 6 characters.",
     "login.passwordRequired": "Enter your password.",
     "login.confirmEmailSent": "Check your email to confirm your account, then sign in.",
+    "login.signUpExistingEmail":
+      "This email may already be registered—no new confirmation email was sent. Try signing in with your password or request a magic link below.",
+    "login.invalidCredentialsHint":
+      "Those credentials didn’t work—often the password is wrong or the email isn’t confirmed yet. Try “Resend confirmation”, “Forgot password”, or the magic link below.",
+    "login.resendConfirmButton": "Resend confirmation email",
+    "login.resendConfirmToast":
+      "If delivery succeeds, you should receive a confirmation email shortly (check spam too).",
+    "login.forgotPasswordButton": "Forgot password?",
+    "login.resetEmailSent": "Check your email for the password reset link (spam folder too).",
+    "login.updatePasswordTitle": "Set a new password",
+    "login.updatePasswordSubtitle":
+      "You opened a valid reset link. Choose a new password, then continue to your account.",
+    "login.newPasswordPlaceholder": "New password",
+    "login.confirmPasswordPlaceholder": "Confirm new password",
+    "login.updatePasswordSubmit": "Save new password",
+    "login.passwordMismatch": "Passwords do not match.",
+    "login.passwordUpdated": "Password updated.",
     "login.authFailed": "Could not complete sign-in.",
     "login.magicLinkDivider": "Or sign in without a password",
     "login.legalLead": "By continuing, you agree to our",
@@ -928,6 +945,23 @@ export const DICTS: Record<Locale, Dict> = {
     "login.passwordTooShort": "La contraseña debe tener al menos 6 caracteres.",
     "login.passwordRequired": "Introduce tu contraseña.",
     "login.confirmEmailSent": "Revisa tu correo para confirmar la cuenta y luego entra.",
+    "login.signUpExistingEmail":
+      "Es posible que este correo ya esté registrado; no enviamos otro email de confirmación. Entra con tu contraseña o pide el enlace mágico abajo.",
+    "login.invalidCredentialsHint":
+      "Acceso rechazado: contraseña incorrecta o email sin confirmar. Prueba reenviar confirmación, recuperar contraseña o el enlace mágico abajo.",
+    "login.resendConfirmButton": "Reenviar email de confirmación",
+    "login.resendConfirmToast":
+      "Si el envío funciona, recibirás el correo en breve (revisa también spam).",
+    "login.forgotPasswordButton": "¿Olvidaste la contraseña?",
+    "login.resetEmailSent": "Revisa tu correo para el enlace de restablecimiento (también spam).",
+    "login.updatePasswordTitle": "Nueva contraseña",
+    "login.updatePasswordSubtitle":
+      "Tu enlace de restablecimiento es válido. Elige una contraseña nueva y continúa a tu cuenta.",
+    "login.newPasswordPlaceholder": "Nueva contraseña",
+    "login.confirmPasswordPlaceholder": "Confirmar contraseña",
+    "login.updatePasswordSubmit": "Guardar contraseña",
+    "login.passwordMismatch": "Las contraseñas no coinciden.",
+    "login.passwordUpdated": "Contraseña actualizada.",
     "login.authFailed": "No se pudo completar el acceso.",
     "login.magicLinkDivider": "O entrar sin contraseña",
     "login.legalLead": "Al continuar, aceptas nuestros",
@@ -1427,6 +1461,23 @@ export const DICTS: Record<Locale, Dict> = {
     "login.passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères.",
     "login.passwordRequired": "Saisis ton mot de passe.",
     "login.confirmEmailSent": "Vérifie tes emails pour confirmer le compte, puis connecte-toi.",
+    "login.signUpExistingEmail":
+      "Cette adresse est peut‑être déjà enregistrée—aucun nouvel email de confirmation n’a été envoyé. Connecte‑toi avec ton mot de passe ou demande un lien magique ci‑dessous.",
+    "login.invalidCredentialsHint":
+      "Connexion refusée : mot de passe incorrect ou email non confirmé. Réessaie renvoyer la confirmation, mot de passe oublié, ou lien magique ci‑dessous.",
+    "login.resendConfirmButton": "Renvoyer l’email de confirmation",
+    "login.resendConfirmToast":
+      "Si l’envoi réussit, vérifie tes emails sous peu (spam inclus).",
+    "login.forgotPasswordButton": "Mot de passe oublié ?",
+    "login.resetEmailSent": "Vérifie tes emails pour le lien de réinitialisation (spam inclus).",
+    "login.updatePasswordTitle": "Nouveau mot de passe",
+    "login.updatePasswordSubtitle":
+      "Ton lien de réinitialisation est valide. Choisis un nouveau mot de passe, puis continue vers ton compte.",
+    "login.newPasswordPlaceholder": "Nouveau mot de passe",
+    "login.confirmPasswordPlaceholder": "Confirmer le mot de passe",
+    "login.updatePasswordSubmit": "Enregistrer",
+    "login.passwordMismatch": "Les mots de passe ne correspondent pas.",
+    "login.passwordUpdated": "Mot de passe mis à jour.",
     "login.authFailed": "Connexion impossible.",
     "login.magicLinkDivider": "Ou te connecter sans mot de passe",
     "login.legalLead": "En continuant, vous acceptez nos",
@@ -1927,6 +1978,23 @@ export const DICTS: Record<Locale, Dict> = {
     "login.passwordTooShort": "Das Passwort muss mindestens 6 Zeichen haben.",
     "login.passwordRequired": "Passwort eingeben.",
     "login.confirmEmailSent": "Bitte E‑Mail zur Bestätigung prüfen, danach anmelden.",
+    "login.signUpExistingEmail":
+      "Diese E‑Mail ist möglicherweise schon registriert—es wurde keine neue Bestätigungs‑Mail gesendet. Melde dich mit Passwort an oder fordere unten einen Magic‑Link an.",
+    "login.invalidCredentialsHint":
+      "Anmeldung fehlgeschlagen: falsches Passwort oder E‑Mail noch nicht bestätigt. Bestätigung erneut senden, Passwort vergessen oder Magic‑Link probieren.",
+    "login.resendConfirmButton": "Bestätigungs‑E‑Mail erneut senden",
+    "login.resendConfirmToast":
+      "Wenn der Versand klappt, prüfe dein Postfach in Kürze (auch Spam).",
+    "login.forgotPasswordButton": "Passwort vergessen?",
+    "login.resetEmailSent": "Prüfe dein Postfach für den Passwort‑Reset‑Link (auch Spam).",
+    "login.updatePasswordTitle": "Neues Passwort setzen",
+    "login.updatePasswordSubtitle":
+      "Der Reset‑Link ist gültig. Wähle ein neues Passwort und gehe weiter zu deinem Konto.",
+    "login.newPasswordPlaceholder": "Neues Passwort",
+    "login.confirmPasswordPlaceholder": "Passwort bestätigen",
+    "login.updatePasswordSubmit": "Passwort speichern",
+    "login.passwordMismatch": "Passwörter stimmen nicht überein.",
+    "login.passwordUpdated": "Passwort aktualisiert.",
     "login.authFailed": "Anmeldung fehlgeschlagen.",
     "login.magicLinkDivider": "Oder ohne Passwort anmelden",
     "login.legalLead": "Mit Fortfahren akzeptierst du unsere",
@@ -2399,6 +2467,21 @@ export const DICTS: Record<Locale, Dict> = {
     "login.passwordTooShort": "密码至少 6 个字符。",
     "login.passwordRequired": "请输入密码。",
     "login.confirmEmailSent": "请查收邮件确认账户后再登录。",
+    "login.signUpExistingEmail":
+      "该邮箱可能已注册，因此未发送新的确认邮件。请尝试用密码登录或在下方请求魔法链接。",
+    "login.invalidCredentialsHint":
+      "登录失败：密码可能错误或邮箱尚未确认。可尝试重新发送确认邮件、忘记密码或使用下方魔法链接。",
+    "login.resendConfirmButton": "重新发送确认邮件",
+    "login.resendConfirmToast": "若发送成功，请稍后查收邮箱（含垃圾邮件）。",
+    "login.forgotPasswordButton": "忘记密码？",
+    "login.resetEmailSent": "请查收重置密码邮件（含垃圾邮件）。",
+    "login.updatePasswordTitle": "设置新密码",
+    "login.updatePasswordSubtitle": "重置链接有效。设置新密码后继续进入账户。",
+    "login.newPasswordPlaceholder": "新密码",
+    "login.confirmPasswordPlaceholder": "确认新密码",
+    "login.updatePasswordSubmit": "保存密码",
+    "login.passwordMismatch": "两次输入的密码不一致。",
+    "login.passwordUpdated": "密码已更新。",
     "login.authFailed": "无法完成登录。",
     "login.magicLinkDivider": "或不使用密码登录",
     "login.legalLead": "继续即表示你同意我们的",
@@ -2879,6 +2962,23 @@ export const DICTS: Record<Locale, Dict> = {
     "login.passwordTooShort": "Şifre en az 6 karakter olmalı.",
     "login.passwordRequired": "Şifreni gir.",
     "login.confirmEmailSent": "Hesabı onaylamak için e-postanı kontrol et, sonra giriş yap.",
+    "login.signUpExistingEmail":
+      "Bu denemede onay maili gönderilmedi (adres zaten kayıtlı olabilir); gelen kutuda görmemen normal. Şifren varsa «Şifreyle giriş» yap, yoksa alttan tek kullanımlık bağlantı iste — o ayrı bir e-posta. O da gelmezse spam ve Supabase’te SMTP / Auth loglarına bak.",
+    "login.invalidCredentialsHint":
+      "Giriş başarısız: şifre yanlış olabilir veya e-posta henüz onaylanmamış. «Onay mailini yeniden gönder», «Şifremi unuttum» veya alttan tek kullanımlık bağlantıyı dene.",
+    "login.resendConfirmButton": "Onay mailini yeniden gönder",
+    "login.resendConfirmToast":
+      "Gönderim başarılıysa birkaç dakika içinde e-postanı kontrol et (spam dahil).",
+    "login.forgotPasswordButton": "Şifremi unuttum",
+    "login.resetEmailSent": "Şifre sıfırlama bağlantısı için e-postanı kontrol et (spam dahil).",
+    "login.updatePasswordTitle": "Yeni şifre belirle",
+    "login.updatePasswordSubtitle":
+      "Sıfırlama bağlantın geçerli. Yeni şifreni kaydet; ardından hesabına devam edebilirsin.",
+    "login.newPasswordPlaceholder": "Yeni şifre",
+    "login.confirmPasswordPlaceholder": "Yeni şifre (tekrar)",
+    "login.updatePasswordSubmit": "Şifreyi kaydet",
+    "login.passwordMismatch": "Şifreler eşleşmiyor.",
+    "login.passwordUpdated": "Şifre güncellendi.",
     "login.authFailed": "Giriş tamamlanamadı.",
     "login.magicLinkDivider": "Ya da şifresiz giriş",
     "login.legalLead": "Devam ederek",

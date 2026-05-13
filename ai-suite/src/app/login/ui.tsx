@@ -18,7 +18,9 @@ export function LoginClient() {
   const runtime = useSupabaseBrowserRuntimeConfig();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [busy, setBusy] = React.useState<null | "magic" | "register" | "signin">(null);
+  const [busy, setBusy] = React.useState<
+    null | "magic" | "register" | "signin" | "resend" | "reset"
+  >(null);
 
   function validateEmail(): string | null {
     const value = email.trim();
@@ -66,6 +68,12 @@ export function LoginClient() {
         await navigateAfterSession(supabase);
         return;
       }
+      // Supabase hides duplicate-email signup errors; empty identities ⇒ account likely exists → no mail sent.
+      const identities = data.user?.identities;
+      if (Array.isArray(identities) && identities.length === 0) {
+        toast.warning(t("login.signUpExistingEmail"));
+        return;
+      }
       toast.success(t("login.confirmEmailSent"));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("login.authFailed"));
@@ -95,7 +103,65 @@ export function LoginClient() {
       if (error) throw error;
       await navigateAfterSession(supabase);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("login.authFailed"));
+      const msg = e instanceof Error ? e.message : "";
+      const norm = msg.toLowerCase();
+      if (
+        norm.includes("invalid login credentials") ||
+        norm.includes("invalid_credentials") ||
+        norm.includes("email not confirmed")
+      ) {
+        toast.error(t("login.invalidCredentialsHint"));
+      } else {
+        toast.error(msg || t("login.authFailed"));
+      }
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function resendConfirmation() {
+    const value = validateEmail();
+    if (!value) return;
+    setBusy("resend");
+    try {
+      const supabase = createSupabaseBrowserClient(runtime);
+      if (!supabase) {
+        toast.error(t("login.missingSupabase"));
+        return;
+      }
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: value,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/claim`,
+        },
+      });
+      if (error) throw error;
+      toast.success(t("login.resendConfirmToast"));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("login.sendFailed"));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function sendPasswordReset() {
+    const value = validateEmail();
+    if (!value) return;
+    setBusy("reset");
+    try {
+      const supabase = createSupabaseBrowserClient(runtime);
+      if (!supabase) {
+        toast.error(t("login.missingSupabase"));
+        return;
+      }
+      const { error } = await supabase.auth.resetPasswordForEmail(value, {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/auth/update-password")}`,
+      });
+      if (error) throw error;
+      toast.success(t("login.resetEmailSent"));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : t("login.sendFailed"));
     } finally {
       setBusy(null);
     }
@@ -157,6 +223,27 @@ export function LoginClient() {
         >
           {busy === "signin" ? t("login.sending") : t("login.signInPasswordButton")}
         </Button>
+      </div>
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-center text-xs">
+        <button
+          type="button"
+          className="text-violet-300 underline-offset-2 hover:text-violet-200 hover:underline disabled:opacity-50"
+          onClick={() => void resendConfirmation()}
+          disabled={loading}
+        >
+          {busy === "resend" ? t("login.sending") : t("login.resendConfirmButton")}
+        </button>
+        <span className="hidden text-slate-600 sm:inline" aria-hidden="true">
+          ·
+        </span>
+        <button
+          type="button"
+          className="text-violet-300 underline-offset-2 hover:text-violet-200 hover:underline disabled:opacity-50"
+          onClick={() => void sendPasswordReset()}
+          disabled={loading}
+        >
+          {busy === "reset" ? t("login.sending") : t("login.forgotPasswordButton")}
+        </button>
       </div>
       <p className="text-center text-xs text-slate-500">{t("login.magicLinkDivider")}</p>
       <Button type="button" variant="outline" onClick={() => void sendLink()} disabled={loading}>
