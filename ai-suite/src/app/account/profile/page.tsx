@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
 import { cn } from "@/lib/utils";
 import { glassInteractive, textGradientHero } from "@/lib/premium-ui";
 import { safeNext } from "@/lib/auth/safe-next";
@@ -46,12 +47,15 @@ export default async function AccountProfilePage({
           </h1>
           <p className="mt-1 text-sm text-slate-400">{d["profile.subtitle"]}</p>
         </div>
-        <Link
-          className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
-          href="/account"
-        >
-          {d["profile.backToAccount"]}
-        </Link>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <SiteLocaleToolbar />
+          <Link
+            className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
+            href="/account"
+          >
+            {d["profile.backToAccount"]}
+          </Link>
+        </div>
       </div>
 
       <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>

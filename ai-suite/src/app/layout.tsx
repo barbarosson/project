@@ -14,6 +14,7 @@ import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { rootMetadataForLocale } from "@/lib/site-metadata";
 import { SupabaseBrowserConfigProvider } from "@/lib/supabase/browser-config-context";
 import { PricingModalProvider } from "@/components/pricing/pricing-modal";
+import { AppLocaleBar } from "@/components/app-locale-bar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -85,6 +86,7 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
                 <RouteTransition />
                 <GlobalBackground />
                 <SocialProof />
+                <AppLocaleBar />
                 {children}
               </PricingModalProvider>
             </ModelProvider>

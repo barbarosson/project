@@ -3,7 +3,6 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { PrivacyEnBody } from "@/app/legal/privacy-en-body";
-import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
 import { cn } from "@/lib/utils";
 import { textGradientHero } from "@/lib/premium-ui";
 import { DICTS, type Locale } from "@/i18n/dictionaries";
@@ -28,11 +27,10 @@ export default async function PrivacyPage() {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-12">
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-8">
         <Link className="text-sm font-medium text-violet-300 hover:text-violet-200" href="/">
           ← {d["nav.backToHome"]}
         </Link>
-        <SiteLocaleToolbar />
       </div>
       <h1 className={cn("text-pretty text-3xl font-semibold tracking-tight", textGradientHero)}>
         {d["legal.privacyTitle"]}

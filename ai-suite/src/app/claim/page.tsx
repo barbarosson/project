@@ -8,6 +8,7 @@ import { billingEnsureEntitlement } from "@/lib/isendai/billing-rpc";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
 import { cn } from "@/lib/utils";
 import { glassInteractive, premiumCta, textGradientHero } from "@/lib/premium-ui";
 
@@ -82,9 +83,17 @@ export default async function ClaimPage() {
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-12">
       <div className={cn("rounded-2xl p-6", glassInteractive)}>
-        <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
-          {d["claim.title"]}
-        </h1>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h1
+            className={cn(
+              "min-w-0 flex-1 text-2xl font-semibold tracking-tight sm:text-3xl",
+              textGradientHero
+            )}
+          >
+            {d["claim.title"]}
+          </h1>
+          <SiteLocaleToolbar className="shrink-0" />
+        </div>
         <p className="mt-2 text-sm text-slate-400">{d["claim.description"]}</p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link className={premiumCta} href="/account">

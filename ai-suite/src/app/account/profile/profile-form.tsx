@@ -11,6 +11,8 @@ import { useI18n } from "@/i18n/i18n-provider";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSupabaseBrowserRuntimeConfig } from "@/lib/supabase/browser-config-context";
 import { safeNext } from "@/lib/auth/safe-next";
+import { getSortedRegionOptions, legacyCountryToCode } from "@/lib/regions";
+import type { Locale } from "@/i18n/dictionaries";
 
 type UseCase = "work" | "personal" | "creator" | "student" | "agency" | "other" | "";
 
@@ -32,16 +34,65 @@ function hasCompletedProfile(meta: Record<string, unknown>): boolean {
   return typeof meta.profile_completed_at === "string" && meta.profile_completed_at.length > 0;
 }
 
+type RegionOptions = ReturnType<typeof getSortedRegionOptions>;
+
+/** Remounted when locale or server country meta changes so mapping stays in sync without effects. */
+function ProfileCountrySelect({
+  locale,
+  initialCountryMeta,
+  regionOptions,
+  placeholder,
+  countryRef,
+}: {
+  locale: Locale;
+  initialCountryMeta: unknown;
+  regionOptions: RegionOptions;
+  placeholder: string;
+  countryRef: React.MutableRefObject<string>;
+}) {
+  const [countryCode, setCountryCode] = React.useState(() =>
+    legacyCountryToCode(str(initialCountryMeta), locale)
+  );
+
+  React.useLayoutEffect(() => {
+    countryRef.current = countryCode;
+  }, [countryCode, countryRef]);
+
+  return (
+    <select
+      id="country"
+      className="flex h-10 w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm text-slate-300 shadow-inner backdrop-blur-xl ring-offset-[#09090b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#09090b] disabled:cursor-not-allowed disabled:opacity-50"
+      style={{ colorScheme: "dark" }}
+      value={countryCode}
+      onChange={(e) => {
+        const v = e.target.value;
+        setCountryCode(v);
+      }}
+      autoComplete="country"
+      required
+    >
+      <option value="">{placeholder}</option>
+      {regionOptions.map(({ code, label }) => (
+        <option key={code} value={code}>
+          {label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 export function ProfileForm({ nextPath, email, initialMeta }: Props) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const runtime = useSupabaseBrowserRuntimeConfig();
   const [busy, setBusy] = React.useState(false);
 
   const [fullName, setFullName] = React.useState(str(initialMeta.full_name));
   const [phone, setPhone] = React.useState(str(initialMeta.phone));
-  const [country, setCountry] = React.useState(str(initialMeta.country));
+  const countryCodeRef = React.useRef(legacyCountryToCode(str(initialMeta.country), locale));
   const [organization, setOrganization] = React.useState(str(initialMeta.organization));
+  const [addressLine, setAddressLine] = React.useState(str(initialMeta.address_line));
+  const [city, setCity] = React.useState(str(initialMeta.city));
   const [jobTitle, setJobTitle] = React.useState(str(initialMeta.job_title));
   const [useCase, setUseCase] = React.useState<UseCase>(
     (str(initialMeta.primary_use_case) as UseCase) || ""
@@ -52,9 +103,11 @@ export function ProfileForm({ nextPath, email, initialMeta }: Props) {
     hasCompletedProfile(initialMeta) || !!str(initialMeta.terms_accepted_at)
   );
 
+  const regionOptions = React.useMemo(() => getSortedRegionOptions(locale), [locale]);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!fullName.trim() || !country.trim() || !useCase) {
+    if (!fullName.trim() || !countryCodeRef.current.trim() || !useCase) {
       toast.error(t("profile.errors.required"));
       return;
     }
@@ -76,7 +129,9 @@ export function ProfileForm({ nextPath, email, initialMeta }: Props) {
         data: {
           full_name: fullName.trim(),
           phone: phone.trim() || null,
-          country: country.trim(),
+          country: countryCodeRef.current.trim(),
+          address_line: addressLine.trim() || null,
+          city: city.trim() || null,
           organization: organization.trim() || null,
           job_title: jobTitle.trim() || null,
           primary_use_case: useCase,
@@ -133,14 +188,41 @@ export function ProfileForm({ nextPath, email, initialMeta }: Props) {
           <label className="text-xs font-medium text-slate-300" htmlFor="country">
             {t("profile.country")} <span className="text-rose-400">*</span>
           </label>
-          <Input
-            id="country"
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            autoComplete="country-name"
-            required
+          <ProfileCountrySelect
+            key={`${locale}:${String(initialMeta.country)}`}
+            locale={locale}
+            initialCountryMeta={initialMeta.country}
+            regionOptions={regionOptions}
+            placeholder={t("profile.countryPlaceholder")}
+            countryRef={countryCodeRef}
           />
         </div>
+      </div>
+
+      <div className="grid gap-1.5">
+        <label className="text-xs font-medium text-slate-300" htmlFor="address_line">
+          {t("profile.addressLabel")}
+        </label>
+        <Textarea
+          id="address_line"
+          value={addressLine}
+          onChange={(e) => setAddressLine(e.target.value)}
+          placeholder={t("profile.addressPlaceholder")}
+          autoComplete="street-address"
+          rows={2}
+        />
+      </div>
+
+      <div className="grid gap-1.5 sm:max-w-md">
+        <label className="text-xs font-medium text-slate-300" htmlFor="city">
+          {t("profile.cityLabel")}
+        </label>
+        <Input
+          id="city"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          autoComplete="address-level2"
+        />
       </div>
 
       <div className="grid gap-1.5 sm:grid-cols-2 sm:gap-4">

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
 import { cn } from "@/lib/utils";
 import { glassInteractive, glassSurface, premiumCta, textGradientHero } from "@/lib/premium-ui";
 
@@ -46,7 +47,8 @@ export default async function AccountPage() {
           </h1>
           <p className="mt-1 text-sm text-slate-400">{user.email}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <SiteLocaleToolbar />
           <Link
             className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
             href="/account/profile"

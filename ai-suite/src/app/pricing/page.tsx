@@ -9,7 +9,6 @@ import {
   PricingPaygoShop,
   PricingYearlyShop,
 } from "@/components/pricing/pricing-shop-blocks";
-import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
 import { cn } from "@/lib/utils";
 import { glassInteractive, premiumCta, textGradientHero } from "@/lib/premium-ui";
 import { DICTS, type Locale } from "@/i18n/dictionaries";
@@ -46,7 +45,6 @@ export default async function PricingPage() {
           {d["pricing.title"]}
         </h1>
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-          <SiteLocaleToolbar />
           <Link className={premiumCta} href="/">
             {d["nav.backToHome"]}
           </Link>
