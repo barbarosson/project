@@ -91,13 +91,15 @@ export function ToolCard({
   const [model, setModel] = React.useState<ModelId>("auto");
 
   React.useEffect(() => {
-    try {
-      const raw = localStorage.getItem(modelStorageKey);
-      const normalized = raw ? normalizeModelIdString(raw) : "";
-      setModel(isModelId(normalized) ? normalized : "auto");
-    } catch {
-      setModel("auto");
-    }
+    queueMicrotask(() => {
+      try {
+        const raw = localStorage.getItem(modelStorageKey);
+        const normalized = raw ? normalizeModelIdString(raw) : "";
+        setModel(isModelId(normalized) ? normalized : "auto");
+      } catch {
+        setModel("auto");
+      }
+    });
   }, [modelStorageKey]);
 
   function persistModel(next: ModelId) {

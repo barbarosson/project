@@ -179,44 +179,47 @@ export function SuccessClient() {
     }
   }, []);
 
-  async function generate(toolName: ToolName, parsed: Stored, model: ModelId, extra?: string) {
-    const def = getToolDefinition(toolName);
-    const concreteModel: ConcreteModelId =
-      model === "auto" ? defaultConcreteModelForProvider(def.provider) : (model as ConcreteModelId);
-    const res = await fetch("/api/generate", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        ...parsed.payload,
-        model: model === "auto" ? undefined : concreteModel,
-        extra,
-      }),
-    });
-    const raw = await res.text();
-    let json: { result?: string; request_id?: string; error?: string; code?: string } | null = null;
-    try {
-      json = JSON.parse(raw) as { result?: string; error?: string; code?: string };
-    } catch {
-      json = null;
-    }
+  const generate = React.useCallback(
+    async (toolName: ToolName, parsed: Stored, model: ModelId, extra?: string) => {
+      const def = getToolDefinition(toolName);
+      const concreteModel: ConcreteModelId =
+        model === "auto" ? defaultConcreteModelForProvider(def.provider) : (model as ConcreteModelId);
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ...parsed.payload,
+          model: model === "auto" ? undefined : concreteModel,
+          extra,
+        }),
+      });
+      const raw = await res.text();
+      let json: { result?: string; request_id?: string; error?: string; code?: string } | null = null;
+      try {
+        json = JSON.parse(raw) as { result?: string; error?: string; code?: string };
+      } catch {
+        json = null;
+      }
 
-    if (!res.ok) {
-      if (res.status >= 500 && res.status <= 599) {
-        toast.error(json?.error ?? t("errors.serverToast"));
+      if (!res.ok) {
+        if (res.status >= 500 && res.status <= 599) {
+          toast.error(json?.error ?? t("errors.serverToast"));
+        }
+        if (res.status === 429 || json?.code === "rate_limited") {
+          throw new Error(`RATELIMIT:${json?.error || ""}`);
+        }
+        if (res.status === 402 || json?.code === "insufficient_credits") {
+          throw new Error(`INSUFFICIENT:${json?.error || ""}`);
+        }
+        throw new Error(json?.error || t("errors.generationFailed"));
       }
-      if (res.status === 429 || json?.code === "rate_limited") {
-        throw new Error(`RATELIMIT:${json?.error || ""}`);
-      }
-      if (res.status === 402 || json?.code === "insufficient_credits") {
-        throw new Error(`INSUFFICIENT:${json?.error || ""}`);
-      }
-      throw new Error(json?.error || t("errors.generationFailed"));
-    }
 
-    if (!json?.result) throw new Error(t("errors.noModelResult"));
-    if (json.request_id && toolName) persistRequest(toolName, json.request_id);
-    return json.result;
-  }
+      if (!json?.result) throw new Error(t("errors.noModelResult"));
+      if (json.request_id && toolName) persistRequest(toolName, json.request_id);
+      return json.result;
+    },
+    [t]
+  );
 
   async function generateAltFromRequest(toolName: ToolName, requestId: string, extra?: string) {
     const res = await fetch("/api/isendai/request/version", {
@@ -356,7 +359,7 @@ export function SuccessClient() {
     return () => {
       cancelled = true;
     };
-  }, [tool, t, cleanup]);
+  }, [tool, t, cleanup, generate]);
 
   React.useEffect(() => {
     if (!active) return;

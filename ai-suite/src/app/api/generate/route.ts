@@ -36,10 +36,9 @@ import { generateTextGoogleWithFlashFallback } from "@/lib/ai/gemini-flash-fallb
 type RequestBody = ToolPayload & { model?: string; extra?: string };
 
 function stripMarketingFields<T extends Record<string, unknown>>(b: T): Omit<T, "leadEmail" | "marketingFreeTrial"> {
-  const { leadEmail: _e, marketingFreeTrial: _m, ...rest } = b as T & {
-    leadEmail?: unknown;
-    marketingFreeTrial?: unknown;
-  };
+  const rest = { ...b } as Record<string, unknown>;
+  delete rest.leadEmail;
+  delete rest.marketingFreeTrial;
   return rest as Omit<T, "leadEmail" | "marketingFreeTrial">;
 }
 
