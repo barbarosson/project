@@ -121,9 +121,6 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
             >
               {t("nav.pricing")}
             </Link>
-            <span className="rounded-full border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-xs font-semibold text-slate-300 backdrop-blur-xl">
-              {t("home.guestMemberBadges")}
-            </span>
           </div>
           {creditsSnapshot ? (
             <div
@@ -136,21 +133,8 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
                 {t("home.creditsSummary")
                   .replace("{credits}", String(creditsSnapshot.balance))
                   .replace("{max}", String(creditsSnapshot.maxVersions))
-                  .replace(
-                    "{scope}",
-                    creditsSnapshot.owner === "user"
-                      ? t("home.creditsScopeUser")
-                      : t("home.creditsScopeGuest")
-                  )}
+                  .replace("{scope}", t("home.creditsScopeUser"))}
               </p>
-              {creditsSnapshot.owner === "anon" ? (
-                <p className="mt-2 text-[11px] leading-relaxed text-slate-400 sm:text-xs">
-                  {t("home.creditsGuestHint")}{" "}
-                  <Link href="/login?next=%2Fclaim" className="text-violet-300 underline hover:text-violet-200">
-                    {t("nav.login")}
-                  </Link>
-                </p>
-              ) : null}
               {creditsSnapshot.balance === 0 ? (
                 <p className="mt-2 text-[11px] leading-relaxed text-amber-200/90 sm:text-xs">
                   {t("growth.zeroCreditsHint")}

@@ -1,11 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { ANON_COOKIE } from "@/lib/isendai/anon-cookie";
 import { readUserEntitlementWalletFromSession } from "@/lib/isendai/user-wallet-from-session";
 import { optionalEnv } from "@/lib/env";
 import { createSupabaseAdminClientOrNull } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { cookies } from "next/headers";
 
 export const runtime = "nodejs";
 
@@ -36,16 +34,13 @@ type WalletDebug = {
   hasPublicSupabaseUrl: boolean;
   hasAlternateSupabaseUrl: boolean;
   signedIn: boolean;
-  ownerType: "user" | "anon" | "none";
+  ownerType: "user" | "none";
   ownerIdPrefix: string | null;
   path: string;
   rpcProbe?: { error: string | null; dataKind: string };
   adminRowFound?: boolean;
-  /** PostgREST error when reading isendai.entitlements with the service role (see docs/isendai-schema.md). */
   adminError?: string;
-  /** Actionable hints when path is admin_error or rpcProbe shows schema cache issues. */
   hints?: string[];
-  /** Parsed from NEXT_PUBLIC_SUPABASE_URL — if this differs from Netlify, local and prod use different DBs. */
   supabaseProjectRef?: string | null;
 };
 
@@ -71,61 +66,48 @@ export async function GET(req: NextRequest) {
     const { data: auth } = await supabase.auth.getUser();
     const { data: sess } = await supabase.auth.getSession();
     const user = auth.user ?? sess.session?.user ?? null;
-    const ownerType: "user" | "anon" = user ? "user" : "anon";
-    const anonFromCookie = (await cookies()).get(ANON_COOKIE)?.value;
-    const ownerId = (user?.id ?? anonFromCookie)?.trim();
+    const ownerId = user?.id?.trim() ?? "";
 
     const dbg = baseDebug();
     dbg.signedIn = Boolean(user);
-    dbg.ownerType = !ownerId ? "none" : ownerType;
+    dbg.ownerType = ownerId ? "user" : "none";
     dbg.ownerIdPrefix = ownerId ? `${ownerId.slice(0, 8)}…` : null;
 
-    if (!ownerId) {
-      dbg.path = "no_owner_id_returns_zero";
-      if (process.env.NODE_ENV === "development") {
-        console.warn(
-          "[api/me/wallet] No owner id (not signed in and no anon cookie). credits=0. If you expect a balance, sign in or open the site once to set the guest cookie."
-        );
-      }
-      const body = { credits: 0, trial_days_left: null, subscription_status: null };
+    if (!user || !ownerId) {
+      dbg.path = "signed_out";
+      const body = { credits: null, trial_days_left: null, subscription_status: null };
       return NextResponse.json(debug ? { ...body, _debug: dbg } : body);
     }
 
-    if (user) {
-      if (debug) {
-        const probe = await supabase.rpc("user_entitlement_wallet");
-        dbg.rpcProbe = {
-          error: probe.error?.message ?? null,
-          dataKind:
-            probe.data == null
-              ? "null"
-              : Array.isArray(probe.data)
-                ? `array(len=${probe.data.length})`
-                : typeof probe.data,
-        };
-      }
+    if (debug) {
+      const probe = await supabase.rpc("user_entitlement_wallet");
+      dbg.rpcProbe = {
+        error: probe.error?.message ?? null,
+        dataKind:
+          probe.data == null
+            ? "null"
+            : Array.isArray(probe.data)
+              ? `array(len=${probe.data.length})`
+              : typeof probe.data,
+      };
+    }
 
-      const w = await readUserEntitlementWalletFromSession(supabase);
-      if (w !== "rpc_missing") {
-        dbg.path = "rpc_row";
-        const trial = trialDaysLeft(w.trial_ends_at, w.subscription_status);
-        const body = {
-          credits: Number(w.credits_balance ?? 0),
-          trial_days_left: trial,
-          subscription_status: w.subscription_status ?? null,
-          max_versions_per_request: Number(w.max_versions_per_request ?? 5) || 5,
-        };
-        if (
-          process.env.NODE_ENV === "development" &&
-          ownerType === "user" &&
-          Number(w.credits_balance ?? 0) === 0
-        ) {
-          console.warn(
-            "[api/me/wallet] RPC returned credits_balance=0 for a signed-in user. If Supabase shows a higher balance, check isendai.entitlements.owner_id matches auth.users.id, or use ?debug=1 on this route."
-          );
-        }
-        return NextResponse.json(debug ? { ...body, _debug: dbg } : body);
+    const w = await readUserEntitlementWalletFromSession(supabase);
+    if (w !== "rpc_missing") {
+      dbg.path = "rpc_row";
+      const trial = trialDaysLeft(w.trial_ends_at, w.subscription_status);
+      const body = {
+        credits: Number(w.credits_balance ?? 0),
+        trial_days_left: trial,
+        subscription_status: w.subscription_status ?? null,
+        max_versions_per_request: Number(w.max_versions_per_request ?? 5) || 5,
+      };
+      if (process.env.NODE_ENV === "development" && Number(w.credits_balance ?? 0) === 0) {
+        console.warn(
+          "[api/me/wallet] RPC returned credits_balance=0 for a signed-in user. If Supabase shows a higher balance, check isendai.entitlements.owner_id matches auth.users.id, or use ?debug=1 on this route."
+        );
       }
+      return NextResponse.json(debug ? { ...body, _debug: dbg } : body);
     }
 
     const admin = createSupabaseAdminClientOrNull();
@@ -148,7 +130,7 @@ export async function GET(req: NextRequest) {
       .schema("isendai")
       .from("entitlements")
       .select("credits_balance,trial_ends_at,subscription_status")
-      .eq("owner_type", ownerType)
+      .eq("owner_type", "user")
       .eq("owner_id", ownerId)
       .maybeSingle();
 
@@ -163,12 +145,7 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    if (
-      process.env.NODE_ENV === "development" &&
-      ownerType === "user" &&
-      !row &&
-      !adminErr
-    ) {
+    if (process.env.NODE_ENV === "development" && !row && !adminErr) {
       console.warn(
         `[api/me/wallet] No isendai.entitlements row for user owner_id=${ownerId}. Credits show as 0. Fix owner_id in SQL to match this UUID, or confirm NEXT_PUBLIC_SUPABASE_URL points at the same Supabase project as the table you inspected.`
       );
@@ -193,7 +170,7 @@ export async function GET(req: NextRequest) {
     if (process.env.NODE_ENV === "development") {
       console.error("[api/me/wallet]", e);
     }
-    const body = { credits: 0, trial_days_left: null, subscription_status: null };
+    const body = { credits: null, trial_days_left: null, subscription_status: null };
     const dbg = baseDebug();
     dbg.path = "catch";
     return NextResponse.json(debug ? { ...body, _debug: dbg } : body);

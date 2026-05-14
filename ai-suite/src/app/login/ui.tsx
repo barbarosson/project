@@ -46,9 +46,7 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
   const runtime = useSupabaseBrowserRuntimeConfig();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [busy, setBusy] = React.useState<
-    null | "magic" | "register" | "signin" | "resend" | "reset"
-  >(null);
+  const [busy, setBusy] = React.useState<null | "register" | "signin" | "resend" | "reset">(null);
 
   function validateEmail(): string | null {
     const value = email.trim();
@@ -195,31 +193,6 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
     }
   }
 
-  async function sendLink() {
-    const value = validateEmail();
-    if (!value) return;
-    setBusy("magic");
-    try {
-      const supabase = createSupabaseBrowserClient(runtime);
-      if (!supabase) {
-        toast.error(t("login.missingSupabase"));
-        return;
-      }
-      const { error } = await supabase.auth.signInWithOtp({
-        email: value,
-        options: {
-          emailRedirectTo: emailAuthRedirectUrl(authCallbackUrl, nextAfterAuth),
-        },
-      });
-      if (error) throw error;
-      toast.success(t("login.emailSent"));
-    } catch (e) {
-      toast.error(mapAuthEmailErrorToMessage(t, e));
-    } finally {
-      setBusy(null);
-    }
-  }
-
   const loading = busy !== null;
 
   return (
@@ -273,10 +246,6 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
           {busy === "reset" ? t("login.sending") : t("login.forgotPasswordButton")}
         </button>
       </div>
-      <p className="text-center text-xs text-slate-500">{t("login.magicLinkDivider")}</p>
-      <Button type="button" variant="outline" onClick={() => void sendLink()} disabled={loading}>
-        {busy === "magic" ? t("login.sending") : t("login.send")}
-      </Button>
     </div>
   );
 }

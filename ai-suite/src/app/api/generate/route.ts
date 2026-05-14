@@ -1,18 +1,15 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { generateText } from "ai";
 import { openai, createOpenAI } from "@ai-sdk/openai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { google } from "@ai-sdk/google";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
-  billingAddCredits,
   billingAddRequestVersion,
   billingChargeAndCreateRequest,
   billingEnsureEntitlement,
 } from "@/lib/isendai/billing-rpc";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import { enforceRateLimit } from "@/lib/rate-limit";
 
 import {
@@ -40,10 +37,6 @@ function stripMarketingFields<T extends Record<string, unknown>>(b: T): Omit<T, 
   delete rest.leadEmail;
   delete rest.marketingFreeTrial;
   return rest as Omit<T, "leadEmail" | "marketingFreeTrial">;
-}
-
-function isValidLeadEmail(s: string): boolean {
-  return s.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
 }
 
 type ScopeResult = {
@@ -530,22 +523,26 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Resolve owner (authenticated user or device-anon).
     const supabase = await createSupabaseServerClient();
     const { data: authData } = await supabase.auth.getUser();
     const userId = authData?.user?.id ?? null;
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Sign in to generate messages.", code: "auth_required" },
+        { status: 401, headers: { ...debugHeaders, "cache-control": "no-store" } }
+      );
+    }
     const userEmail = authData?.user?.email ?? null;
-    const ownerType: "user" | "anon" = userId ? "user" : "anon";
-    const ownerId = userId ?? (await getOrCreateAnonId());
+    const ownerType = "user" as const;
+    const ownerId = userId;
 
-    // Ensure entitlement row exists (defaults: anon=0 credits, user=0 credits; max_versions differs by plan later).
-    // Credit top-ups are handled elsewhere (Lemon Squeezy webhooks, dev endpoint).
+    // Ensure entitlement row exists (credit top-ups are handled elsewhere).
     const admin = createSupabaseAdminClient();
     const { error: entErr } = await billingEnsureEntitlement(admin, {
       p_owner_type: ownerType,
       p_owner_id: ownerId,
       p_default_credits: 0,
-      p_default_max_versions: ownerType === "anon" ? 2 : 5,
+      p_default_max_versions: 5,
     });
     if (entErr) {
       return NextResponse.json(
@@ -576,10 +573,6 @@ export async function POST(req: Request) {
     }
 
     const rawBody = body as RequestBody & Record<string, unknown>;
-    const marketingFreeTrial = rawBody.marketingFreeTrial === true;
-    const leadEmail =
-      typeof rawBody.leadEmail === "string" ? rawBody.leadEmail.trim() : "";
-
     const sanitized = stripMarketingFields(rawBody) as RequestBody;
     const storedInputJson: Record<string, unknown> =
       sanitized.tool === "coverletter-ai"
@@ -587,44 +580,6 @@ export async function POST(req: Request) {
         : sanitized.tool === "dating-roast"
           ? { ...sanitized }
           : { ...sanitized };
-
-    let appliedMarketingGrant = false;
-    if (marketingFreeTrial) {
-      const cookieStore = await cookies();
-      if (cookieStore.get("isendai_ft_consumed")?.value === "1") {
-        return NextResponse.json(
-          {
-            error: "Free trial already used on this device.",
-            code: "free_trial_used",
-          },
-          { status: 403, headers: debugHeaders }
-        );
-      }
-      if (!leadEmail || !isValidLeadEmail(leadEmail)) {
-        return NextResponse.json(
-          {
-            error: "Enter a valid email to unlock your free generation.",
-            code: "invalid_lead_email",
-          },
-          { status: 400, headers: debugHeaders }
-        );
-      }
-      const { error: grantErr } = await billingAddCredits(admin, {
-        p_owner_type: ownerType,
-        p_owner_id: ownerId,
-        p_amount: creditCost,
-      });
-      if (grantErr) {
-        return NextResponse.json(
-          {
-            error: grantErr.message.length > 0 ? grantErr.message : "Could not apply free trial grant.",
-            code: "billing_error",
-          },
-          { status: 503, headers: debugHeaders }
-        );
-      }
-      appliedMarketingGrant = true;
-    }
 
     // Charge credits (amount from creditsForGeneration) and create request row BEFORE generation.
     // If this fails (insufficient credits), we stop early.
@@ -646,7 +601,7 @@ export async function POST(req: Request) {
           .schema("isendai")
           .from("entitlements")
           .select("credits_balance")
-          .eq("owner_type", ownerType)
+          .eq("owner_type", "user")
           .eq("owner_id", ownerId)
           .maybeSingle();
         return NextResponse.json(
@@ -733,15 +688,6 @@ export async function POST(req: Request) {
         },
       }
     );
-    if (appliedMarketingGrant) {
-      response.cookies.set("isendai_ft_consumed", "1", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 365 * 10,
-      });
-    }
     return response;
   } catch (e) {
     const message = e instanceof Error ? e.message : "AI request failed.";

@@ -8,11 +8,11 @@ import { cn } from "@/lib/utils";
 /**
  * Global language control rendered once in the root layout so every route
  * (account, auth flows, success, etc.) can switch locale without per-page wiring.
- * Hidden on `/account` and `/claim` — those pages render {@link SiteLocaleToolbar} in the header.
+ * Hidden on `/account` — that page renders {@link SiteLocaleToolbar} in the header.
  */
 export function AppLocaleBar() {
   const pathname = usePathname();
-  if (pathname.startsWith("/account") || pathname === "/claim") return null;
+  if (pathname.startsWith("/account")) return null;
 
   return (
     <div

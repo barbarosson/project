@@ -26,12 +26,6 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toolDescription, toolPrimaryActionLabel, toolTitle } from "@/i18n/tool-i18n";
 import { useI18n } from "@/i18n/i18n-provider";
-import { FreeTrialEmailDialog } from "@/components/marketing/free-trial-email-dialog";
-import {
-  readFreeTrialUsed,
-  saveLeadEmail,
-  setFreeTrialUsed,
-} from "@/lib/marketing/storage-keys";
 
 function ToolIcon({ tool, className }: { tool: ToolName; className?: string }) {
   const Icon = tool === "corporate-whisperer" ? Mail : tool === "coverletter-ai" ? Briefcase : Flame;
@@ -64,27 +58,14 @@ export function ToolCard({
   tool,
   showHeader = true,
   initialText,
-  enableMarketingFreeTrial = false,
 }: {
   tool: ToolName;
   showHeader?: boolean;
   /** Prefill main text (e.g. from `?text=`). Ignored for coverletter-ai. */
   initialText?: string;
-  /** When true (e.g. `/tool/[id]`), first generation can be gated behind email lead capture. */
-  enableMarketingFreeTrial?: boolean;
 }) {
   const { t } = useI18n();
   const [busy, setBusy] = React.useState(false);
-  const [dialogOpen, setDialogOpen] = React.useState(false);
-  const [trialUsed, setTrialUsed] = React.useState(false);
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    queueMicrotask(() => {
-      setMounted(true);
-      setTrialUsed(readFreeTrialUsed());
-    });
-  }, []);
 
   const def = getToolDefinition(tool);
   const modelStorageKey = `${def.storageKey}:model`;
@@ -147,7 +128,6 @@ export function ToolCard({
   const paidGenerateLabel = t("tool.billing.paidButton")
     .replace("{action}", toolPrimaryActionLabel(t, tool, def.actionLabel))
     .replace("{amount}", costAmount);
-  const showFreeCta = mounted && enableMarketingFreeTrial && !trialUsed;
 
   async function runPaidGeneration() {
     if (!isValid) {
@@ -185,6 +165,12 @@ export function ToolCard({
         json = null;
       }
 
+      if (res.status === 401 || json?.code === "auth_required") {
+        toast.error(json?.error ?? t("errors.signInRequired"));
+        window.location.assign(`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        return;
+      }
+
       if (res.status === 402 || json?.code === "insufficient_credits") {
         openPricingModal(tool);
         toast.error(json?.error ?? t("errors.generationFailed"));
@@ -208,178 +194,88 @@ export function ToolCard({
     }
   }
 
-  async function runFreeGeneration(email: string) {
-    if (!isValid) {
-      toast.error(t("tool.validation.empty"));
-      return;
-    }
-    setBusy(true);
-    try {
-      savePayload(def.storageKey, payload);
-      saveModel(modelStorageKey, model);
-
-      const body: Record<string, unknown> = {
-        ...payload,
-        ...(model === "auto" ? {} : { model: concreteModel }),
-        leadEmail: email,
-        marketingFreeTrial: true,
-      };
-
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const rawText = await res.text();
-      type GenJson = { result?: string; request_id?: string; error?: string; code?: string };
-      let json: GenJson | null = null;
-      try {
-        json = JSON.parse(rawText) as GenJson;
-      } catch {
-        json = null;
-      }
-
-      if (!res.ok) {
-        if (res.status === 402 || json?.code === "insufficient_credits") {
-          openPricingModal(tool);
-          toast.error(json?.error ?? t("errors.generationFailed"));
-          return;
-        }
-        if (json?.code === "free_trial_used") {
-          setFreeTrialUsed(true);
-          setTrialUsed(true);
-          toast.error(t("growth.freeTrial.deviceAlreadyUsed"));
-        } else if (json?.code === "invalid_lead_email") {
-          toast.error(t("growth.freeTrial.invalidEmail"));
-        } else {
-          toast.error(json?.error ?? t("errors.generationFailed"));
-        }
-        return;
-      }
-
-      if (!json?.result || !json.request_id) {
-        toast.error(t("errors.noModelResult"));
-        return;
-      }
-
-      saveLeadEmail(email);
-      setFreeTrialUsed(true);
-      setTrialUsed(true);
-      primeSuccessSession(tool, json.result, json.request_id);
-      setDialogOpen(false);
-      window.location.href = `/success?tool=${encodeURIComponent(tool)}`;
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function onPrimaryClick() {
-    if (!isValid) {
-      toast.error(t("tool.validation.empty"));
-      return;
-    }
-    if (showFreeCta) {
-      setDialogOpen(true);
-      return;
-    }
-    await runPaidGeneration();
-  }
-
   return (
-    <>
-      <Card className="overflow-hidden">
-        {showHeader ? (
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="inline-flex size-9 items-center justify-center rounded-lg border border-white/[0.1] bg-white/[0.05] backdrop-blur-xl">
-                <ToolIcon tool={tool} />
-              </div>
-              <div className="min-w-0">
-                <CardTitle className="truncate">
-                  <span className="inline-flex items-center gap-2">
-                    <span aria-hidden="true">{def.emoji}</span>
-                    <span>{toolTitle(t, tool, def.title)}</span>
-                  </span>
-                </CardTitle>
-                <CardDescription className="mt-1">
-                  {toolDescription(t, tool, def.description)}
-                </CardDescription>
-              </div>
+    <Card className="overflow-hidden">
+      {showHeader ? (
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <div className="inline-flex size-9 items-center justify-center rounded-lg border border-white/[0.1] bg-white/[0.05] backdrop-blur-xl">
+              <ToolIcon tool={tool} />
             </div>
-          </CardHeader>
-        ) : null}
+            <div className="min-w-0">
+              <CardTitle className="truncate">
+                <span className="inline-flex items-center gap-2">
+                  <span aria-hidden="true">{def.emoji}</span>
+                  <span>{toolTitle(t, tool, def.title)}</span>
+                </span>
+              </CardTitle>
+              <CardDescription className="mt-1">
+                {toolDescription(t, tool, def.description)}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+      ) : null}
 
-        <CardContent className="flex flex-col gap-4">
-          {tool === "coverletter-ai" ? (
-            <div className="grid gap-3">
-              <Input
-                value={jobLink}
-                onChange={(e) => setJobLink(e.target.value)}
-                placeholder={localizedPlaceholder(
-                  "tool.cover.placeholder1",
-                  def.fields.find((f) => f.key === "jobLink")?.placeholder ?? ""
-                )}
-              />
-              <Textarea
-                value={resume}
-                onChange={(e) => setResume(e.target.value)}
-                placeholder={localizedPlaceholder(
-                  "tool.cover.placeholder2",
-                  def.fields.find((f) => f.key === "resume")?.placeholder ?? ""
-                )}
-              />
-            </div>
-          ) : (
-            <Textarea
-              value={text}
-              maxLength={TOOL_INPUT_MAX_CHARS}
-              onChange={(e) => setText(e.target.value)}
+      <CardContent className="flex flex-col gap-4">
+        {tool === "coverletter-ai" ? (
+          <div className="grid gap-3">
+            <Input
+              value={jobLink}
+              onChange={(e) => setJobLink(e.target.value)}
               placeholder={localizedPlaceholder(
-                tool === "corporate-whisperer"
-                  ? "tool.corp.placeholder"
-                  : tool === "dating-roast"
-                    ? "tool.dating.placeholder"
-                    : `tool.${tool}.placeholder.text`,
-                def.fields.find((f) => f.key === "text")?.placeholder ?? ""
+                "tool.cover.placeholder1",
+                def.fields.find((f) => f.key === "jobLink")?.placeholder ?? ""
               )}
             />
-          )}
-
-          <div className="flex flex-col gap-2">
-            <p className="text-xs font-medium text-slate-400">{t("tool.modelSelectLabel")}</p>
-            <ModelSwitcher
-              tool={tool}
-              model={model}
-              onModelChange={persistModel}
-              className="w-full max-w-md px-3 py-2 text-sm"
+            <Textarea
+              value={resume}
+              onChange={(e) => setResume(e.target.value)}
+              placeholder={localizedPlaceholder(
+                "tool.cover.placeholder2",
+                def.fields.find((f) => f.key === "resume")?.placeholder ?? ""
+              )}
             />
           </div>
+        ) : (
+          <Textarea
+            value={text}
+            maxLength={TOOL_INPUT_MAX_CHARS}
+            onChange={(e) => setText(e.target.value)}
+            placeholder={localizedPlaceholder(
+              tool === "corporate-whisperer"
+                ? "tool.corp.placeholder"
+                : tool === "dating-roast"
+                  ? "tool.dating.placeholder"
+                  : `tool.${tool}.placeholder.text`,
+              def.fields.find((f) => f.key === "text")?.placeholder ?? ""
+            )}
+          />
+        )}
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div className="min-w-0 space-y-1">
-              <p className="text-sm text-slate-300">{t("tool.flow.hint")}</p>
-              <div className="space-y-1 text-xs text-slate-500">
-                <p>{t("tool.priceReference").replace("{price}", priceListLabel)}</p>
-                <p className="text-[11px] leading-snug text-slate-500">{t("tool.pricePackFlex")}</p>
-              </div>
+        <div className="flex flex-col gap-2">
+          <p className="text-xs font-medium text-slate-400">{t("tool.modelSelectLabel")}</p>
+          <ModelSwitcher
+            tool={tool}
+            model={model}
+            onModelChange={persistModel}
+            className="w-full max-w-md px-3 py-2 text-sm"
+          />
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0 space-y-1">
+            <p className="text-sm text-slate-300">{t("tool.flow.hint")}</p>
+            <div className="space-y-1 text-xs text-slate-500">
+              <p>{t("tool.priceReference").replace("{price}", priceListLabel)}</p>
+              <p className="text-[11px] leading-snug text-slate-500">{t("tool.pricePackFlex")}</p>
             </div>
-            <Button className="shrink-0" onClick={() => void onPrimaryClick()} disabled={busy}>
-              {showFreeCta ? t("growth.freeTrial.ctaButton") : paidGenerateLabel}
-            </Button>
           </div>
-        </CardContent>
-      </Card>
-
-      <FreeTrialEmailDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        title={t("growth.freeTrial.modalTitle")}
-        description={t("growth.freeTrial.modalBody")}
-        placeholder={t("growth.freeTrial.placeholder")}
-        submitLabel={t("growth.freeTrial.submit")}
-        cancelLabel={t("growth.freeTrial.cancel")}
-        onSubmit={runFreeGeneration}
-      />
-    </>
+          <Button className="shrink-0" onClick={() => void runPaidGeneration()} disabled={busy}>
+            {paidGenerateLabel}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

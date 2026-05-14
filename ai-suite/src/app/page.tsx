@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import { HomeClient } from "@/app/home-client";
 import type { HomeCreditsSnapshot } from "@/app/home-credits-snapshot";
 import { createSupabaseAdminClientOrNull } from "@/lib/supabase/admin";
-import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import { readUserEntitlementWalletFromSession } from "@/lib/isendai/user-wallet-from-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -19,15 +18,15 @@ export default async function Home() {
   try {
     const supabase = await createSupabaseServerClient();
     const { data: auth } = await supabase.auth.getUser();
-    const ownerId = auth.user?.id ?? (await getOrCreateAnonId());
-
-    if (auth.user) {
+    if (!auth.user) {
+      creditsSnapshot = null;
+    } else {
+      const ownerId = auth.user.id;
       const w = await readUserEntitlementWalletFromSession(supabase);
-      if (w && w !== "rpc_missing") {
+      if (w !== "rpc_missing") {
         creditsSnapshot = {
           balance: Number(w.credits_balance ?? 0),
           maxVersions: Number(w.max_versions_per_request ?? 5) || 5,
-          owner: "user",
         };
       } else {
         const admin = createSupabaseAdminClientOrNull();
@@ -44,27 +43,8 @@ export default async function Home() {
           creditsSnapshot = {
             balance: ent?.credits_balance ?? 0,
             maxVersions: ent?.max_versions_per_request ?? 5,
-            owner: "user",
           };
         }
-      }
-    } else {
-      const admin = createSupabaseAdminClientOrNull();
-      if (!admin) {
-        creditsSnapshot = null;
-      } else {
-        const { data: ent } = await admin
-          .schema("isendai")
-          .from("entitlements")
-          .select("credits_balance,max_versions_per_request")
-          .eq("owner_type", "anon")
-          .eq("owner_id", ownerId)
-          .maybeSingle();
-        creditsSnapshot = {
-          balance: ent?.credits_balance ?? 0,
-          maxVersions: ent?.max_versions_per_request ?? 2,
-          owner: "anon",
-        };
       }
     }
   } catch {

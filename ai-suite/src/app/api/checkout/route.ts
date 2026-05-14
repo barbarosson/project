@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 
 import { getToolDefinition, isToolName } from "@/components/ai-suite/tools";
 import { resolveVariantId, type CheckoutPackKey, type PaygoTierKey } from "@/lib/lemonsqueezy/catalog";
-import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { trialNetworkFingerprint, trialOwnerFingerprint } from "@/lib/trial/fingerprint";
@@ -67,23 +66,15 @@ export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData.user?.id ?? null;
-
-  if (pack.kind === "subscription" && !userId) {
+  if (!userId) {
     return NextResponse.json(
-      { error: "Sign in required to start a subscription.", code: "auth_required" },
+      { error: "Sign in required to purchase credits.", code: "auth_required" },
       { status: 401 }
     );
   }
 
-  let owner_type: "user" | "anon";
-  let owner_id: string;
-  if (userId) {
-    owner_type = "user";
-    owner_id = userId;
-  } else {
-    owner_type = "anon";
-    owner_id = await getOrCreateAnonId();
-  }
+  const owner_type = "user" as const;
+  const owner_id = userId;
 
   const admin = createSupabaseAdminClient();
   if (pack.kind === "subscription") {

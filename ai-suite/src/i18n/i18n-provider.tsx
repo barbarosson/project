@@ -70,7 +70,16 @@ export function I18nProvider({
     if (preferred !== serverLocale) {
       setLocaleState(preferred);
     }
-  }, [serverLocale]);
+    const cookieLocale = readCookieLocale();
+    if (cookieLocale !== preferred) {
+      try {
+        document.cookie = `${LOCALE_COOKIE}=${encodeURIComponent(preferred)}; path=/; max-age=31536000; samesite=lax`;
+      } catch {
+        // ignore
+      }
+      void router.refresh();
+    }
+  }, [serverLocale, router]);
 
   const setLocale = React.useCallback(
     (next: Locale) => {

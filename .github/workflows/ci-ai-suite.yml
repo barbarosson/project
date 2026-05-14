@@ -10,10 +10,6 @@ on:
       - "ai-suite/**"
       - ".github/workflows/ci-ai-suite.yml"
 
-# GitHub Actions JavaScript actions moving to Node 24 (see GH changelog 2025-09-19).
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 defaults:
   run:
     working-directory: ai-suite
@@ -22,8 +18,8 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: "24"
           cache: npm

@@ -6,8 +6,8 @@ import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { cn } from "@/lib/utils";
 import { glassInteractive, glassSurface, premiumCta, textGradientHero } from "@/lib/premium-ui";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -19,9 +19,9 @@ export default async function HistoryPage() {
   const supabase = await createSupabaseServerClient();
   const { data: authData } = await supabase.auth.getUser();
   const userId = authData?.user?.id ?? null;
-
-  const ownerType: "user" | "anon" = userId ? "user" : "anon";
-  const ownerId = userId ?? (await getOrCreateAnonId());
+  if (!userId) {
+    redirect("/login?next=%2Fhistory");
+  }
 
   const admin = createSupabaseAdminClient();
 
@@ -29,20 +29,20 @@ export default async function HistoryPage() {
     .schema("isendai")
     .from("entitlements")
     .select("credits_balance,max_versions_per_request,plan_id,plan_status,current_period_end")
-    .eq("owner_type", ownerType)
-    .eq("owner_id", ownerId)
+    .eq("owner_type", "user")
+    .eq("owner_id", userId)
     .maybeSingle();
 
   const { data: requests } = await admin
     .schema("isendai")
     .from("requests")
     .select("id,tool_id,model_id,created_at,credits_charged,max_versions")
-    .eq("owner_type", ownerType)
-    .eq("owner_id", ownerId)
+    .eq("owner_type", "user")
+    .eq("owner_id", userId)
     .order("created_at", { ascending: false })
     .limit(50);
 
-  const maxV = ent?.max_versions_per_request ?? (ownerType === "anon" ? 2 : 5);
+  const maxV = ent?.max_versions_per_request ?? 5;
 
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-12">
@@ -51,26 +51,15 @@ export default async function HistoryPage() {
           <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
             {d["history.title"]}
           </h1>
-          <p className="mt-1 text-sm text-slate-400">
-            {ownerType === "user" ? d["history.subtitleUser"] : d["history.subtitleGuest"]}
-          </p>
+          <p className="mt-1 text-sm text-slate-400">{d["history.subtitleUser"]}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {ownerType === "user" ? (
-            <Link
-              className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
-              href="/account"
-            >
-              {d["nav.account"]}
-            </Link>
-          ) : (
-            <Link
-              className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
-              href="/login?next=%2Fhistory"
-            >
-              {d["history.loginToSync"]}
-            </Link>
-          )}
+          <Link
+            className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
+            href="/account"
+          >
+            {d["nav.account"]}
+          </Link>
           <Link className={premiumCta} href="/">
             {d["nav.backToHome"]}
           </Link>

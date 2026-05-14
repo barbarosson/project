@@ -105,6 +105,10 @@ async function startCheckout(
     json = null;
   }
 
+  if (res.status === 401 || json?.code === "auth_required") {
+    toast.error(t("pricing.checkoutSignInRequired"));
+    return;
+  }
   if (!res.ok || !json?.checkout_url) {
     toast.error(json?.error ?? t("pricingModal.checkoutFailed"));
     return;

@@ -13,7 +13,6 @@ import {
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { billingAddRequestVersion, billingDeductCredits } from "@/lib/isendai/billing-rpc";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import {
   defaultConcreteModelForProvider,
   creditsForGeneration,
@@ -107,8 +106,11 @@ export async function POST(req: Request) {
   const supabase = await createSupabaseServerClient();
   const { data: authData } = await supabase.auth.getUser();
   const userId = authData?.user?.id ?? null;
-  const ownerType: "user" | "anon" = userId ? "user" : "anon";
-  const ownerId = userId ?? (await getOrCreateAnonId());
+  if (!userId) {
+    return NextResponse.json({ error: "Sign in required.", code: "auth_required" }, { status: 401 });
+  }
+  const ownerType = "user" as const;
+  const ownerId = userId;
 
   const admin = createSupabaseAdminClient();
   const { data: reqRow, error: reqErr } = await admin

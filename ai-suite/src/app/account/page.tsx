@@ -57,12 +57,6 @@ export default async function AccountPage() {
           >
             {d["profile.editLink"]}
           </Link>
-          <Link
-            className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
-            href="/claim"
-          >
-            {d["account.linkGuest"]}
-          </Link>
           <Link className={premiumCta} href="/">
             {d["nav.backToHome"]}
           </Link>

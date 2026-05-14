@@ -8,34 +8,12 @@ import { resolvePostLoginNext } from "@/lib/auth/safe-next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { glassInteractive, textGradientHero } from "@/lib/premium-ui";
-import { getOrCreateAnonId } from "@/lib/isendai/owner";
-import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { FacebookSignInButton } from "./facebook-sign-in-button";
 import { GoogleSignInButton } from "./google-sign-in-button";
 import { OAuthLoginButtons } from "./oauth-login-buttons";
 import { LoginClient } from "./ui";
 
 export const dynamic = "force-dynamic";
-
-async function loadGuestCreditsSnapshot(): Promise<{ credits: number; max: number } | null> {
-  try {
-    const admin = createSupabaseAdminClient();
-    const anonId = await getOrCreateAnonId();
-    const { data: ent } = await admin
-      .schema("isendai")
-      .from("entitlements")
-      .select("credits_balance,max_versions_per_request")
-      .eq("owner_type", "anon")
-      .eq("owner_id", anonId)
-      .maybeSingle();
-    return {
-      credits: ent?.credits_balance ?? 0,
-      max: ent?.max_versions_per_request ?? 2,
-    };
-  } catch {
-    return null;
-  }
-}
 
 export default async function LoginPage({
   searchParams,
@@ -46,8 +24,6 @@ export default async function LoginPage({
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   const locale = resolveLocaleFromCookie(cookieLocale);
   const d = DICTS[locale];
-  const guest = await loadGuestCreditsSnapshot();
-
   const supabase = await createSupabaseServerClient();
   const { data: auth } = await supabase.auth.getUser();
   if (auth.user) {
@@ -70,20 +46,6 @@ export default async function LoginPage({
           {d["login.title"]}
         </h1>
         <p className="mt-2 text-sm text-slate-400">{d["login.subtitle"]}</p>
-        {guest ? (
-          <div className="mt-4 rounded-xl border border-violet-500/25 bg-violet-500/10 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-violet-200/90">
-              {d["login.creditsTitle"]}
-            </p>
-            <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-white">
-              {guest.credits}
-            </p>
-            <p className="mt-1 text-xs text-slate-300">
-              {d["login.creditsMax"].replace("{max}", String(guest.max))}
-            </p>
-            <p className="mt-2 text-xs leading-relaxed text-slate-400">{d["login.creditsHint"]}</p>
-          </div>
-        ) : null}
         <div className="mt-6 border-t border-white/[0.08] pt-6">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90">
             {d["login.membershipEmailTitle"]}

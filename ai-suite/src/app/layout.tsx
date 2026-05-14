@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Space_Grotesk } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import Script from "next/script";
 import { cookies } from "next/headers";
 import { Toaster } from "sonner";
@@ -16,7 +16,7 @@ import { SupabaseBrowserConfigProvider } from "@/lib/supabase/browser-config-con
 import { PricingModalProvider } from "@/components/pricing/pricing-modal";
 import { AppLocaleBar } from "@/components/app-locale-bar";
 
-const geistSans = Geist({
+const sans = Inter({
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
@@ -56,7 +56,7 @@ export default async function RootLayout({
     <html
       lang={initialLocale ?? "en"}
       suppressHydrationWarning
-      className={`dark ${geistSans.variable} ${spaceGrotesk.variable} h-full antialiased`}
+      className={`dark ${sans.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-[#09090b] text-slate-50 antialiased">
         {GA_ID ? (

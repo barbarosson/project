@@ -3,7 +3,6 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { billingAddCredits, billingEnsureEntitlement } from "@/lib/isendai/billing-rpc";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { getOrCreateAnonId } from "@/lib/isendai/owner";
 
 export async function POST(req: Request) {
   if (process.env.NODE_ENV === "production") {
@@ -34,16 +33,19 @@ export async function POST(req: Request) {
   const supabase = await createSupabaseServerClient();
   const { data: authData } = await supabase.auth.getUser();
   const userId = authData?.user?.id ?? null;
+  if (!userId) {
+    return NextResponse.json({ error: "Sign in required for dev top-up." }, { status: 401 });
+  }
 
-  const ownerType: "user" | "anon" = userId ? "user" : "anon";
-  const ownerId = userId ?? (await getOrCreateAnonId());
+  const ownerType = "user" as const;
+  const ownerId = userId;
 
   const admin = createSupabaseAdminClient();
   const { error: entErr } = await billingEnsureEntitlement(admin, {
     p_owner_type: ownerType,
     p_owner_id: ownerId,
     p_default_credits: 0,
-    p_default_max_versions: ownerType === "anon" ? 2 : 5,
+    p_default_max_versions: 5,
   });
   if (entErr) return NextResponse.json({ error: entErr.message }, { status: 500 });
 
@@ -69,4 +71,3 @@ export async function POST(req: Request) {
     entitlements: ent ?? null,
   });
 }
-

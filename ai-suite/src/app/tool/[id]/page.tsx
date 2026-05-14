@@ -81,7 +81,7 @@ export default async function ToolDeepLinkPage({
             ← {d["nav.backToHome"]}
           </Link>
         </p>
-        <ToolCard tool={tool} initialText={initialText} enableMarketingFreeTrial />
+        <ToolCard tool={tool} initialText={initialText} />
       </main>
     </div>
   );

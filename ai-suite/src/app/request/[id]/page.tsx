@@ -1,11 +1,10 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { getOrCreateAnonId } from "@/lib/isendai/owner";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import { CopyVersionButton } from "./copy-buttons";
@@ -25,8 +24,11 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
   const supabase = await createSupabaseServerClient();
   const { data: authData } = await supabase.auth.getUser();
   const userId = authData?.user?.id ?? null;
-  const ownerType: "user" | "anon" = userId ? "user" : "anon";
-  const ownerId = userId ?? (await getOrCreateAnonId());
+  if (!userId) {
+    redirect(`/login?next=${encodeURIComponent(`/request/${id}`)}`);
+  }
+  const ownerType = "user" as const;
+  const ownerId = userId;
 
   const admin = createSupabaseAdminClient();
   const { data: reqRow } = await admin
