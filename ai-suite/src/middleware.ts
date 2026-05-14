@@ -29,7 +29,8 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
+  /** Skip all `/_next/*` (HMR, webpack/turbopack chunks, react-refresh, etc.) — running middleware there breaks dev with 500s. */
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2)$).*)",
+    "/((?!_next(?:/|$)|favicon\\.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2)$).*)",
   ],
 };

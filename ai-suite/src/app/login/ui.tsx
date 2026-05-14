@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useI18n } from "@/i18n/i18n-provider";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSupabaseBrowserRuntimeConfig } from "@/lib/supabase/browser-config-context";
+import { publicBrowserSiteOrigin } from "@/lib/site-public-url";
 
 const MIN_PASSWORD_LEN = 6;
 
@@ -33,7 +34,8 @@ function mapAuthEmailErrorToMessage(
 function emailAuthRedirectUrl(authCallbackUrl: string, nextAfterAuth: string): string {
   const trimmed = authCallbackUrl.trim();
   if (trimmed) return trimmed;
-  return `${window.location.origin}/auth/callback?next=${encodeURIComponent(nextAfterAuth)}`;
+  const origin = publicBrowserSiteOrigin();
+  return `${origin}/auth/callback?next=${encodeURIComponent(nextAfterAuth)}`;
 }
 
 type LoginClientProps = {
@@ -181,8 +183,9 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
         toast.error(t("login.missingSupabase"));
         return;
       }
+      const origin = publicBrowserSiteOrigin();
       const { error } = await supabase.auth.resetPasswordForEmail(value, {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/auth/update-password")}`,
+        redirectTo: `${origin}/auth/callback?next=${encodeURIComponent("/auth/update-password")}`,
       });
       if (error) throw error;
       toast.success(t("login.resetEmailSent"));

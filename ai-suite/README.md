@@ -31,6 +31,9 @@ copy .env.example .env.local
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (server-only)
 - `OPENAI_API_KEY` (or another provider you enable)
+- **`NEXT_PUBLIC_SITE_URL`** — use your real deploy URL (e.g. `https://isendai.netlify.app`). Supabase puts this into password-reset and sign-up email links when set at **build** time; without it, links follow whatever origin you used when you clicked “Forgot password” (often `http://localhost:3000`).
+
+**Supabase Dashboard → Authentication → URL Configuration:** set **Site URL** to the same production URL and add **`https://isendai.netlify.app/**`** (or your domain) under **Redirect URLs** so recovery links are accepted.
 
 3. Run:
 
