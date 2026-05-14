@@ -16,7 +16,7 @@ const LOCALE_TAG: Record<Locale, string> = {
 };
 
 type Wallet = {
-  credits: number;
+  credits: number | null;
   trial_days_left: number | null;
   subscription_status: string | null;
 };

@@ -8,6 +8,7 @@ The Next.js app expects schema `isendai` with tables `entitlements`, `requests`,
 - `deduct_credits(p_owner_type, p_owner_id, p_amount)` → new balance (extra versions)
 - `set_credits_balance(p_owner_type, p_owner_id, p_balance)` → void (admin / webhooks)
 - `add_request_version(p_request_id, p_text)` → returns version `idx`
+- **`public.user_entitlement_wallet()`** (no args) → current user’s `isendai.entitlements` row (JWT `auth.uid()`). Apply `supabase/APPLY_USER_WALLET_RPC.sql` or migration `20260515120000_user_entitlement_wallet_rpc.sql`. If PostgREST says it is missing from the **schema cache**, run `NOTIFY pgrst, 'reload schema';` in SQL Editor or wait ~1 minute.
 
 ### Quick fix (recommended): one SQL file
 
@@ -30,6 +31,7 @@ Apply migrations **in order**:
 2. `supabase/migrations/20260512100000_isendai_public_rpc_wrappers.sql`
 3. `supabase/migrations/20260513120000_lemon_processed_orders.sql` (optional, Lemon idempotency)
 4. `supabase/migrations/20260514100000_isendai_variable_credits_and_billing_meta.sql` (**required** for current `billingChargeAndCreateRequest` / variable credits)
+5. `supabase/migrations/20260515120000_user_entitlement_wallet_rpc.sql` (**recommended** for `/api/me/wallet` and nav credits without relying only on service-role table reads)
 
 ```bash
 cd ai-suite && supabase db push
