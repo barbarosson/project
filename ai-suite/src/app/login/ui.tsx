@@ -67,13 +67,7 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
       toast.error(t("login.authFailed"));
       return;
     }
-    const meta = user.user_metadata as Record<string, unknown> | undefined;
-    const completed =
-      typeof meta?.profile_completed_at === "string" && meta.profile_completed_at.length > 0;
-    const dest = completed
-      ? nextAfterAuth
-      : `/account/profile?next=${encodeURIComponent(nextAfterAuth)}`;
-    window.location.assign(dest);
+    window.location.assign(nextAfterAuth);
   }
 
   async function registerWithPassword() {

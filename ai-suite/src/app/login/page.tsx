@@ -51,12 +51,7 @@ export default async function LoginPage({
   const supabase = await createSupabaseServerClient();
   const { data: auth } = await supabase.auth.getUser();
   if (auth.user) {
-    const nextAfter = resolvePostLoginNext(sp.next);
-    const meta = auth.user.user_metadata as Record<string, unknown> | undefined;
-    const completed =
-      typeof meta?.profile_completed_at === "string" && meta.profile_completed_at.length > 0;
-    const dest = completed ? nextAfter : `/account/profile?next=${encodeURIComponent(nextAfter)}`;
-    redirect(dest);
+    redirect(resolvePostLoginNext(sp.next));
   }
 
   const h = await headers();

@@ -6,6 +6,5 @@ export function oauthCallbackRedirectUrl(serverCallbackUrl: string): string {
   if (t) return t;
   if (typeof window === "undefined") return "";
   const next = safeNext(new URLSearchParams(window.location.search).get("next"));
-  const n = next === "/" ? "/claim" : next;
-  return `${window.location.origin}/auth/callback?next=${encodeURIComponent(n)}`;
+  return `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
 }

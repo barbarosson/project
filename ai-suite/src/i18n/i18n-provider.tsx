@@ -32,13 +32,15 @@ function readCookieLocale(): Locale | null {
   }
 }
 
-function getInitialLocale(initialLocale?: Locale): Locale {
-  if (typeof window === "undefined") return initialLocale ?? "en";
+function resolveClientLocalePreference(): Locale {
   const cookie = readCookieLocale();
   if (cookie) return cookie;
-  const saved = window.localStorage.getItem(STORAGE_KEY) as Locale | null;
-  if (saved && DICTS[saved]) return saved;
-
+  try {
+    const saved = window.localStorage.getItem(STORAGE_KEY) as Locale | null;
+    if (saved && DICTS[saved]) return saved;
+  } catch {
+    // ignore
+  }
   const lang = (navigator.language || "en").toLowerCase();
   if (lang.startsWith("tr")) return "tr";
   if (lang.startsWith("es")) return "es";
@@ -56,11 +58,19 @@ export function I18nProvider({
   initialLocale?: Locale;
 }) {
   const router = useRouter();
-  const [locale, setLocaleState] = React.useState<Locale>(() => getInitialLocale(initialLocale));
+  const serverLocale = initialLocale ?? "en";
+  const [locale, setLocaleState] = React.useState<Locale>(serverLocale);
 
   React.useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
+
+  React.useEffect(() => {
+    const preferred = resolveClientLocalePreference();
+    if (preferred !== serverLocale) {
+      setLocaleState(preferred);
+    }
+  }, [serverLocale]);
 
   const setLocale = React.useCallback(
     (next: Locale) => {

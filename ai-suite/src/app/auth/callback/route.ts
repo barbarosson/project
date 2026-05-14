@@ -40,19 +40,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/login?error=auth", origin));
   }
 
-  const { data: userData } = await supabase.auth.getUser();
-  const meta = userData.user?.user_metadata as Record<string, unknown> | undefined;
-  const completed =
-    typeof meta?.profile_completed_at === "string" && meta.profile_completed_at.length > 0;
-
   let destinationPath: string;
   if (
     nextPath === "/auth/update-password" ||
     nextPath.startsWith("/auth/update-password/")
   ) {
     destinationPath = nextPath || "/auth/update-password";
-  } else if (!completed) {
-    destinationPath = `/account/profile?next=${encodeURIComponent(nextPath || "/")}`;
   } else {
     destinationPath = nextPath || "/";
   }

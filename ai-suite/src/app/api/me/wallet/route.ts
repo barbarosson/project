@@ -18,6 +18,18 @@ function trialDaysLeft(trialEndsAt: string | null, subscriptionStatus: string | 
   return Math.ceil(ms / 86_400_000);
 }
 
+/** Non-secret: `https://abcd.supabase.co` → project ref (compare with Netlify / Dashboard URL). */
+function supabaseProjectRefFromUrl(url: string | null | undefined): string | null {
+  if (!url?.trim()) return null;
+  try {
+    const host = new URL(url.trim()).hostname.toLowerCase();
+    const m = /^([a-z0-9-]+)\.supabase\.co$/i.exec(host);
+    return m?.[1] ?? host;
+  } catch {
+    return null;
+  }
+}
+
 type WalletDebug = {
   cwdHint: string;
   hasServiceRoleKey: boolean;
@@ -33,6 +45,8 @@ type WalletDebug = {
   adminError?: string;
   /** Actionable hints when path is admin_error or rpcProbe shows schema cache issues. */
   hints?: string[];
+  /** Parsed from NEXT_PUBLIC_SUPABASE_URL — if this differs from Netlify, local and prod use different DBs. */
+  supabaseProjectRef?: string | null;
 };
 
 export async function GET(req: NextRequest) {
@@ -49,6 +63,7 @@ export async function GET(req: NextRequest) {
     ownerType: "none",
     ownerIdPrefix: null,
     path: "init",
+    supabaseProjectRef: supabaseProjectRefFromUrl(optionalEnv("NEXT_PUBLIC_SUPABASE_URL")),
   });
 
   try {
@@ -144,6 +159,7 @@ export async function GET(req: NextRequest) {
       dbg.hints = [
         "Supabase Dashboard → Project Settings → API → Exposed schemas: add `isendai` (then save). Service-role reads use PostgREST; without exposure, .schema(\"isendai\").from(\"entitlements\") fails.",
         "If RPC probe says the function is missing: SQL Editor → run supabase/APPLY_USER_WALLET_RPC.sql (or migration 20260515120000_user_entitlement_wallet_rpc.sql), then run NOTIFY pgrst, 'reload schema'; or wait ~1 min.",
+        "If Netlify shows the right credits but localhost shows 0: compare _debug.supabaseProjectRef with the hostname in Netlify NEXT_PUBLIC_SUPABASE_URL — they must be the same project. Copy URL + anon + service role from Netlify into ai-suite/.env.local, restart dev.",
       ];
     }
 

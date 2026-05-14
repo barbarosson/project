@@ -11,11 +11,10 @@ export function safeNext(raw: string | null | undefined): string {
   return trimmed;
 }
 
-/** Default when `next` query is missing or `/` (matches post-login client flows). */
-export const DEFAULT_POST_LOGIN_NEXT = "/claim";
+/** Default when `next` query is missing (post-login → home). */
+export const DEFAULT_POST_LOGIN_NEXT = "/";
 
 export function resolvePostLoginNext(raw: string | null | undefined): string {
-  const n = safeNext(raw);
-  if (n === "/") return DEFAULT_POST_LOGIN_NEXT;
-  return n;
+  if (raw == null || raw.trim() === "") return DEFAULT_POST_LOGIN_NEXT;
+  return safeNext(raw);
 }
