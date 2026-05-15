@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
 
 import { isMembershipProfileComplete } from "@/lib/auth/membership-profile";
 import { safeNext } from "@/lib/auth/safe-next";
 import { ensureUserEntitlementsBootstrap } from "@/lib/isendai/ensure-user-entitlements";
-import { requiredEnv } from "@/lib/env";
+import {
+  applyPendingAuthCookies,
+  createSupabaseRouteHandlerClient,
+  type PendingAuthCookie,
+} from "@/lib/supabase/route-handler-client";
 
 function redirectOrigin(request: NextRequest, fallback: string): string {
   const forwardedHost = request.headers.get("x-forwarded-host");
@@ -15,12 +18,20 @@ function redirectOrigin(request: NextRequest, fallback: string): string {
   return fallback.replace(/\/+$/, "");
 }
 
+function redirectWithCookies(
+  url: URL,
+  pendingCookies: PendingAuthCookie[]
+): NextResponse {
+  const response = NextResponse.redirect(url);
+  applyPendingAuthCookies(response, pendingCookies);
+  return response;
+}
+
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
-  const origin = url.origin;
   const code = url.searchParams.get("code");
   const nextPath = safeNext(url.searchParams.get("next"));
-  const siteOrigin = redirectOrigin(request, origin);
+  const siteOrigin = redirectOrigin(request, url.origin);
 
   const oauthErr =
     url.searchParams.get("error") ||
@@ -29,6 +40,12 @@ export async function GET(request: NextRequest) {
   if (oauthErr && !code) {
     const login = new URL("/login", siteOrigin);
     login.searchParams.set("error", "oauth");
+    if (url.searchParams.get("error_description")) {
+      login.searchParams.set(
+        "detail",
+        url.searchParams.get("error_description")!.slice(0, 200)
+      );
+    }
     return NextResponse.redirect(login);
   }
 
@@ -36,42 +53,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/", siteOrigin));
   }
 
-  /**
-   * Official Supabase SSR pattern: bind cookies to the redirect response **from the start**
-   * so every `setAll` call by `exchangeCodeForSession` flushes to the response headers.
-   * Without this, OAuth cookies (Facebook/Google) silently never reach the browser.
-   *
-   * Placeholder URL — we rewrite to the real destination after we know the user state.
-   */
-  let response = NextResponse.redirect(new URL("/", siteOrigin));
+  const pendingCookies: PendingAuthCookie[] = [];
+  const supabase = createSupabaseRouteHandlerClient(request, pendingCookies);
 
-  const supabase = createServerClient(
-    requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    requiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            request.cookies.set({ name, value, ...(options ?? {}) });
-            response.cookies.set({ name, value, ...(options ?? {}) });
-          });
-        },
-      },
-    }
-  );
-
-  const { error } = await supabase.auth.exchangeCodeForSession(code);
-  if (error) {
+  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+  if (exchangeError) {
     const login = new URL("/login", siteOrigin);
     login.searchParams.set("error", "auth");
-    const loginResponse = NextResponse.redirect(login);
-    response.cookies.getAll().forEach((c) => {
-      loginResponse.cookies.set(c.name, c.value, c);
-    });
-    return loginResponse;
+    login.searchParams.set("detail", exchangeError.message.slice(0, 200));
+    return redirectWithCookies(login, pendingCookies);
   }
 
   const { data: userData } = await supabase.auth.getUser();
@@ -79,13 +69,9 @@ export async function GET(request: NextRequest) {
   if (!user) {
     const login = new URL("/login", siteOrigin);
     login.searchParams.set("error", "auth");
-    return NextResponse.redirect(login);
+    return redirectWithCookies(login, pendingCookies);
   }
 
-  /**
-   * Bootstrap entitlements row for new OAuth users so `/account` isn't empty.
-   * Idempotent (INSERT ... ON CONFLICT DO NOTHING) — safe to run on every sign-in.
-   */
   await ensureUserEntitlementsBootstrap(user.id);
 
   let destinationPath: string;
@@ -105,12 +91,7 @@ export async function GET(request: NextRequest) {
   if (!user.email?.trim()) {
     destination.searchParams.set("oauth_email", "missing");
   }
+  destination.searchParams.set("auth_sync", "1");
 
-  /** Re-emit with the final destination, preserving cookies we already accumulated. */
-  const finalResponse = NextResponse.redirect(destination);
-  response.cookies.getAll().forEach((c) => {
-    finalResponse.cookies.set(c.name, c.value, c);
-  });
-  response = finalResponse;
-  return response;
+  return redirectWithCookies(destination, pendingCookies);
 }

@@ -23,7 +23,7 @@ export const dynamic = "force-dynamic";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; error?: string }>;
+  searchParams: Promise<{ next?: string; error?: string; detail?: string }>;
 }) {
   const sp = await searchParams;
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
@@ -44,7 +44,7 @@ export default async function LoginPage({
 
   return (
     <main className={pageMain("auth")}>
-      <LoginAuthToast error={sp.error} />
+      <LoginAuthToast error={sp.error} detail={sp.detail} />
       <div className={cn("rounded-2xl p-6", glassInteractive)}>
         <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
           {d["login.title"]}
