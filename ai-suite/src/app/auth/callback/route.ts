@@ -1,10 +1,12 @@
-import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
 
 import { isMembershipProfileComplete } from "@/lib/auth/membership-profile";
 import { safeNext } from "@/lib/auth/safe-next";
-import { requiredEnv } from "@/lib/env";
+import {
+  applyPendingAuthCookies,
+  createSupabaseRouteHandlerClient,
+  type PendingAuthCookie,
+} from "@/lib/supabase/route-handler-client";
 
 function redirectOrigin(request: NextRequest, fallback: string): string {
   const forwardedHost = request.headers.get("x-forwarded-host");
@@ -15,8 +17,8 @@ function redirectOrigin(request: NextRequest, fallback: string): string {
   return fallback.replace(/\/+$/, "");
 }
 
-/** Allow deferred supabase-js auth listeners to flush Set-Cookie in serverless (see supabase-js #2037). */
-async function flushAuthCookies(supabase: ReturnType<typeof createServerClient>) {
+/** Let supabase-js flush deferred Set-Cookie before we copy cookies onto the redirect. */
+async function flushAuthCookies(supabase: ReturnType<typeof createSupabaseRouteHandlerClient>) {
   await supabase.auth.getSession();
   await new Promise((resolve) => setTimeout(resolve, 0));
   await supabase.auth.getUser();
@@ -43,27 +45,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/", siteOrigin));
   }
 
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    requiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
-            });
-          } catch {
-            // Route handlers should allow set; ignore if not writable.
-          }
-        },
-      },
-    }
-  );
+  const pendingCookies: PendingAuthCookie[] = [];
+  const supabase = createSupabaseRouteHandlerClient(request, pendingCookies);
 
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
@@ -100,6 +83,10 @@ export async function GET(request: NextRequest) {
   if (!user.email?.trim()) {
     destination.searchParams.set("oauth_email", "missing");
   }
+  /** Client hydrator runs `getSession` + `router.refresh` after OAuth lands. */
+  destination.searchParams.set("auth_sync", "1");
 
-  return NextResponse.redirect(destination);
+  const response = NextResponse.redirect(destination);
+  applyPendingAuthCookies(response, pendingCookies);
+  return response;
 }

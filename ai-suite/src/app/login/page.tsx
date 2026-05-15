@@ -10,6 +10,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { pageMain } from "@/lib/page-layout";
 import { cn } from "@/lib/utils";
 import { glassInteractive, textGradientHero } from "@/lib/premium-ui";
+import { OAUTH_UI } from "@/lib/auth/oauth-ui";
 import { FacebookSignInButton } from "./facebook-sign-in-button";
 import { GoogleSignInButton } from "./google-sign-in-button";
 import { InstagramSignInButton } from "./instagram-sign-in-button";
@@ -58,41 +59,22 @@ export default async function LoginPage({
             <LoginClient authCallbackUrl={authCallbackUrl} nextAfterAuth={nextAfterAuth} />
           </div>
         </div>
-        <div className="mt-6 border-t border-white/[0.08] pt-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90">
-            {d["login.membershipGoogleTitle"]}
-          </h2>
-          <p className="mt-1 text-sm text-slate-400">{d["login.membershipGoogleBody"]}</p>
-          <div className="mt-4">
-            <GoogleSignInButton authCallbackUrl={authCallbackUrl} />
+        {(OAUTH_UI.google || OAUTH_UI.facebook) && (
+          <div className="mt-6 border-t border-white/[0.08] pt-6">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90">
+              {d["login.membershipSocialTitle"]}
+            </h2>
+            <p className="mt-1 text-sm text-slate-400">{d["login.membershipSocialBody"]}</p>
+            <div className="mt-4 grid gap-3">
+              {OAUTH_UI.google ? (
+                <GoogleSignInButton authCallbackUrl={authCallbackUrl} />
+              ) : null}
+              {OAUTH_UI.facebook ? (
+                <FacebookSignInButton authCallbackUrl={authCallbackUrl} />
+              ) : null}
+            </div>
           </div>
-        </div>
-        <div className="mt-6 border-t border-white/[0.08] pt-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90">
-            {d["login.membershipFacebookTitle"]}
-          </h2>
-          <p className="mt-1 text-sm text-slate-400">{d["login.membershipFacebookBody"]}</p>
-          <div className="mt-4">
-            <FacebookSignInButton authCallbackUrl={authCallbackUrl} />
-          </div>
-        </div>
-        <div className="mt-6 border-t border-white/[0.08] pt-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90">
-            {d["login.membershipInstagramTitle"]}
-          </h2>
-          <p className="mt-1 text-sm text-slate-400">{d["login.membershipInstagramBody"]}</p>
-          <div className="mt-4">
-            <InstagramSignInButton authCallbackUrl={authCallbackUrl} />
-          </div>
-        </div>
-        <div className="mt-6 border-t border-white/[0.08] pt-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90">
-            {d["login.membershipOtherTitle"]}
-          </h2>
-          <div className="mt-4">
-            <OAuthLoginButtons authCallbackUrl={authCallbackUrl} />
-          </div>
-        </div>
+        )}
         <p className="mt-5 text-xs text-slate-400">
           {d["login.legalLead"]}{" "}
           <Link className="text-violet-300 hover:text-violet-200" href="/terms">

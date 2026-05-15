@@ -397,6 +397,9 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipEmailTitle": "Email",
     "login.membershipEmailBody":
       "Use your personal email: create an account with a password, sign in with password, or request a one-time magic link (no password). After sign-in, you complete your membership profile.",
+    "login.membershipSocialTitle": "Google or Facebook",
+    "login.membershipSocialBody":
+      "Sign in with Google or Facebook, then confirm or add membership details on the next screen.",
     "login.membershipGoogleTitle": "Google account",
     "login.membershipGoogleBody":
       "Use your Google identity, then confirm or add membership details on the next screen.",
@@ -931,6 +934,9 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipEmailTitle": "Email",
     "login.membershipEmailBody":
       "Usa tu email personal: crea una cuenta con contraseña, entra con contraseña o pide un enlace mágico de un solo uso. Después del acceso completas tu perfil de membresía.",
+    "login.membershipSocialTitle": "Google o Facebook",
+    "login.membershipSocialBody":
+      "Inicia sesión con Google o Facebook y confirma o añade los datos de membresía en la siguiente pantalla.",
     "login.membershipGoogleTitle": "Cuenta de Google",
     "login.membershipGoogleBody":
       "Usa tu identidad de Google y confirma o añade los datos de membresía en la siguiente pantalla.",
@@ -1457,6 +1463,9 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipEmailTitle": "Email",
     "login.membershipEmailBody":
       "Utilise ton email personnel : crée un compte avec mot de passe, connecte-toi avec mot de passe ou demande un lien magique à usage unique. Après connexion, tu complètes ton profil d’adhésion.",
+    "login.membershipSocialTitle": "Google ou Facebook",
+    "login.membershipSocialBody":
+      "Connecte-toi avec Google ou Facebook, puis confirme ou complète les informations d’adhésion à l’écran suivant.",
     "login.membershipGoogleTitle": "Compte Google",
     "login.membershipGoogleBody":
       "Utilise ton compte Google, puis confirme ou complète les informations d’adhésion à l’écran suivant.",
@@ -1984,6 +1993,9 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipEmailTitle": "E‑Mail",
     "login.membershipEmailBody":
       "Nutze deine persönliche E‑Mail: Konto mit Passwort anlegen, mit Passwort anmelden oder einen einmaligen Magic Link anfordern. Nach der Anmeldung vervollständigst du dein Mitgliedschaftsprofil.",
+    "login.membershipSocialTitle": "Google oder Facebook",
+    "login.membershipSocialBody":
+      "Melde dich mit Google oder Facebook an und bestätige oder ergänze die Mitgliedschaftsdaten auf der nächsten Seite.",
     "login.membershipGoogleTitle": "Google‑Konto",
     "login.membershipGoogleBody":
       "Nutze dein Google‑Konto und bestätige oder ergänze die Mitgliedschaftsdaten auf der nächsten Seite.",
@@ -2484,6 +2496,9 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipEmailTitle": "邮箱",
     "login.membershipEmailBody":
       "使用个人邮箱：可用密码注册账户、用密码登录，或索取一次性魔法链接（无需密码）。登录后完成会员资料。",
+    "login.membershipSocialTitle": "Google 或 Facebook",
+    "login.membershipSocialBody":
+      "使用 Google 或 Facebook 登录后，在下一页确认或补充会员信息。",
     "login.membershipGoogleTitle": "Google 账号",
     "login.membershipGoogleBody":
       "使用 Google 登录后，在下一页确认或补充会员信息。",
@@ -2989,6 +3004,9 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipEmailTitle": "E-posta",
     "login.membershipEmailBody":
       "Kişisel e-postanı kullan: şifreyle hesap oluştur, şifreyle giriş yap veya tek kullanımlık sihirli bağlantı iste (şifresiz). Girişten sonra üyelik profilini tamamlarsın.",
+    "login.membershipSocialTitle": "Google veya Facebook",
+    "login.membershipSocialBody":
+      "Google veya Facebook ile giriş yap; bir sonraki ekranda üyelik bilgilerini onayla veya ekle.",
     "login.membershipGoogleTitle": "Google hesabı",
     "login.membershipGoogleBody":
       "Google kimliğinle gir; bir sonraki ekranda üyelik bilgilerini onayla veya ekle.",
