@@ -8,6 +8,7 @@ import { CreditsNav } from "@/components/credits-nav";
 import { IsendaiLogo } from "@/components/isendai-logo";
 import { ToolCard } from "@/components/ai-suite/tool-card";
 import { getToolDefinition, isToolName, type ToolName } from "@/components/ai-suite/tools";
+import { pageMain, siteContainer } from "@/lib/page-layout";
 import { SEO_CATEGORY_TITLE } from "@/lib/seo/category-public-title";
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
@@ -60,7 +61,7 @@ export default async function ToolDeepLinkPage({
 
   return (
     <div className="min-h-full">
-      <header className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:py-5">
+      <header className={siteContainer("flex flex-wrap items-center justify-between gap-3 py-4 sm:py-5")}>
         <Link href="/" className="flex min-w-0 items-center">
           <IsendaiLogo
             withWordmark
@@ -75,7 +76,7 @@ export default async function ToolDeepLinkPage({
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-3xl px-4 pb-16">
+      <main className={pageMain("narrow", "pb-16")}>
         <p className="mb-6">
           <Link className="text-sm text-violet-300 hover:text-violet-200" href="/">
             ← {d["nav.backToHome"]}

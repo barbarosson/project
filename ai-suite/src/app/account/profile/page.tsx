@@ -6,6 +6,7 @@ import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { AuthStatus } from "@/components/auth-status";
 import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
+import { pageMain } from "@/lib/page-layout";
 import { cn } from "@/lib/utils";
 import { glassInteractive, textGradientHero } from "@/lib/premium-ui";
 import { safeNext } from "@/lib/auth/safe-next";
@@ -41,7 +42,7 @@ export default async function AccountProfilePage({
       : {};
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-12">
+    <main className={pageMain("narrow")}>
       <ProfileOauthToast oauthEmail={sp.oauth_email} />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>

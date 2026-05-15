@@ -259,7 +259,7 @@ export function ToolCard({
             tool={tool}
             model={model}
             onModelChange={persistModel}
-            className="w-full max-w-md px-3 py-2 text-sm"
+            className="w-full min-w-0 max-w-full px-3 py-2 text-sm"
           />
         </div>
 

@@ -117,25 +117,25 @@ export function ConciergeChat({ className }: { className?: string }) {
   }
 
   return (
-    <Card className={className}>
+    <Card className={cn("w-full min-w-0 max-w-full overflow-hidden", className)}>
       <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2 text-base font-semibold">
+        <CardTitle className="flex min-w-0 flex-wrap items-center gap-2 text-base font-semibold">
           <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400/50" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
           </span>
           <IsendaiLogo
             withWordmark
-            className="gap-2"
-            iconClassName="size-6"
-            wordmarkClassName="text-base"
+            className="min-w-0 max-w-full gap-1.5 sm:gap-2"
+            iconClassName="size-6 shrink-0 sm:size-7"
+            wordmarkClassName="truncate text-sm sm:text-base"
           />
         </CardTitle>
       </CardHeader>
-      <CardContent className="grid gap-3">
+      <CardContent className="grid min-w-0 gap-3">
         <div
           className={cn(
-            "max-h-56 space-y-2 overflow-auto rounded-xl p-3 text-sm text-slate-300",
+            "max-h-56 min-w-0 space-y-2 overflow-y-auto overflow-x-hidden rounded-xl p-3 text-sm text-slate-300",
             glassSurface
           )}
         >
@@ -143,13 +143,13 @@ export function ConciergeChat({ className }: { className?: string }) {
             <div
               key={m.id}
               className={cn(
-                "rounded-lg border px-3 py-2",
+                "max-w-full break-words rounded-lg border px-3 py-2",
                 m.role === "user"
-                  ? "ml-auto w-[92%] border-primary/30 bg-primary/10"
-                  : "mr-auto w-[92%] border-border/60 bg-card"
+                  ? "ml-auto w-[min(92%,100%)] border-primary/30 bg-primary/10"
+                  : "mr-auto w-[min(92%,100%)] border-border/60 bg-card"
               )}
             >
-              <p className="whitespace-pre-wrap">
+              <p className="whitespace-pre-wrap break-words">
                 {m.role === "assistant"
                   ? renderMarkdownLinks(m.content === WELCOME_TOKEN ? t("concierge.welcome") : m.content)
                   : m.content}
@@ -178,27 +178,29 @@ export function ConciergeChat({ className }: { className?: string }) {
         ) : null}
 
         {suggested.length ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex min-w-0 flex-wrap gap-2">
             {suggested.map((tool) => (
               <Button
                 key={tool}
                 type="button"
                 variant="outline"
                 size="sm"
+                className="max-w-full shrink"
                 onClick={() => router.replace(`/?tool=${tool}`)}
               >
-                <span className="mr-1" aria-hidden="true">
+                <span className="mr-1 shrink-0" aria-hidden="true">
                   {getToolDefinition(tool).emoji}
                 </span>
-                {toolTitle(t, tool, getToolDefinition(tool).title)}{" "}
-                <ArrowRight className="size-4 text-indigo-400" />
+                <span className="truncate">{toolTitle(t, tool, getToolDefinition(tool).title)}</span>
+                <ArrowRight className="size-4 shrink-0 text-indigo-400" />
               </Button>
             ))}
           </div>
         ) : null}
 
-        <div className="flex gap-2">
+        <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
           <Input
+            className="min-w-0 flex-1"
             value={input}
             maxLength={TOOL_INPUT_MAX_CHARS}
             onChange={(e) => setInput(e.target.value)}
@@ -208,9 +210,15 @@ export function ConciergeChat({ className }: { className?: string }) {
             }}
             disabled={busy}
           />
-          <Button type="button" onClick={send} disabled={busy || !input.trim()}>
+          <Button
+            type="button"
+            className="w-full shrink-0 sm:w-auto"
+            onClick={send}
+            disabled={busy || !input.trim()}
+          >
             <SendHorizonal className="size-4 text-white" />
-            {t("concierge.send")}
+            <span className="sm:sr-only">{t("concierge.send")}</span>
+            <span className="hidden sm:inline">{t("concierge.send")}</span>
           </Button>
         </div>
       </CardContent>

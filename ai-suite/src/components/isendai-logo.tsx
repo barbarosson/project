@@ -21,7 +21,7 @@ export function IsendaiLogo({
   const wordPrefix = hasTerminalAI ? normalized.slice(0, -2) : normalized;
 
   return (
-    <div className={cn("inline-flex items-center gap-2", className)}>
+    <div className={cn("inline-flex min-w-0 max-w-full items-center gap-2", className)}>
       <svg
         viewBox="0 0 64 64"
         className={cn("size-8", iconClassName)}

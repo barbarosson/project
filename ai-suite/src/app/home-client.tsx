@@ -19,6 +19,8 @@ import {
   getToolDefinition,
 } from "@/components/ai-suite/tools";
 import { cn } from "@/lib/utils";
+import { aiProductsNav } from "@/lib/ai-products-nav-styles";
+import { siteContainer } from "@/lib/page-layout";
 import { glassInteractive, glassSurface, textGradientHero } from "@/lib/premium-ui";
 
 import type { HomeCreditsSnapshot } from "@/app/home-credits-snapshot";
@@ -58,6 +60,11 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
   });
 
   const selectedDef = getToolDefinition(selected);
+
+  React.useEffect(() => {
+    setExpanded((prev) => ({ ...prev, [selectedDef.category]: true }));
+  }, [selectedDef.category]);
+
   const demoExamples: { tool: ToolName; key: string }[] = [
     { tool: "corporate-whisperer", key: "corp" },
     { tool: "graceful-quitter", key: "quit" },
@@ -66,23 +73,27 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
   ];
 
   return (
-    <div className="min-h-full">
-      <header className="mx-auto flex w-full max-w-6xl flex-wrap items-start justify-between gap-3 px-4 py-4 sm:items-center sm:py-5">
-        <div className="flex min-w-0 flex-1 items-center">
+    <div className="min-h-full min-w-0 overflow-x-clip">
+      <header
+        className={siteContainer(
+          "flex flex-wrap items-start justify-between gap-3 py-4 sm:items-center sm:py-5"
+        )}
+      >
+        <div className="flex min-w-0 max-w-[min(100%,20rem)] flex-1 items-center sm:max-w-none">
           <IsendaiLogo
             withWordmark
-            className="shrink-0 gap-2 sm:gap-3"
-            iconClassName="size-10 shrink-0 sm:size-12 md:size-14 lg:size-16 xl:size-20"
-            wordmarkClassName="inline-flex items-baseline whitespace-nowrap text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl"
+            className="min-w-0 max-w-full gap-1.5 sm:gap-2 md:gap-3"
+            iconClassName="size-9 shrink-0 sm:size-10 md:size-12 lg:size-14"
+            wordmarkClassName="truncate text-xl sm:text-2xl md:text-3xl lg:text-4xl"
           />
         </div>
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+        <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-1.5 sm:w-auto sm:gap-2">
           <CreditsNav />
           <AuthStatus className="shrink-0" />
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl px-4 pb-16">
+      <main className={siteContainer("pb-16")}>
         <section
           className={cn(
             "relative overflow-hidden rounded-2xl px-6 py-8 sm:px-10",
@@ -245,61 +256,75 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
           </div>
         </section>
 
-        <section className="mt-8 grid gap-6 lg:grid-cols-[320px_1fr]">
+        <section className="mt-8 grid min-w-0 gap-6 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
           {/* Left: tool list */}
-          <aside className={cn("hidden rounded-2xl p-4 lg:block", glassSurface)}>
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold text-slate-100">{t("home.sidebar.title")}</p>
-              <span className="text-xs text-muted-foreground">{TOOLS.length}</span>
+          <aside className={cn("hidden min-w-0 rounded-2xl p-5 lg:block", glassSurface)}>
+            <div className="mb-5 flex items-center justify-between gap-3">
+              <p className={aiProductsNav.sidebarTitle}>{t("home.sidebar.title")}</p>
+              <span className={aiProductsNav.countBadge}>{TOOLS.length}</span>
             </div>
 
-            <div className="grid gap-4">
+            <div className="grid gap-3">
               {categories.map((cat) => (
                 <div key={cat}>
                   <button
                     type="button"
-                    className="mb-2 flex w-full items-center justify-between gap-2 text-left"
+                    className={cn(
+                      aiProductsNav.categoryRow,
+                      (expanded[cat] || selectedDef.category === cat) &&
+                        aiProductsNav.categoryRowOpen
+                    )}
+                    aria-expanded={expanded[cat]}
                     onClick={() =>
                       setExpanded((prev) => ({ ...prev, [cat]: !prev[cat] }))
                     }
                   >
-                    <p className="text-xs font-semibold text-slate-400">
+                    <span
+                      className={cn(
+                        aiProductsNav.categoryLabel,
+                        (expanded[cat] || selectedDef.category === cat) &&
+                          aiProductsNav.categoryLabelOpen
+                      )}
+                    >
                       {t(`category.${cat}.label`)}
-                    </p>
-                    <span className="inline-flex size-6 items-center justify-center rounded-md border border-white/[0.1] bg-white/[0.04] text-indigo-400">
+                    </span>
+                    <span className={aiProductsNav.categoryToggle}>
                       {expanded[cat] ? <Minus className="size-4" /> : <Plus className="size-4" />}
                     </span>
                   </button>
 
                   {expanded[cat] ? (
-                    <div className="grid gap-1">
+                    <div className={cn(aiProductsNav.toolList, "mt-2")}>
                       {TOOLS.filter((x) => x.category === cat).map((x) => {
                         const isActive = x.tool === selected;
                         return (
                           <button
                             key={x.tool}
                             type="button"
-                            className={cn(
-                              "flex w-full items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left text-sm transition-all duration-300",
-                              isActive
-                                ? "border-violet-500/40 bg-violet-500/10 text-white shadow-[0_0_16px_rgba(139,92,246,0.12)]"
-                                : "border-white/[0.08] bg-white/[0.03] text-slate-100 hover:border-violet-500/30 hover:bg-white/[0.06]"
-                            )}
+                            className={aiProductsNav.toolRow(isActive)}
                             onClick={() => {
                               setSelected(x.tool);
                               router.replace(`/?tool=${x.tool}`);
                             }}
                           >
-                            <span className="flex min-w-0 items-center gap-2">
-                              <span className="shrink-0" aria-hidden="true">
+                            <span className="flex min-w-0 flex-1 items-center gap-3">
+                              <span
+                                className={cn(
+                                  aiProductsNav.toolEmoji,
+                                  isActive && aiProductsNav.toolEmojiActive
+                                )}
+                                aria-hidden="true"
+                              >
                                 {x.emoji}
                               </span>
                               <span className="truncate">{toolTitle(t, x.tool, x.title)}</span>
                             </span>
                             <ArrowRight
                               className={cn(
-                                "size-4 shrink-0",
-                                isActive ? "text-violet-300" : "text-indigo-400"
+                                "size-5 shrink-0 transition-transform duration-300",
+                                isActive
+                                  ? "translate-x-0.5 text-violet-300"
+                                  : "text-indigo-400/80 group-hover:translate-x-0.5 group-hover:text-violet-300"
                               )}
                             />
                           </button>
@@ -313,27 +338,21 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
           </aside>
 
           {/* Right: workspace */}
-          <section className={cn("rounded-2xl p-4 sm:p-6", glassInteractive)}>
-            <div className="mb-4 lg:hidden">
+          <section className={cn("min-w-0 overflow-hidden rounded-2xl p-4 sm:p-6", glassInteractive)}>
+            <div className="mb-4 min-w-0 lg:hidden">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-sm font-semibold text-slate-100">{t("home.sidebar.title")}</p>
-                <span className="text-xs text-muted-foreground">{TOOLS.length}</span>
+                <p className={aiProductsNav.sidebarTitle}>{t("home.sidebar.title")}</p>
+                <span className={aiProductsNav.countBadge}>{TOOLS.length}</span>
               </div>
-              <div className="mt-3 -mx-2 overflow-x-auto whitespace-nowrap px-2">
-                <div className="flex w-max gap-2 pb-1">
+              <div className="mt-3 -mx-1 max-w-full overflow-x-auto overscroll-x-contain px-1">
+                <div className="flex w-max max-w-none gap-2 pb-1">
                   {categories.map((cat) => {
                     const isActive = selectedDef.category === cat;
                     return (
                       <button
                         key={cat}
                         type="button"
-                        className={cn(
-                          "inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold transition-all duration-300",
-                          "focus:outline-none focus:ring-2 focus:ring-violet-500/35",
-                          isActive
-                            ? "border-violet-500/40 bg-violet-500/15 text-white shadow-[0_0_14px_rgba(139,92,246,0.2)]"
-                            : "border-white/[0.1] bg-white/[0.04] text-slate-200 hover:border-violet-500/30 hover:bg-white/[0.07]"
-                        )}
+                        className={aiProductsNav.chip(isActive)}
                         onClick={() => {
                           const first = TOOLS.find((x) => x.category === cat)?.tool;
                           if (!first) return;
@@ -348,27 +367,23 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
                 </div>
               </div>
 
-              <div className="mt-3 -mx-2 overflow-x-auto whitespace-nowrap px-2">
-                <div className="flex w-max gap-2 pb-1">
+              <div className="mt-3 -mx-1 max-w-full overflow-x-auto overscroll-x-contain px-1">
+                <div className="flex w-max max-w-none gap-2 pb-1">
                   {TOOLS.filter((x) => x.category === selectedDef.category).map((x) => {
                     const isActive = x.tool === selected;
                     return (
                       <button
                         key={x.tool}
                         type="button"
-                        className={cn(
-                          "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-all duration-300",
-                          "focus:outline-none focus:ring-2 focus:ring-violet-500/35",
-                          isActive
-                            ? "border-violet-500/40 bg-violet-500/15 text-white shadow-[0_0_14px_rgba(139,92,246,0.2)]"
-                            : "border-white/[0.1] bg-white/[0.04] text-slate-200 hover:border-violet-500/30 hover:bg-white/[0.07]"
-                        )}
+                        className={aiProductsNav.chip(isActive)}
                         onClick={() => {
                           setSelected(x.tool);
                           router.replace(`/?tool=${x.tool}`);
                         }}
                       >
-                        <span aria-hidden="true">{x.emoji}</span>
+                        <span className="text-lg leading-none" aria-hidden="true">
+                          {x.emoji}
+                        </span>
                         <span className="max-w-[16rem] truncate">{toolTitle(t, x.tool, x.title)}</span>
                       </button>
                     );
@@ -380,7 +395,7 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
             <ConciergeChat className="mb-5" />
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="min-w-0">
-                <p className="text-xs font-semibold text-slate-500">
+                <p className={aiProductsNav.workspaceCategory}>
                   {t(`category.${selectedDef.category}.label`)}
                 </p>
                 <h2
@@ -412,7 +427,7 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
       </main>
 
       <footer className="border-t border-white/[0.08] bg-white/[0.02] backdrop-blur-xl">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-4 py-10 sm:flex-row sm:items-center sm:justify-between">
+        <div className={siteContainer("flex flex-col gap-3 py-10 sm:flex-row sm:items-center sm:justify-between")}>
           <p className="text-sm text-muted-foreground">{t("footer.copyright")}</p>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
             <Link className="font-medium text-foreground/90 hover:text-foreground transition-colors" href="/login">

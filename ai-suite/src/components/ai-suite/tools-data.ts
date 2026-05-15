@@ -27,6 +27,8 @@ export type ToolSeed = {
   model?: string;
   scopeHint: string;
   systemPrompt: string;
+  /** Few-shot examples injected at runtime from top-rated feedback (future). */
+  dynamicExamples?: string[];
 };
 
 const TEXT_FIELD = (placeholder: string): ToolField => ({

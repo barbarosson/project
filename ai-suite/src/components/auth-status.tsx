@@ -51,9 +51,26 @@ export function AuthStatus({ className, omitAccountLink }: AuthStatusProps) {
       setSignedInLabel(user?.id ? labelFromUser(user) : null);
     }
 
+    function loadServerSessionHint() {
+      void fetch("/api/me/wallet", { cache: "no-store", credentials: "same-origin" })
+        .then((r) => r.json() as Promise<{ signed_in?: boolean; email?: string | null }>)
+        .then((body) => {
+          if (body.signed_in) {
+            const label = body.email?.trim() || t("auth.signedInFallback");
+            setSignedInLabel((prev) => prev ?? label);
+          }
+        })
+        .catch(() => {
+          /* ignore */
+        });
+    }
+
     void supabase.auth.getSession().then(({ data }) => {
       setFromSession(data.session);
+      if (!data.session) loadServerSessionHint();
     });
+
+    loadServerSessionHint();
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       setFromSession(session);

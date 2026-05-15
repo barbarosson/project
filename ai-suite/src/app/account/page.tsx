@@ -7,6 +7,7 @@ import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AuthStatus } from "@/components/auth-status";
 import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
+import { pageMain } from "@/lib/page-layout";
 import { cn } from "@/lib/utils";
 import { glassInteractive, glassSurface, premiumCta, textGradientHero } from "@/lib/premium-ui";
 
@@ -40,7 +41,7 @@ export default async function AccountPage() {
     .limit(20);
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-12">
+    <main className={pageMain("content")}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>

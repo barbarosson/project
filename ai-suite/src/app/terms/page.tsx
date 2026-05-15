@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 
 import { TermsEnBody } from "@/app/legal/terms-en-body";
 import { TermsTrBody } from "@/app/legal/terms-tr-body";
+import { pageMain } from "@/lib/page-layout";
 import { cn } from "@/lib/utils";
 import { textGradientHero } from "@/lib/premium-ui";
 import { DICTS, type Locale } from "@/i18n/dictionaries";
@@ -27,7 +28,7 @@ export default async function TermsPage() {
   const year = String(new Date().getFullYear());
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-12">
+    <main className={pageMain("legal")}>
       <div className="mb-8">
         <Link className="text-sm font-medium text-violet-300 hover:text-violet-200" href="/">
           ← {d["nav.backToHome"]}

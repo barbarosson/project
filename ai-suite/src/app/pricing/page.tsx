@@ -9,6 +9,7 @@ import {
   PricingPaygoShop,
   PricingYearlyShop,
 } from "@/components/pricing/pricing-shop-blocks";
+import { pageMain } from "@/lib/page-layout";
 import { cn } from "@/lib/utils";
 import { glassInteractive, premiumCta, textGradientHero } from "@/lib/premium-ui";
 import { DICTS, type Locale } from "@/i18n/dictionaries";
@@ -34,7 +35,7 @@ export default async function PricingPage() {
   const d = DICTS[locale];
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-12">
+    <main className={pageMain("content")}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <h1
           className={cn(

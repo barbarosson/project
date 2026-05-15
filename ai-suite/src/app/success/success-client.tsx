@@ -6,7 +6,9 @@ import Link from "next/link";
 import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
+import { AiFeedbackBar } from "@/components/ai-feedback-bar";
 import { AiResultShareBar } from "@/components/ai-result-share-bar";
+import { originalTextFromPayload } from "@/lib/feedback/original-text-from-payload";
 
 import type { ToolName, ToolPayload } from "@/components/ai-suite/tools";
 import { getToolDefinition } from "@/components/ai-suite/tools";
@@ -28,6 +30,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { pageMain } from "@/lib/page-layout";
 import { cn } from "@/lib/utils";
 import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
 import { glassSurface } from "@/lib/premium-ui";
@@ -120,6 +123,13 @@ function setPendingAlt(toolName: ToolName, value: boolean) {
   }
 }
 
+function modelUsedLabel(toolName: ToolName, model: ModelId): string {
+  const def = getToolDefinition(toolName);
+  const concrete: ConcreteModelId =
+    model === "auto" ? defaultConcreteModelForProvider(def.provider) : (model as ConcreteModelId);
+  return concrete;
+}
+
 function isValidPayload(payload: ToolPayload): boolean {
   if (payload.tool === "coverletter-ai") {
     return (
@@ -152,6 +162,7 @@ export function SuccessClient() {
   const [activeId, setActiveId] = React.useState<string | null>(null);
   const [altExtra, setAltExtra] = React.useState("");
   const [stored, setStored] = React.useState<Stored | null>(null);
+  const [lastModelUsed, setLastModelUsed] = React.useState<string>("");
   const storageKeyRef = React.useRef<string | null>(null);
   const active = React.useMemo(() => {
     if (!versions.length) return null;
@@ -216,6 +227,7 @@ export function SuccessClient() {
 
       if (!json?.result) throw new Error(t("errors.noModelResult"));
       if (json.request_id && toolName) persistRequest(toolName, json.request_id);
+      setLastModelUsed(modelUsedLabel(toolName, model));
       return json.result;
     },
     [t]
@@ -254,6 +266,10 @@ export function SuccessClient() {
       throw new Error(json?.error || t("errors.generationFailed"));
     }
     if (!json?.text) throw new Error(t("errors.noModelResult"));
+    const storageKey = getToolDefinition(toolName).storageKey;
+    const modelRaw = localStorage.getItem(`${storageKey}:model`);
+    const model: ModelId = isModelId(modelRaw) ? modelRaw : DEFAULT_MODEL;
+    setLastModelUsed(modelUsedLabel(toolName, model));
     return json.text;
   }
 
@@ -296,6 +312,10 @@ export function SuccessClient() {
 
       // Keep payload in memory for alternatives, then clear localStorage later.
       setStored(parsed);
+
+      const modelRaw = localStorage.getItem(`${storageKey}:model`);
+      const modelForLabel: ModelId = isModelId(modelRaw) ? modelRaw : DEFAULT_MODEL;
+      setLastModelUsed(modelUsedLabel(tool, modelForLabel));
 
       const restored = safeLoadVersions(tool);
       setVersions(restored);
@@ -427,7 +447,7 @@ export function SuccessClient() {
 
   return (
     <div className="min-h-full">
-      <main className="mx-auto w-full max-w-3xl px-4 py-12">
+      <main className={pageMain("narrow")}>
         <div
           className={cn(
             "mb-4 rounded-xl p-4 text-sm text-slate-400 shadow-2xl backdrop-blur-xl",
@@ -514,13 +534,23 @@ export function SuccessClient() {
                   <AiResultShareBar text={active.text} onCopied={cleanup} />
                   <div
                     className={cn(
-                      "min-h-[8rem] whitespace-pre-wrap p-4 pt-14 pr-[12rem] text-sm leading-relaxed text-slate-300 sm:pr-52",
+                      "min-h-[8rem] whitespace-pre-wrap p-4 pt-14 pr-[9.25rem] text-sm leading-relaxed text-slate-300 min-[400px]:pr-44 sm:pr-52",
                       "selection:bg-primary/20"
                     )}
                   >
                     {active.text}
                   </div>
                 </div>
+                {tool && stored?.payload ? (
+                  <AiFeedbackBar
+                    feedbackKey={active.id}
+                    toolId={tool}
+                    originalText={originalTextFromPayload(stored.payload)}
+                    aiResponse={active.text}
+                    modelUsed={lastModelUsed || "unknown"}
+                    requestId={safeLoadRequest(tool)?.requestId ?? null}
+                  />
+                ) : null}
                 <div className="grid gap-2">
                   <p className="text-xs font-medium text-slate-300">
                     {t("success.alt.extra.label")}

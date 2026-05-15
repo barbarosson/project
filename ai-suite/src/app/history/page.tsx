@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { pageMain } from "@/lib/page-layout";
 import { cn } from "@/lib/utils";
 import { glassInteractive, glassSurface, premiumCta, textGradientHero } from "@/lib/premium-ui";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -45,7 +46,7 @@ export default async function HistoryPage() {
   const maxV = ent?.max_versions_per_request ?? 5;
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-12">
+    <main className={pageMain("content")}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>

@@ -49,14 +49,22 @@
     monospace;
 }
 
-html,
-body {
+html {
   height: 100%;
+  overflow-x: clip;
 }
 
 body {
+  min-height: 100%;
+  overflow-x: clip;
   background: hsl(var(--background));
   color: hsl(var(--foreground));
+}
+
+/* App root: contain wide children (chat, logos, horizontal tool chips). */
+#__next,
+body > div {
+  min-width: 0;
 }
 
 /* Clickable targets: pointer cursor + subtle press feedback site-wide */

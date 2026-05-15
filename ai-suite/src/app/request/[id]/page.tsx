@@ -8,6 +8,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import { CopyVersionButton } from "./copy-buttons";
+import { pageMain } from "@/lib/page-layout";
 import { cn } from "@/lib/utils";
 import { glassInteractive, glassSurface, premiumCta, textGradientHero } from "@/lib/premium-ui";
 
@@ -51,7 +52,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
   const dateStr = new Date(reqRow.created_at).toLocaleString();
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-12">
+    <main className={pageMain("content")}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>

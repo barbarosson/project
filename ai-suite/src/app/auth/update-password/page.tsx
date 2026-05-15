@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { pageMain } from "@/lib/page-layout";
 import { cn } from "@/lib/utils";
 import { glassInteractive, textGradientHero } from "@/lib/premium-ui";
 
@@ -25,7 +26,7 @@ export default async function UpdatePasswordPage() {
   const d = DICTS[locale];
 
   return (
-    <main className="mx-auto w-full max-w-md px-4 py-14">
+    <main className={pageMain("auth")}>
       <div className={cn("rounded-2xl p-6", glassInteractive)}>
         <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
           {d["login.updatePasswordTitle"]}

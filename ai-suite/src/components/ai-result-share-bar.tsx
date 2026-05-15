@@ -136,7 +136,7 @@ export function AiResultShareBar({ text, onCopied }: AiResultShareBarProps) {
         </div>
       </div>
 
-      <div className="absolute right-2 top-2 z-10 flex flex-nowrap items-center justify-end gap-1 sm:right-3 sm:top-3 sm:gap-1.5 md:gap-2">
+      <div className="absolute right-2 top-2 z-10 flex max-w-[calc(100%-0.5rem)] flex-wrap items-center justify-end gap-1 sm:right-3 sm:top-3 sm:flex-nowrap sm:gap-1.5 md:gap-2">
         <Button
           type="button"
           variant="outline"

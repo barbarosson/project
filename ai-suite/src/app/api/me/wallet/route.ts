@@ -75,7 +75,13 @@ export async function GET(req: NextRequest) {
 
     if (!user || !ownerId) {
       dbg.path = "signed_out";
-      const body = { credits: null, trial_days_left: null, subscription_status: null };
+      const body = {
+        signed_in: false,
+        email: null as string | null,
+        credits: null,
+        trial_days_left: null,
+        subscription_status: null,
+      };
       return NextResponse.json(debug ? { ...body, _debug: dbg } : body);
     }
 
@@ -97,6 +103,8 @@ export async function GET(req: NextRequest) {
       dbg.path = "rpc_row";
       const trial = trialDaysLeft(w.trial_ends_at, w.subscription_status);
       const body = {
+        signed_in: true,
+        email: user.email ?? null,
         credits: Number(w.credits_balance ?? 0),
         trial_days_left: trial,
         subscription_status: w.subscription_status ?? null,
@@ -119,6 +127,8 @@ export async function GET(req: NextRequest) {
         );
       }
       const body = {
+        signed_in: true,
+        email: user.email ?? null,
         credits: null,
         trial_days_left: null,
         subscription_status: null,
@@ -161,6 +171,8 @@ export async function GET(req: NextRequest) {
     );
 
     const body = {
+      signed_in: true,
+      email: user.email ?? null,
       credits,
       trial_days_left: trial,
       subscription_status: row?.subscription_status ?? null,
@@ -170,7 +182,13 @@ export async function GET(req: NextRequest) {
     if (process.env.NODE_ENV === "development") {
       console.error("[api/me/wallet]", e);
     }
-    const body = { credits: null, trial_days_left: null, subscription_status: null };
+    const body = {
+      signed_in: false,
+      email: null as string | null,
+      credits: null,
+      trial_days_left: null,
+      subscription_status: null,
+    };
     const dbg = baseDebug();
     dbg.path = "catch";
     return NextResponse.json(debug ? { ...body, _debug: dbg } : body);

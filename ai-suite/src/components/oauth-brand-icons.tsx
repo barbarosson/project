@@ -1,3 +1,4 @@
+import * as React from "react";
 import type { Provider } from "@supabase/auth-js";
 
 import { cn } from "@/lib/utils";
@@ -39,6 +40,32 @@ export function GoogleMark({ className }: IconProps) {
         fill="#EA4335"
         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
       />
+    </svg>
+  );
+}
+
+/** Instagram camera glyph on brand gradient circle. */
+export function InstagramMark({ className }: IconProps) {
+  const gradId = React.useId();
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className={cn("size-5 shrink-0", className)}
+      aria-hidden
+      focusable="false"
+    >
+      <defs>
+        <linearGradient id={gradId} x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#FEDA75" />
+          <stop offset="25%" stopColor="#FA7E1E" />
+          <stop offset="50%" stopColor="#D62976" />
+          <stop offset="75%" stopColor="#962FBF" />
+          <stop offset="100%" stopColor="#4F5BD5" />
+        </linearGradient>
+      </defs>
+      <rect x="2" y="2" width="20" height="20" rx="6" fill={`url(#${gradId})`} />
+      <circle cx="12" cy="12" r="4.25" fill="none" stroke="#fff" strokeWidth="1.75" />
+      <circle cx="17.4" cy="6.6" r="1.1" fill="#fff" />
     </svg>
   );
 }

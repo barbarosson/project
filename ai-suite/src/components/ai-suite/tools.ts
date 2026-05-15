@@ -26,6 +26,8 @@ export type ToolDefinition = {
   model?: string;
   scopeHint: string;
   systemPrompt: string;
+  /** Few-shot examples from feedback loop (optional; populated at runtime later). */
+  dynamicExamples?: string[];
 };
 
 function mkStorageKey(tool: ToolName) {
@@ -68,6 +70,7 @@ export const TOOLS: ToolDefinition[] = TOOLS_SEED.map((t) => ({
   model: t.model,
   scopeHint: t.scopeHint,
   systemPrompt: t.systemPrompt,
+  dynamicExamples: t.dynamicExamples,
 }));
 
 export function getToolDefinition(tool: ToolName): ToolDefinition {

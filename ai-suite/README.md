@@ -63,12 +63,34 @@ After Google returns to `/auth/callback`, the app exchanges the `code` for a ses
 
 Flow: site → Facebook → Supabase callback → `/auth/callback` → home (or `next`).
 
+### Instagram sign-in (Meta + Supabase custom OAuth)
+
+Instagram is **not** the same as Facebook Login. Supabase has no built-in Instagram provider; the app uses **`custom:instagram`**.
+
+**Limitations:** Only [Instagram professional accounts](https://help.instagram.com/502981923235522) (business/creator). Personal Instagram accounts cannot use this API. Instagram does **not** return email — enable **email optional** on the custom provider and users complete the membership profile after sign-in.
+
+1. In the same [Meta app](https://developers.facebook.com/) (or a new one), add **Instagram** → **API setup with Instagram login** / Business login.
+2. **Instagram** product → **Business login settings** → **OAuth redirect URIs**: Supabase callback  
+   `https://<project-ref>.supabase.co/auth/v1/callback` (copy from any Auth provider page).
+3. Note the **Instagram App ID** and **Instagram App Secret** (Dashboard → Instagram → API setup — not always the same as Facebook App ID).
+4. **Supabase** → Authentication → Providers → **New provider** → Manual (OAuth2):
+   - **Identifier:** `custom:instagram` (must match code)
+   - **Authorization URL:** `https://api.instagram.com/oauth/authorize`
+   - **Token URL:** `https://api.instagram.com/oauth/access_token`
+   - **User Info URL:** `https://graph.instagram.com/me?fields=user_id,username,name,profile_picture_url`
+   - **Scopes:** `instagram_business_basic`
+   - **Email optional:** ON
+   - Client ID / Secret: Instagram App ID + Secret from step 3
+5. Enable the provider. Same **Redirect URLs** and **`NEXT_PUBLIC_SITE_URL`** as other OAuth.
+
+Flow: site → Instagram authorize → Supabase callback → `/auth/callback` → membership profile if incomplete.
+
 ## Routes (high level)
 
 | Path | Purpose |
 |------|---------|
 | `/` | Home + tools; shows live **credits snapshot** when Supabase is configured |
-| `/login` | Email, Google, Facebook, other OAuth; redirects through `/auth/callback` |
+| `/login` | Email, Google, Facebook, Instagram (`custom:instagram`), other OAuth; redirects through `/auth/callback` |
 | `/account/profile` | Membership / profile metadata (required until completed) |
 | `/claim` | Merge **guest** credits + history on this device into the signed-in user |
 | `/history` | Guest or signed-in request list |

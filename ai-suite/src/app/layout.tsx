@@ -15,6 +15,7 @@ import { rootMetadataForLocale } from "@/lib/site-metadata";
 import { SupabaseBrowserConfigProvider } from "@/lib/supabase/browser-config-context";
 import { PricingModalProvider } from "@/components/pricing/pricing-modal";
 import { AppLocaleBar } from "@/components/app-locale-bar";
+import { AuthSessionHydrator } from "@/components/auth-session-hydrator";
 
 const sans = Inter({
   variable: "--font-geist-sans",
@@ -58,7 +59,7 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`dark ${sans.variable} ${spaceGrotesk.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-[#09090b] text-slate-50 antialiased">
+      <body className="flex min-h-full min-w-0 flex-col overflow-x-clip bg-[#09090b] text-slate-50 antialiased">
         {GA_ID ? (
           <>
             <Script
@@ -87,6 +88,7 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
                 <GlobalBackground />
                 <SocialProof />
                 <AppLocaleBar />
+                <AuthSessionHydrator />
                 {children}
               </PricingModalProvider>
             </ModelProvider>

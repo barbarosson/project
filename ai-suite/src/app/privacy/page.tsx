@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { PrivacyEnBody } from "@/app/legal/privacy-en-body";
+import { pageMain } from "@/lib/page-layout";
 import { cn } from "@/lib/utils";
 import { textGradientHero } from "@/lib/premium-ui";
 import { DICTS, type Locale } from "@/i18n/dictionaries";
@@ -26,7 +27,7 @@ export default async function PrivacyPage() {
   const year = String(new Date().getFullYear());
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-12">
+    <main className={pageMain("legal")}>
       <div className="mb-8">
         <Link className="text-sm font-medium text-violet-300 hover:text-violet-200" href="/">
           ← {d["nav.backToHome"]}

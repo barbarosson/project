@@ -152,6 +152,10 @@ export const DICTS: Record<Locale, Dict> = {
       "e.g., more human, slightly funny, shorter, more formal, add warmth, etc.",
     "success.versions": "Saved versions:",
     "success.selectedVersion": "Selected version:",
+    "success.feedback.question": "How did AI do?",
+    "success.feedback.thanks": "Thanks for helping our AI evolve! ✨",
+    "success.feedback.thumbsUpAria": "Good result",
+    "success.feedback.thumbsDownAria": "Poor result",
 
     "home.sidebar.title": "AI Products",
     "home.workspace.hint": "Paste → Generate → Copy",
@@ -380,8 +384,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthApple": "Apple",
     "login.oauthX": "X (Twitter)",
     "login.oauthLinkedin": "LinkedIn",
-    "login.oauthInstagram": "Instagram",
-    "login.oauthInstagramSub": "Uses Meta (Facebook) login",
+    "login.oauthInstagramSub": "Professional Instagram (business/creator) via Meta",
     "login.oauthTiktok": "TikTok",
     "login.oauthTiktokSub": "Requires a Custom OAuth provider id “tiktok” in Supabase",
     "login.oauthSetupHint":
@@ -400,6 +403,12 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipFacebookTitle": "Facebook account",
     "login.membershipFacebookBody":
       "Use your Facebook identity, then confirm or add membership details on the next screen.",
+    "login.membershipInstagramTitle": "Instagram account",
+    "login.membershipInstagramBody":
+      "Professional (business or creator) Instagram accounts only. Instagram does not share email — complete your membership profile after sign-in.",
+    "login.oauthInstagram": "Continue with Instagram",
+    "login.oauthInstagramNotConfigured":
+      "Instagram sign-in is not configured yet. Add the custom:instagram provider in Supabase (see README).",
     "login.membershipOtherTitle": "Other providers",
     "login.oauthGoogle": "Continue with Google",
     "login.oauthFacebook": "Continue with Facebook",
@@ -668,6 +677,10 @@ export const DICTS: Record<Locale, Dict> = {
       "p. ej., más humano, un poco gracioso, más corto, más formal, más cálido, etc.",
     "success.versions": "Versiones guardadas:",
     "success.selectedVersion": "Versión seleccionada:",
+    "success.feedback.question": "¿Qué tal lo hizo la IA?",
+    "success.feedback.thanks": "¡Gracias por ayudar a que nuestra IA evolucione! ✨",
+    "success.feedback.thumbsUpAria": "Buen resultado",
+    "success.feedback.thumbsDownAria": "Mal resultado",
 
     "home.sidebar.title": "Productos de IA",
     "home.workspace.hint": "Pega → Genera → Copia",
@@ -905,8 +918,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthApple": "Apple",
     "login.oauthX": "X (Twitter)",
     "login.oauthLinkedin": "LinkedIn",
-    "login.oauthInstagram": "Instagram",
-    "login.oauthInstagramSub": "Usa el inicio de sesión de Meta (Facebook)",
+    "login.oauthInstagramSub": "Cuenta profesional de Instagram (Meta)",
     "login.oauthTiktok": "TikTok",
     "login.oauthTiktokSub": "Requiere un proveedor OAuth personalizado “tiktok” en Supabase",
     "login.oauthSetupHint":
@@ -925,6 +937,12 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipFacebookTitle": "Cuenta de Facebook",
     "login.membershipFacebookBody":
       "Usa tu identidad de Facebook y confirma o añade los datos de membresía en la siguiente pantalla.",
+    "login.membershipInstagramTitle": "Cuenta de Instagram",
+    "login.membershipInstagramBody":
+      "Solo cuentas profesionales de Instagram (empresa o creador). Instagram no comparte el correo; completa tu perfil después.",
+    "login.oauthInstagram": "Continuar con Instagram",
+    "login.oauthInstagramNotConfigured":
+      "El inicio con Instagram no está configurado. Añade el proveedor custom:instagram en Supabase (ver README).",
     "login.membershipOtherTitle": "Otros proveedores",
     "login.oauthGoogle": "Continuar con Google",
     "login.oauthFacebook": "Continuar con Facebook",
@@ -1185,6 +1203,10 @@ export const DICTS: Record<Locale, Dict> = {
       "ex. plus humain, un peu drôle, plus court, plus formel, plus chaleureux, etc.",
     "success.versions": "Versions enregistrées :",
     "success.selectedVersion": "Version sélectionnée :",
+    "success.feedback.question": "Comment l’IA s’en est-elle sortie ?",
+    "success.feedback.thanks": "Merci d’aider notre IA à évoluer ! ✨",
+    "success.feedback.thumbsUpAria": "Bon résultat",
+    "success.feedback.thumbsDownAria": "Mauvais résultat",
 
     "home.sidebar.title": "Produits IA",
     "home.workspace.hint": "Coller → Générer → Copier",
@@ -1422,8 +1444,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthApple": "Apple",
     "login.oauthX": "X (Twitter)",
     "login.oauthLinkedin": "LinkedIn",
-    "login.oauthInstagram": "Instagram",
-    "login.oauthInstagramSub": "Utilise la connexion Meta (Facebook)",
+    "login.oauthInstagramSub": "Compte Instagram professionnel (Meta)",
     "login.oauthTiktok": "TikTok",
     "login.oauthTiktokSub": "Nécessite un fournisseur OAuth personnalisé « tiktok » dans Supabase",
     "login.oauthSetupHint":
@@ -1442,6 +1463,12 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipFacebookTitle": "Compte Facebook",
     "login.membershipFacebookBody":
       "Utilise ton compte Facebook, puis confirme ou complète les informations d’adhésion à l’écran suivant.",
+    "login.membershipInstagramTitle": "Compte Instagram",
+    "login.membershipInstagramBody":
+      "Comptes Instagram professionnels uniquement. Instagram ne partage pas l’e-mail — complète ton profil après connexion.",
+    "login.oauthInstagram": "Continuer avec Instagram",
+    "login.oauthInstagramNotConfigured":
+      "Connexion Instagram non configurée. Ajoute le fournisseur custom:instagram dans Supabase (voir README).",
     "login.membershipOtherTitle": "Autres fournisseurs",
     "login.oauthGoogle": "Continuer avec Google",
     "login.oauthFacebook": "Continuer avec Facebook",
@@ -1703,6 +1730,10 @@ export const DICTS: Record<Locale, Dict> = {
       "z. B. menschlicher, leicht witzig, kürzer, formeller, wärmer, usw.",
     "success.versions": "Gespeicherte Versionen:",
     "success.selectedVersion": "Ausgewählte Version:",
+    "success.feedback.question": "Wie gut war die KI?",
+    "success.feedback.thanks": "Danke, dass du unsere KI weiterentwickelst! ✨",
+    "success.feedback.thumbsUpAria": "Gutes Ergebnis",
+    "success.feedback.thumbsDownAria": "Schlechtes Ergebnis",
 
     "home.sidebar.title": "KI‑Produkte",
     "home.workspace.hint": "Einfügen → Generieren → Kopieren",
@@ -1940,8 +1971,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthApple": "Apple",
     "login.oauthX": "X (Twitter)",
     "login.oauthLinkedin": "LinkedIn",
-    "login.oauthInstagram": "Instagram",
-    "login.oauthInstagramSub": "Nutzt Meta‑Login (Facebook)",
+    "login.oauthInstagramSub": "Professionelles Instagram‑Konto (Meta)",
     "login.oauthTiktok": "TikTok",
     "login.oauthTiktokSub": "Benötigt Custom OAuth „tiktok“ in Supabase",
     "login.oauthSetupHint":
@@ -1960,6 +1990,12 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipFacebookTitle": "Facebook‑Konto",
     "login.membershipFacebookBody":
       "Nutze dein Facebook‑Konto und bestätige oder ergänze die Mitgliedschaftsdaten auf der nächsten Seite.",
+    "login.membershipInstagramTitle": "Instagram‑Konto",
+    "login.membershipInstagramBody":
+      "Nur professionelle Instagram‑Konten (Business/Creator). Instagram teilt keine E‑Mail — Profil danach ausfüllen.",
+    "login.oauthInstagram": "Mit Instagram fortfahren",
+    "login.oauthInstagramNotConfigured":
+      "Instagram‑Login ist nicht eingerichtet. Provider custom:instagram in Supabase hinzufügen (siehe README).",
     "login.membershipOtherTitle": "Weitere Anbieter",
     "login.oauthGoogle": "Mit Google fortfahren",
     "login.oauthFacebook": "Mit Facebook fortfahren",
@@ -2204,6 +2240,10 @@ export const DICTS: Record<Locale, Dict> = {
       "例如：更口语、更幽默一些、更短、更正式、更有温度等。",
     "success.versions": "已保存版本：",
     "success.selectedVersion": "已选择版本：",
+    "success.feedback.question": "AI 表现如何？",
+    "success.feedback.thanks": "感谢你帮助我们的 AI 不断进化！✨",
+    "success.feedback.thumbsUpAria": "结果不错",
+    "success.feedback.thumbsDownAria": "结果不佳",
 
     "home.sidebar.title": "AI 产品",
     "home.workspace.hint": "粘贴 → 生成 → 复制",
@@ -2433,8 +2473,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthApple": "Apple",
     "login.oauthX": "X（Twitter）",
     "login.oauthLinkedin": "领英",
-    "login.oauthInstagram": "Instagram",
-    "login.oauthInstagramSub": "使用 Meta（Facebook）登录",
+    "login.oauthInstagramSub": "Instagram 专业账号（Meta）",
     "login.oauthTiktok": "TikTok",
     "login.oauthTiktokSub": "需在 Supabase 配置自定义 OAuth，id 为 “tiktok”",
     "login.oauthSetupHint": "在 Supabase → Authentication → Providers 启用各提供商，回调 URL 需包含 /auth/callback",
@@ -2451,6 +2490,12 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipFacebookTitle": "Facebook 账号",
     "login.membershipFacebookBody":
       "使用 Facebook 登录后，在下一页确认或补充会员信息。",
+    "login.membershipInstagramTitle": "Instagram 账号",
+    "login.membershipInstagramBody":
+      "仅限 Instagram 专业账号（企业/创作者）。Instagram 不分享邮箱，登录后请完善会员资料。",
+    "login.oauthInstagram": "使用 Instagram 继续",
+    "login.oauthInstagramNotConfigured":
+      "尚未配置 Instagram 登录。请在 Supabase 添加 custom:instagram 提供商（见 README）。",
     "login.membershipOtherTitle": "其他登录方式",
     "login.oauthGoogle": "使用 Google 继续",
     "login.oauthFacebook": "使用 Facebook 继续",
@@ -2698,6 +2743,10 @@ export const DICTS: Record<Locale, Dict> = {
       "örn. daha insancıl, biraz komik, daha kısa, daha resmi, daha sıcak bir ton, vb.",
     "success.versions": "Kaydedilen versiyon:",
     "success.selectedVersion": "Seçili versiyon:",
+    "success.feedback.question": "Yapay zeka nasıl iş çıkardı?",
+    "success.feedback.thanks": "AI'ımızın gelişmesine yardım ettiğin için teşekkürler! ✨",
+    "success.feedback.thumbsUpAria": "İyi sonuç",
+    "success.feedback.thumbsDownAria": "Zayıf sonuç",
 
     "home.sidebar.title": "AI Ürünleri",
     "home.workspace.hint": "Yapıştır → Üret → Kopyala",
@@ -2927,8 +2976,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthApple": "Apple",
     "login.oauthX": "X (Twitter)",
     "login.oauthLinkedin": "LinkedIn",
-    "login.oauthInstagram": "Instagram",
-    "login.oauthInstagramSub": "Meta (Facebook) ile giriş açılır",
+    "login.oauthInstagramSub": "Profesyonel Instagram hesabı (Meta)",
     "login.oauthTiktok": "TikTok",
     "login.oauthTiktokSub": "Supabase’te “tiktok” adlı Custom OAuth gerekir",
     "login.oauthSetupHint":
@@ -2947,6 +2995,12 @@ export const DICTS: Record<Locale, Dict> = {
     "login.membershipFacebookTitle": "Facebook hesabı",
     "login.membershipFacebookBody":
       "Facebook kimliğinle gir; bir sonraki ekranda üyelik bilgilerini onayla veya ekle.",
+    "login.membershipInstagramTitle": "Instagram hesabı",
+    "login.membershipInstagramBody":
+      "Yalnızca profesyonel (işletme veya içerik üreticisi) Instagram hesapları. Instagram e-posta paylaşmaz; girişten sonra üyelik formunu doldurun.",
+    "login.oauthInstagram": "Instagram ile devam et",
+    "login.oauthInstagramNotConfigured":
+      "Instagram girişi henüz yapılandırılmadı. Supabase’te custom:instagram sağlayıcısını ekleyin (README).",
     "login.membershipOtherTitle": "Diğer sağlayıcılar",
     "login.oauthGoogle": "Google ile devam et",
     "login.oauthFacebook": "Facebook ile devam et",

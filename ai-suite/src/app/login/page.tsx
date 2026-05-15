@@ -7,10 +7,12 @@ import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { resolvePostLoginNext } from "@/lib/auth/safe-next";
 import { resolveAuthPublicOrigin } from "@/lib/site-public-url";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { pageMain } from "@/lib/page-layout";
 import { cn } from "@/lib/utils";
 import { glassInteractive, textGradientHero } from "@/lib/premium-ui";
 import { FacebookSignInButton } from "./facebook-sign-in-button";
 import { GoogleSignInButton } from "./google-sign-in-button";
+import { InstagramSignInButton } from "./instagram-sign-in-button";
 import { LoginAuthToast } from "./login-auth-toast";
 import { OAuthLoginButtons } from "./oauth-login-buttons";
 import { LoginClient } from "./ui";
@@ -40,7 +42,7 @@ export default async function LoginPage({
     : "";
 
   return (
-    <main className="mx-auto w-full max-w-md px-4 py-14">
+    <main className={pageMain("auth")}>
       <LoginAuthToast error={sp.error} />
       <div className={cn("rounded-2xl p-6", glassInteractive)}>
         <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
@@ -72,6 +74,15 @@ export default async function LoginPage({
           <p className="mt-1 text-sm text-slate-400">{d["login.membershipFacebookBody"]}</p>
           <div className="mt-4">
             <FacebookSignInButton authCallbackUrl={authCallbackUrl} />
+          </div>
+        </div>
+        <div className="mt-6 border-t border-white/[0.08] pt-6">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90">
+            {d["login.membershipInstagramTitle"]}
+          </h2>
+          <p className="mt-1 text-sm text-slate-400">{d["login.membershipInstagramBody"]}</p>
+          <div className="mt-4">
+            <InstagramSignInButton authCallbackUrl={authCallbackUrl} />
           </div>
         </div>
         <div className="mt-6 border-t border-white/[0.08] pt-6">
