@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 import { AuthStatus } from "@/components/auth-status";
 import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
 import { pageMain } from "@/lib/page-layout";
@@ -41,6 +42,8 @@ export default async function AccountProfilePage({
       ? (user.user_metadata as Record<string, unknown>)
       : {};
 
+  const authSnapshot = await readServerAuthSnapshot();
+
   return (
     <main className={pageMain("narrow")}>
       <ProfileOauthToast oauthEmail={sp.oauth_email} />
@@ -53,7 +56,10 @@ export default async function AccountProfilePage({
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <SiteLocaleToolbar />
-          <AuthStatus omitAccountLink />
+          <AuthStatus
+            omitAccountLink
+            initialSignedInLabel={authSnapshot.signedIn ? authSnapshot.label : null}
+          />
           <Link
             className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
             href="/account"

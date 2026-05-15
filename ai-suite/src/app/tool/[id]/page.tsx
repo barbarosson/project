@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
+import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 import { AuthStatus } from "@/components/auth-status";
 import { CreditsNav } from "@/components/credits-nav";
 import { IsendaiLogo } from "@/components/isendai-logo";
@@ -58,6 +59,7 @@ export default async function ToolDeepLinkPage({
   const locale = resolveLocaleFromCookie(cookieLocale);
   const d = DICTS[locale];
   const tool = id as ToolName;
+  const authSnapshot = await readServerAuthSnapshot();
 
   return (
     <div className="min-h-full">
@@ -72,7 +74,9 @@ export default async function ToolDeepLinkPage({
         </Link>
         <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
           <CreditsNav />
-          <AuthStatus />
+          <AuthStatus
+            initialSignedInLabel={authSnapshot.signedIn ? authSnapshot.label : null}
+          />
         </div>
       </header>
 

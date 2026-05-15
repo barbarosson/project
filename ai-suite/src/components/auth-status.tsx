@@ -15,13 +15,17 @@ type AuthStatusProps = {
   className?: string;
   /** On /account: show only log out (avoid duplicate “Account” link). */
   omitAccountLink?: boolean;
+  /** Pre-populate signed-in label from the server (eliminates the "Login" flash after OAuth). */
+  initialSignedInLabel?: string | null;
 };
 
-export function AuthStatus({ className, omitAccountLink }: AuthStatusProps) {
+export function AuthStatus({ className, omitAccountLink, initialSignedInLabel }: AuthStatusProps) {
   const { t } = useI18n();
   const router = useRouter();
   const runtime = useSupabaseBrowserRuntimeConfig();
-  const [signedInLabel, setSignedInLabel] = React.useState<string | null>(null);
+  const [signedInLabel, setSignedInLabel] = React.useState<string | null>(
+    initialSignedInLabel ?? null
+  );
   const [busy, setBusy] = React.useState(false);
 
   React.useEffect(() => {
@@ -48,7 +52,13 @@ export function AuthStatus({ className, omitAccountLink }: AuthStatusProps) {
       session: { user?: { id?: string; email?: string | null; user_metadata?: Record<string, unknown> } } | null
     ) {
       const user = session?.user;
-      setSignedInLabel(user?.id ? labelFromUser(user) : null);
+      if (user?.id) {
+        setSignedInLabel(labelFromUser(user));
+      } else if (!initialSignedInLabel) {
+        // Only clear if the server didn't already tell us we're signed in.
+        // Avoids flashing "Login" while the browser client is still hydrating cookies.
+        setSignedInLabel(null);
+      }
     }
 
     function loadServerSessionHint() {
@@ -76,7 +86,7 @@ export function AuthStatus({ className, omitAccountLink }: AuthStatusProps) {
       setFromSession(session);
     });
     return () => sub.subscription.unsubscribe();
-  }, [runtime, t]);
+  }, [runtime, t, initialSignedInLabel]);
 
   async function signOut() {
     setBusy(true);

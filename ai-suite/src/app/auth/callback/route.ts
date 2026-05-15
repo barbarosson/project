@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
 import { isMembershipProfileComplete } from "@/lib/auth/membership-profile";
 import { safeNext } from "@/lib/auth/safe-next";
-import {
-  applyPendingAuthCookies,
-  createSupabaseRouteHandlerClient,
-  type PendingAuthCookie,
-} from "@/lib/supabase/route-handler-client";
+import { ensureUserEntitlementsBootstrap } from "@/lib/isendai/ensure-user-entitlements";
+import { requiredEnv } from "@/lib/env";
 
 function redirectOrigin(request: NextRequest, fallback: string): string {
   const forwardedHost = request.headers.get("x-forwarded-host");
@@ -15,13 +13,6 @@ function redirectOrigin(request: NextRequest, fallback: string): string {
     return `${proto}://${forwardedHost}`.replace(/\/+$/, "");
   }
   return fallback.replace(/\/+$/, "");
-}
-
-/** Let supabase-js flush deferred Set-Cookie before we copy cookies onto the redirect. */
-async function flushAuthCookies(supabase: ReturnType<typeof createSupabaseRouteHandlerClient>) {
-  await supabase.auth.getSession();
-  await new Promise((resolve) => setTimeout(resolve, 0));
-  await supabase.auth.getUser();
 }
 
 export async function GET(request: NextRequest) {
@@ -45,26 +36,57 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/", siteOrigin));
   }
 
-  const pendingCookies: PendingAuthCookie[] = [];
-  const supabase = createSupabaseRouteHandlerClient(request, pendingCookies);
+  /**
+   * Official Supabase SSR pattern: bind cookies to the redirect response **from the start**
+   * so every `setAll` call by `exchangeCodeForSession` flushes to the response headers.
+   * Without this, OAuth cookies (Facebook/Google) silently never reach the browser.
+   *
+   * Placeholder URL — we rewrite to the real destination after we know the user state.
+   */
+  let response = NextResponse.redirect(new URL("/", siteOrigin));
+
+  const supabase = createServerClient(
+    requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    requiredEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set({ name, value, ...(options ?? {}) });
+            response.cookies.set({ name, value, ...(options ?? {}) });
+          });
+        },
+      },
+    }
+  );
 
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
     const login = new URL("/login", siteOrigin);
     login.searchParams.set("error", "auth");
-    return NextResponse.redirect(login);
+    const loginResponse = NextResponse.redirect(login);
+    response.cookies.getAll().forEach((c) => {
+      loginResponse.cookies.set(c.name, c.value, c);
+    });
+    return loginResponse;
   }
 
-  await flushAuthCookies(supabase);
-
-  const { data: sessionData } = await supabase.auth.getSession();
-  if (!sessionData.session) {
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData.user;
+  if (!user) {
     const login = new URL("/login", siteOrigin);
     login.searchParams.set("error", "auth");
     return NextResponse.redirect(login);
   }
 
-  const user = sessionData.session.user;
+  /**
+   * Bootstrap entitlements row for new OAuth users so `/account` isn't empty.
+   * Idempotent (INSERT ... ON CONFLICT DO NOTHING) — safe to run on every sign-in.
+   */
+  await ensureUserEntitlementsBootstrap(user.id);
 
   let destinationPath: string;
   if (
@@ -83,10 +105,12 @@ export async function GET(request: NextRequest) {
   if (!user.email?.trim()) {
     destination.searchParams.set("oauth_email", "missing");
   }
-  /** Client hydrator runs `getSession` + `router.refresh` after OAuth lands. */
-  destination.searchParams.set("auth_sync", "1");
 
-  const response = NextResponse.redirect(destination);
-  applyPendingAuthCookies(response, pendingCookies);
+  /** Re-emit with the final destination, preserving cookies we already accumulated. */
+  const finalResponse = NextResponse.redirect(destination);
+  response.cookies.getAll().forEach((c) => {
+    finalResponse.cookies.set(c.name, c.value, c);
+  });
+  response = finalResponse;
   return response;
 }

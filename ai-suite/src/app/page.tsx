@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 
 import { HomeClient } from "@/app/home-client";
 import type { HomeCreditsSnapshot } from "@/app/home-credits-snapshot";
+import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 import { createSupabaseAdminClientOrNull } from "@/lib/supabase/admin";
 import { readUserEntitlementWalletFromSession } from "@/lib/isendai/user-wallet-from-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -51,9 +52,10 @@ export default async function Home() {
     creditsSnapshot = null;
   }
 
+  const authSnapshot = await readServerAuthSnapshot();
   return (
     <Suspense fallback={<div className="min-h-full bg-background" />}>
-      <HomeClient creditsSnapshot={creditsSnapshot} />
+      <HomeClient creditsSnapshot={creditsSnapshot} authSnapshot={authSnapshot} />
     </Suspense>
   );
 }

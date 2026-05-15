@@ -24,8 +24,15 @@ import { siteContainer } from "@/lib/page-layout";
 import { glassInteractive, glassSurface, textGradientHero } from "@/lib/premium-ui";
 
 import type { HomeCreditsSnapshot } from "@/app/home-credits-snapshot";
+import type { ServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 
-export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSnapshot | null }) {
+export function HomeClient({
+  creditsSnapshot,
+  authSnapshot,
+}: {
+  creditsSnapshot: HomeCreditsSnapshot | null;
+  authSnapshot?: ServerAuthSnapshot;
+}) {
   const { t } = useI18n();
 
   const categories: ToolCategory[] = [
@@ -89,7 +96,10 @@ export function HomeClient({ creditsSnapshot }: { creditsSnapshot: HomeCreditsSn
         </div>
         <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-1.5 sm:w-auto sm:gap-2">
           <CreditsNav />
-          <AuthStatus className="shrink-0" />
+          <AuthStatus
+            className="shrink-0"
+            initialSignedInLabel={authSnapshot?.signedIn ? authSnapshot.label : null}
+          />
         </div>
       </header>
 
