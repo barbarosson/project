@@ -369,6 +369,7 @@ export const DICTS: Record<Locale, Dict> = {
     "auth.disabled": "Auth unavailable",
     "auth.disabledTitle":
       "Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY (or SUPABASE_URL and SUPABASE_ANON_KEY), then redeploy or restart dev.",
+    "auth.signedInFallback": "Signed in",
     "login.title": "Sign in",
     "login.subtitle":
       "Sign in with email, Google, or Facebook. After your first successful sign-in, we collect a short membership profile (name, country, primary use case).",
@@ -439,6 +440,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.legalEnd": ".",
 
     "profile.title": "Membership profile",
+    "profile.oauthEmailMissing":
+      "Facebook did not share your email. Complete the form below; you may need to add an email in account settings before purchasing.",
     "profile.subtitle":
       "These details are stored on your account (Supabase user metadata) to personalize support and product communication.",
     "profile.backToAccount": "Back to account",
@@ -891,6 +894,7 @@ export const DICTS: Record<Locale, Dict> = {
     "auth.disabled": "Acceso no disponible",
     "auth.disabledTitle":
       "Supabase no está configurado. Añade NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY (o SUPABASE_URL y SUPABASE_ANON_KEY) y vuelve a desplegar.",
+    "auth.signedInFallback": "Sesión iniciada",
     "login.title": "Acceso",
     "login.subtitle":
       "Entra con email, Google o Facebook. Tras el primer acceso, pedimos un perfil breve de membresía (nombre, país, caso de uso principal).",
@@ -961,6 +965,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.legalEnd": ".",
 
     "profile.title": "Perfil de membresía",
+    "profile.oauthEmailMissing":
+      "Facebook no compartió tu correo. Completa el formulario; puede que debas añadir un correo en la cuenta antes de comprar.",
     "profile.subtitle":
       "Estos datos se guardan en tu cuenta (metadatos de usuario en Supabase) para soporte y comunicación del producto.",
     "profile.backToAccount": "Volver a mi cuenta",
@@ -1405,6 +1411,7 @@ export const DICTS: Record<Locale, Dict> = {
     "auth.disabled": "Accès indisponible",
     "auth.disabledTitle":
       "Supabase n’est pas configuré. Ajoute NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY (ou SUPABASE_URL et SUPABASE_ANON_KEY), puis redéploie.",
+    "auth.signedInFallback": "Connecté",
     "login.title": "Connexion",
     "login.subtitle":
       "Connectez-vous par e-mail, Google ou Facebook. Après la première connexion, nous demandons un court profil d’adhésion (nom, pays, usage principal).",
@@ -1475,6 +1482,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.legalEnd": ".",
 
     "profile.title": "Profil d’adhésion",
+    "profile.oauthEmailMissing":
+      "Facebook n’a pas partagé votre e-mail. Complétez le formulaire ; un e-mail peut être requis avant l’achat.",
     "profile.subtitle":
       "Ces informations sont stockées sur ton compte (métadonnées utilisateur Supabase) pour le support et les communications produit.",
     "profile.backToAccount": "Retour au compte",
@@ -1920,6 +1929,7 @@ export const DICTS: Record<Locale, Dict> = {
     "auth.disabled": "Login nicht verfügbar",
     "auth.disabledTitle":
       "Supabase ist nicht konfiguriert. Setze NEXT_PUBLIC_SUPABASE_URL und NEXT_PUBLIC_SUPABASE_ANON_KEY (oder SUPABASE_URL und SUPABASE_ANON_KEY) und deploye neu.",
+    "auth.signedInFallback": "Angemeldet",
     "login.title": "Anmelden",
     "login.subtitle":
       "Melde dich per E‑Mail, Google oder Facebook an. Nach der ersten Anmeldung erfassen wir ein kurzes Mitgliedschaftsprofil (Name, Land, Hauptnutzung).",
@@ -1990,6 +2000,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.legalEnd": ".",
 
     "profile.title": "Mitgliedschaftsprofil",
+    "profile.oauthEmailMissing":
+      "Facebook hat deine E-Mail nicht geteilt. Fülle das Formular aus; ggf. musst du vor dem Kauf eine E-Mail im Konto hinterlegen.",
     "profile.subtitle":
       "Diese Angaben werden in deinem Konto gespeichert (Supabase‑Benutzermetadaten) für Support und Produktkommunikation.",
     "profile.backToAccount": "Zurück zum Konto",
@@ -2410,6 +2422,7 @@ export const DICTS: Record<Locale, Dict> = {
     "auth.disabled": "登录不可用",
     "auth.disabledTitle":
       "未配置 Supabase。请设置 NEXT_PUBLIC_SUPABASE_URL 与 NEXT_PUBLIC_SUPABASE_ANON_KEY（或 SUPABASE_URL 与 SUPABASE_ANON_KEY），然后重新部署。",
+    "auth.signedInFallback": "已登录",
     "login.title": "登录 / 会员",
     "login.subtitle":
       "可使用邮箱、Google 或 Facebook 登录。首次登录成功后，我们会收集简短的会员资料（姓名、国家/地区、主要用途）。",
@@ -2476,6 +2489,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.legalEnd": "。",
 
     "profile.title": "会员资料",
+    "profile.oauthEmailMissing":
+      "Facebook 未分享邮箱。请完成下方表单；购买前可能需要在账户中添加邮箱。",
     "profile.subtitle":
       "这些信息保存在你的账户中（Supabase 用户元数据），用于客服与产品相关沟通。",
     "profile.backToAccount": "返回账户",
@@ -2901,6 +2916,7 @@ export const DICTS: Record<Locale, Dict> = {
     "auth.disabled": "Giriş kapalı",
     "auth.disabledTitle":
       "Supabase yapılandırılmadı. NEXT_PUBLIC_SUPABASE_URL ve NEXT_PUBLIC_SUPABASE_ANON_KEY (veya SUPABASE_URL ve SUPABASE_ANON_KEY) ekleyip yeniden deploy et veya dev sunucuyu yeniden başlat.",
+    "auth.signedInFallback": "Giriş yapıldı",
     "login.title": "Üyelik ve giriş",
     "login.subtitle":
       "E-posta, Google veya Facebook ile giriş yap. İlk başarılı oturumdan sonra kısa bir üyelik profili (ad, ülke, ana kullanım) topluyoruz.",
@@ -2971,6 +2987,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.legalEnd": " kabul etmiş olursun.",
 
     "profile.title": "Üyelik profili",
+    "profile.oauthEmailMissing":
+      "Facebook e-posta adresinizi paylaşmadı. Aşağıdaki formu doldurun; satın alma öncesi hesaba e-posta eklemeniz gerekebilir.",
     "profile.subtitle":
       "Bu bilgiler hesabında saklanır (Supabase kullanıcı metadata) — destek ve ürün iletişimi için.",
     "profile.backToAccount": "Hesaba dön",

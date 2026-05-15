@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+import { isMembershipProfileComplete } from "@/lib/auth/membership-profile";
 import { safeNext } from "@/lib/auth/safe-next";
 import { requiredEnv } from "@/lib/env";
+
+function redirectOrigin(request: NextRequest, fallback: string): string {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  if (process.env.NODE_ENV !== "development" && forwardedHost) {
+    const proto = request.headers.get("x-forwarded-proto") ?? "https";
+    return `${proto}://${forwardedHost}`.replace(/\/+$/, "");
+  }
+  return fallback.replace(/\/+$/, "");
+}
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
@@ -24,9 +34,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/", origin));
   }
 
-  const redirectTarget = new URL(nextPath || "/", origin);
-
-  const response = NextResponse.redirect(redirectTarget);
+  const siteOrigin = redirectOrigin(request, origin);
+  const response = NextResponse.redirect(new URL(nextPath || "/", siteOrigin));
 
   const supabase = createServerClient(
     requiredEnv("NEXT_PUBLIC_SUPABASE_URL"),
@@ -47,8 +56,11 @@ export async function GET(request: NextRequest) {
 
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
-    return NextResponse.redirect(new URL("/login?error=auth", origin));
+    return NextResponse.redirect(new URL("/login?error=auth", siteOrigin));
   }
+
+  const { data: userData } = await supabase.auth.getUser();
+  const user = userData.user;
 
   let destinationPath: string;
   if (
@@ -56,11 +68,18 @@ export async function GET(request: NextRequest) {
     nextPath.startsWith("/auth/update-password/")
   ) {
     destinationPath = nextPath || "/auth/update-password";
+  } else if (user && !isMembershipProfileComplete(user.user_metadata)) {
+    const afterProfile = nextPath && nextPath !== "/" ? nextPath : "/";
+    destinationPath = `/account/profile?next=${encodeURIComponent(afterProfile)}`;
   } else {
     destinationPath = nextPath || "/";
   }
 
-  response.headers.set("Location", new URL(destinationPath, origin).toString());
+  const destination = new URL(destinationPath, siteOrigin);
+  if (user && !user.email?.trim()) {
+    destination.searchParams.set("oauth_email", "missing");
+  }
+  response.headers.set("Location", destination.toString());
 
   return response;
 }

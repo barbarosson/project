@@ -21,7 +21,7 @@ export function AuthStatus({ className, omitAccountLink }: AuthStatusProps) {
   const { t } = useI18n();
   const router = useRouter();
   const runtime = useSupabaseBrowserRuntimeConfig();
-  const [email, setEmail] = React.useState<string | null>(null);
+  const [signedInLabel, setSignedInLabel] = React.useState<string | null>(null);
   const [busy, setBusy] = React.useState(false);
 
   React.useEffect(() => {
@@ -29,8 +29,26 @@ export function AuthStatus({ className, omitAccountLink }: AuthStatusProps) {
     const supabase = createSupabaseBrowserClient(runtime);
     if (!supabase) return;
 
-    function setFromSession(session: { user?: { email?: string | null } } | null) {
-      setEmail(session?.user?.email ?? null);
+    function labelFromUser(user: {
+      email?: string | null;
+      user_metadata?: Record<string, unknown>;
+    }): string {
+      const email = user.email?.trim();
+      if (email) return email;
+      const meta = user.user_metadata ?? {};
+      const name =
+        (typeof meta.full_name === "string" && meta.full_name.trim()) ||
+        (typeof meta.name === "string" && meta.name.trim()) ||
+        "";
+      if (name) return name;
+      return t("auth.signedInFallback");
+    }
+
+    function setFromSession(
+      session: { user?: { id?: string; email?: string | null; user_metadata?: Record<string, unknown> } } | null
+    ) {
+      const user = session?.user;
+      setSignedInLabel(user?.id ? labelFromUser(user) : null);
     }
 
     void supabase.auth.getSession().then(({ data }) => {
@@ -41,7 +59,7 @@ export function AuthStatus({ className, omitAccountLink }: AuthStatusProps) {
       setFromSession(session);
     });
     return () => sub.subscription.unsubscribe();
-  }, [runtime]);
+  }, [runtime, t]);
 
   async function signOut() {
     setBusy(true);
@@ -70,13 +88,13 @@ export function AuthStatus({ className, omitAccountLink }: AuthStatusProps) {
     );
   }
 
-  if (email) {
+  if (signedInLabel) {
     const logoutBtn = (
       <button
         type="button"
         onClick={signOut}
         disabled={busy}
-        title={email}
+        title={signedInLabel}
         className={cn(
           interactiveClick,
           "inline-flex items-center gap-2 rounded-lg border border-white/[0.12] bg-white/[0.05] px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl hover:border-violet-500/35 hover:bg-white/[0.09] disabled:opacity-60 sm:px-3 sm:py-2 sm:text-sm"
@@ -99,7 +117,7 @@ export function AuthStatus({ className, omitAccountLink }: AuthStatusProps) {
             interactiveClick,
             "inline-flex items-center gap-2 rounded-lg border border-white/[0.12] bg-white/[0.05] px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl hover:border-violet-500/35 hover:bg-white/[0.09] sm:px-3 sm:py-2 sm:text-sm"
           )}
-          title={email}
+          title={signedInLabel}
         >
           <User className="size-4 text-indigo-400" strokeWidth={1.5} />
           {t("nav.account")}

@@ -12,13 +12,14 @@ import { safeNext } from "@/lib/auth/safe-next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import { ProfileForm } from "./profile-form";
+import { ProfileOauthToast } from "./profile-oauth-toast";
 
 export const dynamic = "force-dynamic";
 
 export default async function AccountProfilePage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; oauth_email?: string }>;
 }) {
   const sp = await searchParams;
   const next = safeNext(sp.next ?? undefined);
@@ -41,6 +42,7 @@ export default async function AccountProfilePage({
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-12">
+      <ProfileOauthToast oauthEmail={sp.oauth_email} />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
