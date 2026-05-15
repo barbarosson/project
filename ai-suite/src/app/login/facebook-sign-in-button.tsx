@@ -24,13 +24,17 @@ export function FacebookSignInButton({ authCallbackUrl }: { authCallbackUrl: str
     }
     setBusy(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "facebook",
         options: {
           redirectTo: oauthCallbackRedirectUrl(authCallbackUrl),
+          scopes: "email,public_profile",
         },
       });
       if (error) throw error;
+      if (data?.url) {
+        window.location.assign(data.url);
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("login.oauthFailed"));
     } finally {

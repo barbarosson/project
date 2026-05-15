@@ -8,6 +8,7 @@ import { LogOut, User } from "lucide-react";
 import { createSupabaseBrowserClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client";
 import { useSupabaseBrowserRuntimeConfig } from "@/lib/supabase/browser-config-context";
 import { useI18n } from "@/i18n/i18n-provider";
+import { interactiveClick } from "@/lib/premium-ui";
 import { cn } from "@/lib/utils";
 
 type AuthStatusProps = {
@@ -76,7 +77,10 @@ export function AuthStatus({ className, omitAccountLink }: AuthStatusProps) {
         onClick={signOut}
         disabled={busy}
         title={email}
-        className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] bg-white/[0.05] px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.09] disabled:opacity-60 sm:px-3 sm:py-2 sm:text-sm"
+        className={cn(
+          interactiveClick,
+          "inline-flex items-center gap-2 rounded-lg border border-white/[0.12] bg-white/[0.05] px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl hover:border-violet-500/35 hover:bg-white/[0.09] disabled:opacity-60 sm:px-3 sm:py-2 sm:text-sm"
+        )}
       >
         <LogOut className="size-4 text-indigo-400" strokeWidth={1.5} />
         {t("nav.logout")}
@@ -91,7 +95,10 @@ export function AuthStatus({ className, omitAccountLink }: AuthStatusProps) {
       <div className={cn("flex items-center gap-2", className)}>
         <Link
           href="/account"
-          className="inline-flex items-center gap-2 rounded-lg border border-white/[0.12] bg-white/[0.05] px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.09] sm:px-3 sm:py-2 sm:text-sm"
+          className={cn(
+            interactiveClick,
+            "inline-flex items-center gap-2 rounded-lg border border-white/[0.12] bg-white/[0.05] px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl hover:border-violet-500/35 hover:bg-white/[0.09] sm:px-3 sm:py-2 sm:text-sm"
+          )}
           title={email}
         >
           <User className="size-4 text-indigo-400" strokeWidth={1.5} />
@@ -106,7 +113,8 @@ export function AuthStatus({ className, omitAccountLink }: AuthStatusProps) {
     <Link
       href="/login"
       className={cn(
-        "inline-flex items-center rounded-lg border border-white/[0.12] bg-white/[0.05] px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.09] sm:px-3 sm:py-2 sm:text-sm",
+        interactiveClick,
+        "inline-flex items-center rounded-lg border border-white/[0.12] bg-white/[0.05] px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl hover:border-violet-500/35 hover:bg-white/[0.09] sm:px-3 sm:py-2 sm:text-sm",
         className
       )}
     >

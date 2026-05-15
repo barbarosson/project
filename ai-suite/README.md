@@ -43,6 +43,26 @@ npm run dev
 
 Open `http://localhost:3000`.
 
+### Google (and other OAuth) sign-in
+
+1. **Supabase** → Authentication → Providers → **Google**: enable, paste **Client ID** and **Client secret** from [Google Cloud Console](https://console.cloud.google.com/apis/credentials) (OAuth 2.0 Web client).
+2. In Google Cloud → **Authorized redirect URIs**, add Supabase’s redirect URL exactly as shown in the Supabase Google provider panel (looks like `https://<project-ref>.supabase.co/auth/v1/callback`).
+3. **Supabase** → Authentication → **URL Configuration**: set **Site URL** to your production origin; under **Redirect URLs** allow `https://your-domain/**/auth/callback` (and `http://localhost:3000/**` for local dev).
+4. Set **`NEXT_PUBLIC_SITE_URL`** on the host (e.g. Netlify) to the same public HTTPS origin so `/login` builds the correct `redirectTo` for OAuth.
+
+After Google returns to `/auth/callback`, the app exchanges the `code` for a session and redirects to `next` (default `/`).
+
+### Facebook sign-in (Meta Developer)
+
+1. Create an app at [Meta for Developers](https://developers.facebook.com/) → **My Apps** → **Create App** → use case **Other** / **Consumer** → add product **Facebook Login** → **Web**.
+2. **Facebook Login** → **Settings** → **Valid OAuth Redirect URIs**: paste Supabase’s callback URL from **Authentication → Providers → Facebook** (e.g. `https://<project-ref>.supabase.co/auth/v1/callback`).
+3. **Settings** → **Basic**: note **App ID** and **App Secret**; set **App domains** to `isendai.netlify.app` (and `localhost` only if Meta allows it for dev); add **Privacy Policy** and **Terms** URLs (required before going Live).
+4. **Supabase** → Authentication → Providers → **Facebook**: enable, paste App ID + App Secret, save.
+5. While the Meta app is in **Development** mode, only **Roles** testers/admins/devs can log in — add your Facebook account under **App roles** → **Administrators** or **Test users**, or switch the app **Live** after review.
+6. Same **URL Configuration** and **`NEXT_PUBLIC_SITE_URL`** as Google (see above).
+
+Flow: site → Facebook → Supabase callback → `/auth/callback` → home (or `next`).
+
 ## Routes (high level)
 
 | Path | Purpose |

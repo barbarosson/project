@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { getToolDefinition, isToolName } from "@/components/ai-suite/tools";
 import { resolveVariantId, type CheckoutPackKey, type PaygoTierKey } from "@/lib/lemonsqueezy/catalog";
+import { isMembershipProfileComplete } from "@/lib/auth/membership-profile";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { trialNetworkFingerprint, trialOwnerFingerprint } from "@/lib/trial/fingerprint";
@@ -70,6 +71,16 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: "Sign in required to purchase credits.", code: "auth_required" },
       { status: 401 }
+    );
+  }
+
+  if (!isMembershipProfileComplete(userData.user?.user_metadata)) {
+    return NextResponse.json(
+      {
+        error: "Complete your membership profile before purchasing.",
+        code: "profile_required",
+      },
+      { status: 403 }
     );
   }
 

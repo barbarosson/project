@@ -37,13 +37,16 @@ export function OAuthLoginButtons({ authCallbackUrl }: { authCallbackUrl: string
     }
     setBusy(provider);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: oauthCallbackRedirectUrl(authCallbackUrl),
         },
       });
       if (error) throw error;
+      if (data?.url) {
+        window.location.assign(data.url);
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("login.oauthFailed"));
     } finally {

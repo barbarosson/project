@@ -231,7 +231,7 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
       <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-center text-xs">
         <button
           type="button"
-          className="text-violet-300 underline-offset-2 hover:text-violet-200 hover:underline disabled:opacity-50"
+          className="cursor-pointer text-violet-300 underline-offset-2 transition-all duration-200 hover:text-violet-200 hover:underline active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
           onClick={() => void resendConfirmation()}
           disabled={loading}
         >
@@ -242,7 +242,7 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
         </span>
         <button
           type="button"
-          className="text-violet-300 underline-offset-2 hover:text-violet-200 hover:underline disabled:opacity-50"
+          className="cursor-pointer text-violet-300 underline-offset-2 transition-all duration-200 hover:text-violet-200 hover:underline active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
           onClick={() => void sendPasswordReset()}
           disabled={loading}
         >

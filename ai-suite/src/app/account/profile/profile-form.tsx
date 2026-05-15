@@ -11,6 +11,7 @@ import { useI18n } from "@/i18n/i18n-provider";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSupabaseBrowserRuntimeConfig } from "@/lib/supabase/browser-config-context";
 import { safeNext } from "@/lib/auth/safe-next";
+import { isMembershipProfileComplete } from "@/lib/auth/membership-profile";
 import { getSortedRegionOptions, legacyCountryToCode } from "@/lib/regions";
 import type { Locale } from "@/i18n/dictionaries";
 
@@ -28,10 +29,6 @@ function str(v: unknown): string {
 
 function bool(v: unknown): boolean {
   return v === true || v === "true";
-}
-
-function hasCompletedProfile(meta: Record<string, unknown>): boolean {
-  return typeof meta.profile_completed_at === "string" && meta.profile_completed_at.length > 0;
 }
 
 type RegionOptions = ReturnType<typeof getSortedRegionOptions>;
@@ -100,7 +97,7 @@ export function ProfileForm({ nextPath, email, initialMeta }: Props) {
   const [notes, setNotes] = React.useState(str(initialMeta.profile_notes));
   const [marketing, setMarketing] = React.useState(bool(initialMeta.marketing_opt_in));
   const [terms, setTerms] = React.useState(
-    hasCompletedProfile(initialMeta) || !!str(initialMeta.terms_accepted_at)
+    isMembershipProfileComplete(initialMeta) || !!str(initialMeta.terms_accepted_at)
   );
 
   const regionOptions = React.useMemo(() => getSortedRegionOptions(locale), [locale]);
@@ -111,7 +108,7 @@ export function ProfileForm({ nextPath, email, initialMeta }: Props) {
       toast.error(t("profile.errors.required"));
       return;
     }
-    if (!hasCompletedProfile(initialMeta) && !terms) {
+    if (!isMembershipProfileComplete(initialMeta) && !terms) {
       toast.error(t("profile.errors.terms"));
       return;
     }

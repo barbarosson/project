@@ -261,6 +261,8 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.buyNow": "Buy now",
     "pricing.checkoutFailed": "Could not start checkout. Configure Lemon Squeezy variants or try again.",
     "pricing.checkoutSignInRequired": "Sign in to purchase a subscription.",
+    "pricing.checkoutProfileRequired":
+      "Complete your membership profile before purchasing — you’ll be redirected there now.",
     "pricing.pack.budget": "10 credits · $1",
     "pricing.pack.standard": "25 credits · $1.49",
     "pricing.pack.premium": "50 credits · $1.99",
@@ -384,6 +386,9 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthSetupHint":
       "Turn on each provider in Supabase → Authentication → Providers. Redirect URL must include /auth/callback",
     "login.oauthFailed": "Social sign-in failed.",
+    "login.oauthCallbackFailed": "Could not finish sign-in. Try again or use email and password.",
+    "login.oauthProviderError":
+      "The provider returned an error (cancelled or misconfigured). Check Supabase redirect URLs and Google OAuth client.",
     "login.missingSupabase": "Sign-in is not configured (missing Supabase keys).",
     "login.membershipEmailTitle": "Email",
     "login.membershipEmailBody":
@@ -777,6 +782,8 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.buyNow": "Comprar",
     "pricing.checkoutFailed": "No se pudo iniciar el pago. Configura las variantes de Lemon Squeezy o inténtalo de nuevo.",
     "pricing.checkoutSignInRequired": "Inicia sesión para comprar una suscripción.",
+    "pricing.checkoutProfileRequired":
+      "Completa tu perfil de socio antes de comprar; te llevamos allí ahora.",
     "pricing.pack.budget": "10 créditos · $1",
     "pricing.pack.standard": "25 créditos · $1.49",
     "pricing.pack.premium": "50 créditos · $1.99",
@@ -901,6 +908,9 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthSetupHint":
       "Activa cada proveedor en Supabase → Authentication → Providers. Añade la URL de retorno /auth/callback",
     "login.oauthFailed": "Error al iniciar sesión social.",
+    "login.oauthCallbackFailed": "No se pudo completar el acceso. Inténtalo de nuevo o usa email y contraseña.",
+    "login.oauthProviderError":
+      "El proveedor devolvió un error (cancelado o mal configurado). Revisa las URLs de redirección en Supabase y el cliente OAuth de Google.",
     "login.missingSupabase": "Inicio no configurado (faltan claves de Supabase).",
     "login.membershipEmailTitle": "Email",
     "login.membershipEmailBody":
@@ -1286,6 +1296,8 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.buyNow": "Acheter",
     "pricing.checkoutFailed": "Impossible de démarrer le paiement. Configure les variantes Lemon Squeezy ou réessaie.",
     "pricing.checkoutSignInRequired": "Connecte-toi pour acheter un abonnement.",
+    "pricing.checkoutProfileRequired":
+      "Complète ton profil membre avant d’acheter — redirection en cours.",
     "pricing.pack.budget": "10 crédits · 1 $",
     "pricing.pack.standard": "25 crédits · 1,49 $",
     "pricing.pack.premium": "50 crédits · 1,99 $",
@@ -1410,6 +1422,9 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthSetupHint":
       "Activez chaque fournisseur dans Supabase → Authentication → Providers. URL de redirection : /auth/callback",
     "login.oauthFailed": "Échec de la connexion sociale.",
+    "login.oauthCallbackFailed": "Connexion impossible. Réessaie ou utilise email + mot de passe.",
+    "login.oauthProviderError":
+      "Erreur du fournisseur (annulé ou mauvaise config). Vérifie les URL de redirection Supabase et le client OAuth Google.",
     "login.missingSupabase": "Connexion non configurée (clés Supabase manquantes).",
     "login.membershipEmailTitle": "Email",
     "login.membershipEmailBody":
@@ -1796,6 +1811,8 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.buyNow": "Jetzt kaufen",
     "pricing.checkoutFailed": "Checkout konnte nicht gestartet werden. Lemon‑Squeezy‑Varianten prüfen oder erneut versuchen.",
     "pricing.checkoutSignInRequired": "Zum Kauf eines Abos anmelden.",
+    "pricing.checkoutProfileRequired":
+      "Bitte zuerst das Mitgliedsprofil ausfüllen — du wirst dorthin weitergeleitet.",
     "pricing.pack.budget": "10 Credits · 1 $",
     "pricing.pack.standard": "25 Credits · 1,49 $",
     "pricing.pack.premium": "50 Credits · 1,99 $",
@@ -1920,6 +1937,9 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthSetupHint":
       "Aktiviere die Anbieter in Supabase → Authentication → Providers. Redirect‑URL: /auth/callback",
     "login.oauthFailed": "Social‑Login fehlgeschlagen.",
+    "login.oauthCallbackFailed": "Anmeldung konnte nicht abgeschlossen werden. Bitte erneut versuchen oder E‑Mail + Passwort nutzen.",
+    "login.oauthProviderError":
+      "Der Anbieter meldet einen Fehler (abgebrochen oder falsch konfiguriert). Prüfe Supabase‑Redirect‑URLs und den Google‑OAuth‑Client.",
     "login.missingSupabase": "Login nicht konfiguriert (Supabase‑Keys fehlen).",
     "login.membershipEmailTitle": "E‑Mail",
     "login.membershipEmailBody":
@@ -2288,6 +2308,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.buyNow": "立即购买",
     "pricing.checkoutFailed": "无法开始结账。请配置 Lemon Squeezy 商品变体或稍后重试。",
     "pricing.checkoutSignInRequired": "购买订阅请先登录。",
+    "pricing.checkoutProfileRequired": "购买前请先完成会员资料，正在跳转。",
     "pricing.pack.budget": "10 额度 · $1",
     "pricing.pack.standard": "25 额度 · $1.49",
     "pricing.pack.premium": "50 额度 · $1.99",
@@ -2405,6 +2426,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthTiktokSub": "需在 Supabase 配置自定义 OAuth，id 为 “tiktok”",
     "login.oauthSetupHint": "在 Supabase → Authentication → Providers 启用各提供商，回调 URL 需包含 /auth/callback",
     "login.oauthFailed": "社交登录失败。",
+    "login.oauthCallbackFailed": "无法完成登录，请重试或使用邮箱和密码。",
+    "login.oauthProviderError": "登录提供方返回错误（已取消或配置有误）。请检查 Supabase 重定向 URL 与 Google OAuth 客户端。",
     "login.missingSupabase": "未配置登录（缺少 Supabase 密钥）。",
     "login.membershipEmailTitle": "邮箱",
     "login.membershipEmailBody":
@@ -2769,6 +2792,8 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.buyNow": "Satın al",
     "pricing.checkoutFailed": "Ödeme başlatılamadı. Lemon Squeezy varyantlarını yapılandır veya tekrar dene.",
     "pricing.checkoutSignInRequired": "Abonelik satın almak için giriş yap.",
+    "pricing.checkoutProfileRequired":
+      "Satın almadan önce üyelik profilini tamamla — şimdi oraya yönlendiriliyorsun.",
     "pricing.pack.budget": "10 kontör · $1",
     "pricing.pack.standard": "25 kontör · $1,49",
     "pricing.pack.premium": "50 kontör · $1,99",
@@ -2893,6 +2918,9 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthSetupHint":
       "Her sağlayıcıyı Supabase → Authentication → Providers içinde aç. Yönlendirme URL’si /auth/callback olmalı",
     "login.oauthFailed": "Sosyal giriş başarısız.",
+    "login.oauthCallbackFailed": "Giriş tamamlanamadı. Tekrar dene veya e-posta + şifre kullan.",
+    "login.oauthProviderError":
+      "Sağlayıcı hata döndü (iptal veya yanlış yapılandırma). Supabase yönlendirme URL’leri ve Google OAuth istemcisini kontrol et.",
     "login.missingSupabase": "Giriş yapılandırılmadı (Supabase anahtarları eksik).",
     "login.membershipEmailTitle": "E-posta",
     "login.membershipEmailBody":

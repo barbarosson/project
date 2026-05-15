@@ -24,13 +24,19 @@ export function GoogleSignInButton({ authCallbackUrl }: { authCallbackUrl: strin
     }
     setBusy(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: oauthCallbackRedirectUrl(authCallbackUrl),
+          queryParams: {
+            prompt: "select_account",
+          },
         },
       });
       if (error) throw error;
+      if (data?.url) {
+        window.location.assign(data.url);
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : t("login.oauthFailed"));
     } finally {

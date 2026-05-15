@@ -7,6 +7,7 @@ import { PricingPaygoTierCards } from "@/components/pricing-paygo-tier-cards";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/i18n/i18n-provider";
 import { cn } from "@/lib/utils";
+import { hrefToCompleteMembershipProfileForCurrentPage } from "@/lib/auth/membership-profile";
 import { glassInteractive, premiumCta, textGradientHero } from "@/lib/premium-ui";
 
 const MONTHLY_PLANS = ["starter", "growth", "scale"] as const;
@@ -33,6 +34,11 @@ async function postCheckout(
     json = JSON.parse(raw) as { checkout_url?: string; error?: string; code?: string };
   } catch {
     json = null;
+  }
+  if (res.status === 403 && json?.code === "profile_required") {
+    toast.error(t("pricing.checkoutProfileRequired"));
+    window.location.assign(hrefToCompleteMembershipProfileForCurrentPage());
+    return false;
   }
   if (res.status === 401 || json?.code === "auth_required") {
     toast.error(t("pricing.checkoutSignInRequired"));

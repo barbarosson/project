@@ -10,6 +10,16 @@ export async function GET(request: NextRequest) {
   const code = url.searchParams.get("code");
   const nextPath = safeNext(url.searchParams.get("next"));
 
+  const oauthErr =
+    url.searchParams.get("error") ||
+    url.searchParams.get("error_code") ||
+    url.searchParams.get("error_description");
+  if (oauthErr && !code) {
+    const login = new URL("/login", origin);
+    login.searchParams.set("error", "oauth");
+    return NextResponse.redirect(login);
+  }
+
   if (!code) {
     return NextResponse.redirect(new URL("/", origin));
   }

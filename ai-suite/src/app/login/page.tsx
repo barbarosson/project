@@ -5,11 +5,13 @@ import { redirect } from "next/navigation";
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { resolvePostLoginNext } from "@/lib/auth/safe-next";
+import { resolveAuthPublicOrigin } from "@/lib/site-public-url";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { glassInteractive, textGradientHero } from "@/lib/premium-ui";
 import { FacebookSignInButton } from "./facebook-sign-in-button";
 import { GoogleSignInButton } from "./google-sign-in-button";
+import { LoginAuthToast } from "./login-auth-toast";
 import { OAuthLoginButtons } from "./oauth-login-buttons";
 import { LoginClient } from "./ui";
 
@@ -18,7 +20,7 @@ export const dynamic = "force-dynamic";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; error?: string }>;
 }) {
   const sp = await searchParams;
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
@@ -31,9 +33,7 @@ export default async function LoginPage({
   }
 
   const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "";
-  const proto = h.get("x-forwarded-proto") ?? "http";
-  const origin = host ? `${proto}://${host}` : "";
+  const origin = resolveAuthPublicOrigin(h);
   const nextAfterAuth = resolvePostLoginNext(sp.next);
   const authCallbackUrl = origin
     ? `${origin}/auth/callback?next=${encodeURIComponent(nextAfterAuth)}`
@@ -41,6 +41,7 @@ export default async function LoginPage({
 
   return (
     <main className="mx-auto w-full max-w-md px-4 py-14">
+      <LoginAuthToast error={sp.error} />
       <div className={cn("rounded-2xl p-6", glassInteractive)}>
         <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
           {d["login.title"]}
