@@ -1,10 +1,11 @@
 import { cookies, headers } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
-import { resolvePostLoginNext } from "@/lib/auth/safe-next";
+import { resolvePostLoginNext, safeNext } from "@/lib/auth/safe-next";
 import { resolveAuthPublicOrigin } from "@/lib/site-public-url";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { pageMain } from "@/lib/page-layout";
@@ -16,6 +17,7 @@ import { GoogleSignInButton } from "./google-sign-in-button";
 import { InstagramSignInButton } from "./instagram-sign-in-button";
 import { LoginAuthToast } from "./login-auth-toast";
 import { OAuthLoginButtons } from "./oauth-login-buttons";
+import { LoginOAuthCodeForward } from "./login-oauth-code-forward";
 import { LoginClient } from "./ui";
 
 export const dynamic = "force-dynamic";
@@ -23,9 +25,24 @@ export const dynamic = "force-dynamic";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; error?: string; detail?: string }>;
+  searchParams: Promise<{
+    next?: string;
+    error?: string;
+    detail?: string;
+    code?: string;
+    error_description?: string;
+  }>;
 }) {
   const sp = await searchParams;
+
+  if (sp.code) {
+    const next = safeNext(sp.next);
+    const q = new URLSearchParams({ code: sp.code, next });
+    if (sp.error) q.set("error", sp.error);
+    if (sp.error_description) q.set("error_description", sp.error_description);
+    redirect(`/auth/callback?${q.toString()}`);
+  }
+
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   const locale = resolveLocaleFromCookie(cookieLocale);
   const d = DICTS[locale];
@@ -44,6 +61,9 @@ export default async function LoginPage({
 
   return (
     <main className={pageMain("auth")}>
+      <Suspense fallback={null}>
+        <LoginOAuthCodeForward />
+      </Suspense>
       <LoginAuthToast error={sp.error} detail={sp.detail} />
       <div className={cn("rounded-2xl p-6", glassInteractive)}>
         <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>

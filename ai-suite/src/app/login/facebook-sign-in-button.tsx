@@ -24,11 +24,12 @@ export function FacebookSignInButton({ authCallbackUrl }: { authCallbackUrl: str
     }
     setBusy(true);
     try {
+      // Do not pass `scopes` here — Supabase already requests email; duplicating
+      // `email` breaks Facebook GDP consent and can abort the flow (scope shows twice).
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "facebook",
         options: {
           redirectTo: oauthCallbackRedirectUrl(authCallbackUrl),
-          scopes: "email,public_profile",
         },
       });
       if (error) throw error;
