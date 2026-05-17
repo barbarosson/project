@@ -22,13 +22,7 @@ import {
   DEFAULT_MODEL,
 } from "@/models/models";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { pageMain } from "@/lib/page-layout";
 import { cn } from "@/lib/utils";
@@ -173,6 +167,11 @@ export function SuccessClient() {
     if (!active) return -1;
     return versions.findIndex((v) => v.id === active.id);
   }, [active, versions]);
+
+  const userQuestion = React.useMemo(() => {
+    if (!stored?.payload) return "";
+    return originalTextFromPayload(stored.payload);
+  }, [stored?.payload]);
 
   const tool: ToolName | null = isToolName(toolParam) ? toolParam : null;
 
@@ -483,9 +482,6 @@ export function SuccessClient() {
                 </Link>
               </Button>
             </div>
-            <CardDescription>
-              {tool ? t("success.usingSaved") : "—"}
-            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             {loading ? (
@@ -518,20 +514,38 @@ export function SuccessClient() {
               </div>
             ) : active ? (
               <>
-                <div className="text-xs text-slate-300">
+                <p className="text-xs text-slate-300">
                   {t("success.selectedVersion")}{" "}
                   <span className="font-medium text-foreground">
                     {activeIndex >= 0 ? activeIndex + 1 : 1}/{versions.length}
                   </span>
-                </div>
-                <div className={cn("relative overflow-hidden rounded-xl", glassSurface)}>
+                </p>
+                {userQuestion ? (
+                  <div
+                    className={cn(
+                      "rounded-xl border border-white/[0.08] bg-black/25 p-4 backdrop-blur-md",
+                      glassSurface
+                    )}
+                  >
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                      {t("success.yourQuestion")}
+                    </p>
+                    <p className="mt-2 max-h-48 overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed text-slate-300">
+                      {userQuestion}
+                    </p>
+                  </div>
+                ) : null}
+                <div className={cn("overflow-hidden rounded-xl", glassSurface)}>
                   <AiResultShareBar text={active.text} onCopied={cleanup} />
                   <div
                     className={cn(
-                      "min-h-[8rem] whitespace-pre-wrap p-4 pt-14 pr-[9.25rem] text-sm leading-relaxed text-slate-300 min-[400px]:pr-44 sm:pr-52",
+                      "min-h-[8rem] whitespace-pre-wrap p-4 text-sm leading-relaxed text-slate-300",
                       "selection:bg-primary/20"
                     )}
                   >
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                      {t("success.aiAnswer")}
+                    </p>
                     {active.text}
                   </div>
                 </div>

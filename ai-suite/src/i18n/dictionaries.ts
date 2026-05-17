@@ -15,10 +15,11 @@ export const DICTS: Record<Locale, Dict> = {
   en: {
     "brand.name": "isendai",
     "header.theme": "Toggle theme",
-    "hero.kicker": "AI Suite for everyday communication",
+    "hero.kicker": "Personal AI Communication Assistant 🪄",
     "hero.title": "Perfect Your Message Before You Hit Send.",
     "hero.subtitle":
-      "Stop overthinking. Let AI transform your angry emails, write your cover letters, and fix your dating profile in seconds.",
+      "Stop overthinking. Let AI transform your angry drafts into professional emails, write your cover letters, and polish your dating texts in seconds.",
+    "hero.cta": "Fix My Message (1st Try Free 🎁)",
     "hero.badge.noSubscription": "No subscription",
     "hero.badge.noSignups": "No sign-ups",
     "hero.badge.payPerUse": "Pay per use",
@@ -26,7 +27,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "Before",
     "home.demo.after.label": "After",
-    "home.demo.title": "Before & After (real examples)",
+    "home.demo.title": "Before & After (Real Examples)",
     "home.demo.subtitle":
       "Pick a product, see the transformation, and click through to generate yours.",
     "home.demo.examples.corp.before":
@@ -62,19 +63,21 @@ export const DICTS: Record<Locale, Dict> = {
     "how.3.title": "3) Copy & send",
     "how.3.body": "Get a clean result with a one-click copy button.",
 
-    "how.detailed.title": "How it works (step-by-step)",
+    "how.detailed.title": "How It Works (4 Simple Steps)",
     "how.detailed.subtitle":
-      "Pick the right micro‑tool, paste your draft, and get a polished output in seconds. Your purchase includes up to 5 versions for the same generation.",
-    "how.detailed.1.title": "1) Choose the right tool",
-    "how.detailed.1.body": "Use the left menu or ask the AI Concierge to recommend one.",
-    "how.detailed.2.title": "2) Paste your context",
-    "how.detailed.2.body": "Drop your draft, job post, or situation. No formatting needed.",
-    "how.detailed.3.title": "3) Select model & pay",
+      "Transform your messy thoughts into perfect messages in under 10 seconds.",
+    "how.detailed.1.title": "1) Choose your tool",
+    "how.detailed.1.body":
+      "Browse our micro-tools from the menu, or just ask the AI Concierge to find the perfect one for your specific situation.",
+    "how.detailed.2.title": "2) Paste your messy draft",
+    "how.detailed.2.body":
+      "Drop in your angry email, awkward text, or basic notes. Don't worry about typos or formatting—just brain dump.",
+    "how.detailed.3.title": "3) Select your AI power",
     "how.detailed.3.body":
-      "Choose a credit pack ($1→10 / $1.49→25 / $1.99→50 credits). Higher tiers unlock more AI models. Billing uses 100-character blocks (rounded up): Economy & GPT‑4o mini 0.2/block, Standard 3/block, Premium 5/block (see Pricing).",
-    "how.detailed.4.title": "4) Review, copy, generate alternatives",
+      "Go with 'Fast AI' (1 Credit) for quick fixes, or 'Pro AI' (25 Credits) for high-stakes messages. The exact credit cost is always transparent on the button.",
+    "how.detailed.4.title": "4) Polish & Send",
     "how.detailed.4.body":
-      "Review and copy your favorite version. You can generate up to 5 total versions for the same generation (included in your purchase). Closing the tab deletes results.",
+      "Review the polished result, copy it, or ask the AI to generate a different variation. Hit send with 100% confidence.",
 
     "products.title": "The products (quick, punchy, effective)",
     "products.subtitle": "Short tools with one job: make you sound better, faster.",
@@ -139,6 +142,22 @@ export const DICTS: Record<Locale, Dict> = {
       "Text copied! Paste it in your LinkedIn post.",
     "success.shareLinkedInCopyFailed":
       "Couldn't copy to clipboard. Try copying the text manually.",
+    "success.yourQuestion": "Your question",
+    "success.aiAnswer": "AI answer",
+    "success.shareToolbarAria": "Share this result",
+    "success.shareOnFacebook": "Share on Facebook",
+    "success.shareOnFacebookAria": "Share this result on Facebook",
+    "success.shareFacebookToast":
+      "Text copied! Paste it in your Facebook post.",
+    "success.shareOnInstagram": "Share on Instagram",
+    "success.shareOnInstagramAria": "Share this result on Instagram",
+    "success.shareInstagramToast":
+      "Text copied! Paste it in your Instagram caption.",
+    "success.shareOnTikTok": "Share on TikTok",
+    "success.shareOnTikTokAria": "Share this result on TikTok",
+    "success.shareTikTokToast": "Text copied! Paste it in your TikTok caption.",
+    "success.shareCopyFailed":
+      "Couldn't copy to clipboard. Try copying the text manually.",
     "success.ready": "Ready when you are.",
 
     "success.ephemeral.title": "Heads up",
@@ -159,9 +178,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "AI Products",
     "home.workspace.hint": "Paste → Generate → Copy",
-    "home.aiStack.title": "AI versions you run on",
+    "home.aiStack.title": "The World's Smartest AIs in One Place 🧠",
     "home.aiStack.body":
-      "Requests are routed across OpenAI, Anthropic, Groq, DeepSeek, and Google. Choose Auto for smart defaults per tool, or pick a concrete model from the list on each tool — credit use follows the tier on Pricing.",
+      "Behind the scenes, the brains of tech giants like OpenAI (ChatGPT), Anthropic (Claude), Google, and DeepSeek work for you. Don't want to think about which model to pick? Leave it on Auto — we'll choose the best fit for your moment. Or take full control and pick your own intelligence from the menu! (Credit usage is calculated transparently based on the tier of the model you choose.)",
 
     "concierge.title": "ISENDAI",
     "concierge.welcome":
@@ -176,6 +195,7 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.pricing": "Pricing",
     "nav.privacy": "Privacy",
     "nav.terms": "Terms",
+    "nav.faq": "FAQ",
     "nav.login": "Sign in · Membership",
     "nav.history": "History",
     "nav.account": "Account",
@@ -363,7 +383,10 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.termsTitle": "Terms of Service",
     "legal.privacyTitle": "Privacy Policy",
     "legal.effective": "Effective date: {year}-01-01",
-    "legal.shellNotice": "Binding legal text is in English below.",
+    "legal.termsMetaDescription":
+      "Terms of Service for isendai. AI writing tools with subscriptions and credit packs.",
+    "legal.privacyMetaDescription":
+      "Privacy Policy for isendai. How we collect, use, and store your text and account data.",
     "legal.paymentsStub":
       "Paid packs and subscriptions will be enabled with Lemon Squeezy; until then, use credits from dev top-up (non-prod) or your operator.",
     "growth.zeroCreditsHint":
@@ -568,10 +591,11 @@ export const DICTS: Record<Locale, Dict> = {
   es: {
     "brand.name": "isendai",
     "header.theme": "Cambiar tema",
-    "hero.kicker": "Suite de IA para comunicación diaria",
-    "hero.title": "Perfecciona tu mensaje antes de enviarlo.",
+    "hero.kicker": "Tu asistente personal de comunicación con IA 🪄",
+    "hero.title": "Perfecciona tu mensaje antes de pulsar Enviar.",
     "hero.subtitle":
-      "Deja de pensarlo tanto. Deja que la IA convierta tus correos enfadados, escriba cartas de presentación y mejore tu perfil de citas en segundos.",
+      "No hace falta buscar las palabras durante horas. Deja que la IA convierta borradores enfadados en emails profesionales y brille tus mensajes de citas en segundos.",
+    "hero.cta": "Arreglar mi mensaje (1.er intento gratis 🎁)",
     "hero.badge.noSubscription": "Sin suscripción",
     "hero.badge.noSignups": "Sin registro",
     "hero.badge.payPerUse": "Pago por uso",
@@ -579,7 +603,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "Antes",
     "home.demo.after.label": "Después",
-    "home.demo.title": "Antes y después (ejemplos reales)",
+    "home.demo.title": "Antes Y Después (Ejemplos Reales)",
     "home.demo.subtitle":
       "Elige un producto, mira la transformación y haz clic para generar el tuyo.",
     "home.demo.examples.corp.before":
@@ -613,21 +637,21 @@ export const DICTS: Record<Locale, Dict> = {
     "how.3.title": "3) Copia y envía",
     "how.3.body": "Obtén un resultado limpio con copiar en un clic.",
 
-    "how.detailed.title": "Cómo funciona (paso a paso)",
+    "how.detailed.title": "Cómo funciona (4 pasos sencillos)",
     "how.detailed.subtitle":
-      "Elige la microherramienta adecuada, pega tu borrador y obtén un resultado pulido en segundos. Tu compra incluye hasta 5 versiones para la misma generación.",
-    "how.detailed.1.title": "1) Elige la herramienta correcta",
+      "Transforma tus ideas desordenadas en mensajes perfectos en menos de 10 segundos.",
+    "how.detailed.1.title": "1) Elige tu herramienta",
     "how.detailed.1.body":
-      "Usa el menú de la izquierda o pide al AI Concierge que te recomiende una.",
-    "how.detailed.2.title": "2) Pega tu contexto",
+      "Explora nuestras microherramientas en el menú o pide al AI Concierge que encuentre la ideal para tu situación.",
+    "how.detailed.2.title": "2) Pega tu borrador",
     "how.detailed.2.body":
-      "Pega tu borrador, oferta o situación. Sin formato necesario.",
-    "how.detailed.3.title": "3) Elige modelo y paga",
+      "Pega tu correo enfadado, mensaje incómodo o notas sueltas. No te preocupes por faltas ni formato: suelta todo.",
+    "how.detailed.3.title": "3) Elige tu potencia de IA",
     "how.detailed.3.body":
-      "Elige un paquete ($1→10 / $1.49→25 / $1.99→50 créditos). Los niveles más altos desbloquean más modelos. Cobramos bloques de 500 caracteres (redondeo superior): Economy y GPT‑4o mini 1 crédito/bloque, Estándar 15/bloque, Premium 25/bloque (véase Precios).",
-    "how.detailed.4.title": "4) Revisa, copia, genera alternativas",
+      "Usa 'Fast AI' (1 crédito) para arreglos rápidos o 'Pro AI' (25 créditos) para mensajes importantes. El coste exacto siempre aparece en el botón.",
+    "how.detailed.4.title": "4) Pulir y enviar",
     "how.detailed.4.body":
-      "Revisa y copia tu versión favorita. Puedes generar hasta 5 versiones en total para la misma generación (incluido en tu compra). Al cerrar la pestaña se borran los resultados.",
+      "Revisa el resultado, cópialo o pide otra variación. Envía con total confianza.",
     "products.title": "Productos (rápidos y efectivos)",
     "products.subtitle": "Herramientas con una sola misión: sonar mejor, más rápido.",
     "products.corp.title": "The Corporate Whisperer",
@@ -682,6 +706,23 @@ export const DICTS: Record<Locale, Dict> = {
       "¡Texto copiado! Pégalo en tu publicación de LinkedIn.",
     "success.shareLinkedInCopyFailed":
       "No se pudo copiar al portapapeles. Intenta copiar el texto manualmente.",
+    "success.yourQuestion": "Tu pregunta",
+    "success.aiAnswer": "Respuesta de la IA",
+    "success.shareToolbarAria": "Compartir este resultado",
+    "success.shareOnFacebook": "Compartir en Facebook",
+    "success.shareOnFacebookAria": "Compartir este resultado en Facebook",
+    "success.shareFacebookToast":
+      "¡Texto copiado! Pégalo en tu publicación de Facebook.",
+    "success.shareOnInstagram": "Compartir en Instagram",
+    "success.shareOnInstagramAria": "Compartir este resultado en Instagram",
+    "success.shareInstagramToast":
+      "¡Texto copiado! Pégalo en la leyenda de Instagram.",
+    "success.shareOnTikTok": "Compartir en TikTok",
+    "success.shareOnTikTokAria": "Compartir este resultado en TikTok",
+    "success.shareTikTokToast":
+      "¡Texto copiado! Pégalo en la descripción de TikTok.",
+    "success.shareCopyFailed":
+      "No se pudo copiar al portapapeles. Intenta copiar el texto manualmente.",
     "success.ready": "Listo cuando tú lo estés.",
 
     "success.ephemeral.title": "Aviso",
@@ -702,9 +743,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "Productos de IA",
     "home.workspace.hint": "Pega → Genera → Copia",
-    "home.aiStack.title": "Versiones de IA que usas",
+    "home.aiStack.title": "Las IAs Más Inteligentes del Mundo en Un Solo Lugar 🧠",
     "home.aiStack.body":
-      "Enrutamos peticiones entre OpenAI, Anthropic, Groq, DeepSeek y Google. Elige Auto para valores por defecto según la herramienta, o un modelo concreto en cada tarjeta — el uso de créditos sigue el nivel en Precios.",
+      "En segundo plano trabajan para ti los cerebros de gigantes tecnológicos como OpenAI (ChatGPT), Anthropic (Claude), Google y DeepSeek. ¿No quieres pensar qué modelo elegir? Déjalo en «Automático» y elegimos el más adecuado para tu momento. ¡O toma el control y elige tu propia inteligencia en el menú! (El uso de créditos se calcula con transparencia según el nivel del modelo que elijas).",
 
     "category.work-career.label": "Brillo Profesional",
     "category.crisis-money.label": "Dinero & Apagafuegos",
@@ -727,6 +768,7 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.pricing": "Precios",
     "nav.privacy": "Privacidad",
     "nav.terms": "Términos",
+    "nav.faq": "FAQ",
     "nav.login": "Acceso · Cuenta",
     "nav.history": "Historial",
     "nav.account": "Mi cuenta",
@@ -915,7 +957,10 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.termsTitle": "Términos del servicio",
     "legal.privacyTitle": "Política de privacidad",
     "legal.effective": "Vigencia: {year}-01-01",
-    "legal.shellNotice": "El texto legal vinculante está en inglés a continuación.",
+    "legal.termsMetaDescription":
+      "Términos del servicio de isendai. Herramientas de escritura con IA, suscripciones y paquetes de créditos.",
+    "legal.privacyMetaDescription":
+      "Política de privacidad de isendai. Cómo recopilamos, usamos y almacenamos tu texto y datos de cuenta.",
     "legal.paymentsStub":
       "Los pagos con Lemon Squeezy llegarán más adelante; hasta entonces usa la recarga dev (no prod) o tu operador.",
     "growth.zeroCreditsHint":
@@ -1112,10 +1157,11 @@ export const DICTS: Record<Locale, Dict> = {
   fr: {
     "brand.name": "isendai",
     "header.theme": "Changer le thème",
-    "hero.kicker": "Suite IA pour la communication au quotidien",
+    "hero.kicker": "Votre assistant IA de communication personnel 🪄",
     "hero.title": "Peaufinez votre message avant d’appuyer sur Envoyer.",
     "hero.subtitle":
-      "Arrêtez de trop réfléchir. L’IA transforme vos emails énervés, écrit vos lettres de motivation et améliore votre bio en quelques secondes.",
+      "Inutile de chercher les mots pendant des heures. L’IA transforme vos brouillons énervés en emails professionnels et polit vos messages de rencontre en quelques secondes.",
+    "hero.cta": "Corriger mon message (1er essai gratuit 🎁)",
     "hero.badge.noSubscription": "Sans abonnement",
     "hero.badge.noSignups": "Sans inscription",
     "hero.badge.payPerUse": "Paiement à l’usage",
@@ -1123,7 +1169,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "Avant",
     "home.demo.after.label": "Après",
-    "home.demo.title": "Avant / Après (exemples réels)",
+    "home.demo.title": "Avant / Après (Exemples Réels)",
     "home.demo.subtitle":
       "Choisissez un produit, voyez la transformation, puis cliquez pour générer le vôtre.",
     "home.demo.examples.corp.before":
@@ -1157,21 +1203,21 @@ export const DICTS: Record<Locale, Dict> = {
     "how.3.title": "3) Copiez & envoyez",
     "how.3.body": "Résultat propre avec copie en un clic.",
 
-    "how.detailed.title": "Comment ça marche (étape par étape)",
+    "how.detailed.title": "Comment ça marche (4 étapes simples)",
     "how.detailed.subtitle":
-      "Choisissez le bon micro‑outil, collez votre brouillon et obtenez un résultat soigné en quelques secondes. Vous pouvez générer jusqu’à 5 alternatives par génération.",
-    "how.detailed.1.title": "1) Choisissez le bon outil",
+      "Transformez vos idées en vrac en messages parfaits en moins de 10 secondes.",
+    "how.detailed.1.title": "1) Choisissez votre outil",
     "how.detailed.1.body":
-      "Utilisez le menu à gauche ou demandez une recommandation à l’AI Concierge.",
-    "how.detailed.2.title": "2) Collez le contexte",
+      "Parcourez nos micro‑outils dans le menu ou demandez à l’AI Concierge de trouver le bon pour votre situation.",
+    "how.detailed.2.title": "2) Collez votre brouillon",
     "how.detailed.2.body":
-      "Collez votre brouillon, offre ou situation. Pas de mise en forme nécessaire.",
-    "how.detailed.3.title": "3) Choisissez le modèle & payez",
+      "Collez votre e‑mail énervé, SMS maladroit ou notes brutes. Pas besoin de corriger : videz votre sac.",
+    "how.detailed.3.title": "3) Choisissez votre puissance IA",
     "how.detailed.3.body":
-      "Choisis un pack ($1→10 / $1.49→25 / $1.99→50 crédits). Les niveaux supérieurs débloquent plus de modèles. Facturation par blocs de 500 caractères (arrondi supérieur) : entrée de gamme et GPT‑4o mini 1 crédit/bloc, Standard 15/bloc, Premium 25/bloc (voir Tarifs).",
-    "how.detailed.4.title": "4) Relisez, copiez, générez des alternatives",
+      "Optez pour 'Fast AI' (1 crédit) pour des retouches rapides ou 'Pro AI' (25 crédits) pour les messages importants. Le coût exact est toujours affiché sur le bouton.",
+    "how.detailed.4.title": "4) Peaufinez et envoyez",
     "how.detailed.4.body":
-      "Copiez le résultat ou achetez/générez une autre version (max 5). Fermer l’onglet supprime les résultats.",
+      "Relisez le résultat, copiez‑le ou demandez une autre variante. Envoyez en toute confiance.",
     "products.title": "Produits (rapides, efficaces)",
     "products.subtitle": "Des outils simples : mieux écrire, plus vite.",
     "products.corp.title": "The Corporate Whisperer",
@@ -1226,6 +1272,23 @@ export const DICTS: Record<Locale, Dict> = {
       "Texte copié ! Collez-le dans votre publication LinkedIn.",
     "success.shareLinkedInCopyFailed":
       "Impossible de copier dans le presse-papiers. Copiez le texte manuellement.",
+    "success.yourQuestion": "Votre question",
+    "success.aiAnswer": "Réponse de l’IA",
+    "success.shareToolbarAria": "Partager ce résultat",
+    "success.shareOnFacebook": "Partager sur Facebook",
+    "success.shareOnFacebookAria": "Partager ce résultat sur Facebook",
+    "success.shareFacebookToast":
+      "Texte copié ! Collez-le dans votre publication Facebook.",
+    "success.shareOnInstagram": "Partager sur Instagram",
+    "success.shareOnInstagramAria": "Partager ce résultat sur Instagram",
+    "success.shareInstagramToast":
+      "Texte copié ! Collez-le dans la légende Instagram.",
+    "success.shareOnTikTok": "Partager sur TikTok",
+    "success.shareOnTikTokAria": "Partager ce résultat sur TikTok",
+    "success.shareTikTokToast":
+      "Texte copié ! Collez-le dans la description TikTok.",
+    "success.shareCopyFailed":
+      "Impossible de copier dans le presse-papiers. Copiez le texte manuellement.",
     "success.ready": "Quand vous voulez.",
 
     "success.ephemeral.title": "Info",
@@ -1246,9 +1309,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "Produits IA",
     "home.workspace.hint": "Coller → Générer → Copier",
-    "home.aiStack.title": "Versions d’IA utilisées",
+    "home.aiStack.title": "Les IA Les Plus Intelligentes du Monde, Réunies 🧠",
     "home.aiStack.body":
-      "Les requêtes passent par OpenAI, Anthropic, Groq, DeepSeek et Google. Choisis Auto pour des réglages adaptés à l’outil, ou un modèle précis sur chaque fiche — les crédits suivent le palier sous Tarifs.",
+      "En coulisses, les cerveaux de géants comme OpenAI (ChatGPT), Anthropic (Claude), Google et DeepSeek travaillent pour vous. Vous ne voulez pas choisir un modèle ? Laissez le mode « Auto » : nous sélectionnons le plus adapté à votre situation. Ou reprenez le contrôle et choisissez votre intelligence dans le menu ! (La consommation de crédits est calculée de façon transparente selon le niveau du modèle choisi).",
 
     "category.work-career.label": "Boost Carrière",
     "category.crisis-money.label": "SOS Argent",
@@ -1271,6 +1334,7 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.pricing": "Tarifs",
     "nav.privacy": "Confidentialité",
     "nav.terms": "Conditions",
+    "nav.faq": "FAQ",
     "nav.login": "Connexion · Compte",
     "nav.history": "Historique",
     "nav.account": "Mon compte",
@@ -1459,7 +1523,10 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.termsTitle": "Conditions d’utilisation",
     "legal.privacyTitle": "Politique de confidentialité",
     "legal.effective": "Date d’effet : {year}-01-01",
-    "legal.shellNotice": "Le texte juridique faisant foi est en anglais ci-dessous.",
+    "legal.termsMetaDescription":
+      "Conditions d’utilisation d’isendai. Outils d’écriture IA, abonnements et packs de crédits.",
+    "legal.privacyMetaDescription":
+      "Politique de confidentialité d’isendai. Comment nous collectons, utilisons et stockons votre texte et vos données.",
     "legal.paymentsStub":
       "Paiement Lemon Squeezy plus tard ; en attendant utilise la recharge dev (hors prod) ou ton opérateur.",
     "growth.zeroCreditsHint":
@@ -1656,10 +1723,11 @@ export const DICTS: Record<Locale, Dict> = {
   de: {
     "brand.name": "isendai",
     "header.theme": "Theme wechseln",
-    "hero.kicker": "KI‑Suite für tägliche Kommunikation",
+    "hero.kicker": "Dein persönlicher KI‑Kommunikationsassistent 🪄",
     "hero.title": "Perfektioniere deine Nachricht, bevor du auf Senden klickst.",
     "hero.subtitle":
-      "Hör auf zu grübeln. KI verwandelt wütende Mails, schreibt Anschreiben und optimiert dein Dating‑Profil in Sekunden.",
+      "Kein stundenlanges Wortgrübeln mehr. Die KI macht aus wütenden Entwürfen professionelle Mails und poliert deine Dating‑Nachrichten in Sekunden.",
+    "hero.cta": "Nachricht verbessern (1. Versuch gratis 🎁)",
     "hero.badge.noSubscription": "Kein Abo",
     "hero.badge.noSignups": "Kein Signup",
     "hero.badge.payPerUse": "Pay‑per‑use",
@@ -1702,21 +1770,21 @@ export const DICTS: Record<Locale, Dict> = {
     "how.3.title": "3) Kopieren & senden",
     "how.3.body": "Sauberes Ergebnis mit Copy‑Button.",
 
-    "how.detailed.title": "So funktioniert’s (Schritt für Schritt)",
+    "how.detailed.title": "So funktioniert’s (4 einfache Schritte)",
     "how.detailed.subtitle":
-      "Wähle das richtige Micro‑Tool, füge deinen Entwurf ein und erhalte in Sekunden ein poliertes Ergebnis. Du kannst pro Generierung bis zu 5 Alternativen erzeugen.",
-    "how.detailed.1.title": "1) Das richtige Tool wählen",
+      "Verwandle chaotische Gedanken in perfekte Nachrichten in unter 10 Sekunden.",
+    "how.detailed.1.title": "1) Wähle dein Tool",
     "how.detailed.1.body":
-      "Nutze das linke Menü oder bitte den AI Concierge um eine Empfehlung.",
-    "how.detailed.2.title": "2) Kontext einfügen",
+      "Durchstöbere unsere Micro‑Tools im Menü oder frag den AI Concierge nach dem passenden Tool für deine Situation.",
+    "how.detailed.2.title": "2) Füge deinen Entwurf ein",
     "how.detailed.2.body":
-      "Füge Entwurf, Jobpost oder Situation ein. Kein Format nötig.",
-    "how.detailed.3.title": "3) Modell wählen & bezahlen",
+      "Füge wütende E‑Mails, ungeschickte Texte oder Notizen ein. Rechtschreibung egal – einfach alles rauslassen.",
+    "how.detailed.3.title": "3) Wähle deine KI‑Power",
     "how.detailed.3.body":
-      "Wähle ein Paket ($1→10 / $1.49→25 / $1.99→50 Credits). Höhere Stufen schalten mehr Modelle frei. Abrechnung in 500‑Zeichen‑Blöcken (aufrunden): Economy & GPT‑4o mini 1 Credit/Block, Standard 15/Block, Premium 25/Block (siehe Preise).",
-    "how.detailed.4.title": "4) Prüfen, kopieren, Alternativen erzeugen",
+      "Nimm 'Fast AI' (1 Credit) für schnelle Fixes oder 'Pro AI' (25 Credits) für wichtige Nachrichten. Die genauen Kosten stehen immer auf dem Button.",
+    "how.detailed.4.title": "4) Feinschliff & absenden",
     "how.detailed.4.body":
-      "Kopiere das Ergebnis oder kaufe/generiere eine weitere Version (max. 5). Beim Schließen des Tabs werden die Ergebnisse gelöscht.",
+      "Prüfe das Ergebnis, kopiere es oder lass eine andere Variante erzeugen. Sende mit voller Sicherheit.",
     "products.title": "Produkte (kurz, knackig, effektiv)",
     "products.subtitle": "Tools mit einem Ziel: besser klingen – schneller.",
     "products.corp.title": "The Corporate Whisperer",
@@ -1771,6 +1839,23 @@ export const DICTS: Record<Locale, Dict> = {
       "Text kopiert! Füge ihn in deinen LinkedIn‑Beitrag ein.",
     "success.shareLinkedInCopyFailed":
       "Konnte nicht in die Zwischenablage kopieren. Kopiere den Text manuell.",
+    "success.yourQuestion": "Deine Frage",
+    "success.aiAnswer": "KI-Antwort",
+    "success.shareToolbarAria": "Dieses Ergebnis teilen",
+    "success.shareOnFacebook": "Auf Facebook teilen",
+    "success.shareOnFacebookAria": "Dieses Ergebnis auf Facebook teilen",
+    "success.shareFacebookToast":
+      "Text kopiert! Füge ihn in deinen Facebook-Beitrag ein.",
+    "success.shareOnInstagram": "Auf Instagram teilen",
+    "success.shareOnInstagramAria": "Dieses Ergebnis auf Instagram teilen",
+    "success.shareInstagramToast":
+      "Text kopiert! Füge ihn in deine Instagram-Bildunterschrift ein.",
+    "success.shareOnTikTok": "Auf TikTok teilen",
+    "success.shareOnTikTokAria": "Dieses Ergebnis auf TikTok teilen",
+    "success.shareTikTokToast":
+      "Text kopiert! Füge ihn in deine TikTok-Beschreibung ein.",
+    "success.shareCopyFailed":
+      "Konnte nicht in die Zwischenablage kopieren. Kopiere den Text manuell.",
     "success.ready": "Bereit, wenn du es bist.",
 
     "success.ephemeral.title": "Hinweis",
@@ -1791,9 +1876,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "KI‑Produkte",
     "home.workspace.hint": "Einfügen → Generieren → Kopieren",
-    "home.aiStack.title": "KI‑Versionen in der App",
+    "home.aiStack.title": "Die Klügsten KIs der Welt an Einem Ort 🧠",
     "home.aiStack.body":
-      "Anfragen laufen über OpenAI, Anthropic, Groq, DeepSeek und Google. Wähle Auto für sinnvolle Standard‑Modelle pro Tool oder ein konkretes Modell auf jeder Karte — die Credits folgen dem Tarif unter Preise.",
+      "Im Hintergrund arbeiten die Köpfe von Tech‑Riesen wie OpenAI (ChatGPT), Anthropic (Claude), Google und DeepSeek für dich. Keine Lust, ein Modell zu wählen? Lass es auf „Automatisch“ — wir picken das Passende für deinen Moment. Oder übernimm die Kontrolle und wähle deine Intelligenz im Menü! (Credit‑Verbrauch wird transparent nach der Stufe des gewählten Modells berechnet).",
 
     "category.work-career.label": "Karriere‑Boost",
     "category.crisis-money.label": "Geld‑SOS",
@@ -1816,6 +1901,7 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.pricing": "Preise",
     "nav.privacy": "Datenschutz",
     "nav.terms": "AGB",
+    "nav.faq": "FAQ",
     "nav.login": "Anmelden · Konto",
     "nav.history": "Verlauf",
     "nav.account": "Konto",
@@ -2004,7 +2090,10 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.termsTitle": "Nutzungsbedingungen",
     "legal.privacyTitle": "Datenschutz",
     "legal.effective": "Gültig ab: {year}-01-01",
-    "legal.shellNotice": "Verbindlicher Rechtstext steht unten auf Englisch.",
+    "legal.termsMetaDescription":
+      "Nutzungsbedingungen für isendai. KI-Schreibtools mit Abos und Credit-Paketen.",
+    "legal.privacyMetaDescription":
+      "Datenschutzerklärung für isendai. Wie wir deinen Text und Kontodaten erheben, nutzen und speichern.",
     "legal.paymentsStub":
       "Lemon Squeezy-Zahlung folgt; bis dahin Dev-Top-up (nicht prod) oder Betreiber-Credits.",
     "growth.zeroCreditsHint":
@@ -2197,10 +2286,11 @@ export const DICTS: Record<Locale, Dict> = {
   zh: {
     "brand.name": "isendai",
     "header.theme": "切换主题",
-    "hero.kicker": "日常沟通 AI 套件",
+    "hero.kicker": "你的个人 AI 沟通助手 🪄",
     "hero.title": "在你点击发送前，把话说得更漂亮。",
     "hero.subtitle":
-      "别再纠结了。让 AI 秒级优化你的情绪邮件、求职信和约会简介。",
+      "不必再花数小时斟酌措辞。让 AI 把情绪草稿变成专业邮件，并在几秒内润色你的约会消息。",
+    "hero.cta": "优化我的消息（首次免费 🎁）",
     "hero.badge.noSubscription": "无需订阅",
     "hero.badge.noSignups": "无需注册",
     "hero.badge.payPerUse": "按次付费",
@@ -2236,19 +2326,20 @@ export const DICTS: Record<Locale, Dict> = {
     "how.3.title": "3) 复制发送",
     "how.3.body": "一键复制，直接发送。",
 
-    "how.detailed.title": "如何使用（分步说明）",
-    "how.detailed.subtitle":
-      "选对微工具，粘贴草稿，几秒内得到更精炼的结果。同一次生成最多可有 5 个备选版本。",
-    "how.detailed.1.title": "1) 选择合适的工具",
-    "how.detailed.1.body": "使用左侧菜单，或让 AI Concierge 帮你推荐。",
-    "how.detailed.2.title": "2) 粘贴你的背景信息",
-    "how.detailed.2.body": "粘贴草稿、职位描述或具体情况，无需格式。",
-    "how.detailed.3.title": "3) 选择模型并支付",
+    "how.detailed.title": "如何使用（4 个简单步骤）",
+    "how.detailed.subtitle": "10 秒内把杂乱想法变成完美消息。",
+    "how.detailed.1.title": "1) 选择工具",
+    "how.detailed.1.body":
+      "在菜单中浏览微工具，或让 AI Concierge 为你的情况找到最合适的工具。",
+    "how.detailed.2.title": "2) 粘贴草稿",
+    "how.detailed.2.body":
+      "粘贴愤怒邮件、尴尬短信或随手笔记。不用管错别字和格式，想到什么写什么。",
+    "how.detailed.3.title": "3) 选择 AI 力度",
     "how.detailed.3.body":
-      "选择额度包（$1→10 / $1.49→25 / $1.99→50 额度）。更高档位解锁更多模型。按每 500 字一块计费（向上取整）：经济档与 GPT‑4o mini 每块 1 额度；标准档每块 15；高级档每块 25（详见价格页）。",
-    "how.detailed.4.title": "4) 查看、复制、生成备选版本",
+      "快速修改选「Fast AI」（1 额度），重要消息选「Pro AI」（25 额度）。按钮上始终显示确切额度消耗。",
+    "how.detailed.4.title": "4) 润色并发送",
     "how.detailed.4.body":
-      "复制结果，或购买/生成另一版（最多 5 版）。关闭标签页会删除结果。",
+      "查看润色结果，复制或让 AI 生成另一版。放心发送。",
     "products.title": "产品（快速、好用、有效）",
     "products.subtitle": "每个工具只做一件事：让你更会说话。",
     "products.corp.title": "The Corporate Whisperer",
@@ -2299,6 +2390,19 @@ export const DICTS: Record<Locale, Dict> = {
     "success.shareOnLinkedInAria": "在 LinkedIn 上分享此结果",
     "success.shareLinkedInToast": "文本已复制！请粘贴到 LinkedIn 帖子中。",
     "success.shareLinkedInCopyFailed": "无法复制到剪贴板，请手动复制文本。",
+    "success.yourQuestion": "你的问题",
+    "success.aiAnswer": "AI 回答",
+    "success.shareToolbarAria": "分享此结果",
+    "success.shareOnFacebook": "分享到 Facebook",
+    "success.shareOnFacebookAria": "在 Facebook 上分享此结果",
+    "success.shareFacebookToast": "文本已复制！粘贴到你的 Facebook 帖子中。",
+    "success.shareOnInstagram": "分享到 Instagram",
+    "success.shareOnInstagramAria": "在 Instagram 上分享此结果",
+    "success.shareInstagramToast": "文本已复制！粘贴到你的 Instagram 说明中。",
+    "success.shareOnTikTok": "分享到 TikTok",
+    "success.shareOnTikTokAria": "在 TikTok 上分享此结果",
+    "success.shareTikTokToast": "文本已复制！粘贴到你的 TikTok 描述中。",
+    "success.shareCopyFailed": "无法复制到剪贴板，请手动复制文本。",
     "success.ready": "准备就绪。",
 
     "success.ephemeral.title": "提示",
@@ -2319,9 +2423,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "AI 产品",
     "home.workspace.hint": "粘贴 → 生成 → 复制",
-    "home.aiStack.title": "应用使用的 AI 版本",
+    "home.aiStack.title": "全球顶尖 AI 齐聚一处 🧠",
     "home.aiStack.body":
-      "请求会路由到 OpenAI、Anthropic、Groq、DeepSeek 与 Google。每个工具可选「自动」智能默认，或在卡片上选择具体模型——额度消耗见「价格与套餐」中的档位说明。",
+      "幕后有 OpenAI（ChatGPT）、Anthropic（Claude）、Google、DeepSeek 等科技巨头的大脑为你工作。不想纠结选哪个模型？交给「自动」模式，我们会为当下场景挑选最合适的模型。也可以完全掌控，在菜单里自选你的 AI！（积分按所选模型的智能档位透明计费。）",
 
     "category.work-career.label": "职场加速",
     "category.crisis-money.label": "钱包急救",
@@ -2344,6 +2448,7 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.pricing": "价格与套餐",
     "nav.privacy": "隐私",
     "nav.terms": "条款",
+    "nav.faq": "常见问题",
     "nav.login": "登录 · 会员",
     "nav.history": "历史记录",
     "nav.account": "我的账户",
@@ -2527,7 +2632,8 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.termsTitle": "服务条款",
     "legal.privacyTitle": "隐私政策",
     "legal.effective": "生效日期：{year}-01-01",
-    "legal.shellNotice": "具有法律效力的正文以下方英文为准。",
+    "legal.termsMetaDescription": "isendai 服务条款。AI 写作工具、订阅与积分包。",
+    "legal.privacyMetaDescription": "isendai 隐私政策。我们如何收集、使用和存储您的文本与账户数据。",
     "legal.paymentsStub": "付费套餐将在 Lemon Squeezy 就绪后启用；此前请用本地 dev 充值或管理员加额度。",
     "growth.zeroCreditsHint": "额度为 0：在「价格」页查看本地 dev 充值说明，或登录/联系管理员。",
     "growth.freeTrial.ctaButton": "免费生成第一条消息 🎁",
@@ -2708,10 +2814,11 @@ export const DICTS: Record<Locale, Dict> = {
   tr: {
     "brand.name": "isendai",
     "header.theme": "Tema değiştir",
-    "hero.kicker": "Günlük iletişim için AI Suite",
-    "hero.title": "Göndermeden önce mesajını mükemmelleştir.",
+    "hero.kicker": "Kişisel İletişim Asistanınız 🪄",
+    "hero.title": "Gönder Tuşuna Basmadan Önce Mesajınızı Mükemmelleştirin.",
     "hero.subtitle":
-      "Fazla düşünmeyi bırak. AI; öfkeli e-postalarını kurumsallaştırır, ön yazını yazar, flört biyonu saniyelerde parlatır.",
+      "Saatlerce doğru kelimeleri aramanıza gerek yok. Bırakın yapay zeka; öfkeli taslaklarınızı profesyonel e-postalara dönüştürsün ve flört mesajlarınızı saniyeler içinde parlatsın.",
+    "hero.cta": "Mesajımı Düzelt (İlk Deneme Bedava 🎁)",
     "hero.badge.noSubscription": "Abonelik yok",
     "hero.badge.noSignups": "Kayıt yok",
     "hero.badge.payPerUse": "Kullandıkça öde",
@@ -2719,7 +2826,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "Önce",
     "home.demo.after.label": "Sonra",
-    "home.demo.title": "Önce / Sonra (ürün bazlı örnekler)",
+    "home.demo.title": "Önce / Sonra (Ürün Bazlı Örnekler)",
     "home.demo.subtitle":
       "Bir ürün seç, dönüşümü gör, tıkla ve kendi metnini üret.",
     "home.demo.examples.corp.before":
@@ -2754,18 +2861,21 @@ export const DICTS: Record<Locale, Dict> = {
     "how.3.title": "3) Kopyala & gönder",
     "how.3.body": "Tek tıkla kopyala, direkt gönder.",
 
-    "how.detailed.title": "Nasıl çalışır? (adım adım)",
+    "how.detailed.title": "Nasıl Çalışır? (4 Basit Adım)",
     "how.detailed.subtitle":
-      "Doğru micro‑aracı seç, metnini yapıştır ve saniyeler içinde parlatılmış çıktı al. Aynı üretim için en fazla 5 alternatif üretebilirsin.",
-    "how.detailed.1.title": "1) Doğru aracı seç",
-    "how.detailed.1.body": "Soldaki listeden seç veya AI Karşılama Botu’ndan öneri iste.",
-    "how.detailed.2.title": "2) Bağlamı yapıştır",
-    "how.detailed.2.body": "Taslak/ilan/durumunu yaz. Format şart değil.",
-    "how.detailed.3.title": "3) Model seç & öde",
+      "Karmaşık düşüncelerinizi 10 saniyenin altında kusursuz mesajlara dönüştürün.",
+    "how.detailed.1.title": "1) Aracınızı seçin",
+    "how.detailed.1.body":
+      "Menüden mikro araçlarımızı inceleyin veya tam durumunuza uygun aracı bulması için AI Concierge asistanımıza danışın.",
+    "how.detailed.2.title": "2) Taslağınızı yapıştırın",
+    "how.detailed.2.body":
+      "Öfkeli e-postanızı, kaba metninizi veya basit notlarınızı yapıştırın. İmla kurallarını dert etmeyin; sadece içinizi dökün.",
+    "how.detailed.3.title": "3) Yapay zeka gücünüzü seçin",
     "how.detailed.3.body":
-      "Kontör paketi seç ($1→10 / $1,49→25 / $1,99→50 kontör). Üst paketler daha fazla model açar. 100 karakterlik bloklar (yukarı yuvarlanır): Ekonomi ve GPT‑4o mini 0,2; Standart 3; Premium 5 kontör/blok (Paketler sayfasına bak).",
-    "how.detailed.4.title": "4) İncele, kopyala, alternatif üret",
-    "how.detailed.4.body": "Sonucu kopyala veya yeni versiyon üret/satın al (max 5). Sekmeyi kapatırsan sonuçlar silinir.",
+      "Hızlı düzeltmeler için 'Fast AI' (1 Kredi), kritik mesajlar için 'Pro AI' (25 Kredi) seçin. Harcanacak kredi miktarı butonda her zaman şeffafça yazar.",
+    "how.detailed.4.title": "4) Kopyala ve Gönder",
+    "how.detailed.4.body":
+      "Kusursuzlaştırılmış sonucu inceleyin, kopyalayın veya farklı bir ton için yeniden üretin. Artık %100 özgüvenle gönderebilirsiniz.",
     "products.title": "Ürünler (hızlı, net, etkili)",
     "products.subtitle": "Tek işi var: daha iyi görünmeni sağlamak.",
     "products.corp.title": "The Corporate Whisperer",
@@ -2820,6 +2930,23 @@ export const DICTS: Record<Locale, Dict> = {
       "Metin kopyalandı! LinkedIn gönderinize yapıştırın.",
     "success.shareLinkedInCopyFailed":
       "Panoya kopyalanamadı. Metni elle kopyalamayı deneyin.",
+    "success.yourQuestion": "Sorunuz",
+    "success.aiAnswer": "AI yanıtı",
+    "success.shareToolbarAria": "Bu sonucu paylaş",
+    "success.shareOnFacebook": "Facebook'ta paylaş",
+    "success.shareOnFacebookAria": "Sonucu Facebook'ta paylaş",
+    "success.shareFacebookToast":
+      "Metin kopyalandı! Facebook gönderinize yapıştırın.",
+    "success.shareOnInstagram": "Instagram'da paylaş",
+    "success.shareOnInstagramAria": "Sonucu Instagram'da paylaş",
+    "success.shareInstagramToast":
+      "Metin kopyalandı! Instagram açıklamasına yapıştırın.",
+    "success.shareOnTikTok": "TikTok'ta paylaş",
+    "success.shareOnTikTokAria": "Sonucu TikTok'ta paylaş",
+    "success.shareTikTokToast":
+      "Metin kopyalandı! TikTok açıklamasına yapıştırın.",
+    "success.shareCopyFailed":
+      "Panoya kopyalanamadı. Metni elle kopyalamayı deneyin.",
     "success.ready": "Hazır olduğunda.",
 
     "success.ephemeral.title": "Bilgi",
@@ -2840,9 +2967,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "AI Ürünleri",
     "home.workspace.hint": "Yapıştır → Üret → Kopyala",
-    "home.aiStack.title": "Uygulamanın çalıştırdığı yapay zeka sürümleri",
+    "home.aiStack.title": "Dünyanın En Zeki Yapay Zekaları Tek Bir Yerde 🧠",
     "home.aiStack.body":
-      "İstekler OpenAI, Anthropic, Groq, DeepSeek ve Google üzerinden yönlendirilir. Araç başına Akıllı seçim için Otomatik’i kullan veya listeden somut model seç — kontör kullanımı Paketler’deki kademeye göre hesaplanır.",
+      "Arka planda OpenAI (ChatGPT), Anthropic (Claude), Google ve DeepSeek gibi teknoloji devlerinin beyinleri sizin için çalışıyor. Hangi modeli seçeceğinizi düşünmek istemiyor musunuz? İşi \"Otomatik\" moda bırakın, o anki kriziniz için en uygun modeli biz seçelim. Ya da kontrolü tamamen elinize alıp menüden kendi zekanızı kendiniz belirleyin! (Kredi harcamalarınız, seçtiğiniz modelin zeka seviyesine göre şeffaf bir şekilde hesaplanır).",
 
     "concierge.title": "ISENDAI",
     "concierge.welcome":
@@ -2857,6 +2984,7 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.pricing": "Paketler",
     "nav.privacy": "Gizlilik",
     "nav.terms": "Şartlar",
+    "nav.faq": "SSS",
     "nav.login": "Üyelik / Giriş",
     "nav.history": "Geçmiş",
     "nav.account": "Hesabım",
@@ -3045,7 +3173,10 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.termsTitle": "Kullanım şartları",
     "legal.privacyTitle": "Gizlilik politikası",
     "legal.effective": "Yürürlük: {year}-01-01",
-    "legal.shellNotice": "Bağlayıcı hukuki metin aşağıda İngilizcedir.",
+    "legal.termsMetaDescription":
+      "isendai kullanım şartları. Abonelik ve kontör paketleriyle AI yazım araçları.",
+    "legal.privacyMetaDescription":
+      "isendai gizlilik politikası. Metninizi ve hesap verilerinizi nasıl topladığımız, kullandığımız ve sakladığımız.",
     "legal.paymentsStub":
       "Lemon Squeezy ödemesi sonra; şimdilik dev top-up (prod dışı) veya operatör kontörü.",
     "growth.zeroCreditsHint":

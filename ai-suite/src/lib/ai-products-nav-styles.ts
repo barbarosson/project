@@ -2,13 +2,15 @@ import { cn } from "@/lib/utils";
 
 /** AI Products sidebar + mobile chip typography (readable, tech-forward). */
 export const aiProductsNav = {
-  sidebarTitle: "text-base font-bold tracking-tight text-slate-50 sm:text-lg",
+  sidebarTitle:
+    "text-pretty text-xl font-bold leading-tight tracking-tight sm:text-2xl bg-gradient-to-r from-white via-violet-100 to-cyan-100 bg-clip-text text-transparent",
   countBadge:
     "rounded-full border border-violet-500/30 bg-violet-500/10 px-2.5 py-0.5 text-xs font-semibold tabular-nums text-violet-200",
   categoryRow:
-    "mb-2 flex w-full items-center justify-between gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 text-left transition-all duration-300 hover:border-violet-500/25 hover:bg-white/[0.05]",
-  categoryRowOpen: "border-violet-500/30 bg-violet-500/[0.07] shadow-[0_0_20px_rgba(139,92,246,0.08)]",
-  categoryLabel: "text-sm font-semibold leading-snug text-slate-200",
+    "mb-2 flex w-full items-center justify-between gap-3 rounded-xl border border-violet-400/25 bg-violet-500/10 px-3 py-2.5 text-left transition-all duration-300 hover:border-violet-400/40 hover:bg-violet-500/15 hover:shadow-[0_8px_24px_rgba(139,92,246,0.15)]",
+  categoryRowOpen:
+    "border-violet-400/45 bg-violet-500/20 shadow-[0_8px_28px_rgba(139,92,246,0.2)]",
+  categoryLabel: "text-sm font-semibold leading-snug text-slate-100",
   categoryLabelOpen: "text-violet-100",
   categoryToggle:
     "inline-flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/[0.12] bg-white/[0.05] text-indigo-300 transition-colors",
@@ -32,5 +34,6 @@ export const aiProductsNav = {
         ? "border-violet-500/45 bg-violet-500/15 text-white shadow-[0_0_16px_rgba(139,92,246,0.22)]"
         : "border-white/[0.12] bg-white/[0.05] text-slate-100 hover:border-violet-500/35 hover:bg-white/[0.08]"
     ),
-  workspaceCategory: "text-sm font-semibold text-violet-300/90",
+  workspaceCategory:
+    "text-xs font-bold uppercase tracking-[0.2em] text-violet-300 sm:text-sm",
 } as const;

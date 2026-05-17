@@ -24,3 +24,42 @@ export const premiumCta = cn(
 
 /** Page titles: bright → soft white gradient (see `.text-gradient-hero` in globals.css). */
 export const textGradientHero = "text-gradient-hero";
+
+/** Large marketing sections (How it works, AI Products workspace). */
+export const sectionGradientShell = cn(
+  "relative overflow-hidden rounded-3xl border border-violet-500/30 p-6 sm:p-8 lg:p-10",
+  "bg-gradient-to-br from-violet-950/50 via-slate-950/80 to-indigo-950/50",
+  "shadow-[0_12px_56px_rgba(139,92,246,0.22),inset_0_1px_0_0_rgba(255,255,255,0.08)]",
+  "backdrop-blur-xl"
+);
+
+export const sectionGradientHeading = cn(
+  "text-pretty text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl",
+  "bg-gradient-to-r from-white via-violet-100 to-cyan-100 bg-clip-text text-transparent"
+);
+
+export const sectionGradientSubheading = cn(
+  "text-pretty text-xl font-bold leading-tight tracking-tight sm:text-2xl",
+  "bg-gradient-to-r from-white via-violet-100 to-cyan-100 bg-clip-text text-transparent"
+);
+
+export const sectionGradientBody =
+  "text-base font-medium leading-relaxed text-slate-200 sm:text-lg";
+
+export const sectionGradientBodySm =
+  "text-sm leading-relaxed text-slate-200 sm:text-base";
+
+export const sectionPanelViolet = cn(
+  "rounded-2xl border border-violet-400/35 bg-gradient-to-br from-violet-500/15 to-violet-950/30",
+  "shadow-lg backdrop-blur-md"
+);
+
+export const sectionPanelFuchsia = cn(
+  "rounded-2xl border border-fuchsia-400/35 bg-gradient-to-br from-fuchsia-500/15 to-fuchsia-950/30",
+  "shadow-lg backdrop-blur-md"
+);
+
+export const sectionPanelCyan = cn(
+  "rounded-2xl border border-cyan-400/35 bg-gradient-to-br from-cyan-500/15 to-cyan-950/30",
+  "shadow-lg backdrop-blur-md"
+);

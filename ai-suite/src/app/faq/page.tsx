@@ -2,28 +2,29 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import type { Metadata } from "next";
 
-import { PrivacyBody } from "@/app/legal/privacy-body";
-import { pageMain } from "@/lib/page-layout";
-import { cn } from "@/lib/utils";
-import { textGradientHero } from "@/lib/premium-ui";
+import { FaqList } from "@/app/faq/faq-list";
 import { DICTS, type Locale } from "@/i18n/dictionaries";
+import { getFaqContent } from "@/i18n/faq-content";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { pageMain } from "@/lib/page-layout";
+import { textGradientHero } from "@/lib/premium-ui";
+import { cn } from "@/lib/utils";
 
 export async function generateMetadata(): Promise<Metadata> {
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   const locale = resolveLocaleFromCookie(cookieLocale) as Locale;
-  const d = DICTS[locale];
+  const faq = getFaqContent(locale);
   return {
-    title: `${d["legal.privacyTitle"]} | isendai`,
-    description: d["legal.privacyMetaDescription"],
+    title: `${faq.title} | isendai`,
+    description: faq.metaDescription,
   };
 }
 
-export default async function PrivacyPage() {
+export default async function FaqPage() {
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   const locale = resolveLocaleFromCookie(cookieLocale) as Locale;
   const d = DICTS[locale];
-  const year = String(new Date().getFullYear());
+  const faq = getFaqContent(locale);
 
   return (
     <main className={pageMain("legal")}>
@@ -33,12 +34,11 @@ export default async function PrivacyPage() {
         </Link>
       </div>
       <h1 className={cn("text-pretty text-3xl font-semibold tracking-tight", textGradientHero)}>
-        {d["legal.privacyTitle"]}
+        {faq.title}
       </h1>
-      <p className="mt-3 text-sm text-slate-400">{d["legal.effective"].replace("{year}", year)}</p>
-      <p className="mt-3 text-sm text-slate-400">{d["legal.paymentsStub"]}</p>
+      <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-400">{faq.intro}</p>
 
-      <PrivacyBody locale={locale} />
+      <FaqList items={faq.items} />
     </main>
   );
 }

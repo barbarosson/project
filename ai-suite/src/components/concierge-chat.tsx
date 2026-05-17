@@ -4,7 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2, SendHorizonal } from "lucide-react";
 
-import { glassSurface } from "@/lib/premium-ui";
+import { sectionPanelViolet } from "@/lib/premium-ui";
 
 import type { ToolName } from "@/components/ai-suite/tools";
 import { getToolDefinition } from "@/components/ai-suite/tools";
@@ -135,8 +135,9 @@ export function ConciergeChat({ className }: { className?: string }) {
       <CardContent className="grid min-w-0 gap-3">
         <div
           className={cn(
-            "max-h-56 min-w-0 space-y-2 overflow-y-auto overflow-x-hidden rounded-xl p-3 text-sm text-slate-300",
-            glassSurface
+            "max-h-56 min-w-0 space-y-2 overflow-y-auto overflow-x-hidden rounded-xl p-3 text-sm text-slate-200",
+            sectionPanelViolet,
+            "border-violet-400/25 from-violet-500/10 to-violet-950/20 shadow-inner"
           )}
         >
           {messages.map((m) => (
