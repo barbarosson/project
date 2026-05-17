@@ -21,6 +21,23 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function lemonErrorMessage(error: unknown): string {
+  if (!(error instanceof Error)) return "Could not start checkout.";
+  const cause = error.cause;
+  if (typeof cause === "string" && cause.trim()) return cause;
+  if (Array.isArray(cause) && cause.length > 0) {
+    const parts = cause
+      .map((item) => {
+        if (!isRecord(item)) return null;
+        const detail = item.detail ?? item.title;
+        return typeof detail === "string" ? detail : null;
+      })
+      .filter((s): s is string => Boolean(s));
+    if (parts.length) return parts.join("; ");
+  }
+  return error.message || "Could not start checkout.";
+}
+
 export async function POST(request: Request) {
   const apiKey = process.env.LEMON_SQUEEZY_API_KEY?.trim();
   const storeId = process.env.LEMON_SQUEEZY_STORE_ID?.trim();
@@ -130,7 +147,9 @@ export async function POST(request: Request) {
 
   const clientModel = typeof rec.model === "string" ? rec.model : "";
 
-  const checkoutData: Record<string, unknown> = {
+  // checkout_data only supports email, name, billing_address, custom, etc. — not trial_period_days.
+  // Free trial length must be set on the Lemon subscription product/variant (e.g. 7 days).
+  const checkoutData = {
     custom: {
       tool_id,
       owner_type,
@@ -144,10 +163,6 @@ export async function POST(request: Request) {
     },
   };
 
-  if (pack.kind === "subscription") {
-    checkoutData.trial_period_days = 7;
-  }
-
   const res = await createCheckout(storeId, variantId, {
     checkoutData: checkoutData as never,
     productOptions: {
@@ -159,8 +174,15 @@ export async function POST(request: Request) {
   });
 
   if (res.error || !res.data) {
-    console.error("[checkout] Lemon Squeezy error:", res.error);
-    return NextResponse.json({ error: "Could not start checkout." }, { status: 502 });
+    const message = lemonErrorMessage(res.error);
+    console.error("[checkout] Lemon Squeezy error:", res.error, res.data);
+    return NextResponse.json(
+      {
+        error: message,
+        code: "lemon_checkout_failed",
+      },
+      { status: 502 }
+    );
   }
 
   const checkoutUrl = res.data.data.attributes.url;
