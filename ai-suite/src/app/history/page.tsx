@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { formatCreditsFromTenths } from "@/lib/credits-units";
 import { pageMain } from "@/lib/page-layout";
 import { cn } from "@/lib/utils";
 import { glassInteractive, glassSurface, premiumCta, textGradientHero } from "@/lib/premium-ui";
@@ -69,7 +70,9 @@ export default async function HistoryPage() {
 
       <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>
         <h2 className={cn("text-sm font-semibold", textGradientHero)}>{d["usage.creditsHeading"]}</h2>
-        <p className="mt-2 text-3xl font-semibold tracking-tight text-white">{ent?.credits_balance ?? 0}</p>
+        <p className="mt-2 text-3xl font-semibold tracking-tight text-white">
+          {formatCreditsFromTenths(ent?.credits_balance ?? 0)}
+        </p>
         <p className="mt-2 text-sm text-slate-400">
           {d["usage.versionsLine"].replace("{max}", String(maxV))}
         </p>
@@ -99,7 +102,7 @@ export default async function HistoryPage() {
                 </p>
                 <p className="mt-2 text-xs text-slate-300">
                   {d["usage.chargedLine"]
-                    .replace("{charged}", String(r.credits_charged))
+                    .replace("{charged}", formatCreditsFromTenths(r.credits_charged))
                     .replace("{max}", String(r.max_versions))}
                 </p>
               </div>

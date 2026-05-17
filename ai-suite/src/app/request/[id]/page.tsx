@@ -8,6 +8,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import { CopyVersionButton } from "./copy-buttons";
+import { formatCreditsFromTenths } from "@/lib/credits-units";
 import { pageMain } from "@/lib/page-layout";
 import { cn } from "@/lib/utils";
 import { glassInteractive, glassSurface, premiumCta, textGradientHero } from "@/lib/premium-ui";
@@ -64,7 +65,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
           <p className="mt-1 text-xs text-slate-400">
             {d["request.timeCreditsLine"]
               .replace("{date}", dateStr)
-              .replace("{charged}", String(reqRow.credits_charged))
+              .replace("{charged}", formatCreditsFromTenths(reqRow.credits_charged))
               .replace("{max}", String(reqRow.max_versions))}
           </p>
         </div>

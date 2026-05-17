@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { billingAddCredits, billingEnsureEntitlement } from "@/lib/isendai/billing-rpc";
+import { creditsToTenths, formatCreditsFromTenths } from "@/lib/credits-units";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(req: Request) {
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
   const { data: newBalance, error: incErr } = await billingAddCredits(admin, {
     p_owner_type: ownerType,
     p_owner_id: ownerId,
-    p_amount: amount,
+    p_amount: creditsToTenths(amount),
   });
   if (incErr) return NextResponse.json({ error: "Topup failed." }, { status: 500 });
 
@@ -64,10 +65,13 @@ export async function POST(req: Request) {
     .eq("owner_id", ownerId)
     .maybeSingle();
 
+  const balanceTenths = newBalance ?? ent?.credits_balance ?? null;
   return NextResponse.json({
     ok: true,
     owner: { type: ownerType, id: ownerId },
-    credits_balance: newBalance ?? null,
+    credits_balance: balanceTenths,
+    credits_balance_display:
+      balanceTenths !== null ? formatCreditsFromTenths(Number(balanceTenths)) : null,
     entitlements: ent ?? null,
   });
 }

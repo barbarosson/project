@@ -8,6 +8,7 @@ import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { AuthStatus } from "@/components/auth-status";
 import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
+import { formatCreditsFromTenths } from "@/lib/credits-units";
 import { pageMain } from "@/lib/page-layout";
 import { cn } from "@/lib/utils";
 import { glassInteractive, glassSurface, premiumCta, textGradientHero } from "@/lib/premium-ui";
@@ -64,6 +65,12 @@ export default async function AccountPage() {
           >
             {d["profile.editLink"]}
           </Link>
+          <Link
+            className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
+            href="/history"
+          >
+            {d["nav.history"]}
+          </Link>
           <Link className={premiumCta} href="/">
             {d["nav.backToHome"]}
           </Link>
@@ -73,7 +80,7 @@ export default async function AccountPage() {
       <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>
         <h2 className={cn("text-sm font-semibold", textGradientHero)}>{d["usage.creditsHeading"]}</h2>
         <p className="mt-2 text-3xl font-semibold tracking-tight text-white">
-          {ent?.credits_balance ?? 0}
+          {formatCreditsFromTenths(ent?.credits_balance ?? 0)}
         </p>
         <p className="mt-2 text-sm text-slate-400">
           {d["usage.versionsLine"].replace("{max}", String(ent?.max_versions_per_request ?? 5))}
@@ -81,9 +88,17 @@ export default async function AccountPage() {
       </section>
 
       <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className={cn("text-sm font-semibold", textGradientHero)}>{d["account.recentRequests"]}</h2>
-          <span className="text-xs text-slate-400">{requests?.length ?? 0}</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-slate-400">{requests?.length ?? 0}</span>
+            <Link
+              className="text-xs font-medium text-violet-300 transition-colors hover:text-violet-200"
+              href="/history"
+            >
+              {d["nav.history"]} →
+            </Link>
+          </div>
         </div>
 
         {requests && requests.length > 0 ? (
@@ -106,7 +121,7 @@ export default async function AccountPage() {
                 </p>
                 <p className="mt-2 text-xs text-slate-300">
                   {d["usage.chargedLine"]
-                    .replace("{charged}", String(r.credits_charged))
+                    .replace("{charged}", formatCreditsFromTenths(r.credits_charged))
                     .replace("{max}", String(r.max_versions))}
                 </p>
               </div>

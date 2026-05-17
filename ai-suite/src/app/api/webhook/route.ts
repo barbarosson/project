@@ -15,6 +15,7 @@ import {
   subscriptionCreditsForVariantId,
   trialCreditsForSubscriptionStart,
 } from "@/lib/lemonsqueezy/catalog";
+import { creditsToTenths } from "@/lib/credits-units";
 import { trialOwnerFingerprint } from "@/lib/trial/fingerprint";
 
 export const runtime = "nodejs";
@@ -136,7 +137,9 @@ export async function POST(request: Request) {
     const onTrial = status === "on_trial" || status === "trialing" || trialEnds !== null;
 
     const variantId = parseVariantId(attrs);
-    const allowance = variantId ? subscriptionCreditsForVariantId(variantId) : null;
+    const allowanceWhole = variantId ? subscriptionCreditsForVariantId(variantId) : null;
+    const allowanceTenths =
+      allowanceWhole !== null ? creditsToTenths(allowanceWhole) : null;
     const planKey = variantId ? planKeyFromVariantId(variantId) : null;
 
     const maxVersions = owner_type === "anon" ? 2 : 5;
@@ -165,7 +168,7 @@ export async function POST(request: Request) {
       const { error: addErr } = await billingAddCredits(admin, {
         p_owner_type: owner_type,
         p_owner_id: owner_id,
-        p_amount: credits,
+        p_amount: creditsToTenths(credits),
       });
       if (addErr) {
         console.error("[webhook] subscription_created add trial credits:", addErr);
@@ -180,18 +183,18 @@ export async function POST(request: Request) {
         .update({
           subscription_status: "trialing",
           trial_ends_at: trialEnds,
-          monthly_credit_allowance: allowance ?? null,
+          monthly_credit_allowance: allowanceTenths,
           plan_id: planKey,
         })
         .eq("owner_type", owner_type)
         .eq("owner_id", owner_id);
-    } else if (allowance !== null) {
+    } else if (allowanceTenths !== null) {
       await admin
         .schema("isendai")
         .from("entitlements")
         .update({
           subscription_status: status || "active",
-          monthly_credit_allowance: allowance,
+          monthly_credit_allowance: allowanceTenths,
           plan_id: planKey,
           trial_ends_at: null,
         })
@@ -217,9 +220,9 @@ export async function POST(request: Request) {
       variantId = parseVariantId(nested as Record<string, unknown>);
     }
 
-    let allowance =
-      variantId !== null ? subscriptionCreditsForVariantId(variantId) : null;
-    if (allowance === null && owner_type && owner_id) {
+    let allowanceTenths: number | null =
+      variantId !== null ? creditsToTenths(subscriptionCreditsForVariantId(variantId)!) : null;
+    if (allowanceTenths === null && owner_type && owner_id) {
       const { data: entRow } = await admin
         .schema("isendai")
         .from("entitlements")
@@ -228,9 +231,9 @@ export async function POST(request: Request) {
         .eq("owner_id", owner_id)
         .maybeSingle();
       const m = entRow?.monthly_credit_allowance;
-      if (typeof m === "number" && m > 0) allowance = m;
+      if (typeof m === "number" && m > 0) allowanceTenths = m;
     }
-    if (allowance === null) {
+    if (allowanceTenths === null) {
       console.warn("[webhook] subscription_payment_success unknown variant:", variantId);
       return NextResponse.json({ ok: true });
     }
@@ -251,7 +254,7 @@ export async function POST(request: Request) {
     const { error: setErr } = await billingSetCreditsBalance(admin, {
       p_owner_type: owner_type,
       p_owner_id: owner_id,
-      p_balance: allowance,
+      p_balance: allowanceTenths,
     });
     if (setErr) {
       console.error("[webhook] set credits:", setErr);
@@ -266,7 +269,7 @@ export async function POST(request: Request) {
       .update({
         subscription_status: "active",
         trial_ends_at: null,
-        monthly_credit_allowance: allowance,
+        monthly_credit_allowance: allowanceTenths,
         plan_id: pk,
       })
       .eq("owner_type", owner_type)
@@ -356,7 +359,7 @@ export async function POST(request: Request) {
     const { error: creditErr } = await billingAddCredits(admin, {
       p_owner_type: owner_type,
       p_owner_id: owner_id,
-      p_amount: credits,
+      p_amount: creditsToTenths(credits),
     });
 
     if (creditErr) {

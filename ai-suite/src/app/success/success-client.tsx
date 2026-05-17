@@ -15,9 +15,9 @@ import { getToolDefinition } from "@/components/ai-suite/tools";
 import { useI18n } from "@/i18n/i18n-provider";
 import { toolTitle } from "@/i18n/tool-i18n";
 import {
-  defaultConcreteModelForProvider,
+  resolveConcreteModelId,
+  normalizeUserModelId,
   isModelId,
-  type ConcreteModelId,
   type ModelId,
   DEFAULT_MODEL,
 } from "@/models/models";
@@ -123,11 +123,8 @@ function setPendingAlt(toolName: ToolName, value: boolean) {
   }
 }
 
-function modelUsedLabel(toolName: ToolName, model: ModelId): string {
-  const def = getToolDefinition(toolName);
-  const concrete: ConcreteModelId =
-    model === "auto" ? defaultConcreteModelForProvider(def.provider) : (model as ConcreteModelId);
-  return concrete;
+function modelUsedLabel(_toolName: ToolName, model: ModelId): string {
+  return resolveConcreteModelId(model);
 }
 
 function isValidPayload(payload: ToolPayload): boolean {
@@ -192,15 +189,12 @@ export function SuccessClient() {
 
   const generate = React.useCallback(
     async (toolName: ToolName, parsed: Stored, model: ModelId, extra?: string) => {
-      const def = getToolDefinition(toolName);
-      const concreteModel: ConcreteModelId =
-        model === "auto" ? defaultConcreteModelForProvider(def.provider) : (model as ConcreteModelId);
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           ...parsed.payload,
-          model: model === "auto" ? undefined : concreteModel,
+          model,
           extra,
         }),
       });
@@ -268,7 +262,7 @@ export function SuccessClient() {
     if (!json?.text) throw new Error(t("errors.noModelResult"));
     const storageKey = getToolDefinition(toolName).storageKey;
     const modelRaw = localStorage.getItem(`${storageKey}:model`);
-    const model: ModelId = isModelId(modelRaw) ? modelRaw : DEFAULT_MODEL;
+    const model: ModelId = modelRaw ? normalizeUserModelId(modelRaw) : DEFAULT_MODEL;
     setLastModelUsed(modelUsedLabel(toolName, model));
     return json.text;
   }
@@ -314,7 +308,7 @@ export function SuccessClient() {
       setStored(parsed);
 
       const modelRaw = localStorage.getItem(`${storageKey}:model`);
-      const modelForLabel: ModelId = isModelId(modelRaw) ? modelRaw : DEFAULT_MODEL;
+      const modelForLabel: ModelId = modelRaw ? normalizeUserModelId(modelRaw) : DEFAULT_MODEL;
       setLastModelUsed(modelUsedLabel(tool, modelForLabel));
 
       const restored = safeLoadVersions(tool);
@@ -324,7 +318,7 @@ export function SuccessClient() {
       setLoading(true);
       try {
         const modelRaw = localStorage.getItem(`${storageKey}:model`);
-        const model: ModelId = isModelId(modelRaw) ? modelRaw : DEFAULT_MODEL;
+        const model: ModelId = modelRaw ? normalizeUserModelId(modelRaw) : DEFAULT_MODEL;
         if (cancelled) return;
 
         // Only auto-generate when:
@@ -399,7 +393,7 @@ export function SuccessClient() {
     const storageKey = getToolDefinition(tool).storageKey;
     storageKeyRef.current = storageKey;
     const modelRaw = localStorage.getItem(`${storageKey}:model`);
-    const model: ModelId = isModelId(modelRaw) ? modelRaw : DEFAULT_MODEL;
+    const model: ModelId = modelRaw ? normalizeUserModelId(modelRaw) : DEFAULT_MODEL;
 
     setPendingAlt(tool, false);
     setLoading(true);

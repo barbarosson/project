@@ -156,6 +156,7 @@ export function PricingPaygoShop() {
         {t("pricing.paygo.sectionTitle")}
       </h2>
       <p className="mt-2 text-sm text-slate-400">{t("pricing.paygo.sectionLead")}</p>
+      <p className="mt-2 text-sm font-medium text-violet-200/90">{t("pricing.allPaygoPacks")}</p>
       <PricingPaygoTierCards
         tiers={PAYGO_TIERS.map((tier) => ({
           id: tier,

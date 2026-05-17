@@ -14,13 +14,13 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { billingAddRequestVersion, billingDeductCredits } from "@/lib/isendai/billing-rpc";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
-  defaultConcreteModelForProvider,
   creditsForGeneration,
-  isConcreteModelId,
   modelMeta,
-  normalizeModelIdString,
+  normalizeUserModelId,
+  resolveConcreteModelId,
   type ConcreteModelId,
 } from "@/models/models";
+import { formatCreditsFromTenths } from "@/lib/credits-units";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { generateTextGoogleWithFlashFallback } from "@/lib/ai/gemini-flash-fallback";
 
@@ -142,11 +142,8 @@ export async function POST(req: Request) {
 
   const def = getToolDefinition(toolField);
   const modelId = String(reqRow.model_id || "");
-  const normalizedStored = normalizeModelIdString(modelId);
-  const provider: ProviderId =
-    isConcreteModelId(normalizedStored)
-      ? (modelMeta(normalizedStored as ConcreteModelId).provider as ProviderId)
-      : def.provider;
+  const concreteForRun = resolveConcreteModelId(normalizeUserModelId(modelId));
+  const provider: ProviderId = modelMeta(concreteForRun).provider as ProviderId;
 
   if (!hasProviderKey(provider)) {
     const env = providerKeyName(provider);
@@ -165,11 +162,7 @@ export async function POST(req: Request) {
   const prompt =
     extra.length > 0 ? `${base}\n\nExtra instructions (apply on top of the tool):\n${extra}` : base;
 
-  const concreteForCost: ConcreteModelId =
-    normalizedStored !== "auto" && isConcreteModelId(normalizedStored)
-      ? normalizedStored
-      : defaultConcreteModelForProvider(provider);
-  const creditCost = creditsForGeneration(concreteForCost, prompt.length);
+  const creditCost = creditsForGeneration(concreteForRun, prompt.length);
 
   const { error: deductErr } = await billingDeductCredits(admin, {
     p_owner_type: ownerType,
@@ -190,8 +183,8 @@ export async function POST(req: Request) {
         {
           error: "Insufficient credits for another version.",
           code: "insufficient_credits",
-          credits_required: creditCost,
-          credits_balance: balRow?.credits_balance ?? 0,
+          credits_required: formatCreditsFromTenths(creditCost),
+          credits_balance: formatCreditsFromTenths(balRow?.credits_balance ?? 0),
         },
         { status: 402 }
       );
@@ -202,10 +195,7 @@ export async function POST(req: Request) {
   // Generate
   let out: Awaited<ReturnType<typeof generateText>>;
   if (provider === "google") {
-    let mid = normalizedStored.trim();
-    if (!isConcreteModelId(mid) || modelMeta(mid as ConcreteModelId).provider !== "google") {
-      mid = defaultConcreteModelForProvider("google");
-    }
+    const mid = concreteForRun;
     const { result } = await generateTextGoogleWithFlashFallback(mid, {
       temperature: 0.6,
       system: def.systemPrompt,
@@ -214,7 +204,7 @@ export async function POST(req: Request) {
     out = result;
   } else {
     out = await generateText({
-      model: modelFor(provider, normalizedStored || def.model || "gpt-4o-mini"),
+      model: modelFor(provider, concreteForRun),
       temperature: 0.6,
       system: def.systemPrompt,
       prompt,

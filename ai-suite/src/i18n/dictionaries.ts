@@ -71,7 +71,7 @@ export const DICTS: Record<Locale, Dict> = {
     "how.detailed.2.body": "Drop your draft, job post, or situation. No formatting needed.",
     "how.detailed.3.title": "3) Select model & pay",
     "how.detailed.3.body":
-      "Choose a credit pack ($1→10 / $1.49→25 / $1.99→50 credits). Higher tiers unlock more AI models. Billing uses 500-character chunks (rounded up): Economy & GPT‑4o mini 1 credit/chunk, Standard 15/chunk, Premium 25/chunk (see Pricing).",
+      "Choose a credit pack ($1→10 / $1.49→25 / $1.99→50 credits). Higher tiers unlock more AI models. Billing uses 100-character blocks (rounded up): Economy & GPT‑4o mini 0.2/block, Standard 3/block, Premium 5/block (see Pricing).",
     "how.detailed.4.title": "4) Review, copy, generate alternatives",
     "how.detailed.4.body":
       "Review and copy your favorite version. You can generate up to 5 total versions for the same generation (included in your purchase). Closing the tab deletes results.",
@@ -119,7 +119,7 @@ export const DICTS: Record<Locale, Dict> = {
     "success.test": "Test mode. Generating your result…",
     "success.paid": "Payment received. Generating your result…",
     "success.introCredits":
-      "Credits are deducted from your balance based on the model and input length (500-character chunks).",
+      "Credits are deducted from your balance based on the model and input length (100-character blocks).",
     "success.insufficientFallback": "Not enough credits to run this generation.",
     "success.insufficientTitle": "You’re out of credits",
     "success.insufficientBody":
@@ -187,6 +187,9 @@ export const DICTS: Record<Locale, Dict> = {
     "creditsNav.trialMany": "Trial: {days} days left",
 
     "modelSwitcher.ariaLabel": "AI model version",
+    "modelSwitcher.fast": "Fast AI (1 Credit)",
+    "modelSwitcher.pro": "Pro AI (15 Credits)",
+    "modelSwitcher.genius": "Genius AI (25 Credits)",
 
     "usage.creditsHeading": "Credits",
     "usage.versionsLine": "Versions per generation: {max}",
@@ -224,7 +227,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.hero.tagPaygo": "Pay-as-you-go",
     "pricing.hero.paygoHint": "Larger packs unlock more models.",
     "pricing.hero.footerMain":
-      "Economy & GPT‑4o mini: 1 credit per 500-character block. Standard: 15; Premium: 25 — each extra block stacks.",
+      "Economy & GPT‑4o mini: 0.2 credits per 100 characters. Standard: 3; Premium: 5 — each extra block stacks.",
     "pricing.hero.footerJump": "How credits work",
     "pricing.monthly.sectionTitle": "Monthly credit bundles",
     "pricing.monthly.sectionLead":
@@ -270,6 +273,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.pack.budget": "10 credits · $1",
     "pricing.pack.standard": "25 credits · $1.49",
     "pricing.pack.premium": "50 credits · $1.99",
+    "pricing.allPaygoPacks": "10 credits · $1 · 25 credits · $1.49 · 50 credits · $1.99",
     "pricing.tier.budget": "Budget",
     "pricing.tier.standard": "Standard",
     "pricing.tier.premium": "Premium",
@@ -277,39 +281,44 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.tier.standardPrice": "$1.49",
     "pricing.tier.premiumPrice": "$1.99",
     "pricing.tier.budgetSummary":
-      "Economy models & GPT‑4o mini: 1 credit per 500-character chunk (rounded up).",
+      "Economy models & GPT‑4o mini: 0.2 credits per 100 characters (rounded up).",
     "pricing.tier.standardSummary":
-      "Standard catalog: 15 credits per 500-character chunk (rounded up).",
+      "Standard catalog: 3 credits per 100 characters (rounded up).",
     "pricing.tier.premiumSummary":
-      "Premium catalog: 25 credits per 500-character chunk (rounded up).",
+      "Premium catalog: 5 credits per 100 characters (rounded up).",
     "pricing.tier.budgetDesc":
-      "Economy-band models (fast, lowest-cost endpoints) plus GPT‑4o mini, billed like Economy: ceil(characters ÷ 500) × 1 credit. Example: 501 characters → 2 credits.",
+      "Economy-band models plus GPT‑4o mini: ceil(characters ÷ 100) × 0.2 credits. Example: 250 characters → 0.6 credits; 501 → 1.2 credits.",
     "pricing.tier.standardDesc":
-      "$1.49 band models: ceil(characters ÷ 500) × 15 credits per generation. Example: 1,000 characters → 30 credits. Flagship models require a Premium pack.",
+      "$1.49 band models: ceil(characters ÷ 100) × 3 credits. Example: 800 characters → 24 credits. Flagship models require a Premium pack.",
     "pricing.tier.premiumDesc":
-      "Full flagship catalog: ceil(characters ÷ 500) × 25 credits. Example: 1,000 characters → 50 credits. Same 500-character chunk rule as Standard, with a higher credit rate per chunk.",
+      "Full flagship catalog: ceil(characters ÷ 100) × 5 credits. Example: 1,000 characters → 50 credits.",
     "pricing.usageGuide.sectionTitle": "How credits work (each generation)",
     "pricing.usageGuide.intro":
-      "We bill in 500-character chunks (rounded up). Your pasted text plus any tool context counts toward the length.",
+      "We bill in 100-character blocks (rounded up). Your pasted text plus any tool context counts toward the length.",
     "pricing.usageGuide.miniBadge": "Economy & mini",
     "pricing.usageGuide.miniTitle": "GPT‑4o mini & Economy models",
     "pricing.usageGuide.miniDesc":
-      "1 credit per chunk. Example: 1–500 chars → 1 credit; 501–1,000 → 2 credits.",
-    "pricing.usageGuide.scaleSectionTitle": "Standard & Premium — credits per chunk",
+      "0.2 credits per 100 characters. Example: 100 chars → 0.2; 500 → 1; 501 → 1.2 credits.",
+    "pricing.usageGuide.scaleSectionTitle": "Standard & Premium — credits per 100 characters",
     "pricing.usageGuide.standardTitle": "Standard-tier models (examples)",
     "pricing.usageGuide.standardBullets":
-      "15 credits per 500-character chunk\n~500 chars → ~15 credits\n~1,000 chars → ~30 credits\n~1,500 chars → ~45 credits",
+      "3 credits per 100 characters\n~500 chars → ~15 credits\n~1,000 chars → ~30 credits\n~1,500 chars → ~45 credits",
     "pricing.usageGuide.premiumTitle": "Premium-tier models (examples)",
     "pricing.usageGuide.premiumBullets":
-      "25 credits per 500-character chunk\n~500 chars → ~25 credits\n~1,000 chars → ~50 credits\n~1,500 chars → ~75 credits",
+      "5 credits per 100 characters\n~500 chars → ~25 credits\n~1,000 chars → ~50 credits\n~1,500 chars → ~75 credits",
     "pricing.usageGuide.chartCaption": "Example totals",
     "pricing.usageGuide.colShort": "~500 chars",
     "pricing.usageGuide.colMid": "~1k chars",
     "pricing.usageGuide.colLong": "~1.5k chars",
     "pricing.usageGuide.chartHint":
-      "Formula: ceil(characters ÷ 500) × tier rate. Bars are illustrative.",
+      "Formula: ceil(characters ÷ 100) × tier rate. Bars are illustrative.",
     "pricing.usageGuide.footer":
       "When you click Generate, we calculate credits from your real prompt (paste + tool context). Each alternate version runs the same check again.",
+    "pricing.modelNote.title": "Models by class",
+    "pricing.modelNote.lead":
+      "Each catalog model belongs to one billing class (same names as in the tool picker). Credit rates above apply per class; your pay-as-you-go pack may limit which classes you can select.",
+    "pricing.modelNote.packHint":
+      "$1 pack → Fast AI only · $1.49 pack → Fast + Pro AI · $1.99 pack → all three classes (Fast, Pro, Genius).",
     "pricing.sectionFootnote":
       "Version limits per generation still follow your account entitlements. Lemon Squeezy checkout for monthly bundles ships in a later phase.",
     "pricing.dev.title": "Developer mode",
@@ -498,10 +507,9 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.flow.hint":
       "Next we open the result page and generate using your credit balance. Paying to buy credits comes in a later release.",
     "tool.modelSelectLabel": "AI model for this request",
-    "tool.priceReference":
-      "This model’s tier uses the 10-credit pack rates: {price}",
+    "tool.priceReference": "Pay-as-you-go pack for this model tier: {pack}.",
     "tool.pricePackFlex":
-      "Checkout packs match Pricing ($1→10 / $1.49→25 / $1.99→50 credits); usage scales with model and text length.",
+      "All packs: 10 credits · $1 · 25 credits · $1.49 · 50 credits · $1.99. See Pricing for how credits are calculated per generation.",
     "tool.validation.empty": "Please fill in the required fields before continuing.",
     "tool.billing.creditOne": "1 credit",
     "tool.billing.creditsMany": "{n} credits",
@@ -730,6 +738,9 @@ export const DICTS: Record<Locale, Dict> = {
     "creditsNav.trialMany": "Prueba: quedan {days} días",
 
     "modelSwitcher.ariaLabel": "Versión del modelo de IA",
+    "modelSwitcher.fast": "Fast AI (1 crédito)",
+    "modelSwitcher.pro": "Pro AI (15 créditos)",
+    "modelSwitcher.genius": "Genius AI (25 créditos)",
 
     "usage.creditsHeading": "Créditos",
     "usage.versionsLine": "Versiones por generación: {max}",
@@ -813,6 +824,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.pack.budget": "10 créditos · $1",
     "pricing.pack.standard": "25 créditos · $1.49",
     "pricing.pack.premium": "50 créditos · $1.99",
+    "pricing.allPaygoPacks": "10 créditos · $1 · 25 créditos · $1.49 · 50 créditos · $1.99",
     "pricing.tier.budget": "Económico",
     "pricing.tier.standard": "Estándar",
     "pricing.tier.premium": "Premium",
@@ -853,6 +865,11 @@ export const DICTS: Record<Locale, Dict> = {
       "Fórmula: redondeo_superior(caracteres ÷ 500) × tarifa del nivel. Las barras son orientativas.",
     "pricing.usageGuide.footer":
       "Al pulsar Generar calculamos los créditos con tu prompt real (texto pegado + contexto). Cada variante alternativa vuelve a aplicar la misma regla.",
+    "pricing.modelNote.title": "Modelos por clase",
+    "pricing.modelNote.lead":
+      "Cada modelo del catálogo pertenece a una clase de facturación (mismos nombres que en el selector de herramientas). Las tarifas de créditos se aplican por clase; tu pack pay-as-you-go puede limitar qué clases puedes elegir.",
+    "pricing.modelNote.packHint":
+      "Pack $1 → solo Fast AI · Pack $1,49 → Fast + Pro AI · Pack $1,99 → las tres clases (Fast, Pro, Genius).",
     "pricing.sectionFootnote":
       "El límite de versiones por generación sigue tu cuenta. El checkout Lemon Squeezy para paquetes mensuales llegará después.",
     "pricing.dev.title": "Modo desarrollador",
@@ -1043,10 +1060,9 @@ export const DICTS: Record<Locale, Dict> = {
       "A continuación abrimos la página de resultado y generamos con tu saldo de créditos. Comprar créditos llegará más adelante.",
     "tool.modelSelectLabel": "Modelo de IA para esta solicitud",
     "tool.ctaCreditSuffix": " — según modelo y longitud",
-    "tool.priceReference":
-      "Tarifa típica en este nivel: {price} (ejemplo: recargas habituales de 10 créditos a $1 / $1.49 / $1.99 por paquete).",
+    "tool.priceReference": "Paquete de pago por uso para este nivel: {pack}.",
     "tool.pricePackFlex":
-      "No estás obligado a comprar exactamente 10 créditos — los tamaños de paquete en Precios son flexibles.",
+      "Todos los paquetes: 10 créditos · $1 · 25 créditos · $1.49 · 50 créditos · $1.99. Ver Precios para el cálculo de créditos.",
     "tool.validation.empty": "Completa los campos obligatorios antes de continuar.",
     "tool.billing.creditOne": "1 crédito",
     "tool.billing.creditsMany": "{n} créditos",
@@ -1266,6 +1282,9 @@ export const DICTS: Record<Locale, Dict> = {
     "creditsNav.trialMany": "Essai : il reste {days} jours",
 
     "modelSwitcher.ariaLabel": "Version du modèle IA",
+    "modelSwitcher.fast": "Fast AI (1 crédit)",
+    "modelSwitcher.pro": "Pro AI (15 crédits)",
+    "modelSwitcher.genius": "Genius AI (25 crédits)",
 
     "usage.creditsHeading": "Crédits",
     "usage.versionsLine": "Versions par génération : {max}",
@@ -1349,6 +1368,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.pack.budget": "10 crédits · 1 $",
     "pricing.pack.standard": "25 crédits · 1,49 $",
     "pricing.pack.premium": "50 crédits · 1,99 $",
+    "pricing.allPaygoPacks": "10 crédits · 1 $ · 25 crédits · 1,49 $ · 50 crédits · 1,99 $",
     "pricing.tier.budget": "Économique",
     "pricing.tier.standard": "Standard",
     "pricing.tier.premium": "Premium",
@@ -1389,6 +1409,11 @@ export const DICTS: Record<Locale, Dict> = {
       "Formule : arrondi_supérieur(caractères ÷ 500) × tarif du palier. Les barres sont indicatives.",
     "pricing.usageGuide.footer":
       "Au clic sur Générer, le montant est calculé sur votre prompt réel (collage + contexte). Chaque variante refait le même calcul.",
+    "pricing.modelNote.title": "Modèles par classe",
+    "pricing.modelNote.lead":
+      "Chaque modèle du catalogue appartient à une classe de facturation (mêmes noms que dans le sélecteur d’outil). Les tarifs de crédits s’appliquent par classe ; votre pack à l’usage peut limiter les classes disponibles.",
+    "pricing.modelNote.packHint":
+      "Pack 1 $ → Fast AI seulement · Pack 1,49 $ → Fast + Pro AI · Pack 1,99 $ → les trois classes (Fast, Pro, Genius).",
     "pricing.sectionFootnote":
       "La limite de versions par génération suit ton compte. Le checkout Lemon Squeezy pour les offres mensuelles arrive ensuite.",
     "pricing.dev.title": "Mode développeur",
@@ -1579,10 +1604,9 @@ export const DICTS: Record<Locale, Dict> = {
       "Ensuite nous ouvrons la page de résultat et générons avec votre solde de crédits. L’achat de crédits arrivera plus tard.",
     "tool.modelSelectLabel": "Modèle IA pour cette requête",
     "tool.ctaCreditSuffix": " — selon modèle et longueur",
-    "tool.priceReference":
-      "Tarif indicatif pour ce palier : {price} (ex. : recharges courantes de 10 crédits à $1 / $1.49 / $1.99 le pack).",
+    "tool.priceReference": "Pack à l’usage pour ce palier : {pack}.",
     "tool.pricePackFlex":
-      "Aucune obligation d’acheter exactement 10 crédits — les formats proposés sous Tarifs restent flexibles.",
+      "Tous les packs : 10 crédits · 1 $ · 25 crédits · 1,49 $ · 50 crédits · 1,99 $. Voir Tarifs pour le calcul des crédits.",
     "tool.validation.empty": "Remplissez les champs requis avant de continuer.",
     "tool.billing.creditOne": "1 crédit",
     "tool.billing.creditsMany": "{n} crédits",
@@ -1803,6 +1827,9 @@ export const DICTS: Record<Locale, Dict> = {
     "creditsNav.trialMany": "Testphase: noch {days} Tage",
 
     "modelSwitcher.ariaLabel": "KI‑Modellversion",
+    "modelSwitcher.fast": "Fast AI (1 Credit)",
+    "modelSwitcher.pro": "Pro AI (15 Credits)",
+    "modelSwitcher.genius": "Genius AI (25 Credits)",
 
     "usage.creditsHeading": "Credits",
     "usage.versionsLine": "Versionen pro Generierung: {max}",
@@ -1886,6 +1913,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.pack.budget": "10 Credits · 1 $",
     "pricing.pack.standard": "25 Credits · 1,49 $",
     "pricing.pack.premium": "50 Credits · 1,99 $",
+    "pricing.allPaygoPacks": "10 Credits · $1 · 25 Credits · $1,49 · 50 Credits · $1,99",
     "pricing.tier.budget": "Budget",
     "pricing.tier.standard": "Standard",
     "pricing.tier.premium": "Premium",
@@ -1926,6 +1954,11 @@ export const DICTS: Record<Locale, Dict> = {
       "Formel: aufrunden(Zeichen ÷ 500) × Tarif des Bands. Balken nur illustrativ.",
     "pricing.usageGuide.footer":
       "Beim Klick auf Generieren berechnen wir Credits aus deinem echten Prompt (Einfügen + Kontext). Jede Alternativversion läuft durch dieselbe Regel.",
+    "pricing.modelNote.title": "Modelle nach Klasse",
+    "pricing.modelNote.lead":
+      "Jedes Katalogmodell gehört zu einer Abrechnungsklasse (gleiche Namen wie in der Tool-Auswahl). Credit-Tarife gelten pro Klasse; dein Pay-as-you-go-Paket kann einschränken, welche Klassen du wählen kannst.",
+    "pricing.modelNote.packHint":
+      "1-$-Paket → nur Fast AI · 1,49-$-Paket → Fast + Pro AI · 1,99-$-Paket → alle drei Klassen (Fast, Pro, Genius).",
     "pricing.sectionFootnote":
       "Versionslimit pro Generierung weiterhin über Berechtigungen. Lemon Squeezy für Monatspakete folgt später.",
     "pricing.dev.title": "Entwicklermodus",
@@ -2116,10 +2149,9 @@ export const DICTS: Record<Locale, Dict> = {
       "Als Nächstes öffnen wir die Ergebnisseite und generieren mit deinem Credit‑Kontostand. Credits kaufen kommt später.",
     "tool.modelSelectLabel": "KI‑Modell für diese Anfrage",
     "tool.ctaCreditSuffix": " — je nach Modell und Länge",
-    "tool.priceReference":
-      "Richtpreis für diese Stufe: {price} (Beispiel: übliche 10‑Credit‑Pakete zu $1 / $1.49 / $1.99).",
+    "tool.priceReference": "Pay-as-you-go-Paket für diese Modellstufe: {pack}.",
     "tool.pricePackFlex":
-      "Du musst nicht genau 10 Credits kaufen — Paketgrößen unter Preise sind flexibel.",
+      "Alle Pakete: 10 Credits · $1 · 25 Credits · $1,49 · 50 Credits · $1,99. Siehe Preise für die Credit-Berechnung.",
     "tool.validation.empty": "Bitte fülle die Pflichtfelder aus, bevor du fortfährst.",
     "tool.billing.creditOne": "1 Credit",
     "tool.billing.creditsMany": "{n} Credits",
@@ -2323,6 +2355,9 @@ export const DICTS: Record<Locale, Dict> = {
     "creditsNav.trialMany": "试用：还剩 {days} 天",
 
     "modelSwitcher.ariaLabel": "AI 模型版本",
+    "modelSwitcher.fast": "Fast AI（1 额度）",
+    "modelSwitcher.pro": "Pro AI（15 额度）",
+    "modelSwitcher.genius": "Genius AI（25 额度）",
 
     "usage.creditsHeading": "额度",
     "usage.versionsLine": "每次生成最多版本数：{max}",
@@ -2404,6 +2439,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.pack.budget": "10 额度 · $1",
     "pricing.pack.standard": "25 额度 · $1.49",
     "pricing.pack.premium": "50 额度 · $1.99",
+    "pricing.allPaygoPacks": "10 额度 · $1 · 25 额度 · $1.49 · 50 额度 · $1.99",
     "pricing.tier.budget": "经济",
     "pricing.tier.standard": "标准",
     "pricing.tier.premium": "高级",
@@ -2444,6 +2480,11 @@ export const DICTS: Record<Locale, Dict> = {
       "公式：⌈字符数÷500⌉×档位费率。柱状图为示意。",
     "pricing.usageGuide.footer":
       "点击「生成」时，会按你的真实提示（粘贴 + 工具上下文）计算额度。每个备选版本再跑一次同样规则。",
+    "pricing.modelNote.title": "按档位的模型",
+    "pricing.modelNote.lead":
+      "目录中的每个模型属于一个计费档位（与工具内选择器名称一致）。额度按档位计费；按量付费包可能限制可选档位。",
+    "pricing.modelNote.packHint":
+      "$1 包 → 仅 Fast AI · $1.49 包 → Fast + Pro AI · $1.99 包 → 三档（Fast、Pro、Genius）。",
     "pricing.sectionFootnote":
       "每次生成可保存的版本数仍以账户权益为准。月度套餐的 Lemon Squeezy 结账稍后上线。",
     "pricing.dev.title": "开发者模式",
@@ -2624,9 +2665,8 @@ export const DICTS: Record<Locale, Dict> = {
       "接下来会打开结果页，并用你的额度余额尝试生成。购买额度的流程会在后续版本接入。",
     "tool.modelSelectLabel": "本次请求使用的 AI 模型",
     "tool.ctaCreditSuffix": " — 按模型与长度计费",
-    "tool.priceReference":
-      "该档位常见换算：{price}（示例：常见的 10 额度充值包价位为 $1 / $1.49 / $1.99）。",
-    "tool.pricePackFlex": "不强制购买恰好 10 额度——价格页的套餐规格可灵活选择。",
+    "tool.priceReference": "该模型档位的一次性额度包：{pack}。",
+    "tool.pricePackFlex": "全部额度包：10 额度 · $1 · 25 额度 · $1.49 · 50 额度 · $1.99。计费规则见价格页。",
     "tool.validation.empty": "请先填写必填内容再继续。",
     "tool.billing.creditOne": "1 额度",
     "tool.billing.creditsMany": "{n} 额度",
@@ -2723,7 +2763,7 @@ export const DICTS: Record<Locale, Dict> = {
     "how.detailed.2.body": "Taslak/ilan/durumunu yaz. Format şart değil.",
     "how.detailed.3.title": "3) Model seç & öde",
     "how.detailed.3.body":
-      "Kontör paketi seç ($1→10 / $1,49→25 / $1,99→50 kontör). Üst paketler daha fazla model açar. 500 karakterlik bloklar halinde ücret (yukarı yuvarlanır): Ekonomi ve GPT‑4o mini blok başı 1 kontör; Standart 15; Premium 25 (Paketler sayfasına bak).",
+      "Kontör paketi seç ($1→10 / $1,49→25 / $1,99→50 kontör). Üst paketler daha fazla model açar. 100 karakterlik bloklar (yukarı yuvarlanır): Ekonomi ve GPT‑4o mini 0,2; Standart 3; Premium 5 kontör/blok (Paketler sayfasına bak).",
     "how.detailed.4.title": "4) İncele, kopyala, alternatif üret",
     "how.detailed.4.body": "Sonucu kopyala veya yeni versiyon üret/satın al (max 5). Sekmeyi kapatırsan sonuçlar silinir.",
     "products.title": "Ürünler (hızlı, net, etkili)",
@@ -2760,7 +2800,7 @@ export const DICTS: Record<Locale, Dict> = {
     "success.test": "Test modu. Sonuç hazırlanıyor…",
     "success.paid": "Ödeme alındı. Sonuç hazırlanıyor…",
     "success.introCredits":
-      "Kontör, seçilen model ve giriş uzunluğuna göre bakiyenden düşülür (500 karakterlik dilimler).",
+      "Kontör, seçilen model ve giriş uzunluğuna göre bakiyenden düşülür (100 karakterlik dilimler).",
     "success.insufficientFallback": "Bu üretim için yeterli kontör yok.",
     "success.insufficientTitle": "Kontör bitti",
     "success.insufficientBody":
@@ -2828,6 +2868,9 @@ export const DICTS: Record<Locale, Dict> = {
     "creditsNav.trialMany": "Deneme: {days} gün kaldı",
 
     "modelSwitcher.ariaLabel": "Yapay zeka model sürümü",
+    "modelSwitcher.fast": "Fast AI (1 Kontör)",
+    "modelSwitcher.pro": "Pro AI (15 Kontör)",
+    "modelSwitcher.genius": "Genius AI (25 Kontör)",
 
     "usage.creditsHeading": "Kontör",
     "usage.versionsLine": "Üretim başına en fazla sürüm: {max}",
@@ -2857,7 +2900,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pricing.title": "Paketler",
     "pricing.subtitle":
-      "$7.99’dan aylık, yıllıkta ~%17 tasarruf veya $1’den kullandıkça öde. Ekonomi ve GPT‑4o mini: 500 karakterde 1 kontör; Standart 15; Premium 25 (blok başına, yukarı yuvarlanır).",
+      "$7.99’dan aylık, yıllıkta ~%17 tasarruf veya $1’den kullandıkça öde. Ekonomi ve GPT‑4o mini: 100 karakterde 0,2 kontör; Standart 3; Premium 5 (yukarı yuvarlanır).",
     "pricing.hero.intro": "Kontör yüklemenin üç yolu — her yerde aynı kurallar:",
     "pricing.hero.tagMonthly": "Aylık",
     "pricing.hero.tagAnnual": "Yıllık",
@@ -2865,7 +2908,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.hero.tagPaygo": "Kullandıkça öde",
     "pricing.hero.paygoHint": "Daha büyük paketler daha fazla model açar.",
     "pricing.hero.footerMain":
-      "Ekonomi ve GPT‑4o mini: 500 karakterlik blok başına 1 kontör. Standart: 15; Premium: 25 — bloklar üst üste eklenir.",
+      "Ekonomi ve GPT‑4o mini: 100 karakter başına 0,2 kontör. Standart: 3; Premium: 5 — bloklar üst üste eklenir.",
     "pricing.hero.footerJump": "Kontör kullanımı",
     "pricing.monthly.sectionTitle": "Aylık kontör paketleri",
     "pricing.monthly.sectionLead":
@@ -2911,6 +2954,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.pack.budget": "10 kontör · $1",
     "pricing.pack.standard": "25 kontör · $1,49",
     "pricing.pack.premium": "50 kontör · $1,99",
+    "pricing.allPaygoPacks": "10 kontör · $1 · 25 kontör · $1,49 · 50 kontör · $1,99",
     "pricing.tier.budget": "Ekonomik",
     "pricing.tier.standard": "Standart",
     "pricing.tier.premium": "Premium",
@@ -2918,39 +2962,44 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.tier.standardPrice": "$1,49",
     "pricing.tier.premiumPrice": "$1,99",
     "pricing.tier.budgetSummary":
-      "Ekonomi modelleri ve GPT‑4o mini: 500 karakterlik blok başına 1 kontör (yukarı yuvarlanır).",
+      "Ekonomi modelleri ve GPT‑4o mini: 100 karakter başına 0,2 kontör (yukarı yuvarlanır).",
     "pricing.tier.standardSummary":
-      "Standart katalog: 500 karakterlik blok başına 15 kontör (yukarı yuvarlanır).",
+      "Standart katalog: 100 karakter başına 3 kontör (yukarı yuvarlanır).",
     "pricing.tier.premiumSummary":
-      "Premium katalog: 500 karakterlik blok başına 25 kontör (yukarı yuvarlanır).",
+      "Premium katalog: 100 karakter başına 5 kontör (yukarı yuvarlanır).",
     "pricing.tier.budgetDesc":
-      "Ekonomi modelleri ve GPT‑4o mini (ekonomi gibi ücret): ceil(karakter ÷ 500) × 1 kontör. Ör.: 501 karakter → 2 kontör.",
+      "Ekonomi + GPT‑4o mini: ceil(karakter ÷ 100) × 0,2 kontör. Ör.: 250 karakter → 0,6; 501 → 1,2 kontör.",
     "pricing.tier.standardDesc":
-      "$1,49 bandı: ceil(karakter ÷ 500) × 15 kontör. Ör.: 1.000 karakter → 30 kontör. Amiral gemisi için Premium paket gerekir.",
+      "$1,49 bandı: ceil(karakter ÷ 100) × 3 kontör. Ör.: 800 karakter → 24 kontör. Amiral gemisi için Premium paket gerekir.",
     "pricing.tier.premiumDesc":
-      "Tam amiral gemisi katalog: ceil(karakter ÷ 500) × 25 kontör. Ör.: 1.000 karakter → 50 kontör. Standart ile aynı 500’lük blok mantığı; blok başına daha fazla kontör harcanır.",
+      "Tam amiral gemisi katalog: ceil(karakter ÷ 100) × 5 kontör. Ör.: 1.000 karakter → 50 kontör.",
     "pricing.usageGuide.sectionTitle": "Kontör nasıl harcanır (her üretim)",
     "pricing.usageGuide.intro":
-      "500 karakterlik bloklar halinde ücret (yukarı yuvarlanır). Yapıştırdığın metin ve araç bağlamı uzunluğa dahil.",
+      "100 karakterlik bloklar halinde ücret (yukarı yuvarlanır). Yapıştırdığın metin ve araç bağlamı uzunluğa dahil.",
     "pricing.usageGuide.miniBadge": "Ekonomi & mini",
     "pricing.usageGuide.miniTitle": "GPT‑4o mini ve ekonomi",
     "pricing.usageGuide.miniDesc":
-      "Blok başına 1 kontör. Ör.: 1–500 karakter → 1; 501–1.000 → 2 kontör.",
-    "pricing.usageGuide.scaleSectionTitle": "Standart ve Premium — blok başına kontör",
+      "100 karakter başına 0,2 kontör. Ör.: 100 kr. → 0,2; 500 → 1; 501 → 1,2 kontör.",
+    "pricing.usageGuide.scaleSectionTitle": "Standart ve Premium — 100 karakter başına kontör",
     "pricing.usageGuide.standardTitle": "Standart kademe modeller (örnek)",
     "pricing.usageGuide.standardBullets":
-      "500 karakterlik blok başına 15 kontör\n~500 karakter → ~15 kontör\n~1.000 karakter → ~30 kontör\n~1.500 karakter → ~45 kontör",
+      "100 karakter başına 3 kontör\n~500 karakter → ~15 kontör\n~1.000 karakter → ~30 kontör\n~1.500 karakter → ~45 kontör",
     "pricing.usageGuide.premiumTitle": "Premium modeller (örnek)",
     "pricing.usageGuide.premiumBullets":
-      "500 karakterlik blok başına 25 kontör\n~500 karakter → ~25 kontör\n~1.000 karakter → ~50 kontör\n~1.500 karakter → ~75 kontör",
+      "100 karakter başına 5 kontör\n~500 karakter → ~25 kontör\n~1.000 karakter → ~50 kontör\n~1.500 karakter → ~75 kontör",
     "pricing.usageGuide.chartCaption": "Örnek toplamlar",
     "pricing.usageGuide.colShort": "~500 kr.",
     "pricing.usageGuide.colMid": "~1k kr.",
     "pricing.usageGuide.colLong": "~1,5k kr.",
     "pricing.usageGuide.chartHint":
-      "Formül: ceil(karakter ÷ 500) × kademe oranı. Çubuklar örnektir.",
+      "Formül: ceil(karakter ÷ 100) × kademe oranı. Çubuklar örnektir.",
     "pricing.usageGuide.footer":
       "Üret’e bastığında kesin tutarı gerçek isteminden (yapıştırma + bağlam) hesaplarız. Her alternatif sürüm aynı kuralı yeniden uygular.",
+    "pricing.modelNote.title": "Sınıfa göre AI modelleri",
+    "pricing.modelNote.lead":
+      "Katalogdaki her model bir faturalandırma sınıfına bağlıdır (araçlardaki seçiciyle aynı isimler). Yukarıdaki kontör oranları sınıfa göre uygulanır; kullandıkça öde paketin hangi sınıfları seçebileceğini sınırlayabilir.",
+    "pricing.modelNote.packHint":
+      "$1 paket → yalnızca Fast AI · $1,49 paket → Fast + Pro AI · $1,99 paket → üç sınıf (Fast, Pro, Genius).",
     "pricing.sectionFootnote":
       "Üretim başına sürüm limiti hesap haklarından gelir. Aylık paketler için Lemon Squeezy ödemesi sonraki aşamada.",
     "pricing.dev.title": "Geliştirici modu",
@@ -3141,10 +3190,9 @@ export const DICTS: Record<Locale, Dict> = {
       "Sırada sonuç sayfası var; üretim kontör bakiyenden düşer. Kontör satın alma akışı sonraki sürümde.",
     "tool.modelSelectLabel": "Bu istek için yapay zeka modeli",
     "tool.ctaCreditSuffix": " — modele ve uzunluğa göre",
-    "tool.priceReference":
-      "Bu kademe için tipik oran: {price} (örnek: yaygın 10 kontörlük paket fiyatları $1 / $1.49 / $1.99).",
+    "tool.priceReference": "Bu model kademesi için kullandıkça öde paketi: {pack}.",
     "tool.pricePackFlex":
-      "Tam 10 kontörlük paket almak zorunda değilsiniz — Paketler sayfasındaki seçenekler esnektir.",
+      "Tüm paketler: 10 kontör · $1 · 25 kontör · $1,49 · 50 kontör · $1,99. Kontör hesabı için Paketler sayfasına bakın.",
     "tool.validation.empty": "Devam etmeden önce gerekli alanları doldur.",
     "tool.billing.creditOne": "1 kontör",
     "tool.billing.creditsMany": "{n} kontör",

@@ -7,13 +7,10 @@ import { toast } from "sonner";
 import type { ToolName, ToolPayload } from "./tools";
 import { getToolDefinition } from "./tools";
 import {
-  defaultConcreteModelForProvider,
-  creditsForGeneration,
   isModelId,
   modelSalesTier,
-  normalizeModelIdString,
-  tierTenPackSummary,
-  type ConcreteModelId,
+  normalizeUserModelId,
+  resolveConcreteModelId,
   type ModelId,
 } from "@/models/models";
 import { ModelSwitcher } from "@/components/model-switcher";
@@ -69,16 +66,16 @@ export function ToolCard({
 
   const def = getToolDefinition(tool);
   const modelStorageKey = `${def.storageKey}:model`;
-  const [model, setModel] = React.useState<ModelId>("auto");
+  const [model, setModel] = React.useState<ModelId>("fast-ai");
 
   React.useEffect(() => {
     queueMicrotask(() => {
       try {
         const raw = localStorage.getItem(modelStorageKey);
-        const normalized = raw ? normalizeModelIdString(raw) : "";
-        setModel(isModelId(normalized) ? normalized : "auto");
+        const normalized = raw ? normalizeUserModelId(raw) : "fast-ai";
+        setModel(isModelId(normalized) ? normalized : "fast-ai");
       } catch {
-        setModel("auto");
+        setModel("fast-ai");
       }
     });
   }, [modelStorageKey]);
@@ -92,8 +89,7 @@ export function ToolCard({
     }
   }
 
-  const concreteModel: ConcreteModelId =
-    model === "auto" ? defaultConcreteModelForProvider(def.provider) : (model as ConcreteModelId);
+  const concreteModel = resolveConcreteModelId(model);
 
   function localizedPlaceholder(key: string, fallback: string) {
     const resolved = t(key);
@@ -117,17 +113,9 @@ export function ToolCard({
       ? jobLink.trim().length >= 8 && resume.trim().length >= 20
       : text.trim().length >= 10;
 
-  const priceListLabel = tierTenPackSummary(modelSalesTier(concreteModel));
-  const inputCharLen =
-    tool === "coverletter-ai"
-      ? jobLink.trim().length + resume.trim().length
-      : text.trim().length;
-  const genCost = creditsForGeneration(concreteModel, Math.max(inputCharLen, 1));
-  const costAmount =
-    genCost === 1 ? t("tool.billing.creditOne") : t("tool.billing.creditsMany").replace("{n}", String(genCost));
-  const paidGenerateLabel = t("tool.billing.paidButton")
-    .replace("{action}", toolPrimaryActionLabel(t, tool, def.actionLabel))
-    .replace("{amount}", costAmount);
+  const salesTier = modelSalesTier(concreteModel);
+  const packLabel = t(`pricing.pack.${salesTier}`);
+  const paidGenerateLabel = toolPrimaryActionLabel(t, tool, def.actionLabel);
 
   async function runPaidGeneration() {
     if (!isValid) {
@@ -141,7 +129,7 @@ export function ToolCard({
 
       const body: Record<string, unknown> = {
         ...payload,
-        ...(model === "auto" ? {} : { model: concreteModel }),
+        model,
       };
 
       const res = await fetch("/api/generate", {
@@ -267,7 +255,7 @@ export function ToolCard({
           <div className="min-w-0 space-y-1">
             <p className="text-sm text-slate-300">{t("tool.flow.hint")}</p>
             <div className="space-y-1 text-xs text-slate-500">
-              <p>{t("tool.priceReference").replace("{price}", priceListLabel)}</p>
+              <p>{t("tool.priceReference").replace("{pack}", packLabel)}</p>
               <p className="text-[11px] leading-snug text-slate-500">{t("tool.pricePackFlex")}</p>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { readUserEntitlementWalletFromSession } from "@/lib/isendai/user-wallet-from-session";
 import { optionalEnv } from "@/lib/env";
 import { createSupabaseAdminClientOrNull } from "@/lib/supabase/admin";
+import { tenthsToDisplayCredits } from "@/lib/credits-units";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -105,7 +106,7 @@ export async function GET(req: NextRequest) {
       const body = {
         signed_in: true,
         email: user.email ?? null,
-        credits: Number(w.credits_balance ?? 0),
+        credits: tenthsToDisplayCredits(Number(w.credits_balance ?? 0)),
         trial_days_left: trial,
         subscription_status: w.subscription_status ?? null,
         max_versions_per_request: Number(w.max_versions_per_request ?? 5) || 5,
@@ -164,7 +165,7 @@ export async function GET(req: NextRequest) {
       console.warn("[api/me/wallet] admin entitlements read error:", adminErr.message);
     }
 
-    const credits = row?.credits_balance ?? 0;
+    const credits = tenthsToDisplayCredits(row?.credits_balance ?? 0);
     const trial = trialDaysLeft(
       typeof row?.trial_ends_at === "string" ? row.trial_ends_at : null,
       typeof row?.subscription_status === "string" ? row.subscription_status : null

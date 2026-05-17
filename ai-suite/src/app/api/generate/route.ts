@@ -20,15 +20,15 @@ import {
   type ToolPayload,
 } from "@/components/ai-suite/tools";
 import {
-  defaultConcreteModelForProvider,
   creditsForGeneration,
-  isConcreteModelId,
   modelMeta,
-  normalizeModelIdString,
+  normalizeUserModelId,
+  resolveConcreteModelId,
   type ConcreteModelId,
 } from "@/models/models";
 import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
 import { generateTextGoogleWithFlashFallback } from "@/lib/ai/gemini-flash-fallback";
+import { formatCreditsFromTenths } from "@/lib/credits-units";
 
 type RequestBody = ToolPayload & { model?: string; extra?: string };
 
@@ -133,10 +133,8 @@ function resolveModelOverride(
   | { provider: ProviderId; client: typeof google; model: string }
   | null {
   if (typeof body.model !== "string") return null;
-  const mid = normalizeModelIdString(body.model);
-  if (mid === "auto") return null;
-  if (!isConcreteModelId(mid)) return null;
-  const meta = modelMeta(mid as ConcreteModelId);
+  const concrete = resolveConcreteModelId(normalizeUserModelId(body.model));
+  const meta = modelMeta(concrete);
   switch (meta.provider) {
     case "openai":
       return { provider: "openai", client: openai, model: meta.id };
@@ -498,15 +496,14 @@ export async function POST(req: Request) {
   const { client, model } = override ?? modelForProvider(provider);
   const midRaw =
     typeof (body as RequestBody).model === "string"
-      ? normalizeModelIdString((body as RequestBody).model as string)
-      : "auto";
-  const concreteForCredits: ConcreteModelId =
-    midRaw !== "auto" && isConcreteModelId(midRaw) ? midRaw : defaultConcreteModelForProvider(provider);
+      ? normalizeUserModelId((body as RequestBody).model as string)
+      : "fast-ai";
+  const concreteForCredits = resolveConcreteModelId(midRaw);
   const creditCost = creditsForGeneration(concreteForCredits, user.length);
   const debugHeaders: Record<string, string> = {
     "x-ai-provider": provider,
     "x-ai-model": model,
-    "x-credits-required": String(creditCost),
+    "x-credits-required": formatCreditsFromTenths(creditCost),
   };
 
   if (!hasProviderKey(provider)) {
@@ -608,8 +605,8 @@ export async function POST(req: Request) {
           {
             error: "Insufficient credits for this model. Upgrade or add credits.",
             code: "insufficient_credits",
-            credits_required: creditCost,
-            credits_balance: balRow?.credits_balance ?? 0,
+            credits_required: formatCreditsFromTenths(creditCost),
+            credits_balance: formatCreditsFromTenths(balRow?.credits_balance ?? 0),
           },
           { status: 402, headers: debugHeaders }
         );

@@ -4,19 +4,20 @@ import { SlidersHorizontal } from "lucide-react";
 
 import type { ToolName } from "@/components/ai-suite/tools";
 import {
-  MODELS,
-  modelSalesTier,
-  modelTierOptgroupLabel,
-  type ConcreteModelId,
+  USER_MODEL_TIER_IDS,
   type ModelId,
-  type ModelSalesTier,
+  type UserFacingModelId,
 } from "@/models/models";
 import { useModel } from "@/models/model-provider";
 import { useI18n } from "@/i18n/i18n-provider";
 import { cn } from "@/lib/utils";
 import { glassSurface } from "@/lib/premium-ui";
 
-const TIER_ORDER: ModelSalesTier[] = ["budget", "standard", "premium"];
+const TIER_I18N_KEY: Record<UserFacingModelId, "modelSwitcher.fast" | "modelSwitcher.pro" | "modelSwitcher.genius"> = {
+  "fast-ai": "modelSwitcher.fast",
+  "pro-ai": "modelSwitcher.pro",
+  "genius-ai": "modelSwitcher.genius",
+};
 
 export function ModelSwitcher({
   className,
@@ -38,8 +39,9 @@ export function ModelSwitcher({
   const model = controlled ? controlledModel : global.model;
   const setModel = controlled ? onModelChange : global.setModel;
 
-  const autoEntry = MODELS.find((m) => m.id === "auto");
-  const concrete = MODELS.filter((m) => m.id !== "auto");
+  const selected = USER_MODEL_TIER_IDS.includes(model as UserFacingModelId)
+    ? (model as UserFacingModelId)
+    : "fast-ai";
 
   return (
     <label
@@ -55,25 +57,14 @@ export function ModelSwitcher({
           "min-w-0 max-w-full flex-1 rounded-md border border-white/[0.12] bg-zinc-950/95 px-2 py-1 text-sm text-zinc-100 shadow-inner outline-none",
           "focus:ring-2 focus:ring-violet-500/35"
         )}
-        value={model}
-        onChange={(e) => setModel(e.target.value as ModelId)}
+        value={selected}
+        onChange={(e) => setModel(e.target.value as UserFacingModelId)}
         aria-label={t("modelSwitcher.ariaLabel")}
       >
-        {autoEntry ? (
-          <option key={autoEntry.id} value={autoEntry.id}>
-            {autoEntry.label}
+        {USER_MODEL_TIER_IDS.map((id) => (
+          <option key={id} value={id}>
+            {t(TIER_I18N_KEY[id])}
           </option>
-        ) : null}
-        {TIER_ORDER.map((tier) => (
-          <optgroup key={tier} label={modelTierOptgroupLabel(tier)}>
-            {concrete
-              .filter((m) => modelSalesTier(m.id as ConcreteModelId) === tier)
-              .map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.label}
-                </option>
-              ))}
-          </optgroup>
         ))}
       </select>
     </label>

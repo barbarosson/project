@@ -385,6 +385,7 @@ export function PricingModalShell({
               {t("pricingModal.oneTimePacksTitle")}
             </p>
             <p className="mt-1 text-center text-xs text-slate-500">{t("pricingModal.oneTimePacksLead")}</p>
+            <p className="mt-2 text-center text-xs font-medium text-violet-200/90">{t("pricing.allPaygoPacks")}</p>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               {PAYGO_TIERS.map((tier) => (
                 <div

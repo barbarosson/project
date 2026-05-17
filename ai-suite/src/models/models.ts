@@ -9,8 +9,6 @@ export type SalesPrice = {
   usd: number;
   /** Pack price tier for billing logic / pricing page ($1→10 / $1.49→25 / $1.99→50 credits). */
   label: "$1.00" | "$1.49" | "$1.99";
-  /** Shown in AI model lists: approximate cost per credit (pack price ÷ credits in pack). */
-  listLabel: string;
 };
 
 /** Customer-facing price band for a concrete model ($1 / $1.49 / $1.99 sales tiers). */
@@ -29,17 +27,6 @@ export const PAYGO_PACK_CREDITS: Record<ModelSalesTier, number> = {
   standard: 25,
   premium: 50,
 };
-
-function formatPerCreditListLabelForTier(tier: ModelSalesTier): string {
-  const per = PAYGO_PACK_PRICE_USD[tier] / PAYGO_PACK_CREDITS[tier];
-  const fmt = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 3,
-  }).format(per);
-  return `≈ ${fmt}/credit`;
-}
 
 export function estimateCostUSD(
   pricing: ModelPricing,
@@ -84,7 +71,7 @@ export function salesPriceForModel(model: ModelId): SalesPrice {
     model === "deepseek-v4-pro" ||
     model === "gemini-2.5-pro"
   ) {
-    return { usd: 1.99, label: "$1.99", listLabel: formatPerCreditListLabelForTier("premium") };
+    return { usd: 1.99, label: "$1.99" };
   }
 
   // Tier A (budget): very cheap providers/models for high-volume usage.
@@ -97,11 +84,11 @@ export function salesPriceForModel(model: ModelId): SalesPrice {
     model === "deepseek-v4-flash" ||
     model === "gemini-2.5-flash-lite"
   ) {
-    return { usd: 1.0, label: "$1.00", listLabel: formatPerCreditListLabelForTier("budget") };
+    return { usd: 1.0, label: "$1.00" };
   }
 
   // Tier B (standard): everything else.
-  return { usd: 1.49, label: "$1.49", listLabel: formatPerCreditListLabelForTier("standard") };
+  return { usd: 1.49, label: "$1.49" };
 }
 
 export const MODELS = [
@@ -262,10 +249,25 @@ export const MODELS = [
   provider: ProviderId;
 }>;
 
-export type ModelId = (typeof MODELS)[number]["id"];
-export type ConcreteModelId = Exclude<ModelId, "auto">;
+export type CatalogModelId = (typeof MODELS)[number]["id"];
+export type ConcreteModelId = Exclude<CatalogModelId, "auto">;
 
-export const DEFAULT_MODEL: ModelId = "auto";
+/** User-facing model picker (no provider slugs in the UI). */
+export const USER_MODEL_TIER_IDS = ["fast-ai", "pro-ai", "genius-ai"] as const;
+export type UserFacingModelId = (typeof USER_MODEL_TIER_IDS)[number];
+
+export const USER_MODEL_TIERS: ReadonlyArray<{
+  id: UserFacingModelId;
+  concreteId: ConcreteModelId;
+}> = [
+  { id: "fast-ai", concreteId: "gpt-4o-mini" },
+  { id: "pro-ai", concreteId: "claude-haiku-4-5" },
+  { id: "genius-ai", concreteId: "gpt-4o" },
+];
+
+export type ModelId = UserFacingModelId | CatalogModelId;
+
+export const DEFAULT_MODEL: ModelId = "fast-ai";
 
 /** Retired ids still stored in localStorage or sent by old clients → map to current MODELS ids. */
 const LEGACY_MODEL_ALIASES: Partial<Record<string, ConcreteModelId>> = {
@@ -277,12 +279,69 @@ export function normalizeModelIdString(raw: string): string {
   return mapped ?? raw;
 }
 
+export function isUserFacingModelId(value: unknown): value is UserFacingModelId {
+  return typeof value === "string" && USER_MODEL_TIER_IDS.includes(value as UserFacingModelId);
+}
+
 export function isModelId(value: unknown): value is ModelId {
-  return typeof value === "string" && MODELS.some((m) => m.id === value);
+  return isUserFacingModelId(value) || (typeof value === "string" && MODELS.some((m) => m.id === value));
 }
 
 export function isConcreteModelId(value: unknown): value is ConcreteModelId {
   return typeof value === "string" && value !== "auto" && MODELS.some((m) => m.id === value);
+}
+
+export function userFacingModelFromConcrete(concrete: ConcreteModelId): UserFacingModelId {
+  if (concrete === "gpt-4o-mini" || modelSalesTier(concrete) === "budget") return "fast-ai";
+  if (modelSalesTier(concrete) === "premium") return "genius-ai";
+  return "pro-ai";
+}
+
+/** Strip provider prefix from catalog label for pricing copy (e.g. "OpenAI · GPT‑4o" → "GPT‑4o"). */
+export function pricingCatalogDisplayName(catalogLabel: string): string {
+  const sep = " · ";
+  const idx = catalogLabel.indexOf(sep);
+  return idx >= 0 ? catalogLabel.slice(idx + sep.length) : catalogLabel;
+}
+
+/** All catalog models grouped by Fast / Pro / Genius billing class (matches the tool model picker). */
+export function modelsGroupedByUserFacingTier(): Record<
+  UserFacingModelId,
+  ReadonlyArray<{ id: ConcreteModelId; name: string }>
+> {
+  const groups: Record<UserFacingModelId, { id: ConcreteModelId; name: string }[]> = {
+    "fast-ai": [],
+    "pro-ai": [],
+    "genius-ai": [],
+  };
+  for (const m of MODELS) {
+    if (m.id === "auto") continue;
+    const id = m.id as ConcreteModelId;
+    const tier = userFacingModelFromConcrete(id);
+    groups[tier].push({ id, name: pricingCatalogDisplayName(m.label) });
+  }
+  for (const tier of USER_MODEL_TIER_IDS) {
+    groups[tier].sort((a, b) => a.name.localeCompare(b.name, "en"));
+  }
+  return groups;
+}
+
+/** Map UI / legacy stored model id → concrete endpoint used for generation and billing. */
+export function resolveConcreteModelId(model: ModelId): ConcreteModelId {
+  const tier = USER_MODEL_TIERS.find((t) => t.id === model);
+  if (tier) return tier.concreteId;
+  if (model === "auto") return "gpt-4o-mini";
+  if (isConcreteModelId(model)) return model;
+  return "gpt-4o-mini";
+}
+
+/** Normalize localStorage / API model field to a user-facing tier when possible. */
+export function normalizeUserModelId(raw: string): ModelId {
+  const n = normalizeModelIdString(raw);
+  if (isUserFacingModelId(n)) return n;
+  if (n === "auto") return "fast-ai";
+  if (isConcreteModelId(n)) return userFacingModelFromConcrete(n);
+  return DEFAULT_MODEL;
 }
 
 /** Legacy constants — billing scales by input length; see {@link creditsForGeneration}. */
@@ -290,17 +349,28 @@ export const GENERATION_CREDITS_FAST = 1;
 export const GENERATION_CREDITS_PREMIUM = 25;
 
 /** Prompt length is billed in multiples of this many characters (rounded up). */
-export const CREDIT_CHUNK_CHAR_LENGTH = 500;
+export const CREDIT_BILL_CHAR_LENGTH = 100;
 
-const CREDITS_PER_CHUNK_ECONOMY = 1;
-const CREDITS_PER_CHUNK_STANDARD = 15;
-const CREDITS_PER_CHUNK_PREMIUM = 25;
+/** @deprecated Use {@link CREDIT_BILL_CHAR_LENGTH}. */
+export const CREDIT_CHUNK_CHAR_LENGTH = 500;
 
 const MAX_BILLABLE_INPUT_CHARS = 50_000;
 
+/** Tenths charged per 100-character block (0.2 / 3 / 5 credits). */
+const CREDIT_TENTHS_PER_BLOCK_ECONOMY = 2;
+const CREDIT_TENTHS_PER_BLOCK_STANDARD = 30;
+const CREDIT_TENTHS_PER_BLOCK_PREMIUM = 50;
+
 /**
- * How many 500-character chunks the prompt spans (rounded up). Empty input still bills one chunk.
+ * How many 100-character blocks the prompt spans (rounded up). Empty input still bills one block.
  */
+export function billableBlocks100(inputCharLength: number): number {
+  const n = Math.min(Math.max(inputCharLength, 0), MAX_BILLABLE_INPUT_CHARS);
+  if (n === 0) return 1;
+  return Math.ceil(n / CREDIT_BILL_CHAR_LENGTH);
+}
+
+/** @deprecated Use {@link billableBlocks100}. */
 export function billableChunks500(inputCharLength: number): number {
   const n = Math.min(Math.max(inputCharLength, 0), MAX_BILLABLE_INPUT_CHARS);
   if (n === 0) return 1;
@@ -308,24 +378,21 @@ export function billableChunks500(inputCharLength: number): number {
 }
 
 /**
- * Credits for one generation from pasted prompt length (characters we send).
+ * Credit charge for one generation, in **tenths** (divide by 10 for display credits).
  *
- * - **Economy** (`salesPriceForModel` → budget) **and GPT‑4o mini**: `chunks × 1` (1 credit per 500 chars).
- * **GPT‑4o mini** uses economy pricing even though its pack tier is standard.
- * - **Standard**: `chunks × 15`.
- * - **Premium**: `chunks × 25`.
- *
- * `chunks = ceil(characters / 500)`, capped at 50k chars → max 100 chunks.
+ * - **Economy** + GPT‑4o mini: 0.2 credits / 100 chars (2 tenths per block).
+ * - **Standard**: 3 credits / 100 chars (30 tenths per block).
+ * - **Premium**: 5 credits / 100 chars (50 tenths per block).
  */
 export function creditsForGeneration(model: ConcreteModelId, inputCharLength: number): number {
-  const chunks = billableChunks500(inputCharLength);
+  const blocks = billableBlocks100(inputCharLength);
   if (model === "gpt-4o-mini" || modelSalesTier(model) === "budget") {
-    return chunks * CREDITS_PER_CHUNK_ECONOMY;
+    return blocks * CREDIT_TENTHS_PER_BLOCK_ECONOMY;
   }
   if (modelSalesTier(model) === "premium") {
-    return chunks * CREDITS_PER_CHUNK_PREMIUM;
+    return blocks * CREDIT_TENTHS_PER_BLOCK_PREMIUM;
   }
-  return chunks * CREDITS_PER_CHUNK_STANDARD;
+  return blocks * CREDIT_TENTHS_PER_BLOCK_STANDARD;
 }
 
 /** @deprecated Prefer {@link creditsForGeneration}(model, inputLength). Uses ~1.5k chars as a rough estimate for UI fallbacks. */
@@ -337,10 +404,8 @@ export function generationCreditsForConcreteModel(model: ConcreteModelId): numbe
  * Credits for one generation when only the model id is known — assumes medium-length input (~1.5k chars).
  */
 export function generationCreditsForResolvedModel(modelId: string): number {
-  const mid = normalizeModelIdString(modelId);
-  if (mid === "auto") return creditsForGeneration("gpt-4o-mini", 1500);
-  if (!isConcreteModelId(mid)) return creditsForGeneration("gpt-4o-mini", 1500);
-  return creditsForGeneration(mid, 1500);
+  const mid = normalizeUserModelId(modelId);
+  return creditsForGeneration(resolveConcreteModelId(mid), 1500);
 }
 
 export function modelSalesTier(model: ConcreteModelId): ModelSalesTier {
@@ -359,39 +424,20 @@ const TIER_DISPLAY_NAME: Record<ModelSalesTier, string> = {
   premium: "Premium",
 };
 
-function formatMoneyUsd(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 3,
-  }).format(amount);
+function formatPackPriceUsd(amount: number): string {
+  return amount % 1 === 0 ? `$${amount.toFixed(0)}` : `$${amount.toFixed(2)}`;
 }
 
-/** Unit $/credit implied by the tier’s pay-as-you-go pack (pack price ÷ credits in pack). */
-export function unitUsdPerCreditFromPack(tier: ModelSalesTier): number {
-  return PAYGO_PACK_PRICE_USD[tier] / PAYGO_PACK_CREDITS[tier];
+/** Pay-as-you-go pack line: credits + total price (no per-credit unit rate). */
+export function paygoPackLabel(tier: ModelSalesTier): string {
+  const creds = PAYGO_PACK_CREDITS[tier];
+  const price = PAYGO_PACK_PRICE_USD[tier];
+  return `${creds} credits · ${formatPackPriceUsd(price)}`;
 }
 
-/** @deprecated Use {@link unitUsdPerCreditFromPack} */
-export function unitUsdPerCreditFromTenPack(tier: ModelSalesTier): number {
-  return unitUsdPerCreditFromPack(tier);
-}
-
-/** One line per tier: unit rate + pack price + credits included. */
+/** @deprecated Use {@link paygoPackLabel} */
 export function tierTenPackSummary(tier: ModelSalesTier): string {
-  const per = unitUsdPerCreditFromPack(tier);
-  const price = PAYGO_PACK_PRICE_USD[tier];
-  const creds = PAYGO_PACK_CREDITS[tier];
-  return `${TIER_DISPLAY_NAME[tier]}: ${formatMoneyUsd(per)}/credit · $${price.toFixed(2)} / ${creds} credits`;
-}
-
-/** `<optgroup label>` text for the model dropdown (three tiers). */
-export function modelTierOptgroupLabel(tier: ModelSalesTier): string {
-  const per = unitUsdPerCreditFromPack(tier);
-  const price = PAYGO_PACK_PRICE_USD[tier];
-  const creds = PAYGO_PACK_CREDITS[tier];
-  return `${TIER_DISPLAY_NAME[tier]} · ${formatMoneyUsd(per)}/credit ($${price.toFixed(2)} → ${creds} credits)`;
+  return paygoPackLabel(tier);
 }
 
 export function modelMeta(id: ConcreteModelId) {

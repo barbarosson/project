@@ -7,6 +7,7 @@ import { ArrowRight, Minus, MoveRight, Plus, Sparkles } from "lucide-react";
 
 import { ToolCard } from "@/components/ai-suite/tool-card";
 import { IsendaiLogo } from "@/components/isendai-logo";
+import { formatCreditsFromTenths } from "@/lib/credits-units";
 import { useI18n } from "@/i18n/i18n-provider";
 import { toolDescription, toolTitle } from "@/i18n/tool-i18n";
 import { ConciergeChat } from "@/components/concierge-chat";
@@ -21,7 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 import { aiProductsNav } from "@/lib/ai-products-nav-styles";
 import { siteContainer } from "@/lib/page-layout";
-import { glassInteractive, glassSurface, textGradientHero } from "@/lib/premium-ui";
+import { glassInteractive, glassSurface, premiumCta, textGradientHero } from "@/lib/premium-ui";
 
 import type { HomeCreditsSnapshot } from "@/app/home-credits-snapshot";
 import type { ServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
@@ -67,10 +68,6 @@ export function HomeClient({
   });
 
   const selectedDef = getToolDefinition(selected);
-
-  React.useEffect(() => {
-    setExpanded((prev) => ({ ...prev, [selectedDef.category]: true }));
-  }, [selectedDef.category]);
 
   const demoExamples: { tool: ToolName; key: string }[] = [
     { tool: "corporate-whisperer", key: "corp" },
@@ -123,22 +120,21 @@ export function HomeClient({
           <p className="mt-3 max-w-3xl text-balance text-sm text-slate-400 sm:text-base">
             {t("hero.subtitle")}
           </p>
-          <div className="mt-5 flex flex-wrap items-center gap-2">
+          <div className="mt-6 grid w-full grid-cols-1 gap-3 sm:grid-cols-2">
             <Link
               href="/login"
-              className="rounded-full border border-violet-500/35 bg-gradient-to-r from-indigo-500/20 via-purple-500/15 to-pink-500/15 px-3 py-1.5 text-xs font-semibold text-violet-100 shadow-sm backdrop-blur-md transition-all duration-300 hover:border-violet-400/50 hover:shadow-[0_0_18px_rgba(168,85,247,0.25)] active:scale-95"
+              className={cn(
+                premiumCta,
+                "min-h-12 w-full rounded-xl px-5 py-3.5 text-center text-sm font-semibold sm:text-base"
+              )}
             >
               {t("nav.login")}
             </Link>
             <Link
-              href="/history"
-              className="rounded-full border border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl transition-all duration-300 hover:border-violet-500/35 hover:bg-white/[0.07] active:scale-95"
-            >
-              {t("nav.history")}
-            </Link>
-            <Link
               href="/pricing"
-              className="rounded-full border border-white/[0.1] bg-white/[0.04] px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl transition-all duration-300 hover:border-violet-500/35 hover:bg-white/[0.07] active:scale-95"
+              className={cn(
+                "flex min-h-12 w-full items-center justify-center rounded-xl border border-white/[0.12] bg-white/[0.04] px-5 py-3.5 text-center text-sm font-semibold text-slate-100 backdrop-blur-xl transition-all duration-300 hover:border-violet-500/35 hover:bg-white/[0.07] active:scale-[0.98] sm:text-base"
+              )}
             >
               {t("nav.pricing")}
             </Link>
@@ -152,7 +148,7 @@ export function HomeClient({
             >
               <p className="font-medium text-slate-100">
                 {t("home.creditsSummary")
-                  .replace("{credits}", String(creditsSnapshot.balance))
+                  .replace("{credits}", formatCreditsFromTenths(creditsSnapshot.balance))
                   .replace("{max}", String(creditsSnapshot.maxVersions))
                   .replace("{scope}", t("home.creditsScopeUser"))}
               </p>
@@ -281,8 +277,7 @@ export function HomeClient({
                     type="button"
                     className={cn(
                       aiProductsNav.categoryRow,
-                      (expanded[cat] || selectedDef.category === cat) &&
-                        aiProductsNav.categoryRowOpen
+                      expanded[cat] && aiProductsNav.categoryRowOpen
                     )}
                     aria-expanded={expanded[cat]}
                     onClick={() =>
@@ -292,8 +287,7 @@ export function HomeClient({
                     <span
                       className={cn(
                         aiProductsNav.categoryLabel,
-                        (expanded[cat] || selectedDef.category === cat) &&
-                          aiProductsNav.categoryLabelOpen
+                        expanded[cat] && aiProductsNav.categoryLabelOpen
                       )}
                     >
                       {t(`category.${cat}.label`)}
@@ -445,9 +439,6 @@ export function HomeClient({
             </Link>
             <Link className="hover:text-foreground transition-colors" href="/account">
               {t("nav.account")}
-            </Link>
-            <Link className="hover:text-foreground transition-colors" href="/history">
-              {t("nav.history")}
             </Link>
             <Link className="hover:text-foreground transition-colors" href="/pricing">
               {t("nav.pricing")}

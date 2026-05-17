@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { DEFAULT_MODEL, isModelId, normalizeModelIdString, type ModelId } from "./models";
+import { DEFAULT_MODEL, isModelId, normalizeUserModelId, type ModelId } from "./models";
 
 const STORAGE_KEY = "ai-suite:model";
 
@@ -16,7 +16,7 @@ function getInitialModel(): ModelId {
   if (typeof window === "undefined") return DEFAULT_MODEL;
   const saved = window.localStorage.getItem(STORAGE_KEY);
   if (!saved) return DEFAULT_MODEL;
-  const normalized = normalizeModelIdString(saved);
+  const normalized = normalizeUserModelId(saved);
   if (normalized !== saved) {
     try {
       window.localStorage.setItem(STORAGE_KEY, normalized);

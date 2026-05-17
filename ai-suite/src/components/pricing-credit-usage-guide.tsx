@@ -107,7 +107,6 @@ export function PricingCreditUsageGuide({ d }: { d: Dict }) {
           </div>
         </div>
 
-        <p className="mt-4 text-xs leading-relaxed text-slate-500">{d["pricing.usageGuide.chartHint"]}</p>
       </div>
 
       <p className="text-sm leading-relaxed text-slate-400">{d["pricing.usageGuide.footer"]}</p>

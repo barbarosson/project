@@ -134,7 +134,7 @@ export async function billingChargeAndCreateRequest(
     p_credit_cost?: number;
   }
 ): Promise<{ data: string | null; error: BillingRpcError | null }> {
-  const creditCost = Math.max(1, Math.floor(Number(params.p_credit_cost ?? 1)));
+  const creditCost = Math.max(1, Math.round(Number(params.p_credit_cost ?? 1)));
   const sql = getDirectSql();
   if (sql) {
     try {
@@ -176,7 +176,7 @@ export async function billingDeductCredits(
   admin: SupabaseClient,
   params: { p_owner_type: string; p_owner_id: string; p_amount: number }
 ): Promise<{ data: number | null; error: BillingRpcError | null }> {
-  const amt = Math.max(1, Math.floor(Number(params.p_amount)));
+  const amt = Math.max(1, Math.round(Number(params.p_amount)));
   const sql = getDirectSql();
   if (sql) {
     try {

@@ -125,9 +125,11 @@ Flow: site → Instagram authorize → Supabase callback → `/auth/callback` �
 
 **Pay-as-you-go packs**
 
-- **$1** → **10 credits**; **budget-tier models only** (`salesPriceForModel` → `$1.00` band). ~**$0.10**/credit. **Economy models + GPT‑4o mini**: **1 credit per 500-character chunk** (rounded up).
-- **$1.49** → **25 credits**; **budget + standard** (`$1.49` band). ~**$0.060**/credit. **Standard** models: **15 credits per 500-character chunk** (rounded up).
-- **$1.99** → **50 credits**; **full catalog** (`$1.99` band). ~**$0.040**/credit. **Premium** models: **25 credits per 500-character chunk** (rounded up).
+- **$1** → **10 credits**; **budget-tier models only** (`salesPriceForModel` → `$1.00` band). ~**$0.10**/credit. **Economy models + GPT‑4o mini**: **0.2 credits per 100 characters** (rounded up).
+- **$1.49** → **25 credits**; **budget + standard** (`$1.49` band). ~**$0.060**/credit. **Standard** models: **3 credits per 100 characters** (rounded up).
+- **$1.99** → **50 credits**; **full catalog** (`$1.99` band). ~**$0.040**/credit. **Premium** models: **5 credits per 100 characters** (rounded up).
+
+Balances and charges are stored in **tenths** (0.1 credit) in Postgres. After deploying, run migration `20260515180000_credit_balance_tenths.sql` once per environment.
 
 Configure Lemon Squeezy keys and variant IDs in `.env.local`. See `src/models/models.ts` (`salesPriceForModel`, `PAYGO_PACK_CREDITS`, `creditsForGeneration`).
 
