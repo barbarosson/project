@@ -9,7 +9,7 @@ import { AuthStatus } from "@/components/auth-status";
 import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
 import { pageMain } from "@/lib/page-layout";
 import { cn } from "@/lib/utils";
-import { glassInteractive, textGradientHero } from "@/lib/premium-ui";
+import { glassInteractive, premiumCta, textGradientHero } from "@/lib/premium-ui";
 import { safeNext } from "@/lib/auth/safe-next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -65,6 +65,9 @@ export default async function AccountProfilePage({
             href="/account"
           >
             {d["profile.backToAccount"]}
+          </Link>
+          <Link className={premiumCta} href="/">
+            {d["nav.backToHome"]}
           </Link>
         </div>
       </div>

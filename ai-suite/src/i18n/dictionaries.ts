@@ -453,12 +453,17 @@ export const DICTS: Record<Locale, Dict> = {
 
     "profile.title": "Membership profile",
     "profile.oauthEmailMissing":
-      "Facebook did not share your email. Complete the form below; you may need to add an email in account settings before purchasing.",
+      "Facebook did not share your email. Enter it in the email field below, then save your profile.",
     "profile.subtitle":
       "These details are stored on your account (Supabase user metadata) to personalize support and product communication.",
     "profile.backToAccount": "Back to account",
     "profile.editLink": "Membership details",
     "profile.emailLabel": "Account email",
+    "profile.emailPlaceholder": "you@example.com",
+    "profile.emailHintOAuth":
+      "Facebook did not share an email. Enter one here — we will save it to your account.",
+    "profile.emailConfirmSent":
+      "We sent a confirmation link to that address. Open it, then return here if needed.",
     "profile.fullName": "Full name",
     "profile.phone": "Phone (optional)",
     "profile.country": "Country / region",
@@ -485,6 +490,8 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.saving": "Saving…",
     "profile.saved": "Profile saved.",
     "profile.errors.required": "Please fill in all required fields.",
+    "profile.errors.emailRequired": "Please enter your email address.",
+    "profile.errors.emailInvalid": "Please enter a valid email address.",
     "profile.errors.terms": "You must accept the terms to continue.",
     "profile.errors.save": "Could not save your profile. Try again.",
 
@@ -990,12 +997,17 @@ export const DICTS: Record<Locale, Dict> = {
 
     "profile.title": "Perfil de membresía",
     "profile.oauthEmailMissing":
-      "Facebook no compartió tu correo. Completa el formulario; puede que debas añadir un correo en la cuenta antes de comprar.",
+      "Facebook no compartió tu correo. Escríbelo en el campo de abajo y guarda el perfil.",
     "profile.subtitle":
       "Estos datos se guardan en tu cuenta (metadatos de usuario en Supabase) para soporte y comunicación del producto.",
     "profile.backToAccount": "Volver a mi cuenta",
     "profile.editLink": "Datos de membresía",
     "profile.emailLabel": "Email de la cuenta",
+    "profile.emailPlaceholder": "tu@ejemplo.com",
+    "profile.emailHintOAuth":
+      "Facebook no compartió tu correo. Escríbelo aquí — lo guardaremos en tu cuenta.",
+    "profile.emailConfirmSent":
+      "Enviamos un enlace de confirmación a esa dirección. Ábrelo y vuelve aquí si hace falta.",
     "profile.fullName": "Nombre completo",
     "profile.phone": "Teléfono (opcional)",
     "profile.country": "País o región",
@@ -1022,6 +1034,8 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.saving": "Guardando…",
     "profile.saved": "Perfil guardado.",
     "profile.errors.required": "Completa todos los campos obligatorios.",
+    "profile.errors.emailRequired": "Introduce tu dirección de correo.",
+    "profile.errors.emailInvalid": "Introduce un correo válido.",
     "profile.errors.terms": "Debes aceptar los términos para continuar.",
     "profile.errors.save": "No se pudo guardar el perfil. Inténtalo de nuevo.",
 
@@ -1519,12 +1533,17 @@ export const DICTS: Record<Locale, Dict> = {
 
     "profile.title": "Profil d’adhésion",
     "profile.oauthEmailMissing":
-      "Facebook n’a pas partagé votre e-mail. Complétez le formulaire ; un e-mail peut être requis avant l’achat.",
+      "Facebook n’a pas partagé votre e-mail. Saisissez-le ci-dessous, puis enregistrez le profil.",
     "profile.subtitle":
       "Ces informations sont stockées sur ton compte (métadonnées utilisateur Supabase) pour le support et les communications produit.",
     "profile.backToAccount": "Retour au compte",
     "profile.editLink": "Détails d’adhésion",
     "profile.emailLabel": "Email du compte",
+    "profile.emailPlaceholder": "vous@exemple.com",
+    "profile.emailHintOAuth":
+      "Facebook n’a pas partagé votre e-mail. Saisissez-le ici — nous l’enregistrerons sur votre compte.",
+    "profile.emailConfirmSent":
+      "Nous avons envoyé un lien de confirmation à cette adresse. Ouvrez-le, puis revenez ici si besoin.",
     "profile.fullName": "Nom complet",
     "profile.phone": "Téléphone (optionnel)",
     "profile.country": "Pays ou région",
@@ -1551,6 +1570,8 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.saving": "Enregistrement…",
     "profile.saved": "Profil enregistré.",
     "profile.errors.required": "Remplis tous les champs obligatoires.",
+    "profile.errors.emailRequired": "Saisis ton adresse e-mail.",
+    "profile.errors.emailInvalid": "Saisis une adresse e-mail valide.",
     "profile.errors.terms": "Tu dois accepter les conditions pour continuer.",
     "profile.errors.save": "Impossible d’enregistrer le profil. Réessaie.",
 
@@ -2049,12 +2070,17 @@ export const DICTS: Record<Locale, Dict> = {
 
     "profile.title": "Mitgliedschaftsprofil",
     "profile.oauthEmailMissing":
-      "Facebook hat deine E-Mail nicht geteilt. Fülle das Formular aus; ggf. musst du vor dem Kauf eine E-Mail im Konto hinterlegen.",
+      "Facebook hat deine E-Mail nicht geteilt. Trage sie unten ein und speichere das Profil.",
     "profile.subtitle":
       "Diese Angaben werden in deinem Konto gespeichert (Supabase‑Benutzermetadaten) für Support und Produktkommunikation.",
     "profile.backToAccount": "Zurück zum Konto",
     "profile.editLink": "Mitgliedschaftsdaten",
     "profile.emailLabel": "Konto‑E‑Mail",
+    "profile.emailPlaceholder": "du@beispiel.de",
+    "profile.emailHintOAuth":
+      "Facebook hat keine E-Mail geteilt. Trage sie hier ein — wir speichern sie in deinem Konto.",
+    "profile.emailConfirmSent":
+      "Wir haben einen Bestätigungslink an diese Adresse gesendet. Öffne ihn und kehre bei Bedarf hierher zurück.",
     "profile.fullName": "Vollständiger Name",
     "profile.phone": "Telefon (optional)",
     "profile.country": "Land / Region",
@@ -2081,6 +2107,8 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.saving": "Speichern…",
     "profile.saved": "Profil gespeichert.",
     "profile.errors.required": "Bitte alle Pflichtfelder ausfüllen.",
+    "profile.errors.emailRequired": "Bitte gib deine E-Mail-Adresse ein.",
+    "profile.errors.emailInvalid": "Bitte gib eine gültige E-Mail-Adresse ein.",
     "profile.errors.terms": "Bitte die Bedingungen akzeptieren, um fortzufahren.",
     "profile.errors.save": "Profil konnte nicht gespeichert werden. Bitte erneut versuchen.",
 
@@ -2550,12 +2578,17 @@ export const DICTS: Record<Locale, Dict> = {
 
     "profile.title": "会员资料",
     "profile.oauthEmailMissing":
-      "Facebook 未分享邮箱。请完成下方表单；购买前可能需要在账户中添加邮箱。",
+      "Facebook 未分享邮箱。请在下方邮箱栏填写并保存资料。",
     "profile.subtitle":
       "这些信息保存在你的账户中（Supabase 用户元数据），用于客服与产品相关沟通。",
     "profile.backToAccount": "返回账户",
     "profile.editLink": "会员资料",
     "profile.emailLabel": "账户邮箱",
+    "profile.emailPlaceholder": "you@example.com",
+    "profile.emailHintOAuth":
+      "Facebook 未分享邮箱。请在此填写 — 我们将保存到你的账户。",
+    "profile.emailConfirmSent":
+      "我们已向该地址发送确认链接。请打开邮件中的链接，必要时再返回此页。",
     "profile.fullName": "姓名",
     "profile.phone": "电话（可选）",
     "profile.country": "国家 / 地区",
@@ -2582,6 +2615,8 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.saving": "保存中…",
     "profile.saved": "资料已保存。",
     "profile.errors.required": "请填写所有必填项。",
+    "profile.errors.emailRequired": "请输入邮箱地址。",
+    "profile.errors.emailInvalid": "请输入有效的邮箱地址。",
     "profile.errors.terms": "需同意条款才能继续。",
     "profile.errors.save": "保存失败，请重试。",
 
@@ -3060,12 +3095,17 @@ export const DICTS: Record<Locale, Dict> = {
 
     "profile.title": "Üyelik profili",
     "profile.oauthEmailMissing":
-      "Facebook e-posta adresinizi paylaşmadı. Aşağıdaki formu doldurun; satın alma öncesi hesaba e-posta eklemeniz gerekebilir.",
+      "Facebook e-posta paylaşmadı. Aşağıdaki e-posta alanına yazıp profili kaydedin.",
     "profile.subtitle":
       "Bu bilgiler hesabında saklanır (Supabase kullanıcı metadata) — destek ve ürün iletişimi için.",
     "profile.backToAccount": "Hesaba dön",
     "profile.editLink": "Üyelik bilgileri",
     "profile.emailLabel": "Hesap e-postası",
+    "profile.emailPlaceholder": "ornek@email.com",
+    "profile.emailHintOAuth":
+      "Facebook e-posta paylaşmadı. Buraya yazın — hesabınıza kaydedeceğiz.",
+    "profile.emailConfirmSent":
+      "Bu adrese onay bağlantısı gönderdik. E-postanızdaki bağlantıyı açın, gerekirse buraya dönün.",
     "profile.fullName": "Ad soyad",
     "profile.phone": "Telefon (isteğe bağlı)",
     "profile.country": "Ülke / bölge",
@@ -3092,6 +3132,8 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.saving": "Kaydediliyor…",
     "profile.saved": "Profil kaydedildi.",
     "profile.errors.required": "Zorunlu alanları doldur.",
+    "profile.errors.emailRequired": "E-posta adresini gir.",
+    "profile.errors.emailInvalid": "Geçerli bir e-posta adresi gir.",
     "profile.errors.terms": "Devam etmek için şartları kabul etmelisin.",
     "profile.errors.save": "Profil kaydedilemedi. Tekrar dene.",
 

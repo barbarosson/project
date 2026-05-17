@@ -31,6 +31,10 @@ function bool(v: unknown): boolean {
   return v === true || v === "true";
 }
 
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
 type RegionOptions = ReturnType<typeof getSortedRegionOptions>;
 
 /** Remounted when locale or server country meta changes so mapping stays in sync without effects. */
@@ -84,6 +88,9 @@ export function ProfileForm({ nextPath, email, initialMeta }: Props) {
   const runtime = useSupabaseBrowserRuntimeConfig();
   const [busy, setBusy] = React.useState(false);
 
+  const hasAccountEmail = Boolean(email.trim());
+  const [accountEmail, setAccountEmail] = React.useState(email);
+
   const [fullName, setFullName] = React.useState(str(initialMeta.full_name));
   const [phone, setPhone] = React.useState(str(initialMeta.phone));
   const countryCodeRef = React.useRef(legacyCountryToCode(str(initialMeta.country), locale));
@@ -104,6 +111,17 @@ export function ProfileForm({ nextPath, email, initialMeta }: Props) {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    const emailToSave = accountEmail.trim();
+    if (!hasAccountEmail) {
+      if (!emailToSave) {
+        toast.error(t("profile.errors.emailRequired"));
+        return;
+      }
+      if (!isValidEmail(emailToSave)) {
+        toast.error(t("profile.errors.emailInvalid"));
+        return;
+      }
+    }
     if (!fullName.trim() || !countryCodeRef.current.trim() || !useCase) {
       toast.error(t("profile.errors.required"));
       return;
@@ -121,6 +139,17 @@ export function ProfileForm({ nextPath, email, initialMeta }: Props) {
 
     setBusy(true);
     try {
+      if (!hasAccountEmail && emailToSave) {
+        const { data: emailData, error: emailError } = await supabase.auth.updateUser({
+          email: emailToSave,
+        });
+        if (emailError) throw emailError;
+        const confirmed = emailData.user?.email?.trim() === emailToSave;
+        if (!confirmed) {
+          toast.info(t("profile.emailConfirmSent"));
+        }
+      }
+
       const now = new Date().toISOString();
       const { error } = await supabase.auth.updateUser({
         data: {
@@ -152,8 +181,26 @@ export function ProfileForm({ nextPath, email, initialMeta }: Props) {
   return (
     <form onSubmit={onSubmit} className="mt-6 grid max-w-xl gap-4">
       <div className="grid gap-1.5">
-        <label className="text-xs font-medium text-slate-300">{t("profile.emailLabel")}</label>
-        <Input value={email} readOnly disabled className="bg-slate-950/50" />
+        <label className="text-xs font-medium text-slate-300" htmlFor="account_email">
+          {t("profile.emailLabel")}
+          {!hasAccountEmail ? <span className="text-rose-400"> *</span> : null}
+        </label>
+        {hasAccountEmail ? (
+          <Input value={accountEmail} readOnly disabled className="bg-slate-950/50" />
+        ) : (
+          <>
+            <Input
+              id="account_email"
+              type="email"
+              value={accountEmail}
+              onChange={(e) => setAccountEmail(e.target.value)}
+              placeholder={t("profile.emailPlaceholder")}
+              autoComplete="email"
+              required
+            />
+            <p className="text-xs text-slate-500">{t("profile.emailHintOAuth")}</p>
+          </>
+        )}
       </div>
 
       <div className="grid gap-1.5">
