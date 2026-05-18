@@ -1,7 +1,5 @@
-'use client'
+import { redirect } from 'next/navigation'
 
-import { ModulusLandingLayout } from '@/components/marketing/parasut-landing-layout'
-
-export default function LandingPage() {
-  return <ModulusLandingLayout />
+export default function LandingRedirectPage() {
+  redirect('/products/modulus-erp')
 }

@@ -1,18 +1,34 @@
 import { Metadata } from 'next'
 
 const defaultMetadata = {
-  title: 'MODULUS - Smart ERP & CRM Suite',
-  description: 'Professional SaaS-based modular ERP and CRM application for modern businesses. Streamline operations, boost productivity, and drive growth.',
+  title: 'MODULUS — Technology products by Songurtech',
+  description:
+    'Songurtech builds MODULUS: Modulus ERP, AppointFlow, and isendAI — AI-powered software for modern businesses.',
   ogImage: '/icon-512.png',
 }
 
+const slugMetadata: Record<string, { title: string; description: string }> = {
+  home: defaultMetadata,
+  'modulus-erp': {
+    title: 'Modulus ERP — Smart ERP & CRM | MODULUS',
+    description:
+      'Modular cloud ERP for B2B: inventory, invoicing, finance, CRM, e-invoice, and AI-assisted workflows.',
+  },
+  isendai: {
+    title: 'isendAI — Communication intelligence | MODULUS',
+    description:
+      'Polish messages before you send. AI tools and concierge routing for work, relationships, and everyday life.',
+  },
+}
+
 export async function getPageMetadata(slug: string): Promise<Metadata> {
+  const meta = slugMetadata[slug] ?? defaultMetadata
   return {
-    title: defaultMetadata.title,
-    description: defaultMetadata.description,
+    title: meta.title,
+    description: meta.description,
     openGraph: {
-      title: defaultMetadata.title,
-      description: defaultMetadata.description,
+      title: meta.title,
+      description: meta.description,
       images: [
         {
           url: defaultMetadata.ogImage,
@@ -25,8 +41,8 @@ export async function getPageMetadata(slug: string): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
-      title: defaultMetadata.title,
-      description: defaultMetadata.description,
+      title: meta.title,
+      description: meta.description,
       images: [defaultMetadata.ogImage],
     },
   }

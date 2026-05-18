@@ -6,17 +6,19 @@ import { ModulusLogo } from '@/components/modulus-logo'
 import { Button } from '@/components/ui/button'
 import { Menu, X, Globe, ChevronDown } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
-import { useSiteConfig } from '@/contexts/site-config-context'
+import { getCorporateCopy } from '@/lib/corporate-marketing-copy'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu'
 
 export function MarketingHeader() {
-  const { language, setLanguage, t } = useLanguage()
-  const { config } = useSiteConfig()
+  const { language, setLanguage } = useLanguage()
+  const c = getCorporateCopy(language)
   const [isScrolled, setIsScrolled] = useState(false)
   const [showHeaderCta, setShowHeaderCta] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -31,16 +33,16 @@ export function MarketingHeader() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const navigation = [
-    { name: t.marketing.nav.product, href: '/landing#product' },
-    {
-      name: language === 'en' ? 'AppointFlow' : 'AppointFlow',
-      href: '/products/appointflow',
-      badge: language === 'en' ? 'NEW' : 'YENİ',
-    },
-    { name: t.marketing.nav.solutions, href: '/landing#solutions' },
-    { name: t.marketing.nav.pricing, href: '/landing#pricing' },
-    { name: t.marketing.nav.contact, href: '/contact' },
+  const productLinks = [
+    { name: c.nav.modulusErp, href: '/products/modulus-erp', description: c.products.erp.tagline },
+    { name: c.nav.appointflow, href: '/products/appointflow', description: c.products.appointflow.tagline },
+    { name: c.nav.isendai, href: '/products/isendai', description: c.products.isendai.tagline },
+  ]
+
+  const topNav = [
+    { name: c.nav.solutions, href: '/#solutions' },
+    { name: c.nav.company, href: '/hakkimizda' },
+    { name: c.nav.contact, href: '/contact' },
   ]
 
   return (
@@ -54,35 +56,49 @@ export function MarketingHeader() {
     >
       <nav className="h-full" style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px' }}>
         <div className="flex items-center justify-between h-full">
-          <Link href="/landing" className="flex items-center shrink-0 mr-10 relative" style={{ height: '76px' }}>
+          <Link href="/" className="flex items-center shrink-0 mr-10 relative" style={{ height: '76px' }}>
             <ModulusLogo size={48} variant="default" showText={true} className="transition-opacity duration-300" />
           </Link>
 
-          <div className="hidden lg:flex items-center gap-8 nav-links-24bold">
-            {navigation.map((item) => (
+          <div className="hidden lg:flex items-center gap-6 nav-links-24bold">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 font-bold transition-all duration-300 hover:opacity-80"
+                  style={{ color: '#425466', fontSize: '22px', fontWeight: 700 }}
+                >
+                  {c.nav.products}
+                  <ChevronDown className="h-5 w-5 opacity-70" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-72 p-2">
+                <DropdownMenuLabel className="text-xs text-muted-foreground uppercase tracking-wider">
+                  MODULUS
+                </DropdownMenuLabel>
+                {productLinks.map((item) => (
+                  <DropdownMenuItem key={item.href} asChild>
+                    <Link href={item.href} className="flex flex-col items-start gap-0.5 py-2.5 cursor-pointer">
+                      <span className="font-semibold text-[#0A2540]">{item.name}</span>
+                      <span className="text-xs text-[#425466] font-normal">{item.description}</span>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {topNav.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="transition-all duration-300 hover:opacity-80 inline-flex items-center gap-2"
+                className="transition-all duration-300 hover:opacity-80"
               >
                 <span
                   className="font-bold"
-                  style={{
-                    color: '#425466',
-                    fontSize: '24px',
-                    fontWeight: 700,
-                  }}
+                  style={{ color: '#425466', fontSize: '22px', fontWeight: 700 }}
                 >
                   {item.name}
                 </span>
-                {'badge' in item && item.badge && (
-                  <span
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white align-middle"
-                    style={{ backgroundColor: '#00D4AA', letterSpacing: '0.05em' }}
-                  >
-                    {item.badge}
-                  </span>
-                )}
               </Link>
             ))}
           </div>
@@ -93,11 +109,11 @@ export function MarketingHeader() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="gap-1.5 text-2xl font-bold hover:bg-gray-100 transition-colors duration-300"
+                  className="gap-1.5 text-lg font-bold hover:bg-gray-100 transition-colors duration-300"
                   style={{ color: '#425466' }}
                 >
                   <Globe className="h-4 w-4" />
-                  <span className="uppercase text-2xl font-bold">{language}</span>
+                  <span className="uppercase font-bold">{language}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="min-w-[140px]">
@@ -105,7 +121,7 @@ export function MarketingHeader() {
                   onClick={() => setLanguage('tr')}
                   className={language === 'tr' ? 'bg-accent' : ''}
                 >
-                  Turkce (TR)
+                  Türkçe (TR)
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => setLanguage('en')}
@@ -121,34 +137,19 @@ export function MarketingHeader() {
                 <Link href="/login">
                   <Button
                     size="sm"
-                    className="text-2xl font-bold rounded-full px-5 transition-all duration-300"
-                    style={{
-                      backgroundColor: '#0A2540',
-                      color: '#ffffff',
-                    }}
+                    className="text-lg font-bold rounded-full px-5 transition-all duration-300"
+                    style={{ backgroundColor: '#0A2540', color: '#ffffff' }}
                   >
-                    {t.marketing.nav.signIn}
-                  </Button>
-                </Link>
-                <Link href="/landing#pricing">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="text-2xl font-bold rounded-full px-5 transition-all duration-300 border-[#00D4AA] text-[#0A2540] hover:bg-[#00D4AA]/10"
-                  >
-                    {language === 'tr' ? 'Satın Al' : 'Buy Now'}
+                    {c.nav.signIn}
                   </Button>
                 </Link>
                 <Link href="/contact">
                   <Button
                     size="sm"
-                    className="text-2xl font-bold rounded-full px-5 transition-all duration-300"
-                    style={{
-                      backgroundColor: '#0A2540',
-                      color: '#ffffff',
-                    }}
+                    className="text-lg font-bold rounded-full px-5 transition-all duration-300"
+                    style={{ backgroundColor: '#00D4AA', color: '#0A2540' }}
                   >
-                    {t.marketing.nav.bookDemo}
+                    {c.nav.bookDemo}
                   </Button>
                 </Link>
               </>
@@ -161,34 +162,37 @@ export function MarketingHeader() {
             aria-label="Toggle menu"
             style={{ color: '#0A2540' }}
           >
-            {isMobileMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
-            )}
+            {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
       </nav>
 
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-white border-t border-gray-100 shadow-xl">
+        <div className="lg:hidden bg-white border-t border-gray-100 shadow-xl max-h-[80vh] overflow-y-auto">
           <div className="py-6 px-6 space-y-1">
-            {navigation.map((item) => (
+            <p className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-[#425466]">
+              {c.nav.products}
+            </p>
+            {productLinks.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="block py-3 px-3 rounded-lg hover:bg-[#F6F9FC]"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <span className="text-lg font-bold text-[#0A2540]">{item.name}</span>
+                <span className="block text-sm text-[#425466]">{item.description}</span>
+              </Link>
+            ))}
+            <DropdownMenuSeparator className="my-3" />
+            {topNav.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
-                className="py-3 px-3 text-2xl font-bold text-[#425466] hover:text-[#0A2540] hover:bg-[#F6F9FC] rounded-lg transition-all flex items-center gap-2"
+                className="block py-3 px-3 text-lg font-bold text-[#425466] hover:text-[#0A2540] hover:bg-[#F6F9FC] rounded-lg"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
-                <span>{item.name}</span>
-                {'badge' in item && item.badge && (
-                  <span
-                    className="text-[10px] font-bold px-2 py-0.5 rounded-full text-white"
-                    style={{ backgroundColor: '#00D4AA', letterSpacing: '0.05em' }}
-                  >
-                    {item.badge}
-                  </span>
-                )}
+                {item.name}
               </Link>
             ))}
             <div className="pt-6 border-t border-gray-100 space-y-3">
@@ -196,8 +200,12 @@ export function MarketingHeader() {
                 <Button
                   variant={language === 'tr' ? 'default' : 'outline'}
                   size="sm"
-                  className="flex-1 text-2xl font-bold rounded-full"
-                  style={language === 'tr' ? { backgroundColor: '#0A2540', color: '#ffffff' } : { borderColor: '#E6EBF1', color: '#425466' }}
+                  className="flex-1 font-bold rounded-full"
+                  style={
+                    language === 'tr'
+                      ? { backgroundColor: '#0A2540', color: '#ffffff' }
+                      : { borderColor: '#E6EBF1', color: '#425466' }
+                  }
                   onClick={() => {
                     setLanguage('tr')
                     setIsMobileMenuOpen(false)
@@ -208,8 +216,12 @@ export function MarketingHeader() {
                 <Button
                   variant={language === 'en' ? 'default' : 'outline'}
                   size="sm"
-                  className="flex-1 text-2xl font-bold rounded-full"
-                  style={language === 'en' ? { backgroundColor: '#0A2540', color: '#ffffff' } : { borderColor: '#E6EBF1', color: '#425466' }}
+                  className="flex-1 font-bold rounded-full"
+                  style={
+                    language === 'en'
+                      ? { backgroundColor: '#0A2540', color: '#ffffff' }
+                      : { borderColor: '#E6EBF1', color: '#425466' }
+                  }
                   onClick={() => {
                     setLanguage('en')
                     setIsMobileMenuOpen(false)
@@ -218,22 +230,21 @@ export function MarketingHeader() {
                   EN
                 </Button>
               </div>
-              <Link href="/login" className="block">
-                <Button variant="outline" className="w-full text-2xl font-bold rounded-full" style={{ borderColor: '#E6EBF1', color: '#0A2540' }}>
-                  {t.marketing.nav.signIn}
-                </Button>
-              </Link>
-              <Link href="/landing#pricing" className="block" onClick={() => setIsMobileMenuOpen(false)}>
+              <Link href="/login" className="block" onClick={() => setIsMobileMenuOpen(false)}>
                 <Button
                   variant="outline"
-                  className="w-full text-2xl font-bold rounded-full border-[#00D4AA] text-[#0A2540] hover:bg-[#00D4AA]/10"
+                  className="w-full font-bold rounded-full"
+                  style={{ borderColor: '#E6EBF1', color: '#0A2540' }}
                 >
-                  {language === 'tr' ? 'Satın Al' : 'Buy Now'}
+                  {c.nav.signIn}
                 </Button>
               </Link>
-              <Link href="/contact" className="block">
-                <Button className="w-full text-2xl font-bold rounded-full" style={{ backgroundColor: '#0A2540', color: '#ffffff' }}>
-                  {t.marketing.nav.bookDemo}
+              <Link href="/contact" className="block" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button
+                  className="w-full font-bold rounded-full"
+                  style={{ backgroundColor: '#0A2540', color: '#ffffff' }}
+                >
+                  {c.nav.bookDemo}
                 </Button>
               </Link>
             </div>

@@ -10,7 +10,7 @@ interface BackToHomeButtonProps {
 
 export function BackToHomeButton({ className }: BackToHomeButtonProps) {
   return (
-    <Link href="/landing">
+    <Link href="/">
       <Button variant="ghost" size="sm" className={className}>
         <Home className="h-4 w-4 mr-2" />
         Ana Sayfa

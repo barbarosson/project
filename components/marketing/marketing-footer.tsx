@@ -8,7 +8,7 @@ import { useSiteConfig } from '@/contexts/site-config-context'
 import { ModulusLogo } from '@/components/modulus-logo'
 
 export function MarketingFooter() {
-  const { t } = useLanguage()
+  const { t, language } = useLanguage()
   const { config } = useSiteConfig()
 
   const companyName =
@@ -20,10 +20,10 @@ export function MarketingFooter() {
     product: {
       title: t.marketing.footer.product,
       links: [
-        { name: t.marketing.footer.features, href: '/landing#features' },
-        { name: t.marketing.footer.solutions, href: '/landing#solutions' },
-        { name: t.marketing.footer.pricing, href: '/landing#pricing' },
-        { name: t.marketing.footer.updates, href: '#' },
+        { name: 'Modulus ERP', href: '/products/modulus-erp' },
+        { name: 'AppointFlow', href: '/products/appointflow' },
+        { name: 'isendAI', href: '/products/isendai' },
+        { name: language === 'tr' ? 'Kurumsal ana sayfa' : 'Corporate home', href: '/' },
       ],
     },
     company: {

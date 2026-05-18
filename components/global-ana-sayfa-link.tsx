@@ -10,9 +10,15 @@ export function GlobalAnaSayfaLink() {
   const pathname = usePathname() || ''
   const { language } = useLanguage()
 
-  if (pathname === '/landing' || pathname === '/') return null
+  if (
+    pathname === '/' ||
+    pathname === '/landing' ||
+    pathname.startsWith('/products/')
+  ) {
+    return null
+  }
 
-  let href = '/landing'
+  let href = '/'
   let label = language === 'tr' ? 'Ana Sayfa' : 'Home'
 
   if (pathname.startsWith('/dashboard')) {
@@ -21,7 +27,7 @@ export function GlobalAnaSayfaLink() {
     label = language === 'tr' ? 'Ana Sayfa' : 'Home'
   } else if (pathname.startsWith('/admin')) {
     if (pathname === '/admin/login') {
-      href = '/landing'
+      href = '/'
       label = language === 'tr' ? 'Ana Sayfa' : 'Home'
     } else {
       href = '/admin/users'

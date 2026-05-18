@@ -1,19 +1,20 @@
 import { Metadata } from 'next'
-import { getPageMetadata } from '@/lib/metadata'
-import { HomePageContent } from '@/components/home-page-content'
-import { BetaHomeGate } from '@/components/marketing/beta-home-gate'
+import { CorporateHomeLayout } from '@/components/marketing/corporate-home-layout'
+import { corporateCopy } from '@/lib/corporate-marketing-copy'
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
-export async function generateMetadata(): Promise<Metadata> {
-  return await getPageMetadata('home')
+export const metadata: Metadata = {
+  title: corporateCopy.en.meta.homeTitle,
+  description: corporateCopy.en.meta.homeDescription,
+  openGraph: {
+    title: corporateCopy.en.meta.homeTitle,
+    description: corporateCopy.en.meta.homeDescription,
+    type: 'website',
+  },
 }
 
 export default function HomePage() {
-  return (
-    <BetaHomeGate>
-      <HomePageContent />
-    </BetaHomeGate>
-  )
+  return <CorporateHomeLayout />
 }

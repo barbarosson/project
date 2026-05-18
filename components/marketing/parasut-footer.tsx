@@ -18,14 +18,13 @@ export function ModulusFooter() {
 
   const footerSections = {
     product: {
-      title: language === 'en' ? 'Product' : 'Urun',
+      title: language === 'en' ? 'Products' : 'Ürünler',
       links: [
-        { name: language === 'en' ? 'Features' : 'Ozellikler', href: '/landing#features' },
-        { name: language === 'en' ? 'Pricing' : 'Fiyatlandirma', href: '/pricing' },
-        { name: language === 'en' ? 'Integrations' : 'Entegrasyonlar', href: '#' },
-        { name: language === 'en' ? 'API Documentation' : 'API Dokumantasyon', href: '#' },
-        { name: language === 'en' ? 'Changelog' : 'Guncellemeler', href: '#' }
-      ]
+        { name: 'Modulus ERP', href: '/products/modulus-erp' },
+        { name: 'AppointFlow', href: '/products/appointflow' },
+        { name: 'isendAI', href: '/products/isendai' },
+        { name: language === 'en' ? 'Corporate home' : 'Kurumsal ana sayfa', href: '/' },
+      ],
     },
     resources: {
       title: language === 'en' ? 'Resources' : 'Kaynaklar',
@@ -50,7 +49,7 @@ export function ModulusFooter() {
     legal: {
       title: language === 'en' ? 'Legal' : 'Yasal',
       links: [
-        { name: language === 'en' ? 'Home' : 'Ana Sayfa', href: '/landing' },
+        { name: language === 'en' ? 'Home' : 'Ana Sayfa', href: '/' },
         {
           name: language === 'en' ? 'Privacy Policy' : 'Gizlilik Politikası',
           href: '/gizlilik',
@@ -202,8 +201,8 @@ export function ModulusFooter() {
 
             <div className="mt-8 text-center lg:text-left">
               <p className="text-[14px]" style={{ color: 'rgba(255,255,255,0.35)' }}>
-                &copy; 2026 Modulus Business.{' '}
-                {language === 'en' ? 'All rights reserved.' : 'Tum haklari saklidir.'}
+                &copy; 2026 Songurtech · MODULUS.{' '}
+                {language === 'en' ? 'All rights reserved.' : 'Tüm hakları saklıdır.'}
               </p>
             </div>
           </div>
