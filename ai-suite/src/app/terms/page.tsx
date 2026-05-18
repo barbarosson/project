@@ -1,13 +1,19 @@
 import { cookies } from "next/headers";
-import Link from "next/link";
 import type { Metadata } from "next";
 
 import { TermsBody } from "@/app/legal/terms-body";
-import { pageMain } from "@/lib/page-layout";
-import { cn } from "@/lib/utils";
-import { textGradientHero } from "@/lib/premium-ui";
+import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
+import {
+  SitePageBackNav,
+  SitePageChrome,
+  SitePageHeader,
+  SitePageMain,
+  SitePageTitleBlock,
+} from "@/components/site-page-layout";
+import { pageSubtitle } from "@/lib/premium-ui";
 import { DICTS, type Locale } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { cn } from "@/lib/utils";
 
 export async function generateMetadata(): Promise<Metadata> {
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
@@ -24,21 +30,24 @@ export default async function TermsPage() {
   const locale = resolveLocaleFromCookie(cookieLocale) as Locale;
   const d = DICTS[locale];
   const year = String(new Date().getFullYear());
+  const authSnapshot = await readServerAuthSnapshot();
 
   return (
-    <main className={pageMain("legal")}>
-      <div className="mb-8">
-        <Link className="text-sm font-medium text-violet-300 hover:text-violet-200" href="/">
-          ← {d["nav.backToHome"]}
-        </Link>
-      </div>
-      <h1 className={cn("text-pretty text-3xl font-semibold tracking-tight", textGradientHero)}>
-        {d["legal.termsTitle"]}
-      </h1>
-      <p className="mt-3 text-sm text-slate-400">{d["legal.effective"].replace("{year}", year)}</p>
-      <p className="mt-3 text-sm text-slate-400">{d["legal.paymentsStub"]}</p>
-
-      <TermsBody locale={locale} />
-    </main>
+    <SitePageChrome>
+      <SitePageHeader
+        initialSignedInLabel={authSnapshot.signedIn ? authSnapshot.label : null}
+      />
+      <SitePageMain width="legal">
+        <SitePageBackNav>{d["nav.backToHome"]}</SitePageBackNav>
+        <SitePageTitleBlock title={d["legal.termsTitle"]} />
+        <p className={cn(pageSubtitle, "mt-2")}>
+          {d["legal.effective"].replace("{year}", year)}
+        </p>
+        <p className={cn(pageSubtitle, "mt-2")}>{d["legal.paymentsStub"]}</p>
+        <div className="legal-document mt-8">
+          <TermsBody locale={locale} />
+        </div>
+      </SitePageMain>
+    </SitePageChrome>
   );
 }

@@ -8,13 +8,17 @@ import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { resolvePostLoginNext, safeNext } from "@/lib/auth/safe-next";
 import { resolveAuthPublicOrigin } from "@/lib/site-public-url";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { pageMain } from "@/lib/page-layout";
+import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
+import {
+  SitePageChrome,
+  SitePageHeader,
+  SitePageMain,
+} from "@/components/site-page-layout";
 import { cn } from "@/lib/utils";
-import { glassInteractive, textGradientHero } from "@/lib/premium-ui";
+import { pageBackLink, pageContentSection, pageHeroPanel, pageSubtitle, pageTitle } from "@/lib/premium-ui";
 import { OAUTH_UI } from "@/lib/auth/oauth-ui";
 import { FacebookSignInButton } from "./facebook-sign-in-button";
 import { GoogleSignInButton } from "./google-sign-in-button";
-import { InstagramSignInButton } from "./instagram-sign-in-button";
 import { LoginAuthToast } from "./login-auth-toast";
 import { OAuthLoginButtons } from "./oauth-login-buttons";
 import { LoginOAuthCodeForward } from "./login-oauth-code-forward";
@@ -52,6 +56,7 @@ export default async function LoginPage({
     redirect(resolvePostLoginNext(sp.next));
   }
 
+  const authSnapshot = await readServerAuthSnapshot();
   const h = await headers();
   const origin = resolveAuthPublicOrigin(h);
   const nextAfterAuth = resolvePostLoginNext(sp.next);
@@ -60,58 +65,61 @@ export default async function LoginPage({
     : "";
 
   return (
-    <main className={pageMain("auth")}>
-      <Suspense fallback={null}>
-        <LoginOAuthCodeForward />
-      </Suspense>
-      <LoginAuthToast error={sp.error} detail={sp.detail} />
-      <div className={cn("rounded-2xl p-6", glassInteractive)}>
-        <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
-          {d["login.title"]}
-        </h1>
-        <p className="mt-2 text-sm text-slate-400">{d["login.subtitle"]}</p>
-        <div className="mt-6 border-t border-white/[0.08] pt-6">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90">
-            {d["login.membershipEmailTitle"]}
-          </h2>
-          <p className="mt-1 text-sm text-slate-400">{d["login.membershipEmailBody"]}</p>
-          <div className="mt-4">
-            <LoginClient authCallbackUrl={authCallbackUrl} nextAfterAuth={nextAfterAuth} />
-          </div>
-        </div>
-        {(OAUTH_UI.google || OAUTH_UI.facebook) && (
+    <SitePageChrome>
+      <SitePageHeader
+        initialSignedInLabel={authSnapshot.signedIn ? authSnapshot.label : null}
+      />
+      <SitePageMain width="auth">
+        <Suspense fallback={null}>
+          <LoginOAuthCodeForward />
+        </Suspense>
+        <LoginAuthToast error={sp.error} detail={sp.detail} />
+        <div className={cn(pageHeroPanel, pageContentSection, "mt-0 p-6 sm:p-8")}>
+          <h1 className={pageTitle}>{d["login.title"]}</h1>
+          <p className={cn(pageSubtitle, "mt-2")}>{d["login.subtitle"]}</p>
           <div className="mt-6 border-t border-white/[0.08] pt-6">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90">
-              {d["login.membershipSocialTitle"]}
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90 sm:text-sm">
+              {d["login.membershipEmailTitle"]}
             </h2>
-            <p className="mt-1 text-sm text-slate-400">{d["login.membershipSocialBody"]}</p>
-            <div className="mt-4 grid gap-3">
-              {OAUTH_UI.google ? (
-                <GoogleSignInButton authCallbackUrl={authCallbackUrl} />
-              ) : null}
-              {OAUTH_UI.facebook ? (
-                <FacebookSignInButton authCallbackUrl={authCallbackUrl} />
-              ) : null}
+            <p className={cn(pageSubtitle, "mt-1")}>{d["login.membershipEmailBody"]}</p>
+            <div className="mt-4">
+              <LoginClient authCallbackUrl={authCallbackUrl} nextAfterAuth={nextAfterAuth} />
             </div>
           </div>
-        )}
-        <p className="mt-5 text-xs text-slate-400">
-          {d["login.legalLead"]}{" "}
-          <Link className="text-violet-300 hover:text-violet-200" href="/terms">
-            {d["legal.termsTitle"]}
-          </Link>{" "}
-          {d["login.legalMid"]}{" "}
-          <Link className="text-violet-300 hover:text-violet-200" href="/privacy">
-            {d["legal.privacyTitle"]}
-          </Link>
-          {d["login.legalEnd"]}
-        </p>
-        <p className="mt-4 text-center text-sm">
-          <Link className="text-violet-300 hover:text-violet-200" href="/">
-            ← {d["nav.backToHome"]}
-          </Link>
-        </p>
-      </div>
-    </main>
+          {(OAUTH_UI.google || OAUTH_UI.facebook) && (
+            <div className="mt-6 border-t border-white/[0.08] pt-6">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90 sm:text-sm">
+                {d["login.membershipSocialTitle"]}
+              </h2>
+              <p className={cn(pageSubtitle, "mt-1")}>{d["login.membershipSocialBody"]}</p>
+              <div className="mt-4 grid gap-3">
+                {OAUTH_UI.google ? (
+                  <GoogleSignInButton authCallbackUrl={authCallbackUrl} />
+                ) : null}
+                {OAUTH_UI.facebook ? (
+                  <FacebookSignInButton authCallbackUrl={authCallbackUrl} />
+                ) : null}
+              </div>
+            </div>
+          )}
+          <p className="mt-5 text-sm leading-relaxed text-slate-200 sm:text-base">
+            {d["login.legalLead"]}{" "}
+            <Link className={pageBackLink} href="/terms">
+              {d["legal.termsTitle"]}
+            </Link>{" "}
+            {d["login.legalMid"]}{" "}
+            <Link className={pageBackLink} href="/privacy">
+              {d["legal.privacyTitle"]}
+            </Link>
+            {d["login.legalEnd"]}
+          </p>
+          <p className="mt-4 text-center text-sm sm:text-base">
+            <Link className={pageBackLink} href="/">
+              ← {d["nav.backToHome"]}
+            </Link>
+          </p>
+        </div>
+      </SitePageMain>
+    </SitePageChrome>
   );
 }

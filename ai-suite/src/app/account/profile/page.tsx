@@ -5,11 +5,15 @@ import { redirect } from "next/navigation";
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
-import { AuthStatus } from "@/components/auth-status";
 import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
-import { pageMain } from "@/lib/page-layout";
-import { cn } from "@/lib/utils";
-import { glassInteractive, premiumCta, textGradientHero } from "@/lib/premium-ui";
+import {
+  SitePageChrome,
+  SitePageHeader,
+  SitePageMain,
+  SitePageSection,
+  SitePageTitleBlock,
+} from "@/components/site-page-layout";
+import { pageOutlineButton, premiumCta } from "@/lib/premium-ui";
 import { safeNext } from "@/lib/auth/safe-next";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -45,36 +49,31 @@ export default async function AccountProfilePage({
   const authSnapshot = await readServerAuthSnapshot();
 
   return (
-    <main className={pageMain("narrow")}>
-      <ProfileOauthToast oauthEmail={sp.oauth_email} />
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
-            {d["profile.title"]}
-          </h1>
-          <p className="mt-1 text-sm text-slate-400">{d["profile.subtitle"]}</p>
-        </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <SiteLocaleToolbar />
-          <AuthStatus
-            omitAccountLink
-            initialSignedInLabel={authSnapshot.signedIn ? authSnapshot.label : null}
-          />
-          <Link
-            className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
-            href="/account"
-          >
-            {d["profile.backToAccount"]}
-          </Link>
-          <Link className={premiumCta} href="/">
-            {d["nav.backToHome"]}
-          </Link>
-        </div>
-      </div>
-
-      <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>
-        <ProfileForm nextPath={next} email={user.email ?? ""} initialMeta={meta} />
-      </section>
-    </main>
+    <SitePageChrome>
+      <SitePageHeader
+        initialSignedInLabel={authSnapshot.signedIn ? authSnapshot.label : null}
+      />
+      <SitePageMain width="narrow">
+        <ProfileOauthToast oauthEmail={sp.oauth_email} />
+        <SitePageTitleBlock
+          title={d["profile.title"]}
+          subtitle={d["profile.subtitle"]}
+          actions={
+            <>
+              <SiteLocaleToolbar />
+              <Link className={pageOutlineButton} href="/account">
+                {d["profile.backToAccount"]}
+              </Link>
+              <Link className={premiumCta} href="/">
+                {d["nav.backToHome"]}
+              </Link>
+            </>
+          }
+        />
+        <SitePageSection className="mt-0">
+          <ProfileForm nextPath={next} email={user.email ?? ""} initialMeta={meta} />
+        </SitePageSection>
+      </SitePageMain>
+    </SitePageChrome>
   );
 }

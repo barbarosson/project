@@ -4,14 +4,20 @@ import { notFound, redirect } from "next/navigation";
 
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-
+import {
+  SitePageChrome,
+  SitePageHeader,
+  SitePageMain,
+  SitePageSection,
+  SitePageTitleBlock,
+} from "@/components/site-page-layout";
 import { CopyVersionButton } from "./copy-buttons";
 import { formatCreditsFromTenths } from "@/lib/credits-units";
-import { pageMain } from "@/lib/page-layout";
+import { glassSurface, pageOutlineButton, pageSectionLabel, premiumCta } from "@/lib/premium-ui";
 import { cn } from "@/lib/utils";
-import { glassInteractive, glassSurface, premiumCta, textGradientHero } from "@/lib/premium-ui";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +38,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
   const ownerType = "user" as const;
   const ownerId = userId;
 
+  const authSnapshot = await readServerAuthSnapshot();
   const admin = createSupabaseAdminClient();
   const { data: reqRow } = await admin
     .schema("isendai")
@@ -53,65 +60,65 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
   const dateStr = new Date(reqRow.created_at).toLocaleString();
 
   return (
-    <main className={pageMain("content")}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
-            {d["request.pageTitle"]}
-          </h1>
-          <p className="mt-1 text-sm text-slate-400">
-            {reqRow.tool_id} · {reqRow.model_id}
-          </p>
-          <p className="mt-1 text-xs text-slate-400">
-            {d["request.timeCreditsLine"]
-              .replace("{date}", dateStr)
-              .replace("{charged}", formatCreditsFromTenths(reqRow.credits_charged))
-              .replace("{max}", String(reqRow.max_versions))}
-          </p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
-            href="/account"
-          >
-            {d["nav.account"]}
-          </Link>
-          <Link className={premiumCta} href="/">
-            {d["nav.backToHome"]}
-          </Link>
-        </div>
-      </div>
+    <SitePageChrome>
+      <SitePageHeader
+        initialSignedInLabel={authSnapshot.signedIn ? authSnapshot.label : null}
+      />
+      <SitePageMain width="content">
+        <SitePageTitleBlock
+          title={d["request.pageTitle"]}
+          meta={`${reqRow.tool_id} · ${reqRow.model_id}`}
+          subtitle={d["request.timeCreditsLine"]
+            .replace("{date}", dateStr)
+            .replace("{charged}", formatCreditsFromTenths(reqRow.credits_charged))
+            .replace("{max}", String(reqRow.max_versions))}
+          actions={
+            <>
+              <Link className={pageOutlineButton} href="/account">
+                {d["nav.account"]}
+              </Link>
+              <Link className={premiumCta} href="/">
+                {d["nav.backToHome"]}
+              </Link>
+            </>
+          }
+        />
 
-      <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>
-        <h2 className={cn("text-sm font-semibold", textGradientHero)}>{d["request.inputStored"]}</h2>
-        <pre className="mt-3 max-h-[360px] overflow-auto whitespace-pre-wrap rounded-xl border border-white/[0.08] bg-black/35 p-4 text-xs text-slate-300 backdrop-blur-md">
-          {JSON.stringify(reqRow.input_json, null, 2)}
-        </pre>
-      </section>
+        <SitePageSection className="mt-0">
+          <h2 className={pageSectionLabel}>{d["request.inputStored"]}</h2>
+          <pre className="mt-3 max-h-[360px] overflow-auto whitespace-pre-wrap rounded-xl border border-white/[0.08] bg-black/35 p-4 text-sm leading-relaxed text-slate-200 backdrop-blur-md sm:text-base">
+            {JSON.stringify(reqRow.input_json, null, 2)}
+          </pre>
+        </SitePageSection>
 
-      <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>
-        <h2 className={cn("text-sm font-semibold", textGradientHero)}>{d["request.versions"]}</h2>
-        {versions && versions.length > 0 ? (
-          <div className="mt-4 grid gap-3">
-            {versions.map((v) => (
-              <div key={v.idx} className={cn("rounded-xl p-4", glassSurface)}>
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-xs font-semibold text-slate-300">
-                    {d["request.versionLine"].replace("{idx}", String(v.idx))}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <CopyVersionButton text={v.text} />
-                    <p className="text-xs text-slate-500">{new Date(v.created_at).toLocaleString()}</p>
+        <SitePageSection>
+          <h2 className={pageSectionLabel}>{d["request.versions"]}</h2>
+          {versions && versions.length > 0 ? (
+            <div className="mt-4 grid gap-3">
+              {versions.map((v) => (
+                <div key={v.idx} className={cn("rounded-xl p-4", glassSurface)}>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-semibold text-slate-200">
+                      {d["request.versionLine"].replace("{idx}", String(v.idx))}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <CopyVersionButton text={v.text} />
+                      <p className="text-sm text-slate-300">{new Date(v.created_at).toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <div className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-100 sm:text-base">
+                    {v.text}
                   </div>
                 </div>
-                <div className="mt-2 whitespace-pre-wrap text-sm text-slate-100">{v.text}</div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="mt-3 text-sm text-slate-300">{d["request.noVersions"]}</p>
-        )}
-      </section>
-    </main>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 text-sm leading-relaxed text-slate-200 sm:text-base">
+              {d["request.noVersions"]}
+            </p>
+          )}
+        </SitePageSection>
+      </SitePageMain>
+    </SitePageChrome>
   );
 }

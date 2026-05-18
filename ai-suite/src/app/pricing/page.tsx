@@ -10,11 +10,17 @@ import {
   PricingPaygoShop,
   PricingYearlyShop,
 } from "@/components/pricing/pricing-shop-blocks";
-import { pageMain } from "@/lib/page-layout";
-import { cn } from "@/lib/utils";
-import { premiumCta, textGradientHero } from "@/lib/premium-ui";
+import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
+import {
+  SitePageChrome,
+  SitePageHeader,
+  SitePageMain,
+  SitePageTitleBlock,
+} from "@/components/site-page-layout";
+import { premiumCta, pageSectionLabel, pageSubtitle } from "@/lib/premium-ui";
 import { DICTS, type Locale } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -32,40 +38,35 @@ export default async function PricingPage() {
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   const locale = resolveLocaleFromCookie(cookieLocale);
   const d = DICTS[locale];
+  const authSnapshot = await readServerAuthSnapshot();
 
   return (
-    <main className={pageMain("content")}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <h1
-          className={cn(
-            "min-w-0 flex-1 text-2xl font-semibold tracking-tight sm:text-3xl",
-            textGradientHero
-          )}
-        >
-          {d["pricing.title"]}
-        </h1>
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
-          <Link className={premiumCta} href="/">
-            {d["nav.backToHome"]}
-          </Link>
-        </div>
-      </div>
-      <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-400">{d["pricing.subtitle"]}</p>
-      <p className="mt-2 text-sm font-medium text-violet-200/90">{d["pricing.allPaygoPacks"]}</p>
-      <PricingHeroOverview d={d} />
+    <SitePageChrome>
+      <SitePageHeader
+        initialSignedInLabel={authSnapshot.signedIn ? authSnapshot.label : null}
+      />
+      <SitePageMain width="content">
+        <SitePageTitleBlock
+          title={d["pricing.title"]}
+          actions={<Link className={premiumCta} href="/">{d["nav.backToHome"]}</Link>}
+        />
+        <p className={cn(pageSubtitle, "max-w-3xl")}>{d["pricing.subtitle"]}</p>
+        <p className={cn("mt-2", "text-sm font-medium text-violet-200/90 sm:text-base")}>
+          {d["pricing.allPaygoPacks"]}
+        </p>
+        <PricingHeroOverview d={d} />
 
-      <PricingMonthlyShop />
-      <PricingYearlyShop />
-      <PricingPaygoShop />
+        <PricingMonthlyShop />
+        <PricingYearlyShop />
+        <PricingPaygoShop />
 
-      <PricingModelClassNote d={d} />
+        <PricingModelClassNote d={d} />
 
-      <section id="how-credits-work" className="mt-10 scroll-mt-24">
-        <h2 className={cn("text-lg font-semibold tracking-tight", textGradientHero)}>
-          {d["pricing.usageGuide.sectionTitle"]}
-        </h2>
-        <PricingCreditUsageGuide d={d} />
-      </section>
-    </main>
+        <section id="how-credits-work" className="mt-10 scroll-mt-24">
+          <h2 className={pageSectionLabel}>{d["pricing.usageGuide.sectionTitle"]}</h2>
+          <PricingCreditUsageGuide d={d} />
+        </section>
+      </SitePageMain>
+    </SitePageChrome>
   );
 }

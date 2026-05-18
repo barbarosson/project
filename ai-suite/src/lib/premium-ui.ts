@@ -27,7 +27,7 @@ export const textGradientHero = "text-gradient-hero";
 
 /** Large marketing sections (How it works, AI Products workspace). */
 export const sectionGradientShell = cn(
-  "relative overflow-hidden rounded-3xl border border-violet-500/30 p-6 sm:p-8 lg:p-10",
+  "relative min-w-0 overflow-hidden rounded-3xl border border-violet-500/30 p-4 sm:p-6 lg:p-10",
   "bg-gradient-to-br from-violet-950/50 via-slate-950/80 to-indigo-950/50",
   "shadow-[0_12px_56px_rgba(139,92,246,0.22),inset_0_1px_0_0_rgba(255,255,255,0.08)]",
   "backdrop-blur-xl"
@@ -62,4 +62,34 @@ export const sectionPanelFuchsia = cn(
 export const sectionPanelCyan = cn(
   "rounded-2xl border border-cyan-400/35 bg-gradient-to-br from-cyan-500/15 to-cyan-950/30",
   "shadow-lg backdrop-blur-md"
+);
+
+/** Inner pages — matches home marketing headings & body. */
+export const pageTitle = sectionGradientHeading;
+
+export const pageSubtitle = sectionGradientBodySm;
+
+export const pageMeta = "text-sm font-medium text-slate-300 sm:text-base";
+
+export const pageBackLink =
+  "text-sm font-medium text-violet-300 transition-colors hover:text-violet-200";
+
+export const pageOutlineButton = cn(
+  interactiveClick,
+  "inline-flex items-center justify-center rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm font-medium text-slate-200 backdrop-blur-xl hover:border-violet-500/35 hover:bg-white/[0.07]"
+);
+
+export const pageContentSection = cn(glassInteractive, "rounded-2xl p-6");
+
+export const pageHeroPanel = cn(
+  glassInteractive,
+  "relative overflow-hidden rounded-2xl px-6 py-8 sm:px-10"
+);
+
+export const pageStatValue =
+  "mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl";
+
+export const pageSectionLabel = cn(
+  "text-sm font-semibold sm:text-base",
+  "bg-gradient-to-r from-white via-violet-100 to-cyan-100 bg-clip-text text-transparent"
 );

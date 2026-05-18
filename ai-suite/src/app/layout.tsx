@@ -7,6 +7,9 @@ import "./globals.css";
 import { I18nProvider } from "@/i18n/i18n-provider";
 import { RouteTransition } from "@/components/route-transition";
 import { ModelProvider } from "@/models/model-provider";
+import { readDefaultAiModelFromMetadata } from "@/lib/auth/default-ai-model";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import type { UserFacingModelId } from "@/models/models";
 import { GlobalBackground } from "@/components/global-background";
 import { SocialProof } from "@/components/SocialProof";
 import type { Locale } from "@/i18n/dictionaries";
@@ -53,6 +56,18 @@ export default async function RootLayout({
     cookieLocale === "zh"
       ? cookieLocale
       : undefined;
+
+  let initialDefaultAiModel: UserFacingModelId | null = null;
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data } = await supabase.auth.getUser();
+    if (data.user) {
+      initialDefaultAiModel = readDefaultAiModelFromMetadata(data.user.user_metadata);
+    }
+  } catch {
+    initialDefaultAiModel = null;
+  }
+
   return (
     <html
       lang={initialLocale ?? "en"}
@@ -82,7 +97,7 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
         ) : null}
         <SupabaseBrowserConfigProvider url={supabaseUrl} anonKey={supabaseAnonKey}>
           <I18nProvider initialLocale={initialLocale}>
-            <ModelProvider>
+            <ModelProvider initialDefaultAiModel={initialDefaultAiModel}>
               <PricingModalProvider>
                 <RouteTransition />
                 <GlobalBackground />

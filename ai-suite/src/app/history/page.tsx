@@ -1,15 +1,22 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 import { formatCreditsFromTenths } from "@/lib/credits-units";
-import { pageMain } from "@/lib/page-layout";
-import { cn } from "@/lib/utils";
-import { glassInteractive, glassSurface, premiumCta, textGradientHero } from "@/lib/premium-ui";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
+import {
+  SitePageChrome,
+  SitePageHeader,
+  SitePageMain,
+  SitePageSection,
+  SitePageTitleBlock,
+} from "@/components/site-page-layout";
+import { glassSurface, pageOutlineButton, pageSectionLabel, pageStatValue, premiumCta } from "@/lib/premium-ui";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +32,7 @@ export default async function HistoryPage() {
     redirect("/login?next=%2Fhistory");
   }
 
+  const authSnapshot = await readServerAuthSnapshot();
   const admin = createSupabaseAdminClient();
 
   const { data: ent } = await admin
@@ -47,71 +55,74 @@ export default async function HistoryPage() {
   const maxV = ent?.max_versions_per_request ?? 5;
 
   return (
-    <main className={pageMain("content")}>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
-            {d["history.title"]}
-          </h1>
-          <p className="mt-1 text-sm text-slate-400">{d["history.subtitleUser"]}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Link
-            className="rounded-lg border border-white/[0.12] bg-white/[0.04] px-4 py-2 text-sm text-slate-200 backdrop-blur-xl transition-all hover:border-violet-500/35 hover:bg-white/[0.07]"
-            href="/account"
-          >
-            {d["nav.account"]}
-          </Link>
-          <Link className={premiumCta} href="/">
-            {d["nav.backToHome"]}
-          </Link>
-        </div>
-      </div>
+    <SitePageChrome>
+      <SitePageHeader
+        initialSignedInLabel={authSnapshot.signedIn ? authSnapshot.label : null}
+      />
+      <SitePageMain width="content">
+        <SitePageTitleBlock
+          title={d["history.title"]}
+          subtitle={d["history.subtitleUser"]}
+          actions={
+            <>
+              <Link className={pageOutlineButton} href="/account">
+                {d["nav.account"]}
+              </Link>
+              <Link className={premiumCta} href="/">
+                {d["nav.backToHome"]}
+              </Link>
+            </>
+          }
+        />
 
-      <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>
-        <h2 className={cn("text-sm font-semibold", textGradientHero)}>{d["usage.creditsHeading"]}</h2>
-        <p className="mt-2 text-3xl font-semibold tracking-tight text-white">
-          {formatCreditsFromTenths(ent?.credits_balance ?? 0)}
-        </p>
-        <p className="mt-2 text-sm text-slate-400">
-          {d["usage.versionsLine"].replace("{max}", String(maxV))}
-        </p>
-      </section>
+        <SitePageSection className="mt-0">
+          <h2 className={pageSectionLabel}>{d["usage.creditsHeading"]}</h2>
+          <p className={pageStatValue}>{formatCreditsFromTenths(ent?.credits_balance ?? 0)}</p>
+          <p className={cn("mt-2", "text-sm leading-relaxed text-slate-200 sm:text-base")}>
+            {d["usage.versionsLine"].replace("{max}", String(maxV))}
+          </p>
+        </SitePageSection>
 
-      <section className={cn("mt-6 rounded-2xl p-6", glassInteractive)}>
-        <div className="flex items-center justify-between gap-3">
-          <h2 className={cn("text-sm font-semibold", textGradientHero)}>{d["usage.requestsHeading"]}</h2>
-          <span className="text-xs text-slate-400">{requests?.length ?? 0}</span>
-        </div>
-
-        {requests && requests.length > 0 ? (
-          <div className="mt-4 grid gap-2">
-            {requests.map((r) => (
-              <div key={r.id} className={cn("rounded-xl p-4 text-sm text-slate-300", glassSurface)}>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-3">
-                    <p className="font-semibold text-white">{r.tool_id}</p>
-                    <Link className="text-xs text-violet-300 hover:text-violet-200" href={`/request/${r.id}`}>
-                      {d["usage.open"]}
-                    </Link>
-                  </div>
-                  <p className="text-xs text-slate-400">{new Date(r.created_at).toLocaleString()}</p>
-                </div>
-                <p className="mt-1 text-xs text-slate-400">
-                  {d["usage.modelLabel"]}: {r.model_id}
-                </p>
-                <p className="mt-2 text-xs text-slate-300">
-                  {d["usage.chargedLine"]
-                    .replace("{charged}", formatCreditsFromTenths(r.credits_charged))
-                    .replace("{max}", String(r.max_versions))}
-                </p>
-              </div>
-            ))}
+        <SitePageSection>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className={pageSectionLabel}>{d["usage.requestsHeading"]}</h2>
+            <span className="text-sm text-slate-300">{requests?.length ?? 0}</span>
           </div>
-        ) : (
-          <p className="mt-3 text-sm text-slate-300">{d["usage.emptyRequests"]}</p>
-        )}
-      </section>
-    </main>
+
+          {requests && requests.length > 0 ? (
+            <div className="mt-4 grid gap-2">
+              {requests.map((r) => (
+                <div key={r.id} className={cn("rounded-xl p-4 text-sm text-slate-200", glassSurface)}>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-3">
+                      <p className="font-semibold text-white">{r.tool_id}</p>
+                      <Link
+                        className="text-sm font-medium text-violet-300 hover:text-violet-200"
+                        href={`/request/${r.id}`}
+                      >
+                        {d["usage.open"]}
+                      </Link>
+                    </div>
+                    <p className="text-sm text-slate-300">{new Date(r.created_at).toLocaleString()}</p>
+                  </div>
+                  <p className="mt-1 text-sm text-slate-300">
+                    {d["usage.modelLabel"]}: {r.model_id}
+                  </p>
+                  <p className="mt-2 text-sm text-slate-200">
+                    {d["usage.chargedLine"]
+                      .replace("{charged}", formatCreditsFromTenths(r.credits_charged))
+                      .replace("{max}", String(r.max_versions))}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 text-sm leading-relaxed text-slate-200 sm:text-base">
+              {d["usage.emptyRequests"]}
+            </p>
+          )}
+        </SitePageSection>
+      </SitePageMain>
+    </SitePageChrome>
   );
 }

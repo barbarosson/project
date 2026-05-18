@@ -24,10 +24,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { pageMain } from "@/lib/page-layout";
+import { SitePageChrome, SitePageHeader, SitePageMain } from "@/components/site-page-layout";
 import { cn } from "@/lib/utils";
 import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
-import { glassSurface } from "@/lib/premium-ui";
+import { pageContentSection, pageSubtitle, glassSurface } from "@/lib/premium-ui";
+import type { ServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 
 type Stored = { v: 1; savedAt: string; payload: ToolPayload };
 type Version = { v: 1; id: string; createdAt: string; text: string };
@@ -139,7 +140,11 @@ function isValidPayload(payload: ToolPayload): boolean {
   return "text" in payload && typeof payload.text === "string" && payload.text.trim().length >= 10;
 }
 
-export function SuccessClient() {
+export function SuccessClient({
+  authSnapshot = null,
+}: {
+  authSnapshot?: ServerAuthSnapshot | null;
+}) {
   const searchParams = useSearchParams();
   const toolParam = searchParams.get("tool");
   const isTest = searchParams.get("test") === "1";
@@ -439,16 +444,14 @@ export function SuccessClient() {
   }
 
   return (
-    <div className="min-h-full">
-      <main className={pageMain("narrow")}>
-        <div
-          className={cn(
-            "mb-4 rounded-xl p-4 text-sm text-slate-400 shadow-2xl backdrop-blur-xl",
-            glassSurface
-          )}
-        >
-          <p className="font-medium text-white">{t("success.ephemeral.title")}</p>
-          <p className="mt-1">{t("success.ephemeral.body")}</p>
+    <SitePageChrome>
+      <SitePageHeader
+        initialSignedInLabel={authSnapshot?.signedIn ? authSnapshot.label : null}
+      />
+      <SitePageMain width="narrow">
+        <div className={cn("mb-4", pageContentSection, "p-4 sm:p-5")}>
+          <p className="font-semibold text-white sm:text-lg">{t("success.ephemeral.title")}</p>
+          <p className={cn("mt-1", pageSubtitle)}>{t("success.ephemeral.body")}</p>
         </div>
 
         <div className="mb-6 flex items-center gap-3">
@@ -457,7 +460,7 @@ export function SuccessClient() {
             <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.65)]" />
           </span>
           <CheckCircle2 className="size-5 text-emerald-400" strokeWidth={1.5} />
-          <p className="text-sm text-slate-400">
+          <p className={pageSubtitle}>
             {isTest ? t("success.test") : isPaidReturn ? t("success.paid") : t("success.introCredits")}
           </p>
         </div>
@@ -635,8 +638,8 @@ export function SuccessClient() {
             )}
           </CardContent>
         </Card>
-      </main>
-    </div>
+      </SitePageMain>
+    </SitePageChrome>
   );
 }
 

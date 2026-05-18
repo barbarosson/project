@@ -1,0 +1,137 @@
+[
+  {
+    "file": "01-starter-monthly.jpg",
+    "slug": "01-starter-monthly",
+    "badge": "MONTHLY",
+    "title": "Starter",
+    "price": "$7.99 / mo",
+    "credits": "500 credits / month",
+    "accent": "#8b5cf6",
+    "bullets": [
+      "Monthly credit refill",
+      "Fast AI (1 credit) & Pro AI (25 credits)",
+      "Perfect for occasional polish",
+      "Cancel anytime"
+    ]
+  },
+  {
+    "file": "02-growth-monthly.jpg",
+    "slug": "02-growth-monthly",
+    "badge": "MONTHLY",
+    "title": "Growth",
+    "price": "$9.99 / mo",
+    "credits": "1,000 credits / month",
+    "accent": "#a855f7",
+    "bullets": [
+      "2× Starter credits every month",
+      "Ideal for daily messaging",
+      "Transparent cost on every button",
+      "Unlocks models per your tier"
+    ]
+  },
+  {
+    "file": "03-scale-monthly.jpg",
+    "slug": "03-scale-monthly",
+    "badge": "MONTHLY",
+    "title": "Scale",
+    "price": "$19.99 / mo",
+    "credits": "5,000 credits / month",
+    "accent": "#d946ef",
+    "bullets": [
+      "High-volume monthly allowance",
+      "Teams, automation & power users",
+      "Fast + Pro + Genius when eligible",
+      "Best for heavy ISEND AI use"
+    ]
+  },
+  {
+    "file": "04-starter-yearly.jpg",
+    "slug": "04-starter-yearly",
+    "badge": "YEARLY · SAVE ~17%",
+    "title": "Starter Annual",
+    "price": "$79 / year",
+    "credits": "6,000 credits / year",
+    "accent": "#6366f1",
+    "bullets": [
+      "Same volume as Starter monthly",
+      "One payment — credits all year",
+      "~17% less vs 12× monthly",
+      "Great for solo professionals"
+    ]
+  },
+  {
+    "file": "05-growth-yearly.jpg",
+    "slug": "05-growth-yearly",
+    "badge": "YEARLY · SAVE ~17%",
+    "title": "Growth Annual",
+    "price": "$99 / year",
+    "credits": "12,000 credits / year",
+    "accent": "#7c3aed",
+    "bullets": [
+      "Matches Growth monthly volume",
+      "Pay yearly, skip monthly checkout",
+      "~17% savings vs monthly",
+      "For committed daily users"
+    ]
+  },
+  {
+    "file": "06-scale-yearly.jpg",
+    "slug": "06-scale-yearly",
+    "badge": "YEARLY · SAVE ~17%",
+    "title": "Scale Annual",
+    "price": "$199 / year",
+    "credits": "60,000 credits / year",
+    "accent": "#c026d3",
+    "bullets": [
+      "Maximum yearly credit pool",
+      "Scale-tier volume upfront",
+      "Best value for high throughput",
+      "Built for teams at scale"
+    ]
+  },
+  {
+    "file": "07-paygo-budget.jpg",
+    "slug": "07-paygo-budget",
+    "badge": "ONE-TIME · PAY AS YOU GO",
+    "title": "Budget Pack",
+    "price": "$1",
+    "credits": "10 credits",
+    "accent": "#22d3ee",
+    "bullets": [
+      "No subscription required",
+      "Fast AI — 1 credit per run",
+      "Quick fixes & light edits",
+      "Top up anytime"
+    ]
+  },
+  {
+    "file": "08-paygo-standard.jpg",
+    "slug": "08-paygo-standard",
+    "badge": "ONE-TIME · PAY AS YOU GO",
+    "title": "Standard Pack",
+    "price": "$1.49",
+    "credits": "25 credits",
+    "accent": "#38bdf8",
+    "bullets": [
+      "Fast AI + Pro AI access",
+      "Pro runs cost up to 25 credits",
+      "Important emails & messages",
+      "Credits never expire on account"
+    ]
+  },
+  {
+    "file": "09-paygo-premium.jpg",
+    "slug": "09-paygo-premium",
+    "badge": "ONE-TIME · PAY AS YOU GO",
+    "title": "Premium Pack",
+    "price": "$1.99",
+    "credits": "50 credits",
+    "accent": "#34d399",
+    "bullets": [
+      "Full catalog: Fast, Pro & Genius",
+      "Highest-stakes copy & tone",
+      "Best $/credit for power users",
+      "Instant balance after checkout"
+    ]
+  }
+]

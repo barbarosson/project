@@ -1,6 +1,7 @@
 import { ChevronDown } from "lucide-react";
 
 import type { FaqItem } from "@/i18n/faq-content";
+import { glassInteractive } from "@/lib/premium-ui";
 import { cn } from "@/lib/utils";
 
 type FaqListProps = {
@@ -14,14 +15,15 @@ export function FaqList({ items }: FaqListProps) {
         <details
           key={index}
           className={cn(
-            "group rounded-xl border border-white/[0.08] bg-black/25 backdrop-blur-md",
-            "open:border-white/[0.12] open:bg-black/35"
+            "group rounded-xl",
+            glassInteractive,
+            "open:border-violet-500/40"
           )}
         >
           <summary
             className={cn(
-              "flex cursor-pointer list-none items-start justify-between gap-3 px-4 py-3.5",
-              "text-sm font-medium text-white marker:content-none",
+              "flex cursor-pointer list-none items-start justify-between gap-3 px-4 py-3.5 sm:px-5 sm:py-4",
+              "text-sm font-semibold text-white sm:text-base marker:content-none",
               "[&::-webkit-details-marker]:hidden"
             )}
           >
@@ -34,7 +36,7 @@ export function FaqList({ items }: FaqListProps) {
               aria-hidden
             />
           </summary>
-          <p className="border-t border-white/[0.06] px-4 pb-4 pt-3 text-sm leading-relaxed text-slate-300">
+          <p className="border-t border-white/[0.08] px-4 pb-4 pt-3 text-sm leading-relaxed text-slate-200 sm:px-5 sm:text-base">
             {item.answer}
           </p>
         </details>

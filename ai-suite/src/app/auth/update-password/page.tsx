@@ -4,10 +4,15 @@ import { redirect } from "next/navigation";
 
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { pageMain } from "@/lib/page-layout";
+import {
+  SitePageChrome,
+  SitePageHeader,
+  SitePageMain,
+} from "@/components/site-page-layout";
 import { cn } from "@/lib/utils";
-import { glassInteractive, textGradientHero } from "@/lib/premium-ui";
+import { pageBackLink, pageContentSection, pageHeroPanel, pageSubtitle, pageTitle } from "@/lib/premium-ui";
 
 import { UpdatePasswordForm } from "./update-password-form";
 
@@ -24,23 +29,27 @@ export default async function UpdatePasswordPage() {
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   const locale = resolveLocaleFromCookie(cookieLocale);
   const d = DICTS[locale];
+  const authSnapshot = await readServerAuthSnapshot();
 
   return (
-    <main className={pageMain("auth")}>
-      <div className={cn("rounded-2xl p-6", glassInteractive)}>
-        <h1 className={cn("text-2xl font-semibold tracking-tight sm:text-3xl", textGradientHero)}>
-          {d["login.updatePasswordTitle"]}
-        </h1>
-        <p className="mt-2 text-sm text-slate-400">{d["login.updatePasswordSubtitle"]}</p>
-        <div className="mt-6">
-          <UpdatePasswordForm email={user.email ?? null} />
+    <SitePageChrome>
+      <SitePageHeader
+        initialSignedInLabel={authSnapshot.signedIn ? authSnapshot.label : null}
+      />
+      <SitePageMain width="auth">
+        <div className={cn(pageHeroPanel, pageContentSection, "mt-0 p-6 sm:p-8")}>
+          <h1 className={pageTitle}>{d["login.updatePasswordTitle"]}</h1>
+          <p className={cn(pageSubtitle, "mt-2")}>{d["login.updatePasswordSubtitle"]}</p>
+          <div className="mt-6">
+            <UpdatePasswordForm email={user.email ?? null} />
+          </div>
+          <p className="mt-6 text-center text-sm sm:text-base">
+            <Link className={pageBackLink} href="/login">
+              ← {d["nav.login"]}
+            </Link>
+          </p>
         </div>
-        <p className="mt-6 text-center text-sm">
-          <Link className="text-violet-300 hover:text-violet-200" href="/login">
-            ← {d["nav.login"]}
-          </Link>
-        </p>
-      </div>
-    </main>
+      </SitePageMain>
+    </SitePageChrome>
   );
 }

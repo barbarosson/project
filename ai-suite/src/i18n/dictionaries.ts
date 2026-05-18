@@ -256,29 +256,43 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.monthly.starter.price": "$7.99",
     "pricing.monthly.starter.credits": "500 credits / month",
     "pricing.monthly.starter.desc": "Entry monthly volume for individuals.",
+    "pricing.monthly.starter.detail":
+      "500 credits refilled every month\nFast AI (1 credit) or Pro AI (25 credits) per run\nAll micro-tools + AI Concierge included\nRenews monthly — cancel anytime",
     "pricing.monthly.growth.name": "Growth",
     "pricing.monthly.growth.price": "$9.99",
     "pricing.monthly.growth.credits": "1,000 credits / month",
     "pricing.monthly.growth.desc": "Best for steady daily use.",
+    "pricing.monthly.growth.detail":
+      "1,000 credits refilled every month\nIdeal for daily emails, DMs & workflows\nFast AI (1) or Pro AI (25) — cost always on the button\nRenews monthly — cancel anytime",
     "pricing.monthly.scale.name": "Scale",
     "pricing.monthly.scale.price": "$19.99",
     "pricing.monthly.scale.credits": "5,000 credits / month",
     "pricing.monthly.scale.desc": "Heavy usage, automation, and high monthly volume.",
+    "pricing.monthly.scale.detail":
+      "5,000 credits refilled every month\nBuilt for teams, automation & high volume\nFast, Pro & Genius AI when your balance allows\nBest tier for power users",
     "pricing.yearly.sectionTitle": "Annual bundles",
     "pricing.yearly.sectionLead":
       "Same three tiers as monthly, billed once per year. Yearly allowance: 6,000 / 12,000 / 60,000 credits (equivalent to 500 / 1,000 / 5,000 per month).",
     "pricing.yearly.starter.price": "$79 / year",
     "pricing.yearly.starter.credits": "6,000 credits / year",
     "pricing.yearly.starter.desc": "Matches Starter monthly volume with a lower effective monthly rate.",
+    "pricing.yearly.starter.detail":
+      "6,000 credits per year (500/month equivalent)\nSame tools & AI tiers as Starter monthly\n~17% cheaper than 12 monthly payments\nOne upfront payment — use all year",
     "pricing.yearly.starter.savings": "~17% less than paying monthly for 12 months",
     "pricing.yearly.growth.price": "$99 / year",
     "pricing.yearly.growth.credits": "12,000 credits / year",
     "pricing.yearly.growth.desc": "Matches Growth monthly volume — best for teams that commit annually.",
+    "pricing.yearly.growth.detail":
+      "12,000 credits per year\nSame features as Growth monthly\n~17% savings vs paying month-by-month\nGreat when you commit for the year",
     "pricing.yearly.growth.savings": "~17% less than paying monthly for 12 months",
     "pricing.yearly.scale.price": "$199 / year",
     "pricing.yearly.scale.credits": "60,000 credits / year",
     "pricing.yearly.scale.desc": "Matches Scale monthly volume — best value when you pay yearly upfront.",
+    "pricing.yearly.scale.detail":
+      "60,000 credits per year\nMaximum yearly pool for heavy throughput\n~17% off vs 12× Scale monthly\nBest value for agencies & teams",
     "pricing.yearly.scale.savings": "~17% less than paying monthly for 12 months",
+    "pricing.pack.detailModalTitle": "{tier} — what's included",
+    "pricing.pack.infoButtonAria": "Package details for {tier}",
     "pricing.paygo.sectionTitle": "Pay-as-you-go packs",
     "pricing.paygo.sectionLead":
       "One-time top-ups—no subscription. Larger packs unlock Standard and Premium model tiers.",
@@ -300,18 +314,15 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.tier.budgetPrice": "$1",
     "pricing.tier.standardPrice": "$1.49",
     "pricing.tier.premiumPrice": "$1.99",
-    "pricing.tier.budgetSummary":
-      "Economy models & GPT‑4o mini: 0.2 credits per 100 characters (rounded up).",
-    "pricing.tier.standardSummary":
-      "Standard catalog: 3 credits per 100 characters (rounded up).",
-    "pricing.tier.premiumSummary":
-      "Premium catalog: 5 credits per 100 characters (rounded up).",
+    "pricing.tier.budgetSummary": "One-time · Fast AI (1 credit per run)",
+    "pricing.tier.standardSummary": "One-time · Fast + Pro AI (up to 25 credits)",
+    "pricing.tier.premiumSummary": "One-time · Fast, Pro & Genius AI",
     "pricing.tier.budgetDesc":
-      "Economy-band models plus GPT‑4o mini: ceil(characters ÷ 100) × 0.2 credits. Example: 250 characters → 0.6 credits; 501 → 1.2 credits.",
+      "$1 · 10 credits added instantly\nFast AI only — 1 credit per message\nQuick fixes & short polish\nNo subscription",
     "pricing.tier.standardDesc":
-      "$1.49 band models: ceil(characters ÷ 100) × 3 credits. Example: 800 characters → 24 credits. Flagship models require a Premium pack.",
+      "$1.49 · 25 credits added instantly\nFast AI (1) or Pro AI (25) per run\nImportant emails & high-stakes copy\nNo subscription",
     "pricing.tier.premiumDesc":
-      "Full flagship catalog: ceil(characters ÷ 100) × 5 credits. Example: 1,000 characters → 50 credits.",
+      "$1.99 · 50 credits added instantly\nUnlocks Fast, Pro & Genius AI\nBest $/credit for frequent users\nNo subscription",
     "pricing.usageGuide.sectionTitle": "How credits work (each generation)",
     "pricing.usageGuide.intro":
       "We bill in 100-character blocks (rounded up). Your pasted text plus any tool context counts toward the length.",
@@ -513,6 +524,9 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.useCaseStudent": "Student / academic",
     "profile.useCaseAgency": "Agency / client work",
     "profile.useCaseOther": "Other",
+    "profile.defaultAiModel": "Default AI version",
+    "profile.defaultAiModelHint":
+      "Pre-selected when you open a tool. You can still change it per question; your last choice is remembered on this device.",
     "profile.notes": "Anything else we should know? (optional)",
     "profile.notesPlaceholder": "Context, goals, languages you write in…",
     "profile.marketingOptIn": "Email me occasionally about new tools and tips (optional).",
@@ -1087,6 +1101,9 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.useCaseStudent": "Estudiante / académico",
     "profile.useCaseAgency": "Agencia / clientes",
     "profile.useCaseOther": "Otro",
+    "profile.defaultAiModel": "Versión de IA predeterminada",
+    "profile.defaultAiModelHint":
+      "Se preselecciona al abrir una herramienta. Puedes cambiarla en cada pregunta; tu última elección se guarda en este dispositivo.",
     "profile.notes": "¿Algo más que debamos saber? (opcional)",
     "profile.notesPlaceholder": "Contexto, objetivos, idiomas…",
     "profile.marketingOptIn": "Envíame correos ocasionales sobre novedades (opcional).",
@@ -1653,6 +1670,9 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.useCaseStudent": "Étudiant / académique",
     "profile.useCaseAgency": "Agence / clients",
     "profile.useCaseOther": "Autre",
+    "profile.defaultAiModel": "Version IA par défaut",
+    "profile.defaultAiModelHint":
+      "Présélectionnée à l’ouverture d’un outil. Vous pouvez la changer par question ; votre dernier choix est mémorisé sur cet appareil.",
     "profile.notes": "Autre chose à savoir ? (optionnel)",
     "profile.notesPlaceholder": "Contexte, objectifs, langues…",
     "profile.marketingOptIn": "M’envoyer parfois des nouveautés par email (optionnel).",
@@ -2220,6 +2240,9 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.useCaseStudent": "Student / akademisch",
     "profile.useCaseAgency": "Agentur / Kunden",
     "profile.useCaseOther": "Sonstiges",
+    "profile.defaultAiModel": "Standard-KI-Version",
+    "profile.defaultAiModelHint":
+      "Wird beim Öffnen eines Tools vorausgewählt. Pro Frage änderbar; die letzte Wahl wird auf diesem Gerät gespeichert.",
     "profile.notes": "Noch etwas Wichtiges? (optional)",
     "profile.notesPlaceholder": "Kontext, Ziele, Sprachen…",
     "profile.marketingOptIn": "Gelegentlich Neuigkeiten per E‑Mail (optional).",
@@ -2753,6 +2776,9 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.useCaseStudent": "学生 / 学术",
     "profile.useCaseAgency": "代理 / 客户服务",
     "profile.useCaseOther": "其他",
+    "profile.defaultAiModel": "默认 AI 版本",
+    "profile.defaultAiModelHint":
+      "打开工具时预选。每道题仍可更改；上次选择会保存在本设备。",
     "profile.notes": "其他需要说明的信息（可选）",
     "profile.notesPlaceholder": "背景、目标、常用语言等…",
     "profile.marketingOptIn": "偶尔通过邮件接收新功能与技巧（可选）。",
@@ -3045,29 +3071,43 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.monthly.starter.price": "$7.99",
     "pricing.monthly.starter.credits": "Ayda 500 kontör",
     "pricing.monthly.starter.desc": "Bireysel hafif kullanım.",
+    "pricing.monthly.starter.detail":
+      "Her ay 500 kontör yenilenir\nFast AI (1 kontör) veya Pro AI (25 kontör) — üretim başına\nTüm mikro araçlar + AI Concierge dahil\nAylık yenilenir — istediğin zaman iptal",
     "pricing.monthly.growth.name": "Büyüme",
     "pricing.monthly.growth.price": "$9.99",
     "pricing.monthly.growth.credits": "Ayda 1.000 kontör",
     "pricing.monthly.growth.desc": "Düzenli günlük kullanım.",
+    "pricing.monthly.growth.detail":
+      "Her ay 1.000 kontör yenilenir\nGünlük e-posta, DM ve iş akışları için ideal\nFast AI (1) veya Pro AI (25) — maliyet her zaman butonda\nAylık yenilenir — istediğin zaman iptal",
     "pricing.monthly.scale.name": "Ölçek",
     "pricing.monthly.scale.price": "$19.99",
     "pricing.monthly.scale.credits": "Ayda 5.000 kontör",
     "pricing.monthly.scale.desc": "Yoğun kullanım, otomasyon ve yüksek aylık hacim.",
+    "pricing.monthly.scale.detail":
+      "Her ay 5.000 kontör yenilenir\nEkipler, otomasyon ve yüksek hacim için\nFast, Pro ve Genius AI (bakiye yeterliyse)\nGüç kullanıcıları için en yüksek kademe",
     "pricing.yearly.sectionTitle": "Yıllık paketler",
     "pricing.yearly.sectionLead":
       "Aylık üç kademeyle aynı; yılda bir kez faturalanır. Yıllık kontör toplamı: 6.000 / 12.000 / 60.000 (ayda 500 / 1.000 / 5.000 ile eşdeğer).",
     "pricing.yearly.starter.price": "$79 / yıl",
     "pricing.yearly.starter.credits": "Yılda 6.000 kontör",
     "pricing.yearly.starter.desc": "Starter aylıkla aynı hacim; efektif aylık maliyet daha düşük.",
+    "pricing.yearly.starter.detail":
+      "Yılda 6.000 kontör (ayda 500 eşdeğeri)\nBaşlangıç aylık ile aynı araçlar ve AI kademeleri\n12 aylık ödemeye göre ~%17 daha ucuz\nTek ödeme — tüm yıl kullan",
     "pricing.yearly.starter.savings": "12 ay boyunca aylık ödemeye göre ~%17 daha az",
     "pricing.yearly.growth.price": "$99 / yıl",
     "pricing.yearly.growth.credits": "Yılda 12.000 kontör",
     "pricing.yearly.growth.desc": "Growth aylıkla aynı — yıllık taahhüt için uygun.",
+    "pricing.yearly.growth.detail":
+      "Yılda 12.000 kontör\nBüyüme aylık ile aynı özellikler\nAy ay ödemeye göre ~%17 tasarruf\nYıllık taahhüt için ideal",
     "pricing.yearly.growth.savings": "12 ay boyunca aylık ödemeye göre ~%17 daha az",
     "pricing.yearly.scale.price": "$199 / yıl",
     "pricing.yearly.scale.credits": "Yılda 60.000 kontör",
     "pricing.yearly.scale.desc": "Scale aylık paketle aynı hacim — yüksek kullanımda yıllık ön ödeme için uygun.",
+    "pricing.yearly.scale.detail":
+      "Yılda 60.000 kontör\nYoğun kullanım için maksimum yıllık havuz\n12× Ölçek aylığa göre ~%17 indirim\nAjanslar ve ekipler için en iyi değer",
     "pricing.yearly.scale.savings": "12 ay boyunca aylık ödemeye göre ~%17 daha az",
+    "pricing.pack.detailModalTitle": "{tier} — pakette neler var",
+    "pricing.pack.infoButtonAria": "{tier} paket detayları",
     "pricing.paygo.sectionTitle": "Kullandıkça öde (paketler)",
     "pricing.paygo.sectionLead":
       "Tek seferlik kontör; abonelik yok. Daha büyük paketler Standart ve Premium modellere erişim sağlar.",
@@ -3089,18 +3129,15 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.tier.budgetPrice": "$1",
     "pricing.tier.standardPrice": "$1,49",
     "pricing.tier.premiumPrice": "$1,99",
-    "pricing.tier.budgetSummary":
-      "Ekonomi modelleri ve GPT‑4o mini: 100 karakter başına 0,2 kontör (yukarı yuvarlanır).",
-    "pricing.tier.standardSummary":
-      "Standart katalog: 100 karakter başına 3 kontör (yukarı yuvarlanır).",
-    "pricing.tier.premiumSummary":
-      "Premium katalog: 100 karakter başına 5 kontör (yukarı yuvarlanır).",
+    "pricing.tier.budgetSummary": "Tek seferlik · Fast AI (üretim başına 1 kontör)",
+    "pricing.tier.standardSummary": "Tek seferlik · Fast + Pro AI (en fazla 25 kontör)",
+    "pricing.tier.premiumSummary": "Tek seferlik · Fast, Pro ve Genius AI",
     "pricing.tier.budgetDesc":
-      "Ekonomi + GPT‑4o mini: ceil(karakter ÷ 100) × 0,2 kontör. Ör.: 250 karakter → 0,6; 501 → 1,2 kontör.",
+      "$1 · anında 10 kontör\nYalnızca Fast AI — mesaj başına 1 kontör\nHızlı düzeltmeler ve kısa parlatma\nAbonelik yok",
     "pricing.tier.standardDesc":
-      "$1,49 bandı: ceil(karakter ÷ 100) × 3 kontör. Ör.: 800 karakter → 24 kontör. Amiral gemisi için Premium paket gerekir.",
+      "$1,49 · anında 25 kontör\nFast AI (1) veya Pro AI (25) — üretim başına\nÖnemli e-postalar ve kritik metinler\nAbonelik yok",
     "pricing.tier.premiumDesc":
-      "Tam amiral gemisi katalog: ceil(karakter ÷ 100) × 5 kontör. Ör.: 1.000 karakter → 50 kontör.",
+      "$1,99 · anında 50 kontör\nFast, Pro ve Genius AI açılır\nSık kullananlar için en iyi kontör/$\nAbonelik yok",
     "pricing.usageGuide.sectionTitle": "Kontör nasıl harcanır (her üretim)",
     "pricing.usageGuide.intro":
       "100 karakterlik bloklar halinde ücret (yukarı yuvarlanır). Yapıştırdığın metin ve araç bağlamı uzunluğa dahil.",
@@ -3303,6 +3340,9 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.useCaseStudent": "Öğrenci / akademik",
     "profile.useCaseAgency": "Ajans / müşteri işi",
     "profile.useCaseOther": "Diğer",
+    "profile.defaultAiModel": "Varsayılan AI sürümü",
+    "profile.defaultAiModelHint":
+      "Bir aracı açtığınızda ön seçilir. Her soruda değiştirebilirsiniz; son seçiminiz bu cihazda hatırlanır.",
     "profile.notes": "Bilmemiz gereken başka bir şey? (isteğe bağlı)",
     "profile.notesPlaceholder": "Bağlam, hedefler, yazdığın diller…",
     "profile.marketingOptIn": "Ara sıra yeni araçlar ve ipuçları için e-posta gönder (isteğe bağlı).",

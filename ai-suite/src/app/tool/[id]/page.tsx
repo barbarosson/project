@@ -1,15 +1,16 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
-import { AuthStatus } from "@/components/auth-status";
-import { CreditsNav } from "@/components/credits-nav";
-import { IsendaiLogo } from "@/components/isendai-logo";
 import { ToolCard } from "@/components/ai-suite/tool-card";
 import { getToolDefinition, isToolName, type ToolName } from "@/components/ai-suite/tools";
-import { pageMain, siteContainer } from "@/lib/page-layout";
+import {
+  SitePageBackNav,
+  SitePageChrome,
+  SitePageHeader,
+  SitePageMain,
+} from "@/components/site-page-layout";
 import { SEO_CATEGORY_TITLE } from "@/lib/seo/category-public-title";
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
@@ -62,32 +63,14 @@ export default async function ToolDeepLinkPage({
   const authSnapshot = await readServerAuthSnapshot();
 
   return (
-    <div className="min-h-full">
-      <header className={siteContainer("flex flex-wrap items-center justify-between gap-3 py-4 sm:py-5")}>
-        <Link href="/" className="flex min-w-0 items-center">
-          <IsendaiLogo
-            withWordmark
-            className="shrink-0 gap-2 sm:gap-3"
-            iconClassName="size-10 shrink-0 sm:size-12"
-            wordmarkClassName="text-xl sm:text-2xl"
-          />
-        </Link>
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
-          <CreditsNav />
-          <AuthStatus
-            initialSignedInLabel={authSnapshot.signedIn ? authSnapshot.label : null}
-          />
-        </div>
-      </header>
-
-      <main className={pageMain("narrow", "pb-16")}>
-        <p className="mb-6">
-          <Link className="text-sm text-violet-300 hover:text-violet-200" href="/">
-            ← {d["nav.backToHome"]}
-          </Link>
-        </p>
+    <SitePageChrome>
+      <SitePageHeader
+        initialSignedInLabel={authSnapshot.signedIn ? authSnapshot.label : null}
+      />
+      <SitePageMain width="narrow" className="pb-16">
+        <SitePageBackNav>{d["nav.backToHome"]}</SitePageBackNav>
         <ToolCard tool={tool} initialText={initialText} />
-      </main>
-    </div>
+      </SitePageMain>
+    </SitePageChrome>
   );
 }

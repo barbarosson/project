@@ -6,14 +6,10 @@ import { toast } from "sonner";
 
 import type { ToolName, ToolPayload } from "./tools";
 import { getToolDefinition } from "./tools";
-import {
-  isModelId,
-  modelSalesTier,
-  normalizeUserModelId,
-  resolveConcreteModelId,
-  type ModelId,
-} from "@/models/models";
+import { modelSalesTier, resolveConcreteModelId, type ModelId } from "@/models/models";
+import { resolveToolModelPreference } from "@/lib/auth/default-ai-model";
 import { ModelSwitcher } from "@/components/model-switcher";
+import { useModel } from "@/models/model-provider";
 import { openPricingModal } from "@/components/pricing/pricing-modal";
 import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
 import { Button } from "@/components/ui/button";
@@ -62,23 +58,23 @@ export function ToolCard({
   initialText?: string;
 }) {
   const { t } = useI18n();
+  const { profileDefaultModel } = useModel();
   const [busy, setBusy] = React.useState(false);
 
   const def = getToolDefinition(tool);
   const modelStorageKey = `${def.storageKey}:model`;
-  const [model, setModel] = React.useState<ModelId>("fast-ai");
+  const [model, setModel] = React.useState<ModelId>(profileDefaultModel);
 
   React.useEffect(() => {
     queueMicrotask(() => {
       try {
         const raw = localStorage.getItem(modelStorageKey);
-        const normalized = raw ? normalizeUserModelId(raw) : "fast-ai";
-        setModel(isModelId(normalized) ? normalized : "fast-ai");
+        setModel(resolveToolModelPreference(raw, profileDefaultModel));
       } catch {
-        setModel("fast-ai");
+        setModel(profileDefaultModel);
       }
     });
-  }, [modelStorageKey]);
+  }, [modelStorageKey, profileDefaultModel]);
 
   function persistModel(next: ModelId) {
     setModel(next);

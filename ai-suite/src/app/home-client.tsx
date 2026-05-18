@@ -6,13 +6,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Minus, MoveRight, Plus, Sparkles } from "lucide-react";
 
 import { ToolCard } from "@/components/ai-suite/tool-card";
-import { IsendaiLogo } from "@/components/isendai-logo";
+import { SitePageChrome, SitePageHeader } from "@/components/site-page-layout";
 import { formatCreditsFromTenths } from "@/lib/credits-units";
 import { useI18n } from "@/i18n/i18n-provider";
 import { toolDescription, toolTitle } from "@/i18n/tool-i18n";
 import { ConciergeChat } from "@/components/concierge-chat";
-import { AuthStatus } from "@/components/auth-status";
-import { CreditsNav } from "@/components/credits-nav";
 import {
   TOOLS,
   type ToolCategory,
@@ -93,30 +91,12 @@ export function HomeClient({
   ];
 
   return (
-    <div className="min-h-full min-w-0 overflow-x-clip">
-      <header
-        className={siteContainer(
-          "flex flex-wrap items-start justify-between gap-3 py-4 sm:items-center sm:py-5"
-        )}
-      >
-        <div className="flex min-w-0 max-w-[min(100%,20rem)] flex-1 items-center sm:max-w-none">
-          <IsendaiLogo
-            withWordmark
-            className="min-w-0 max-w-full gap-1.5 sm:gap-2 md:gap-3"
-            iconClassName="size-9 shrink-0 sm:size-10 md:size-12 lg:size-14"
-            wordmarkClassName="truncate text-xl sm:text-2xl md:text-3xl lg:text-4xl"
-          />
-        </div>
-        <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-1.5 sm:w-auto sm:gap-2">
-          <CreditsNav />
-          <AuthStatus
-            className="shrink-0"
-            initialSignedInLabel={authSnapshot?.signedIn ? authSnapshot.label : null}
-          />
-        </div>
-      </header>
+    <SitePageChrome>
+      <SitePageHeader
+        initialSignedInLabel={authSnapshot?.signedIn ? authSnapshot.label : null}
+      />
 
-      <main className={siteContainer("pb-16")}>
+      <main className={siteContainer("min-w-0 overflow-x-clip pb-16")}>
         <section
           className={cn(
             "relative overflow-hidden rounded-2xl px-6 py-8 sm:px-10",
@@ -193,7 +173,7 @@ export function HomeClient({
 
         <section
           className={cn(
-            "relative mt-8 overflow-hidden rounded-3xl border border-violet-500/30 p-6 sm:p-8 lg:p-10",
+            "relative mt-8 min-w-0 overflow-hidden rounded-3xl border border-violet-500/30 p-4 sm:p-6 lg:p-10",
             "bg-gradient-to-br from-violet-950/50 via-slate-950/80 to-indigo-950/50",
             "shadow-[0_12px_56px_rgba(139,92,246,0.22),inset_0_1px_0_0_rgba(255,255,255,0.08)]",
             "backdrop-blur-xl"
@@ -224,7 +204,7 @@ export function HomeClient({
 
         <section
           className={cn(
-            "relative mt-8 overflow-hidden rounded-3xl border border-violet-500/30 p-6 sm:p-8 lg:p-10",
+            "relative mt-8 min-w-0 overflow-hidden rounded-3xl border border-violet-500/30 p-4 sm:p-6 lg:p-10",
             "bg-gradient-to-br from-violet-950/50 via-slate-950/80 to-indigo-950/50",
             "shadow-[0_12px_56px_rgba(139,92,246,0.22),inset_0_1px_0_0_rgba(255,255,255,0.08)]",
             "backdrop-blur-xl"
@@ -239,7 +219,7 @@ export function HomeClient({
             aria-hidden
           />
           <div className="relative min-w-0">
-            <p className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-violet-200 sm:text-sm">
+            <p className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-violet-200 sm:text-sm">
               <Sparkles className="size-3.5 shrink-0 text-fuchsia-300 sm:size-4" aria-hidden />
               {t("home.demo.before.label")} → {t("home.demo.after.label")}
             </p>
@@ -256,55 +236,50 @@ export function HomeClient({
             </p>
           </div>
 
-          <div className="relative mt-8 grid gap-5 lg:grid-cols-2 lg:gap-6">
+          <div className="relative mt-8 grid min-w-0 gap-5 lg:grid-cols-2 lg:gap-6">
             {demoExamples.map(({ tool, key }) => (
               <div
                 key={tool}
                 className={cn(
-                  "rounded-2xl border border-white/[0.1] bg-black/25 p-5 sm:p-6",
+                  "min-w-0 overflow-hidden rounded-2xl border border-white/[0.1] bg-black/25 p-4 sm:p-5 lg:p-6",
                   "shadow-lg backdrop-blur-md transition-all duration-300",
                   "hover:-translate-y-1 hover:border-violet-400/35 hover:shadow-[0_12px_40px_rgba(139,92,246,0.2)]"
                 )}
               >
                 <Link
                   href={`/?tool=${tool}`}
-                  className="group inline-flex max-w-full items-center gap-3 text-base font-semibold text-white sm:text-lg"
+                  className="group flex min-w-0 max-w-full items-center gap-2 sm:gap-3 text-base font-semibold text-white sm:text-lg"
                 >
                   <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl border border-violet-400/25 bg-gradient-to-br from-violet-500/20 to-fuchsia-500/10 text-lg shadow-inner sm:size-11">
                     <span aria-hidden="true">{getToolDefinition(tool).emoji}</span>
                   </span>
-                  <span className="truncate group-hover:text-violet-100">
+                  <span className="min-w-0 flex-1 truncate group-hover:text-violet-100">
                     {toolTitle(t, tool, getToolDefinition(tool).title)}
                   </span>
                   <ArrowRight className="size-5 shrink-0 text-fuchsia-300 transition-transform group-hover:translate-x-1" />
                 </Link>
 
-                <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
-                  <div className="rounded-xl border border-rose-400/35 bg-gradient-to-br from-rose-500/15 to-rose-950/30 p-4 shadow-[inset_0_1px_0_0_rgba(251,113,133,0.15)] sm:p-5">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-rose-300 sm:text-sm">
+                <div className="mt-4 grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] lg:items-stretch">
+                  <div className="min-w-0 rounded-xl border border-rose-400/35 bg-gradient-to-br from-rose-500/15 to-rose-950/30 p-3 shadow-[inset_0_1px_0_0_rgba(251,113,133,0.15)] sm:p-4 lg:p-5">
+                    <p className="text-xs font-bold uppercase tracking-wide text-rose-300 sm:tracking-[0.15em] sm:text-sm">
                       {t("home.demo.before.label")}
                     </p>
-                    <p className="mt-2.5 whitespace-pre-wrap text-base leading-relaxed text-slate-100 sm:text-[17px]">
+                    <p className="mt-2.5 break-words text-sm leading-relaxed text-slate-100 sm:text-base lg:text-[17px]">
                       {t(`home.demo.examples.${key}.before`)}
                     </p>
                   </div>
-                  <div className="hidden items-center justify-center lg:flex">
-                    <span className="inline-flex size-12 animate-pulse items-center justify-center rounded-full border border-violet-400/40 bg-gradient-to-br from-indigo-500/30 via-violet-500/25 to-fuchsia-500/20 text-violet-100 shadow-[0_0_24px_rgba(139,92,246,0.35)]">
-                      <MoveRight className="size-5" strokeWidth={2} />
+                  <div className="flex min-w-0 items-center justify-center py-0.5 lg:py-0">
+                    <span className="inline-flex size-10 shrink-0 animate-pulse items-center justify-center rounded-full border border-violet-400/40 bg-gradient-to-br from-indigo-500/30 via-violet-500/25 to-fuchsia-500/20 text-violet-100 shadow-[0_0_24px_rgba(139,92,246,0.35)] sm:size-11 lg:size-12">
+                      <MoveRight className="size-4 sm:size-5" strokeWidth={2} aria-hidden />
                     </span>
                   </div>
-                  <div className="rounded-xl border border-emerald-400/35 bg-gradient-to-br from-emerald-500/15 to-emerald-950/30 p-4 shadow-[inset_0_1px_0_0_rgba(52,211,153,0.15)] sm:p-5">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300 sm:text-sm">
+                  <div className="min-w-0 rounded-xl border border-emerald-400/35 bg-gradient-to-br from-emerald-500/15 to-emerald-950/30 p-3 shadow-[inset_0_1px_0_0_rgba(52,211,153,0.15)] sm:p-4 lg:p-5">
+                    <p className="text-xs font-bold uppercase tracking-wide text-emerald-300 sm:tracking-[0.15em] sm:text-sm">
                       {t("home.demo.after.label")}
                     </p>
-                    <p className="mt-2.5 whitespace-pre-wrap text-base leading-relaxed text-slate-50 sm:text-[17px]">
+                    <p className="mt-2.5 break-words text-sm leading-relaxed text-slate-50 sm:text-base lg:text-[17px]">
                       {t(`home.demo.examples.${key}.after`)}
                     </p>
-                  </div>
-                  <div className="flex items-center justify-center lg:hidden">
-                    <span className="inline-flex size-11 animate-pulse items-center justify-center rounded-full border border-violet-400/40 bg-gradient-to-br from-indigo-500/30 to-fuchsia-500/20 text-violet-100">
-                      <MoveRight className="size-5" strokeWidth={2} />
-                    </span>
                   </div>
                 </div>
               </div>
@@ -314,7 +289,7 @@ export function HomeClient({
 
         <section
           className={cn(
-            "relative mt-8 overflow-hidden rounded-3xl border border-violet-500/30 p-6 sm:p-8 lg:p-10",
+            "relative mt-8 min-w-0 overflow-hidden rounded-3xl border border-violet-500/30 p-4 sm:p-6 lg:p-10",
             "bg-gradient-to-br from-violet-950/50 via-slate-950/80 to-indigo-950/50",
             "shadow-[0_12px_56px_rgba(139,92,246,0.22),inset_0_1px_0_0_rgba(255,255,255,0.08)]",
             "backdrop-blur-xl"
@@ -342,7 +317,7 @@ export function HomeClient({
             </p>
           </div>
 
-          <div className="relative mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+          <div className="relative mt-8 grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
             {(
               [
                 {
@@ -374,7 +349,7 @@ export function HomeClient({
               <div
                 key={n}
                 className={cn(
-                  "rounded-2xl border bg-gradient-to-br p-5 sm:p-6",
+                  "min-w-0 rounded-2xl border bg-gradient-to-br p-5 sm:p-6",
                   "shadow-lg backdrop-blur-md transition-all duration-300",
                   "hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(139,92,246,0.2)]",
                   border,
@@ -393,7 +368,7 @@ export function HomeClient({
                 <p className="mt-4 text-base font-bold text-white sm:text-lg">
                   {t(`how.detailed.${n}.title`)}
                 </p>
-                <p className="mt-2.5 text-sm leading-relaxed text-slate-200 sm:text-base">
+                <p className="mt-2.5 break-words text-sm leading-relaxed text-slate-200 sm:text-base">
                   {t(`how.detailed.${n}.body`)}
                 </p>
               </div>
@@ -609,7 +584,7 @@ export function HomeClient({
           </div>
         </div>
       </footer>
-    </div>
+    </SitePageChrome>
   );
 }
 
