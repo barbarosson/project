@@ -1,9 +1,9 @@
-# Model B: two Netlify sites, same repo — see docs/deploy-model-b.md
-# - Production site → branch `main` → isendai.com
-# - Staging site    → branch `staging` → https://isendai.netlify.app (no isendai.com)
+# Two Netlify sites, same repo — see docs/deploy-model-b.md
+# Set Base directory in the Netlify UI (netlify.toml must NOT pin base here):
+#   - isendai production / staging → Base directory: ai-suite
+#   - moduluscursor (modulusaas.com) → Base directory: .  (repo root)
 
 [build]
-base = "ai-suite"
 command = "npm run build"
 publish = ".next"
 

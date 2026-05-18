@@ -7,7 +7,7 @@ Bu proje **aynı GitHub reposunu** iki ayrı Netlify sitesine bağlar:
 | **Production** (mevcut — Adım 1 tamam) | `main` | `https://isendai.com` | Canlı müşteri trafiği |
 | **Staging** (yeni site — Adım 2) | `staging` | `https://isendai.netlify.app` | Test ve onay |
 
-Her iki site de repo kökündeki `netlify.toml` dosyasını kullanır (`base = "ai-suite"`).
+Her iki site de repo kökündeki `netlify.toml` dosyasını kullanır. **Base directory yalnızca Netlify UI’da** ayarlanır (isendai: `ai-suite`, Modulus: `.`).
 
 ---
 
