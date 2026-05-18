@@ -408,7 +408,8 @@
 
 /* Marketing header nav links - force 24px bold */
 .nav-links-24bold a span,
-.nav-links-24bold span {
+.nav-links-24bold button span,
+.nav-links-24bold > button {
   font-size: 24px !important;
   font-weight: 700 !important;
 }

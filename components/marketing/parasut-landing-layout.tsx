@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { ModulusHeroSection } from './parasut-hero-section'
 import { ModulusFeaturesSection } from './parasut-features-section'
@@ -15,20 +14,12 @@ import { LoadingSpinner } from '@/components/loading-spinner'
 import { BannerDisplay } from '@/components/banner-display'
 
 export function ModulusLandingLayout() {
-  const router = useRouter()
   const { user, loading: authLoading } = useAuth()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   useEffect(() => {
     setIsAuthenticated(!!user)
   }, [user])
-
-  // Giriş yapmış kullanıcı ana sayfadaysa dashboard'a yönlendir (dashboard'ın açılmasını sağla)
-  useEffect(() => {
-    if (!authLoading && user) {
-      router.replace('/dashboard')
-    }
-  }, [authLoading, user, router])
 
   if (authLoading) {
     return (

@@ -52,13 +52,13 @@ copy .env.example .env.local
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3001` (isendAI dev uses port **3001** so **3000** stays free for Modulus / modulusaas at the repo root).
 
 ### Google (and other OAuth) sign-in
 
 1. **Supabase** → Authentication → Providers → **Google**: enable, paste **Client ID** and **Client secret** from [Google Cloud Console](https://console.cloud.google.com/apis/credentials) (OAuth 2.0 Web client).
 2. In Google Cloud → **Authorized redirect URIs**, add Supabase’s redirect URL exactly as shown in the Supabase Google provider panel (looks like `https://<project-ref>.supabase.co/auth/v1/callback`).
-3. **Supabase** → Authentication → **URL Configuration**: set **Site URL** to your production origin; under **Redirect URLs** allow `https://your-domain/**/auth/callback` (and `http://localhost:3000/**` for local dev).
+3. **Supabase** → Authentication → **URL Configuration**: set **Site URL** to your production origin; under **Redirect URLs** allow `https://your-domain/**/auth/callback` (and `http://localhost:3001/**` (and optionally `http://localhost:3000/**`) for local dev).
 4. Set **`NEXT_PUBLIC_SITE_URL`** on the host (e.g. Netlify) to the same public HTTPS origin so `/login` builds the correct `redirectTo` for OAuth.
 
 After Google returns to `/auth/callback`, the app exchanges the `code` for a session and redirects to `next` (default `/`).
