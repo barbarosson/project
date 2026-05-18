@@ -1,3 +1,7 @@
+# Model B: two Netlify sites, same repo — see docs/deploy-model-b.md
+# - Production site → branch `main` → isendai.com
+# - Staging site    → branch `staging` → https://isendai.netlify.app (no isendai.com)
+
 [build]
 base = "ai-suite"
 command = "npm run build"

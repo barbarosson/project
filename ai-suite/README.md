@@ -8,6 +8,17 @@ Production-ready AI tools suite with:
 - Multiple AI providers (OpenAI / Anthropic / Groq / DeepSeek / Google)
 - **Lemon Squeezy** checkout + webhooks for packs (see `src/app/api/webhook/route.ts` and env vars)
 
+## Deploy (Model B — staging + production)
+
+Two Netlify sites, same repo:
+
+| Branch | Netlify site | URL |
+|--------|--------------|-----|
+| `main` | Production | `https://isendai.com` |
+| `staging` | Staging (second site) | `https://isendai.netlify.app` |
+
+Full setup: [`docs/deploy-model-b.md`](../docs/deploy-model-b.md). Env templates: `.env.production.example`, `.env.staging.example`.
+
 ## Supabase database
 
 Apply the bundled migration so RPCs and tables exist:
@@ -31,9 +42,9 @@ copy .env.example .env.local
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY` (server-only)
 - `OPENAI_API_KEY` (or another provider you enable)
-- **`NEXT_PUBLIC_SITE_URL`** — use your real deploy URL (e.g. `https://isendai.netlify.app`). Supabase puts this into password-reset and sign-up email links when set at **build** time; without it, links follow whatever origin you used when you clicked “Forgot password” (often `http://localhost:3000`).
+- **`NEXT_PUBLIC_SITE_URL`** — production: `https://isendai.com`; staging: `https://isendai.netlify.app`. Set **`NEXT_PUBLIC_DEPLOY_ENV`** to `production` or `staging` (see `.env.*.example`).
 
-**Supabase Dashboard → Authentication → URL Configuration:** set **Site URL** to the same production URL and add **`https://isendai.netlify.app/**`** (or your domain) under **Redirect URLs** so recovery links are accepted.
+**Supabase Dashboard → Authentication → URL Configuration:** **Site URL** = `https://isendai.com`; **Redirect URLs** include `https://isendai.com/**`, `https://isendai.netlify.app/**`, and `http://localhost:3000/**`.
 
 3. Run:
 

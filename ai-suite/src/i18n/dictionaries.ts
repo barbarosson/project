@@ -214,6 +214,10 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.aiFailed": "Could not get a reply. Please try again.",
     "concierge.errors.server": "Server error. Please try again shortly.",
 
+    "deploy.stagingBanner":
+      "Staging environment — not live for customers. Test here before merging to main.",
+    "deploy.stagingOpenProduction": "Open production (isendai.com)",
+
     "nav.backToHome": "Back to Home",
     "nav.pricing": "Pricing",
     "nav.privacy": "Privacy",
@@ -832,6 +836,10 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.aiFailed": "No se pudo obtener respuesta. Inténtalo de nuevo.",
     "concierge.errors.server": "Error del servidor. Inténtalo en un momento.",
 
+    "deploy.stagingBanner":
+      "Entorno de pruebas — no es el sitio en vivo. Prueba aquí antes de fusionar a main.",
+    "deploy.stagingOpenProduction": "Abrir producción (isendai.com)",
+
     "nav.backToHome": "Volver al inicio",
     "nav.pricing": "Precios",
     "nav.privacy": "Privacidad",
@@ -1431,6 +1439,10 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.missingProvider": "Fournisseur IA non configuré.",
     "concierge.errors.aiFailed": "Impossible d’obtenir une réponse. Réessaie.",
     "concierge.errors.server": "Erreur serveur. Réessaie dans un instant.",
+
+    "deploy.stagingBanner":
+      "Environnement de staging — pas le site en production. Teste ici avant de fusionner vers main.",
+    "deploy.stagingOpenProduction": "Ouvrir la production (isendai.com)",
 
     "nav.backToHome": "Retour à l’accueil",
     "nav.pricing": "Tarifs",
@@ -2033,6 +2045,10 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.aiFailed": "Keine Antwort erhalten. Bitte erneut versuchen.",
     "concierge.errors.server": "Serverfehler. Bitte kurz warten.",
 
+    "deploy.stagingBanner":
+      "Staging-Umgebung — nicht die Live-Seite. Hier testen, dann in main mergen.",
+    "deploy.stagingOpenProduction": "Produktion öffnen (isendai.com)",
+
     "nav.backToHome": "Zur Startseite",
     "nav.pricing": "Preise",
     "nav.privacy": "Datenschutz",
@@ -2614,6 +2630,9 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.aiFailed": "无法获取回复，请重试。",
     "concierge.errors.server": "服务器错误，请稍后重试。",
 
+    "deploy.stagingBanner": "预发布环境 — 非正式站点。合并到 main 前请在此测试。",
+    "deploy.stagingOpenProduction": "打开正式站 (isendai.com)",
+
     "nav.backToHome": "返回首页",
     "nav.pricing": "价格与套餐",
     "nav.privacy": "隐私",
@@ -3182,6 +3201,10 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.missingProvider": "Yapay zeka sağlayıcısı yapılandırılmamış.",
     "concierge.errors.aiFailed": "Yanıt alınamadı. Lütfen tekrar dene.",
     "concierge.errors.server": "Sunucu hatası. Kısa süre sonra tekrar dene.",
+
+    "deploy.stagingBanner":
+      "Staging ortamı — müşterilere açık canlı site değil. main’e almadan önce burada test edin.",
+    "deploy.stagingOpenProduction": "Canlı siteyi aç (isendai.com)",
 
     "nav.backToHome": "Ana sayfaya dön",
     "nav.pricing": "Paketler",

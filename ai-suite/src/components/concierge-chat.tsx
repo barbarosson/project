@@ -1,13 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2, SendHorizonal } from "lucide-react";
 
 import { sectionPanelViolet } from "@/lib/premium-ui";
 
 import type { ToolName } from "@/components/ai-suite/tools";
-import { getToolDefinition } from "@/components/ai-suite/tools";
+import { getToolDefinition, isToolName } from "@/components/ai-suite/tools";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -23,7 +22,20 @@ type ApiResponse = { reply: string; suggested_tools: ToolName[] };
 
 const WELCOME_TOKEN = "__ISENDAI_WELCOME__";
 
-function renderMarkdownLinks(text: string) {
+function toolFromInternalHref(href: string): ToolName | null {
+  try {
+    const u = new URL(href, "https://isendai.local");
+    const tool = u.searchParams.get("tool");
+    return isToolName(tool) ? tool : null;
+  } catch {
+    return null;
+  }
+}
+
+function renderMarkdownLinks(
+  text: string,
+  onOpenTool?: (tool: ToolName) => void
+) {
   const parts: React.ReactNode[] = [];
   const re = /\[([^\]]+)\]\(([^)]+)\)/g;
   let lastIndex = 0;
@@ -35,7 +47,19 @@ function renderMarkdownLinks(text: string) {
     if (start > lastIndex) parts.push(text.slice(lastIndex, start));
 
     const safeHref = typeof href === "string" && href.startsWith("/") ? href : null;
-    if (safeHref) {
+    const toolId = safeHref ? toolFromInternalHref(safeHref) : null;
+    if (safeHref && toolId && onOpenTool) {
+      parts.push(
+        <button
+          key={`${start}:${safeHref}`}
+          type="button"
+          onClick={() => onOpenTool(toolId)}
+          className="font-medium text-primary underline underline-offset-4 hover:text-primary/90"
+        >
+          {label}
+        </button>
+      );
+    } else if (safeHref) {
       parts.push(
         <a
           key={`${start}:${safeHref}`}
@@ -55,8 +79,14 @@ function renderMarkdownLinks(text: string) {
   return parts;
 }
 
-export function ConciergeChat({ className }: { className?: string }) {
-  const router = useRouter();
+export function ConciergeChat({
+  className,
+  onOpenTool,
+}: {
+  className?: string;
+  /** Open the workspace tool panel (and optional draft prefill from the last user message). */
+  onOpenTool?: (tool: ToolName, opts?: { draftText?: string; scroll?: boolean }) => void;
+}) {
   const { t, locale } = useI18n();
 
   const [messages, setMessages] = React.useState<UiMsg[]>(() => [
@@ -70,6 +100,14 @@ export function ConciergeChat({ className }: { className?: string }) {
   const [input, setInput] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const lastUserDraftRef = React.useRef("");
+
+  function openSuggestedTool(tool: ToolName, scroll = true) {
+    onOpenTool?.(tool, {
+      draftText: lastUserDraftRef.current || undefined,
+      scroll,
+    });
+  }
 
   async function send() {
     const text = input.trim();
@@ -78,6 +116,7 @@ export function ConciergeChat({ className }: { className?: string }) {
     setSuggested([]);
     setBusy(true);
 
+    lastUserDraftRef.current = text;
     const userMsg: UiMsg = { id: crypto.randomUUID(), role: "user", content: text };
     const nextMsgs = [...messages, userMsg];
     setMessages(nextMsgs);
@@ -113,6 +152,9 @@ export function ConciergeChat({ className }: { className?: string }) {
         ? (json.suggested_tools as ToolName[])
         : [];
       setSuggested(suggestedTools);
+      if (suggestedTools.length > 0 && onOpenTool) {
+        openSuggestedTool(suggestedTools[0], false);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : t("concierge.errors.chatFailed"));
     } finally {
@@ -156,7 +198,10 @@ export function ConciergeChat({ className }: { className?: string }) {
             >
               <p className="whitespace-pre-wrap break-words">
                 {m.role === "assistant"
-                  ? renderMarkdownLinks(m.content === WELCOME_TOKEN ? t("concierge.welcome") : m.content)
+                  ? renderMarkdownLinks(
+                      m.content === WELCOME_TOKEN ? t("concierge.welcome") : m.content,
+                      onOpenTool ? (tool) => openSuggestedTool(tool, true) : undefined
+                    )
                   : m.content}
               </p>
             </div>
@@ -191,7 +236,7 @@ export function ConciergeChat({ className }: { className?: string }) {
                 variant="outline"
                 size="sm"
                 className="max-w-full shrink"
-                onClick={() => router.replace(`/?tool=${tool}`)}
+                onClick={() => openSuggestedTool(tool, true)}
               >
                 <span className="mr-1 shrink-0" aria-hidden="true">
                   {getToolDefinition(tool).emoji}

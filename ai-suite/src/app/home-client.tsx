@@ -71,6 +71,40 @@ export function HomeClient({
       ? selectedFromUrl
       : defaultTool
   );
+  const [toolPrefill, setToolPrefill] = React.useState<string | undefined>();
+  const [toolPrefillKey, setToolPrefillKey] = React.useState(0);
+
+  React.useEffect(() => {
+    const fromUrl = searchParams.get("tool") as ToolName | null;
+    if (fromUrl && TOOLS.some((x) => x.tool === fromUrl) && fromUrl !== selected) {
+      setSelected(fromUrl);
+    }
+  }, [searchParams, selected]);
+
+  function selectTool(
+    tool: ToolName,
+    opts?: { draftText?: string; scroll?: boolean; updateUrl?: boolean }
+  ) {
+    setSelected(tool);
+    if (opts?.draftText?.trim()) {
+      setToolPrefill(opts.draftText.trim());
+      setToolPrefillKey((k) => k + 1);
+    }
+    if (opts?.updateUrl !== false) {
+      router.replace(`/?tool=${tool}`, { scroll: false });
+    }
+    if (opts?.scroll) {
+      document.getElementById("home-tool-workspace")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }
+
+  function selectToolFromSidebar(tool: ToolName) {
+    setToolPrefill(undefined);
+    selectTool(tool, { scroll: false });
+  }
   const [expanded, setExpanded] = React.useState<Record<ToolCategory, boolean>>({
     "work-career": false,
     "crisis-money": false,
@@ -111,13 +145,13 @@ export function HomeClient({
           </p>
           <h1
             className={cn(
-              "mt-4 text-balance text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl",
+              "mt-4 w-full text-balance text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl",
               "bg-gradient-to-r from-white via-violet-100 to-cyan-100 bg-clip-text text-transparent"
             )}
           >
             {t("hero.title")}
           </h1>
-          <p className="mt-4 max-w-3xl text-balance text-base font-medium leading-relaxed text-slate-200 sm:text-lg">
+          <p className="mt-4 w-full min-w-0 text-pretty text-base font-medium leading-relaxed text-slate-200 sm:text-lg">
             {t("hero.subtitle")}
           </p>
           <PromoCampaignBanner className="mt-6" showPricingLink />
@@ -189,16 +223,16 @@ export function HomeClient({
             className="pointer-events-none absolute -bottom-12 -right-12 size-40 rounded-full bg-fuchsia-500/15 blur-3xl"
             aria-hidden
           />
-          <div className="relative min-w-0">
+          <div className="relative w-full min-w-0">
             <h2
               className={cn(
-                "text-pretty text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl",
+                "w-full text-pretty text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl",
                 "bg-gradient-to-r from-white via-violet-100 to-cyan-100 bg-clip-text text-transparent"
               )}
             >
               {t("home.aiStack.title")}
             </h2>
-            <p className="mt-4 max-w-3xl text-base font-medium leading-relaxed text-slate-200 sm:text-lg lg:text-xl">
+            <p className="mt-4 w-full min-w-0 text-pretty text-base font-medium leading-relaxed text-slate-200 sm:text-lg lg:text-[1.125rem] lg:leading-relaxed xl:text-xl">
               {t("home.aiStack.body")}
             </p>
           </div>
@@ -220,20 +254,20 @@ export function HomeClient({
             className="pointer-events-none absolute -bottom-16 -left-16 size-48 rounded-full bg-cyan-500/15 blur-3xl"
             aria-hidden
           />
-          <div className="relative min-w-0">
+          <div className="relative w-full min-w-0">
             <p className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-violet-200 sm:text-sm">
               <Sparkles className="size-3.5 shrink-0 text-fuchsia-300 sm:size-4" aria-hidden />
               {t("home.demo.before.label")} → {t("home.demo.after.label")}
             </p>
             <h2
               className={cn(
-                "mt-4 text-pretty text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl",
+                "mt-4 w-full text-pretty text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl",
                 "bg-gradient-to-r from-white via-violet-100 to-cyan-100 bg-clip-text text-transparent"
               )}
             >
               {t("home.demo.title")}
             </h2>
-            <p className="mt-4 max-w-3xl text-base font-medium leading-relaxed text-slate-200 sm:text-lg lg:text-xl">
+            <p className="mt-4 w-full min-w-0 text-pretty text-base font-medium leading-relaxed text-slate-200 sm:text-lg lg:text-[1.125rem] lg:leading-relaxed xl:text-xl">
               {t("home.demo.subtitle")}
             </p>
           </div>
@@ -305,16 +339,16 @@ export function HomeClient({
             className="pointer-events-none absolute -bottom-10 right-0 size-44 rounded-full bg-cyan-500/15 blur-3xl"
             aria-hidden
           />
-          <div className="relative min-w-0">
+          <div className="relative w-full min-w-0">
             <h2
               className={cn(
-                "text-pretty text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl",
+                "w-full text-pretty text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl",
                 "bg-gradient-to-r from-white via-violet-100 to-cyan-100 bg-clip-text text-transparent"
               )}
             >
               {t("how.detailed.title")}
             </h2>
-            <p className="mt-4 max-w-3xl text-base font-medium leading-relaxed text-slate-200 sm:text-lg lg:text-xl">
+            <p className="mt-4 w-full min-w-0 text-pretty text-base font-medium leading-relaxed text-slate-200 sm:text-lg lg:text-[1.125rem] lg:leading-relaxed xl:text-xl">
               {t("how.detailed.subtitle")}
             </p>
           </div>
@@ -432,10 +466,7 @@ export function HomeClient({
                             key={x.tool}
                             type="button"
                             className={aiProductsNav.toolRow(isActive)}
-                            onClick={() => {
-                              setSelected(x.tool);
-                              router.replace(`/?tool=${x.tool}`);
-                            }}
+                            onClick={() => selectToolFromSidebar(x.tool)}
                           >
                             <span className="flex min-w-0 flex-1 items-center gap-3">
                               <span
@@ -486,8 +517,7 @@ export function HomeClient({
                         onClick={() => {
                           const first = TOOLS.find((x) => x.category === cat)?.tool;
                           if (!first) return;
-                          setSelected(first);
-                          router.replace(`/?tool=${first}`);
+                          selectToolFromSidebar(first);
                         }}
                       >
                         {t(`category.${cat}.label`)}
@@ -506,10 +536,7 @@ export function HomeClient({
                         key={x.tool}
                         type="button"
                         className={aiProductsNav.chip(isActive)}
-                        onClick={() => {
-                          setSelected(x.tool);
-                          router.replace(`/?tool=${x.tool}`);
-                        }}
+                        onClick={() => selectToolFromSidebar(x.tool)}
                       >
                         <span className="text-lg leading-none" aria-hidden="true">
                           {x.emoji}
@@ -528,8 +555,17 @@ export function HomeClient({
                 sectionPanelCyan,
                 "border-cyan-400/35 from-cyan-500/15 to-cyan-950/30"
               )}
+              onOpenTool={(tool, opts) =>
+                selectTool(tool, {
+                  draftText: opts?.draftText,
+                  scroll: opts?.scroll ?? true,
+                })
+              }
             />
-            <div className="flex flex-wrap items-start justify-between gap-4">
+            <div
+              id="home-tool-workspace"
+              className="flex flex-wrap items-start justify-between gap-4 scroll-mt-28"
+            >
               <div className="min-w-0">
                 <p className={aiProductsNav.workspaceCategory}>
                   {t(`category.${selectedDef.category}.label`)}
@@ -551,7 +587,12 @@ export function HomeClient({
             </div>
 
             <div className="mt-5 rounded-2xl border border-violet-400/30 bg-gradient-to-br from-violet-500/10 to-slate-950/40 p-1 shadow-lg backdrop-blur-md sm:p-2">
-              <ToolCard tool={selected} showHeader={false} />
+              <ToolCard
+                key={`${selected}-${toolPrefillKey}`}
+                tool={selected}
+                showHeader={false}
+                initialText={toolPrefill}
+              />
             </div>
           </section>
           </div>

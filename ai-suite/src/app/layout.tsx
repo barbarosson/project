@@ -15,10 +15,12 @@ import { SocialProof } from "@/components/SocialProof";
 import type { Locale } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { rootMetadataForLocale } from "@/lib/site-metadata";
+import { getDeployEnv } from "@/lib/deploy-env";
 import { SupabaseBrowserConfigProvider } from "@/lib/supabase/browser-config-context";
 import { PricingModalProvider } from "@/components/pricing/pricing-modal";
 import { AppLocaleBar } from "@/components/app-locale-bar";
 import { AuthSessionHydrator } from "@/components/auth-session-hydrator";
+import { DeployEnvBanner } from "@/components/deploy-env-banner";
 
 const sans = Inter({
   variable: "--font-geist-sans",
@@ -40,7 +42,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+  const GA_ID = getDeployEnv() === "production" ? process.env.NEXT_PUBLIC_GA_ID : undefined;
   const pe = process.env as Record<string, string | undefined>;
   const supabaseUrl =
     pe.NEXT_PUBLIC_SUPABASE_URL?.trim() || pe.SUPABASE_URL?.trim() || null;
@@ -103,6 +105,7 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
                 <GlobalBackground />
                 <SocialProof />
                 <AppLocaleBar />
+                <DeployEnvBanner />
                 <AuthSessionHydrator />
                 {children}
               </PricingModalProvider>
