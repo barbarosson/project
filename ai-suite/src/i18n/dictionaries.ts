@@ -20,6 +20,7 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.subtitle":
       "Stop overthinking. Let AI transform your angry drafts into professional emails, write your cover letters, and polish your dating texts in seconds.",
     "hero.cta": "Fix My Message (1st Try Free 🎁)",
+    "hero.modulusFamily": "Part of the MODULUS family —",
     "hero.badge.noSubscription": "No subscription",
     "hero.badge.noSignups": "No sign-ups",
     "hero.badge.payPerUse": "Pay per use",
@@ -112,6 +113,8 @@ export const DICTS: Record<Locale, Dict> = {
     "footer.copyright": "© 2026 isendai.com. Crafted for better communication.",
     "footer.trust":
       "🔒 Secure Payments via Lemon Squeezy | ⚡ Powered by AI | 🚫 We do not store your data.",
+    "footer.modulusLead": "Part of the MODULUS family —",
+    "footer.modulus": "MODULUS corporate site",
 
     "tool.corp.desc":
       "Want to yell at your boss or client? Don't. Type your angry, unfiltered thoughts here, and we'll turn it into a polite, HR-friendly masterpiece.",
@@ -190,7 +193,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "AI Products",
     "home.workspace.hint": "Paste → Generate → Copy",
-    "home.aiStack.title": "The World's Smartest AIs in One Place 🧠",
+    "home.aiStack.title": "The World's Leading AI Models in One Place 🧠",
     "home.aiStack.body":
       "Behind the scenes, the brains of tech giants like OpenAI (ChatGPT), Anthropic (Claude), Google, and DeepSeek work for you. Don't want to think about which model to pick? Leave it on Auto — we'll choose the best fit for your moment. Or take full control and pick your own intelligence from the menu! (Credit usage is calculated transparently based on the tier of the model you choose.)",
 
@@ -645,6 +648,7 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.subtitle":
       "No hace falta buscar las palabras durante horas. Deja que la IA convierta borradores enfadados en emails profesionales y brille tus mensajes de citas en segundos.",
     "hero.cta": "Arreglar mi mensaje (1.er intento gratis 🎁)",
+    "hero.modulusFamily": "Parte de la familia MODULUS —",
     "hero.badge.noSubscription": "Sin suscripción",
     "hero.badge.noSignups": "Sin registro",
     "hero.badge.payPerUse": "Pago por uso",
@@ -728,6 +732,8 @@ export const DICTS: Record<Locale, Dict> = {
     "faq.q3": "¿Qué recibo?",
     "faq.a3": "Un texto pulido que puedes copiar al instante.",
     "footer.copyright": "© 2026 isendai.com. Hecho para comunicar mejor.",
+    "footer.modulusLead": "Parte de la familia MODULUS —",
+    "footer.modulus": "Sitio corporativo MODULUS",
     "footer.trust":
       "🔒 Pagos seguros con Lemon Squeezy | ⚡ Impulsado por IA | 🚫 No guardamos tus datos.",
     "tool.corp.desc":
@@ -804,7 +810,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "Productos de IA",
     "home.workspace.hint": "Pega → Genera → Copia",
-    "home.aiStack.title": "Las IAs Más Inteligentes del Mundo en Un Solo Lugar 🧠",
+    "home.aiStack.title": "Los Principales Modelos de IA del Mundo en Un Solo Lugar 🧠",
     "home.aiStack.body":
       "En segundo plano trabajan para ti los cerebros de gigantes tecnológicos como OpenAI (ChatGPT), Anthropic (Claude), Google y DeepSeek. ¿No quieres pensar qué modelo elegir? Déjalo en «Automático» y elegimos el más adecuado para tu momento. ¡O toma el control y elige tu propia inteligencia en el menú! (El uso de créditos se calcula con transparencia según el nivel del modelo que elijas).",
 
@@ -1249,6 +1255,7 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.subtitle":
       "Inutile de chercher les mots pendant des heures. L’IA transforme vos brouillons énervés en emails professionnels et polit vos messages de rencontre en quelques secondes.",
     "hero.cta": "Corriger mon message (1er essai gratuit 🎁)",
+    "hero.modulusFamily": "Une offre de la famille MODULUS —",
     "hero.badge.noSubscription": "Sans abonnement",
     "hero.badge.noSignups": "Sans inscription",
     "hero.badge.payPerUse": "Paiement à l’usage",
@@ -1332,6 +1339,8 @@ export const DICTS: Record<Locale, Dict> = {
     "faq.q3": "Qu’est-ce que je reçois ?",
     "faq.a3": "Un texte peaufiné que vous pouvez copier immédiatement.",
     "footer.copyright": "© 2026 isendai.com. Conçu pour mieux communiquer.",
+    "footer.modulusLead": "Une offre de la famille MODULUS —",
+    "footer.modulus": "Site corporate MODULUS",
     "footer.trust":
       "🔒 Paiements sécurisés via Lemon Squeezy | ⚡ Propulsé par l’IA | 🚫 Nous ne stockons pas vos données.",
     "tool.corp.desc":
@@ -1408,7 +1417,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "Produits IA",
     "home.workspace.hint": "Coller → Générer → Copier",
-    "home.aiStack.title": "Les IA Les Plus Intelligentes du Monde, Réunies 🧠",
+    "home.aiStack.title": "Les Principaux Modèles d'IA au Monde, Réunis 🧠",
     "home.aiStack.body":
       "En coulisses, les cerveaux de géants comme OpenAI (ChatGPT), Anthropic (Claude), Google et DeepSeek travaillent pour vous. Vous ne voulez pas choisir un modèle ? Laissez le mode « Auto » : nous sélectionnons le plus adapté à votre situation. Ou reprenez le contrôle et choisissez votre intelligence dans le menu ! (La consommation de crédits est calculée de façon transparente selon le niveau du modèle choisi).",
 
@@ -1853,6 +1862,7 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.subtitle":
       "Kein stundenlanges Wortgrübeln mehr. Die KI macht aus wütenden Entwürfen professionelle Mails und poliert deine Dating‑Nachrichten in Sekunden.",
     "hero.cta": "Nachricht verbessern (1. Versuch gratis 🎁)",
+    "hero.modulusFamily": "Teil der MODULUS-Produktfamilie —",
     "hero.badge.noSubscription": "Kein Abo",
     "hero.badge.noSignups": "Kein Signup",
     "hero.badge.payPerUse": "Pay‑per‑use",
@@ -1937,6 +1947,8 @@ export const DICTS: Record<Locale, Dict> = {
     "faq.q3": "Was bekomme ich?",
     "faq.a3": "Einen polierten Text zum sofortigen Kopieren.",
     "footer.copyright": "© 2026 isendai.com. Für bessere Kommunikation.",
+    "footer.modulusLead": "Teil der MODULUS-Produktfamilie —",
+    "footer.modulus": "MODULUS Unternehmensseite",
     "footer.trust":
       "🔒 Sichere Zahlungen via Lemon Squeezy | ⚡ Powered by AI | 🚫 Wir speichern deine Daten nicht.",
     "tool.corp.desc":
@@ -2013,7 +2025,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "KI‑Produkte",
     "home.workspace.hint": "Einfügen → Generieren → Kopieren",
-    "home.aiStack.title": "Die Klügsten KIs der Welt an Einem Ort 🧠",
+    "home.aiStack.title": "Die Führenden KI-Modelle der Welt an Einem Ort 🧠",
     "home.aiStack.body":
       "Im Hintergrund arbeiten die Köpfe von Tech‑Riesen wie OpenAI (ChatGPT), Anthropic (Claude), Google und DeepSeek für dich. Keine Lust, ein Modell zu wählen? Lass es auf „Automatisch“ — wir picken das Passende für deinen Moment. Oder übernimm die Kontrolle und wähle deine Intelligenz im Menü! (Credit‑Verbrauch wird transparent nach der Stufe des gewählten Modells berechnet).",
 
@@ -2454,6 +2466,7 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.subtitle":
       "不必再花数小时斟酌措辞。让 AI 把情绪草稿变成专业邮件，并在几秒内润色你的约会消息。",
     "hero.cta": "优化我的消息（首次免费 🎁）",
+    "hero.modulusFamily": "MODULUS 产品家族的一员 —",
     "hero.badge.noSubscription": "无需订阅",
     "hero.badge.noSignups": "无需注册",
     "hero.badge.payPerUse": "按次付费",
@@ -2530,6 +2543,8 @@ export const DICTS: Record<Locale, Dict> = {
     "faq.q3": "我会得到什么？",
     "faq.a3": "可立即复制的优化结果：邮件/求职信/简介。",
     "footer.copyright": "© 2026 isendai.com. 为更好的沟通而生。",
+    "footer.modulusLead": "MODULUS 产品家族的一员 —",
+    "footer.modulus": "MODULUS 企业站",
     "footer.trust": "🔒 Lemon Squeezy 安全支付 | ⚡ AI 驱动 | 🚫 不存储你的数据",
     "tool.corp.desc":
       "想对老板/客户发火？别。把真实想法写下来，我们帮你变成礼貌、HR 友好的邮件。",
@@ -2598,7 +2613,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "AI 产品",
     "home.workspace.hint": "粘贴 → 生成 → 复制",
-    "home.aiStack.title": "全球顶尖 AI 齐聚一处 🧠",
+    "home.aiStack.title": "全球领先的 AI 模型，齐聚一处 🧠",
     "home.aiStack.body":
       "幕后有 OpenAI（ChatGPT）、Anthropic（Claude）、Google、DeepSeek 等科技巨头的大脑为你工作。不想纠结选哪个模型？交给「自动」模式，我们会为当下场景挑选最合适的模型。也可以完全掌控，在菜单里自选你的 AI！（积分按所选模型的智能档位透明计费。）",
 
@@ -3018,6 +3033,7 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.subtitle":
       "Saatlerce doğru kelimeleri aramanıza gerek yok. Bırakın yapay zeka; öfkeli taslaklarınızı profesyonel e-postalara dönüştürsün ve flört mesajlarınızı saniyeler içinde parlatsın.",
     "hero.cta": "Mesajımı Düzelt (İlk Deneme Bedava 🎁)",
+    "hero.modulusFamily": "MODULUS ürün ailesinin bir parçası —",
     "hero.badge.noSubscription": "Abonelik yok",
     "hero.badge.noSignups": "Kayıt yok",
     "hero.badge.payPerUse": "Kullandıkça öde",
@@ -3102,6 +3118,8 @@ export const DICTS: Record<Locale, Dict> = {
     "faq.q3": "Ne elde edeceğim?",
     "faq.a3": "Hemen kopyalayabileceğin parlatılmış bir çıktı.",
     "footer.copyright": "© 2026 isendai.com. Daha iyi iletişim için üretildi.",
+    "footer.modulusLead": "MODULUS ürün ailesinin bir parçası —",
+    "footer.modulus": "MODULUS kurumsal sitesi",
     "footer.trust":
       "🔒 Lemon Squeezy ile güvenli ödeme | ⚡ AI destekli | 🚫 Verini saklamayız.",
     "tool.corp.desc":
@@ -3178,7 +3196,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.sidebar.title": "AI Ürünleri",
     "home.workspace.hint": "Yapıştır → Üret → Kopyala",
-    "home.aiStack.title": "Dünyanın En Zeki Yapay Zekaları Tek Bir Yerde 🧠",
+    "home.aiStack.title": "Dünyanın Önde Gelen Yapay Zeka Modelleri Tek Bir Yerde 🧠",
     "home.aiStack.body":
       "Arka planda OpenAI (ChatGPT), Anthropic (Claude), Google ve DeepSeek gibi teknoloji devlerinin beyinleri sizin için çalışıyor. Hangi modeli seçeceğinizi düşünmek istemiyor musunuz? İşi \"Otomatik\" moda bırakın, o anki kriziniz için en uygun modeli biz seçelim. Ya da kontrolü tamamen elinize alıp menüden kendi zekanızı kendiniz belirleyin! (Kredi harcamalarınız, seçtiğiniz modelin zeka seviyesine göre şeffaf bir şekilde hesaplanır).",
 

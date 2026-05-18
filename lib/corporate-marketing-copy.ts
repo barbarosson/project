@@ -110,10 +110,16 @@ export const corporateCopy = {
         subtitle:
           'Stop overthinking. Let AI transform angry drafts into professional emails, polish cover letters, and fix awkward texts in seconds.',
         cta: 'Try on isendai.com',
-        badges: ['No subscription trap', 'Pay per use', 'We don’t store your text'],
+        taglines: [
+          'Polish every message before you hit send.',
+          'Dozens of micro-tools for work, dating, and everyday life.',
+          'Pay per use — no subscription lock-in.',
+          'Leading AI models and smart routing in one place.',
+          'Your drafts stay private — we don’t store your text.',
+        ],
       },
       aiStack: {
-        title: "The World's Smartest AIs in One Place 🧠",
+        title: "The World's Leading AI Models in One Place 🧠",
         body:
           'OpenAI, Anthropic, Google, and DeepSeek power your rewrites behind the scenes. Pick a model yourself or let Auto mode choose the best brain for the moment — credit use is always transparent.',
       },
@@ -275,11 +281,11 @@ export const corporateCopy = {
       },
       isendai: {
         summary:
-          'isendAI kişisel iletişim asistanınızdır: onlarca mikro araç ve saniyeler içinde doğru düzeltmeye yönlendiren concierge — mesajı göndermeden önce.',
+          'isendAI kişisel iletişim asistanınızdır: onlarca mikro araç ve saniyeler içinde doğru düzeltmeye yönlendiren akıllı rehber — mesajı göndermeden önce.',
         highlights: [
           'Kurumsal e-posta tonu, istifa, ön yazı, flört biyosu',
           'Önce/sonra örnekleri ve şeffaf kredi fiyatlandırması',
-          'Durumunuza uygun aracı seçen concierge sohbet',
+          'İhtiyacınıza göre en uygun aracı öneren akıllı sohbet',
           'Hızlı ve kritik mesajlar için Fast / Pro AI katmanları',
           'Türkçe ve İngilizce; isendai.com üzerinden kullandıkça öde',
         ],
@@ -293,7 +299,7 @@ export const corporateCopy = {
     isendaiPage: {
       metaTitle: 'isendAI — Göndermeden önce mesajını mükemmelleştir',
       metaDescription:
-        'Kişisel iletişim yapay zeka asistanı: onlarca mikro araç, concierge yönlendirme, iş ve günlük hayat için önce/sonra örnekleri.',
+        'Kişisel iletişim yapay zeka asistanı: onlarca mikro araç, akıllı araç yönlendirmesi, iş ve günlük hayat için önce/sonra örnekleri.',
       backToModulus: '← Tüm MODULUS ürünleri',
       hero: {
         kicker: 'Kişisel İletişim Asistanınız 🪄',
@@ -301,10 +307,16 @@ export const corporateCopy = {
         subtitle:
           'Saatlerce kelime aramayın. Yapay zeka öfkeli taslakları profesyonel e-postalara çevirsin, ön yazıları ve flört mesajlarını saniyeler içinde parlatır.',
         cta: 'isendai.com\'da dene',
-        badges: ['Abonelik tuzağı yok', 'Kullandıkça öde', 'Metnini saklamayız'],
+        taglines: [
+          'Gönder tuşuna basmadan mesajınızı netleştirin.',
+          'İş, flört ve günlük hayat için onlarca mikro araç.',
+          'Kullandıkça ödeyin — abonelik tuzağı yok.',
+          'Önde gelen yapay zeka modelleri ve akıllı araç yönlendirmesi tek yerde.',
+          'Taslaklarınız size özel — metninizi saklamıyoruz.',
+        ],
       },
       aiStack: {
-        title: 'Dünyanın En Zeki Yapay Zekaları Tek Bir Yerde 🧠',
+        title: 'Dünyanın Önde Gelen Yapay Zeka Modelleri Tek Bir Yerde 🧠',
         body:
           'OpenAI, Anthropic, Google ve DeepSeek arka planda çalışır. Modeli siz seçin veya Otomatik moda bırakın — kredi harcaması her zaman şeffaftır.',
       },
@@ -316,14 +328,14 @@ export const corporateCopy = {
         examples: [
           {
             emoji: '💼',
-            title: 'The Corporate Whisperer',
+            title: 'Kurumsal İletişim Ustası',
             before: 'Bu tasarım berbat, brifimi okumamışsınız belli!',
             after:
               'Briften biraz sapmış gibi hissediyorum. Tasarımı, ilk vizyonumuzla uyumlu olduğundan emin olmak için birlikte gözden geçirebilir miyiz?',
           },
           {
             emoji: '🚪',
-            title: 'Graceful Quitter',
+            title: 'Zarif İstifa',
             before: 'Bıktım. İstifa ediyorum. Bir daha yazmayın.',
             after:
               'Merhaba [İsim] — [tarih] itibarıyla görevimden ayrılmak istiyorum. Fırsat için teşekkür ederim. Ayrılmadan önce sorumluluklarımı devretmek için destek olacağım.',
@@ -349,7 +361,7 @@ export const corporateCopy = {
         steps: [
           {
             title: '1) Aracınızı seçin',
-            body: 'Mikro araçlara göz atın veya AI Concierge\'e durumunuzu anlatın.',
+            body: 'Mikro araçlara göz atın veya akıllı sohbet asistanına durumunuzu anlatın.',
           },
           {
             title: '2) Taslağınızı yapıştırın',
@@ -369,9 +381,9 @@ export const corporateCopy = {
         title: 'Gerçek durumlar için mikro araçlar',
         subtitle: 'Tek iş: daha iyi görünmenizi sağlamak.',
         items: [
-          { title: 'The Corporate Whisperer', slogan: 'Sert söyle. Güvenli gönder.' },
-          { title: '1-Click Cover Letter', slogan: 'Özel, ATS uyumlu, mülakat odaklı.' },
-          { title: 'Dating Profile Roast & Fix', slogan: 'Daha az cringe. Daha çok eşleşme.' },
+          { title: 'Kurumsal İletişim Ustası', slogan: 'Sert söyle. Güvenli gönder.' },
+          { title: 'Tek Tıkla Ön Yazı', slogan: 'Size özel, ATS uyumlu, mülakata hazır.' },
+          { title: 'Flört Profili Eleştir & Düzelt', slogan: 'Daha az garip. Daha çok eşleşme.' },
         ],
       },
       trust: '🔒 Lemon Squeezy ile güvenli ödeme · ⚡ AI destekli · 🚫 Verini saklamayız',

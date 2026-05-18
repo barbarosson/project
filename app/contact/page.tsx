@@ -408,12 +408,7 @@ export default function ContactPage() {
                 ? 'Web Sitesi Künye Bilgileri'
                 : 'Legal / Company Information'}
             </h2>
-            <p className="text-sm mb-6" style={{ color: '#64748b' }}>
-              {language === 'tr'
-                ? 'iyzico onay süreci için bu bilgilerin sitede görünür olması şarttır.'
-                : 'These details are displayed for regulatory and payment provider compliance.'}
-            </p>
-            <dl className="grid sm:grid-cols-2 gap-4 text-sm" style={{ color: '#425466' }}>
+            <dl className="grid sm:grid-cols-2 gap-4 text-sm mt-4" style={{ color: '#425466' }}>
               <div>
                 <dt className="font-semibold text-slate-800">
                   {language === 'tr' ? 'Ticari Ünvan' : 'Trade name'}

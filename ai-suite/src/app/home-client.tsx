@@ -20,6 +20,7 @@ import {
 } from "@/components/ai-suite/tools";
 import { cn } from "@/lib/utils";
 import { aiProductsNav } from "@/lib/ai-products-nav-styles";
+import { MODULUS_SITE_URL } from "@/lib/modulus-site";
 import { siteContainer } from "@/lib/page-layout";
 import {
   glassInteractive,
@@ -153,6 +154,17 @@ export function HomeClient({
           </h1>
           <p className="mt-4 w-full min-w-0 text-pretty text-base font-medium leading-relaxed text-slate-200 sm:text-lg">
             {t("hero.subtitle")}
+          </p>
+          <p className="mt-4 text-sm text-slate-400">
+            {t("hero.modulusFamily")}{" "}
+            <a
+              href={MODULUS_SITE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-violet-200 underline-offset-2 transition-colors hover:text-white hover:underline"
+            >
+              modulusaas.com
+            </a>
           </p>
           <PromoCampaignBanner className="mt-6" showPricingLink />
           <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
@@ -599,34 +611,6 @@ export function HomeClient({
         </section>
       </main>
 
-      <footer className="border-t border-white/[0.08] bg-white/[0.02] backdrop-blur-xl">
-        <div className={siteContainer("flex flex-col gap-3 py-10 sm:flex-row sm:items-center sm:justify-between")}>
-          <p className="text-sm text-muted-foreground">{t("footer.copyright")}</p>
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-            <Link className="font-medium text-foreground/90 hover:text-foreground transition-colors" href="/login">
-              {t("nav.login")}
-            </Link>
-            <Link className="hover:text-foreground transition-colors" href="/account">
-              {t("nav.account")}
-            </Link>
-            <Link className="hover:text-foreground transition-colors" href="/pricing">
-              {t("nav.pricing")}
-            </Link>
-            <Link className="hover:text-foreground transition-colors" href="/faq">
-              {t("nav.faq")}
-            </Link>
-            <span className="hidden sm:inline">·</span>
-            <Link className="hover:text-foreground transition-colors" href="/privacy">
-              {t("nav.privacy")}
-            </Link>
-            <Link className="hover:text-foreground transition-colors" href="/terms">
-              {t("nav.terms")}
-            </Link>
-            <span className="hidden sm:inline">·</span>
-            <span>{t("footer.trust")}</span>
-          </div>
-        </div>
-      </footer>
     </SitePageChrome>
   );
 }

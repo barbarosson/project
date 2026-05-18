@@ -6,6 +6,8 @@ import type { ReactNode } from "react";
 import { AuthStatus } from "@/components/auth-status";
 import { CreditsNav } from "@/components/credits-nav";
 import { IsendaiLogo } from "@/components/isendai-logo";
+import { useI18n } from "@/i18n/i18n-provider";
+import { MODULUS_SITE_URL } from "@/lib/modulus-site";
 import { siteContainer, type PageShellVariant } from "@/lib/page-layout";
 import {
   pageBackLink,
@@ -24,7 +26,73 @@ const innerWidth: Record<PageShellVariant, string> = {
 };
 
 export function SitePageChrome({ children }: { children: ReactNode }) {
-  return <div className="min-h-full min-w-0 overflow-x-clip">{children}</div>;
+  return (
+    <div className="flex min-h-full min-w-0 flex-col overflow-x-clip">
+      <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+      <SitePageFooter />
+    </div>
+  );
+}
+
+export function SitePageFooter() {
+  const { t } = useI18n();
+
+  return (
+    <footer className="mt-auto border-t border-white/[0.08] bg-white/[0.02] backdrop-blur-xl">
+      <div
+        className={siteContainer(
+          "flex flex-col gap-4 py-10 sm:flex-row sm:items-start sm:justify-between"
+        )}
+      >
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground">{t("footer.copyright")}</p>
+          <p className="text-sm text-muted-foreground">
+            {t("footer.modulusLead")}{" "}
+            <a
+              href={MODULUS_SITE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-violet-200 underline-offset-2 transition-colors hover:text-white hover:underline"
+            >
+              modulusaas.com
+            </a>
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+          <a
+            href={MODULUS_SITE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-violet-200 transition-colors hover:text-white"
+          >
+            {t("footer.modulus")}
+          </a>
+          <span className="hidden text-white/20 sm:inline">·</span>
+          <Link className="font-medium text-foreground/90 transition-colors hover:text-foreground" href="/login">
+            {t("nav.login")}
+          </Link>
+          <Link className="transition-colors hover:text-foreground" href="/account">
+            {t("nav.account")}
+          </Link>
+          <Link className="transition-colors hover:text-foreground" href="/pricing">
+            {t("nav.pricing")}
+          </Link>
+          <Link className="transition-colors hover:text-foreground" href="/faq">
+            {t("nav.faq")}
+          </Link>
+          <span className="hidden text-white/20 sm:inline">·</span>
+          <Link className="transition-colors hover:text-foreground" href="/privacy">
+            {t("nav.privacy")}
+          </Link>
+          <Link className="transition-colors hover:text-foreground" href="/terms">
+            {t("nav.terms")}
+          </Link>
+          <span className="hidden w-full text-white/20 sm:inline sm:w-auto">·</span>
+          <span className="w-full sm:w-auto">{t("footer.trust")}</span>
+        </div>
+      </div>
+    </footer>
+  );
 }
 
 export function SitePageHeader({

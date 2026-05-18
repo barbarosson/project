@@ -1,222 +1,256 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Globe, MoveRight, Sparkles } from 'lucide-react'
+import { ArrowRight, Check, MoveRight, Sparkles } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
 import { getCorporateCopy } from '@/lib/corporate-marketing-copy'
 import {
+  ISENDAI_ACCENT,
   isendaiBody,
-  isendaiCta,
-  isendaiGlassCard,
-  isendaiGradientHeading,
+  isendaiCard,
+  isendaiHeading,
+  isendaiKicker,
+  isendaiMutedSection,
   isendaiOutlineBtn,
-  isendaiPageRoot,
-  isendaiSectionShell,
+  isendaiPageSection,
+  isendaiPrimaryBtn,
+  isendaiSectionCard,
 } from '@/lib/isendai-product-styles'
 import { cn } from '@/lib/utils'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { MarketingLayout } from './marketing-layout'
+import { ProductMenuIcon } from './product-menu-icons'
 import { Button } from '@/components/ui/button'
 
 const ISENDAI_URL = process.env.NEXT_PUBLIC_ISENDAI_URL ?? 'https://isendai.com'
-const CONTAINER = 'mx-auto w-full min-w-0 max-w-6xl px-4 sm:px-6 lg:px-8'
 
 export function IsendaiProductContent() {
-  const { language, setLanguage } = useLanguage()
+  const { language } = useLanguage()
   const p = getCorporateCopy(language).isendaiPage
+  const product = getCorporateCopy(language).products.isendai
 
   return (
-    <div className={isendaiPageRoot}>
-      <header className={cn(CONTAINER, 'flex flex-wrap items-center justify-between gap-4 py-5 sm:py-6')}>
-        <Link href={ISENDAI_URL} className="group flex min-w-0 items-center gap-2">
-          <span
-            className={cn(
-              'text-2xl font-bold tracking-tight sm:text-3xl',
-              'bg-gradient-to-r from-violet-200 via-fuchsia-200 to-cyan-200 bg-clip-text text-transparent'
-            )}
+    <MarketingLayout>
+      <section
+        className="pt-32 pb-16 lg:pt-40 lg:pb-24 relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(180deg, #FFFFFF 0%, #F6F9FC 55%, #FFFFFF 100%)',
+        }}
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -top-24 right-0 h-96 w-96 rounded-full opacity-25 blur-3xl"
+          style={{ background: 'radial-gradient(circle, #8B5CF6 0%, transparent 70%)' }}
+        />
+        <div className="container-marketing relative">
+          <Link
+            href="/"
+            className="inline-flex items-center text-sm font-medium text-[#425466] hover:text-[#0A2540] mb-8"
           >
-            isendai
-          </span>
-        </Link>
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="gap-1.5 text-slate-300 hover:bg-white/10 hover:text-white"
-              >
-                <Globe className="h-4 w-4" />
-                <span className="uppercase font-semibold">{language}</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setLanguage('tr')}>Türkçe (TR)</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setLanguage('en')}>English (EN)</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Link href="/" className={isendaiOutlineBtn}>
-            {p.secondaryCta}
+            {p.backToModulus}
           </Link>
-          <a href={ISENDAI_URL} target="_blank" rel="noopener noreferrer" className={isendaiCta}>
-            {p.primaryCta}
-            <ArrowRight className="h-4 w-4" />
-          </a>
-        </div>
-      </header>
 
-      <main className={cn(CONTAINER, 'space-y-8 pb-16 pt-2')}>
-        <section className={cn('relative overflow-hidden rounded-2xl px-6 py-8 sm:px-10', isendaiGlassCard)}>
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(124,58,237,0.22)_0%,transparent_70%)]"
-          />
-          <p className="inline-flex items-center gap-2 rounded-full border border-violet-400/35 bg-gradient-to-r from-violet-500/15 to-fuchsia-500/10 px-3 py-1.5 text-xs font-semibold tracking-wide text-violet-100 sm:text-sm">
-            <Sparkles className="size-3.5 shrink-0 text-fuchsia-300 sm:size-4" aria-hidden />
+          <div className="flex flex-col sm:flex-row sm:items-start gap-6 mb-6">
+            <ProductMenuIcon product="isendai" size={72} />
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: ISENDAI_ACCENT }}>
+                {product.tagline}
+              </p>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0A2540]">{product.name}</h1>
+            </div>
+          </div>
+
+          <p className={isendaiKicker}>
+            <Sparkles className="size-4 shrink-0" style={{ color: ISENDAI_ACCENT }} aria-hidden />
             {p.hero.kicker}
           </p>
-          <h1 className={cn('mt-4 text-3xl sm:text-4xl lg:text-5xl', isendaiGradientHeading)}>
+          <h2 className={cn('mt-4 text-3xl sm:text-4xl lg:text-5xl max-w-4xl', isendaiHeading)}>
             {p.hero.title}
-          </h1>
+          </h2>
           <p className={cn('mt-4 max-w-3xl', isendaiBody)}>{p.hero.subtitle}</p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {p.hero.badges.map((badge) => (
-              <span
-                key={badge}
-                className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-slate-300"
-              >
-                {badge}
-              </span>
+
+          <ul className="mt-8 max-w-2xl space-y-3">
+            {p.hero.taglines.map((line) => (
+              <li key={line} className="flex items-start gap-3">
+                <span
+                  className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
+                  style={{ backgroundColor: `${ISENDAI_ACCENT}20` }}
+                >
+                  <Check className="h-3.5 w-3.5" style={{ color: ISENDAI_ACCENT }} />
+                </span>
+                <span className="text-base font-semibold leading-snug text-[#0A2540] sm:text-lg">
+                  {line}
+                </span>
+              </li>
             ))}
-          </div>
+          </ul>
+
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-            <a href={ISENDAI_URL} target="_blank" rel="noopener noreferrer" className={cn(isendaiCta, 'sm:min-w-[14rem]')}>
+            <a
+              href={ISENDAI_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={isendaiPrimaryBtn}
+              style={{ backgroundColor: '#0A2540' }}
+            >
               {p.hero.cta}
               <ArrowRight className="h-4 w-4" />
             </a>
-            <a href={`${ISENDAI_URL}/pricing`} target="_blank" rel="noopener noreferrer" className={isendaiOutlineBtn}>
+            <a
+              href={`${ISENDAI_URL}/pricing`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={isendaiOutlineBtn}
+            >
               {language === 'tr' ? 'Paketler & fiyat' : 'Plans & pricing'}
             </a>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className={isendaiSectionShell}>
-          <h2 className={cn('text-2xl sm:text-3xl lg:text-4xl', isendaiGradientHeading)}>{p.aiStack.title}</h2>
-          <p className={cn('mt-4 max-w-4xl', isendaiBody)}>{p.aiStack.body}</p>
-        </section>
-
-        <section className={isendaiSectionShell}>
-          <p className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-violet-200">
-            <Sparkles className="size-3.5 text-fuchsia-300" aria-hidden />
-            {p.demo.before} → {p.demo.after}
-          </p>
-          <h2 className={cn('mt-4 text-2xl sm:text-3xl lg:text-4xl', isendaiGradientHeading)}>{p.demo.title}</h2>
-          <p className={cn('mt-4', isendaiBody)}>{p.demo.subtitle}</p>
-
-          <div className="mt-8 grid min-w-0 gap-5 lg:grid-cols-2">
-            {p.demo.examples.map((ex) => (
-              <div
-                key={ex.title}
-                className="min-w-0 overflow-hidden rounded-2xl border border-white/[0.1] bg-black/25 p-4 sm:p-5"
-              >
-                <div className="mb-4 flex items-center gap-3">
-                  <span className="inline-flex size-10 items-center justify-center rounded-xl border border-violet-400/25 bg-gradient-to-br from-violet-500/20 to-fuchsia-500/10 text-lg">
-                    {ex.emoji}
-                  </span>
-                  <span className="font-semibold text-white">{ex.title}</span>
-                </div>
-                <div className="grid gap-3 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
-                  <div className="rounded-xl border border-rose-400/35 bg-gradient-to-br from-rose-500/15 to-rose-950/30 p-4">
-                    <p className="text-xs font-bold uppercase tracking-wide text-rose-300">{p.demo.before}</p>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-100 sm:text-base">{ex.before}</p>
-                  </div>
-                  <div className="flex items-center justify-center py-1 lg:py-0">
-                    <span className="inline-flex size-10 items-center justify-center rounded-full border border-violet-400/40 bg-gradient-to-br from-indigo-500/30 to-fuchsia-500/20 text-violet-100 shadow-[0_0_24px_rgba(139,92,246,0.35)]">
-                      <MoveRight className="size-4" aria-hidden />
-                    </span>
-                  </div>
-                  <div className="rounded-xl border border-emerald-400/35 bg-gradient-to-br from-emerald-500/15 to-emerald-950/30 p-4">
-                    <p className="text-xs font-bold uppercase tracking-wide text-emerald-300">{p.demo.after}</p>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-50 sm:text-base">{ex.after}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+      <section className={cn(isendaiPageSection, 'bg-white')}>
+        <div className="container-marketing">
+          <div className={isendaiSectionCard}>
+            <h2 className={cn('text-2xl sm:text-3xl lg:text-4xl', isendaiHeading)}>{p.aiStack.title}</h2>
+            <p className={cn('mt-4 max-w-4xl', isendaiBody)}>{p.aiStack.body}</p>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className={isendaiSectionShell}>
-          <h2 className={cn('text-2xl sm:text-3xl lg:text-4xl', isendaiGradientHeading)}>{p.how.title}</h2>
-          <p className={cn('mt-4', isendaiBody)}>{p.how.subtitle}</p>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {p.how.steps.map((step, i) => {
-              const borders = [
-                'border-violet-400/35 from-violet-500/15 to-violet-950/30',
-                'border-fuchsia-400/35 from-fuchsia-500/15 to-fuchsia-950/30',
-                'border-cyan-400/35 from-cyan-500/15 to-cyan-950/30',
-                'border-emerald-400/35 from-emerald-500/15 to-emerald-950/30',
-              ]
-              return (
+      <section className={cn(isendaiPageSection, isendaiMutedSection)}>
+        <div className="container-marketing">
+          <div className={isendaiSectionCard}>
+            <p className={isendaiKicker}>
+              <Sparkles className="size-3.5" style={{ color: ISENDAI_ACCENT }} aria-hidden />
+              {p.demo.before} → {p.demo.after}
+            </p>
+            <h2 className={cn('mt-4 text-2xl sm:text-3xl lg:text-4xl', isendaiHeading)}>{p.demo.title}</h2>
+            <p className={cn('mt-4', isendaiBody)}>{p.demo.subtitle}</p>
+
+            <div className="mt-8 grid min-w-0 gap-5 lg:grid-cols-2">
+              {p.demo.examples.map((ex) => (
+                <div key={ex.title} className={cn('p-4 sm:p-5', isendaiCard)}>
+                  <div className="mb-4 flex items-center gap-3">
+                    <span
+                      className="inline-flex size-10 items-center justify-center rounded-xl text-lg"
+                      style={{ backgroundColor: `${ISENDAI_ACCENT}18` }}
+                    >
+                      {ex.emoji}
+                    </span>
+                    <span className="font-semibold text-[#0A2540]">{ex.title}</span>
+                  </div>
+                  <div className="grid gap-3 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
+                    <div className="rounded-xl border border-rose-200 bg-rose-50 p-4">
+                      <p className="text-xs font-bold uppercase tracking-wide text-rose-600">{p.demo.before}</p>
+                      <p className="mt-2 text-sm leading-relaxed text-[#425466] sm:text-base">{ex.before}</p>
+                    </div>
+                    <div className="flex items-center justify-center py-1 lg:py-0">
+                      <span
+                        className="inline-flex size-10 items-center justify-center rounded-full border text-white"
+                        style={{ borderColor: `${ISENDAI_ACCENT}40`, backgroundColor: ISENDAI_ACCENT }}
+                      >
+                        <MoveRight className="size-4" aria-hidden />
+                      </span>
+                    </div>
+                    <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                      <p className="text-xs font-bold uppercase tracking-wide text-emerald-700">{p.demo.after}</p>
+                      <p className="mt-2 text-sm leading-relaxed text-[#425466] sm:text-base">{ex.after}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className={cn(isendaiPageSection, 'bg-white')}>
+        <div className="container-marketing">
+          <div className={isendaiSectionCard}>
+            <h2 className={cn('text-2xl sm:text-3xl lg:text-4xl', isendaiHeading)}>{p.how.title}</h2>
+            <p className={cn('mt-4', isendaiBody)}>{p.how.subtitle}</p>
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {p.how.steps.map((step, i) => (
                 <div
                   key={step.title}
-                  className={cn(
-                    'rounded-2xl border bg-gradient-to-br p-5 shadow-lg backdrop-blur-md',
-                    borders[i]
-                  )}
+                  className="rounded-2xl border border-[#E6EBF1] p-5"
+                  style={{ background: 'linear-gradient(135deg, #FAF5FF 0%, #FFFFFF 100%)' }}
                 >
-                  <span className="inline-flex size-9 items-center justify-center rounded-xl border border-white/10 bg-white/10 text-sm font-bold text-white">
+                  <span
+                    className="inline-flex size-9 items-center justify-center rounded-xl text-sm font-bold text-white"
+                    style={{ backgroundColor: ISENDAI_ACCENT }}
+                  >
                     {i + 1}
                   </span>
-                  <h3 className="mt-4 font-semibold text-white">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-200">{step.body}</p>
+                  <h3 className="mt-4 font-semibold text-[#0A2540]">{step.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-[#425466]">{step.body}</p>
                 </div>
-              )
-            })}
+              ))}
+            </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section className={isendaiSectionShell}>
-          <h2 className={cn('text-2xl sm:text-3xl', isendaiGradientHeading)}>{p.tools.title}</h2>
-          <p className={cn('mt-3', isendaiBody)}>{p.tools.subtitle}</p>
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {p.tools.items.map((tool) => (
-              <div
-                key={tool.title}
-                className="rounded-2xl border border-violet-400/30 bg-violet-500/10 p-6 backdrop-blur-md"
+      <section className={cn(isendaiPageSection, isendaiMutedSection)}>
+        <div className="container-marketing">
+          <div className={isendaiSectionCard}>
+            <h2 className={cn('text-2xl sm:text-3xl', isendaiHeading)}>{p.tools.title}</h2>
+            <p className={cn('mt-3', isendaiBody)}>{p.tools.subtitle}</p>
+            <div className="mt-8 grid gap-4 md:grid-cols-3">
+              {p.tools.items.map((tool, index) => (
+                <div
+                  key={index}
+                  className="rounded-2xl border p-6"
+                  style={{
+                    borderColor: `${ISENDAI_ACCENT}30`,
+                    background: 'linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%)',
+                  }}
+                >
+                  <h3 className="font-semibold text-[#0A2540]">{tool.title}</h3>
+                  <p className="mt-2 text-sm text-[#425466]">{tool.slogan}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 lg:py-24 bg-white">
+        <div className="container-marketing">
+          <div
+            className="rounded-3xl px-6 py-12 sm:px-12 sm:py-14 text-center"
+            style={{
+              background: 'linear-gradient(135deg, #0A2540 0%, #1a4a6e 50%, #0A2540 100%)',
+            }}
+          >
+            <div className="flex justify-center">
+              <ProductMenuIcon product="isendai" size={56} />
+            </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mt-6 mb-4">
+              {language === 'tr' ? 'Hazır mısınız?' : 'Ready to try?'}
+            </h2>
+            <p className="text-base sm:text-lg text-white/75 mb-10 max-w-xl mx-auto px-2">
+              {language === 'tr'
+                ? 'Tam uygulama isendai.com üzerinde — akıllı yönlendirme, tüm araçlar ve kredi paketleri.'
+                : 'Full app at isendai.com — smart routing, every tool, and credit packs.'}
+            </p>
+            <a
+              href={ISENDAI_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex"
+            >
+              <Button
+                size="lg"
+                className="rounded-full px-8 bg-white text-[#0A2540] hover:bg-[#F6F9FC] font-semibold shadow-md"
               >
-                <h3 className="font-semibold text-white">{tool.title}</h3>
-                <p className="mt-2 text-sm text-violet-200">{tool.slogan}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="rounded-3xl border border-violet-500/40 bg-gradient-to-r from-violet-900/40 via-fuchsia-900/30 to-indigo-900/40 px-6 py-12 text-center sm:px-10">
-          <h2 className={cn('text-2xl sm:text-3xl', isendaiGradientHeading)}>
-            {language === 'tr' ? 'Hazır mısınız?' : 'Ready to try?'}
-          </h2>
-          <p className={cn('mx-auto mt-4 max-w-xl', isendaiBody)}>
-            {language === 'tr'
-              ? 'Tam uygulama isendai.com üzerinde — concierge, tüm araçlar ve kredi paketleri.'
-              : 'Full app at isendai.com — concierge, every tool, and credit packs.'}
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <a href={ISENDAI_URL} target="_blank" rel="noopener noreferrer" className={isendaiCta}>
-              {p.primaryCta}
-              <ArrowRight className="h-4 w-4" />
+                {p.primaryCta}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </a>
+            <p className="mt-8 text-xs text-white/60 sm:text-sm">{p.trust}</p>
           </div>
-          <p className="mt-8 text-xs text-slate-400 sm:text-sm">{p.trust}</p>
-          <Link href="/" className="mt-6 inline-block text-sm font-medium text-violet-300 hover:text-violet-200">
-            {p.backToModulus}
-          </Link>
-        </section>
-      </main>
-    </div>
+        </div>
+      </section>
+    </MarketingLayout>
   )
 }
-
