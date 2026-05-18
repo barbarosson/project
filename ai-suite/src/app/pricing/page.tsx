@@ -17,6 +17,7 @@ import {
   SitePageMain,
   SitePageTitleBlock,
 } from "@/components/site-page-layout";
+import { PromoCampaignBanner } from "@/components/promo-campaign-banner";
 import { premiumCta, pageSectionLabel, pageSubtitle } from "@/lib/premium-ui";
 import { DICTS, type Locale } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
@@ -51,7 +52,8 @@ export default async function PricingPage() {
           actions={<Link className={premiumCta} href="/">{d["nav.backToHome"]}</Link>}
         />
         <p className={cn(pageSubtitle, "max-w-3xl")}>{d["pricing.subtitle"]}</p>
-        <p className={cn("mt-2", "text-sm font-medium text-violet-200/90 sm:text-base")}>
+        <PromoCampaignBanner className="mt-6" />
+        <p className={cn("mt-4", "text-sm font-medium text-violet-200/90 sm:text-base")}>
           {d["pricing.allPaygoPacks"]}
         </p>
         <PricingHeroOverview d={d} />

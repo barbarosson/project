@@ -6,8 +6,14 @@ import { google } from "@ai-sdk/google";
 import OpenAI from "openai";
 
 import { TOOLS, type ProviderId, type ToolName } from "@/components/ai-suite/tools";
-import { type Locale } from "@/i18n/dictionaries";
+import { DICTS, type Locale } from "@/i18n/dictionaries";
 import { resolveToolDescription, resolveToolTitle } from "@/i18n/tool-copy-resolve";
+import { conciergeError, parseApiLocale } from "@/lib/api-error-messages";
+import {
+  alignSuggestedTools,
+  looksLikeToolableMessageRequest,
+  rankToolsForUserIntent,
+} from "@/lib/intent-tool-routing";
 import { isConcreteModelId, modelMeta, type ModelId } from "@/models/models";
 
 const groq = createOpenAI({
@@ -155,46 +161,19 @@ function safeParseScope(text: string): ConciergeScope | null {
 }
 
 function fallbackSuggestedTools(lastUser: string): ToolName[] {
-  const t = lastUser.toLowerCase();
+  return rankToolsForUserIntent(lastUser);
+}
 
-  const has = (id: ToolName) => TOOLS.some((x) => x.tool === id);
-  const pick = (ids: ToolName[]) => ids.filter(has).slice(0, 3);
-
-  // Relationship / personal messages
-  if (
-    /\b(wife|husband|girlfriend|boyfriend|partner|spouse|anniversary|gift|present|valentine)\b/.test(t) ||
-    /\b(eşim|karım|kocam|sevgilim|partnerim|hediye|sürpriz|yıldönümü|doğum\s*günü)\b/.test(t)
-  ) {
-    return pick(["awkward-text-fixer", "delicate-truth", "relationship-define-the-talk"]);
-  }
-
-  // Apology/repair
-  if (/\b(apolog|sorry|repair|make up)\b/.test(t) || /\b(özür|pardon|telafi|barış)\b/.test(t)) {
-    return pick(["perfect-apology", "apology-repair-plan", "relationship-repair-text"]);
-  }
-
-  // Work email default
-  if (/\b(boss|manager|client|email|work)\b/.test(t) || /\b(iş|mail|e-?posta|patron|müşteri)\b/.test(t)) {
-    return pick(["corporate-whisperer", "deadline-diplomat", "micromanager-tamer"]);
-  }
-
-  // Generic “write a message” fallback
-  if (
-    /\b(message|text|write|rewrite|draft|ask)\b/.test(t) ||
-    /\b(mesaj|yaz|yazmak|sor|sormak|rica)\b/.test(t)
-  ) {
-    return pick(["awkward-text-fixer", "delicate-truth", "guilt-free-no"]);
-  }
-
-  // Absolute fallback: always return something sensible.
-  return pick(["awkward-text-fixer", "corporate-whisperer", "delicate-truth"]);
+function fillConciergeOffScopeReply(locale: Locale, toolLines: string): string {
+  const d = DICTS[locale] ?? DICTS.en;
+  return `${d["concierge.offScope.lead"]}\n\n${d["concierge.offScope.try"]}\n${toolLines}`;
 }
 
 export async function POST(req: Request) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
-      { error: "Missing OPENAI_API_KEY." },
+      { error: conciergeError("en", "concierge.errors.missingApi"), code: "misconfigured" },
       { status: 503 }
     );
   }
@@ -202,32 +181,17 @@ export async function POST(req: Request) {
   try {
   const body = (await req.json().catch(() => null)) as unknown;
   if (!isRequestBody(body)) {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    const badLocale =
+      isRecord(body) && typeof body.locale === "string" ? parseApiLocale(body.locale) : "en";
+    return NextResponse.json(
+      { error: conciergeError(badLocale, "concierge.errors.invalidBody"), code: "invalid_body" },
+      { status: 400 }
+    );
   }
 
-  const locale: Locale =
-    typeof body.locale === "string" &&
-    (body.locale === "en" ||
-      body.locale === "tr" ||
-      body.locale === "es" ||
-      body.locale === "fr" ||
-      body.locale === "de" ||
-      body.locale === "zh")
-      ? body.locale
-      : "en";
+  const locale = parseApiLocale(body.locale);
   const lastUser = [...body.messages].reverse().find((m) => m.role === "user")?.content ?? "";
-  const lastUserLower = lastUser.toLowerCase();
-  // Heuristic: if the user is clearly asking to write/rewrite a message (which our tools do),
-  // treat it as in-scope even if the classifier is overly strict.
-  const looksLikeMessageRequest =
-    /\b(message|text|dm|email|write|rewrite|draft)\b/.test(lastUserLower) ||
-    /\b(ask|how do i ask|how can i ask|how to ask|politely)\b/.test(lastUserLower) ||
-    /\b(mesaj|yaz|yazmak|metin|dm|e-?posta|mail)\b/.test(lastUserLower) ||
-    /\b(sor|sormak|nasıl sor|kibarca|rica)\b/.test(lastUserLower) ||
-    /\b(mensaje|escribir|texto|correo)\b/.test(lastUserLower) ||
-    /\b(message|écrire|texte|courriel)\b/.test(lastUserLower) ||
-    /\b(nachricht|text|schreib|mail)\b/.test(lastUserLower) ||
-    /消息|短信|写|邮件/.test(lastUser);
+  const looksLikeMessageRequest = looksLikeToolableMessageRequest(lastUser);
   const toolCatalog = TOOLS.map((t) => ({
     tool: t.tool,
     emoji: t.emoji,
@@ -263,7 +227,7 @@ export async function POST(req: Request) {
     scope = { in_scope: true };
   }
   if (scope && scope.in_scope === false && !looksLikeMessageRequest) {
-    const suggested_tools = fallbackSuggestedTools(lastUser);
+    const suggested_tools = alignSuggestedTools(lastUser, fallbackSuggestedTools(lastUser));
     const toolLines = suggested_tools
       .map((id) => {
         const t = TOOLS.find((x) => x.tool === id);
@@ -273,10 +237,7 @@ export async function POST(req: Request) {
       })
       .join("\n");
 
-    const reply =
-      locale === "tr"
-        ? `Bunu isendai ile halledebiliriz: eşine kibarca hediye fikrini sormak için bir mesaj taslağı çıkarabilirim.\n\nŞunları dene:\n${toolLines}`
-        : `We can handle this with isendai: I can draft a polite message to ask for gift ideas.\n\nTry:\n${toolLines}`;
+    const reply = fillConciergeOffScopeReply(locale, toolLines);
 
     return NextResponse.json({ reply, suggested_tools });
   }
@@ -286,11 +247,17 @@ export async function POST(req: Request) {
 
   const lmBinding = resolveConciergeLanguageModel(modelId);
   if (!lmBinding) {
-    return NextResponse.json({ error: "Invalid model." }, { status: 400 });
+    return NextResponse.json(
+      { error: conciergeError(locale, "concierge.errors.invalidModel"), code: "invalid_model" },
+      { status: 400 }
+    );
   }
   if (!hasProviderKey(lmBinding.provider)) {
     return NextResponse.json(
-      { error: `Missing API credentials for ${lmBinding.provider}.` },
+      {
+        error: conciergeError(locale, "concierge.errors.missingProvider"),
+        code: "misconfigured",
+      },
       { status: 503 }
     );
   }
@@ -302,6 +269,10 @@ export async function POST(req: Request) {
     "If the user asks about available products, summarize the catalog.\n" +
     "Be friendly, concise, and practical.\n" +
     "IMPORTANT: Only discuss the isendai tools suite (tools, how it works, pricing/models, payments, privacy). If asked anything else, refuse briefly and redirect back to choosing a tool.\n" +
+    "Tool-matching rules:\n" +
+    "- Gift / asking what someone wants for a present / awkward message to partner → awkward-text-fixer (NOT relationship-define-the-talk).\n" +
+    "- 'What are we?' / define-the-relationship (DTR) talks → relationship-define-the-talk.\n" +
+    "- Only put a tool id in suggested_tools if the user's intent clearly fits that tool's description.\n" +
     "When you recommend a tool, include it as a clickable markdown link in your reply using this format:\n" +
     "- [<emoji> <tool label>](/?tool=<tool id>)\n" +
     "Only use internal links that start with '/'.\n" +
@@ -324,34 +295,37 @@ export async function POST(req: Request) {
       messages: body.messages.map((m) => ({ role: m.role, content: m.content })),
     });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "AI request failed.";
-    return NextResponse.json({ error: message }, { status: 502 });
+    return NextResponse.json(
+      { error: conciergeError(locale, "concierge.errors.aiFailed"), code: "ai_failed" },
+      { status: 502 }
+    );
   }
 
   const content = result.text?.trim() ?? "";
   const parsed = safeParseResponse(content);
 
   if (!parsed) {
-    // Fail soft: return plain text with no suggestions.
     return NextResponse.json({
       reply: content || "OK",
-      suggested_tools: fallbackSuggestedTools(lastUser),
+      suggested_tools: alignSuggestedTools(lastUser, fallbackSuggestedTools(lastUser)),
     });
   }
 
-  // Guarantee at least one suggestion for valid in-scope queries.
-  if (!parsed.suggested_tools?.length) {
-    return NextResponse.json({
-      reply: parsed.reply,
-      suggested_tools: fallbackSuggestedTools(lastUser),
-    });
-  }
+  const suggested_tools = alignSuggestedTools(
+    lastUser,
+    parsed.suggested_tools?.length ? parsed.suggested_tools : fallbackSuggestedTools(lastUser)
+  );
 
-  return NextResponse.json(parsed);
+  return NextResponse.json({
+    reply: parsed.reply,
+    suggested_tools,
+  });
   } catch (e) {
-    const message = e instanceof Error ? e.message : "Concierge request failed.";
     console.error("[concierge] POST error:", e);
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json(
+      { error: conciergeError("en", "concierge.errors.server"), code: "server_error" },
+      { status: 500 }
+    );
   }
 }
 

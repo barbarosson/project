@@ -96,8 +96,12 @@ export function ConciergeChat({ className }: { className?: string }) {
         }),
       });
       const json = (await res.json()) as Partial<ApiResponse> & { error?: string };
-      if (!res.ok) throw new Error(json?.error || "Chat failed.");
-      if (!json.reply) throw new Error("No reply returned.");
+      if (!res.ok) {
+        throw new Error(json?.error || t("concierge.errors.chatFailed"));
+      }
+      if (!json.reply) {
+        throw new Error(t("concierge.errors.noReply"));
+      }
 
       const assistantMsg: UiMsg = {
         id: crypto.randomUUID(),
@@ -110,7 +114,7 @@ export function ConciergeChat({ className }: { className?: string }) {
         : [];
       setSuggested(suggestedTools);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Chat failed.");
+      setError(e instanceof Error ? e.message : t("concierge.errors.chatFailed"));
     } finally {
       setBusy(false);
     }

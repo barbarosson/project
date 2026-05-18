@@ -29,8 +29,14 @@ import {
 import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
 import { generateTextGoogleWithFlashFallback } from "@/lib/ai/gemini-flash-fallback";
 import { formatCreditsFromTenths } from "@/lib/credits-units";
+import { generateOutOfScopeError, parseApiLocale } from "@/lib/api-error-messages";
+import { DICTS, type Locale } from "@/i18n/dictionaries";
+import {
+  isDefineRelationshipIntent,
+  isGiftMessageIntent,
+} from "@/lib/intent-tool-routing";
 
-type RequestBody = ToolPayload & { model?: string; extra?: string };
+type RequestBody = ToolPayload & { model?: string; extra?: string; locale?: string };
 
 function stripMarketingFields<T extends Record<string, unknown>>(b: T): Omit<T, "leadEmail" | "marketingFreeTrial"> {
   const rest = { ...b } as Record<string, unknown>;
@@ -184,6 +190,25 @@ async function checkScope(payload: RequestBody): Promise<ScopeResult> {
     if (wantsQuit) return { in_scope: true };
   }
 
+  if (tool === "awkward-text-fixer" && isGiftMessageIntent(rawInput)) {
+    return { in_scope: true };
+  }
+
+  if (
+    tool === "relationship-define-the-talk" &&
+    isGiftMessageIntent(rawInput) &&
+    !isDefineRelationshipIntent(rawInput)
+  ) {
+    return {
+      in_scope: false,
+      suggested_tool: "awkward-text-fixer",
+    };
+  }
+
+  if (tool === "relationship-define-the-talk" && isDefineRelationshipIntent(rawInput)) {
+    return { in_scope: true };
+  }
+
   const allowed = [...TOOLS.map((t) => t.tool), "unknown"].join(", ");
 
   const override = resolveModelOverride(payload);
@@ -200,6 +225,8 @@ async function checkScope(payload: RequestBody): Promise<ScopeResult> {
     "IMPORTANT: Classify based on the user's INTENT and TOPIC, not the current tone or quality of writing.\n" +
     "Be permissive: if the selected tool can reasonably help with the user's intent, mark in_scope=true even if they didn't explicitly ask for the final artifact.\n" +
     'Example: graceful-quitter is IN SCOPE for "I want to quit" or "I\'m resigning" even if "write a resignation letter" is not stated.\n' +
+    'Example: awkward-text-fixer is IN SCOPE for gift messages like "I want to buy you a gift but don\'t know what you want — tell me".\n' +
+    "relationship-define-the-talk is ONLY for starting a define-the-relationship (what are we?) talk — NOT for gift shopping messages.\n" +
     "For corporate-whisperer specifically, rude/angry/unprofessional drafts are IN SCOPE.\n" +
     "Do not include any extra keys, markdown, or text.";
 
@@ -466,26 +493,41 @@ export async function POST(req: Request) {
   try {
     body = (await req.json()) as unknown;
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+    return NextResponse.json(
+      { error: DICTS.en["errors.invalidJson"], code: "invalid_json" },
+      { status: 400 }
+    );
   }
+
+  const locale = isRecord(body) ? parseApiLocale(body.locale) : "en";
 
   if (!isToolPayload(body)) {
     return NextResponse.json(
-      { error: "Invalid payload for tool." },
+      { error: DICTS[locale]["errors.invalidPayload"], code: "invalid_payload" },
       { status: 400 }
     );
   }
 
   const lenErr = payloadLengthError(body);
   if (lenErr) {
-    return NextResponse.json({ error: lenErr, code: "input_too_long" }, { status: 400 });
+    const max = String(TOOL_INPUT_MAX_CHARS);
+    return NextResponse.json(
+      {
+        error: DICTS[locale]["errors.inputTooLong"].replace("{max}", max),
+        code: "input_too_long",
+      },
+      { status: 400 }
+    );
   }
 
   const rpm = Math.min(300, Math.max(10, Number(process.env.ISENDAI_GENERATE_RPM ?? "60")));
   const rl = enforceRateLimit(req, "generate", rpm, 60_000);
   if (!rl.ok) {
     return NextResponse.json(
-      { error: "Too many requests. Please wait and try again.", code: "rate_limited" },
+      {
+        error: DICTS[locale]["errors.rateLimit"],
+        code: "rate_limited",
+      },
       { status: 429, headers: { "retry-after": String(Math.ceil(rl.retryAfterMs / 1000)) } }
     );
   }
@@ -554,16 +596,22 @@ export async function POST(req: Request) {
     // (2) Hard gate: block out-of-scope inputs before generation.
     const scope = await checkScope(body);
     if (!scope.in_scope) {
-      const suggestion =
+      const suggested =
         scope.suggested_tool && scope.suggested_tool !== "unknown"
-          ? ` Try tool=${scope.suggested_tool}.`
-          : "";
+          ? scope.suggested_tool
+          : isGiftMessageIntent(rawInputFor(body))
+            ? "awkward-text-fixer"
+            : undefined;
+      const giftMismatch =
+        body.tool === "relationship-define-the-talk" && isGiftMessageIntent(rawInputFor(body));
       return NextResponse.json(
         {
-          error:
-            `Out of scope for ${body.tool}. ` +
-            (scope.reason ? `${scope.reason}` : "Please use the appropriate tool.") +
-            suggestion,
+          error: generateOutOfScopeError(locale, body.tool, {
+            suggestedTool: suggested,
+            giftMismatch,
+          }),
+          code: "out_of_scope",
+          suggested_tool: suggested,
         },
         { status: 400, headers: debugHeaders }
       );

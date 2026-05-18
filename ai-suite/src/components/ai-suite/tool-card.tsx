@@ -57,7 +57,7 @@ export function ToolCard({
   /** Prefill main text (e.g. from `?text=`). Ignored for coverletter-ai. */
   initialText?: string;
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const { profileDefaultModel } = useModel();
   const [busy, setBusy] = React.useState(false);
 
@@ -126,6 +126,7 @@ export function ToolCard({
       const body: Record<string, unknown> = {
         ...payload,
         model,
+        locale,
       };
 
       const res = await fetch("/api/generate", {
@@ -157,6 +158,11 @@ export function ToolCard({
 
       if (res.status === 402 || json?.code === "insufficient_credits") {
         openPricingModal(tool);
+        toast.error(json?.error ?? t("errors.generationFailed"));
+        return;
+      }
+
+      if (res.status === 400 && json?.code === "out_of_scope") {
         toast.error(json?.error ?? t("errors.generationFailed"));
         return;
       }

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Minus, MoveRight, Plus, Sparkles } from "lucide-react";
 
 import { ToolCard } from "@/components/ai-suite/tool-card";
+import { PromoCampaignBanner } from "@/components/promo-campaign-banner";
 import { SitePageChrome, SitePageHeader } from "@/components/site-page-layout";
 import { formatCreditsFromTenths } from "@/lib/credits-units";
 import { useI18n } from "@/i18n/i18n-provider";
@@ -119,6 +120,7 @@ export function HomeClient({
           <p className="mt-4 max-w-3xl text-balance text-base font-medium leading-relaxed text-slate-200 sm:text-lg">
             {t("hero.subtitle")}
           </p>
+          <PromoCampaignBanner className="mt-6" showPricingLink />
           <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
             <button
               type="button"
