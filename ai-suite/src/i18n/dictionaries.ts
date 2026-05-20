@@ -279,6 +279,12 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copySuccessToast": "Copied to clipboard! 📋",
     "ui.copyFailed": "Could not copy.",
 
+    "billing.lemon.pendingReview":
+      "Payments: Lemon Squeezy merchant review in progress. Checkout may open in test mode only — live card charges start after approval. Need credits now? Use staging dev top-up or contact support.",
+    "billing.lemon.testMode":
+      "Payments: Lemon Squeezy is in test mode. Use test cards in checkout; live charges require live mode in the Lemon dashboard and Netlify env.",
+    "billing.lemon.unconfigured":
+      "Payments: Lemon Squeezy is not fully configured on this deploy. Set LEMON_SQUEEZY_* env vars or use dev top-up on staging.",
     "pricing.title": "Pricing",
     "pricing.subtitle":
       "Monthly from $7.99, yearly ~17% off, or pay-as-you-go from $1. Economy & GPT‑4o mini: 1 credit per 500 chars; Standard 15; Premium 25 (per chunk, rounded up).",
@@ -293,7 +299,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.hero.footerJump": "How credits work",
     "pricing.monthly.sectionTitle": "Monthly credit bundles",
     "pricing.monthly.sectionLead":
-      "Once Lemon Squeezy checkout is enabled, subscriptions renew each billing period. Pick Starter, Growth, or Scale to match how much you generate.",
+      "Subscriptions renew each billing period via Lemon Squeezy. Pick Starter, Growth, or Scale to match how much you generate.",
     "pricing.monthly.starter.name": "Starter",
     "pricing.monthly.starter.price": "$7.99",
     "pricing.monthly.starter.credits": "500 credits / month",
@@ -452,9 +458,9 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.privacyMetaDescription":
       "Privacy Policy for isendai. How we collect, use, and store your text and account data.",
     "legal.paymentsStub":
-      "Paid packs and subscriptions will be enabled with Lemon Squeezy; until then, use credits from dev top-up (non-prod) or your operator.",
+      "Paid packs and subscriptions are sold via Lemon Squeezy. While merchant approval is pending, you may only complete test checkouts or receive operator-granted credits.",
     "growth.zeroCreditsHint":
-      "Balance is 0 — use the dev top-up on Pricing (local only), sign in, or ask your admin to add credits.",
+      "Balance is 0 — buy a pack on Pricing (when live), use staging dev top-up, or contact us for help.",
     "growth.freeTrial.ctaButton": "Generate 1st Message for Free 🎁",
     "growth.freeTrial.modalTitle": "Unlock your first free generation",
     "growth.freeTrial.modalBody":
@@ -920,6 +926,12 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copySuccessToast": "¡Copiado al portapapeles! 📋",
     "ui.copyFailed": "No se pudo copiar.",
 
+    "billing.lemon.pendingReview":
+      "Pagos: revisión de comercio Lemon Squeezy en curso. El checkout puede abrirse solo en modo test; los cobros reales empiezan tras la aprobación. ¿Créditos ya? Top-up dev en staging o contacto.",
+    "billing.lemon.testMode":
+      "Pagos: Lemon Squeezy en modo test. Usa tarjetas de prueba; los cobros reales requieren modo live en Lemon y Netlify.",
+    "billing.lemon.unconfigured":
+      "Pagos: Lemon Squeezy no está configurado en este deploy. Define LEMON_SQUEEZY_* o usa top-up dev en staging.",
     "pricing.title": "Precios",
     "pricing.subtitle":
       "Desde $7.99/mes, anual ~17 % menos o pago por uso desde $1. Economy y GPT‑4o mini: 1 crédito por 500 caracteres; Estándar 15; Premium 25 (por bloque, redondeo superior).",
@@ -1023,7 +1035,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.modelNote.packHint":
       "Pack $1 → solo Fast AI · Pack $1,49 → Fast + Pro AI · Pack $1,99 → las tres clases (Fast, Pro, Genius).",
     "pricing.sectionFootnote":
-      "El límite de versiones por generación sigue tu cuenta. El checkout Lemon Squeezy para paquetes mensuales llegará después.",
+      "El límite de versiones sigue tu cuenta. Checkout con Lemon Squeezy (cobros reales cuando la tienda esté en modo live).",
     "pricing.dev.title": "Modo desarrollador",
     "pricing.dev.body": "Añade créditos en local durante el desarrollo (solo no producción):",
     "pricing.dev.secretHint":
@@ -1083,7 +1095,7 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.privacyMetaDescription":
       "Política de privacidad de isendai. Cómo recopilamos, usamos y almacenamos tu texto y datos de cuenta.",
     "legal.paymentsStub":
-      "Los pagos con Lemon Squeezy llegarán más adelante; hasta entonces usa la recarga dev (no prod) o tu operador.",
+      "Los packs y suscripciones se venden con Lemon Squeezy. Mientras la revisión del comercio está pendiente, solo checkout test o créditos del operador.",
     "growth.zeroCreditsHint":
       "Saldo 0: usa la recarga dev en Precios (solo local), inicia sesión o pide créditos al administrador.",
     "growth.freeTrial.ctaButton": "Genera tu 1.er mensaje gratis 🎁",
@@ -1542,6 +1554,12 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copySuccessToast": "Copié dans le presse-papiers ! 📋",
     "ui.copyFailed": "Impossible de copier.",
 
+    "billing.lemon.pendingReview":
+      "Paiements : examen marchand Lemon Squeezy en cours. Checkout possible en mode test seulement ; les prélèvements live après approbation. Crédits ? Recharge dev staging ou contact.",
+    "billing.lemon.testMode":
+      "Paiements : Lemon Squeezy en mode test. Cartes de test au checkout ; le live exige le mode live Lemon + Netlify.",
+    "billing.lemon.unconfigured":
+      "Paiements : Lemon Squeezy non configuré sur ce déploiement. Variables LEMON_SQUEEZY_* ou recharge dev staging.",
     "pricing.title": "Tarifs",
     "pricing.subtitle":
       "Forfaits dès 7,99 $/mois, annuel ~17 % moins cher, ou à l’usage dès 1 $. Entrée de gamme et GPT‑4o mini : 1 crédit par 500 caractères ; Standard 15 ; Premium 25 (par bloc, arrondi supérieur).",
@@ -1645,7 +1663,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.modelNote.packHint":
       "Pack 1 $ → Fast AI seulement · Pack 1,49 $ → Fast + Pro AI · Pack 1,99 $ → les trois classes (Fast, Pro, Genius).",
     "pricing.sectionFootnote":
-      "La limite de versions par génération suit ton compte. Le checkout Lemon Squeezy pour les offres mensuelles arrive ensuite.",
+      "La limite de versions suit ton compte. Checkout via Lemon Squeezy (prélèvements live quand la boutique est approuvée).",
     "pricing.dev.title": "Mode développeur",
     "pricing.dev.body": "Ajoute des crédits en local pendant le développement (hors production) :",
     "pricing.dev.secretHint":
@@ -1705,7 +1723,7 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.privacyMetaDescription":
       "Politique de confidentialité d’isendai. Comment nous collectons, utilisons et stockons votre texte et vos données.",
     "legal.paymentsStub":
-      "Paiement Lemon Squeezy plus tard ; en attendant utilise la recharge dev (hors prod) ou ton opérateur.",
+      "Forfaits et abonnements via Lemon Squeezy. Pendant l’examen marchand : checkout test ou crédits opérateur uniquement.",
     "growth.zeroCreditsHint":
       "Solde 0 : recharge dev sur Tarifs (local), connecte-toi ou demande des crédits à l’admin.",
     "growth.freeTrial.ctaButton": "Générez votre 1er message gratuitement 🎁",
@@ -2165,6 +2183,12 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copySuccessToast": "In die Zwischenablage kopiert! 📋",
     "ui.copyFailed": "Kopieren fehlgeschlagen.",
 
+    "billing.lemon.pendingReview":
+      "Zahlungen: Lemon-Händlerprüfung läuft. Checkout ggf. nur im Testmodus; Live-Zahlungen nach Freigabe. Credits? Dev-Top-up auf Staging oder Kontakt.",
+    "billing.lemon.testMode":
+      "Zahlungen: Lemon Squeezy im Testmodus. Testkarten im Checkout; Live erfordert Live-Modus in Lemon und Netlify.",
+    "billing.lemon.unconfigured":
+      "Zahlungen: Lemon Squeezy hier nicht konfiguriert. LEMON_SQUEEZY_* setzen oder Dev-Top-up auf Staging.",
     "pricing.title": "Preise",
     "pricing.subtitle":
       "Ab $7.99/Monat, Jahrespaket ~17 % günstiger oder PAYG ab $1. Economy & GPT‑4o mini: 1 Credit pro 500 Zeichen; Standard 15; Premium 25 (pro Block, aufgerundet).",
@@ -2268,7 +2292,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.modelNote.packHint":
       "1-$-Paket → nur Fast AI · 1,49-$-Paket → Fast + Pro AI · 1,99-$-Paket → alle drei Klassen (Fast, Pro, Genius).",
     "pricing.sectionFootnote":
-      "Versionslimit pro Generierung weiterhin über Berechtigungen. Lemon Squeezy für Monatspakete folgt später.",
+      "Versionslimit über deine Berechtigungen. Checkout über Lemon Squeezy (Live nach Freigabe des Stores).",
     "pricing.dev.title": "Entwicklermodus",
     "pricing.dev.body": "Credits in der Entwicklung lokal hinzufügen (nur Nicht-Produktion):",
     "pricing.dev.secretHint":
@@ -2328,7 +2352,7 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.privacyMetaDescription":
       "Datenschutzerklärung für isendai. Wie wir deinen Text und Kontodaten erheben, nutzen und speichern.",
     "legal.paymentsStub":
-      "Lemon Squeezy-Zahlung folgt; bis dahin Dev-Top-up (nicht prod) oder Betreiber-Credits.",
+      "Pakete und Abos über Lemon Squeezy. Während der Händlerprüfung: nur Test-Checkout oder Betreiber-Credits.",
     "growth.zeroCreditsHint":
       "Stand 0: Dev-Top-up unter Preise (nur lokal), anmelden oder Admin um Credits bitten.",
     "growth.freeTrial.ctaButton": "Erste Nachricht gratis generieren 🎁",
@@ -2766,6 +2790,12 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copySuccessToast": "已复制到剪贴板！📋",
     "ui.copyFailed": "复制失败。",
 
+    "billing.lemon.pendingReview":
+      "支付：Lemon Squeezy 商户审核中。结账可能仅为测试模式；获批后开启正式扣款。需要额度？可用 staging 开发充值或联系我们。",
+    "billing.lemon.testMode":
+      "支付：Lemon Squeezy 测试模式。请用测试卡；正式扣款需在 Lemon 与 Netlify 开启 live。",
+    "billing.lemon.unconfigured":
+      "支付：此环境未配置 Lemon Squeezy。请设置 LEMON_SQUEEZY_* 或在 staging 使用开发充值。",
     "pricing.title": "价格与套餐",
     "pricing.subtitle":
       "月付 $7.99 起、年付约省 17%，或按次 $1 起。经济档与 GPT‑4o mini：每 500 字 1 额度；标准档 15；高级档 25（按块向上取整）。",
@@ -2868,7 +2898,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.modelNote.packHint":
       "$1 包 → 仅 Fast AI · $1.49 包 → Fast + Pro AI · $1.99 包 → 三档（Fast、Pro、Genius）。",
     "pricing.sectionFootnote":
-      "每次生成可保存的版本数仍以账户权益为准。月度套餐的 Lemon Squeezy 结账稍后上线。",
+      "每次生成的版本数以账户权益为准。结账由 Lemon Squeezy 提供（商店 live 后正式扣款）。",
     "pricing.dev.title": "开发者模式",
     "pricing.dev.body": "开发环境（非生产）可在本地充值额度：",
     "pricing.dev.secretHint": "若在 .env.local 设置了 DEV_TOPUP_SECRET，请附带请求头 X-Dev-Topup-Secret 或 Authorization: Bearer。",
@@ -2921,7 +2951,7 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.effective": "生效日期：{year}-01-01",
     "legal.termsMetaDescription": "isendai 服务条款。AI 写作工具、订阅与积分包。",
     "legal.privacyMetaDescription": "isendai 隐私政策。我们如何收集、使用和存储您的文本与账户数据。",
-    "legal.paymentsStub": "付费套餐将在 Lemon Squeezy 就绪后启用；此前请用本地 dev 充值或管理员加额度。",
+    "legal.paymentsStub": "套餐与订阅通过 Lemon Squeezy 销售。商户审核期间仅支持测试结账或由运营方授予额度。",
     "growth.zeroCreditsHint": "额度为 0：在「价格」页查看本地 dev 充值说明，或登录/联系管理员。",
     "growth.freeTrial.ctaButton": "免费生成第一条消息 🎁",
     "growth.freeTrial.modalTitle": "解锁首次免费生成",
@@ -3358,6 +3388,12 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copySuccessToast": "Panoya kopyalandı! 📋",
     "ui.copyFailed": "Kopyalanamadı.",
 
+    "billing.lemon.pendingReview":
+      "Ödeme: Lemon Squeezy mağaza incelemesi sürüyor. Checkout yalnızca test modunda açılabilir; canlı tahsilat onay sonrası. Kontör için staging dev top-up veya iletişim.",
+    "billing.lemon.testMode":
+      "Ödeme: Lemon Squeezy test modunda. Test kartları kullanın; canlı için Lemon ve Netlify’da live mod gerekir.",
+    "billing.lemon.unconfigured":
+      "Ödeme: Bu deploy’da Lemon Squeezy tam yapılandırılmamış. LEMON_SQUEEZY_* veya staging dev top-up.",
     "pricing.title": "Paketler",
     "pricing.subtitle":
       "$7.99’dan aylık, yıllıkta ~%17 tasarruf veya $1’den kullandıkça öde. Ekonomi ve GPT‑4o mini: 100 karakterde 0,2 kontör; Standart 3; Premium 5 (yukarı yuvarlanır).",
@@ -3472,7 +3508,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.modelNote.packHint":
       "$1 paket → yalnızca Fast AI · $1,49 paket → Fast + Pro AI · $1,99 paket → üç sınıf (Fast, Pro, Genius).",
     "pricing.sectionFootnote":
-      "Üretim başına sürüm limiti hesap haklarından gelir. Aylık paketler için Lemon Squeezy ödemesi sonraki aşamada.",
+      "Sürüm limiti hesap haklarından gelir. Ödeme Lemon Squeezy ile (mağaza live onaylandığında canlı tahsilat).",
     "pricing.dev.title": "Geliştirici modu",
     "pricing.dev.body": "Geliştirme sırasında yerelde kontör ekleyin (yalnızca üretim dışı):",
     "pricing.dev.secretHint":
@@ -3532,7 +3568,7 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.privacyMetaDescription":
       "isendai gizlilik politikası. Metninizi ve hesap verilerinizi nasıl topladığımız, kullandığımız ve sakladığımız.",
     "legal.paymentsStub":
-      "Lemon Squeezy ödemesi sonra; şimdilik dev top-up (prod dışı) veya operatör kontörü.",
+      "Paket ve abonelikler Lemon Squeezy ile satılır. Mağaza incelemesi sürerken yalnızca test checkout veya operatör kontörü.",
     "growth.zeroCreditsHint":
       "Bakiye 0: Paketler’deki dev top-up (yalnızca lokal), giriş veya yöneticiden kontör iste.",
     "growth.freeTrial.ctaButton": "İlk mesajını ücretsiz oluştur 🎁",

@@ -32,6 +32,7 @@ Apply migrations **in order**:
 3. `supabase/migrations/20260513120000_lemon_processed_orders.sql` (optional, Lemon idempotency)
 4. `supabase/migrations/20260514100000_isendai_variable_credits_and_billing_meta.sql` (**required** for current `billingChargeAndCreateRequest` / variable credits)
 5. `supabase/migrations/20260515120000_user_entitlement_wallet_rpc.sql` (**recommended** for `/api/me/wallet` and nav credits without relying only on service-role table reads)
+6. `supabase/migrations/20260520120000_contact_inquiries.sql` (**required** for `/contact` form — or run `supabase/APPLY_CONTACT.sql` in SQL Editor)
 
 ```bash
 cd ai-suite && supabase db push

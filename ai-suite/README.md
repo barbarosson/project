@@ -159,6 +159,18 @@ Before pointing production traffic at `https://isendai.com`:
 
 Server errors log via `src/instrumentation.ts` and `POST /api/client-error`. Optional: set `ERROR_WEBHOOK_URL` for Slack/Discord-style webhooks.
 
+## Pre-launch while Lemon merchant is in review
+
+You can ship the site **before** Lemon approves live payments:
+
+1. Netlify env: `NEXT_PUBLIC_LEMON_MERCHANT_STATUS=pending_review` (prod + staging). `/pricing` shows an amber notice.
+2. Staging: keep Lemon **test mode** + `POST /api/dev/topup` for credit testing (see Pricing dev section).
+3. Run SQL: `supabase/APPLY_CONTACT.sql` (contact form).
+4. HTTP smoke (no payment): `npm run smoke:routes -- https://isendai.netlify.app` then prod URL.
+5. When Lemon approves: set `NEXT_PUBLIC_LEMON_MERCHANT_STATUS=live`, switch store to **Live**, update live variant IDs + webhook, run one real checkout smoke test.
+
+**Blocked until Lemon live:** real card charges, webhook-settled production revenue, GA `purchase` on real orders.
+
 ## Learn more
 
 - [Next.js Documentation](https://nextjs.org/docs)

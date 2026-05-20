@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "verify:launch-env": "node scripts/verify-launch-env.mjs",
+    "smoke:routes": "node scripts/smoke-routes.mjs",
     "lemon:images": "node scripts/generate-lemon-product-images.mjs"
   },
   "dependencies": {

@@ -17,7 +17,9 @@ import {
   SitePageMain,
   SitePageTitleBlock,
 } from "@/components/site-page-layout";
+import { LemonStatusBanner } from "@/components/billing/lemon-status-banner";
 import { PromoCampaignBanner } from "@/components/promo-campaign-banner";
+import { lemonStatusBannerMessage } from "@/lib/billing/lemon-banner-key";
 import { premiumCta, pageSectionLabel, pageSubtitle } from "@/lib/premium-ui";
 import { DICTS, type Locale } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
@@ -38,6 +40,7 @@ export default async function PricingPage() {
   const locale = resolveLocaleFromCookie(cookieLocale);
   const d = DICTS[locale];
   const authSnapshot = await readServerAuthSnapshot();
+  const lemonBanner = lemonStatusBannerMessage(locale);
 
   return (
     <SitePageChrome>
@@ -50,6 +53,7 @@ export default async function PricingPage() {
           actions={<Link className={premiumCta} href="/">{d["nav.backToHome"]}</Link>}
         />
         <p className={cn(pageSubtitle, "max-w-3xl")}>{d["pricing.subtitle"]}</p>
+        {lemonBanner ? <LemonStatusBanner message={lemonBanner} className="mt-4" /> : null}
         <PromoCampaignBanner className="mt-6" />
         <p className={cn("mt-4", "text-sm font-medium text-violet-200/90 sm:text-base")}>
           {d["pricing.allPaygoPacks"]}
