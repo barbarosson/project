@@ -1,4 +1,5 @@
 import { baseSiteUrl } from "@/lib/site-metadata";
+import { DEFAULT_SUPPORT_EMAIL } from "@/lib/support-email";
 
 export function HomeJsonLd() {
   const url = baseSiteUrl().href.replace(/\/$/, "") || "https://isendai.com";
@@ -16,6 +17,12 @@ export function HomeJsonLd() {
       price: "0",
       priceCurrency: "USD",
       description: "Pay per use credit packs; optional subscriptions via Lemon Squeezy",
+    },
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "customer support",
+      email: DEFAULT_SUPPORT_EMAIL,
+      url: `${url}/contact`,
     },
   };
 
