@@ -447,7 +447,7 @@ export function BannerManager() {
                       </SelectContent>
                     </Select>
                     <p className="text-xs text-muted-foreground">
-                      Hangi dilde gösterilecek? "All" seçerseniz her iki dilde gösterilir.
+                      Hangi dilde gösterilecek? &quot;All&quot; seçerseniz her iki dilde gösterilir.
                     </p>
                   </div>
 
@@ -459,7 +459,7 @@ export function BannerManager() {
                       onChange={(e) => setEditingBanner({ ...editingBanner, order_index: parseInt(e.target.value) || 0 })}
                     />
                     <p className="text-xs text-muted-foreground">
-                      Aynı position'daki bannerlar carousel olarak gösterilir
+                      Aynı position&apos;daki bannerlar carousel olarak gösterilir
                     </p>
                   </div>
                 </div>
@@ -676,7 +676,7 @@ export function BannerManager() {
                     <div className="space-y-1">
                       <Label className="cursor-pointer">Resmi Tam Genişlikte Göster (Full Width Image)</Label>
                       <p className="text-xs text-muted-foreground">
-                        Aktif edildiğinde, resim banner'ın tüm alanını kaplar ve içerik üzerine yerleşir. Hero ve Full-Width layout'lar için idealdir.
+                        Aktif edildiğinde, resim banner&apos;ın tüm alanını kaplar ve içerik üzerine yerleşir. Hero ve Full-Width layout&apos;lar için idealdir.
                       </p>
                     </div>
                   </div>

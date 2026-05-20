@@ -17,7 +17,6 @@ import { toolTitle } from "@/i18n/tool-i18n";
 import {
   resolveConcreteModelId,
   normalizeUserModelId,
-  isModelId,
   type ModelId,
   DEFAULT_MODEL,
 } from "@/models/models";
@@ -176,7 +175,7 @@ export function SuccessClient({
   const userQuestion = React.useMemo(() => {
     if (!stored?.payload) return "";
     return originalTextFromPayload(stored.payload);
-  }, [stored?.payload]);
+  }, [stored]);
 
   const tool: ToolName | null = isToolName(toolParam) ? toolParam : null;
 
@@ -228,7 +227,7 @@ export function SuccessClient({
       setLastModelUsed(modelUsedLabel(toolName, model));
       return json.result;
     },
-    [t]
+    [setLastModelUsed, t]
   );
 
   async function generateAltFromRequest(toolName: ToolName, requestId: string, extra?: string) {
@@ -554,6 +553,7 @@ export function SuccessClient({
                 </div>
                 {tool && stored?.payload ? (
                   <AiFeedbackBar
+                    key={active.id}
                     feedbackKey={active.id}
                     toolId={tool}
                     originalText={originalTextFromPayload(stored.payload)}

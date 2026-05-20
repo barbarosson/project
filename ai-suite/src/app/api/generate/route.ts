@@ -24,13 +24,12 @@ import {
   modelMeta,
   normalizeUserModelId,
   resolveConcreteModelId,
-  type ConcreteModelId,
 } from "@/models/models";
 import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
 import { generateTextGoogleWithFlashFallback } from "@/lib/ai/gemini-flash-fallback";
 import { formatCreditsFromTenths } from "@/lib/credits-units";
 import { generateOutOfScopeError, parseApiLocale } from "@/lib/api-error-messages";
-import { DICTS, type Locale } from "@/i18n/dictionaries";
+import { DICTS } from "@/i18n/dictionaries";
 import {
   isDefineRelationshipIntent,
   isGiftMessageIntent,

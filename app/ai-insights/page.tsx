@@ -755,7 +755,7 @@ export default function AIInsightsPage() {
                                 I have full access to your financial data and can answer complex questions.
                                 Try asking:<br/>
                                 <strong>What is my profit margin this month?</strong><br/>
-                                <strong>Show me customers from Istanbul who haven't paid</strong><br/>
+                                <strong>Show me customers from Istanbul who haven&apos;t paid</strong><br/>
                                 <strong>Bu ayki satışlarım nedir?</strong>
                               </p>
                             </div>

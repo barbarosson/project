@@ -126,7 +126,7 @@ export default function SiteCommanderPage() {
             <CardHeader>
               <CardTitle>Theme Settings</CardTitle>
               <CardDescription>
-                Customize your site's color scheme and branding
+                Customize your site&apos;s color scheme and branding
               </CardDescription>
             </CardHeader>
             <CardContent>

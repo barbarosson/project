@@ -20,7 +20,6 @@ import { OAUTH_UI } from "@/lib/auth/oauth-ui";
 import { FacebookSignInButton } from "./facebook-sign-in-button";
 import { GoogleSignInButton } from "./google-sign-in-button";
 import { LoginAuthToast } from "./login-auth-toast";
-import { OAuthLoginButtons } from "./oauth-login-buttons";
 import { LoginOAuthCodeForward } from "./login-oauth-code-forward";
 import { LoginClient } from "./ui";
 

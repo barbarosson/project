@@ -28,7 +28,7 @@ export function generateOutOfScopeError(
 ): string {
   const d = dict(locale);
   const toolName = resolveToolTitle(locale, tool);
-  let reason =
+  const reason =
     opts?.giftMismatch === true
       ? (d["errors.outOfScopeReason.gift"] ?? d["errors.outOfScopeReason.generic"] ?? "")
       : (d["errors.outOfScopeReason.generic"] ?? "");

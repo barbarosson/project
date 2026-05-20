@@ -579,7 +579,7 @@ export default function BannerStudioPage() {
                             <div className="space-y-1">
                               <Label className="cursor-pointer font-semibold">Resmi Tam Genişlikte Göster</Label>
                               <p className="text-xs text-muted-foreground">
-                                Aktif edildiğinde, resim banner'ın tüm alanını kaplar (uçtan uca) ve içerik üzerine yerleşir.
+                                Aktif edildiğinde, resim banner&apos;ın tüm alanını kaplar (uçtan uca) ve içerik üzerine yerleşir.
                               </p>
                             </div>
                           </div>
@@ -668,7 +668,7 @@ export default function BannerStudioPage() {
                               </SelectContent>
                             </Select>
                             <p className="text-xs text-muted-foreground">
-                              Aynı position'a farklı diller için ayrı bannerlar ekleyebilirsiniz
+                              Aynı position&apos;a farklı diller için ayrı bannerlar ekleyebilirsiniz
                             </p>
                           </div>
 

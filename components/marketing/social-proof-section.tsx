@@ -62,7 +62,7 @@ export function SocialProofSection() {
               <Quote className="h-8 w-8 text-primary/20 mb-4" />
 
               <p className="text-foreground mb-6 leading-relaxed">
-                "{testimonial.quote}"
+                &ldquo;{testimonial.quote}&rdquo;
               </p>
 
               <div className="flex items-center gap-3 pt-4 border-t">

@@ -122,7 +122,7 @@ export function ThemeSettings({ onUpdate }: ThemeSettingsProps) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Theme Settings</h2>
-          <p className="text-muted-foreground">Customize your site's appearance and branding</p>
+          <p className="text-muted-foreground">Customize your site&apos;s appearance and branding</p>
         </div>
         <Button onClick={handleSave} disabled={saving}>
           {saving ? (

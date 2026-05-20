@@ -294,7 +294,7 @@ export async function POST(req: Request) {
       system: mainSystem,
       messages: body.messages.map((m) => ({ role: m.role, content: m.content })),
     });
-  } catch (e) {
+  } catch {
     return NextResponse.json(
       { error: conciergeError(locale, "concierge.errors.aiFailed"), code: "ai_failed" },
       { status: 502 }

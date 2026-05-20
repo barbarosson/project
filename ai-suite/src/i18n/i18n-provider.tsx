@@ -59,7 +59,10 @@ export function I18nProvider({
 }) {
   const router = useRouter();
   const serverLocale = initialLocale ?? "en";
-  const [locale, setLocaleState] = React.useState<Locale>(serverLocale);
+  const [locale, setLocaleState] = React.useState<Locale>(() => {
+    if (typeof window === "undefined") return serverLocale;
+    return resolveClientLocalePreference();
+  });
 
   React.useEffect(() => {
     document.documentElement.lang = locale;
@@ -67,9 +70,6 @@ export function I18nProvider({
 
   React.useEffect(() => {
     const preferred = resolveClientLocalePreference();
-    if (preferred !== serverLocale) {
-      setLocaleState(preferred);
-    }
     const cookieLocale = readCookieLocale();
     if (cookieLocale !== preferred) {
       try {

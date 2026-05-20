@@ -26,9 +26,7 @@ import {
   glassInteractive,
   glassSurface,
   premiumCta,
-  sectionGradientBody,
   sectionGradientBodySm,
-  sectionGradientHeading,
   sectionGradientShell,
   sectionGradientSubheading,
   sectionPanelCyan,
@@ -67,26 +65,23 @@ export function HomeClient({
 
   const selectedFromUrl = searchParams.get("tool") as ToolName | null;
   const defaultTool = TOOLS[0]?.tool ?? "corporate-whisperer";
-  const [selected, setSelected] = React.useState<ToolName>(
+  const [selectedState, setSelectedState] = React.useState<ToolName>(
     selectedFromUrl && TOOLS.some((x) => x.tool === selectedFromUrl)
       ? selectedFromUrl
       : defaultTool
   );
+  const selected =
+    selectedFromUrl && TOOLS.some((x) => x.tool === selectedFromUrl)
+      ? selectedFromUrl
+      : selectedState;
   const [toolPrefill, setToolPrefill] = React.useState<string | undefined>();
   const [toolPrefillKey, setToolPrefillKey] = React.useState(0);
-
-  React.useEffect(() => {
-    const fromUrl = searchParams.get("tool") as ToolName | null;
-    if (fromUrl && TOOLS.some((x) => x.tool === fromUrl) && fromUrl !== selected) {
-      setSelected(fromUrl);
-    }
-  }, [searchParams, selected]);
 
   function selectTool(
     tool: ToolName,
     opts?: { draftText?: string; scroll?: boolean; updateUrl?: boolean }
   ) {
-    setSelected(tool);
+    setSelectedState(tool);
     if (opts?.draftText?.trim()) {
       setToolPrefill(opts.draftText.trim());
       setToolPrefillKey((k) => k + 1);

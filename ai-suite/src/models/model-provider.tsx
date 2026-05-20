@@ -46,15 +46,10 @@ export function ModelProvider({
   const profileDefaultModel = initialDefaultAiModel ?? (DEFAULT_MODEL as UserFacingModelId);
 
   const [model, setModelState] = React.useState<ModelId>(() => {
+    if (typeof window === "undefined") return profileDefaultModel;
     const stored = readLocalStorageModel();
     return stored ?? profileDefaultModel;
   });
-
-  React.useEffect(() => {
-    const stored = readLocalStorageModel();
-    const next = stored ?? profileDefaultModel;
-    setModelState(isModelId(next) ? next : DEFAULT_MODEL);
-  }, [profileDefaultModel]);
 
   const setModel = React.useCallback((next: ModelId) => {
     setModelState(next);

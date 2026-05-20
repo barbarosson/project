@@ -18,7 +18,6 @@ import {
   modelMeta,
   normalizeUserModelId,
   resolveConcreteModelId,
-  type ConcreteModelId,
 } from "@/models/models";
 import { formatCreditsFromTenths } from "@/lib/credits-units";
 import { enforceRateLimit } from "@/lib/rate-limit";

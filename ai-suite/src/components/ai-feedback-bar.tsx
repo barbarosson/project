@@ -32,12 +32,6 @@ export function AiFeedbackBar({
   const [animating, setAnimating] = React.useState<FeedbackRating | null>(null);
   const [busy, setBusy] = React.useState(false);
 
-  React.useEffect(() => {
-    setSubmitted(null);
-    setAnimating(null);
-    setBusy(false);
-  }, [feedbackKey]);
-
   async function submit(rating: FeedbackRating) {
     if (submitted || busy) return;
     setAnimating(rating);
@@ -69,6 +63,7 @@ export function AiFeedbackBar({
 
   return (
     <div
+      key={feedbackKey}
       className={cn(
         "mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/[0.08] px-4 py-3",
         glassSurface

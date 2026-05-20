@@ -100,11 +100,11 @@ export function ConciergeChat({
   const [input, setInput] = React.useState("");
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  const lastUserDraftRef = React.useRef("");
+  const [lastUserDraft, setLastUserDraft] = React.useState("");
 
   function openSuggestedTool(tool: ToolName, scroll = true) {
     onOpenTool?.(tool, {
-      draftText: lastUserDraftRef.current || undefined,
+      draftText: lastUserDraft || undefined,
       scroll,
     });
   }
@@ -116,7 +116,7 @@ export function ConciergeChat({
     setSuggested([]);
     setBusy(true);
 
-    lastUserDraftRef.current = text;
+    setLastUserDraft(text);
     const userMsg: UiMsg = { id: crypto.randomUUID(), role: "user", content: text };
     const nextMsgs = [...messages, userMsg];
     setMessages(nextMsgs);
