@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -60,6 +60,22 @@ export function EditManualExpenseDialog({ expense, open, onOpenChange, onSuccess
     notes: ''
   })
 
+  const fetchAccounts = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('accounts')
+        .select('id, name, type, currency, current_balance')
+        .eq('tenant_id', tenantId)
+        .eq('is_active', true)
+        .order('name')
+
+      if (error) throw error
+      setAccounts(data || [])
+    } catch (error) {
+      console.error('Error fetching accounts:', error)
+    }
+  }, [tenantId])
+
   useEffect(() => {
     if (open && tenantId) {
       fetchAccounts()
@@ -71,7 +87,7 @@ export function EditManualExpenseDialog({ expense, open, onOpenChange, onSuccess
         .order('name')
         .then(({ data }) => setStaffList(data || []))
     }
-  }, [open, tenantId])
+  }, [open, tenantId, fetchAccounts])
 
   useEffect(() => {
     if (expense) {
@@ -89,22 +105,6 @@ export function EditManualExpenseDialog({ expense, open, onOpenChange, onSuccess
       })
     }
   }, [expense])
-
-  async function fetchAccounts() {
-    try {
-      const { data, error } = await supabase
-        .from('accounts')
-        .select('id, name, type, currency, current_balance')
-        .eq('tenant_id', tenantId)
-        .eq('is_active', true)
-        .order('name')
-
-      if (error) throw error
-      setAccounts(data || [])
-    } catch (error) {
-      console.error('Error fetching accounts:', error)
-    }
-  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

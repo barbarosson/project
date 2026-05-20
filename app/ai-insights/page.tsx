@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -62,21 +62,7 @@ export default function AIInsightsPage() {
   const [threads, setThreads] = useState<Thread[]>([])
   const [loadingHistory, setLoadingHistory] = useState(false)
 
-  useEffect(() => {
-    if (!tenantLoading && tenantId) {
-      generateInsights()
-      generateCashFlowPrediction()
-      loadThreads()
-    }
-  }, [tenantId, tenantLoading])
-
-  useEffect(() => {
-    if (currentThreadId && tenantId) {
-      loadThreadHistory(currentThreadId)
-    }
-  }, [currentThreadId, tenantId])
-
-  async function generateInsights() {
+  const generateInsights = useCallback(async () => {
     if (!tenantId) return
 
     try {
@@ -309,9 +295,9 @@ export default function AIInsightsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [tenantId, t.aiInsights])
 
-  async function generateCashFlowPrediction() {
+  const generateCashFlowPrediction = useCallback(async () => {
     if (!tenantId) return
 
     try {
@@ -359,9 +345,9 @@ export default function AIInsightsPage() {
     } catch (error) {
       console.error('Error generating cash flow prediction:', error)
     }
-  }
+  }, [tenantId])
 
-  async function loadThreads() {
+  const loadThreads = useCallback(async () => {
     if (!tenantId) return
 
     try {
@@ -377,9 +363,9 @@ export default function AIInsightsPage() {
     } catch (error) {
       console.error('Error loading threads:', error)
     }
-  }
+  }, [tenantId])
 
-  async function loadThreadHistory(threadId: string) {
+  const loadThreadHistory = useCallback(async (threadId: string) => {
     if (!tenantId) return
     setLoadingHistory(true)
 
@@ -407,7 +393,21 @@ export default function AIInsightsPage() {
     } finally {
       setLoadingHistory(false)
     }
-  }
+  }, [tenantId])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId) {
+      generateInsights()
+      generateCashFlowPrediction()
+      loadThreads()
+    }
+  }, [tenantId, tenantLoading, generateInsights, generateCashFlowPrediction, loadThreads])
+
+  useEffect(() => {
+    if (currentThreadId && tenantId) {
+      loadThreadHistory(currentThreadId)
+    }
+  }, [currentThreadId, tenantId, loadThreadHistory])
 
   async function startNewConversation() {
     setCurrentThreadId(null)

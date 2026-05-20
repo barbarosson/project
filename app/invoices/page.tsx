@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Button } from '@/components/ui/button'
@@ -112,13 +112,7 @@ export default function InvoicesPage() {
   const [invoiceToSendTevkifat, setInvoiceToSendTevkifat] = useState<Invoice | null>(null)
   const [invoiceEdocs, setInvoiceEdocs] = useState<Record<string, { ettn: string; status: string; document_type: string }>>({})
 
-  useEffect(() => {
-    if (!tenantLoading && tenantId) {
-      fetchInvoices()
-    }
-  }, [tenantId, tenantLoading])
-
-  async function fetchInvoices() {
+  const fetchInvoices = useCallback(async () => {
     if (!tenantId) return
 
     try {
@@ -182,7 +176,13 @@ export default function InvoicesPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [tenantId])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId) {
+      fetchInvoices()
+    }
+  }, [tenantId, tenantLoading, fetchInvoices])
 
   const getStatusBadge = (status: string) => {
     const colors: Record<string, string> = {

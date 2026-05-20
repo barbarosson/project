@@ -56,15 +56,7 @@ export default function AccountingAIPage() {
     scrollToBottom()
   }, [messages, scrollToBottom])
 
-  useEffect(() => {
-    if (!tenantLoading && tenantId) loadThreads()
-  }, [tenantId, tenantLoading])
-
-  useEffect(() => {
-    if (currentThreadId && tenantId) loadThreadHistory(currentThreadId)
-  }, [currentThreadId, tenantId])
-
-  async function loadThreads() {
+  const loadThreads = useCallback(async () => {
     if (!tenantId) return
     const { data } = await supabase
       .from('accounting_ai_threads')
@@ -73,9 +65,9 @@ export default function AccountingAIPage() {
       .order('updated_at', { ascending: false })
       .limit(15)
     setThreads(data || [])
-  }
+  }, [tenantId])
 
-  async function loadThreadHistory(threadId: string) {
+  const loadThreadHistory = useCallback(async (threadId: string) => {
     if (!tenantId) return
     setLoadingHistory(true)
     try {
@@ -98,7 +90,15 @@ export default function AccountingAIPage() {
     } finally {
       setLoadingHistory(false)
     }
-  }
+  }, [tenantId])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId) loadThreads()
+  }, [tenantId, tenantLoading, loadThreads])
+
+  useEffect(() => {
+    if (currentThreadId && tenantId) loadThreadHistory(currentThreadId)
+  }, [currentThreadId, tenantId, loadThreadHistory])
 
   function startNewChat() {
     setCurrentThreadId(null)

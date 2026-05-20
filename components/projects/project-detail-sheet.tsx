@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -37,11 +37,7 @@ export function ProjectDetailSheet({ projectId, tenantId, open, onOpenChange, is
   const [data, setData] = useState<ProjectData | null>(null)
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    if (open && projectId) loadData()
-  }, [open, projectId])
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     if (!projectId) return
     setLoading(true)
 
@@ -65,7 +61,11 @@ export function ProjectDetailSheet({ projectId, tenantId, open, onOpenChange, is
       orders: ordersRes.data || [],
     })
     setLoading(false)
-  }
+  }, [projectId])
+
+  useEffect(() => {
+    if (open && projectId) loadData()
+  }, [open, projectId, loadData])
 
   function getStatusBadge(status: string) {
     const map: Record<string, string> = {

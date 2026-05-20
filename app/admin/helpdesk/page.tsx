@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -75,11 +75,31 @@ export default function HelpdeskPage() {
   const [resolveDialogOpen, setResolveDialogOpen] = useState(false)
   const [resolution, setResolution] = useState('')
 
+  const fetchTickets = useCallback(async () => {
+    try {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('support_tickets')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setTickets(data || [])
+      setFilteredTickets(data || [])
+    } catch (error: any) {
+      console.error('Error fetching tickets:', error)
+      toast.error('Failed to load tickets')
+    } finally {
+      setLoading(false)
+    }
+  }, [tenantId])
+
   useEffect(() => {
     if (tenantId) {
       fetchTickets()
     }
-  }, [tenantId])
+  }, [tenantId, fetchTickets])
 
   useEffect(() => {
     let filtered = tickets
@@ -98,26 +118,6 @@ export default function HelpdeskPage() {
 
     setFilteredTickets(filtered)
   }, [tickets, statusFilter, searchQuery])
-
-  async function fetchTickets() {
-    try {
-      setLoading(true)
-      const { data, error } = await supabase
-        .from('support_tickets')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setTickets(data || [])
-      setFilteredTickets(data || [])
-    } catch (error: any) {
-      console.error('Error fetching tickets:', error)
-      toast.error('Failed to load tickets')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   async function handleResolveTicket() {
     if (!selectedTicket || !resolution.trim()) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -82,14 +82,7 @@ export default function CampaignsPage() {
     new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
   )
 
-  useEffect(() => {
-    if (!tenantLoading && tenantId) {
-      fetchCampaigns()
-      generateAIRecommendations()
-    }
-  }, [tenantId, tenantLoading])
-
-  async function fetchCampaigns() {
+  const fetchCampaigns = useCallback(async () => {
     if (!tenantId) return
 
     try {
@@ -106,9 +99,9 @@ export default function CampaignsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [tenantId])
 
-  async function generateAIRecommendations() {
+  const generateAIRecommendations = useCallback(async () => {
     if (!tenantId) return
 
     try {
@@ -191,7 +184,14 @@ export default function CampaignsPage() {
     } catch (error) {
       console.error('Error generating recommendations:', error)
     }
-  }
+  }, [tenantId, t.campaigns])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId) {
+      fetchCampaigns()
+      generateAIRecommendations()
+    }
+  }, [tenantId, tenantLoading, fetchCampaigns, generateAIRecommendations])
 
   async function handleCreateCampaign() {
     if (!tenantId) return

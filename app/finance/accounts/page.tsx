@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { convertAmount } from '@/lib/tcmb'
 import type { TcmbRatesByCurrency } from '@/lib/tcmb'
@@ -95,12 +95,6 @@ export default function AccountsPage() {
   })
 
   useEffect(() => {
-    if (tenantId) {
-      fetchAccounts()
-    }
-  }, [tenantId, viewFilter])
-
-  useEffect(() => {
     const dateStr = new Date().toISOString().slice(0, 10)
     fetch(`/api/tcmb?date=${dateStr}`)
       .then((res) => res.ok ? res.json() : null)
@@ -108,7 +102,7 @@ export default function AccountsPage() {
       .catch(() => setTcmbRates(null))
   }, [])
 
-  async function fetchAccounts() {
+  const fetchAccounts = useCallback(async () => {
     try {
       setLoading(true)
       let query = supabase
@@ -127,7 +121,13 @@ export default function AccountsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [tenantId, viewFilter, t.toast.failedToLoadAccounts])
+
+  useEffect(() => {
+    if (tenantId) {
+      fetchAccounts()
+    }
+  }, [tenantId, fetchAccounts])
 
   async function handleAddAccount() {
     try {

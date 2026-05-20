@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, useCallback, type ReactNode } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Button } from '@/components/ui/button'
@@ -105,12 +105,6 @@ export default function ExpensesPage() {
 
   const targetCurrency = (preferredCurrency || 'TRY').toUpperCase()
 
-  useEffect(() => {
-    if (!tenantLoading && tenantId) {
-      fetchData()
-    }
-  }, [tenantId, tenantLoading])
-
   // When navigated from E-Invoice Center with a specific purchase invoice id,
   // go to the incoming invoice detail page.
   useEffect(() => {
@@ -120,7 +114,7 @@ export default function ExpensesPage() {
     router.replace(`/expenses/incoming/${purchaseFromUrl}`)
   }, [purchaseFromUrl, purchaseInvoices, router])
 
-  async function fetchTcmbRatesForDates(dates: string[]): Promise<Record<string, TcmbRatesByCurrency>> {
+  const fetchTcmbRatesForDates = useCallback(async (dates: string[]): Promise<Record<string, TcmbRatesByCurrency>> => {
     const fallbackDate = format(new Date(), 'yyyy-MM-dd')
     const ratesByDate: Record<string, TcmbRatesByCurrency> = {}
     for (let d = 0; d <= 3; d++) {
@@ -154,7 +148,7 @@ export default function ExpensesPage() {
       if (!ratesByDate[dateStr] && ratesByDate[fallbackDate]) ratesByDate[dateStr] = ratesByDate[fallbackDate]
     }
     return ratesByDate
-  }
+  }, [])
 
   function getRatesForDate(dateStr: string | null): TcmbRatesByCurrency | null {
     if (!dateStr) return null
@@ -190,28 +184,7 @@ export default function ExpensesPage() {
     )
   }
 
-  async function fetchData() {
-    if (!tenantId) return
-
-    setLoading(true)
-    try {
-      await fetchPurchaseInvoices()
-    } catch (error) {
-      console.error('Error fetching data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    if (purchaseInvoices.length === 0) return
-    const uniqueDates = Array.from(new Set(
-      purchaseInvoices.map(inv => inv.invoice_date ? format(new Date(inv.invoice_date), 'yyyy-MM-dd') : null).filter(Boolean)
-    )) as string[]
-    fetchTcmbRatesForDates(uniqueDates).then(setTcmbRatesByDate)
-  }, [purchaseInvoices.length])
-
-  async function fetchPurchaseInvoices() {
+  const fetchPurchaseInvoices = useCallback(async () => {
     if (!tenantId) return
 
     const { data, error } = await supabase
@@ -226,7 +199,34 @@ export default function ExpensesPage() {
     }
 
     setPurchaseInvoices(data || [])
-  }
+  }, [tenantId])
+
+  const fetchData = useCallback(async () => {
+    if (!tenantId) return
+
+    setLoading(true)
+    try {
+      await fetchPurchaseInvoices()
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [tenantId, fetchPurchaseInvoices])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId) {
+      fetchData()
+    }
+  }, [tenantId, tenantLoading, fetchData])
+
+  useEffect(() => {
+    if (purchaseInvoices.length === 0) return
+    const uniqueDates = Array.from(new Set(
+      purchaseInvoices.map(inv => inv.invoice_date ? format(new Date(inv.invoice_date), 'yyyy-MM-dd') : null).filter(Boolean)
+    )) as string[]
+    fetchTcmbRatesForDates(uniqueDates).then(setTcmbRatesByDate)
+  }, [purchaseInvoices, fetchTcmbRatesForDates])
 
   const filteredInvoices = purchaseInvoices.filter((invoice) => {
     if (purchaseStatusFilter !== 'all' && invoice.status !== purchaseStatusFilter) return false

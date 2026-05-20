@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -53,13 +53,7 @@ export function MergeCustomersDialog({
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [previewData, setPreviewData] = useState<any>(null)
 
-  useEffect(() => {
-    if (isOpen && tenantId) {
-      fetchCustomers()
-    }
-  }, [isOpen, tenantId])
-
-  const fetchCustomers = async () => {
+  const fetchCustomers = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('customers')
@@ -73,7 +67,13 @@ export function MergeCustomersDialog({
       console.error('Error fetching customers:', error)
       toast.error('Cariler yüklenemedi')
     }
-  }
+  }, [tenantId])
+
+  useEffect(() => {
+    if (isOpen && tenantId) {
+      fetchCustomers()
+    }
+  }, [isOpen, tenantId, fetchCustomers])
 
   const toggleSourceCustomer = (customerId: string) => {
     if (sourceCustomerIds.includes(customerId)) {

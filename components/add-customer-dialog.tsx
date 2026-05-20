@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -131,7 +131,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
   }, [isOpen, companyCurrency])
 
   // Alt şube eklerken üst carinin bilgilerini forma doldur (veri sheet'ten gelirse anında, yoksa fetch)
-  const applyParentToForm = (parent: Record<string, unknown>, parentId: string) => {
+  const applyParentToForm = useCallback((parent: Record<string, unknown>, parentId: string) => {
     const paymentTermsDays = Number(parent.payment_terms) || 0
     const asMonths = paymentTermsDays % 30 === 0 && paymentTermsDays > 0
     setFormData(prev => ({
@@ -171,7 +171,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
       opening_balance: 0,
       branch_code: '',
     }))
-  }
+  }, [companyCurrency])
 
   useEffect(() => {
     if (!isOpen || !initialParentCustomerId) return
@@ -196,7 +196,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
       }
     })()
     return () => { cancelled = true }
-  }, [isOpen, initialParentCustomerId, initialParentData, tenantId, companyCurrency])
+  }, [isOpen, initialParentCustomerId, initialParentData, tenantId, applyParentToForm])
 
   useEffect(() => {
     if (formData.city && hasDistrictData(formData.city)) {
@@ -209,13 +209,7 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
 
   // Cari tipi (tüzel/gerçek kişi) kullanıcı seçimine göre belirlenir; vergi no ile otomatik değiştirilmez
 
-  useEffect(() => {
-    if (isOpen && tenantId) {
-      fetchParentCustomers()
-    }
-  }, [isOpen, tenantId])
-
-  const fetchParentCustomers = async () => {
+  const fetchParentCustomers = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('customers')
@@ -228,7 +222,13 @@ export function AddCustomerDialog({ isOpen, onClose, onSuccess, initialParentCus
     } catch (error) {
       console.error('Error fetching parent customers:', error)
     }
-  }
+  }, [tenantId])
+
+  useEffect(() => {
+    if (isOpen && tenantId) {
+      fetchParentCustomers()
+    }
+  }, [isOpen, tenantId, fetchParentCustomers])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Button } from '@/components/ui/button'
@@ -147,13 +147,7 @@ export default function NewInvoicePage() {
       .catch(() => setTcmbRates({}))
   }, [issueDate])
 
-  useEffect(() => {
-    if (!tenantLoading && tenantId) {
-      fetchData()
-    }
-  }, [tenantId, tenantLoading])
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     if (!tenantId) return
 
     try {
@@ -171,7 +165,13 @@ export default function NewInvoicePage() {
     } catch (error) {
       console.error('Error fetching data:', error)
     }
-  }
+  }, [tenantId])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId) {
+      fetchData()
+    }
+  }, [tenantId, tenantLoading, fetchData])
 
   useEffect(() => {
     if (!selectedCustomerId || !tenantId) {
@@ -204,7 +204,7 @@ export default function NewInvoicePage() {
       dueDateObj.setDate(dueDateObj.getDate() + effectiveCustomer.payment_terms)
       setDueDate(dueDateObj.toISOString().split('T')[0])
     }
-  }, [effectiveCustomerId, issueDate, customers, subBranches])
+  }, [effectiveCustomer, issueDate])
 
   function applyKonaklamaVerDefault() {
     setLineItems((prev) =>

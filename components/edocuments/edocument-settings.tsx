@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -66,11 +66,7 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
   const [testing, setTesting] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
-  useEffect(() => {
-    loadSettings()
-  }, [tenantId])
-
-  async function loadSettings() {
+  const loadSettings = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('edocument_settings')
@@ -85,7 +81,11 @@ export function EdocumentSettings({ tenantId, language, translations: t, onSaved
     } finally {
       setLoading(false)
     }
-  }
+  }, [tenantId])
+
+  useEffect(() => {
+    loadSettings()
+  }, [loadSettings])
 
   async function handleSave() {
     setSaving(true)

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -65,13 +65,7 @@ export default function AIProductionAdvisorPage() {
   const [selectedSuggestion, setSelectedSuggestion] = useState<ProductionSuggestion | null>(null);
   const [activeTab, setActiveTab] = useState('suggestions');
 
-  useEffect(() => {
-    if (tenantId) {
-      loadSuggestions();
-    }
-  }, [tenantId]);
-
-  const loadSuggestions = async () => {
+  const loadSuggestions = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -101,7 +95,13 @@ export default function AIProductionAdvisorPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenantId]);
+
+  useEffect(() => {
+    if (tenantId) {
+      loadSuggestions();
+    }
+  }, [tenantId, loadSuggestions]);
 
   const generateSuggestions = async () => {
     try {

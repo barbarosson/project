@@ -197,7 +197,7 @@ export default function AdminUsersPage() {
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'Demo veri yukleme basarisiz');
     }
-  }, []);
+  }, [fetchUsers]);
 
   const handleDeleteDemoDataConfirm = useCallback(async () => {
     if (!deleteDemoTarget?.tenant_id) return;
@@ -235,7 +235,7 @@ export default function AdminUsersPage() {
     } finally {
       setDeleteDemoLoading(false);
     }
-  }, [deleteDemoTarget]);
+  }, [deleteDemoTarget, fetchUsers]);
 
   const selectedUsers = filteredUsers.filter((u) => selectedUserIds.includes(u.id));
   const selectedWithTenant = selectedUsers.filter((u) => u.tenant_id);

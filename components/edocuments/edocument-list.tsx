@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -73,11 +73,7 @@ export function EdocumentList({ tenantId, language, translations: t, onViewDocum
   const [directionFilter, setDirectionFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
 
-  useEffect(() => {
-    loadDocuments()
-  }, [tenantId])
-
-  async function loadDocuments() {
+  const loadDocuments = useCallback(async () => {
     setLoading(true)
     try {
       const { data, error } = await supabase
@@ -94,7 +90,11 @@ export function EdocumentList({ tenantId, language, translations: t, onViewDocum
     } finally {
       setLoading(false)
     }
-  }
+  }, [tenantId])
+
+  useEffect(() => {
+    loadDocuments()
+  }, [loadDocuments])
 
   const filtered = documents.filter(doc => {
     if (typeFilter !== 'all' && doc.document_type !== typeFilter) return false

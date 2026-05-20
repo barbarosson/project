@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -159,35 +159,11 @@ function LoginContent() {
   }, [searchParams, language, l.signIn])
 
   useEffect(() => {
-    if (!authLoading && user) {
-      checkAndCreateTenant()
-    }
-  }, [user, authLoading])
-
-  useEffect(() => {
     if (resendCooldown > 0) {
       const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000)
       return () => clearTimeout(timer)
     }
   }, [resendCooldown])
-
-  async function checkAndCreateTenant() {
-    if (!user) return
-    try {
-      const { data: existingTenant } = await supabase
-        .from('tenants')
-        .select('id')
-        .eq('owner_id', user.id)
-        .maybeSingle()
-
-      if (!existingTenant && user.user_metadata?.full_name) {
-        await createTenantForUser(user.id, user.user_metadata.full_name, user.email || '')
-      }
-      router.push('/dashboard')
-    } catch (error) {
-      router.push('/dashboard')
-    }
-  }
 
   async function handleEmailSignIn() {
     const emailVal = loginEmailRef.current?.value?.trim() ?? ''
@@ -391,7 +367,7 @@ function LoginContent() {
     }
   }
 
-  async function createTenantForUser(userId: string, name: string, userEmail: string) {
+  const createTenantForUser = useCallback(async (userId: string, name: string, userEmail: string) => {
     try {
       const { data: existing } = await supabase
         .from('tenants')
@@ -430,7 +406,31 @@ function LoginContent() {
     } catch (error) {
       console.error('Error creating tenant:', error)
     }
-  }
+  }, [language])
+
+  const checkAndCreateTenant = useCallback(async () => {
+    if (!user) return
+    try {
+      const { data: existingTenant } = await supabase
+        .from('tenants')
+        .select('id')
+        .eq('owner_id', user.id)
+        .maybeSingle()
+
+      if (!existingTenant && user.user_metadata?.full_name) {
+        await createTenantForUser(user.id, user.user_metadata.full_name, user.email || '')
+      }
+      router.push('/dashboard')
+    } catch (error) {
+      router.push('/dashboard')
+    }
+  }, [user, createTenantForUser, router])
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      checkAndCreateTenant()
+    }
+  }, [user, authLoading, checkAndCreateTenant])
 
   async function handleDemoLogin() {
     setLoading(true)

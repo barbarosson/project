@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -222,13 +222,6 @@ export default function TransactionsPage() {
   }
 
   useEffect(() => {
-    if (tenantId) {
-      fetchTransactions()
-      fetchSummary()
-    }
-  }, [tenantId])
-
-  useEffect(() => {
     if (matchTransaction && tenantId) {
       supabase
         .from('invoices')
@@ -244,7 +237,7 @@ export default function TransactionsPage() {
     }
   }, [matchTransaction, tenantId])
 
-  async function fetchTransactions() {
+  const fetchTransactions = useCallback(async () => {
     try {
       setLoading(true)
       const { data, error } = await supabase
@@ -265,9 +258,9 @@ export default function TransactionsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [tenantId])
 
-  async function fetchSummary() {
+  const fetchSummary = useCallback(async () => {
     try {
       const { data: accounts } = await supabase
         .from('accounts')
@@ -316,7 +309,14 @@ export default function TransactionsPage() {
     } catch (error: any) {
       console.error('Error fetching summary:', error)
     }
-  }
+  }, [tenantId, preferredCurrency, defaultRateType])
+
+  useEffect(() => {
+    if (tenantId) {
+      fetchTransactions()
+      fetchSummary()
+    }
+  }, [tenantId, fetchTransactions, fetchSummary])
 
   function getPaymentMethodLabel(method: string) {
     const methods = t.finance.transactions.paymentMethods as any

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,13 +64,7 @@ export function CreatePurchaseOrderDialog({
 
   const [items, setItems] = useState<POItem[]>([]);
 
-  useEffect(() => {
-    if (open && currentTenant) {
-      loadData();
-    }
-  }, [open, currentTenant]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!currentTenant) return;
 
     const { data: suppliersData } = await supabase
@@ -116,7 +110,13 @@ export function CreatePurchaseOrderDialog({
     setProducts(productsData || []);
     setBranches(branchesData || []);
     setProjects(projectsData || []);
-  };
+  }, [currentTenant]);
+
+  useEffect(() => {
+    if (open && currentTenant) {
+      loadData();
+    }
+  }, [open, currentTenant, loadData]);
 
   const addItem = () => {
     setItems([

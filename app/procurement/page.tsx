@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,13 +70,7 @@ export default function ProcurementPage() {
   const [excelImportOpen, setExcelImportOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
-  useEffect(() => {
-    if (currentTenant) {
-      loadData();
-    }
-  }, [currentTenant]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!currentTenant) return;
 
     setLoading(true);
@@ -109,7 +103,13 @@ export default function ProcurementPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentTenant, toast, t.procurement.loadDataError]);
+
+  useEffect(() => {
+    if (currentTenant) {
+      loadData();
+    }
+  }, [currentTenant, loadData]);
 
   const stats = {
     activeOrders: orders.filter((o) => ["approved", "ordered"].includes(o.status)).length,

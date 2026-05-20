@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Button } from '@/components/ui/button'
@@ -79,13 +79,7 @@ export default function NewProposalPage() {
     }
   ])
 
-  useEffect(() => {
-    if (!tenantLoading && tenantId) {
-      fetchData()
-    }
-  }, [tenantId, tenantLoading])
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     if (!tenantId) return
 
     try {
@@ -99,7 +93,13 @@ export default function NewProposalPage() {
     } catch (error) {
       console.error('Error fetching data:', error)
     }
-  }
+  }, [tenantId])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId) {
+      fetchData()
+    }
+  }, [tenantId, tenantLoading, fetchData])
 
   function calculateLineItem(item: LineItem): LineItem {
     const discountedPrice = item.unit_price * (1 - item.discount_percent / 100)

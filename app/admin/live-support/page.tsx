@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -65,12 +65,113 @@ export default function LiveSupportManagementPage() {
   const [newChatMessage, setNewChatMessage] = useState('')
   const [useExistingCustomer, setUseExistingCustomer] = useState(true)
 
+  const markMessageAsRead = useCallback(async (messageId: string) => {
+    try {
+      await supabase
+        .from('support_messages')
+        .update({ is_read: true })
+        .eq('id', messageId)
+    } catch (error: any) {
+      console.error('Error marking message as read:', error)
+    }
+  }, [])
+
+  const loadChatSessions = useCallback(async () => {
+    if (!tenantId) return
+
+    try {
+      setLoading(true)
+
+      const { data: sessionsData, error: sessionsError } = await supabase
+        .from('support_chat_sessions')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .in('status', ['active', 'waiting'])
+        .order('updated_at', { ascending: false })
+
+      if (sessionsError) throw sessionsError
+
+      const sessionsWithUnread = await Promise.all(
+        (sessionsData || []).map(async (session: any) => {
+          const { count } = await supabase
+            .from('support_messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('session_id', session.id)
+            .eq('is_admin_reply', false)
+            .eq('is_read', false)
+
+          return {
+            ...session,
+            unread_count: count || 0
+          }
+        })
+      )
+
+      setSessions(sessionsWithUnread)
+    } catch (error: any) {
+      console.error('Error loading chat sessions:', error)
+      toast.error(error.message || 'Failed to load chat sessions')
+    } finally {
+      setLoading(false)
+    }
+  }, [tenantId])
+
+  const loadCustomers = useCallback(async () => {
+    if (!tenantId) return
+
+    try {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('id, name, company_title, email')
+        .eq('tenant_id', tenantId)
+        .order('name', { ascending: true })
+        .limit(100)
+
+      if (error) throw error
+      setCustomers(data || [])
+    } catch (error: any) {
+      console.error('Error loading customers:', error)
+    }
+  }, [tenantId])
+
+  const loadMessages = useCallback(async (sessionId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('support_messages')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: true })
+
+      if (error) throw error
+      setMessages(data || [])
+
+      const unreadMessages = data?.filter((m: any) => !m.is_admin_reply && !m.is_read) || []
+      for (const msg of unreadMessages) {
+        await markMessageAsRead(msg.id)
+      }
+    } catch (error: any) {
+      console.error('Error loading messages:', error)
+      toast.error(error.message || 'Failed to load messages')
+    }
+  }, [markMessageAsRead])
+
+  const markSessionAsRead = useCallback(async (sessionId: string) => {
+    try {
+      await supabase
+        .from('support_chat_sessions')
+        .update({ is_read_by_admin: true })
+        .eq('id', sessionId)
+    } catch (error: any) {
+      console.error('Error marking session as read:', error)
+    }
+  }, [])
+
   useEffect(() => {
     if (!tenantLoading && tenantId) {
       loadChatSessions()
       loadCustomers()
     }
-  }, [tenantId, tenantLoading])
+  }, [tenantId, tenantLoading, loadChatSessions, loadCustomers])
 
   // Subscribe to new sessions
   useEffect(() => {
@@ -95,7 +196,7 @@ export default function LiveSupportManagementPage() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [tenantId])
+  }, [tenantId, loadChatSessions])
 
   // Subscribe to new messages for selected session
   useEffect(() => {
@@ -127,7 +228,7 @@ export default function LiveSupportManagementPage() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [selectedSession])
+  }, [selectedSession, markMessageAsRead])
 
   // Load messages when session is selected
   useEffect(() => {
@@ -135,7 +236,7 @@ export default function LiveSupportManagementPage() {
       loadMessages(selectedSession.id)
       markSessionAsRead(selectedSession.id)
     }
-  }, [selectedSession])
+  }, [selectedSession, loadMessages, markSessionAsRead])
 
   useEffect(() => {
     scrollToBottom()
@@ -145,65 +246,6 @@ export default function LiveSupportManagementPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  async function loadChatSessions() {
-    if (!tenantId) return
-
-    try {
-      setLoading(true)
-
-      // Load sessions
-      const { data: sessionsData, error: sessionsError } = await supabase
-        .from('support_chat_sessions')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .in('status', ['active', 'waiting'])
-        .order('updated_at', { ascending: false })
-
-      if (sessionsError) throw sessionsError
-
-      // Load unread count for each session
-      const sessionsWithUnread = await Promise.all(
-        (sessionsData || []).map(async (session: any) => {
-          const { count } = await supabase
-            .from('support_messages')
-            .select('*', { count: 'exact', head: true })
-            .eq('session_id', session.id)
-            .eq('is_admin_reply', false)
-            .eq('is_read', false)
-
-          return {
-            ...session,
-            unread_count: count || 0
-          }
-        })
-      )
-
-      setSessions(sessionsWithUnread)
-    } catch (error: any) {
-      console.error('Error loading chat sessions:', error)
-      toast.error(error.message || 'Failed to load chat sessions')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function loadCustomers() {
-    if (!tenantId) return
-
-    try {
-      const { data, error } = await supabase
-        .from('customers')
-        .select('id, name, company_title, email')
-        .eq('tenant_id', tenantId)
-        .order('name', { ascending: true })
-        .limit(100)
-
-      if (error) throw error
-      setCustomers(data || [])
-    } catch (error: any) {
-      console.error('Error loading customers:', error)
-    }
-  }
 
   async function startNewChat() {
     if (!tenantId) return
@@ -279,50 +321,6 @@ export default function LiveSupportManagementPage() {
     } catch (error: any) {
       console.error('Error starting new chat:', error)
       toast.error(error.message || (language === 'tr' ? 'Sohbet başlatılamadı' : 'Failed to start chat'))
-    }
-  }
-
-  async function loadMessages(sessionId: string) {
-    try {
-      const { data, error } = await supabase
-        .from('support_messages')
-        .select('*')
-        .eq('session_id', sessionId)
-        .order('created_at', { ascending: true })
-
-      if (error) throw error
-      setMessages(data || [])
-
-      // Mark unread messages as read
-      const unreadMessages = data?.filter((m: any) => !m.is_admin_reply && !m.is_read) || []
-      for (const msg of unreadMessages) {
-        await markMessageAsRead(msg.id)
-      }
-    } catch (error: any) {
-      console.error('Error loading messages:', error)
-      toast.error(error.message || 'Failed to load messages')
-    }
-  }
-
-  async function markSessionAsRead(sessionId: string) {
-    try {
-      await supabase
-        .from('support_chat_sessions')
-        .update({ is_read_by_admin: true })
-        .eq('id', sessionId)
-    } catch (error: any) {
-      console.error('Error marking session as read:', error)
-    }
-  }
-
-  async function markMessageAsRead(messageId: string) {
-    try {
-      await supabase
-        .from('support_messages')
-        .update({ is_read: true })
-        .eq('id', messageId)
-    } catch (error: any) {
-      console.error('Error marking message as read:', error)
     }
   }
 

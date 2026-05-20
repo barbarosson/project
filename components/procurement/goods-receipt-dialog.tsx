@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -32,13 +32,7 @@ export function GoodsReceiptDialog({
   const [items, setItems] = useState<PurchaseOrderItem[]>([]);
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    if (open && purchaseOrder) {
-      loadItems();
-    }
-  }, [open, purchaseOrder]);
-
-  const loadItems = async () => {
+  const loadItems = useCallback(async () => {
     if (!purchaseOrder) return;
 
     const { data, error } = await supabase
@@ -56,7 +50,13 @@ export function GoodsReceiptDialog({
 
     setItems(data || []);
     setCheckedItems(new Set((data || []).map((i) => i.id)));
-  };
+  }, [purchaseOrder]);
+
+  useEffect(() => {
+    if (open && purchaseOrder) {
+      loadItems();
+    }
+  }, [open, purchaseOrder, loadItems]);
 
   const toggleItem = (itemId: string) => {
     const newChecked = new Set(checkedItems);

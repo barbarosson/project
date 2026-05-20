@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -32,17 +32,17 @@ export function OrderDetailSheet({ orderId, tenantId, open, onOpenChange, onRefr
   const [loading, setLoading] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (open && orderId) loadData()
-  }, [open, orderId])
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     if (!orderId) return
     setLoading(true)
     const result = await getOrderLinkedData(orderId, tenantId)
     setData(result)
     setLoading(false)
-  }
+  }, [orderId, tenantId])
+
+  useEffect(() => {
+    if (open && orderId) loadData()
+  }, [open, orderId, loadData])
 
   async function handleCreateInvoice() {
     if (!orderId) return

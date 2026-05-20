@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -68,14 +68,7 @@ export function AddTransactionDialog({
     notes: ''
   })
 
-  useEffect(() => {
-    if (open && tenantId) {
-      fetchAccounts()
-      fetchCustomers()
-    }
-  }, [open, tenantId])
-
-  async function fetchAccounts() {
+  const fetchAccounts = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('accounts')
@@ -89,9 +82,9 @@ export function AddTransactionDialog({
     } catch (error) {
       console.error('Error fetching accounts:', error)
     }
-  }
+  }, [tenantId])
 
-  async function fetchCustomers() {
+  const fetchCustomers = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('customers')
@@ -105,7 +98,14 @@ export function AddTransactionDialog({
     } catch (error) {
       console.error('Error fetching customers:', error)
     }
-  }
+  }, [tenantId])
+
+  useEffect(() => {
+    if (open && tenantId) {
+      fetchAccounts()
+      fetchCustomers()
+    }
+  }, [open, tenantId, fetchAccounts, fetchCustomers])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

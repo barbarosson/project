@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -53,11 +53,22 @@ export function CreateOrderDialog({ open, onOpenChange, tenantId, onSuccess, isT
   const [saving, setSaving] = useState(false)
   const [tcmbRates, setTcmbRates] = useState<TcmbRatesByCurrency | null>(null)
 
+  const loadData = useCallback(async () => {
+    const [custRes, prodRes, projRes] = await Promise.all([
+      supabase.from('customers').select('id, name, company_title').eq('tenant_id', tenantId).order('name'),
+      supabase.from('products').select('id, name, sku, sale_price').eq('tenant_id', tenantId).order('name'),
+      supabase.from('projects').select('id, name, code').eq('tenant_id', tenantId).in('status', ['planning', 'active']).order('name'),
+    ])
+    setCustomers(custRes.data || [])
+    setProducts(prodRes.data || [])
+    setProjects(projRes.data || [])
+  }, [tenantId])
+
   useEffect(() => {
     if (open && tenantId) {
       loadData()
     }
-  }, [open, tenantId])
+  }, [open, tenantId, loadData])
 
   useEffect(() => {
     if (open && (currency !== 'TRY' || (companyCurrency && companyCurrency !== 'TRY'))) {
@@ -70,17 +81,6 @@ export function CreateOrderDialog({ open, onOpenChange, tenantId, onSuccess, isT
       setTcmbRates(null)
     }
   }, [open, currency, companyCurrency, orderDate])
-
-  async function loadData() {
-    const [custRes, prodRes, projRes] = await Promise.all([
-      supabase.from('customers').select('id, name, company_title').eq('tenant_id', tenantId).order('name'),
-      supabase.from('products').select('id, name, sku, sale_price').eq('tenant_id', tenantId).order('name'),
-      supabase.from('projects').select('id, name, code').eq('tenant_id', tenantId).in('status', ['planning', 'active']).order('name'),
-    ])
-    setCustomers(custRes.data || [])
-    setProducts(prodRes.data || [])
-    setProjects(projRes.data || [])
-  }
 
   function handleProductSelect(index: number, productId: string) {
     const product = products.find(p => p.id === productId)

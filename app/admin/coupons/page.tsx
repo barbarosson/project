@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -207,11 +207,7 @@ export default function CouponsAdminPage() {
     is_active: true,
   });
 
-  useEffect(() => {
-    fetchCoupons();
-  }, []);
-
-  const fetchCoupons = async () => {
+  const fetchCoupons = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -227,7 +223,11 @@ export default function CouponsAdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [l.loadFail]);
+
+  useEffect(() => {
+    fetchCoupons();
+  }, [fetchCoupons]);
 
   const isExpired = (coupon: Coupon) => {
     if (!coupon.valid_until) return false;
@@ -239,19 +239,19 @@ export default function CouponsAdminPage() {
     return coupon.current_uses >= coupon.max_uses;
   };
 
-  const getCouponStatus = (coupon: Coupon): StatusFilter => {
+  const getCouponStatus = useCallback((coupon: Coupon): StatusFilter => {
     if (!coupon.is_active) return 'inactive';
     if (isExpired(coupon)) return 'expired';
     if (isMaxedOut(coupon)) return 'maxed_out';
     return 'active';
-  };
+  }, []);
 
   const stats = useMemo(() => {
     const active = coupons.filter((c) => getCouponStatus(c) === 'active').length;
     const expired = coupons.filter((c) => getCouponStatus(c) === 'expired').length;
     const maxedOut = coupons.filter((c) => getCouponStatus(c) === 'maxed_out').length;
     return { total: coupons.length, active, expired, maxedOut };
-  }, [coupons]);
+  }, [coupons, getCouponStatus]);
 
   const filteredCoupons = useMemo(() => {
     let list = coupons;
@@ -263,7 +263,7 @@ export default function CouponsAdminPage() {
       list = list.filter((c) => getCouponStatus(c) === statusFilter);
     }
     return list;
-  }, [coupons, search, statusFilter]);
+  }, [coupons, search, statusFilter, getCouponStatus]);
 
   const generateCode = () => {
     const code = 'SAVE' + Math.random().toString(36).substring(2, 8).toUpperCase();

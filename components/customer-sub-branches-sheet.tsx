@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import {
   Sheet,
   SheetContent,
@@ -97,14 +97,7 @@ export function CustomerSubBranchesSheet({
   })
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
-    if (isOpen && customerId) {
-      fetchSubBranches()
-      fetchParentCustomer()
-    }
-  }, [isOpen, customerId])
-
-  const fetchParentCustomer = async () => {
+  const fetchParentCustomer = useCallback(async () => {
     if (!customerId) return
 
     try {
@@ -119,9 +112,9 @@ export function CustomerSubBranchesSheet({
     } catch (error) {
       console.error('Error fetching parent customer:', error)
     }
-  }
+  }, [customerId])
 
-  const fetchSubBranches = async () => {
+  const fetchSubBranches = useCallback(async () => {
     if (!customerId) return
 
     setLoading(true)
@@ -142,7 +135,14 @@ export function CustomerSubBranchesSheet({
     } finally {
       setLoading(false)
     }
-  }
+  }, [customerId, tenantId])
+
+  useEffect(() => {
+    if (isOpen && customerId) {
+      fetchSubBranches()
+      fetchParentCustomer()
+    }
+  }, [isOpen, customerId, fetchSubBranches, fetchParentCustomer])
 
   const getBranchIcon = (branchType: string) => {
     switch (branchType) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
@@ -32,11 +32,7 @@ export function ProjectFinancialDashboard({ projectId, tenantId, isTR, currency 
   const [data, setData] = useState<FinancialData | null>(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadData()
-  }, [projectId])
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     const { data: summary } = await supabase
       .from('project_financial_summary')
       .select('*')
@@ -45,7 +41,11 @@ export function ProjectFinancialDashboard({ projectId, tenantId, isTR, currency 
 
     setData(summary)
     setLoading(false)
-  }
+  }, [projectId])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   if (loading) {
     return (

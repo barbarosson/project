@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Button } from '@/components/ui/button'
@@ -69,13 +69,7 @@ export default function ProposalDetailPage({ params }: { params: { id: string } 
   const [loading, setLoading] = useState(true)
   const [converting, setConverting] = useState(false)
 
-  useEffect(() => {
-    if (!tenantLoading && tenantId) {
-      fetchProposal()
-    }
-  }, [tenantId, tenantLoading, params.id])
-
-  async function fetchProposal() {
+  const fetchProposal = useCallback(async () => {
     if (!tenantId) return
 
     try {
@@ -113,7 +107,13 @@ export default function ProposalDetailPage({ params }: { params: { id: string } 
     } finally {
       setLoading(false)
     }
-  }
+  }, [tenantId, params.id])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId) {
+      fetchProposal()
+    }
+  }, [tenantId, tenantLoading, fetchProposal])
 
   async function handleStatusChange(newStatus: string) {
     if (!tenantId) return

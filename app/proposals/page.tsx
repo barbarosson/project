@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -41,21 +41,7 @@ export default function ProposalsPage() {
   const [editingProposal, setEditingProposal] = useState<any>(null)
   const [deletingProposal, setDeletingProposal] = useState<any>(null)
 
-  useEffect(() => {
-    if (!tenantLoading && tenantId) {
-      fetchProposals()
-    }
-  }, [tenantId, tenantLoading])
-
-  useEffect(() => {
-    if (statusFilter === 'all') {
-      setFilteredProposals(proposals)
-    } else {
-      setFilteredProposals(proposals.filter(p => p.status === statusFilter))
-    }
-  }, [statusFilter, proposals])
-
-  async function fetchProposals() {
+  const fetchProposals = useCallback(async () => {
     if (!tenantId) return
 
     try {
@@ -79,7 +65,21 @@ export default function ProposalsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [tenantId])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId) {
+      fetchProposals()
+    }
+  }, [tenantId, tenantLoading, fetchProposals])
+
+  useEffect(() => {
+    if (statusFilter === 'all') {
+      setFilteredProposals(proposals)
+    } else {
+      setFilteredProposals(proposals.filter(p => p.status === statusFilter))
+    }
+  }, [statusFilter, proposals])
 
   async function handleDelete(proposalId: string) {
     if (!tenantId) return

@@ -1,7 +1,7 @@
 'use client'
 // DEPLOYMENT_V2: 1739082650-FORCE-CACHE-CLEAR
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { ModulusLogo } from '@/components/modulus-logo'
@@ -114,6 +114,24 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   }
 
   // Load unread chat messages count
+  const loadUnreadChatCount = useCallback(async () => {
+    if (!tenantId) return
+
+    try {
+      // Count sessions with unread messages from users
+      const { count } = await supabase
+        .from('support_chat_sessions')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
+        .eq('is_read_by_admin', false)
+        .in('status', ['active', 'waiting'])
+
+      setUnreadChatCount(count || 0)
+    } catch (error) {
+      console.error('Error loading unread chat count:', error)
+    }
+  }, [tenantId])
+
   useEffect(() => {
     if (!tenantId) return
 
@@ -154,25 +172,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [tenantId])
-
-  async function loadUnreadChatCount() {
-    if (!tenantId) return
-
-    try {
-      // Count sessions with unread messages from users
-      const { count } = await supabase
-        .from('support_chat_sessions')
-        .select('*', { count: 'exact', head: true })
-        .eq('tenant_id', tenantId)
-        .eq('is_read_by_admin', false)
-        .in('status', ['active', 'waiting'])
-
-      setUnreadChatCount(count || 0)
-    } catch (error) {
-      console.error('Error loading unread chat count:', error)
-    }
-  }
+  }, [tenantId, loadUnreadChatCount])
 
   // Dil desteği: label_tr / label_en varsa kullan, yoksa label
   const menuLabel = (m: { label?: string; label_tr?: string | null; label_en?: string | null }) =>

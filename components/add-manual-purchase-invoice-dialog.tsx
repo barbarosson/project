@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -109,24 +109,72 @@ export function AddManualPurchaseInvoiceDialog({
   const [products, setProducts] = useState<Product[]>([])
   const [showEInvoiceImport, setShowEInvoiceImport] = useState(false)
   const [eInvoiceXml, setEInvoiceXml] = useState('')
+  const initialSupplierId = initialInvoice?.supplier_id || ''
+  const initialInvoiceNumber = initialInvoice?.invoice_number || ''
+  const initialInvoiceDate = initialInvoice?.invoice_date || new Date().toISOString().split('T')[0]
+  const initialDueDate = initialInvoice?.due_date || ''
+  const initialInvoiceType = (initialInvoice?.invoice_type || 'fatura_olustur') as string
+
+  const fetchProducts = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('id, name, sku, purchase_price, vat_rate')
+        .eq('tenant_id', tenantId)
+        .eq('status', 'active')
+        .order('name')
+      if (error) throw error
+      setProducts(data || [])
+    } catch (e) {
+      console.error(e)
+      setProducts([])
+    }
+  }, [tenantId])
+
+  const fetchSuppliers = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('id, company_title, name, email')
+        .eq('tenant_id', tenantId)
+        .eq('status', 'active')
+        .in('account_type', ['vendor', 'both'])
+        .order('company_title')
+
+      if (error) {
+        const { data: fallback } = await supabase
+          .from('customers')
+          .select('id, company_title, name, email')
+          .eq('tenant_id', tenantId)
+          .eq('status', 'active')
+          .order('company_title')
+        setSuppliers(fallback || [])
+        return
+      }
+      setSuppliers(data || [])
+    } catch (e) {
+      console.error(e)
+      setSuppliers([])
+    }
+  }, [tenantId])
 
   useEffect(() => {
     if (effectiveOpen && tenantId) {
       fetchSuppliers()
       fetchProducts()
     }
-  }, [effectiveOpen, tenantId])
+  }, [effectiveOpen, tenantId, fetchSuppliers, fetchProducts])
 
   useEffect(() => {
     if (!effectiveOpen || !tenantId) return
     if (mode !== 'edit' || !initialInvoice?.id) return
 
     setFormData({
-      supplier_id: initialInvoice.supplier_id || '',
-      invoice_number: initialInvoice.invoice_number || '',
-      invoice_date: initialInvoice.invoice_date || new Date().toISOString().split('T')[0],
-      due_date: initialInvoice.due_date || '',
-      invoice_type: (initialInvoice.invoice_type || 'fatura_olustur') as string,
+      supplier_id: initialSupplierId,
+      invoice_number: initialInvoiceNumber,
+      invoice_date: initialInvoiceDate,
+      due_date: initialDueDate,
+      invoice_type: initialInvoiceType,
     })
 
     ;(async () => {
@@ -160,50 +208,7 @@ export function AddManualPurchaseInvoiceDialog({
         setLineItems([{ id: crypto.randomUUID(), product_id: null, description: '', quantity: '1', unit_price: '', vat_rate: DEFAULT_VAT_RATE }])
       }
     })()
-  }, [effectiveOpen, tenantId, mode, initialInvoice?.id])
-
-  async function fetchProducts() {
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('id, name, sku, purchase_price, vat_rate')
-        .eq('tenant_id', tenantId)
-        .eq('status', 'active')
-        .order('name')
-      if (error) throw error
-      setProducts(data || [])
-    } catch (e) {
-      console.error(e)
-      setProducts([])
-    }
-  }
-
-  async function fetchSuppliers() {
-    try {
-      const { data, error } = await supabase
-        .from('customers')
-        .select('id, company_title, name, email')
-        .eq('tenant_id', tenantId)
-        .eq('status', 'active')
-        .in('account_type', ['vendor', 'both'])
-        .order('company_title')
-
-      if (error) {
-        const { data: fallback } = await supabase
-          .from('customers')
-          .select('id, company_title, name, email')
-          .eq('tenant_id', tenantId)
-          .eq('status', 'active')
-          .order('company_title')
-        setSuppliers(fallback || [])
-        return
-      }
-      setSuppliers(data || [])
-    } catch (e) {
-      console.error(e)
-      setSuppliers([])
-    }
-  }
+  }, [effectiveOpen, tenantId, mode, initialInvoice?.id, initialSupplierId, initialInvoiceNumber, initialInvoiceDate, initialDueDate, initialInvoiceType])
 
   function addLine() {
     setLineItems((prev) => [...prev, { id: crypto.randomUUID(), product_id: null, description: '', quantity: '1', unit_price: '', vat_rate: DEFAULT_VAT_RATE }])

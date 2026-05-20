@@ -76,10 +76,12 @@ export function AdvancePaymentDialog({
         .order('name')
         .then(({ data }) => {
           setAccounts(data || [])
-          if (data?.length && !formData.account_id) {
+          if (!data?.length) return
+          setFormData((prev) => {
+            if (prev.account_id) return prev
             const tryAccount = data.find((a: Account) => (a.currency || '').toUpperCase() === 'TRY')
-            setFormData((prev) => ({ ...prev, account_id: tryAccount?.id || data[0].id }))
-          }
+            return { ...prev, account_id: tryAccount?.id || data[0].id }
+          })
         })
       supabase
         .from('staff')
@@ -101,7 +103,7 @@ export function AdvancePaymentDialog({
         description: (t.hr.advancePayment || 'Avans').toString().replace('Avans Ödemesi', 'Avans').replace('Advance Payment', 'Advance') + ' - ' + selectedStaffFullName,
       }))
     }
-  }, [formData.staff_id, selectedStaffFullName])
+  }, [selectedStaff, selectedStaffFullName, formData.description, t.hr.advancePayment])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Button } from '@/components/ui/button'
@@ -32,11 +32,7 @@ export default function ProjectDetailPage() {
   const [loading, setLoading] = useState(true)
   const [showEditDialog, setShowEditDialog] = useState(false)
 
-  useEffect(() => {
-    if (!tenantLoading && tenantId && projectId) fetchProject()
-  }, [tenantId, tenantLoading, projectId])
-
-  async function fetchProject() {
+  const fetchProject = useCallback(async () => {
     const { data } = await supabase
       .from('projects')
       .select('*, customers(name, company_title)')
@@ -46,7 +42,11 @@ export default function ProjectDetailPage() {
 
     setProject(data)
     setLoading(false)
-  }
+  }, [projectId, tenantId])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId && projectId) fetchProject()
+  }, [tenantId, tenantLoading, projectId, fetchProject])
 
   function getStatusBadge(status: string) {
     const map: Record<string, string> = {

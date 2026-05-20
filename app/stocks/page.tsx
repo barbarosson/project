@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -34,13 +34,7 @@ export default function StocksPage() {
   const [selectedProduct, setSelectedProduct] = useState<ProductStock | null>(null)
   const [showMovementSheet, setShowMovementSheet] = useState(false)
 
-  useEffect(() => {
-    if (!tenantLoading && tenantId) {
-      fetchData()
-    }
-  }, [tenantId, tenantLoading])
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     if (!tenantId) return
 
     setLoading(true)
@@ -96,7 +90,13 @@ export default function StocksPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [tenantId])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId) {
+      fetchData()
+    }
+  }, [tenantId, tenantLoading, fetchData])
 
   const displayProduct = selectedProduct
     ? {

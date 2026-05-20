@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase'
@@ -37,12 +37,7 @@ export function EdocumentStats({ tenantId, language }: EdocumentStatsProps) {
   })
   const [account, setAccount] = useState<AccountInfo>({ credits: null, loading: false, error: null })
 
-  useEffect(() => {
-    loadStats()
-    loadAccountInfo()
-  }, [tenantId])
-
-  async function loadStats() {
+  const loadStats = useCallback(async () => {
     const { data } = await supabase
       .from('edocuments')
       .select('direction, status')
@@ -59,9 +54,9 @@ export function EdocumentStats({ tenantId, language }: EdocumentStatsProps) {
         rejected: data.filter(d => d.status === 'rejected').length,
       })
     }
-  }
+  }, [tenantId])
 
-  async function loadAccountInfo() {
+  const loadAccountInfo = useCallback(async () => {
     setAccount(prev => ({ ...prev, loading: true, error: null }))
     try {
       const result = await getAccountInfo(tenantId)
@@ -82,7 +77,12 @@ export function EdocumentStats({ tenantId, language }: EdocumentStatsProps) {
       const isConnection = msg.includes('baglantilamadi') || msg.includes('dns error') || msg.includes('Name or service not known')
       setAccount({ credits: null, loading: false, error: isConnection ? 'connection' : 'failed' })
     }
-  }
+  }, [tenantId])
+
+  useEffect(() => {
+    loadStats()
+    loadAccountInfo()
+  }, [loadStats, loadAccountInfo])
 
   const cards = [
     { label: language === 'tr' ? 'Toplam Belge' : 'Total Documents', value: stats.total, icon: FileText, color: 'text-[#0A2540]', bg: 'bg-[#0A2540]/5' },

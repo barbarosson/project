@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAdmin } from '@/contexts/admin-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -51,11 +51,7 @@ export default function AdminCampaignsPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchCampaigns();
-  }, [profile?.tenant_id]);
-
-  async function fetchCampaigns() {
+  const fetchCampaigns = useCallback(async () => {
     try {
       setLoading(true);
       const query = supabase
@@ -78,7 +74,11 @@ export default function AdminCampaignsPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [profile?.tenant_id]);
+
+  useEffect(() => {
+    fetchCampaigns();
+  }, [fetchCampaigns]);
 
   const hasTenant = !!profile?.tenant_id;
 

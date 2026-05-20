@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,14 +19,7 @@ export function AICashFlowPredictions() {
   const [activeScenario, setActiveScenario] = useState<'pessimistic' | 'realistic' | 'optimistic'>('realistic');
   const [modelAccuracy, setModelAccuracy] = useState<number>(0);
 
-  useEffect(() => {
-    if (tenantId) {
-      loadPredictions();
-      loadModelAccuracy();
-    }
-  }, [tenantId]);
-
-  const loadPredictions = async () => {
+  const loadPredictions = useCallback(async () => {
     try {
       setLoading(true);
       const result = await aiCashFlowClient.predictCashFlow({
@@ -40,9 +33,9 @@ export function AICashFlowPredictions() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenantId, activeScenario]);
 
-  const loadScenarios = async () => {
+  const loadScenarios = useCallback(async () => {
     try {
       setLoading(true);
       const result = await aiCashFlowClient.getScenarioComparison({
@@ -55,9 +48,9 @@ export function AICashFlowPredictions() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenantId]);
 
-  const loadModelAccuracy = async () => {
+  const loadModelAccuracy = useCallback(async () => {
     try {
       const result = await aiCashFlowClient.getModelAccuracy({
         tenant_id: tenantId!,
@@ -66,9 +59,16 @@ export function AICashFlowPredictions() {
     } catch (error) {
       console.error('Failed to load model accuracy:', error);
     }
-  };
+  }, [tenantId]);
 
-  const trainModel = async () => {
+  useEffect(() => {
+    if (tenantId) {
+      loadPredictions();
+      loadModelAccuracy();
+    }
+  }, [tenantId, loadPredictions, loadModelAccuracy]);
+
+  const trainModel = useCallback(async () => {
     try {
       setLoading(true);
       await aiCashFlowClient.trainModel({
@@ -82,7 +82,7 @@ export function AICashFlowPredictions() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenantId, loadPredictions, loadModelAccuracy]);
 
   const chartData = predictions.map((pred) => ({
     date: new Date(pred.date).toLocaleDateString('tr-TR', { month: 'short', day: 'numeric' }),
@@ -144,7 +144,6 @@ export function AICashFlowPredictions() {
 
       <Tabs value={activeScenario} onValueChange={(v) => {
         setActiveScenario(v as any);
-        loadPredictions();
       }}>
         <TabsList>
           <TabsTrigger value="pessimistic">Kötümser</TabsTrigger>

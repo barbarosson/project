@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -103,13 +103,7 @@ export default function HRAIPage() {
   const [confirmTerminateOpen, setConfirmTerminateOpen] = useState(false)
   const [excelImportOpen, setExcelImportOpen] = useState(false)
 
-  useEffect(() => {
-    if (tenantId) {
-      loadData()
-    }
-  }, [tenantId])
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     setLoading(true)
     try {
       const tenant = tenantId != null ? String(tenantId) : ''
@@ -151,7 +145,13 @@ export default function HRAIPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [tenantId, t.hr.loadError])
+
+  useEffect(() => {
+    if (tenantId) {
+      loadData()
+    }
+  }, [tenantId, loadData])
 
   const filteredStaff = staff.filter(s =>
     s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

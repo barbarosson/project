@@ -80,7 +80,7 @@ export default function BuyPage() {
     return () => {
       mounted = false
     }
-  }, [language])
+  }, [language, searchParams])
 
   const selectedPlan = useMemo(
     () => plans.find((p) => p.id === selectedPlanId) || null,

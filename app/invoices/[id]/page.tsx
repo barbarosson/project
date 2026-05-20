@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Button } from '@/components/ui/button'
@@ -91,12 +91,6 @@ export default function InvoiceDetailPage() {
   const [copying, setCopying] = useState(false)
 
   useEffect(() => {
-    if (!tenantLoading && tenantId && invoiceId) {
-      fetchInvoiceDetails()
-    }
-  }, [tenantId, tenantLoading, invoiceId])
-
-  useEffect(() => {
     if (!tenantId || !invoiceId) {
       setEdocForInvoice(null)
       return
@@ -125,7 +119,7 @@ export default function InvoiceDetailPage() {
       .catch(() => setTcmbRates({}))
   }, [invoice?.issue_date])
 
-  async function fetchInvoiceDetails() {
+  const fetchInvoiceDetails = useCallback(async () => {
     if (!tenantId) return
 
     try {
@@ -163,7 +157,13 @@ export default function InvoiceDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [tenantId, invoiceId])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId && invoiceId) {
+      fetchInvoiceDetails()
+    }
+  }, [tenantId, tenantLoading, invoiceId, fetchInvoiceDetails])
 
   function getConvertedAmount(targetCurrency: string): { value: number; source: 'manual_amount' | 'manual_rate' | 'tcmb' } | null {
     if (!invoice || targetCurrency === curr) return null

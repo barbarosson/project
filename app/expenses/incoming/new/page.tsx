@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Button } from '@/components/ui/button'
@@ -151,13 +151,7 @@ export default function NewPurchaseInvoicePage() {
       .catch(() => setTcmbRates({}))
   }, [issueDate])
 
-  useEffect(() => {
-    if (!tenantLoading && tenantId) {
-      fetchData()
-    }
-  }, [tenantId, tenantLoading])
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     if (!tenantId) return
     try {
       const [suppliersRes, productsRes] = await Promise.all([
@@ -181,7 +175,13 @@ export default function NewPurchaseInvoicePage() {
     } catch (error) {
       console.error('Error fetching data:', error)
     }
-  }
+  }, [tenantId])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId) {
+      fetchData()
+    }
+  }, [tenantId, tenantLoading, fetchData])
 
   const effectiveSupplier = suppliers.find((s) => s.id === selectedSupplierId)
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, Suspense, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { LoadingSpinner } from '@/components/loading-spinner'
@@ -13,11 +13,76 @@ function AuthCallbackContent() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [message, setMessage] = useState('')
 
-  useEffect(() => {
-    handleCallback()
+  const sendWelcomeEmailAfterConfirmation = useCallback(async (user: any) => {
+    try {
+      const apiUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-welcome-email`
+      await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: user.email,
+          fullName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
+          language: 'tr',
+          type: 'welcome',
+        }),
+      })
+    } catch (err) {
+      // non-critical
+    }
   }, [])
 
-  async function handleCallback() {
+  const ensureTenantExists = useCallback(async (user: any) => {
+    try {
+      const { data: existingTenant } = await supabase
+        .from('tenants')
+        .select('id')
+        .eq('owner_id', user.id)
+        .maybeSingle()
+
+      if (existingTenant) return existingTenant
+
+      const fullName = user.user_metadata?.full_name ||
+                       user.user_metadata?.name ||
+                       user.email?.split('@')[0] ||
+                       'User'
+      const companyName = fullName.split(' ')[0] + "'s Business"
+      const userEmail = user.email || ''
+
+      const { data: newTenant, error: tenantError } = await supabase
+        .from('tenants')
+        .insert({
+          name: companyName,
+          owner_id: user.id,
+          settings: {
+            currency: 'TRY',
+            language: 'tr',
+            plan: 'demo',
+            plan_started_at: new Date().toISOString(),
+            trial_ends_at: null,
+          },
+        })
+        .select()
+        .single()
+
+      if (tenantError) throw tenantError
+
+      await supabase.from('company_settings').insert({
+        tenant_id: newTenant.id,
+        company_name: companyName,
+        email: userEmail,
+        currency: 'TRY',
+      })
+
+      return newTenant
+    } catch (error) {
+      console.error('Error ensuring tenant exists:', error)
+    }
+  }, [])
+
+  const handleCallback = useCallback(async () => {
     try {
       const error = searchParams.get('error')
       const errorDescription = searchParams.get('error_description')
@@ -76,76 +141,11 @@ function AuthCallbackContent() {
       toast.error('Authentication failed')
       setTimeout(() => router.push('/login'), 3000)
     }
-  }
+  }, [ensureTenantExists, router, searchParams, sendWelcomeEmailAfterConfirmation])
 
-  async function sendWelcomeEmailAfterConfirmation(user: any) {
-    try {
-      const apiUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-welcome-email`
-      await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: user.email,
-          fullName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
-          language: 'tr',
-          type: 'welcome',
-        }),
-      })
-    } catch (err) {
-      // non-critical
-    }
-  }
-
-  async function ensureTenantExists(user: any) {
-    try {
-      const { data: existingTenant } = await supabase
-        .from('tenants')
-        .select('id')
-        .eq('owner_id', user.id)
-        .maybeSingle()
-
-      if (existingTenant) return existingTenant
-
-      const fullName = user.user_metadata?.full_name ||
-                       user.user_metadata?.name ||
-                       user.email?.split('@')[0] ||
-                       'User'
-      const companyName = fullName.split(' ')[0] + "'s Business"
-      const userEmail = user.email || ''
-
-      const { data: newTenant, error: tenantError } = await supabase
-        .from('tenants')
-        .insert({
-          name: companyName,
-          owner_id: user.id,
-          settings: {
-            currency: 'TRY',
-            language: 'tr',
-            plan: 'demo',
-            plan_started_at: new Date().toISOString(),
-            trial_ends_at: null,
-          },
-        })
-        .select()
-        .single()
-
-      if (tenantError) throw tenantError
-
-      await supabase.from('company_settings').insert({
-        tenant_id: newTenant.id,
-        company_name: companyName,
-        email: userEmail,
-        currency: 'TRY',
-      })
-
-      return newTenant
-    } catch (error) {
-      console.error('Error ensuring tenant exists:', error)
-    }
-  }
+  useEffect(() => {
+    handleCallback()
+  }, [handleCallback])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">

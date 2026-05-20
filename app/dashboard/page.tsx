@@ -1,6 +1,7 @@
 'use client'
+/* eslint-disable react-hooks/exhaustive-deps */
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { MetricCard } from '@/components/metric-card'
@@ -146,26 +147,7 @@ export default function Dashboard() {
   )
 
   // Her girişte ve tarih/dil değişince veriyi yenile
-  useEffect(() => {
-    if (!tenantLoading && tenantId) {
-      fetchDashboardData()
-      checkFirstTimeUser()
-    } else if (!tenantLoading && !tenantId) {
-      setLoading(false)
-    }
-  }, [tenantId, tenantLoading, dateRange, language])
-
-  // Sekme tekrar odaklandığında (ekrana her dönüşte) faturalama vb. güncellensin
-  useEffect(() => {
-    if (!tenantId) return
-    const onVisibility = () => {
-      if (document.visibilityState === 'visible') fetchDashboardData()
-    }
-    document.addEventListener('visibilitychange', onVisibility)
-    return () => document.removeEventListener('visibilitychange', onVisibility)
-  }, [tenantId, dateRange])
-
-  async function checkFirstTimeUser() {
+  const checkFirstTimeUser = useCallback(async () => {
     if (!user) return
 
     const tourShownKey = `product_tour_shown_${user.id}`
@@ -177,9 +159,10 @@ export default function Dashboard() {
         localStorage.setItem(tourShownKey, 'true')
       }, 1000)
     }
-  }
+  }, [user])
 
-  async function fetchDashboardData() {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const fetchDashboardData = useCallback(async () => {
     if (!tenantId) {
       setLoading(false)
       return
@@ -494,7 +477,7 @@ export default function Dashboard() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [tenantId, dateRange, companyCurrency, defaultRateType, formatCurrency])
 
   function calculateCashFlow(
     invoices: any[],
@@ -591,7 +574,8 @@ export default function Dashboard() {
     return result
   }
 
-  async function generateActivities(tenantId: string, maxLimit: number = 50): Promise<Activity[]> {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const generateActivities = useCallback(async (tenantId: string, maxLimit: number = 50): Promise<Activity[]> => {
     const activities: Activity[] = []
 
     try {
@@ -757,7 +741,26 @@ export default function Dashboard() {
       console.error('Error generating activities:', error)
       return []
     }
-  }
+  }, [t, formatCurrency, language])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId) {
+      fetchDashboardData()
+      checkFirstTimeUser()
+    } else if (!tenantLoading && !tenantId) {
+      setLoading(false)
+    }
+  }, [tenantId, tenantLoading, fetchDashboardData, checkFirstTimeUser])
+
+  // Sekme tekrar odaklandığında (ekrana her dönüşte) faturalama vb. güncellensin
+  useEffect(() => {
+    if (!tenantId) return
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') fetchDashboardData()
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => document.removeEventListener('visibilitychange', onVisibility)
+  }, [tenantId, fetchDashboardData])
 
   function exportDetailToExcel() {
     if (!detailModal) return

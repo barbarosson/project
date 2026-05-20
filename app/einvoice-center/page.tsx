@@ -184,12 +184,6 @@ export default function EInvoiceCenterPage() {
     toast.success(language === 'tr' ? `${rows.length} kayıt dışa aktarıldı.` : `${rows.length} record(s) exported.`);
   };
 
-  useEffect(() => {
-    if (tenantId && mainTabValue === 'invoices') {
-      loadInvoices();
-    }
-  }, [tenantId, activeTab, mainTabValue, listSubTab, appliedDateFrom, appliedDateTo, appliedTitle, appliedAmount, appliedNumber, appliedVkn, appliedStatus]);
-
   const loadEdocSetup = useCallback(() => {
     if (!tenantId) return;
     supabase
@@ -225,7 +219,7 @@ export default function EInvoiceCenterPage() {
     return () => { cancelled = true; };
   }, [tenantId]);
 
-  const loadInvoices = async () => {
+  const loadInvoices = useCallback(async () => {
     if (!tenantId) return;
     setLoading(true);
     try {
@@ -357,7 +351,13 @@ export default function EInvoiceCenterPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenantId, listSubTab, appliedDateFrom, appliedDateTo, appliedTitle, appliedAmount, appliedNumber, appliedVkn, appliedStatus, tr.loadError]);
+
+  useEffect(() => {
+    if (tenantId && mainTabValue === 'invoices') {
+      loadInvoices();
+    }
+  }, [tenantId, activeTab, mainTabValue, listSubTab, appliedDateFrom, appliedDateTo, appliedTitle, appliedAmount, appliedNumber, appliedVkn, appliedStatus, loadInvoices]);
 
   useEffect(() => {
     if (!viewingIncomingDoc) {
@@ -386,7 +386,7 @@ export default function EInvoiceCenterPage() {
         if (!cancelled) setViewingIncomingHtmlLoading(false);
       });
     return () => { cancelled = true; };
-  }, [tenantId, viewingIncomingDoc?.id, viewingIncomingDoc?.ettn]);
+  }, [tenantId, viewingIncomingDoc]);
 
   const handleSyncInvoices = async (direction: 'incoming' | 'outgoing') => {
     if (!tenantId) return;

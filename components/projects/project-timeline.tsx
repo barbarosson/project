@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { FileText, Receipt, Package, ShoppingCart, DollarSign, Loader2 } from 'lucide-react'
@@ -25,11 +25,7 @@ export function ProjectTimeline({ projectId, tenantId, isTR }: ProjectTimelinePr
   const [entries, setEntries] = useState<TimelineEntry[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadTimeline()
-  }, [projectId])
-
-  async function loadTimeline() {
+  const loadTimeline = useCallback(async () => {
     const [invoicesRes, expensesRes, stockRes, ordersRes, costsRes] = await Promise.all([
       supabase.from('invoices').select('id, invoice_number, total, status, issue_date').eq('project_id', projectId),
       supabase.from('expenses').select('id, description, amount, expense_date').eq('project_id', projectId),
@@ -95,7 +91,11 @@ export function ProjectTimeline({ projectId, tenantId, isTR }: ProjectTimelinePr
     timeline.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     setEntries(timeline)
     setLoading(false)
-  }
+  }, [projectId, isTR])
+
+  useEffect(() => {
+    loadTimeline()
+  }, [loadTimeline])
 
   function getIcon(type: string) {
     const map: Record<string, any> = {

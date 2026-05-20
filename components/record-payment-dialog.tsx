@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -74,20 +74,7 @@ export function RecordPaymentDialog({
     transaction_date: new Date().toISOString().split('T')[0]
   })
 
-  useEffect(() => {
-    if (open && tenantId) {
-      fetchAccounts()
-    }
-  }, [open, tenantId])
-
-  useEffect(() => {
-    setFormData(prev => ({
-      ...prev,
-      amount: remainingAmount.toString()
-    }))
-  }, [remainingAmount])
-
-  async function fetchAccounts() {
+  const fetchAccounts = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('accounts')
@@ -111,7 +98,20 @@ export function RecordPaymentDialog({
       console.error('Error fetching accounts:', error)
       toast.error(t.toast.failedToLoadAccounts)
     }
-  }
+  }, [tenantId, currency, t.toast.failedToLoadAccounts])
+
+  useEffect(() => {
+    if (open && tenantId) {
+      fetchAccounts()
+    }
+  }, [open, tenantId, fetchAccounts])
+
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      amount: remainingAmount.toString()
+    }))
+  }, [remainingAmount])
 
   async function handleSubmit() {
     const amount = parseFloat(formData.amount)

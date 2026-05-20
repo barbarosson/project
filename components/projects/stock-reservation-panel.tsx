@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -35,11 +35,7 @@ export function StockReservationPanel({ projectId, tenantId, isTR }: StockReserv
   const [quantity, setQuantity] = useState('')
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
-    loadData()
-  }, [projectId])
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     const [resRes, prodRes] = await Promise.all([
       supabase
         .from('project_reservations')
@@ -56,7 +52,11 @@ export function StockReservationPanel({ projectId, tenantId, isTR }: StockReserv
     setReservations(resRes.data || [])
     setProducts(prodRes.data || [])
     setLoading(false)
-  }
+  }, [projectId, tenantId])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
 
   async function addReservation() {
     if (!selectedProduct || !quantity || Number(quantity) <= 0) {

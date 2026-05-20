@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable @next/next/no-img-element */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useLanguage } from '@/contexts/language-context';
 import { Button } from '@/components/ui/button';
@@ -46,29 +46,7 @@ export function BannerDisplay({ position, pageSlug }: BannerDisplayProps) {
   const { language } = useLanguage();
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
 
-  useEffect(() => {
-    fetchBanners();
-    const dismissed = localStorage.getItem('dismissedBanners');
-    if (dismissed) {
-      setDismissedBanners(JSON.parse(dismissed));
-    }
-  }, [position, pageSlug, language]);
-
-  useEffect(() => {
-    if (!emblaApi || banners.length <= 1) return;
-
-    const intervalId = setInterval(() => {
-      if (emblaApi.canScrollNext()) {
-        emblaApi.scrollNext();
-      } else {
-        emblaApi.scrollTo(0);
-      }
-    }, 5000);
-
-    return () => clearInterval(intervalId);
-  }, [emblaApi, banners]);
-
-  const fetchBanners = async () => {
+  const fetchBanners = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -95,7 +73,29 @@ export function BannerDisplay({ position, pageSlug }: BannerDisplayProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [position, pageSlug, language]);
+
+  useEffect(() => {
+    fetchBanners();
+    const dismissed = localStorage.getItem('dismissedBanners');
+    if (dismissed) {
+      setDismissedBanners(JSON.parse(dismissed));
+    }
+  }, [fetchBanners]);
+
+  useEffect(() => {
+    if (!emblaApi || banners.length <= 1) return;
+
+    const intervalId = setInterval(() => {
+      if (emblaApi.canScrollNext()) {
+        emblaApi.scrollNext();
+      } else {
+        emblaApi.scrollTo(0);
+      }
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [emblaApi, banners]);
 
   const handleDismiss = (bannerId: string) => {
     const newDismissed = [...dismissedBanners, bannerId];

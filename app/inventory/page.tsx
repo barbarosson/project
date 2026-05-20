@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -72,35 +72,7 @@ export default function InventoryPage() {
   const [linkedOrderCounts, setLinkedOrderCounts] = useState<Record<string, number>>({})
   const [pendingOrderCount, setPendingOrderCount] = useState(0)
 
-  useEffect(() => {
-    if (!tenantLoading && tenantId) {
-      fetchProducts()
-    }
-  }, [tenantId, tenantLoading])
-
-  async function fetchProducts() {
-    if (!tenantId) return
-
-    try {
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .order('name')
-
-      if (error) throw error
-
-      setProducts(data || [])
-      calculateAIInsights(data || [])
-      fetchLinkedOrders(data || [])
-    } catch (error) {
-      console.error('Error fetching products:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function fetchLinkedOrders(productsData: Product[]) {
+  const fetchLinkedOrders = useCallback(async (productsData: Product[]) => {
     if (!tenantId || productsData.length === 0) return
     try {
       const { data: orderItems } = await supabase
@@ -126,7 +98,35 @@ export default function InventoryPage() {
     } catch (err) {
       console.error('Error fetching linked orders:', err)
     }
-  }
+  }, [tenantId])
+
+  const fetchProducts = useCallback(async () => {
+    if (!tenantId) return
+
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .order('name')
+
+      if (error) throw error
+
+      setProducts(data || [])
+      calculateAIInsights(data || [])
+      fetchLinkedOrders(data || [])
+    } catch (error) {
+      console.error('Error fetching products:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [tenantId, fetchLinkedOrders])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId) {
+      fetchProducts()
+    }
+  }, [tenantId, tenantLoading, fetchProducts])
 
   function calculateAIInsights(productsData: Product[]) {
     const lowStockProducts = productsData.filter(

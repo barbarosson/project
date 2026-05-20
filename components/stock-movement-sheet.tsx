@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
@@ -42,25 +42,7 @@ export function StockMovementSheet({ product, open, onOpenChange }: StockMovemen
   const [loading, setLoading] = useState(true)
   const [displayedStock, setDisplayedStock] = useState<number | null>(null)
 
-  useEffect(() => {
-    if (open && product) {
-      setDisplayedStock(Number(product.current_stock ?? product.stock_quantity ?? 0))
-      fetchMovements()
-      if (tenantId) {
-        supabase
-          .from('products')
-          .select('current_stock, stock_quantity')
-          .eq('id', product.id)
-          .eq('tenant_id', tenantId)
-          .single()
-          .then(({ data }) => {
-            if (data) setDisplayedStock(Number(data.current_stock ?? data.stock_quantity ?? 0))
-          })
-      }
-    }
-  }, [open, product?.id, tenantId])
-
-  async function fetchMovements() {
+  const fetchMovements = useCallback(async () => {
     if (!product) return
     setLoading(true)
     try {
@@ -78,7 +60,25 @@ export function StockMovementSheet({ product, open, onOpenChange }: StockMovemen
     } finally {
       setLoading(false)
     }
-  }
+  }, [product])
+
+  useEffect(() => {
+    if (open && product) {
+      setDisplayedStock(Number(product.current_stock ?? product.stock_quantity ?? 0))
+      fetchMovements()
+      if (tenantId) {
+        supabase
+          .from('products')
+          .select('current_stock, stock_quantity')
+          .eq('id', product.id)
+          .eq('tenant_id', tenantId)
+          .single()
+          .then(({ data }) => {
+            if (data) setDisplayedStock(Number(data.current_stock ?? data.stock_quantity ?? 0))
+          })
+      }
+    }
+  }, [open, product, tenantId, fetchMovements])
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>

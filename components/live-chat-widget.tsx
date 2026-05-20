@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -64,63 +64,33 @@ export function LiveChatWidget({ onClose, embedded = false }: LiveChatWidgetProp
     }
   }
 
-  useEffect(() => {
-    if (chatStarted && tenantId) {
-      loadOrCreateSession()
-    }
-  }, [chatStarted, tenantId])
+  const loadMessages = useCallback(async (sessionId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('support_messages')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: true })
 
-  useEffect(() => {
-    const savedSessionId = localStorage.getItem(`chat_session_${tenantId}`)
-    if (savedSessionId && tenantId) {
-      setSessionId(savedSessionId)
-      loadMessages(savedSessionId)
+      if (error) throw error
+      setMessages(data || [])
+    } catch (error: any) {
+      console.error('Error loading messages:', error)
     }
+  }, [])
+
+  const sendSystemMessage = useCallback(async (sessionId: string, message: string) => {
+    await supabase.from('support_messages').insert({
+      session_id: sessionId,
+      tenant_id: tenantId,
+      message,
+      sender_name: 'System',
+      is_admin_reply: true,
+      is_read: true
+    })
   }, [tenantId])
 
-  useEffect(() => {
-    if (!sessionId) return
-
-    const channel = supabase
-      .channel(`chat:${sessionId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'support_messages',
-          filter: `session_id=eq.${sessionId}`
-        },
-        (payload) => {
-          const newMessage = payload.new as Message
-          setMessages(prev => [...prev, newMessage])
-          scrollToBottom()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [sessionId])
-
-  useEffect(() => {
-    scrollToBottom()
-  }, [messages])
-
-  function checkBusinessHours() {
-    const now = new Date()
-    const day = now.getDay()
-    const hour = now.getHours()
-    const online = day >= 1 && day <= 5 && hour >= 9 && hour < 17
-    setIsOnline(online)
-  }
-
-  function scrollToBottom() {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
-
-  async function loadOrCreateSession() {
+  const loadOrCreateSession = useCallback(async () => {
     if (!tenantId) return
 
     try {
@@ -163,32 +133,62 @@ export function LiveChatWidget({ onClose, embedded = false }: LiveChatWidgetProp
     } finally {
       setLoading(false)
     }
-  }
+  }, [tenantId, userName, userEmail, t.support.youAreConnected, loadMessages, sendSystemMessage])
 
-  async function loadMessages(sessionId: string) {
-    try {
-      const { data, error } = await supabase
-        .from('support_messages')
-        .select('*')
-        .eq('session_id', sessionId)
-        .order('created_at', { ascending: true })
-
-      if (error) throw error
-      setMessages(data || [])
-    } catch (error: any) {
-      console.error('Error loading messages:', error)
+  useEffect(() => {
+    if (chatStarted && tenantId) {
+      loadOrCreateSession()
     }
+  }, [chatStarted, tenantId, loadOrCreateSession])
+
+  useEffect(() => {
+    const savedSessionId = localStorage.getItem(`chat_session_${tenantId}`)
+    if (savedSessionId && tenantId) {
+      setSessionId(savedSessionId)
+      loadMessages(savedSessionId)
+    }
+  }, [tenantId, loadMessages])
+
+  useEffect(() => {
+    if (!sessionId) return
+
+    const channel = supabase
+      .channel(`chat:${sessionId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'support_messages',
+          filter: `session_id=eq.${sessionId}`
+        },
+        (payload) => {
+          const newMessage = payload.new as Message
+          setMessages(prev => [...prev, newMessage])
+          scrollToBottom()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [sessionId])
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
+
+  function checkBusinessHours() {
+    const now = new Date()
+    const day = now.getDay()
+    const hour = now.getHours()
+    const online = day >= 1 && day <= 5 && hour >= 9 && hour < 17
+    setIsOnline(online)
   }
 
-  async function sendSystemMessage(sessionId: string, message: string) {
-    await supabase.from('support_messages').insert({
-      session_id: sessionId,
-      tenant_id: tenantId,
-      message,
-      sender_name: 'System',
-      is_admin_reply: true,
-      is_read: true
-    })
+  function scrollToBottom() {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   async function sendMessage() {

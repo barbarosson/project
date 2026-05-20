@@ -1,7 +1,7 @@
 'use client'
 /* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -79,13 +79,7 @@ export default function SettingsPage() {
     currency: 'USD'
   })
 
-  useEffect(() => {
-    if (!tenantLoading && tenantId) {
-      fetchCompanySettings()
-    }
-  }, [tenantId, tenantLoading])
-
-  async function fetchCompanySettings() {
+  const fetchCompanySettings = useCallback(async () => {
     if (!tenantId) return
 
     setLoading(true)
@@ -106,7 +100,13 @@ export default function SettingsPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [tenantId, t.common.loading])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId) {
+      fetchCompanySettings()
+    }
+  }, [tenantId, tenantLoading, fetchCompanySettings])
 
   async function handleCurrencyChange(newCurrency: string) {
     try {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -70,9 +70,41 @@ export function SendEInvoicePanel({ tenantId, language, translations: tr, initia
   const t = tr || {}
   const isTr = language === 'tr'
 
+  const loadInvoices = useCallback(async () => {
+    setLoading(true)
+    try {
+      const { data: invoiceList, error } = await supabase
+        .from('invoices')
+        .select('id, invoice_number, customer_id, total, amount, subtotal, tax_total, withholding_amount, issue_date, status, customers(name, company_title)')
+        .eq('tenant_id', tenantId)
+        .in('status', ['sent', 'paid', 'overdue'])
+        .order('created_at', { ascending: false })
+        .limit(80)
+
+      if (error) throw error
+
+      const { data: sentEdocs } = await supabase
+        .from('edocuments')
+        .select('local_invoice_id')
+        .eq('tenant_id', tenantId)
+        .eq('direction', 'outgoing')
+        .neq('status', 'draft')
+        .not('local_invoice_id', 'is', null)
+
+      const sentInvoiceIds = new Set((sentEdocs ?? []).map((d) => d.local_invoice_id).filter(Boolean))
+      const notYetSent = (invoiceList ?? []).filter((inv) => !sentInvoiceIds.has(inv.id))
+      setInvoices(notYetSent)
+      setSelectedInvoiceId((prev) => (sentInvoiceIds.has(prev) ? '' : prev))
+    } catch (error: any) {
+      toast.error(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }, [tenantId])
+
   useEffect(() => {
     loadInvoices()
-  }, [tenantId])
+  }, [loadInvoices])
 
   useEffect(() => {
     if (initialSelectedInvoiceId && invoices.some((inv) => inv.id === initialSelectedInvoiceId)) {
@@ -120,38 +152,6 @@ export function SendEInvoicePanel({ tenantId, language, translations: tr, initia
       setWithholdingAmount(wh)
     }
   }, [selectedInvoiceId, invoices])
-
-  async function loadInvoices() {
-    setLoading(true)
-    try {
-      const { data: invoiceList, error } = await supabase
-        .from('invoices')
-        .select('id, invoice_number, customer_id, total, amount, subtotal, tax_total, withholding_amount, issue_date, status, customers(name, company_title)')
-        .eq('tenant_id', tenantId)
-        .in('status', ['sent', 'paid', 'overdue'])
-        .order('created_at', { ascending: false })
-        .limit(80)
-
-      if (error) throw error
-
-      const { data: sentEdocs } = await supabase
-        .from('edocuments')
-        .select('local_invoice_id')
-        .eq('tenant_id', tenantId)
-        .eq('direction', 'outgoing')
-        .neq('status', 'draft')
-        .not('local_invoice_id', 'is', null)
-
-      const sentInvoiceIds = new Set((sentEdocs ?? []).map((d) => d.local_invoice_id).filter(Boolean))
-      const notYetSent = (invoiceList ?? []).filter((inv) => !sentInvoiceIds.has(inv.id))
-      setInvoices(notYetSent)
-      setSelectedInvoiceId((prev) => (sentInvoiceIds.has(prev) ? '' : prev))
-    } catch (error: any) {
-      toast.error(error.message)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   async function handleSendEInvoice() {
     if (!selectedInvoiceId) {

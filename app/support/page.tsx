@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -61,11 +61,31 @@ export default function SupportPage() {
   const hasLiveChat = hasFeature('support_live')
   const has24_7Support = hasFeature('support_24_7')
 
+  const fetchTickets = useCallback(async () => {
+    if (!tenantId) return
+
+    setLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('support_tickets')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      setTickets(data || [])
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to fetch tickets')
+    } finally {
+      setLoading(false)
+    }
+  }, [tenantId])
+
   useEffect(() => {
     if (!tenantLoading && tenantId) {
       fetchTickets()
     }
-  }, [tenantId, tenantLoading])
+  }, [tenantId, tenantLoading, fetchTickets])
 
   useEffect(() => {
     if (liveChatWidget && typeof window !== 'undefined') {
@@ -85,26 +105,6 @@ export default function SupportPage() {
       }
     }
   }, [liveChatWidget])
-
-  async function fetchTickets() {
-    if (!tenantId) return
-
-    setLoading(true)
-    try {
-      const { data, error } = await supabase
-        .from('support_tickets')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setTickets(data || [])
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to fetch tickets')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   function getStatusBadge(status: string) {
     const statusConfig = {

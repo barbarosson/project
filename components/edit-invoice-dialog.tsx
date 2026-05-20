@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -162,6 +162,62 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
     }
   }, [isOpen])
 
+  const fetchCustomersData = useCallback(async (): Promise<any[]> => {
+    if (!tenantId) return []
+    console.log('EditInvoiceDialog - Fetching main customers for tenant:', tenantId)
+    const { data, error } = await supabase
+      .from('customers')
+      .select('id, name, company_title, branch_type, parent_customer_id')
+      .eq('tenant_id', tenantId)
+      .eq('status', 'active')
+      .or('branch_type.eq.main,parent_customer_id.is.null')
+      .order('company_title')
+    console.log('EditInvoiceDialog - Customers loaded:', data?.length, 'items, error:', error)
+    return data || []
+  }, [tenantId])
+
+  const fetchProductsData = useCallback(async (): Promise<any[]> => {
+    if (!tenantId) return []
+    console.log('EditInvoiceDialog - Fetching products for tenant:', tenantId)
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .eq('status', 'active')
+      .order('name')
+    console.log('EditInvoiceDialog - Products loaded:', data?.length, 'items, error:', error)
+    return data || []
+  }, [tenantId])
+
+  const fetchLineItemsData = useCallback(async (invoiceId: string): Promise<LineItem[]> => {
+    if (!tenantId) return []
+    console.log('EditInvoiceDialog - Fetching line items for invoice:', invoiceId, 'tenant:', tenantId)
+    const { data, error } = await supabase
+      .from('invoice_line_items')
+      .select('*')
+      .eq('invoice_id', invoiceId)
+      .eq('tenant_id', tenantId)
+
+    console.log('EditInvoiceDialog - Line items loaded:', data?.length, 'items, error:', error)
+
+    if (data) {
+      const normalizedData = data.map(item => ({
+        id: item.id,
+        product_id: item.product_id,
+        product_name: item.product_name || '',
+        description: item.description || '',
+        quantity: item.quantity || 0,
+        unit_price: item.unit_price || 0,
+        vat_rate: [0, 1, 10, 20].includes(Number(item.vat_rate)) ? Number(item.vat_rate) : 20,
+        line_total: item.line_total || 0,
+        vat_amount: item.vat_amount || 0,
+        total_with_vat: item.total_with_vat || 0
+      }))
+      return normalizedData
+    }
+    return []
+  }, [tenantId])
+
   useEffect(() => {
     const loadAllData = async () => {
       if (!isOpen || !invoice || !tenantId) return
@@ -233,10 +289,12 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
         console.log('EditInvoiceDialog - Setting initial form data:', initialFormData)
         setFormData(initialFormData)
 
-        setFormKey(prev => prev + 1)
+        setFormKey(prev => {
+          const next = prev + 1
+          console.log('FORM_READY: Rendering form with key', next, 'and Customer ID', initialFormData.customer_id)
+          return next
+        })
         setIsInitializing(false)
-
-        console.log('FORM_READY: Rendering form with key', formKey + 1, 'and Customer ID', initialFormData.customer_id)
       } catch (error) {
         console.error('EditInvoiceDialog - Error loading data:', error)
         toast.error(t.invoices.failedToLoadInvoiceData)
@@ -247,7 +305,7 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
     }
 
     loadAllData()
-  }, [isOpen, invoice?.id, tenantId])
+  }, [isOpen, invoice, tenantId, fetchCustomersData, fetchProductsData, fetchLineItemsData, t.invoices.failedToLoadInvoiceData])
 
   useEffect(() => {
     if (!isOpen || !formData.customer_id || !tenantId) {
@@ -265,62 +323,6 @@ export function EditInvoiceDialog({ invoice, isOpen, onClose, onSuccess }: EditI
   }, [isOpen, formData.customer_id, tenantId])
 
   const effectiveCustomerId = selectedSubBranchId || formData.customer_id
-
-  async function fetchCustomersData(): Promise<any[]> {
-    if (!tenantId) return []
-    console.log('EditInvoiceDialog - Fetching main customers for tenant:', tenantId)
-    const { data, error } = await supabase
-      .from('customers')
-      .select('id, name, company_title, branch_type, parent_customer_id')
-      .eq('tenant_id', tenantId)
-      .eq('status', 'active')
-      .or('branch_type.eq.main,parent_customer_id.is.null')
-      .order('company_title')
-    console.log('EditInvoiceDialog - Customers loaded:', data?.length, 'items, error:', error)
-    return data || []
-  }
-
-  async function fetchProductsData(): Promise<any[]> {
-    if (!tenantId) return []
-    console.log('EditInvoiceDialog - Fetching products for tenant:', tenantId)
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('tenant_id', tenantId)
-      .eq('status', 'active')
-      .order('name')
-    console.log('EditInvoiceDialog - Products loaded:', data?.length, 'items, error:', error)
-    return data || []
-  }
-
-  async function fetchLineItemsData(invoiceId: string): Promise<LineItem[]> {
-    if (!tenantId) return []
-    console.log('EditInvoiceDialog - Fetching line items for invoice:', invoiceId, 'tenant:', tenantId)
-    const { data, error } = await supabase
-      .from('invoice_line_items')
-      .select('*')
-      .eq('invoice_id', invoiceId)
-      .eq('tenant_id', tenantId)
-
-    console.log('EditInvoiceDialog - Line items loaded:', data?.length, 'items, error:', error)
-
-    if (data) {
-      const normalizedData = data.map(item => ({
-        id: item.id,
-        product_id: item.product_id,
-        product_name: item.product_name || '',
-        description: item.description || '',
-        quantity: item.quantity || 0,
-        unit_price: item.unit_price || 0,
-        vat_rate: [0, 1, 10, 20].includes(Number(item.vat_rate)) ? Number(item.vat_rate) : 20,
-        line_total: item.line_total || 0,
-        vat_amount: item.vat_amount || 0,
-        total_with_vat: item.total_with_vat || 0
-      }))
-      return normalizedData
-    }
-    return []
-  }
 
   const addLineItem = () => {
     setLineItems([

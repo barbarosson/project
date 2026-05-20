@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -40,11 +40,7 @@ export function MilestoneManager({ projectId, tenantId, isTR }: MilestoneManager
   const [newAutoInvoice, setNewAutoInvoice] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
-    fetchMilestones()
-  }, [projectId])
-
-  async function fetchMilestones() {
+  const fetchMilestones = useCallback(async () => {
     const { data } = await supabase
       .from('project_milestones')
       .select('*')
@@ -54,7 +50,11 @@ export function MilestoneManager({ projectId, tenantId, isTR }: MilestoneManager
 
     setMilestones(data || [])
     setLoading(false)
-  }
+  }, [projectId, tenantId])
+
+  useEffect(() => {
+    fetchMilestones()
+  }, [fetchMilestones])
 
   async function addMilestone() {
     if (!newTitle.trim()) return

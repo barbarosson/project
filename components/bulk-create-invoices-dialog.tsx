@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -57,23 +57,23 @@ export function BulkCreateInvoicesDialog({ isOpen, onClose, onSuccess }: BulkCre
     }
   ])
 
+  const fetchCustomers = useCallback(async () => {
+    if (!tenantId) return
+    const { data } = await supabase.from('customers').select('*').eq('tenant_id', tenantId).eq('status', 'active').order('company_title')
+    setCustomers(data || [])
+  }, [tenantId])
+
+  const fetchProducts = useCallback(async () => {
+    const { data } = await supabase.from('products').select('*').eq('status', 'active').order('name')
+    setProducts(data || [])
+  }, [])
+
   useEffect(() => {
     if (isOpen && tenantId) {
       fetchCustomers()
       fetchProducts()
     }
-  }, [isOpen, tenantId])
-
-  async function fetchCustomers() {
-    if (!tenantId) return
-    const { data } = await supabase.from('customers').select('*').eq('tenant_id', tenantId).eq('status', 'active').order('company_title')
-    setCustomers(data || [])
-  }
-
-  async function fetchProducts() {
-    const { data } = await supabase.from('products').select('*').eq('status', 'active').order('name')
-    setProducts(data || [])
-  }
+  }, [isOpen, tenantId, fetchCustomers, fetchProducts])
 
   const addRow = () => {
     if (invoices.length >= 50) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Search, Bell, Menu, User, LogOut, Settings, Globe, FileText, Users as UsersIcon, Package, Check, X, Clock, Shield } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -64,15 +64,7 @@ export function Topbar({ onMenuClick }: TopbarProps) {
     return () => document.removeEventListener('keydown', down)
   }, [])
 
-  useEffect(() => {
-    if (searchQuery && tenantId) {
-      performSearch()
-    } else {
-      setSearchResults({ customers: [], invoices: [], products: [] })
-    }
-  }, [searchQuery, tenantId])
-
-  async function performSearch() {
+  const performSearch = useCallback(async () => {
     if (!tenantId || !searchQuery) return
 
     const query = searchQuery.toLowerCase()
@@ -103,7 +95,15 @@ export function Topbar({ onMenuClick }: TopbarProps) {
       invoices: invoicesRes.data || [],
       products: productsRes.data || []
     })
-  }
+  }, [tenantId, searchQuery])
+
+  useEffect(() => {
+    if (searchQuery && tenantId) {
+      performSearch()
+    } else {
+      setSearchResults({ customers: [], invoices: [], products: [] })
+    }
+  }, [searchQuery, tenantId, performSearch])
 
   function handleSelect(type: string, id: string) {
     setOpen(false)

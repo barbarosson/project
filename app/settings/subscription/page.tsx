@@ -18,6 +18,15 @@ import { IyzicoCheckoutDialog } from '@/components/pricing/iyzico-checkout-dialo
 import type { PricingBreakdown } from '@/hooks/use-pricing-engine';
 import type { PricingLineItem } from '@/hooks/use-pricing-engine';
 
+const E_INVOICE_PACKS = [
+  { qty: 100, basePrice: 400 },
+  { qty: 200, basePrice: 660, tag: 'advantage' as const },
+  { qty: 500, basePrice: 1500 },
+  { qty: 1000, basePrice: 2500 },
+  { qty: 2500, basePrice: 5500 },
+  { qty: 5000, basePrice: 9500 },
+];
+
 export default function SubscriptionPage() {
   const { t, language } = useLanguage();
   const { user } = useAuth();
@@ -28,15 +37,6 @@ export default function SubscriptionPage() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [selectedEInvoicePackQty, setSelectedEInvoicePackQty] = useState<number | null>(null);
-
-  const eInvoicePacks = [
-    { qty: 100, basePrice: 400 },
-    { qty: 200, basePrice: 660, tag: 'advantage' as const },
-    { qty: 500, basePrice: 1500 },
-    { qty: 1000, basePrice: 2500 },
-    { qty: 2500, basePrice: 5500 },
-    { qty: 5000, basePrice: 9500 },
-  ];
 
   const handleBuyCredits = async (type: 'ocr' | 'e_fatura') => {
     if (!user) return;
@@ -112,7 +112,7 @@ export default function SubscriptionPage() {
     }
 
     if (selectedEInvoicePackQty) {
-      const selectedPack = eInvoicePacks.find((p) => p.qty === selectedEInvoicePackQty);
+      const selectedPack = E_INVOICE_PACKS.find((p) => p.qty === selectedEInvoicePackQty);
       if (selectedPack) {
         const discounted = selectedPack.basePrice * 0.85;
         lineItems.push({
@@ -348,7 +348,7 @@ export default function SubscriptionPage() {
                   <span className="rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5">-%15</span>
                 </div>
 
-                {eInvoicePacks.map((pack) => {
+                {E_INVOICE_PACKS.map((pack) => {
                   const discounted = pack.basePrice * 0.85;
                   const isSelected = selectedEInvoicePackQty === pack.qty;
                   return (

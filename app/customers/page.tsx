@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { DashboardLayout } from '@/components/dashboard-layout'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -89,44 +89,7 @@ export default function CustomersPage() {
   const [addSubCustomerParentId, setAddSubCustomerParentId] = useState<string | null>(null)
   const [addSubCustomerParentData, setAddSubCustomerParentData] = useState<Record<string, unknown> | null>(null)
 
-  useEffect(() => {
-    if (!tenantLoading && tenantId) {
-      fetchCustomers()
-    }
-  }, [tenantId, tenantLoading])
-
-  useEffect(() => {
-    if (!tenantLoading && !tenantId) {
-      setLoading(false)
-    }
-  }, [tenantLoading, tenantId])
-
-  useEffect(() => {
-    filterCustomers()
-  }, [searchQuery, segmentFilter, customers, customerSegments])
-
-  async function fetchCustomers() {
-    if (!tenantId) return
-
-    try {
-      const { data, error } = await supabase
-        .from('customers')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      setCustomers(data || [])
-      await calculateCustomerSegments(data || [])
-    } catch (error) {
-      console.error('Error fetching customers:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function calculateCustomerSegments(customersData: Customer[]) {
+  const calculateCustomerSegments = useCallback(async (customersData: Customer[]) => {
     if (!tenantId) return
 
     try {
@@ -173,7 +136,28 @@ export default function CustomersPage() {
     } catch (error) {
       console.error('Error calculating segments:', error)
     }
-  }
+  }, [tenantId])
+
+  const fetchCustomers = useCallback(async () => {
+    if (!tenantId) return
+
+    try {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('*')
+        .eq('tenant_id', tenantId)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      setCustomers(data || [])
+      await calculateCustomerSegments(data || [])
+    } catch (error) {
+      console.error('Error fetching customers:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [tenantId, calculateCustomerSegments])
 
   // Varsayılan olarak sadece ana cariler listelenir; alt şubeler ana carinin "Şube ve Alt Cariler" bölümünde gösterilir.
   // Ancak bazı tenant'larda tüm kayıtlar yanlışlıkla alt-şube gibi (parent_customer_id dolu) import edilmiş olabiliyor.
@@ -183,7 +167,7 @@ export default function CustomersPage() {
     return mains.length > 0 ? mains : customers
   }, [customers])
 
-  function filterCustomers() {
+  const filterCustomers = useCallback(() => {
     let filtered = mainCustomers
 
     if (segmentFilter !== 'all') {
@@ -205,7 +189,23 @@ export default function CustomersPage() {
     }
 
     setFilteredCustomers(filtered)
-  }
+  }, [mainCustomers, segmentFilter, customerSegments, searchQuery])
+
+  useEffect(() => {
+    if (!tenantLoading && tenantId) {
+      fetchCustomers()
+    }
+  }, [tenantId, tenantLoading, fetchCustomers])
+
+  useEffect(() => {
+    if (!tenantLoading && !tenantId) {
+      setLoading(false)
+    }
+  }, [tenantLoading, tenantId])
+
+  useEffect(() => {
+    filterCustomers()
+  }, [filterCustomers])
 
   function getCustomerSegment(customerId: string): CustomerSegment | undefined {
     return customerSegments.find(seg => seg.customer_id === customerId)
