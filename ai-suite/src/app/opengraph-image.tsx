@@ -23,7 +23,7 @@ export default function OpenGraphImage() {
           background: "radial-gradient(1200px 800px at 20% 30%, rgba(124,58,237,0.35), transparent 60%), radial-gradient(1000px 700px at 85% 40%, rgba(99,102,241,0.35), transparent 55%), #020617",
           color: "white",
           fontFamily:
-            'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
+            'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial',
         }}
       >
         <div

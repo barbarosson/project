@@ -223,10 +223,7 @@ export default function AppointFlowProductPage() {
               <Badge className="mb-5 bg-[#00D4AA] text-white px-3 py-1 text-xs font-semibold tracking-wide">
                 {isEn ? 'NEW MODULE — MODULUS APPOINTFLOW' : 'YENİ MODÜL — MODULUS APPOINTFLOW'}
               </Badge>
-              <h1
-                className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6"
-                style={{ color: '#0A2540', fontFamily: 'Montserrat, sans-serif' }}
-              >
+              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 text-[#0A2540]">
                 {isEn
                   ? 'Your autonomous appointment agent — on WhatsApp, 24/7.'
                   : 'Otonom randevu ajanınız — WhatsApp\'ta, 7/24.'}
@@ -345,7 +342,7 @@ export default function AppointFlowProductPage() {
       <section className="py-16 lg:py-24 bg-white">
         <div className="container-marketing">
           <div className="text-center mb-12 max-w-3xl mx-auto">
-            <h2 className="text-3xl lg:text-5xl font-bold mb-4" style={{ color: '#0A2540', fontFamily: 'Montserrat, sans-serif' }}>
+            <h2 className="font-display text-3xl lg:text-5xl font-bold mb-4 text-[#0A2540]">
               {isEn ? 'The problem with running a service business' : 'Hizmet işletmesi yönetmenin gerçeği'}
             </h2>
             <p className="text-lg" style={{ color: '#425466' }}>
@@ -409,7 +406,7 @@ export default function AppointFlowProductPage() {
             <Badge className="mb-4 bg-[#0A2540] text-white px-4 py-1.5">
               {isEn ? 'How it works' : 'Nasıl çalışır?'}
             </Badge>
-            <h2 className="text-3xl lg:text-5xl font-bold mb-4" style={{ color: '#0A2540', fontFamily: 'Montserrat, sans-serif' }}>
+            <h2 className="font-display text-3xl lg:text-5xl font-bold mb-4 text-[#0A2540]">
               {isEn ? 'Live in 5 minutes. No app to install.' : '5 dakikada canlı. Uygulama kurmaya gerek yok.'}
             </h2>
           </div>
@@ -476,7 +473,7 @@ export default function AppointFlowProductPage() {
             <Badge className="mb-4 bg-blue-600 text-white px-4 py-1.5">
               {isEn ? 'The autonomous stack' : 'Otonom yığın'}
             </Badge>
-            <h2 className="text-3xl lg:text-5xl font-bold mb-4" style={{ color: '#0A2540', fontFamily: 'Montserrat, sans-serif' }}>
+            <h2 className="font-display text-3xl lg:text-5xl font-bold mb-4 text-[#0A2540]">
               {isEn ? '11 AI agents, one business on autopilot' : '11 AI ajanı, otomatik pilotta bir işletme'}
             </h2>
             <p className="text-lg" style={{ color: '#425466' }}>
@@ -543,7 +540,7 @@ export default function AppointFlowProductPage() {
             <Badge className="mb-4 bg-[#00D4AA] text-white px-4 py-1.5">
               {isEn ? 'Pricing' : 'Fiyatlandırma'}
             </Badge>
-            <h2 className="text-3xl lg:text-5xl font-bold mb-4" style={{ color: '#0A2540', fontFamily: 'Montserrat, sans-serif' }}>
+            <h2 className="font-display text-3xl lg:text-5xl font-bold mb-4 text-[#0A2540]">
               {isEn ? 'Simple, transparent pricing' : 'Sade ve şeffaf fiyatlandırma'}
             </h2>
             <p className="text-lg mb-8" style={{ color: '#425466' }}>
@@ -592,7 +589,7 @@ export default function AppointFlowProductPage() {
                     </Badge>
                   )}
                   <div className="mb-5">
-                    <div className="text-xl font-bold mb-1" style={{ color: '#0A2540', fontFamily: 'Montserrat, sans-serif' }}>
+                    <div className="font-display text-xl font-bold mb-1 text-[#0A2540]">
                       {tier.name}
                     </div>
                     <div className="text-sm" style={{ color: '#425466' }}>
@@ -657,7 +654,7 @@ export default function AppointFlowProductPage() {
         <div className="container-marketing">
           <div className="text-center mb-12 max-w-3xl mx-auto">
             <Badge className="mb-4 bg-blue-600 text-white px-4 py-1.5">FAQ</Badge>
-            <h2 className="text-3xl lg:text-5xl font-bold mb-4" style={{ color: '#0A2540', fontFamily: 'Montserrat, sans-serif' }}>
+            <h2 className="font-display text-3xl lg:text-5xl font-bold mb-4 text-[#0A2540]">
               {isEn ? 'Frequently asked questions' : 'Sık sorulan sorular'}
             </h2>
           </div>
@@ -702,7 +699,7 @@ export default function AppointFlowProductPage() {
             style={{ background: 'linear-gradient(135deg, #0A2540 0%, #0D3158 100%)' }}
           >
             <Users className="h-12 w-12 mx-auto mb-6 text-[#00D4AA]" />
-            <h2 className="text-3xl lg:text-5xl font-bold mb-5 text-white" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+            <h2 className="font-display text-3xl lg:text-5xl font-bold mb-5 text-white">
               {isEn
                 ? 'Stop missing bookings. Start sleeping at night.'
                 : 'Randevu kaçırmayı bırakın. Geceleri uyumaya başlayın.'}

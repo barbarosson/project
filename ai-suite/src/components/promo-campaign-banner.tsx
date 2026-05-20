@@ -6,11 +6,7 @@ import { Copy, Percent, Check } from "lucide-react";
 import { toast } from "sonner";
 
 import { useI18n } from "@/i18n/i18n-provider";
-import {
-  PROMO_CODE_ISEND101,
-  PROMO_ISEND101_DISCOUNT_PERCENT,
-  PROMO_ISEND101_MEMBER_LIMIT,
-} from "@/lib/promo";
+import { PROMO_CODE_ISEND101, PROMO_ISEND101_DISCOUNT_PERCENT } from "@/lib/promo";
 import { cn } from "@/lib/utils";
 import { glassSurface, interactiveClick } from "@/lib/premium-ui";
 
@@ -37,8 +33,7 @@ export function PromoCampaignBanner({ className, showPricingLink = false }: Prop
 
   const body = t("promo.isend101.body")
     .replace("{code}", PROMO_CODE_ISEND101)
-    .replace("{percent}", String(PROMO_ISEND101_DISCOUNT_PERCENT))
-    .replace("{limit}", String(PROMO_ISEND101_MEMBER_LIMIT));
+    .replace("{percent}", String(PROMO_ISEND101_DISCOUNT_PERCENT));
 
   return (
     <aside

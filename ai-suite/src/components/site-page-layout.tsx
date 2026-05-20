@@ -34,62 +34,74 @@ export function SitePageChrome({ children }: { children: ReactNode }) {
   );
 }
 
+function FooterDot() {
+  return <span className="hidden shrink-0 text-white/25 sm:inline" aria-hidden>·</span>;
+}
+
 export function SitePageFooter() {
   const { t } = useI18n();
 
+  const navLink =
+    "shrink-0 whitespace-nowrap text-xs font-medium text-foreground/85 transition-colors hover:text-foreground sm:text-sm";
+  const navLinkMuted =
+    "shrink-0 whitespace-nowrap text-xs text-muted-foreground transition-colors hover:text-foreground sm:text-sm";
+
   return (
     <footer className="mt-auto border-t border-white/[0.08] bg-white/[0.02] backdrop-blur-xl">
-      <div
-        className={siteContainer(
-          "flex flex-col gap-4 py-10 sm:flex-row sm:items-start sm:justify-between"
-        )}
-      >
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">{t("footer.copyright")}</p>
-          <p className="text-sm text-muted-foreground">
-            {t("footer.modulusLead")}{" "}
-            <a
-              href={MODULUS_SITE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-violet-200 underline-offset-2 transition-colors hover:text-white hover:underline"
-            >
-              modulusaas.com
-            </a>
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-          <a
-            href={MODULUS_SITE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-violet-200 transition-colors hover:text-white"
+      <div className={siteContainer("py-6 sm:py-8")}>
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+          <div className="min-w-0 max-w-xl shrink-0 space-y-1">
+            <p className="text-pretty text-xs leading-snug text-muted-foreground sm:text-sm">
+              {t("footer.copyright")}
+            </p>
+            <p className="flex min-w-0 flex-wrap items-baseline gap-x-1 gap-y-0.5 text-pretty text-xs leading-snug text-muted-foreground sm:text-sm">
+              <span>{t("footer.modulusLead")}</span>
+              <a
+                href={MODULUS_SITE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-violet-200 underline-offset-2 transition-colors hover:text-white hover:underline"
+              >
+                modulusaas.com
+              </a>
+            </p>
+          </div>
+
+          <nav
+            className="min-w-0 lg:flex-1 lg:justify-end"
+            aria-label="Footer"
           >
-            {t("footer.modulus")}
-          </a>
-          <span className="hidden text-white/20 sm:inline">·</span>
-          <Link className="font-medium text-foreground/90 transition-colors hover:text-foreground" href="/login">
-            {t("nav.login")}
-          </Link>
-          <Link className="transition-colors hover:text-foreground" href="/account">
-            {t("nav.account")}
-          </Link>
-          <Link className="transition-colors hover:text-foreground" href="/pricing">
-            {t("nav.pricing")}
-          </Link>
-          <Link className="transition-colors hover:text-foreground" href="/faq">
-            {t("nav.faq")}
-          </Link>
-          <span className="hidden text-white/20 sm:inline">·</span>
-          <Link className="transition-colors hover:text-foreground" href="/privacy">
-            {t("nav.privacy")}
-          </Link>
-          <Link className="transition-colors hover:text-foreground" href="/terms">
-            {t("nav.terms")}
-          </Link>
-          <span className="hidden w-full text-white/20 sm:inline sm:w-auto">·</span>
-          <span className="w-full sm:w-auto">{t("footer.trust")}</span>
+            <div className="-mx-1 flex min-w-0 items-center gap-x-2 gap-y-2 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible sm:pb-0 lg:justify-end [&::-webkit-scrollbar]:hidden">
+              <Link className={navLink} href="/login">
+                {t("nav.login")}
+              </Link>
+              <FooterDot />
+              <Link className={navLinkMuted} href="/account">
+                {t("nav.account")}
+              </Link>
+              <FooterDot />
+              <Link className={navLinkMuted} href="/pricing">
+                {t("nav.pricing")}
+              </Link>
+              <FooterDot />
+              <Link className={navLinkMuted} href="/faq">
+                {t("nav.faq")}
+              </Link>
+              <FooterDot />
+              <Link className={navLinkMuted} href="/privacy">
+                {t("nav.privacy")}
+              </Link>
+              <FooterDot />
+              <Link className={navLinkMuted} href="/terms">
+                {t("nav.terms")}
+              </Link>
+            </div>
+          </nav>
         </div>
+
+        <p className="mt-4 border-t border-white/[0.06] pt-4 text-center text-[11px] leading-relaxed text-muted-foreground sm:text-xs lg:text-left">
+          {t("footer.trust")}
+        </p>
       </div>
     </footer>
   );

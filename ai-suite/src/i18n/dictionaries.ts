@@ -24,11 +24,11 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.badge.noSubscription": "No subscription",
     "hero.badge.noSignups": "No sign-ups",
     "hero.badge.payPerUse": "Pay per use",
-    "promo.isend101.ariaLabel": "Launch discount offer",
-    "promo.isend101.badge": "Limited launch offer",
-    "promo.isend101.title": "50% off for the first 50 members",
+    "promo.isend101.ariaLabel": "Limited-time discount offer",
+    "promo.isend101.badge": "Limited-time offer",
+    "promo.isend101.title": "50% off for a limited time",
     "promo.isend101.body":
-      "Use code {code} at checkout — {percent}% off any plan or credit pack for the first {limit} members who purchase.",
+      "Use code {code} at checkout — {percent}% off any plan or credit pack for a limited time.",
     "promo.isend101.hint": "Enter the code on the secure Lemon Squeezy payment page before you pay.",
     "promo.isend101.codeLabel": "Your code",
     "promo.isend101.copy": "Copy code",
@@ -40,7 +40,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "Before",
     "home.demo.after.label": "After",
-    "home.demo.title": "Before & After (Real Examples)",
+    "home.demo.title": "Before & After",
     "home.demo.subtitle":
       "Pick a product, see the transformation, and click through to generate yours.",
     "home.demo.examples.corp.before":
@@ -652,11 +652,11 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.badge.noSubscription": "Sin suscripción",
     "hero.badge.noSignups": "Sin registro",
     "hero.badge.payPerUse": "Pago por uso",
-    "promo.isend101.ariaLabel": "Oferta de lanzamiento",
-    "promo.isend101.badge": "Oferta limitada de lanzamiento",
-    "promo.isend101.title": "50 % de descuento para los primeros 50 miembros",
+    "promo.isend101.ariaLabel": "Oferta por tiempo limitado",
+    "promo.isend101.badge": "Oferta por tiempo limitado",
+    "promo.isend101.title": "50 % de descuento por tiempo limitado",
     "promo.isend101.body":
-      "Usa el código {code} al pagar — {percent} % de descuento en cualquier plan o pack para los primeros {limit} miembros que compren.",
+      "Usa el código {code} al pagar — {percent} % de descuento en cualquier plan o pack por tiempo limitado.",
     "promo.isend101.hint": "Introduce el código en la página de pago segura de Lemon Squeezy antes de pagar.",
     "promo.isend101.codeLabel": "Tu código",
     "promo.isend101.copy": "Copiar código",
@@ -668,7 +668,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "Antes",
     "home.demo.after.label": "Después",
-    "home.demo.title": "Antes Y Después (Ejemplos Reales)",
+    "home.demo.title": "Antes y después",
     "home.demo.subtitle":
       "Elige un producto, mira la transformación y haz clic para generar el tuyo.",
     "home.demo.examples.corp.before":
@@ -1259,11 +1259,11 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.badge.noSubscription": "Sans abonnement",
     "hero.badge.noSignups": "Sans inscription",
     "hero.badge.payPerUse": "Paiement à l’usage",
-    "promo.isend101.ariaLabel": "Offre de lancement",
-    "promo.isend101.badge": "Offre de lancement limitée",
-    "promo.isend101.title": "−50 % pour les 50 premiers membres",
+    "promo.isend101.ariaLabel": "Offre à durée limitée",
+    "promo.isend101.badge": "Offre à durée limitée",
+    "promo.isend101.title": "−50 % pour une durée limitée",
     "promo.isend101.body":
-      "Code {code} au paiement — {percent} % de réduction sur tout forfait ou pack pour les {limit} premiers acheteurs.",
+      "Code {code} au paiement — {percent} % de réduction sur tout forfait ou pack pour une durée limitée.",
     "promo.isend101.hint": "Saisissez le code sur la page de paiement Lemon Squeezy avant de régler.",
     "promo.isend101.codeLabel": "Votre code",
     "promo.isend101.copy": "Copier le code",
@@ -1275,7 +1275,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "Avant",
     "home.demo.after.label": "Après",
-    "home.demo.title": "Avant / Après (Exemples Réels)",
+    "home.demo.title": "Avant / Après",
     "home.demo.subtitle":
       "Choisissez un produit, voyez la transformation, puis cliquez pour générer le vôtre.",
     "home.demo.examples.corp.before":
@@ -1866,11 +1866,11 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.badge.noSubscription": "Kein Abo",
     "hero.badge.noSignups": "Kein Signup",
     "hero.badge.payPerUse": "Pay‑per‑use",
-    "promo.isend101.ariaLabel": "Startangebot",
-    "promo.isend101.badge": "Limitiertes Startangebot",
-    "promo.isend101.title": "50 % Rabatt für die ersten 50 Mitglieder",
+    "promo.isend101.ariaLabel": "Zeitlich begrenztes Angebot",
+    "promo.isend101.badge": "Zeitlich begrenztes Angebot",
+    "promo.isend101.title": "50 % Rabatt für begrenzte Zeit",
     "promo.isend101.body":
-      "Code {code} beim Checkout — {percent} % auf jeden Plan oder Credit-Pack für die ersten {limit} Käufer.",
+      "Code {code} beim Checkout — {percent} % auf jeden Plan oder Credit-Pack für begrenzte Zeit.",
     "promo.isend101.hint": "Code auf der Lemon-Squeezy-Zahlungsseite vor dem Bezahlen eingeben.",
     "promo.isend101.codeLabel": "Dein Code",
     "promo.isend101.copy": "Code kopieren",
@@ -1882,7 +1882,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "Vorher",
     "home.demo.after.label": "Nachher",
-    "home.demo.title": "Vorher / Nachher (echte Beispiele)",
+    "home.demo.title": "Vorher / Nachher",
     "home.demo.subtitle":
       "Produkt wählen, Transformation sehen und direkt klicken, um deine Version zu generieren.",
     "home.demo.examples.corp.before":
@@ -2470,11 +2470,11 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.badge.noSubscription": "无需订阅",
     "hero.badge.noSignups": "无需注册",
     "hero.badge.payPerUse": "按次付费",
-    "promo.isend101.ariaLabel": "上线优惠",
-    "promo.isend101.badge": "限量上线优惠",
-    "promo.isend101.title": "前 50 名会员享 5 折",
+    "promo.isend101.ariaLabel": "限时优惠",
+    "promo.isend101.badge": "限时优惠",
+    "promo.isend101.title": "限时 5 折优惠",
     "promo.isend101.body":
-      "结账时使用优惠码 {code} — 前 {limit} 名购买任意套餐或积分包的用户享 {percent}% 折扣。",
+      "结账时使用优惠码 {code} — 任意套餐或积分包限时享 {percent}% 折扣。",
     "promo.isend101.hint": "请在 Lemon Squeezy 安全支付页付款前输入优惠码。",
     "promo.isend101.codeLabel": "优惠码",
     "promo.isend101.copy": "复制优惠码",
@@ -2486,7 +2486,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "改写前",
     "home.demo.after.label": "改写后",
-    "home.demo.title": "前后对比（真实示例）",
+    "home.demo.title": "前后对比",
     "home.demo.subtitle": "按产品查看改写效果，点击即可生成你的版本。",
     "home.demo.examples.corp.before": "这设计太烂了，你明显没看我的需求文档！",
     "home.demo.examples.corp.after":
@@ -3037,11 +3037,11 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.badge.noSubscription": "Abonelik yok",
     "hero.badge.noSignups": "Kayıt yok",
     "hero.badge.payPerUse": "Kullandıkça öde",
-    "promo.isend101.ariaLabel": "Açılış indirimi kampanyası",
-    "promo.isend101.badge": "Sınırlı açılış kampanyası",
-    "promo.isend101.title": "İlk 50 üyeye %50 indirim",
+    "promo.isend101.ariaLabel": "Sınırlı süre indirim kampanyası",
+    "promo.isend101.badge": "Sınırlı süre kampanyası",
+    "promo.isend101.title": "Sınırlı süre için %50 indirim",
     "promo.isend101.body":
-      "Ödeme sırasında {code} kodunu kullanın — paket veya kontör satın alan ilk {limit} üyeye %{percent} indirim.",
+      "Ödeme sırasında {code} kodunu kullanın — tüm plan ve kontör paketlerinde geçerli, sınırlı süre için %{percent} indirim.",
     "promo.isend101.hint": "Kodu Lemon Squeezy güvenli ödeme sayfasında, ödemeden önce girin.",
     "promo.isend101.codeLabel": "Kampanya kodu",
     "promo.isend101.copy": "Kodu kopyala",
@@ -3053,7 +3053,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "Önce",
     "home.demo.after.label": "Sonra",
-    "home.demo.title": "Önce / Sonra (Ürün Bazlı Örnekler)",
+    "home.demo.title": "Önce / Sonra",
     "home.demo.subtitle":
       "Bir ürün seç, dönüşümü gör, tıkla ve kendi metnini üret.",
     "home.demo.examples.corp.before":

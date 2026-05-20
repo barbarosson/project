@@ -20,13 +20,14 @@ import { cn } from '@/lib/utils'
 import { MarketingLayout } from './marketing-layout'
 import { ProductMenuIcon } from './product-menu-icons'
 import { Button } from '@/components/ui/button'
-
-const ISENDAI_URL = process.env.NEXT_PUBLIC_ISENDAI_URL ?? 'https://isendai.com'
+import { getIsendaiAppUrl, isendaiAppLinkProps } from '@/lib/isendai-app-url'
 
 export function IsendaiProductContent() {
   const { language } = useLanguage()
   const p = getCorporateCopy(language).isendaiPage
   const product = getCorporateCopy(language).products.isendai
+  const isendaiAppUrl = getIsendaiAppUrl()
+  const appLink = isendaiAppLinkProps(isendaiAppUrl)
 
   return (
     <MarketingLayout>
@@ -86,21 +87,15 @@ export function IsendaiProductContent() {
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <a
-              href={ISENDAI_URL}
-              target="_blank"
-              rel="noopener noreferrer"
+              href={isendaiAppUrl}
+              {...appLink}
               className={isendaiPrimaryBtn}
               style={{ backgroundColor: '#0A2540' }}
             >
               {p.hero.cta}
               <ArrowRight className="h-4 w-4" />
             </a>
-            <a
-              href={`${ISENDAI_URL}/pricing`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={isendaiOutlineBtn}
-            >
+            <a href={`${isendaiAppUrl}/pricing`} {...appLink} className={isendaiOutlineBtn}>
               {language === 'tr' ? 'Paketler & fiyat' : 'Plans & pricing'}
             </a>
           </div>
@@ -233,12 +228,7 @@ export function IsendaiProductContent() {
                 ? 'Tam uygulama isendai.com üzerinde — akıllı yönlendirme, tüm araçlar ve kredi paketleri.'
                 : 'Full app at isendai.com — smart routing, every tool, and credit packs.'}
             </p>
-            <a
-              href={ISENDAI_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex"
-            >
+            <a href={isendaiAppUrl} {...appLink} className="inline-flex">
               <Button
                 size="lg"
                 className="rounded-full px-8 bg-white text-[#0A2540] hover:bg-[#F6F9FC] font-semibold shadow-md"

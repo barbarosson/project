@@ -1,7 +1,19 @@
 import './globals.css'
 import type { Metadata, Viewport } from 'next'
+import { Inter, Space_Grotesk } from 'next/font/google'
 import { ClientProviders } from '@/components/client-providers'
-import '@fontsource/inter/latin.css'
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+})
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+})
 
 // v2.3 - Theme sync: 1739350000 (cache bust)
 export const dynamic = 'force-dynamic'
@@ -91,7 +103,11 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="tr" suppressHydrationWarning>
+    <html
+      lang="tr"
+      suppressHydrationWarning
+      className={`${inter.variable} ${spaceGrotesk.variable}`}
+    >
       <body className="font-inter text-[#0A2540] bg-[#0A2540]/5">
         <ClientProviders>{children}</ClientProviders>
       </body>

@@ -66,24 +66,24 @@ export function ModulusLogo({ size = 40, showText = true, variant = 'default', c
       {showText && variant !== 'icon-only' && (
         <div className="flex flex-col" style={{ lineHeight: 1 }}>
           <span
+            className="font-display"
             style={{
               fontSize: size * 0.48,
               fontWeight: 800,
               letterSpacing: '0.08em',
               color: isLight ? '#FFFFFF' : '#0F172A',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
               textTransform: 'uppercase' as const,
             }}
           >
             MODULUS
           </span>
           <span
+            className="font-display"
             style={{
               fontSize: size * 0.18,
               fontWeight: 500,
               letterSpacing: '0.25em',
               color: isLight ? 'rgba(255,255,255,0.6)' : '#64748B',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
               textTransform: 'uppercase' as const,
               marginTop: size * 0.02,
             }}

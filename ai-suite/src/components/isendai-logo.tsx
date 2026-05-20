@@ -87,7 +87,7 @@ export function IsendaiLogo({
       </svg>
 
       {withWordmark ? (
-        <span className={cn("font-black uppercase leading-none tracking-tight", "[font-family:var(--font-space-grotesk)]", wordmarkClassName)}>
+        <span className={cn("font-display font-black uppercase leading-none tracking-tight", wordmarkClassName)}>
           <span
             className={cn(
               "bg-gradient-to-br from-[hsl(255_85%_65%)] via-[hsl(200_95%_55%)] to-[hsl(285_85%_65%)]",

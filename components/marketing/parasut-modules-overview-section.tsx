@@ -275,7 +275,7 @@ export function ModulusModulesOverviewSection() {
           <Badge className="mb-4 bg-blue-600 text-white px-4 py-1.5">
             {language === 'en' ? 'All-in-One Modules' : 'Tüm Modüller Tek Yerde'}
           </Badge>
-          <h2 className="text-3xl lg:text-5xl font-bold mb-4" style={{ fontFamily: 'Montserrat, sans-serif', color: '#1a202c' }}>
+          <h2 className="font-display text-3xl lg:text-5xl font-bold mb-4 text-[#1a202c]">
             {language === 'en'
               ? 'Everything Your Business Needs, Connected'
               : 'İşletmenizin İhtiyaç Duyduğu Her Şey, Birbirine Bağlı'}
@@ -311,7 +311,7 @@ export function ModulusModulesOverviewSection() {
                   }`}>
                     <Icon className={`h-6 w-6 ${href ? 'text-[#00D4AA]' : 'text-blue-600'}`} />
                   </div>
-                  <h3 className="text-lg font-bold flex items-center gap-2" style={{ fontFamily: 'Montserrat, sans-serif', color: '#1a202c' }}>
+                  <h3 className="font-display text-lg font-bold flex items-center gap-2 text-[#1a202c]">
                     <span>{language === 'en' ? mod.title_en : mod.title_tr}</span>
                     {badge && (
                       <Badge className="bg-[#00D4AA] text-white text-[10px] px-2 py-0.5 leading-none">

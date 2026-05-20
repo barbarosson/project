@@ -23,7 +23,7 @@ export default function TwitterImage() {
           background: "radial-gradient(1100px 700px at 25% 35%, rgba(124,58,237,0.35), transparent 60%), radial-gradient(950px 650px at 80% 45%, rgba(99,102,241,0.35), transparent 55%), #020617",
           color: "white",
           fontFamily:
-            'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial',
+            'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial',
         }}
       >
         <div style={{ fontSize: 22, color: "rgba(226,232,240,0.9)" }}>isendai</div>

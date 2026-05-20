@@ -62,6 +62,9 @@ export function MarketingHeader() {
     { name: c.nav.contact, href: '/contact' },
   ]
 
+  const desktopNavItem =
+    'inline-flex h-12 min-w-[5.25rem] items-center justify-center gap-1.5 px-2 font-bold leading-none text-[#425466] transition-opacity duration-300 hover:opacity-80'
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
@@ -72,19 +75,15 @@ export function MarketingHeader() {
       style={{ height: '80px' }}
     >
       <nav className="h-full" style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px' }}>
-        <div className="flex items-center justify-between h-full">
-          <Link href="/" className="flex items-center shrink-0 mr-10 relative" style={{ height: '76px' }}>
+        <div className="grid h-full grid-cols-[auto_1fr_auto] items-center gap-4 lg:gap-6">
+          <Link href="/" className="relative flex shrink-0 items-center">
             <ModulusLogo size={48} variant="default" showText={true} className="transition-opacity duration-300" />
           </Link>
 
-          <div className="hidden lg:flex items-center gap-6 nav-links-24bold">
+          <div className="marketing-header-nav nav-links-24bold hidden min-w-0 justify-center lg:flex">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  className="inline-flex h-auto items-center gap-1.5 border-0 bg-transparent p-0 font-bold transition-all duration-300 hover:opacity-80"
-                  style={{ color: '#425466' }}
-                >
+                <button type="button" className={desktopNavItem}>
                   <span>{c.nav.products}</span>
                   <ChevronDown className="h-5 w-5 shrink-0 opacity-70" aria-hidden />
                 </button>
@@ -133,19 +132,13 @@ export function MarketingHeader() {
             </DropdownMenu>
 
             {topNav.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className="transition-all duration-300 hover:opacity-80"
-              >
-                <span className="font-bold" style={{ color: '#425466' }}>
-                  {item.name}
-                </span>
+              <Link key={item.name} href={item.href} className={desktopNavItem}>
+                <span>{item.name}</span>
               </Link>
             ))}
           </div>
 
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden shrink-0 items-center justify-end gap-3 lg:flex">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -199,7 +192,7 @@ export function MarketingHeader() {
           </div>
 
           <button
-            className="lg:hidden p-2 transition-colors"
+            className="col-start-3 justify-self-end p-2 transition-colors lg:hidden"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle menu"
             style={{ color: '#0A2540' }}

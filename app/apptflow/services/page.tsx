@@ -379,7 +379,15 @@ export default function AppointFlowServicesPage() {
   }
 
   return (
-    <div dir={isRtl ? 'rtl' : 'ltr'} style={{ maxWidth: 1000, margin: '0 auto', padding: 24, fontFamily: 'system-ui, sans-serif' }}>
+    <div
+      dir={isRtl ? 'rtl' : 'ltr'}
+      style={{
+        maxWidth: 1000,
+        margin: '0 auto',
+        padding: 24,
+        fontFamily: 'var(--font-inter), system-ui, sans-serif',
+      }}
+    >
       {/* Header with language switcher */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, gap: 12 }}>
         <div style={{ flex: 1 }}>

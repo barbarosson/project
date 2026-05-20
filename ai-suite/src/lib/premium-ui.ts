@@ -34,12 +34,12 @@ export const sectionGradientShell = cn(
 );
 
 export const sectionGradientHeading = cn(
-  "text-pretty text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl",
+  "font-display text-pretty text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl",
   "bg-gradient-to-r from-white via-violet-100 to-cyan-100 bg-clip-text text-transparent"
 );
 
 export const sectionGradientSubheading = cn(
-  "text-pretty text-xl font-bold leading-tight tracking-tight sm:text-2xl",
+  "font-display text-pretty text-xl font-bold leading-tight tracking-tight sm:text-2xl",
   "bg-gradient-to-r from-white via-violet-100 to-cyan-100 bg-clip-text text-transparent"
 );
 

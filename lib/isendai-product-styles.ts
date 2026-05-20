@@ -15,7 +15,7 @@ export const isendaiSectionCard = cn(
 
 export const isendaiMutedSection = 'bg-[#F6F9FC]'
 
-export const isendaiHeading = 'text-[#0A2540] font-bold tracking-tight'
+export const isendaiHeading = 'font-display text-[#0A2540] font-bold tracking-tight'
 
 export const isendaiBody = 'text-[#425466] leading-relaxed text-base sm:text-lg'
 

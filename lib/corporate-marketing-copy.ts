@@ -124,7 +124,7 @@ export const corporateCopy = {
           'OpenAI, Anthropic, Google, and DeepSeek power your rewrites behind the scenes. Pick a model yourself or let Auto mode choose the best brain for the moment — credit use is always transparent.',
       },
       demo: {
-        title: 'Before & After (Real Examples)',
+        title: 'Before & After',
         subtitle: 'See how isendAI transforms tone — then try it with your own draft.',
         before: 'Before',
         after: 'After',
@@ -321,7 +321,7 @@ export const corporateCopy = {
           'OpenAI, Anthropic, Google ve DeepSeek arka planda çalışır. Modeli siz seçin veya Otomatik moda bırakın — kredi harcaması her zaman şeffaftır.',
       },
       demo: {
-        title: 'Önce / Sonra (Ürün Bazlı Örnekler)',
+        title: 'Önce / Sonra',
         subtitle: 'Ton dönüşümünü görün — ardından kendi metninizle deneyin.',
         before: 'Önce',
         after: 'Sonra',

@@ -22,14 +22,16 @@ import { AppLocaleBar } from "@/components/app-locale-bar";
 import { AuthSessionHydrator } from "@/components/auth-session-hydrator";
 import { DeployEnvBanner } from "@/components/deploy-env-banner";
 
-const sans = Inter({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -74,7 +76,7 @@ export default async function RootLayout({
     <html
       lang={initialLocale ?? "en"}
       suppressHydrationWarning
-      className={`dark ${sans.variable} ${spaceGrotesk.variable} h-full antialiased`}
+      className={`dark ${inter.variable} ${spaceGrotesk.variable} h-full font-sans antialiased`}
     >
       <body className="flex min-h-full min-w-0 flex-col overflow-x-clip bg-[#09090b] text-slate-50 antialiased">
         {GA_ID ? (

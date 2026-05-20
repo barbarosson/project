@@ -75,7 +75,7 @@ export function ModulusFeaturesSection() {
     <section id="features" className="py-20 lg:py-28 bg-white">
       <div className="container-marketing" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
         <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-5xl font-bold mb-4" style={{ fontFamily: 'Montserrat, sans-serif', color: '#1a202c' }}>
+          <h2 className="font-display text-3xl lg:text-5xl font-bold mb-4 text-[#1a202c]">
             {language === 'en'
               ? 'Everything You Need to Run Your Business'
               : 'İşletmenizi Yönetmek İçin İhtiyacınız Olan Her Şey'
@@ -103,7 +103,7 @@ export function ModulusFeaturesSection() {
                   </div>
                 </div>
 
-                <h3 className="text-xl font-bold mb-3" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                <h3 className="font-display text-xl font-bold mb-3">
                   {language === 'en' ? feature.title_en : feature.title_tr}
                 </h3>
 

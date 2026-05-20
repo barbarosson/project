@@ -146,7 +146,7 @@ export function HomeClient({
           </p>
           <h1
             className={cn(
-              "mt-4 w-full text-balance text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl",
+              "font-display mt-4 w-full text-balance text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl",
               "bg-gradient-to-r from-white via-violet-100 to-cyan-100 bg-clip-text text-transparent"
             )}
           >
@@ -592,7 +592,7 @@ export function HomeClient({
                   {toolDescription(t, selected, selectedDef.description)}
                 </p>
               </div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-2 text-xs font-semibold text-violet-100 sm:text-sm">
+              <div className="font-sans inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-2 text-xs font-semibold text-violet-100 sm:text-sm">
                 <Sparkles className="size-4 shrink-0 text-fuchsia-300" aria-hidden />
                 {t("home.workspace.hint")}
               </div>

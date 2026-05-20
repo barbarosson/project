@@ -27,10 +27,10 @@ interface TypographyStyle {
 
 const FONT_FAMILIES = [
   { name: 'Inter', value: 'Inter, system-ui, sans-serif' },
+  { name: 'Space Grotesk', value: '"Space Grotesk", Inter, system-ui, sans-serif' },
   { name: 'Roboto', value: 'Roboto, system-ui, sans-serif' },
   { name: 'Open Sans', value: '"Open Sans", system-ui, sans-serif' },
   { name: 'Lato', value: 'Lato, system-ui, sans-serif' },
-  { name: 'Montserrat', value: 'Montserrat, system-ui, sans-serif' },
   { name: 'Poppins', value: 'Poppins, system-ui, sans-serif' },
   { name: 'Raleway', value: 'Raleway, system-ui, sans-serif' },
   { name: 'Playfair Display', value: '"Playfair Display", serif' },

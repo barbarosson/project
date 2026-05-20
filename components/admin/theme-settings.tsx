@@ -398,12 +398,12 @@ export function ThemeSettings({ onUpdate }: ThemeSettingsProps) {
               <div className="space-y-2">
                 <Label>Heading Font</Label>
                 <Input
-                  value={config.heading_font || 'Inter'}
+                  value={config.heading_font || 'Space Grotesk'}
                   onChange={(e) => updateField('heading_font', e.target.value)}
-                  placeholder="Inter, sans-serif"
+                  placeholder="Space Grotesk, sans-serif"
                 />
                 <p className="text-xs text-muted-foreground">
-                  Popular options: Inter, Poppins, Roboto, Montserrat, Open Sans
+                  Recommended pair: Space Grotesk (headings) + Inter (body)
                 </p>
               </div>
 

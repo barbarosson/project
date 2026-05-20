@@ -110,7 +110,7 @@ export function ModulusHeroSection({ isAuthenticated = false }: ModulusHeroSecti
               color: 'rgba(255,255,255,0.06)',
               letterSpacing: '-0.04em',
               lineHeight: 0.9,
-              fontFamily: 'var(--font-inter), system-ui, sans-serif',
+              fontFamily: 'var(--font-display), var(--font-inter), system-ui, sans-serif',
             }}
           >
             MODULUS
@@ -134,7 +134,7 @@ export function ModulusHeroSection({ isAuthenticated = false }: ModulusHeroSecti
             </div>
 
             <h1 className="mb-8 animate-fade-in" style={{
-              fontFamily: 'var(--font-inter), system-ui, sans-serif',
+              fontFamily: 'var(--font-display), var(--font-inter), system-ui, sans-serif',
               color: '#ffffff',
               fontSize: 'clamp(36px, 5vw, 64px)',
               lineHeight: '1.1',
