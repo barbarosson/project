@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { cookies } from "next/headers";
 import type { Metadata } from "next";
 
 import { HomeClient } from "@/app/home-client";
@@ -7,12 +8,13 @@ import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 import { createSupabaseAdminClientOrNull } from "@/lib/supabase/admin";
 import { readUserEntitlementWalletFromSession } from "@/lib/isendai/user-wallet-from-session";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { rootMetadataForLocale } from "@/lib/site-metadata";
 
-export const metadata: Metadata = {
-  title: "isendai | Perfect Your Message Before You Hit Send",
-  description:
-    "Stop overthinking. Let AI transform your angry emails, write your cover letters, and handle your communication stress in seconds. Pay per use, no subscriptions.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
+  return rootMetadataForLocale(resolveLocaleFromCookie(cookieLocale));
+}
 
 export default async function Home() {
   let creditsSnapshot: HomeCreditsSnapshot | null = null;

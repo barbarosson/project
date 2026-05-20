@@ -154,8 +154,10 @@ Before pointing production traffic at `https://isendai.com`:
 4. **Smoke test** — OAuth login, one tool generation, checkout → `/success?paid=1`, `/account`, 404 page.
 5. **Analytics** — GA4 Realtime: `login`, `begin_checkout`, `purchase` events (production only).
 6. **SEO** — `/robots.txt`, `/sitemap.xml` use `NEXT_PUBLIC_SITE_URL`; private routes (`/account`, `/history`) are disallowed.
+7. **Contact** — `/contact` form → `POST /api/contact` (apply migration `20260520120000_contact_inquiries.sql`).
+8. **Env check** — `npm run verify:launch-env production` (or `staging`) in a shell with Netlify env exported.
 
-Server errors log via `src/instrumentation.ts` (`onRequestError`). Optional Sentry: reserve `SENTRY_DSN` in `env.example` for a later pass.
+Server errors log via `src/instrumentation.ts` and `POST /api/client-error`. Optional: set `ERROR_WEBHOOK_URL` for Slack/Discord-style webhooks.
 
 ## Learn more
 

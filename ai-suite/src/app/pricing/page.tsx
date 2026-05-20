@@ -22,6 +22,7 @@ import { premiumCta, pageSectionLabel, pageSubtitle } from "@/lib/premium-ui";
 import { DICTS, type Locale } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { cn } from "@/lib/utils";
+import { pageMetadataForPath } from "@/lib/site-metadata";
 
 export const dynamic = "force-dynamic";
 
@@ -29,10 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   const locale = resolveLocaleFromCookie(cookieLocale) as Locale;
   const d = DICTS[locale];
-  return {
-    title: `${d["pricing.title"]} | isendai`,
-    description: d["pricing.subtitle"],
-  };
+  return pageMetadataForPath("/pricing", `${d["pricing.title"]} | isendai`, d["pricing.subtitle"]);
 }
 
 export default async function PricingPage() {

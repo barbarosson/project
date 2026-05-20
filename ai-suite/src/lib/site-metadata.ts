@@ -48,17 +48,27 @@ const ROOT_METADATA: Record<
 
 export function rootMetadataForLocale(locale: Locale): Metadata {
   const { title, description } = ROOT_METADATA[locale];
+  return pageMetadataForPath("/", title, description);
+}
+
+export function pageMetadataForPath(
+  pathname: string,
+  title: string,
+  description: string
+): Metadata {
   const metadataBase = baseUrl();
+  const canonical = new URL(pathname.startsWith("/") ? pathname : `/${pathname}`, metadataBase);
   return {
     metadataBase,
     title,
     description,
+    alternates: { canonical: canonical.pathname },
     openGraph: {
       type: "website",
       title,
       description,
       siteName: "isendai",
-      url: metadataBase.href,
+      url: canonical.href,
     },
     twitter: {
       card: "summary_large_image",

@@ -11,6 +11,7 @@ import type { Locale } from "@/i18n/dictionaries";
 import { useI18n } from "@/i18n/i18n-provider";
 import { SUBSCRIPTION_TRIAL_CREDITS } from "@/lib/lemonsqueezy/catalog";
 import { hrefToCompleteMembershipProfileForCurrentPage } from "@/lib/auth/membership-profile";
+import { useDialogA11y } from "@/lib/hooks/use-dialog-a11y";
 
 type BillingToggle = "monthly" | "yearly";
 
@@ -286,6 +287,8 @@ export function PricingModalShell({
   const { t, locale } = useI18n();
   const [interval, setInterval] = React.useState<BillingToggle>("monthly");
   const [busyPaygo, setBusyPaygo] = React.useState<string | null>(null);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  useDialogA11y(open, onClose, panelRef);
 
   if (!open) return null;
 
@@ -303,6 +306,8 @@ export function PricingModalShell({
         onClick={onClose}
       />
       <div
+        ref={panelRef}
+        tabIndex={-1}
         className={cn(
           "relative z-[101] w-full max-w-5xl overflow-hidden rounded-3xl border border-white/[0.14]",
           "bg-gradient-to-br from-white/[0.12] via-white/[0.06] to-transparent shadow-2xl backdrop-blur-2xl"

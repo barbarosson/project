@@ -9,6 +9,7 @@ import { useI18n } from "@/i18n/i18n-provider";
 import { SitePageChrome, SitePageHeader, SitePageMain } from "@/components/site-page-layout";
 import { pageContentSection, pageSubtitle, pageTitle } from "@/lib/premium-ui";
 import { trackGaEvent } from "@/lib/analytics/gtag";
+import { reportClientError } from "@/lib/observability/report-error";
 import { cn } from "@/lib/utils";
 
 type ErrorContentProps = {
@@ -24,6 +25,12 @@ export function ErrorContent({ reset, digest }: ErrorContentProps) {
       description: "segment_error_boundary",
       fatal: false,
       ...(digest ? { error_digest: digest } : {}),
+    });
+    void reportClientError({
+      message: "segment_error_boundary",
+      digest,
+      scope: "error_boundary",
+      path: typeof window !== "undefined" ? window.location.pathname : undefined,
     });
   }, [digest]);
   return (

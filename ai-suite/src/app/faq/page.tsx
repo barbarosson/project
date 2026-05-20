@@ -6,6 +6,7 @@ import { DICTS, type Locale } from "@/i18n/dictionaries";
 import { getFaqContent } from "@/i18n/faq-content";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
+import { pageMetadataForPath } from "@/lib/site-metadata";
 import {
   SitePageBackNav,
   SitePageChrome,
@@ -18,10 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   const locale = resolveLocaleFromCookie(cookieLocale) as Locale;
   const faq = getFaqContent(locale);
-  return {
-    title: `${faq.title} | isendai`,
-    description: faq.metaDescription,
-  };
+  return pageMetadataForPath("/faq", `${faq.title} | isendai`, faq.metaDescription);
 }
 
 export default async function FaqPage() {

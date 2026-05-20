@@ -6,6 +6,7 @@ import { Info, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { glassInteractive, glassSurface, premiumCta } from "@/lib/premium-ui";
 import { Button } from "@/components/ui/button";
+import { useDialogA11y } from "@/lib/hooks/use-dialog-a11y";
 
 export type PricingPackRow = {
   id: string;
@@ -53,6 +54,8 @@ export function PricingPackCards({
 }: Props) {
   const [openId, setOpenId] = React.useState<string | null>(null);
   const dialogPanelRef = React.useRef<HTMLDivElement>(null);
+  const modalOpen = openId !== null;
+  useDialogA11y(modalOpen, () => setOpenId(null), dialogPanelRef);
 
   React.useEffect(() => {
     if (!openId) return;
@@ -64,19 +67,12 @@ export function PricingPackCards({
   }, [openId]);
 
   React.useEffect(() => {
-    function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpenId(null);
-    }
-    if (openId) {
-      document.addEventListener("keydown", onKey);
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.removeEventListener("keydown", onKey);
-        document.body.style.overflow = prev;
-      };
-    }
-    return undefined;
+    if (!openId) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
   }, [openId]);
 
   const openPack = openId ? packs.find((p) => p.id === openId) : null;

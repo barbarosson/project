@@ -88,6 +88,10 @@ export function SitePageFooter() {
                 {t("nav.faq")}
               </Link>
               <FooterDot />
+              <Link className={navLinkMuted} href="/contact">
+                {t("nav.contact")}
+              </Link>
+              <FooterDot />
               <Link className={navLinkMuted} href="/privacy">
                 {t("nav.privacy")}
               </Link>

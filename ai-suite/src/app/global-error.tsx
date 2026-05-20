@@ -1,14 +1,28 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
+
+import { reportClientError } from "@/lib/observability/report-error";
 
 /** Shown when the root layout fails; cannot rely on app providers or i18n. */
 export default function GlobalError({
+  error,
   reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  React.useEffect(() => {
+    void reportClientError({
+      message: error.message || "global_error",
+      digest: error.digest,
+      scope: "global_error",
+      path: typeof window !== "undefined" ? window.location.pathname : undefined,
+      stack: error.stack,
+    });
+  }, [error]);
+
   return (
     <html lang="en">
       <body className="flex min-h-screen items-center justify-center bg-[#09090b] px-6 font-sans text-slate-50 antialiased">
