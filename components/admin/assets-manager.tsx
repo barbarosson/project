@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
 
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -9,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Image, Link2, Loader2, Plus, Trash2, ExternalLink, Upload, FolderOpen } from 'lucide-react';
+import { ImageIcon, Link2, Loader2, Plus, Trash2, ExternalLink, Upload, FolderOpen } from 'lucide-react';
 
 interface Asset {
   id: string;
@@ -343,7 +344,7 @@ export default function AssetsManager() {
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
-              <Image className="h-5 w-5" />
+              <ImageIcon className="h-5 w-5" />
               Assets Manager
             </CardTitle>
             <CardDescription>
@@ -419,7 +420,7 @@ export default function AssetsManager() {
                 ))}
               {assets.filter((a) => a.type === 'banner').length === 0 && (
                 <div className="col-span-full text-center py-12 text-muted-foreground">
-                  <Image className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <ImageIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p className="mb-2">No CMS banners yet</p>
                   <Button onClick={() => setDialogOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />

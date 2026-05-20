@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Loader2, Image, Palette, Type, Settings, FolderOpen, FileText } from 'lucide-react';
+import { Loader2, ImageIcon, Palette, Type, Settings, FolderOpen, FileText } from 'lucide-react';
 import { ThemeSettings } from '@/components/admin/theme-settings';
 import { BannerManager } from '@/components/admin/banner-manager';
 import { DesignController } from '@/components/admin/design-controller';
@@ -78,7 +78,7 @@ export default function SiteCommanderPage() {
             <span className="hidden sm:inline">Content</span>
           </TabsTrigger>
           <TabsTrigger value="banners" className="gap-2">
-            <Image className="h-4 w-4" />
+            <ImageIcon className="h-4 w-4" />
             <span className="hidden sm:inline">Banners</span>
           </TabsTrigger>
           <TabsTrigger value="theme" className="gap-2">

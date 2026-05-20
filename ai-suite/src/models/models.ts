@@ -418,12 +418,6 @@ export function modelSalesTier(model: ConcreteModelId): ModelSalesTier {
 /** @deprecated Use {@link PAYGO_PACK_PRICE_USD} */
 export const TEN_CREDIT_PACK_USD = PAYGO_PACK_PRICE_USD;
 
-const TIER_DISPLAY_NAME: Record<ModelSalesTier, string> = {
-  budget: "Economy",
-  standard: "Standard",
-  premium: "Premium",
-};
-
 function formatPackPriceUsd(amount: number): string {
   return amount % 1 === 0 ? `$${amount.toFixed(0)}` : `$${amount.toFixed(2)}`;
 }
