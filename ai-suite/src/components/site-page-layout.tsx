@@ -8,6 +8,7 @@ import { CreditsNav } from "@/components/credits-nav";
 import { IsendaiLogo } from "@/components/isendai-logo";
 import { useI18n } from "@/i18n/i18n-provider";
 import { MODULUS_SITE_URL } from "@/lib/modulus-site";
+import { getPublicSupportEmail } from "@/lib/support-email";
 import { siteContainer, type PageShellVariant } from "@/lib/page-layout";
 import {
   pageBackLink,
@@ -40,6 +41,7 @@ function FooterDot() {
 
 export function SitePageFooter() {
   const { t } = useI18n();
+  const supportEmail = getPublicSupportEmail();
 
   const navLink =
     "shrink-0 whitespace-nowrap text-xs font-medium text-foreground/85 transition-colors hover:text-foreground sm:text-sm";
@@ -91,6 +93,10 @@ export function SitePageFooter() {
               <Link className={navLinkMuted} href="/contact">
                 {t("nav.contact")}
               </Link>
+              <FooterDot />
+              <a className={navLinkMuted} href={`mailto:${supportEmail}`}>
+                {supportEmail}
+              </a>
               <FooterDot />
               <Link className={navLinkMuted} href="/privacy">
                 {t("nav.privacy")}

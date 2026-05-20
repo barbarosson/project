@@ -1,3 +1,5 @@
+import { LegalSupportContact } from "@/components/legal/legal-support-contact";
+
 /** Chinese legal body for Terms when locale is `zh`. */
 export function TermsZhBody() {
   return (

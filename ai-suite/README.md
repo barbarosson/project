@@ -171,6 +171,8 @@ You can ship the site **before** Lemon approves live payments:
 
 **Blocked until Lemon live:** real card charges, webhook-settled production revenue, GA `purchase` on real orders.
 
+Env templates: `.env.production.example`, `.env.staging.example` (used by `npm run verify:launch-env:production|staging`). Public support default: `info@modulustech.app` (`NEXT_PUBLIC_SUPPORT_EMAIL`).
+
 ## Learn more
 
 - [Next.js Documentation](https://nextjs.org/docs)

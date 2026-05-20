@@ -1,4 +1,6 @@
 /** Turkish legal body for Privacy when locale is `tr`. */
+import { LegalSupportContact } from "@/components/legal/legal-support-contact";
+
 export function PrivacyTrBody() {
   return (
     <section className="mt-8 space-y-4 text-sm leading-relaxed text-slate-200">
@@ -46,10 +48,7 @@ export function PrivacyTrBody() {
       </p>
 
       <h2 className="text-base font-semibold text-white">İletişim</h2>
-      <p>
-        Bu politika hakkında sorularınız için site sahibine veya satın alma dekontunuzda belirtilen
-        destek kanalına başvurun.
-      </p>
+      <LegalSupportContact />
     </section>
   );
 }

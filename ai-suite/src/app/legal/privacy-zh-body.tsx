@@ -1,4 +1,6 @@
 /** Chinese legal body for Privacy when locale is `zh`. */
+import { LegalSupportContact } from "@/components/legal/legal-support-contact";
+
 export function PrivacyZhBody() {
   return (
     <section className="mt-8 space-y-4 text-sm leading-relaxed text-slate-200">

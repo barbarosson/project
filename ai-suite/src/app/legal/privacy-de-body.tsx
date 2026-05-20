@@ -1,4 +1,6 @@
 /** German legal body for Privacy when locale is `de`. */
+import { LegalSupportContact } from "@/components/legal/legal-support-contact";
+
 export function PrivacyDeBody() {
   return (
     <section className="mt-8 space-y-4 text-sm leading-relaxed text-slate-200">

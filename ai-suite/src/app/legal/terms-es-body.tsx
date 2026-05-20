@@ -1,4 +1,6 @@
 /** Spanish legal body for Terms when locale is `es`. */
+import { LegalSupportContact } from "@/components/legal/legal-support-contact";
+
 export function TermsEsBody() {
   return (
     <section className="mt-8 space-y-4 text-sm leading-relaxed text-slate-200">
@@ -48,10 +50,7 @@ export function TermsEsBody() {
       </p>
 
       <h2 className="text-base font-semibold text-white">Contacto</h2>
-      <p>
-        Las preguntas sobre estos Términos pueden enviarse al titular del sitio o al canal de
-        soporte indicado en tu recibo de compra.
-      </p>
+      <LegalSupportContact />
     </section>
   );
 }

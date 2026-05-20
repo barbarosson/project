@@ -23,13 +23,15 @@ export function ContactForm() {
     const email = String(fd.get("email") ?? "").trim();
     const subject = String(fd.get("subject") ?? "").trim();
     const message = String(fd.get("message") ?? "").trim();
+    const _hp = String(fd.get("_hp") ?? "").trim();
+    if (_hp) return;
 
     setBusy(true);
     try {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name, email, subject, message, locale }),
+        body: JSON.stringify({ name, email, subject, message, locale, _hp }),
       });
       const json = (await res.json().catch(() => null)) as { error?: string; ok?: boolean } | null;
       if (!res.ok) {
@@ -56,7 +58,15 @@ export function ContactForm() {
   }
 
   return (
-    <form className="mx-auto flex w-full max-w-lg flex-col gap-4" onSubmit={onSubmit}>
+    <form className="relative mx-auto flex w-full max-w-lg flex-col gap-4" onSubmit={onSubmit}>
+      <input
+        type="text"
+        name="_hp"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden
+        className="pointer-events-none absolute h-0 w-0 opacity-0"
+      />
       <div>
         <label htmlFor="contact-name" className="mb-1.5 block text-sm font-medium text-slate-200">
           {t("contact.nameLabel")}

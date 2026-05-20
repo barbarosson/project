@@ -1,3 +1,5 @@
+import { LegalSupportContact } from "@/components/legal/legal-support-contact";
+
 /** English legal body (binding copy). Localized shell wraps this in `terms/page.tsx`. */
 export function TermsEnBody() {
   return (
@@ -48,10 +50,7 @@ export function TermsEnBody() {
       </p>
 
       <h2 className="text-base font-semibold text-white">Contact</h2>
-      <p>
-        Questions about these Terms can be sent via the site owner or support channel listed on
-        your purchase receipt.
-      </p>
+      <LegalSupportContact />
     </section>
   );
 }

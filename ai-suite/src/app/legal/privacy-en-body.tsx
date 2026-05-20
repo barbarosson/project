@@ -1,4 +1,6 @@
 /** English legal body (binding copy). Localized shell wraps this in `privacy/page.tsx`. */
+import { LegalSupportContact } from "@/components/legal/legal-support-contact";
+
 export function PrivacyEnBody() {
   return (
     <section className="mt-8 space-y-4 text-sm leading-relaxed text-slate-200">
@@ -46,10 +48,7 @@ export function PrivacyEnBody() {
       </p>
 
       <h2 className="text-base font-semibold text-white">Contact</h2>
-      <p>
-        If you have questions about this policy, please contact us via the site owner or support
-        channel listed on your purchase receipt.
-      </p>
+      <LegalSupportContact />
     </section>
   );
 }

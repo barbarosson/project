@@ -12,6 +12,7 @@ type Body = {
   subject?: string;
   message?: string;
   locale?: string;
+  _hp?: string;
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -30,6 +31,11 @@ export async function POST(req: Request) {
     body = (await req.json()) as Body;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
+  }
+
+  const honeypot = typeof body._hp === "string" ? body._hp.trim() : "";
+  if (honeypot) {
+    return NextResponse.json({ ok: true });
   }
 
   const name = typeof body.name === "string" ? body.name.trim() : "";

@@ -1,4 +1,5 @@
 import type { Locale } from "@/i18n/dictionaries";
+import { faqSupportAnswers } from "@/lib/faq-support";
 
 export type FaqItem = { question: string; answer: string };
 
@@ -515,5 +516,13 @@ export const FAQ_CONTENT: Record<Locale, FaqPageContent> = {
 };
 
 export function getFaqContent(locale: Locale): FaqPageContent {
-  return FAQ_CONTENT[locale] ?? FAQ_CONTENT.en;
+  const base = FAQ_CONTENT[locale] ?? FAQ_CONTENT.en;
+  const support = faqSupportAnswers(locale);
+  const items = base.items.map((item, i) => {
+    const n = base.items.length;
+    if (i === n - 2) return { ...item, answer: support.help };
+    if (i === n - 1) return { ...item, answer: support.delete };
+    return item;
+  });
+  return { ...base, items };
 }

@@ -1,4 +1,6 @@
 /** Spanish legal body for Privacy when locale is `es`. */
+import { LegalSupportContact } from "@/components/legal/legal-support-contact";
+
 export function PrivacyEsBody() {
   return (
     <section className="mt-8 space-y-4 text-sm leading-relaxed text-slate-200">
@@ -46,10 +48,7 @@ export function PrivacyEsBody() {
       </p>
 
       <h2 className="text-base font-semibold text-white">Contacto</h2>
-      <p>
-        Si tienes preguntas sobre esta política, contáctanos a través del titular del sitio o del
-        canal de soporte indicado en tu recibo de compra.
-      </p>
+      <LegalSupportContact />
     </section>
   );
 }

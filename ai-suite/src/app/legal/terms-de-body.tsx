@@ -1,4 +1,6 @@
 /** German legal body for Terms when locale is `de`. */
+import { LegalSupportContact } from "@/components/legal/legal-support-contact";
+
 export function TermsDeBody() {
   return (
     <section className="mt-8 space-y-4 text-sm leading-relaxed text-slate-200">
@@ -50,10 +52,7 @@ export function TermsDeBody() {
       </p>
 
       <h2 className="text-base font-semibold text-white">Kontakt</h2>
-      <p>
-        Fragen zu diesen Bedingungen kannst du an den Seitenbetreiber oder den auf deinem
-        Kaufbeleg genannten Support-Kanal richten.
-      </p>
+      <LegalSupportContact />
     </section>
   );
 }

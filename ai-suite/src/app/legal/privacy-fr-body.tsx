@@ -1,4 +1,6 @@
 /** French legal body for Privacy when locale is `fr`. */
+import { LegalSupportContact } from "@/components/legal/legal-support-contact";
+
 export function PrivacyFrBody() {
   return (
     <section className="mt-8 space-y-4 text-sm leading-relaxed text-slate-200">
@@ -47,10 +49,7 @@ export function PrivacyFrBody() {
       </p>
 
       <h2 className="text-base font-semibold text-white">Contact</h2>
-      <p>
-        Pour toute question sur cette politique, contactez-nous via le propriétaire du site ou le
-        canal d&apos;assistance indiqué sur votre reçu d&apos;achat.
-      </p>
+      <LegalSupportContact />
     </section>
   );
 }

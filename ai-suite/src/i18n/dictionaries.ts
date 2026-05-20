@@ -227,6 +227,7 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.terms": "Terms",
     "nav.faq": "FAQ",
     "nav.contact": "Contact",
+    "legal.contact.lead": "Questions? Email",
     "contact.title": "Contact",
     "contact.lead": "Questions about billing, your account, or the product? Send a message or email",
     "contact.nameLabel": "Name",
@@ -280,7 +281,7 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copyFailed": "Could not copy.",
 
     "billing.lemon.pendingReview":
-      "Payments: Lemon Squeezy merchant review in progress. Checkout may open in test mode only — live card charges start after approval. Need credits now? Use staging dev top-up or contact support.",
+      "Payments: Lemon Squeezy merchant review in progress. Checkout may open in test mode only — live card charges start after approval. Need credits now? Staging dev top-up or info@modulustech.app / Contact.",
     "billing.lemon.testMode":
       "Payments: Lemon Squeezy is in test mode. Use test cards in checkout; live charges require live mode in the Lemon dashboard and Netlify env.",
     "billing.lemon.unconfigured":
@@ -667,17 +668,17 @@ export const DICTS: Record<Locale, Dict> = {
     "header.theme": "Cambiar tema",
     "socialProof.demoPrefix": "Demo:",
     "hero.kicker": "Tu borrador caótico → mensaje listo para enviar ✨",
-    "hero.title": "Perfecciona tu mensaje antes de pulsar Enviar.",
+    "hero.title": "Aún no pulses Enviar. Arréglalo primero.",
     "hero.subtitle":
-      "No hace falta buscar las palabras durante horas. Deja que la IA convierta borradores enfadados en emails profesionales y brille tus mensajes de citas en segundos.",
-    "hero.cta": "Arreglar mi mensaje (1.er intento gratis 🎁)",
+      "¿Email de rabia? ¿Texto incómodo? ¿Carta a medias? Pega el desastre. Llévate algo que sí enviarías — en segundos.",
+    "hero.cta": "Arreglar mi desastre (1.er intento gratis 🎁)",
     "hero.modulusFamily": "Parte de la familia MODULUS —",
-    "hero.badge.noSubscription": "Sin suscripción",
-    "hero.badge.noSignups": "Sin registro",
-    "hero.badge.payPerUse": "Pago por uso",
+    "hero.badge.noSubscription": "Sin trampa de suscripción",
+    "hero.badge.noSignups": "Prueba gratis disponible",
+    "hero.badge.payPerUse": "Pagas al generar",
     "promo.isend101.ariaLabel": "Oferta por tiempo limitado",
     "promo.isend101.badge": "Oferta por tiempo limitado",
-    "promo.isend101.title": "50 % de descuento por tiempo limitado",
+    "promo.isend101.title": "50 % off — desata el caos, paga menos 🔥",
     "promo.isend101.body":
       "Usa el código {code} al pagar — {percent} % de descuento en cualquier plan o pack por tiempo limitado.",
     "promo.isend101.hint": "Introduce el código en la página de pago segura de Lemon Squeezy antes de pagar.",
@@ -875,6 +876,7 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.terms": "Términos",
     "nav.faq": "FAQ",
     "nav.contact": "Contacto",
+    "legal.contact.lead": "¿Preguntas? Escribe a",
     "contact.title": "Contacto",
     "contact.lead": "¿Dudas sobre facturación, tu cuenta o el producto? Escríbenos o envía un correo a",
     "contact.nameLabel": "Nombre",
@@ -928,7 +930,7 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copyFailed": "No se pudo copiar.",
 
     "billing.lemon.pendingReview":
-      "Pagos: revisión de comercio Lemon Squeezy en curso. El checkout puede abrirse solo en modo test; los cobros reales empiezan tras la aprobación. ¿Créditos ya? Top-up dev en staging o contacto.",
+      "Pagos: revisión Lemon Squeezy en curso. Checkout solo en test hasta aprobación. ¿Créditos? Top-up dev en staging o info@modulustech.app / Contacto.",
     "billing.lemon.testMode":
       "Pagos: Lemon Squeezy en modo test. Usa tarjetas de prueba; los cobros reales requieren modo live en Lemon y Netlify.",
     "billing.lemon.unconfigured":
@@ -1296,17 +1298,17 @@ export const DICTS: Record<Locale, Dict> = {
     "header.theme": "Changer le thème",
     "socialProof.demoPrefix": "Démo :",
     "hero.kicker": "Brouillon chaotique → message prêt à envoyer ✨",
-    "hero.title": "Peaufinez votre message avant d’appuyer sur Envoyer.",
+    "hero.title": "N’envoyez pas encore. Corrigez d’abord.",
     "hero.subtitle":
-      "Inutile de chercher les mots pendant des heures. L’IA transforme vos brouillons énervés en emails professionnels et polit vos messages de rencontre en quelques secondes.",
-    "hero.cta": "Corriger mon message (1er essai gratuit 🎁)",
+      "Mail rageux ? SMS gênant ? Lettre bancale ? Collez le chaos. Repartez avec un message que vous oseriez envoyer — en quelques secondes.",
+    "hero.cta": "Corriger mon bazar (1er essai offert 🎁)",
     "hero.modulusFamily": "Une offre de la famille MODULUS —",
-    "hero.badge.noSubscription": "Sans abonnement",
-    "hero.badge.noSignups": "Sans inscription",
-    "hero.badge.payPerUse": "Paiement à l’usage",
+    "hero.badge.noSubscription": "Pas de piège d’abonnement",
+    "hero.badge.noSignups": "Essai gratuit dispo",
+    "hero.badge.payPerUse": "Payez à la génération",
     "promo.isend101.ariaLabel": "Offre à durée limitée",
     "promo.isend101.badge": "Offre à durée limitée",
-    "promo.isend101.title": "−50 % pour une durée limitée",
+    "promo.isend101.title": "−50 % — lâchez-vous, payez moins 🔥",
     "promo.isend101.body":
       "Code {code} au paiement — {percent} % de réduction sur tout forfait ou pack pour une durée limitée.",
     "promo.isend101.hint": "Saisissez le code sur la page de paiement Lemon Squeezy avant de régler.",
@@ -1504,6 +1506,7 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.terms": "Conditions",
     "nav.faq": "FAQ",
     "nav.contact": "Contact",
+    "legal.contact.lead": "Questions ? Écrivez à",
     "contact.title": "Contact",
     "contact.lead": "Questions sur la facturation, votre compte ou le produit ? Écrivez-nous ou envoyez un e-mail à",
     "contact.nameLabel": "Nom",
@@ -1557,7 +1560,7 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copyFailed": "Impossible de copier.",
 
     "billing.lemon.pendingReview":
-      "Paiements : examen marchand Lemon Squeezy en cours. Checkout possible en mode test seulement ; les prélèvements live après approbation. Crédits ? Recharge dev staging ou contact.",
+      "Paiements : examen Lemon en cours. Checkout en test jusqu’à approbation. Crédits ? Recharge dev staging ou info@modulustech.app / Contact.",
     "billing.lemon.testMode":
       "Paiements : Lemon Squeezy en mode test. Cartes de test au checkout ; le live exige le mode live Lemon + Netlify.",
     "billing.lemon.unconfigured":
@@ -1925,17 +1928,17 @@ export const DICTS: Record<Locale, Dict> = {
     "header.theme": "Theme wechseln",
     "socialProof.demoPrefix": "Demo:",
     "hero.kicker": "Chaos-Entwurf → sendefertige Nachricht ✨",
-    "hero.title": "Perfektioniere deine Nachricht, bevor du auf Senden klickst.",
+    "hero.title": "Noch nicht senden. Erst fixen.",
     "hero.subtitle":
-      "Kein stundenlanges Wortgrübeln mehr. Die KI macht aus wütenden Entwürfen professionelle Mails und poliert deine Dating‑Nachrichten in Sekunden.",
-    "hero.cta": "Nachricht verbessern (1. Versuch gratis 🎁)",
+      "Wut-Mail? Peinliche SMS? Halbe Bewerbung? Chaos einfügen. In Sekunden etwas, das du wirklich abschicken würdest.",
+    "hero.cta": "Mein Chaos fixen (1. Versuch gratis 🎁)",
     "hero.modulusFamily": "Teil der MODULUS-Produktfamilie —",
-    "hero.badge.noSubscription": "Kein Abo",
-    "hero.badge.noSignups": "Kein Signup",
-    "hero.badge.payPerUse": "Pay‑per‑use",
+    "hero.badge.noSubscription": "Kein Abo-Falle",
+    "hero.badge.noSignups": "Gratis-Probe möglich",
+    "hero.badge.payPerUse": "Zahlst beim Generieren",
     "promo.isend101.ariaLabel": "Zeitlich begrenztes Angebot",
     "promo.isend101.badge": "Zeitlich begrenztes Angebot",
-    "promo.isend101.title": "50 % Rabatt für begrenzte Zeit",
+    "promo.isend101.title": "50 % Rabatt — wild werden, weniger zahlen 🔥",
     "promo.isend101.body":
       "Code {code} beim Checkout — {percent} % auf jeden Plan oder Credit-Pack für begrenzte Zeit.",
     "promo.isend101.hint": "Code auf der Lemon-Squeezy-Zahlungsseite vor dem Bezahlen eingeben.",
@@ -2134,6 +2137,7 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.terms": "AGB",
     "nav.faq": "FAQ",
     "nav.contact": "Kontakt",
+    "legal.contact.lead": "Fragen? E-Mail:",
     "contact.title": "Kontakt",
     "contact.lead": "Fragen zu Abrechnung, Konto oder Produkt? Schreib uns oder mail an",
     "contact.nameLabel": "Name",
@@ -2187,7 +2191,7 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copyFailed": "Kopieren fehlgeschlagen.",
 
     "billing.lemon.pendingReview":
-      "Zahlungen: Lemon-Händlerprüfung läuft. Checkout ggf. nur im Testmodus; Live-Zahlungen nach Freigabe. Credits? Dev-Top-up auf Staging oder Kontakt.",
+      "Zahlungen: Lemon-Prüfung läuft. Checkout ggf. nur Testmodus; Live nach Freigabe. Credits? Dev-Top-up auf Staging oder info@modulustech.app / Kontakt.",
     "billing.lemon.testMode":
       "Zahlungen: Lemon Squeezy im Testmodus. Testkarten im Checkout; Live erfordert Live-Modus in Lemon und Netlify.",
     "billing.lemon.unconfigured":
@@ -2551,17 +2555,17 @@ export const DICTS: Record<Locale, Dict> = {
     "header.theme": "切换主题",
     "socialProof.demoPrefix": "演示：",
     "hero.kicker": "混乱草稿 → 敢发出去的消息 ✨",
-    "hero.title": "在你点击发送前，把话说得更漂亮。",
+    "hero.title": "先别发送。先修好。",
     "hero.subtitle":
-      "不必再花数小时斟酌措辞。让 AI 把情绪草稿变成专业邮件，并在几秒内润色你的约会消息。",
-    "hero.cta": "优化我的消息（首次免费 🎁）",
+      "暴怒邮件？尴尬短信？半成品求职信？粘贴混乱内容，几秒内得到你真的敢发出去的文字。",
+    "hero.cta": "修好我的烂摊子（首次免费 🎁）",
     "hero.modulusFamily": "MODULUS 产品家族的一员 —",
-    "hero.badge.noSubscription": "无需订阅",
-    "hero.badge.noSignups": "无需注册",
-    "hero.badge.payPerUse": "按次付费",
+    "hero.badge.noSubscription": "无订阅陷阱",
+    "hero.badge.noSignups": "可免费尝鲜",
+    "hero.badge.payPerUse": "按生成付费",
     "promo.isend101.ariaLabel": "限时优惠",
     "promo.isend101.badge": "限时优惠",
-    "promo.isend101.title": "限时 5 折优惠",
+    "promo.isend101.title": "限时 5 折 — 放飞自我，少付钱 🔥",
     "promo.isend101.body":
       "结账时使用优惠码 {code} — 任意套餐或积分包限时享 {percent}% 折扣。",
     "promo.isend101.hint": "请在 Lemon Squeezy 安全支付页付款前输入优惠码。",
@@ -2743,6 +2747,7 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.terms": "条款",
     "nav.faq": "常见问题",
     "nav.contact": "联系",
+    "legal.contact.lead": "有问题？请发邮件至",
     "contact.title": "联系我们",
     "contact.lead": "账单、账户或产品问题？留言或发送邮件至",
     "contact.nameLabel": "姓名",
@@ -2795,7 +2800,7 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copyFailed": "复制失败。",
 
     "billing.lemon.pendingReview":
-      "支付：Lemon Squeezy 商户审核中。结账可能仅为测试模式；获批后开启正式扣款。需要额度？可用 staging 开发充值或联系我们。",
+      "支付：Lemon 商户审核中。获批前结账可能仅为测试模式。需要额度？staging 开发充值或 info@modulustech.app / 联系。",
     "billing.lemon.testMode":
       "支付：Lemon Squeezy 测试模式。请用测试卡；正式扣款需在 Lemon 与 Netlify 开启 live。",
     "billing.lemon.unconfigured":
@@ -3164,9 +3169,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "Önce",
     "home.demo.after.label": "Sonra",
-    "home.demo.title": "Önce / Sonra",
+    "home.demo.title": "Önce / Sonra (glow-up gerçek)",
     "home.demo.subtitle":
-      "Bir ürün seç, dönüşümü gör, tıkla ve kendi metnini üret.",
+      "Bir vibe seç, kaosu medeni hale getir, kendi taslağına uygula.",
     "home.demo.examples.corp.before":
       "Bu tasarım berbat, brifimi okumamışsınız belli!",
     "home.demo.examples.corp.after":
@@ -3341,6 +3346,7 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.terms": "Şartlar",
     "nav.faq": "SSS",
     "nav.contact": "İletişim",
+    "legal.contact.lead": "Sorularınız için e-posta:",
     "contact.title": "İletişim",
     "contact.lead": "Fatura, hesap veya ürün soruların mı var? Mesaj gönder veya e-posta at:",
     "contact.nameLabel": "Ad",
@@ -3394,7 +3400,7 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copyFailed": "Kopyalanamadı.",
 
     "billing.lemon.pendingReview":
-      "Ödeme: Lemon Squeezy mağaza incelemesi sürüyor. Checkout yalnızca test modunda açılabilir; canlı tahsilat onay sonrası. Kontör için staging dev top-up veya iletişim.",
+      "Ödeme: Lemon mağaza incelemesi sürüyor. Checkout test modunda; canlı tahsilat onay sonrası. Kontör: staging dev top-up veya info@modulustech.app / İletişim.",
     "billing.lemon.testMode":
       "Ödeme: Lemon Squeezy test modunda. Test kartları kullanın; canlı için Lemon ve Netlify’da live mod gerekir.",
     "billing.lemon.unconfigured":

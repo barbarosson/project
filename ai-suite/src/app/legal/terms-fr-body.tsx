@@ -1,4 +1,6 @@
 /** French legal body for Terms when locale is `fr`. */
+import { LegalSupportContact } from "@/components/legal/legal-support-contact";
+
 export function TermsFrBody() {
   return (
     <section className="mt-8 space-y-4 text-sm leading-relaxed text-slate-200">
@@ -51,10 +53,7 @@ export function TermsFrBody() {
       </p>
 
       <h2 className="text-base font-semibold text-white">Contact</h2>
-      <p>
-        Les questions concernant ces Conditions peuvent être adressées au propriétaire du site ou au
-        canal d&apos;assistance indiqué sur votre reçu d&apos;achat.
-      </p>
+      <LegalSupportContact />
     </section>
   );
 }

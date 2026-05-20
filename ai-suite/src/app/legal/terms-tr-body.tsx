@@ -1,4 +1,6 @@
 /** Turkish legal body for Terms when locale is `tr`. */
+import { LegalSupportContact } from "@/components/legal/legal-support-contact";
+
 export function TermsTrBody() {
   return (
     <section className="mt-8 space-y-4 text-sm leading-relaxed text-slate-200">
@@ -49,10 +51,7 @@ export function TermsTrBody() {
       </p>
 
       <h2 className="text-base font-semibold text-white">İletişim</h2>
-      <p>
-        Bu Şartlarla ilgili sorularınızı site sahibine veya satın alma dekontunuzda belirtilen destek
-        kanalına iletebilirsiniz.
-      </p>
+      <LegalSupportContact />
     </section>
   );
 }
