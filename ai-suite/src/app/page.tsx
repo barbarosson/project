@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import type { Metadata } from "next";
 
 import { HomeClient } from "@/app/home-client";
+import { HomeJsonLd } from "@/components/seo/home-json-ld";
 import type { HomeCreditsSnapshot } from "@/app/home-credits-snapshot";
 import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 import { createSupabaseAdminClientOrNull } from "@/lib/supabase/admin";
@@ -56,8 +57,11 @@ export default async function Home() {
 
   const authSnapshot = await readServerAuthSnapshot();
   return (
-    <Suspense fallback={<div className="min-h-full bg-background" />}>
-      <HomeClient creditsSnapshot={creditsSnapshot} authSnapshot={authSnapshot} />
-    </Suspense>
+    <>
+      <HomeJsonLd />
+      <Suspense fallback={<div className="min-h-full bg-background" />}>
+        <HomeClient creditsSnapshot={creditsSnapshot} authSnapshot={authSnapshot} />
+      </Suspense>
+    </>
   );
 }

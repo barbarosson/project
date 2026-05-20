@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import type { Metadata } from "next";
 
 import { FaqList } from "@/app/faq/faq-list";
+import { FaqJsonLd } from "@/components/seo/faq-json-ld";
 import { DICTS, type Locale } from "@/i18n/dictionaries";
 import { getFaqContent } from "@/i18n/faq-content";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
@@ -19,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   const locale = resolveLocaleFromCookie(cookieLocale) as Locale;
   const faq = getFaqContent(locale);
-  return pageMetadataForPath("/faq", `${faq.title} | isendai`, faq.metaDescription);
+  return pageMetadataForPath("/faq", `${faq.title} | isendai`, faq.metaDescription, locale);
 }
 
 export default async function FaqPage() {
@@ -38,6 +39,7 @@ export default async function FaqPage() {
         <SitePageBackNav>{d["nav.backToHome"]}</SitePageBackNav>
         <SitePageTitleBlock title={faq.title} subtitle={faq.intro} />
         <FaqList items={faq.items} />
+        <FaqJsonLd items={faq.items} />
       </SitePageMain>
     </SitePageChrome>
   );

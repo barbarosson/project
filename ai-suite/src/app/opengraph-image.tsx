@@ -1,15 +1,25 @@
+import { cookies } from "next/headers";
 import { ImageResponse } from "next/og";
+
+import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { OG_COPY } from "@/lib/seo/og-content";
 
 export const runtime = "edge";
 
-export const alt = "isendai | Perfect Your Message Before You Hit Send";
 export const size = {
   width: 1200,
   height: 630,
 };
 export const contentType = "image/png";
 
-export default function OpenGraphImage() {
+/** Cookie locale is read at request time (not build-time static OG variants). */
+export const dynamic = "force-dynamic";
+
+export default async function OpenGraphImage() {
+  const cookieStore = await cookies();
+  const locale = resolveLocaleFromCookie(cookieStore.get("ai-suite-locale")?.value);
+  const copy = OG_COPY[locale];
+
   return new ImageResponse(
     (
       <div
@@ -20,7 +30,8 @@ export default function OpenGraphImage() {
           flexDirection: "column",
           justifyContent: "center",
           padding: 72,
-          background: "radial-gradient(1200px 800px at 20% 30%, rgba(124,58,237,0.35), transparent 60%), radial-gradient(1000px 700px at 85% 40%, rgba(99,102,241,0.35), transparent 55%), #020617",
+          background:
+            "radial-gradient(1200px 800px at 20% 30%, rgba(124,58,237,0.35), transparent 60%), radial-gradient(1000px 700px at 85% 40%, rgba(99,102,241,0.35), transparent 55%), #020617",
           color: "white",
           fontFamily:
             'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial',
@@ -48,18 +59,23 @@ export default function OpenGraphImage() {
         </div>
 
         <div style={{ marginTop: 22, fontSize: 64, lineHeight: 1.05, fontWeight: 700 }}>
-          Perfect Your Message
-          <br />
-          Before You Hit Send
+          {copy.headline}
         </div>
 
-        <div style={{ marginTop: 22, fontSize: 28, lineHeight: 1.35, color: "rgba(226,232,240,0.85)", maxWidth: 860 }}>
-          Stop overthinking. Transform angry emails, write cover letters, and reduce communication
-          stress in seconds. Pay per use, no subscriptions.
+        <div
+          style={{
+            marginTop: 22,
+            fontSize: 28,
+            lineHeight: 1.35,
+            color: "rgba(226,232,240,0.85)",
+            maxWidth: 860,
+          }}
+        >
+          {copy.subline}
         </div>
 
         <div style={{ marginTop: 40, display: "flex", gap: 12, flexWrap: "wrap" }}>
-          {["Corporate Whisperer", "Cover Letter AI", "LinkedIn Headline Smith"].map((x) => (
+          {copy.chips.map((x) => (
             <div
               key={x}
               style={{
@@ -80,4 +96,3 @@ export default function OpenGraphImage() {
     size
   );
 }
-

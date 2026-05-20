@@ -4,16 +4,17 @@ import { notFound } from "next/navigation";
 
 import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 import { ToolCard } from "@/components/ai-suite/tool-card";
-import { getToolDefinition, isToolName, type ToolName } from "@/components/ai-suite/tools";
+import { isToolName, type ToolName } from "@/components/ai-suite/tools";
+import { DICTS } from "@/i18n/dictionaries";
 import {
   SitePageBackNav,
   SitePageChrome,
   SitePageHeader,
   SitePageMain,
 } from "@/components/site-page-layout";
-import { SEO_CATEGORY_TITLE } from "@/lib/seo/category-public-title";
-import { DICTS } from "@/i18n/dictionaries";
+import type { Locale } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { toolPageMetadata } from "@/lib/seo/tool-page-metadata";
 
 const MAX_PREFILL_CHARS = 2000;
 
@@ -35,12 +36,9 @@ export async function generateMetadata({
   if (!isToolName(id)) {
     return { title: "Tool | isendai" };
   }
-  const def = getToolDefinition(id);
-  const categoryTitle = SEO_CATEGORY_TITLE[def.category];
-  return {
-    title: `${def.title} - isendai AI | ${categoryTitle}`,
-    description: `${def.description} Generate professional, HR-safe, and high EQ messages instantly.`,
-  };
+  const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
+  const locale = resolveLocaleFromCookie(cookieLocale) as Locale;
+  return toolPageMetadata(locale, id);
 }
 
 export default async function ToolDeepLinkPage({

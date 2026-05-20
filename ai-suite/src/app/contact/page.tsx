@@ -37,7 +37,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   const locale = resolveLocaleFromCookie(cookieLocale) as Locale;
   const { title, description } = CONTACT_META[locale];
-  return pageMetadataForPath("/contact", title, description);
+  return pageMetadataForPath("/contact", title, description, locale);
 }
 
 export default function ContactPage() {

@@ -15,18 +15,19 @@ export const DICTS: Record<Locale, Dict> = {
   en: {
     "brand.name": "isendai",
     "header.theme": "Toggle theme",
-    "hero.kicker": "Personal AI Communication Assistant 🪄",
-    "hero.title": "Perfect Your Message Before You Hit Send.",
+    "socialProof.demoPrefix": "Demo vibe:",
+    "hero.kicker": "Your chaotic draft → send-ready masterpiece ✨",
+    "hero.title": "Don't Send That Yet. Fix It First.",
     "hero.subtitle":
-      "Stop overthinking. Let AI transform your angry drafts into professional emails, write your cover letters, and polish your dating texts in seconds.",
-    "hero.cta": "Fix My Message (1st Try Free 🎁)",
+      "Rage-email? Awkward text? Mid cover letter? Paste the mess. Get something you'd actually hit send on — in seconds.",
+    "hero.cta": "Fix My Mess (1st try's on us 🎁)",
     "hero.modulusFamily": "Part of the MODULUS family —",
-    "hero.badge.noSubscription": "No subscription",
-    "hero.badge.noSignups": "No sign-ups",
-    "hero.badge.payPerUse": "Pay per use",
+    "hero.badge.noSubscription": "No subscription trap",
+    "hero.badge.noSignups": "Free taste available",
+    "hero.badge.payPerUse": "Pay when you generate",
     "promo.isend101.ariaLabel": "Limited-time discount offer",
     "promo.isend101.badge": "Limited-time offer",
-    "promo.isend101.title": "50% off for a limited time",
+    "promo.isend101.title": "50% off — go feral, pay less 🔥",
     "promo.isend101.body":
       "Use code {code} at checkout — {percent}% off any plan or credit pack for a limited time.",
     "promo.isend101.hint": "Enter the code on the secure Lemon Squeezy payment page before you pay.",
@@ -40,9 +41,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "Before",
     "home.demo.after.label": "After",
-    "home.demo.title": "Before & After",
+    "home.demo.title": "Before & After (the glow-up is real)",
     "home.demo.subtitle":
-      "Pick a product, see the transformation, and click through to generate yours.",
+      "Pick a vibe, watch the chaos turn civil, then steal the workflow for your own draft.",
     "home.demo.examples.corp.before":
       "This design is garbage, you clearly didn't read my brief!",
     "home.demo.examples.corp.after":
@@ -60,10 +61,9 @@ export const DICTS: Record<Locale, Dict> = {
     "home.demo.examples.caveman.after":
       "I hate this. Later.",
 
-    "section.tools.title":
-      "Choose a tool. Paste your text. Get a better version instantly.",
+    "section.tools.title": "Pick a tool. Paste chaos. Leave with confidence.",
     "section.tools.subtitle":
-      "Built for real life: work emails, job applications, and dating bios.",
+      "Work emails, job apps, dating bios — micro-tools that fix how you sound, fast.",
     "tabs.corporate": "Corporate",
     "tabs.coverletter": "Cover Letter",
     "tabs.dating": "Dating Bio",
@@ -76,9 +76,9 @@ export const DICTS: Record<Locale, Dict> = {
     "how.3.title": "3) Copy & send",
     "how.3.body": "Get a clean result with a one-click copy button.",
 
-    "how.detailed.title": "How It Works (4 Simple Steps)",
+    "how.detailed.title": "How It Works (4 steps, zero cringe)",
     "how.detailed.subtitle":
-      "Transform your messy thoughts into perfect messages in under 10 seconds.",
+      "Messy thoughts → send-ready message in under 10 seconds. No corporate tutorial energy.",
     "how.detailed.1.title": "1) Choose your tool",
     "how.detailed.1.body":
       "Browse our micro-tools from the menu, or just ask the AI Concierge to find the perfect one for your specific situation.",
@@ -92,8 +92,8 @@ export const DICTS: Record<Locale, Dict> = {
     "how.detailed.4.body":
       "Review the polished result, copy it, or ask the AI to generate a different variation. Hit send with 100% confidence.",
 
-    "products.title": "The products (quick, punchy, effective)",
-    "products.subtitle": "Short tools with one job: make you sound better, faster.",
+    "products.title": "The hits (fast, punchy, unhinged in a good way)",
+    "products.subtitle": "One job each: make you sound human, hired, or dateable — faster.",
     "products.corp.title": "The Corporate Whisperer",
     "products.corp.slogan": "Say it firmly. Send it safely.",
     "products.cover.title": "1-Click Cover Letter",
@@ -112,7 +112,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "footer.copyright": "© 2026 isendai.com. Crafted for better communication.",
     "footer.trust":
-      "🔒 Secure Payments via Lemon Squeezy | ⚡ Powered by AI | 🚫 We do not store your data.",
+      "🔒 Lemon Squeezy checkout | ⚡ AI-powered glow-ups | 🚫 We don't hoard your drafts",
     "footer.modulusLead": "Part of the MODULUS family —",
     "footer.modulus": "MODULUS corporate site",
 
@@ -665,7 +665,8 @@ export const DICTS: Record<Locale, Dict> = {
   es: {
     "brand.name": "isendai",
     "header.theme": "Cambiar tema",
-    "hero.kicker": "Tu asistente personal de comunicación con IA 🪄",
+    "socialProof.demoPrefix": "Demo:",
+    "hero.kicker": "Tu borrador caótico → mensaje listo para enviar ✨",
     "hero.title": "Perfecciona tu mensaje antes de pulsar Enviar.",
     "hero.subtitle":
       "No hace falta buscar las palabras durante horas. Deja que la IA convierta borradores enfadados en emails profesionales y brille tus mensajes de citas en segundos.",
@@ -1293,7 +1294,8 @@ export const DICTS: Record<Locale, Dict> = {
   fr: {
     "brand.name": "isendai",
     "header.theme": "Changer le thème",
-    "hero.kicker": "Votre assistant IA de communication personnel 🪄",
+    "socialProof.demoPrefix": "Démo :",
+    "hero.kicker": "Brouillon chaotique → message prêt à envoyer ✨",
     "hero.title": "Peaufinez votre message avant d’appuyer sur Envoyer.",
     "hero.subtitle":
       "Inutile de chercher les mots pendant des heures. L’IA transforme vos brouillons énervés en emails professionnels et polit vos messages de rencontre en quelques secondes.",
@@ -1921,7 +1923,8 @@ export const DICTS: Record<Locale, Dict> = {
   de: {
     "brand.name": "isendai",
     "header.theme": "Theme wechseln",
-    "hero.kicker": "Dein persönlicher KI‑Kommunikationsassistent 🪄",
+    "socialProof.demoPrefix": "Demo:",
+    "hero.kicker": "Chaos-Entwurf → sendefertige Nachricht ✨",
     "hero.title": "Perfektioniere deine Nachricht, bevor du auf Senden klickst.",
     "hero.subtitle":
       "Kein stundenlanges Wortgrübeln mehr. Die KI macht aus wütenden Entwürfen professionelle Mails und poliert deine Dating‑Nachrichten in Sekunden.",
@@ -2546,7 +2549,8 @@ export const DICTS: Record<Locale, Dict> = {
   zh: {
     "brand.name": "isendai",
     "header.theme": "切换主题",
-    "hero.kicker": "你的个人 AI 沟通助手 🪄",
+    "socialProof.demoPrefix": "演示：",
+    "hero.kicker": "混乱草稿 → 敢发出去的消息 ✨",
     "hero.title": "在你点击发送前，把话说得更漂亮。",
     "hero.subtitle":
       "不必再花数小时斟酌措辞。让 AI 把情绪草稿变成专业邮件，并在几秒内润色你的约会消息。",
@@ -3134,18 +3138,19 @@ export const DICTS: Record<Locale, Dict> = {
   tr: {
     "brand.name": "isendai",
     "header.theme": "Tema değiştir",
-    "hero.kicker": "Kişisel İletişim Asistanınız 🪄",
-    "hero.title": "Gönder Tuşuna Basmadan Önce Mesajınızı Mükemmelleştirin.",
+    "socialProof.demoPrefix": "Demo:",
+    "hero.kicker": "Dağınık taslak → göndermeye cesaret edilen metin ✨",
+    "hero.title": "Henüz Gönderme. Önce Düzelt.",
     "hero.subtitle":
-      "Saatlerce doğru kelimeleri aramanıza gerek yok. Bırakın yapay zeka; öfkeli taslaklarınızı profesyonel e-postalara dönüştürsün ve flört mesajlarınızı saniyeler içinde parlatsın.",
-    "hero.cta": "Mesajımı Düzelt (İlk Deneme Bedava 🎁)",
+      "Öfke maili mi? Garip mesaj mı? Yarım ön yazı mı? Karmaşayı yapıştır; saniyeler içinde gerçekten gönderebileceğin bir şey al.",
+    "hero.cta": "Dağınıklığı Düzelt (ilk deneme bizden 🎁)",
     "hero.modulusFamily": "MODULUS ürün ailesinin bir parçası —",
-    "hero.badge.noSubscription": "Abonelik yok",
-    "hero.badge.noSignups": "Kayıt yok",
-    "hero.badge.payPerUse": "Kullandıkça öde",
+    "hero.badge.noSubscription": "Abonelik tuzağı yok",
+    "hero.badge.noSignups": "Ücretsiz tadım var",
+    "hero.badge.payPerUse": "Ürettikçe öde",
     "promo.isend101.ariaLabel": "Sınırlı süre indirim kampanyası",
     "promo.isend101.badge": "Sınırlı süre kampanyası",
-    "promo.isend101.title": "Sınırlı süre için %50 indirim",
+    "promo.isend101.title": "%50 indirim — az öde, çok glow-up 🔥",
     "promo.isend101.body":
       "Ödeme sırasında {code} kodunu kullanın — tüm plan ve kontör paketlerinde geçerli, sınırlı süre için %{percent} indirim.",
     "promo.isend101.hint": "Kodu Lemon Squeezy güvenli ödeme sayfasında, ödemeden önce girin.",
@@ -3227,7 +3232,7 @@ export const DICTS: Record<Locale, Dict> = {
     "footer.modulusLead": "MODULUS ürün ailesinin bir parçası —",
     "footer.modulus": "MODULUS kurumsal sitesi",
     "footer.trust":
-      "🔒 Lemon Squeezy ile güvenli ödeme | ⚡ AI destekli | 🚫 Verini saklamayız.",
+      "🔒 Lemon Squeezy ödeme | ⚡ AI glow-up | 🚫 Taslaklarını hortumlamıyoruz",
     "tool.corp.desc":
       "Patronuna/müşterine bağırmak mı istiyorsun? Sakın. Buraya yaz; biz de kibar, HR-dostu bir e-postaya çevirelim.",
     "tool.corp.placeholder":

@@ -13,16 +13,19 @@ import {
 import { pageSubtitle } from "@/lib/premium-ui";
 import { DICTS, type Locale } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { pageMetadataForPath } from "@/lib/site-metadata";
 import { cn } from "@/lib/utils";
 
 export async function generateMetadata(): Promise<Metadata> {
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   const locale = resolveLocaleFromCookie(cookieLocale) as Locale;
   const d = DICTS[locale];
-  return {
-    title: `${d["legal.termsTitle"]} | isendai`,
-    description: d["legal.termsMetaDescription"],
-  };
+  return pageMetadataForPath(
+    "/terms",
+    `${d["legal.termsTitle"]} | isendai`,
+    d["legal.termsMetaDescription"],
+    locale
+  );
 }
 
 export default async function TermsPage() {

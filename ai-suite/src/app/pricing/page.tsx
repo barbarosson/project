@@ -32,7 +32,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   const locale = resolveLocaleFromCookie(cookieLocale) as Locale;
   const d = DICTS[locale];
-  return pageMetadataForPath("/pricing", `${d["pricing.title"]} | isendai`, d["pricing.subtitle"]);
+  return pageMetadataForPath(
+    "/pricing",
+    `${d["pricing.title"]} | isendai`,
+    d["pricing.subtitle"],
+    locale
+  );
 }
 
 export default async function PricingPage() {
