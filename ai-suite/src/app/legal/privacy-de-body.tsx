@@ -49,10 +49,7 @@ export function PrivacyDeBody() {
       </p>
 
       <h2 className="text-base font-semibold text-white">Kontakt</h2>
-      <p>
-        Bei Fragen zu dieser Richtlinie erreichst du uns über den Seitenbetreiber oder den auf
-        deinem Kaufbeleg genannten Support-Kanal.
-      </p>
+      <LegalSupportContact />
     </section>
   );
 }

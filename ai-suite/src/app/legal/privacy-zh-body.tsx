@@ -37,7 +37,7 @@ export function PrivacyZhBody() {
       </p>
 
       <h2 className="text-base font-semibold text-white">联系</h2>
-      <p>如对本政策有疑问，请通过网站运营方或您购买收据上列明的支持渠道与我们联系。</p>
+      <LegalSupportContact />
     </section>
   );
 }
