@@ -144,6 +144,19 @@ Balances and charges are stored in **tenths** (0.1 credit) in Postgres. After de
 
 Configure Lemon Squeezy keys and variant IDs in `.env.local`. See `src/models/models.ts` (`salesPriceForModel`, `PAYGO_PACK_CREDITS`, `creditsForGeneration`).
 
+## Launch checklist (isendai.com)
+
+Before pointing production traffic at `https://isendai.com`:
+
+1. **Netlify (production site, branch `main`)** — copy `.env.production.example` into site env vars; set all `LEMON_SQUEEZY_VARIANT_*` and `NEXT_PUBLIC_GA_ID`.
+2. **Lemon webhook** — `https://isendai.com/api/webhook` only (not staging).
+3. **Supabase** — redirect URLs for `isendai.com`, staging, and localhost (see Getting started).
+4. **Smoke test** — OAuth login, one tool generation, checkout → `/success?paid=1`, `/account`, 404 page.
+5. **Analytics** — GA4 Realtime: `login`, `begin_checkout`, `purchase` events (production only).
+6. **SEO** — `/robots.txt`, `/sitemap.xml` use `NEXT_PUBLIC_SITE_URL`; private routes (`/account`, `/history`) are disallowed.
+
+Server errors log via `src/instrumentation.ts` (`onRequestError`). Optional Sentry: reserve `SENTRY_DSN` in `env.example` for a later pass.
+
 ## Learn more
 
 - [Next.js Documentation](https://nextjs.org/docs)

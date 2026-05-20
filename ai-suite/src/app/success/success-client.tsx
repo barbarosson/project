@@ -27,6 +27,7 @@ import { SitePageChrome, SitePageHeader, SitePageMain } from "@/components/site-
 import { cn } from "@/lib/utils";
 import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
 import { pageContentSection, pageSubtitle, glassSurface } from "@/lib/premium-ui";
+import { trackGaPurchase } from "@/lib/analytics/gtag";
 import type { ServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 
 type Stored = { v: 1; savedAt: string; payload: ToolPayload };
@@ -178,6 +179,21 @@ export function SuccessClient({
   }, [stored]);
 
   const tool: ToolName | null = isToolName(toolParam) ? toolParam : null;
+
+  const purchaseTracked = React.useRef(false);
+  React.useEffect(() => {
+    if (!isPaidReturn || purchaseTracked.current) return;
+    purchaseTracked.current = true;
+    trackGaPurchase(tool ?? "unknown", "lemon_checkout");
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("paid");
+      const qs = url.searchParams.toString();
+      window.history.replaceState(null, "", `${url.pathname}${qs ? `?${qs}` : ""}`);
+    } catch {
+      // ignore
+    }
+  }, [isPaidReturn, tool]);
 
   const cleanup = React.useCallback(() => {
     const storageKey = storageKeyRef.current;

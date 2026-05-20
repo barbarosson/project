@@ -143,7 +143,7 @@ export async function POST(request: Request) {
 
   lemonSqueezySetup({ apiKey });
 
-  const redirectUrl = `${siteUrl(request)}/success?tool=${encodeURIComponent(tool_id)}`;
+  const redirectUrl = `${siteUrl(request)}/success?tool=${encodeURIComponent(tool_id)}&paid=1`;
 
   const clientModel = typeof rec.model === "string" ? rec.model : "";
 

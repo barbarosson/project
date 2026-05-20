@@ -4,6 +4,7 @@ import * as React from "react";
 import { toast } from "sonner";
 
 import { PricingPackCards } from "@/components/pricing-pack-cards";
+import { trackGaBeginCheckout } from "@/lib/analytics/gtag";
 import { useI18n } from "@/i18n/i18n-provider";
 import { hrefToCompleteMembershipProfileForCurrentPage } from "@/lib/auth/membership-profile";
 import { pageSectionLabel } from "@/lib/premium-ui";
@@ -48,6 +49,15 @@ async function postCheckout(
   if (!res.ok || !json?.checkout_url) {
     toast.error(json?.error ?? t("pricing.checkoutFailed"));
     return false;
+  }
+  const pack = body.pack;
+  if (pack === "subscription" && typeof body.plan === "string") {
+    const interval = body.billing_interval === "yearly" ? "yearly" : "monthly";
+    trackGaBeginCheckout(`${body.plan}_${interval}`, "subscription");
+  } else if (pack === "paygo" && typeof body.tier === "string") {
+    trackGaBeginCheckout(String(body.tier), "paygo");
+  } else {
+    trackGaBeginCheckout("one_time_trial", "one_time");
   }
   window.location.href = json.checkout_url;
   return true;

@@ -416,6 +416,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "notFound.title": "Page not found",
     "notFound.description": "The page you’re looking for doesn’t exist.",
+    "errorPage.title": "Something went wrong",
+    "errorPage.description": "We hit an unexpected error. Try again or return to the home page.",
+    "errorPage.retry": "Try again",
     "errors.serverToast": "Server error. Please try again shortly.",
     "errors.generationFailed": "Generation failed.",
     "errors.signInRequired": "Please sign in to generate.",
@@ -1031,6 +1034,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "notFound.title": "Página no encontrada",
     "notFound.description": "La página que buscas no existe.",
+    "errorPage.title": "Algo salió mal",
+    "errorPage.description": "Ocurrió un error inesperado. Reintenta o vuelve al inicio.",
+    "errorPage.retry": "Reintentar",
     "errors.serverToast": "Error del servidor. Inténtalo de nuevo en un momento.",
     "errors.generationFailed": "La generación falló.",
     "errors.signInRequired": "Inicia sesión para generar.",
@@ -1638,6 +1644,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "notFound.title": "Page introuvable",
     "notFound.description": "La page demandée n’existe pas.",
+    "errorPage.title": "Une erreur s’est produite",
+    "errorPage.description": "Erreur inattendue. Réessayez ou retournez à l’accueil.",
+    "errorPage.retry": "Réessayer",
     "errors.serverToast": "Erreur serveur. Réessaie dans un instant.",
     "errors.generationFailed": "Échec de la génération.",
     "errors.signInRequired": "Connectez-vous pour générer.",
@@ -2246,6 +2255,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "notFound.title": "Seite nicht gefunden",
     "notFound.description": "Diese Seite existiert nicht.",
+    "errorPage.title": "Etwas ist schiefgelaufen",
+    "errorPage.description": "Unerwarteter Fehler. Erneut versuchen oder zur Startseite.",
+    "errorPage.retry": "Erneut versuchen",
     "errors.serverToast": "Serverfehler. Bitte kurz warten und erneut versuchen.",
     "errors.generationFailed": "Generierung fehlgeschlagen.",
     "errors.signInRequired": "Bitte anmelden, um zu generieren.",
@@ -2828,6 +2840,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "notFound.title": "页面未找到",
     "notFound.description": "你要访问的页面不存在。",
+    "errorPage.title": "出了点问题",
+    "errorPage.description": "发生意外错误。请重试或返回首页。",
+    "errorPage.retry": "重试",
     "errors.serverToast": "服务器错误，请稍后重试。",
     "errors.generationFailed": "生成失败。",
     "errors.signInRequired": "请登录后再生成。",
@@ -3420,6 +3435,9 @@ export const DICTS: Record<Locale, Dict> = {
 
     "notFound.title": "Sayfa bulunamadı",
     "notFound.description": "Aradığın sayfa yok.",
+    "errorPage.title": "Bir şeyler ters gitti",
+    "errorPage.description": "Beklenmeyen bir hata oluştu. Tekrar dene veya ana sayfaya dön.",
+    "errorPage.retry": "Tekrar dene",
     "errors.serverToast": "Sunucu hatası. Kısa süre sonra tekrar dene.",
     "errors.generationFailed": "Üretim başarısız.",
     "errors.signInRequired": "Üretim için lütfen giriş yapın.",

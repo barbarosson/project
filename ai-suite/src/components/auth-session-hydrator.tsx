@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
+import { trackGaLogin } from "@/lib/analytics/gtag";
 import {
   createSupabaseBrowserClient,
   isSupabaseBrowserConfigured,
@@ -59,6 +60,21 @@ export function AuthSessionHydrator() {
         if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
           router.refresh();
           stripAuthSyncParam();
+        }
+        if (event === "SIGNED_IN" && session) {
+          try {
+            const key = "isendai:ga_login";
+            if (sessionStorage.getItem(key) !== session.user.id) {
+              sessionStorage.setItem(key, session.user.id);
+              const provider =
+                session.user.app_metadata?.provider ??
+                (Array.isArray(session.user.identities) && session.user.identities[0]?.provider) ??
+                "email";
+              trackGaLogin(String(provider));
+            }
+          } catch {
+            trackGaLogin("oauth");
+          }
         }
       }
     );
