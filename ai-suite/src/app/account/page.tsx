@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
+import { loadAccountEntitlementsAndRequests } from "@/lib/isendai/load-account-data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
 import {
@@ -28,26 +29,11 @@ export default async function AccountPage() {
 
   const authSnapshot = await readServerAuthSnapshot();
 
-  const { data: ent } = await supabase
-    .schema("isendai")
-    .from("entitlements")
-    .select("credits_balance,max_versions_per_request,plan_id,plan_status,current_period_end")
-    .eq("owner_type", "user")
-    .eq("owner_id", user.id)
-    .maybeSingle();
-
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   const locale = resolveLocaleFromCookie(cookieLocale);
   const d = DICTS[locale];
 
-  const { data: requests } = await supabase
-    .schema("isendai")
-    .from("requests")
-    .select("id,tool_id,model_id,created_at,credits_charged,max_versions")
-    .eq("owner_type", "user")
-    .eq("owner_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(20);
+  const { ent, requests } = await loadAccountEntitlementsAndRequests(user.id, supabase);
 
   return (
     <SitePageChrome>
@@ -86,7 +72,7 @@ export default async function AccountPage() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className={pageSectionLabel}>{d["account.recentRequests"]}</h2>
             <div className="flex items-center gap-3">
-              <span className="text-sm text-slate-300">{requests?.length ?? 0}</span>
+              <span className="text-sm text-slate-300">{requests.length}</span>
               <Link
                 className="text-sm font-medium text-violet-300 transition-colors hover:text-violet-200"
                 href="/history"
@@ -96,7 +82,7 @@ export default async function AccountPage() {
             </div>
           </div>
 
-          {requests && requests.length > 0 ? (
+          {requests.length > 0 ? (
             <div className="mt-4 grid gap-2">
               {requests.map((r) => (
                 <div key={r.id} className={cn("rounded-xl p-4 text-sm text-slate-200", glassSurface)}>
