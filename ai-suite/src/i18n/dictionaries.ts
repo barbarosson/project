@@ -120,6 +120,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Want to yell at your boss or client? Don't. Type your angry, unfiltered thoughts here, and we'll turn it into a polite, HR-friendly masterpiece.",
     "tool.corp.placeholder":
       `Type what you REALLY want to say... (e.g., "This design is garbage and you clearly didn't read my brief.")`,
+    "tool.action.generic": "Generate",
     "tool.corp.button": "Translate to Professional",
 
     "tool.cover.desc":
@@ -764,6 +765,7 @@ export const DICTS: Record<Locale, Dict> = {
       "¿Quieres gritarle a tu jefe o cliente? No lo hagas. Escribe lo que piensas y lo convertimos en un correo educado y apto para RR. HH.",
     "tool.corp.placeholder":
       `Escribe lo que REALMENTE quieres decir... (p. ej., "Este diseño es basura y ni leíste el brief.")`,
+    "tool.action.generic": "Generar",
     "tool.corp.button": "Traducir a profesional",
     "tool.cover.desc":
       "¿Cansado de la misma carta para cada puesto? Pega la URL/oferta y tus habilidades. Generamos una carta a medida que consigue entrevistas.",
@@ -1394,6 +1396,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Envie de crier sur votre boss ou client ? Ne le faites pas. Écrivez tout, on le transforme en email poli et OK RH.",
     "tool.corp.placeholder":
       `Tapez ce que vous voulez VRAIMENT dire... (ex. "Ce design est nul et vous n’avez pas lu le brief.")`,
+    "tool.action.generic": "Générer",
     "tool.corp.button": "Traduire en pro",
     "tool.cover.desc":
       "Marre de la même lettre ? Collez l’URL/offre et vos compétences. On génère une lettre ciblée qui décroche des entretiens.",
@@ -2025,6 +2028,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Du willst deinen Chef/Client anschreien? Tu’s nicht. Schreib’s hier rein – wir machen daraus eine höfliche, HR‑taugliche Mail.",
     "tool.corp.placeholder":
       `Schreib, was du WIRKLICH sagen willst... (z. B. "Dieses Design ist Müll und du hast mein Briefing nicht gelesen.")`,
+    "tool.action.generic": "Generieren",
     "tool.corp.button": "Professionell umschreiben",
     "tool.cover.desc":
       "Keine Lust auf Copy‑Paste‑Anschreiben? Job‑URL und Skills einfügen – wir generieren ein passendes, ATS‑starkes Anschreiben.",
@@ -2643,6 +2647,7 @@ export const DICTS: Record<Locale, Dict> = {
       "想对老板/客户发火？别。把真实想法写下来，我们帮你变成礼貌、HR 友好的邮件。",
     "tool.corp.placeholder":
       `写下你“真正”想说的话…（例如：“这个设计太烂了，你根本没看 brief。”）`,
+    "tool.action.generic": "生成",
     "tool.corp.button": "改写成职场语气",
     "tool.cover.desc":
       "厌倦每次都写一遍？粘贴职位 URL/描述和你的技能，我们生成定制的求职信。",
@@ -3242,6 +3247,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Patronuna/müşterine bağırmak mı istiyorsun? Sakın. Buraya yaz; biz de kibar, HR-dostu bir e-postaya çevirelim.",
     "tool.corp.placeholder":
       `GERÇEKTEN söylemek istediğini yaz... (örn. "Bu tasarım berbat ve brief’i hiç okumamışsın.")`,
+    "tool.action.generic": "Oluştur",
     "tool.corp.button": "Kurumsala çevir",
     "tool.cover.desc":
       "Her ilana aynı ön yazıyı yazmaktan yoruldun mu? İlan URL/metnini ve becerilerini yapıştır. Özel bir ön yazı üretelim.",

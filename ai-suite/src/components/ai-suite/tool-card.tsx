@@ -111,7 +111,7 @@ export function ToolCard({
 
   const salesTier = modelSalesTier(concreteModel);
   const packLabel = t(`pricing.pack.${salesTier}`);
-  const paidGenerateLabel = toolPrimaryActionLabel(t, tool, def.actionLabel);
+  const paidGenerateLabel = toolPrimaryActionLabel(t, tool, def.actionLabel, locale);
 
   async function runPaidGeneration() {
     if (!isValid) {

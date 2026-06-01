@@ -41,12 +41,20 @@ const TOOL_PRIMARY_ACTION_KEYS: Partial<Record<ToolName, string>> = {
 export function toolPrimaryActionLabel(
   t: (key: string) => string,
   tool: ToolName,
-  fallback: string
+  fallback: string,
+  locale?: Locale
 ): string {
   const key = TOOL_PRIMARY_ACTION_KEYS[tool];
-  if (!key) return fallback;
-  const resolved = t(key);
-  return resolved === key ? fallback : resolved;
+  if (key) {
+    const resolved = t(key);
+    if (resolved !== key) return resolved;
+  }
+  // English keeps each tool's specific verb (e.g. "Say It Kindly").
+  if (!locale || locale === "en") return fallback;
+  // Other locales fall back to a localized generic action verb so the button
+  // is never left in English when no tool-specific translation exists.
+  const generic = t("tool.action.generic");
+  return generic === "tool.action.generic" ? fallback : generic;
 }
 
 /** @deprecated Prefer resolveToolTitle from tool-copy-resolve; kept for compatibility. */
