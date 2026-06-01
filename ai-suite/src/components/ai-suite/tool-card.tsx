@@ -89,7 +89,11 @@ export function ToolCard({
 
   function localizedPlaceholder(key: string, fallback: string) {
     const resolved = t(key);
-    return resolved === key ? fallback : resolved;
+    if (resolved !== key) return resolved;
+    // Generic localized placeholder (missing in English on purpose → keeps tool-specific English copy).
+    const generic = t("tool.placeholder.generic");
+    if (generic !== "tool.placeholder.generic") return generic;
+    return fallback;
   }
 
   const trimmedInitial = initialText?.trim() ?? "";
@@ -111,7 +115,7 @@ export function ToolCard({
 
   const salesTier = modelSalesTier(concreteModel);
   const packLabel = t(`pricing.pack.${salesTier}`);
-  const paidGenerateLabel = toolPrimaryActionLabel(t, tool, def.actionLabel, locale);
+  const paidGenerateLabel = toolPrimaryActionLabel(t, tool, def.actionLabel);
 
   async function runPaidGeneration() {
     if (!isValid) {

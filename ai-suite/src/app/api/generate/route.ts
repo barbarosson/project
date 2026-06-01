@@ -27,6 +27,7 @@ import {
 } from "@/models/models";
 import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
 import { generateTextGoogleWithFlashFallback } from "@/lib/ai/gemini-flash-fallback";
+import { buildExpertSystemPrompt } from "@/lib/ai/expert-system-prompt";
 import { formatCreditsFromTenths } from "@/lib/credits-units";
 import { generateOutOfScopeError, parseApiLocale } from "@/lib/api-error-messages";
 import { DICTS } from "@/i18n/dictionaries";
@@ -531,7 +532,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const { system, user } = promptFor(body);
+  const { system: baseSystem, user } = promptFor(body);
+  const system = buildExpertSystemPrompt(body.tool, baseSystem);
   const override = resolveModelOverride(body);
   const provider = override?.provider ?? pickProvider(body);
   const { client, model } = override ?? modelForProvider(provider);

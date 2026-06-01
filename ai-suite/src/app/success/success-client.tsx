@@ -20,6 +20,7 @@ import {
   type ModelId,
   DEFAULT_MODEL,
 } from "@/models/models";
+import { ModelSwitcher } from "@/components/model-switcher";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -157,6 +158,7 @@ export function SuccessClient({
   const [versions, setVersions] = React.useState<Version[]>([]);
   const [activeId, setActiveId] = React.useState<string | null>(null);
   const [altExtra, setAltExtra] = React.useState("");
+  const [altModel, setAltModel] = React.useState<ModelId>(DEFAULT_MODEL);
   const [stored, setStored] = React.useState<Stored | null>(null);
   const [lastModelUsed, setLastModelUsed] = React.useState<string>("");
   const storageKeyRef = React.useRef<string | null>(null);
@@ -246,11 +248,16 @@ export function SuccessClient({
     [setLastModelUsed, t]
   );
 
-  async function generateAltFromRequest(toolName: ToolName, requestId: string, extra?: string) {
+  async function generateAltFromRequest(
+    toolName: ToolName,
+    requestId: string,
+    extra?: string,
+    model?: ModelId
+  ) {
     const res = await fetch("/api/isendai/request/version", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ request_id: requestId, extra }),
+      body: JSON.stringify({ request_id: requestId, extra, model }),
     });
     const raw = await res.text();
     type VersionApiJson = {
@@ -281,8 +288,9 @@ export function SuccessClient({
     if (!json?.text) throw new Error(t("errors.noModelResult"));
     const storageKey = getToolDefinition(toolName).storageKey;
     const modelRaw = localStorage.getItem(`${storageKey}:model`);
-    const model: ModelId = modelRaw ? normalizeUserModelId(modelRaw) : DEFAULT_MODEL;
-    setLastModelUsed(modelUsedLabel(toolName, model));
+    const usedModel: ModelId =
+      model ?? (modelRaw ? normalizeUserModelId(modelRaw) : DEFAULT_MODEL);
+    setLastModelUsed(modelUsedLabel(toolName, usedModel));
     return json.text;
   }
 
@@ -329,6 +337,7 @@ export function SuccessClient({
       const modelRaw = localStorage.getItem(`${storageKey}:model`);
       const modelForLabel: ModelId = modelRaw ? normalizeUserModelId(modelRaw) : DEFAULT_MODEL;
       setLastModelUsed(modelUsedLabel(tool, modelForLabel));
+      setAltModel(modelForLabel);
 
       const restored = safeLoadVersions(tool);
       setVersions(restored);
@@ -411,8 +420,13 @@ export function SuccessClient({
 
     const storageKey = getToolDefinition(tool).storageKey;
     storageKeyRef.current = storageKey;
-    const modelRaw = localStorage.getItem(`${storageKey}:model`);
-    const model: ModelId = modelRaw ? normalizeUserModelId(modelRaw) : DEFAULT_MODEL;
+    const model: ModelId = altModel;
+    // Keep the tool's stored preference in sync with the chosen alternative model.
+    try {
+      localStorage.setItem(`${storageKey}:model`, model);
+    } catch {
+      // ignore
+    }
 
     setPendingAlt(tool, false);
     setLoading(true);
@@ -426,7 +440,7 @@ export function SuccessClient({
 
       const reqRef = safeLoadRequest(tool);
       const text = reqRef
-        ? await generateAltFromRequest(tool, reqRef.requestId, altExtra)
+        ? await generateAltFromRequest(tool, reqRef.requestId, altExtra, model)
         : await generate(tool, parsed, model, altExtra);
       const newVersion: Version = {
         v: 1,
@@ -532,12 +546,35 @@ export function SuccessClient({
               </div>
             ) : active ? (
               <>
-                <p className="text-xs text-slate-300">
-                  {t("success.selectedVersion")}{" "}
-                  <span className="font-medium text-foreground">
-                    {activeIndex >= 0 ? activeIndex + 1 : 1}/{versions.length}
-                  </span>
-                </p>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <p className="text-xs text-slate-300">
+                    {t("success.selectedVersion")}{" "}
+                    <span className="font-medium text-foreground">
+                      {activeIndex >= 0 ? activeIndex + 1 : 1}/{versions.length}
+                    </span>
+                  </p>
+                  {versions.length > 1 ? (
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {versions.map((v, i) => (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => setActiveId(v.id)}
+                          aria-pressed={v.id === active.id}
+                          aria-label={`${t("success.alt.version")} ${i + 1}`}
+                          className={cn(
+                            "inline-flex size-7 items-center justify-center rounded-lg border text-xs font-semibold transition-all duration-200",
+                            v.id === active.id
+                              ? "border-violet-400/60 bg-violet-500/20 text-white shadow-[0_0_12px_rgba(139,92,246,0.25)]"
+                              : "border-white/[0.1] bg-white/[0.04] text-slate-300 hover:border-violet-400/40 hover:text-white"
+                          )}
+                        >
+                          {i + 1}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
                 {userQuestion ? (
                   <div
                     className={cn(
@@ -578,25 +615,38 @@ export function SuccessClient({
                     requestId={safeLoadRequest(tool)?.requestId ?? null}
                   />
                 ) : null}
-                <div className="grid gap-2">
-                  <p className="text-xs font-medium text-slate-300">
-                    {t("success.alt.extra.label")}
+                <div className={cn("grid gap-3 rounded-xl p-4", glassSurface)}>
+                  <p className="text-sm font-semibold text-white">
+                    {t("success.alt.panelTitle")}
                   </p>
-                  <Textarea
-                    value={altExtra}
-                    maxLength={TOOL_INPUT_MAX_CHARS}
-                    onChange={(e) => setAltExtra(e.target.value)}
-                    placeholder={t("success.alt.extra.placeholder")}
-                    className="min-h-20"
-                  />
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-xs text-slate-300">
-                    {t("success.versions")} {versions.length}
-                  </p>
-                  <div className="flex flex-wrap items-center justify-end gap-2">
+                  <div className="grid gap-1.5">
+                    <p className="text-xs font-medium text-slate-300">
+                      {t("success.alt.modelLabel")}
+                    </p>
+                    <ModelSwitcher
+                      tool={tool ?? undefined}
+                      model={altModel}
+                      onModelChange={setAltModel}
+                      className="w-full min-w-0 max-w-full"
+                    />
+                  </div>
+                  <div className="grid gap-1.5">
+                    <p className="text-xs font-medium text-slate-300">
+                      {t("success.alt.extra.label")}
+                    </p>
+                    <Textarea
+                      value={altExtra}
+                      maxLength={TOOL_INPUT_MAX_CHARS}
+                      onChange={(e) => setAltExtra(e.target.value)}
+                      placeholder={t("success.alt.extra.placeholder")}
+                      className="min-h-20"
+                    />
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="text-xs text-slate-400">
+                      {t("success.versions")} {versions.length}/5
+                    </p>
                     <Button
-                      variant="outline"
                       onClick={payAndGenerateAlternative}
                       disabled={!canGenerateAnother()}
                     >

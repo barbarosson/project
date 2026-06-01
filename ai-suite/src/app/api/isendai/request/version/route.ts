@@ -22,10 +22,13 @@ import {
 import { formatCreditsFromTenths } from "@/lib/credits-units";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { generateTextGoogleWithFlashFallback } from "@/lib/ai/gemini-flash-fallback";
+import { buildExpertSystemPrompt } from "@/lib/ai/expert-system-prompt";
 
 type Body = {
   request_id?: string;
   extra?: string;
+  /** Optional user-facing tier override for this alternative (fast-ai | pro-ai | genius-ai). */
+  model?: string;
 };
 
 function providerKeyName(provider: ProviderId) {
@@ -91,6 +94,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing request_id." }, { status: 400 });
   }
   const extra = typeof body?.extra === "string" ? body.extra.trim() : "";
+  const requestedModel = typeof body?.model === "string" ? body.model.trim() : "";
 
   const rpm = Math.min(300, Math.max(10, Number(process.env.ISENDAI_VERSION_RPM ?? "90")));
   const rl = enforceRateLimit(req, "request-version", rpm, 60_000);
@@ -140,7 +144,8 @@ export async function POST(req: Request) {
   }
 
   const def = getToolDefinition(toolField);
-  const modelId = String(reqRow.model_id || "");
+  // Prefer the model the user picked for this alternative; fall back to the original request's model.
+  const modelId = requestedModel || String(reqRow.model_id || "");
   const concreteForRun = resolveConcreteModelId(normalizeUserModelId(modelId));
   const provider: ProviderId = modelMeta(concreteForRun).provider as ProviderId;
 
@@ -160,6 +165,7 @@ export async function POST(req: Request) {
   const base = rawInputFor(payload);
   const prompt =
     extra.length > 0 ? `${base}\n\nExtra instructions (apply on top of the tool):\n${extra}` : base;
+  const system = buildExpertSystemPrompt(toolField, def.systemPrompt);
 
   const creditCost = creditsForGeneration(concreteForRun, prompt.length);
 
@@ -196,16 +202,17 @@ export async function POST(req: Request) {
   if (provider === "google") {
     const mid = concreteForRun;
     const { result } = await generateTextGoogleWithFlashFallback(mid, {
-      temperature: 0.6,
-      system: def.systemPrompt,
+      // Higher temperature so each alternative meaningfully differs from prior versions.
+      temperature: 0.85,
+      system,
       prompt,
     });
     out = result;
   } else {
     out = await generateText({
       model: modelFor(provider, concreteForRun),
-      temperature: 0.6,
-      system: def.systemPrompt,
+      temperature: 0.85,
+      system,
       prompt,
     });
   }

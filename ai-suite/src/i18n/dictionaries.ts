@@ -120,7 +120,6 @@ export const DICTS: Record<Locale, Dict> = {
       "Want to yell at your boss or client? Don't. Type your angry, unfiltered thoughts here, and we'll turn it into a polite, HR-friendly masterpiece.",
     "tool.corp.placeholder":
       `Type what you REALLY want to say... (e.g., "This design is garbage and you clearly didn't read my brief.")`,
-    "tool.action.generic": "Generate",
     "tool.corp.button": "Translate to Professional",
 
     "tool.cover.desc":
@@ -180,6 +179,8 @@ export const DICTS: Record<Locale, Dict> = {
     "success.ephemeral.body":
       "These results are temporary. If you close this tab/window, they will be deleted and you won’t be able to access them again.",
     "success.alt.generate": "Generate alternative",
+    "success.alt.panelTitle": "Create another version",
+    "success.alt.modelLabel": "AI version for this alternative",
     "success.alt.limit": "You’ve reached the maximum of 5 alternatives for this generation.",
     "success.alt.version": "Version",
     "success.alt.extra.label": "Extra instructions for the next version (optional)",
@@ -765,8 +766,9 @@ export const DICTS: Record<Locale, Dict> = {
       "¿Quieres gritarle a tu jefe o cliente? No lo hagas. Escribe lo que piensas y lo convertimos en un correo educado y apto para RR. HH.",
     "tool.corp.placeholder":
       `Escribe lo que REALMENTE quieres decir... (p. ej., "Este diseño es basura y ni leíste el brief.")`,
-    "tool.action.generic": "Generar",
     "tool.corp.button": "Traducir a profesional",
+    "tool.action.generic": "Generar",
+    "tool.placeholder.generic": "Pega tu texto aquí…",
     "tool.cover.desc":
       "¿Cansado de la misma carta para cada puesto? Pega la URL/oferta y tus habilidades. Generamos una carta a medida que consigue entrevistas.",
     "tool.cover.placeholder1": "Pega la descripción o URL del trabajo...",
@@ -822,6 +824,8 @@ export const DICTS: Record<Locale, Dict> = {
     "success.ephemeral.body":
       "Estos resultados son temporales. Si cierras esta pestaña/ventana, se eliminarán y no podrás acceder a ellos de nuevo.",
     "success.alt.generate": "Generar alternativa",
+    "success.alt.panelTitle": "Crear otra versión",
+    "success.alt.modelLabel": "Versión de IA para esta alternativa",
     "success.alt.limit": "Has alcanzado el máximo de 5 alternativas para esta generación.",
     "success.alt.version": "Versión",
     "success.alt.extra.label": "Instrucciones extra para la próxima versión (opcional)",
@@ -1396,8 +1400,9 @@ export const DICTS: Record<Locale, Dict> = {
       "Envie de crier sur votre boss ou client ? Ne le faites pas. Écrivez tout, on le transforme en email poli et OK RH.",
     "tool.corp.placeholder":
       `Tapez ce que vous voulez VRAIMENT dire... (ex. "Ce design est nul et vous n’avez pas lu le brief.")`,
-    "tool.action.generic": "Générer",
     "tool.corp.button": "Traduire en pro",
+    "tool.action.generic": "Générer",
+    "tool.placeholder.generic": "Collez votre texte ici…",
     "tool.cover.desc":
       "Marre de la même lettre ? Collez l’URL/offre et vos compétences. On génère une lettre ciblée qui décroche des entretiens.",
     "tool.cover.placeholder1": "Collez l’offre ou l’URL...",
@@ -1453,6 +1458,8 @@ export const DICTS: Record<Locale, Dict> = {
     "success.ephemeral.body":
       "Ces résultats sont temporaires. Si vous fermez cet onglet/cette fenêtre, ils seront supprimés et vous ne pourrez plus y accéder.",
     "success.alt.generate": "Générer une alternative",
+    "success.alt.panelTitle": "Créer une autre version",
+    "success.alt.modelLabel": "Version IA pour cette alternative",
     "success.alt.limit": "Vous avez atteint le maximum de 5 alternatives pour cette génération.",
     "success.alt.version": "Version",
     "success.alt.extra.label": "Consignes supplémentaires pour la prochaine version (optionnel)",
@@ -2028,8 +2035,9 @@ export const DICTS: Record<Locale, Dict> = {
       "Du willst deinen Chef/Client anschreien? Tu’s nicht. Schreib’s hier rein – wir machen daraus eine höfliche, HR‑taugliche Mail.",
     "tool.corp.placeholder":
       `Schreib, was du WIRKLICH sagen willst... (z. B. "Dieses Design ist Müll und du hast mein Briefing nicht gelesen.")`,
-    "tool.action.generic": "Generieren",
     "tool.corp.button": "Professionell umschreiben",
+    "tool.action.generic": "Generieren",
+    "tool.placeholder.generic": "Füge deinen Text hier ein…",
     "tool.cover.desc":
       "Keine Lust auf Copy‑Paste‑Anschreiben? Job‑URL und Skills einfügen – wir generieren ein passendes, ATS‑starkes Anschreiben.",
     "tool.cover.placeholder1": "Jobbeschreibung oder URL einfügen...",
@@ -2085,6 +2093,8 @@ export const DICTS: Record<Locale, Dict> = {
     "success.ephemeral.body":
       "Diese Ergebnisse sind temporär. Wenn du diesen Tab/dieses Fenster schließt, werden sie gelöscht und sind nicht mehr abrufbar.",
     "success.alt.generate": "Alternative erzeugen",
+    "success.alt.panelTitle": "Weitere Version erstellen",
+    "success.alt.modelLabel": "KI‑Version für diese Alternative",
     "success.alt.limit": "Du hast das Maximum von 5 Alternativen für diese Generierung erreicht.",
     "success.alt.version": "Version",
     "success.alt.extra.label": "Extra‑Wünsche für die nächste Version (optional)",
@@ -2647,8 +2657,9 @@ export const DICTS: Record<Locale, Dict> = {
       "想对老板/客户发火？别。把真实想法写下来，我们帮你变成礼貌、HR 友好的邮件。",
     "tool.corp.placeholder":
       `写下你“真正”想说的话…（例如：“这个设计太烂了，你根本没看 brief。”）`,
-    "tool.action.generic": "生成",
     "tool.corp.button": "改写成职场语气",
+    "tool.action.generic": "生成",
+    "tool.placeholder.generic": "在此粘贴你的文本…",
     "tool.cover.desc":
       "厌倦每次都写一遍？粘贴职位 URL/描述和你的技能，我们生成定制的求职信。",
     "tool.cover.placeholder1": "粘贴职位描述或 URL…",
@@ -2697,6 +2708,8 @@ export const DICTS: Record<Locale, Dict> = {
     "success.ephemeral.body":
       "这些结果是临时的。如果你关闭此标签页/窗口，它们将被删除，之后无法再次访问。",
     "success.alt.generate": "生成备选版本",
+    "success.alt.panelTitle": "再生成一个版本",
+    "success.alt.modelLabel": "此备选版本使用的 AI 版本",
     "success.alt.limit": "本次生成最多只能有 5 个备选版本。",
     "success.alt.version": "版本",
     "success.alt.extra.label": "下一版的额外要求（可选）",
@@ -3247,8 +3260,9 @@ export const DICTS: Record<Locale, Dict> = {
       "Patronuna/müşterine bağırmak mı istiyorsun? Sakın. Buraya yaz; biz de kibar, HR-dostu bir e-postaya çevirelim.",
     "tool.corp.placeholder":
       `GERÇEKTEN söylemek istediğini yaz... (örn. "Bu tasarım berbat ve brief’i hiç okumamışsın.")`,
-    "tool.action.generic": "Oluştur",
     "tool.corp.button": "Kurumsala çevir",
+    "tool.action.generic": "Oluştur",
+    "tool.placeholder.generic": "Metnini buraya yapıştır…",
     "tool.cover.desc":
       "Her ilana aynı ön yazıyı yazmaktan yoruldun mu? İlan URL/metnini ve becerilerini yapıştır. Özel bir ön yazı üretelim.",
     "tool.cover.placeholder1": "İlan metni veya URL yapıştır...",
@@ -3304,6 +3318,8 @@ export const DICTS: Record<Locale, Dict> = {
     "success.ephemeral.body":
       "Bu sonuçlar geçicidir. Sekmeyi/pencereyi kapatırsan silinir ve tekrar erişemezsin.",
     "success.alt.generate": "Alternatif üret",
+    "success.alt.panelTitle": "Yeni bir versiyon oluştur",
+    "success.alt.modelLabel": "Bu alternatif için yapay zeka sürümü",
     "success.alt.limit": "Bu üretim için en fazla 5 alternatif üretebilirsin.",
     "success.alt.version": "Versiyon",
     "success.alt.extra.label": "Bir sonraki versiyon için ek istekler (opsiyonel)",

@@ -15,6 +15,10 @@ import {
   rankToolsForUserIntent,
 } from "@/lib/intent-tool-routing";
 import { isConcreteModelId, modelMeta, type ModelId } from "@/models/models";
+import { enforceRateLimit } from "@/lib/rate-limit";
+
+const MAX_CONCIERGE_MESSAGES = 24;
+const MAX_CONCIERGE_TOTAL_CHARS = 8000;
 
 const groq = createOpenAI({
   apiKey: process.env.GROQ_API_KEY,
@@ -190,6 +194,25 @@ export async function POST(req: Request) {
   }
 
   const locale = parseApiLocale(body.locale);
+
+  // Abuse / cost guard: concierge makes 2 model calls per request and is public.
+  const rpm = Math.min(120, Math.max(5, Number(process.env.ISENDAI_CONCIERGE_RPM ?? "20")));
+  const rl = enforceRateLimit(req, "concierge", rpm, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: conciergeError(locale, "concierge.errors.server"), code: "rate_limited" },
+      { status: 429, headers: { "retry-after": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
+  }
+
+  const totalChars = body.messages.reduce((sum, m) => sum + m.content.length, 0);
+  if (body.messages.length > MAX_CONCIERGE_MESSAGES || totalChars > MAX_CONCIERGE_TOTAL_CHARS) {
+    return NextResponse.json(
+      { error: conciergeError(locale, "concierge.errors.invalidBody"), code: "invalid_body" },
+      { status: 400 }
+    );
+  }
+
   const lastUser = [...body.messages].reverse().find((m) => m.role === "user")?.content ?? "";
   const looksLikeMessageRequest = looksLikeToolableMessageRequest(lastUser);
   const toolCatalog = TOOLS.map((t) => ({

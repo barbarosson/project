@@ -38,23 +38,23 @@ const TOOL_PRIMARY_ACTION_KEYS: Partial<Record<ToolName, string>> = {
   "dating-roast": "tool.dating.button",
 };
 
+/** Generic localized CTA used when a tool has no specific localized verb.
+ * Missing on purpose in the English dict so English keeps its specific labels. */
+const GENERIC_ACTION_KEY = "tool.action.generic";
+
 export function toolPrimaryActionLabel(
   t: (key: string) => string,
   tool: ToolName,
-  fallback: string,
-  locale?: Locale
+  fallback: string
 ): string {
   const key = TOOL_PRIMARY_ACTION_KEYS[tool];
   if (key) {
     const resolved = t(key);
     if (resolved !== key) return resolved;
   }
-  // English keeps each tool's specific verb (e.g. "Say It Kindly").
-  if (!locale || locale === "en") return fallback;
-  // Other locales fall back to a localized generic action verb so the button
-  // is never left in English when no tool-specific translation exists.
-  const generic = t("tool.action.generic");
-  return generic === "tool.action.generic" ? fallback : generic;
+  const generic = t(GENERIC_ACTION_KEY);
+  if (generic !== GENERIC_ACTION_KEY) return generic;
+  return fallback;
 }
 
 /** @deprecated Prefer resolveToolTitle from tool-copy-resolve; kept for compatibility. */
