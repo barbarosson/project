@@ -2,6 +2,7 @@ import { createCheckout, lemonSqueezySetup } from "@lemonsqueezy/lemonsqueezy.js
 import { NextResponse } from "next/server";
 
 import { getToolDefinition, isToolName } from "@/components/ai-suite/tools";
+import { isLiveCheckoutExpected } from "@/lib/billing/lemon-merchant-status";
 import { resolveVariantId, type CheckoutPackKey, type PaygoTierKey } from "@/lib/lemonsqueezy/catalog";
 import { isMembershipProfileComplete } from "@/lib/auth/membership-profile";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -163,7 +164,10 @@ export async function POST(request: Request) {
     },
   };
 
+  const liveCheckout = isLiveCheckoutExpected();
+
   const res = await createCheckout(storeId, variantId, {
+    testMode: !liveCheckout,
     checkoutData: checkoutData as never,
     productOptions: {
       redirectUrl,
@@ -185,9 +189,22 @@ export async function POST(request: Request) {
     );
   }
 
-  const checkoutUrl = res.data.data.attributes.url;
+  const attrs = res.data.data.attributes as { url?: string; test_mode?: boolean };
+  const checkoutUrl = attrs.url;
   if (!checkoutUrl) {
     return NextResponse.json({ error: "Missing checkout URL." }, { status: 502 });
+  }
+
+  if (liveCheckout && attrs.test_mode === true) {
+    console.error("[checkout] Live deploy received test_mode checkout", { variantId, storeId });
+    return NextResponse.json(
+      {
+        error:
+          "Checkout is still in Lemon test mode. In Netlify use a Live-mode API key and Live variant IDs (copy each variant ID while the Live toggle is on in Lemon).",
+        code: "lemon_test_mode_mismatch",
+      },
+      { status: 502 }
+    );
   }
 
   return NextResponse.json({ checkout_url: checkoutUrl });
