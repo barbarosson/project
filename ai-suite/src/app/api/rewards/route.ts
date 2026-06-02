@@ -1,16 +1,13 @@
 import { NextResponse } from "next/server";
 
 import {
-  buildInviteUrl,
   ensureReferralProfileWithDiagnostics,
-  getReferralDashboardStats,
   getReferralRewardStatusForUser,
   logReferralSignupAttribution,
 } from "@/lib/referrals/referral-service";
+import { loadRewardsPayloadForUser } from "@/lib/referrals/load-rewards-payload";
 import { parseReferralCookie } from "@/lib/referrals/ref-cookie";
 import { REFERRAL_BONUS_CREDITS_WHOLE } from "@/lib/referrals/constants";
-import { baseSiteUrl } from "@/lib/site-metadata";
-import { tenthsToDisplayCredits } from "@/lib/credits-units";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { enforceRateLimit } from "@/lib/rate-limit";
 
@@ -39,8 +36,8 @@ export async function GET() {
     );
   }
 
-  const stats = await getReferralDashboardStats(user.id);
-  if (!stats) {
+  const payload = await loadRewardsPayloadForUser(user);
+  if (!payload) {
     return NextResponse.json(
       {
         error: "Referral profile unavailable after create.",
@@ -51,13 +48,8 @@ export async function GET() {
   }
 
   const rewardStatus = await getReferralRewardStatusForUser(user);
-  const origin = baseSiteUrl().origin;
   return NextResponse.json({
-    referral_code: stats.referralCode,
-    invite_url: buildInviteUrl(origin, stats.referralCode),
-    friends_invited: stats.friendsInvited,
-    credits_earned: tenthsToDisplayCredits(stats.creditsEarnedTenths),
-    bonus_per_friend: REFERRAL_BONUS_CREDITS_WHOLE,
+    ...payload,
     reward_status: rewardStatus.status,
   });
 }

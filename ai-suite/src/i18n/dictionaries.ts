@@ -267,6 +267,8 @@ export const DICTS: Record<Locale, Dict> = {
       "To install on iPhone: tap Share, then \"Add to Home Screen\".",
     "pwa.toastInstalled": "isendai is already on your home screen.",
     "pwa.toastUnavailable": "Install isn’t available in this browser right now.",
+    "pwa.toastDesktop":
+      "To install: Chrome/Edge — menu (⋮) → Install isendai / Save and share. Already installed? Open from your home screen or app list.",
 
     "referrals.navLabel": "Get Free Credits",
     "referrals.navLabelShort": "Free Credits",
@@ -986,6 +988,8 @@ export const DICTS: Record<Locale, Dict> = {
       "En iPhone: toca Compartir y luego «Añadir a la pantalla de inicio».",
     "pwa.toastInstalled": "isendai ya está en tu pantalla de inicio.",
     "pwa.toastUnavailable": "La instalación no está disponible en este navegador.",
+    "pwa.toastDesktop":
+      "Para instalar: Chrome/Edge — menú (⋮) → Instalar isendai. ¿Ya instalada? Ábrela desde la pantalla de inicio.",
 
     "referrals.navLabel": "Créditos gratis",
     "referrals.navLabelShort": "Gratis",
@@ -1685,6 +1689,8 @@ export const DICTS: Record<Locale, Dict> = {
       "Sur iPhone : touchez Partager, puis « Sur l’écran d’accueil ».",
     "pwa.toastInstalled": "isendai est déjà sur votre écran d’accueil.",
     "pwa.toastUnavailable": "L’installation n’est pas disponible dans ce navigateur.",
+    "pwa.toastDesktop":
+      "Pour installer : Chrome/Edge — menu (⋮) → Installer isendai. Déjà installé ? Ouvrez depuis l’écran d’accueil.",
 
     "referrals.navLabel": "Crédits gratuits",
     "referrals.navLabelShort": "Gratuit",
@@ -2385,6 +2391,8 @@ export const DICTS: Record<Locale, Dict> = {
       "Auf dem iPhone: Teilen tippen, dann „Zum Home-Bildschirm“.",
     "pwa.toastInstalled": "isendai ist bereits auf dem Home-Bildschirm.",
     "pwa.toastUnavailable": "Installation in diesem Browser gerade nicht verfügbar.",
+    "pwa.toastDesktop":
+      "Installation: Chrome/Edge — Menü (⋮) → isendai installieren. Bereits installiert? Über Startbildschirm öffnen.",
 
     "referrals.navLabel": "Gratis-Credits",
     "referrals.navLabelShort": "Gratis",
@@ -3063,6 +3071,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pwa.toastIos": "在 iPhone 上：点分享，然后选择「添加到主屏幕」。",
     "pwa.toastInstalled": "isendai 已在主屏幕。",
     "pwa.toastUnavailable": "当前浏览器不支持安装。",
+    "pwa.toastDesktop": "安装：Chrome/Edge — 菜单 (⋮) → 安装 isendai。已安装？从主屏幕打开。",
 
     "referrals.navLabel": "免费领额度",
     "referrals.navLabelShort": "免费",
@@ -3726,6 +3735,8 @@ export const DICTS: Record<Locale, Dict> = {
       "iPhone’da: Paylaş’a dokunun, ardından «Ana Ekrana Ekle».",
     "pwa.toastInstalled": "isendai zaten ana ekranınızda.",
     "pwa.toastUnavailable": "Bu tarayıcıda yükleme şu an kullanılamıyor.",
+    "pwa.toastDesktop":
+      "Yüklemek için: Chrome/Edge — menü (⋮) → isendai'yi yükle / Uygulamayı yükle. Zaten yüklüyse ana ekrandan açın.",
 
     "referrals.navLabel": "Ücretsiz Kontör",
     "referrals.navLabelShort": "Ücretsiz",

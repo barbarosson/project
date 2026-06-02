@@ -32,16 +32,12 @@ export function InstallAppButton({ variant = "hero", className }: InstallAppButt
       return;
     }
 
-    if (isIosInstallBrowser()) {
-      setVisible(true);
-      return;
-    }
+    setVisible(true);
 
     const onBeforeInstall = (e: Event) => {
       if (!isBeforeInstallPromptEvent(e)) return;
       e.preventDefault();
       setDeferredPrompt(e);
-      setVisible(true);
     };
 
     const onInstalled = () => {
@@ -70,22 +66,22 @@ export function InstallAppButton({ variant = "hero", className }: InstallAppButt
       return;
     }
 
-    if (!deferredPrompt) {
-      toast.message(t("pwa.toastUnavailable"));
+    if (deferredPrompt) {
+      try {
+        await deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === "accepted") {
+          setVisible(false);
+        }
+      } catch {
+        toast.message(t("pwa.toastDesktop"), { duration: 9000 });
+      } finally {
+        setDeferredPrompt(null);
+      }
       return;
     }
 
-    try {
-      await deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === "accepted") {
-        setVisible(false);
-      }
-    } catch {
-      toast.message(t("pwa.toastUnavailable"));
-    } finally {
-      setDeferredPrompt(null);
-    }
+    toast.message(t("pwa.toastDesktop"), { duration: 9000 });
   }
 
   const isHeader = variant === "header";

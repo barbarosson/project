@@ -8,7 +8,9 @@ import { DICTS } from "@/i18n/dictionaries";
 import type { Locale } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
+import { loadRewardsPayloadForUser } from "@/lib/referrals/load-rewards-payload";
 import { pageMetadataForPath } from "@/lib/site-metadata";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
   SitePageChrome,
   SitePageHeader,
@@ -39,6 +41,11 @@ export default async function RewardsDashboardPage() {
     redirect("/login?next=%2Fdashboard%2Frewards");
   }
 
+  const supabase = await createSupabaseServerClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const initialData =
+    auth.user != null ? await loadRewardsPayloadForUser(auth.user) : null;
+
   return (
     <SitePageChrome>
       <SitePageHeader
@@ -60,7 +67,7 @@ export default async function RewardsDashboardPage() {
             </li>
           </ol>
         </nav>
-        <RewardsDashboardClient />
+        <RewardsDashboardClient initialData={initialData} />
       </SitePageMain>
     </SitePageChrome>
   );

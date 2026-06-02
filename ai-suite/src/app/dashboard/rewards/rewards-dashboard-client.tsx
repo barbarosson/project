@@ -6,6 +6,7 @@ import { Copy, Gift, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 import { useI18n } from "@/i18n/i18n-provider";
+import type { RewardsPayload } from "@/lib/referrals/load-rewards-payload";
 import { REFERRAL_BONUS_CREDITS_WHOLE } from "@/lib/referrals/constants";
 import {
   glassInteractive,
@@ -16,13 +17,7 @@ import {
 } from "@/lib/premium-ui";
 import { cn } from "@/lib/utils";
 
-type RewardsPayload = {
-  referral_code: string;
-  invite_url: string;
-  friends_invited: number;
-  credits_earned: number;
-  bonus_per_friend: number;
-};
+type RewardsPayloadView = RewardsPayload;
 
 function XIcon({ className }: { className?: string }) {
   return (
@@ -32,10 +27,14 @@ function XIcon({ className }: { className?: string }) {
   );
 }
 
-export function RewardsDashboardClient() {
+export function RewardsDashboardClient({
+  initialData = null,
+}: {
+  initialData?: RewardsPayloadView | null;
+}) {
   const { t } = useI18n();
-  const [data, setData] = React.useState<RewardsPayload | null>(null);
-  const [loading, setLoading] = React.useState(true);
+  const [data, setData] = React.useState<RewardsPayloadView | null>(initialData);
+  const [loading, setLoading] = React.useState(initialData == null);
 
   const shareMessage = React.useMemo(() => {
     if (!data?.invite_url) return "";
@@ -46,19 +45,22 @@ export function RewardsDashboardClient() {
     let cancelled = false;
     void (async () => {
       try {
-        await fetch("/api/rewards", { method: "POST", credentials: "same-origin" });
-        const res = await fetch("/api/rewards", { cache: "no-store", credentials: "same-origin" });
-        const json = (await res.json()) as RewardsPayload & { error?: string; code?: string };
+        const res = await fetch("/api/rewards", {
+          method: "GET",
+          cache: "no-store",
+          credentials: "same-origin",
+        });
+        const json = (await res.json()) as RewardsPayloadView & { error?: string; code?: string };
         if (!cancelled && res.ok) {
           setData(json);
-        } else if (!cancelled) {
+        } else if (!cancelled && !initialData) {
           setData(null);
           if (json.error) {
             toast.error(json.error);
           }
         }
       } catch {
-        if (!cancelled) setData(null);
+        if (!cancelled && !initialData) setData(null);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -66,7 +68,7 @@ export function RewardsDashboardClient() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialData]);
 
   async function copyLink() {
     if (!data?.invite_url) return;
