@@ -30,7 +30,7 @@ export async function GET() {
       no_admin:
         "Server missing SUPABASE_SERVICE_ROLE_KEY or SUPABASE_DATABASE_URL. Add one in Netlify env vars.",
       profile_failed:
-        "Could not create referral profile. Expose schema isendai in Supabase API settings or set SUPABASE_DATABASE_URL.",
+        "Could not create referral profile. In Supabase SQL Editor run supabase/migrations/20260602190000_isendai_referral_public_rpc.sql (or add isendai to Exposed schemas).",
       invalid_user: "Invalid user session.",
     };
     return NextResponse.json(

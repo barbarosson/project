@@ -46,6 +46,50 @@ function isSchemaExposureError(message: string): boolean {
   return m.includes("invalid schema") || m.includes("does not exist") || m.includes("schema cache");
 }
 
+function isRpcMissingError(message: string): boolean {
+  const m = message.toLowerCase();
+  return m.includes("could not find the function") || m.includes("schema cache");
+}
+
+function rpcRowToProfile(row: Record<string, unknown> | undefined): ReferralProfileRow | null {
+  if (!row?.referral_code) return null;
+  return {
+    user_id: String(row.user_id),
+    referral_code: String(row.referral_code),
+    referred_by_code:
+      row.referred_by_code != null && String(row.referred_by_code).length > 0
+        ? String(row.referred_by_code)
+        : null,
+    created_at: String(row.created_at),
+  };
+}
+
+async function ensureReferralProfileRpc(
+  user: User,
+  opts?: { referredByCode?: string | null }
+): Promise<ReferralProfileRow | null> {
+  const admin = createSupabaseAdminClientOrNull();
+  if (!admin) return null;
+
+  const referredBy =
+    normalizeReferralCode(opts?.referredByCode ?? undefined) ?? referredByFromUser(user);
+
+  const { data, error } = await admin.rpc("ensure_referral_profile", {
+    p_user_id: user.id,
+    p_referred_by_code: referredBy,
+  });
+
+  if (error) {
+    if (!isRpcMissingError(error.message)) {
+      console.warn("[referrals] RPC ensure_referral_profile:", error.message);
+    }
+    return null;
+  }
+
+  const rows = (Array.isArray(data) ? data : data ? [data] : []) as Record<string, unknown>[];
+  return rpcRowToProfile(rows[0]);
+}
+
 async function allocateUniqueCodePostgrest(
   admin: NonNullable<ReturnType<typeof createSupabaseAdminClientOrNull>>
 ): Promise<string> {
@@ -155,6 +199,16 @@ export async function ensureReferralProfileForUser(
   const userId = user.id.trim();
   if (!userId) return null;
 
+  try {
+    const rpcProfile = await ensureReferralProfileRpc(user, opts);
+    if (rpcProfile) {
+      await syncReferralCodeToUserMetadata(user, rpcProfile.referral_code, rpcProfile.referred_by_code);
+      return rpcProfile;
+    }
+  } catch (e) {
+    console.warn("[referrals] RPC profile failed:", e);
+  }
+
   if (getReferralDirectSql()) {
     try {
       const profile = await ensureReferralProfileDirect(user, opts);
@@ -233,6 +287,21 @@ export async function logReferralSignupAttribution(
   const admin = createSupabaseAdminClientOrNull();
   if (!admin) {
     return { logged: false, reason: "admin_unavailable" };
+  }
+
+  const { error: rpcErr } = await admin.rpc("upsert_referral_attribution", {
+    p_user_id: user.id,
+    p_referred_by_code: profile.referred_by_code,
+    p_ip_address: ip,
+    p_device_fingerprint: payload.deviceFingerprint,
+  });
+
+  if (!rpcErr) {
+    return { logged: true };
+  }
+
+  if (!isRpcMissingError(rpcErr.message)) {
+    console.warn("[referrals] RPC attribution failed:", rpcErr.message);
   }
 
   const { error } = await admin.schema("isendai").from("referral_signup_attribution").upsert(
@@ -336,11 +405,48 @@ export async function ensureReferralProfileWithDiagnostics(
   return { ok: true, profile };
 }
 
+async function getReferralDashboardStatsRpc(userId: string): Promise<{
+  referralCode: string;
+  friendsInvited: number;
+  creditsEarnedTenths: number;
+} | null> {
+  const admin = createSupabaseAdminClientOrNull();
+  if (!admin) return null;
+
+  const { data, error } = await admin.rpc("get_referral_dashboard_stats", {
+    p_user_id: userId,
+  });
+
+  if (error || data == null) {
+    if (error && !isRpcMissingError(error.message)) {
+      console.warn("[referrals] RPC get_referral_dashboard_stats:", error.message);
+    }
+    return null;
+  }
+
+  const row = data as Record<string, unknown>;
+  const referralCode = row.referral_code;
+  if (typeof referralCode !== "string" || !referralCode) return null;
+
+  return {
+    referralCode,
+    friendsInvited: Number(row.friends_invited ?? 0),
+    creditsEarnedTenths: Number(row.credits_earned_tenths ?? 0),
+  };
+}
+
 export async function getReferralDashboardStats(userId: string): Promise<{
   referralCode: string;
   friendsInvited: number;
   creditsEarnedTenths: number;
 } | null> {
+  try {
+    const rpcStats = await getReferralDashboardStatsRpc(userId);
+    if (rpcStats) return rpcStats;
+  } catch (e) {
+    console.warn("[referrals] RPC stats failed:", e);
+  }
+
   if (getReferralDirectSql()) {
     try {
       const stats = await directGetReferralDashboardStats(userId);
