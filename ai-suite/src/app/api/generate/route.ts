@@ -28,7 +28,10 @@ import {
 } from "@/models/models";
 import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
 import { generateTextGoogleWithFlashFallback } from "@/lib/ai/gemini-flash-fallback";
-import { withOptionalTemperature } from "@/lib/ai/generation-sampling";
+import {
+  messageLooksLikeTemperatureUnsupported,
+  withOptionalTemperature,
+} from "@/lib/ai/generation-sampling";
 import { buildExpertSystemPrompt } from "@/lib/ai/expert-system-prompt";
 import { formatCreditsFromTenths } from "@/lib/credits-units";
 import {
@@ -707,12 +710,23 @@ export async function POST(req: Request) {
       out = result;
       usedGeminiFlashFallback = usedFlashFallback;
     } else {
-      out = await generateText({
-        model: client(model),
-        ...withOptionalTemperature(model, 0.6),
-        system,
-        prompt: user,
-      });
+      try {
+        out = await generateText({
+          model: client(model),
+          ...withOptionalTemperature(model, 0.6),
+          system,
+          prompt: user,
+        });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        if (!messageLooksLikeTemperatureUnsupported(msg)) throw e;
+        // Some endpoints reject temperature even when the SDK accepts it; retry once without it.
+        out = await generateText({
+          model: client(model),
+          system,
+          prompt: user,
+        });
+      }
     }
 
     if (usedGeminiFlashFallback) {

@@ -22,7 +22,10 @@ import {
 import { formatCreditsFromTenths } from "@/lib/credits-units";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { generateTextGoogleWithFlashFallback } from "@/lib/ai/gemini-flash-fallback";
-import { withOptionalTemperature } from "@/lib/ai/generation-sampling";
+import {
+  messageLooksLikeTemperatureUnsupported,
+  withOptionalTemperature,
+} from "@/lib/ai/generation-sampling";
 import { buildExpertSystemPrompt } from "@/lib/ai/expert-system-prompt";
 import {
   insufficientCreditsError,
@@ -221,12 +224,22 @@ export async function POST(req: Request) {
       });
       out = result;
     } else {
-      out = await generateText({
-        model: modelFor(provider, concreteForRun),
-        ...withOptionalTemperature(concreteForRun, 0.85),
-        system,
-        prompt,
-      });
+      try {
+        out = await generateText({
+          model: modelFor(provider, concreteForRun),
+          ...withOptionalTemperature(concreteForRun, 0.85),
+          system,
+          prompt,
+        });
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        if (!messageLooksLikeTemperatureUnsupported(msg)) throw e;
+        out = await generateText({
+          model: modelFor(provider, concreteForRun),
+          system,
+          prompt,
+        });
+      }
     }
   } catch (e) {
     const raw = e instanceof Error ? e.message : "AI request failed.";

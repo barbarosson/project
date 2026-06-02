@@ -18,3 +18,16 @@ export function withOptionalTemperature(
 ): { temperature?: number } {
   return modelSupportsTemperature(modelId) ? { temperature } : {};
 }
+
+export function messageLooksLikeTemperatureUnsupported(message: string): boolean {
+  const m = message.toLowerCase();
+  return (
+    m.includes("temperature") &&
+    (m.includes("deprecated") ||
+      m.includes("unsupported") ||
+      m.includes("not supported") ||
+      m.includes("not allowed") ||
+      m.includes("invalid") ||
+      m.includes("unknown parameter"))
+  );
+}
