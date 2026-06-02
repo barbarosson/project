@@ -16,9 +16,12 @@ type Body = {
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MAX_CONTACT_MESSAGE = 4000;
+const MAX_CONTACT_NAME = 120;
+const MAX_CONTACT_SUBJECT = 200;
 
 export async function POST(req: Request) {
-  const limited = enforceRateLimit(req, "contact", 8, 60_000);
+  const limited = await enforceRateLimit(req, "contact", 8, 60_000);
   if (!limited.ok) {
     return NextResponse.json(
       { error: "Too many messages. Try again shortly." },
@@ -43,14 +46,20 @@ export async function POST(req: Request) {
   const message = typeof body.message === "string" ? body.message.trim() : "";
   const subject = typeof body.subject === "string" ? body.subject.trim() : "";
 
-  if (!name || name.length < 2) {
+  if (!name || name.length < 2 || name.length > MAX_CONTACT_NAME) {
     return NextResponse.json({ error: "Please enter your name." }, { status: 400 });
   }
-  if (!email || !EMAIL_RE.test(email)) {
+  if (!email || !EMAIL_RE.test(email) || email.length > 254) {
     return NextResponse.json({ error: "Please enter a valid email." }, { status: 400 });
   }
-  if (!message || message.length < 10) {
-    return NextResponse.json({ error: "Message must be at least 10 characters." }, { status: 400 });
+  if (!message || message.length < 10 || message.length > MAX_CONTACT_MESSAGE) {
+    return NextResponse.json(
+      { error: `Message must be between 10 and ${MAX_CONTACT_MESSAGE} characters.` },
+      { status: 400 }
+    );
+  }
+  if (subject.length > MAX_CONTACT_SUBJECT) {
+    return NextResponse.json({ error: "Subject is too long." }, { status: 400 });
   }
 
   let userId: string | null = null;

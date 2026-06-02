@@ -16,7 +16,9 @@ import {
   rankToolsForUserIntent,
 } from "@/lib/intent-tool-routing";
 import { isConcreteModelId, modelMeta, type ModelId } from "@/models/models";
+import { conciergeRequiresAuth } from "@/lib/concierge-auth";
 import { enforceRateLimit } from "@/lib/rate-limit";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const MAX_CONCIERGE_MESSAGES = 24;
 const MAX_CONCIERGE_TOTAL_CHARS = 8000;
@@ -196,13 +198,33 @@ export async function POST(req: Request) {
 
   const locale = parseApiLocale(body.locale);
 
-  // Abuse / cost guard: concierge makes 2 model calls per request and is public.
-  const rpm = Math.min(120, Math.max(5, Number(process.env.ISENDAI_CONCIERGE_RPM ?? "20")));
-  const rl = enforceRateLimit(req, "concierge", rpm, 60_000);
+  if (conciergeRequiresAuth()) {
+    const supabase = await createSupabaseServerClient();
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData?.user?.id) {
+      return NextResponse.json(
+        { error: conciergeError(locale, "concierge.errors.authRequired"), code: "auth_required" },
+        { status: 401 }
+      );
+    }
+  }
+
+  // Abuse / cost guard: concierge may use 2 model calls per request.
+  const rpm = Math.min(60, Math.max(5, Number(process.env.ISENDAI_CONCIERGE_RPM ?? "12")));
+  const rl = await enforceRateLimit(req, "concierge", rpm, 60_000);
   if (!rl.ok) {
     return NextResponse.json(
       { error: conciergeError(locale, "concierge.errors.server"), code: "rate_limited" },
       { status: 429, headers: { "retry-after": String(Math.ceil(rl.retryAfterMs / 1000)) } }
+    );
+  }
+
+  const dailyMax = Math.min(200, Math.max(10, Number(process.env.ISENDAI_CONCIERGE_DAILY_MAX ?? "40")));
+  const dailyRl = await enforceRateLimit(req, "concierge-day", dailyMax, 86_400_000);
+  if (!dailyRl.ok) {
+    return NextResponse.json(
+      { error: conciergeError(locale, "concierge.errors.server"), code: "rate_limited" },
+      { status: 429, headers: { "retry-after": String(Math.ceil(dailyRl.retryAfterMs / 1000)) } }
     );
   }
 
@@ -247,10 +269,26 @@ export async function POST(req: Request) {
     const scopeText = scopeRes.choices?.[0]?.message?.content?.trim() ?? "";
     scope = safeParseScope(scopeText);
   } catch {
-    // Network/provider failure: do not block the main concierge reply.
-    scope = { in_scope: true };
+    scope = null;
   }
-  if (scope && scope.in_scope === false && !looksLikeMessageRequest) {
+
+  if (!scope) {
+    const suggested_tools = alignSuggestedTools(lastUser, fallbackSuggestedTools(lastUser));
+    const toolLines = suggested_tools
+      .map((id) => {
+        const t = TOOLS.find((x) => x.tool === id);
+        const label = resolveToolTitle(locale, id);
+        const emoji = t?.emoji ?? "✨";
+        return `- [${emoji} ${label}](/?tool=${id})`;
+      })
+      .join("\n");
+    return NextResponse.json({
+      reply: fillConciergeOffScopeReply(locale, toolLines),
+      suggested_tools,
+    });
+  }
+
+  if (scope.in_scope === false && !looksLikeMessageRequest) {
     const suggested_tools = alignSuggestedTools(lastUser, fallbackSuggestedTools(lastUser));
     const toolLines = suggested_tools
       .map((id) => {

@@ -4,6 +4,8 @@ import { isToolName } from "@/components/ai-suite/tools";
 import { saveAiFeedback, type FeedbackRating } from "@/lib/feedback/save-feedback";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
+import { feedbackRequiresAuth } from "@/lib/security/feedback-auth";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -27,8 +29,10 @@ function clipField(value: string, max: number): string | null {
   return t.length <= max ? t : t.slice(0, max);
 }
 
+const FEEDBACK_TEXT_MAX = TOOL_INPUT_MAX_CHARS * 2;
+
 export async function POST(req: Request) {
-  const limited = enforceRateLimit(req, "feedback", 40, 60_000);
+  const limited = await enforceRateLimit(req, "feedback", 20, 60_000);
   if (!limited.ok) {
     return NextResponse.json(
       { error: "Too many feedback submissions. Try again shortly." },
@@ -53,29 +57,45 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "rating must be 'up' or 'down'." }, { status: 400 });
   }
 
-  const originalText = clipField(typeof body.originalText === "string" ? body.originalText : "", TOOL_INPUT_MAX_CHARS * 4);
-  const aiResponse = clipField(typeof body.aiResponse === "string" ? body.aiResponse : "", TOOL_INPUT_MAX_CHARS * 4);
+  const originalText = clipField(
+    typeof body.originalText === "string" ? body.originalText : "",
+    FEEDBACK_TEXT_MAX
+  );
+  const aiResponse = clipField(typeof body.aiResponse === "string" ? body.aiResponse : "", FEEDBACK_TEXT_MAX);
   const modelUsed = clipField(typeof body.modelUsed === "string" ? body.modelUsed : "", 128);
 
   if (!originalText || !aiResponse || !modelUsed) {
     return NextResponse.json({ error: "originalText, aiResponse, and modelUsed are required." }, { status: 400 });
   }
 
-  let ownerType: "user" | "anon" | null = null;
-  let ownerId: string | null = null;
-  try {
-    const supabase = await createSupabaseServerClient();
-    const { data } = await supabase.auth.getUser();
-    if (data.user?.id) {
-      ownerType = "user";
-      ownerId = data.user.id;
-    }
-  } catch {
-    /* anonymous feedback is allowed */
+  const supabase = await createSupabaseServerClient();
+  const { data: authData } = await supabase.auth.getUser();
+  const userId = authData?.user?.id ?? null;
+
+  if (feedbackRequiresAuth() && !userId) {
+    return NextResponse.json({ error: "Sign in to submit feedback.", code: "auth_required" }, { status: 401 });
   }
+
+  const ownerType = userId ? ("user" as const) : null;
+  const ownerId = userId;
 
   const requestId =
     typeof body.requestId === "string" && body.requestId.length >= 10 ? body.requestId.trim() : null;
+
+  if (requestId && userId) {
+    const admin = createSupabaseAdminClient();
+    const { data: reqRow } = await admin
+      .schema("isendai")
+      .from("requests")
+      .select("owner_type,owner_id")
+      .eq("id", requestId)
+      .maybeSingle();
+    if (!reqRow || reqRow.owner_type !== "user" || reqRow.owner_id !== userId) {
+      return NextResponse.json({ error: "Invalid request reference.", code: "forbidden" }, { status: 403 });
+    }
+  } else if (requestId && !userId) {
+    return NextResponse.json({ error: "Sign in to link feedback to a request.", code: "auth_required" }, { status: 401 });
+  }
 
   const result = await saveAiFeedback({
     toolId,

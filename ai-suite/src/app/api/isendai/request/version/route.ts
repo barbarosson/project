@@ -20,6 +20,8 @@ import {
   resolveConcreteModelId,
 } from "@/models/models";
 import { formatCreditsFromTenths } from "@/lib/credits-units";
+import { appendExtraInstructions, extraLengthError, normalizeExtra } from "@/lib/ai/extra-instructions";
+import { EXTRA_INSTRUCTIONS_MAX_CHARS } from "@/lib/constants/input-limits";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { generateTextGoogleWithFlashFallback } from "@/lib/ai/gemini-flash-fallback";
 import {
@@ -103,12 +105,22 @@ export async function POST(req: Request) {
   if (!requestId || typeof requestId !== "string") {
     return NextResponse.json({ error: "Missing request_id." }, { status: 400 });
   }
-  const extra = typeof body?.extra === "string" ? body.extra.trim() : "";
+  const extra = normalizeExtra(body?.extra);
   const requestedModel = typeof body?.model === "string" ? body.model.trim() : "";
   const locale = parseApiLocale(body?.locale);
 
+  if (extraLengthError(extra)) {
+    return NextResponse.json(
+      {
+        error: `Extra instructions must be at most ${EXTRA_INSTRUCTIONS_MAX_CHARS} characters.`,
+        code: "extra_too_long",
+      },
+      { status: 400 }
+    );
+  }
+
   const rpm = Math.min(300, Math.max(10, Number(process.env.ISENDAI_VERSION_RPM ?? "90")));
-  const rl = enforceRateLimit(req, "request-version", rpm, 60_000);
+  const rl = await enforceRateLimit(req, "request-version", rpm, 60_000);
   if (!rl.ok) {
     return NextResponse.json(
       { error: "Too many requests. Please wait and try again.", code: "rate_limited" },
@@ -174,8 +186,7 @@ export async function POST(req: Request) {
   }
 
   const base = rawInputFor(payload);
-  const prompt =
-    extra.length > 0 ? `${base}\n\nExtra instructions (apply on top of the tool):\n${extra}` : base;
+  const prompt = appendExtraInstructions(base, extra);
   const system = buildExpertSystemPrompt(toolField, def.systemPrompt, {
     locale,
     userText: prompt,

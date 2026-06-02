@@ -26,7 +26,12 @@ import {
   parseRequestedModelId,
   resolveConcreteModelId,
 } from "@/models/models";
-import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
+import { EXTRA_INSTRUCTIONS_MAX_CHARS, TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
+import {
+  appendExtraInstructions,
+  extraLengthError,
+  normalizeExtra,
+} from "@/lib/ai/extra-instructions";
 import { generateTextGoogleWithFlashFallback } from "@/lib/ai/gemini-flash-fallback";
 import {
   messageLooksLikeTemperatureUnsupported,
@@ -41,19 +46,16 @@ import {
   parseApiLocale,
 } from "@/lib/api-error-messages";
 import { DICTS } from "@/i18n/dictionaries";
+import { generationDebugHeaders } from "@/lib/security/api-debug-headers";
+import { scopeByHeuristicsOnly } from "@/lib/security/scope-heuristics";
+import { sanitizeStoredRequestInput } from "@/lib/security/stored-request-sanitize";
 import {
   isDefineRelationshipIntent,
   isGiftMessageIntent,
+  rankToolsForUserIntent,
 } from "@/lib/intent-tool-routing";
 
 type RequestBody = ToolPayload & { model?: string; extra?: string; locale?: string };
-
-function stripMarketingFields<T extends Record<string, unknown>>(b: T): Omit<T, "leadEmail" | "marketingFreeTrial"> {
-  const rest = { ...b } as Record<string, unknown>;
-  delete rest.leadEmail;
-  delete rest.marketingFreeTrial;
-  return rest as Omit<T, "leadEmail" | "marketingFreeTrial">;
-}
 
 type ScopeResult = {
   in_scope: boolean;
@@ -224,12 +226,9 @@ async function checkScope(payload: RequestBody): Promise<ScopeResult> {
 
   const allowed = [...TOOLS.map((t) => t.tool), "unknown"].join(", ");
 
-  const override = resolveModelOverride(payload);
-  const provider = override?.provider ?? pickProvider(payload);
-  const { client, model } = override ?? modelForProvider(provider);
-
-  // Fail-open if the required key is missing.
-  if (!hasProviderKey(provider)) return { in_scope: true };
+  if (!hasProviderKey("openai")) {
+    return scopeByHeuristicsOnly(tool, rawInput);
+  }
 
   const system =
     "You are a scope classifier for a small AI tools suite.\n" +
@@ -250,24 +249,25 @@ async function checkScope(payload: RequestBody): Promise<ScopeResult> {
     "If not, set in_scope=false and suggest the best tool (or unknown).\n\n" +
     `User input:\n${rawInput}`;
 
-  const scopeSampling = withOptionalTemperature(model, 0);
-  const result =
-    provider === "google"
-      ? (
-          await generateTextGoogleWithFlashFallback(model, {
-            temperature: 0,
-            system,
-            prompt,
-          })
-        ).result
-      : await generateText({
-          model: client(model),
-          ...scopeSampling,
-          system,
-          prompt,
-        });
+  const scopeModel = "gpt-4o-mini";
+  const scopeSampling = withOptionalTemperature(scopeModel, 0);
+  let content = "";
+  try {
+    const result = await generateText({
+      model: openai(scopeModel),
+      ...scopeSampling,
+      system,
+      prompt,
+    });
+    content = result.text?.trim() ?? "";
+  } catch {
+    const fallback = rankToolsForUserIntent(rawInput)[0];
+    return {
+      in_scope: false,
+      suggested_tool: fallback ?? "unknown",
+    };
+  }
 
-  const content = result.text?.trim() ?? "";
   try {
     const parsed = JSON.parse(content) as ScopeResult;
     if (typeof parsed?.in_scope !== "boolean") throw new Error("bad json");
@@ -280,18 +280,18 @@ async function checkScope(payload: RequestBody): Promise<ScopeResult> {
           : "unknown",
     };
   } catch {
-    // Fail open: if classifier output can't be parsed, don't block generation.
-    return { in_scope: true };
+    const fallback = rankToolsForUserIntent(rawInput)[0];
+    return {
+      in_scope: false,
+      suggested_tool: fallback ?? "unknown",
+    };
   }
 }
 
 function promptFor(payload: RequestBody) {
   const def = getToolDefinition(payload.tool);
-  const extra = typeof payload.extra === "string" ? payload.extra.trim() : "";
-  const withExtra = (base: string) =>
-    extra.length > 0
-      ? `${base}\n\nExtra instructions (apply on top of the tool):\n${extra}`
-      : base;
+  const extra = normalizeExtra(payload.extra);
+  const withExtra = (base: string) => appendExtraInstructions(base, extra);
   switch (payload.tool) {
     case "corporate-whisperer":
       return { system: def.systemPrompt, user: withExtra(payload.text) };
@@ -518,8 +518,23 @@ export async function POST(req: Request) {
     );
   }
 
+  const extraNorm = normalizeExtra((body as RequestBody).extra);
+  if (extraLengthError(extraNorm)) {
+    const max = String(EXTRA_INSTRUCTIONS_MAX_CHARS);
+    return NextResponse.json(
+      {
+        error: (DICTS[locale]["errors.extraTooLong"] ?? DICTS.en["errors.extraTooLong"]).replace(
+          "{max}",
+          max
+        ),
+        code: "extra_too_long",
+      },
+      { status: 400 }
+    );
+  }
+
   const rpm = Math.min(300, Math.max(10, Number(process.env.ISENDAI_GENERATE_RPM ?? "60")));
-  const rl = enforceRateLimit(req, "generate", rpm, 60_000);
+  const rl = await enforceRateLimit(req, "generate", rpm, 60_000);
   if (!rl.ok) {
     return NextResponse.json(
       {
@@ -543,11 +558,11 @@ export async function POST(req: Request) {
   );
   const concreteForCredits = resolveConcreteModelId(requestedModel);
   const creditCost = creditsForGeneration(concreteForCredits, user.length);
-  const debugHeaders: Record<string, string> = {
-    "x-ai-provider": provider,
-    "x-ai-model": model,
-    "x-credits-required": formatCreditsFromTenths(creditCost),
-  };
+  let debugHeaders = generationDebugHeaders({
+    provider,
+    model,
+    creditsRequired: formatCreditsFromTenths(creditCost),
+  });
 
   if (!hasProviderKey(provider)) {
     const env = providerKeyName(provider);
@@ -572,7 +587,6 @@ export async function POST(req: Request) {
         { status: 401, headers: { ...debugHeaders, "cache-control": "no-store" } }
       );
     }
-    const userEmail = authData?.user?.email ?? null;
     const ownerType = "user" as const;
     const ownerId = userId;
 
@@ -618,18 +632,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const rawBody = body as RequestBody & Record<string, unknown>;
-    const sanitized = stripMarketingFields(rawBody) as RequestBody;
-    const storedInputJson: Record<string, unknown> =
-      sanitized.tool === "coverletter-ai"
-        ? { ...sanitized }
-        : sanitized.tool === "dating-roast"
-          ? { ...sanitized }
-          : { ...sanitized };
+    const inputJson = sanitizeStoredRequestInput(body);
 
     // Charge credits (amount from creditsForGeneration) and create request row BEFORE generation.
     // If this fails (insufficient credits), we stop early.
-    const inputJson = storedInputJson;
 
     const { data: requestId, error: chargeErr } = await billingChargeAndCreateRequest(admin, {
       p_owner_type: ownerType,
@@ -712,7 +718,12 @@ export async function POST(req: Request) {
     }
 
     if (usedGeminiFlashFallback) {
-      debugHeaders["x-ai-gemini-flash-fallback"] = "1";
+      debugHeaders = generationDebugHeaders({
+        provider,
+        model,
+        creditsRequired: formatCreditsFromTenths(creditCost),
+        extra: { "x-ai-gemini-flash-fallback": "1" },
+      });
     }
 
     const text = out.text?.trim();
@@ -739,7 +750,7 @@ export async function POST(req: Request) {
     }
 
     const response = NextResponse.json(
-      { result: text, request_id: requestId, owner: { type: ownerType, id: ownerId, email: userEmail } },
+      { result: text, request_id: requestId, owner: { type: ownerType, id: ownerId } },
       {
         headers: {
           "cache-control": "no-store",

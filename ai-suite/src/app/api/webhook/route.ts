@@ -16,6 +16,10 @@ import {
   trialCreditsForSubscriptionStart,
 } from "@/lib/lemonsqueezy/catalog";
 import { creditsToTenths } from "@/lib/credits-units";
+import {
+  logWebhookOwnerRejected,
+  verifyWebhookOwnerEmail,
+} from "@/lib/security/webhook-owner-verify";
 import { trialOwnerFingerprint } from "@/lib/trial/fingerprint";
 
 export const runtime = "nodejs";
@@ -118,11 +122,25 @@ export async function POST(request: Request) {
 
   const attrs = isRecord(data.attributes) ? data.attributes : {};
 
+  async function rejectOwnerIfEmailMismatch(
+    event: string,
+    owner_type: "user" | "anon",
+    owner_id: string
+  ): Promise<boolean> {
+    const check = await verifyWebhookOwnerEmail(admin, owner_type, owner_id, attrs);
+    if (check.ok) return false;
+    logWebhookOwnerRejected(event, owner_type, owner_id, check.reason);
+    return true;
+  }
+
   // --- subscription_created (trial → SUBSCRIPTION_TRIAL_CREDITS) ---
   if (eventName === "subscription_created") {
     const { owner_type, owner_id } = extractCustom(root);
     if (!owner_type || !owner_id) {
       console.warn("[webhook] subscription_created missing custom owner.");
+      return NextResponse.json({ ok: true });
+    }
+    if (await rejectOwnerIfEmailMismatch(eventName, owner_type, owner_id)) {
       return NextResponse.json({ ok: true });
     }
 
@@ -304,6 +322,9 @@ export async function POST(request: Request) {
 
     if (!owner_type || !owner_id) {
       console.warn("[webhook] order_created missing owner mapping.");
+      return NextResponse.json({ ok: true });
+    }
+    if (await rejectOwnerIfEmailMismatch(eventName, owner_type, owner_id)) {
       return NextResponse.json({ ok: true });
     }
 

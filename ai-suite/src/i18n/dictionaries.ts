@@ -228,6 +228,7 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.missingProvider": "AI provider is not configured.",
     "concierge.errors.aiFailed": "Could not get a reply. Please try again.",
     "concierge.errors.server": "Server error. Please try again shortly.",
+    "concierge.errors.authRequired": "Sign in to use the assistant chat.",
 
     "deploy.stagingBanner":
       "Staging environment — not live for customers. Test here before merging to main.",
@@ -475,6 +476,7 @@ export const DICTS: Record<Locale, Dict> = {
     "errors.invalidJson": "Invalid request.",
     "errors.invalidPayload": "Invalid tool input.",
     "errors.inputTooLong": "Input must be at most {max} characters.",
+    "errors.extraTooLong": "Extra instructions must be at most {max} characters.",
     "errors.rateLimit": "Too many requests. Please wait a moment and try again.",
     "errors.insufficientCredits":
       "Not enough credits for this generation. Add credits or choose a cheaper model.",
@@ -913,6 +915,7 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.missingProvider": "Proveedor de IA no configurado.",
     "concierge.errors.aiFailed": "No se pudo obtener respuesta. Inténtalo de nuevo.",
     "concierge.errors.server": "Error del servidor. Inténtalo en un momento.",
+    "concierge.errors.authRequired": "Inicia sesión para usar el chat del asistente.",
 
     "deploy.stagingBanner":
       "Entorno de pruebas — no es el sitio en vivo. Prueba aquí antes de fusionar a main.",
@@ -1149,6 +1152,7 @@ export const DICTS: Record<Locale, Dict> = {
     "errors.invalidJson": "Solicitud no válida.",
     "errors.invalidPayload": "Entrada de herramienta no válida.",
     "errors.inputTooLong": "La entrada debe tener como máximo {max} caracteres.",
+    "errors.extraTooLong": "Las instrucciones extra deben tener como máximo {max} caracteres.",
     "errors.rateLimit": "Demasiadas peticiones. Espera un momento e inténtalo de nuevo.",
     "errors.insufficientCredits":
       "No tienes créditos suficientes para esta generación. Añade créditos o elige un modelo más económico.",
@@ -1578,6 +1582,7 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.missingProvider": "Fournisseur IA non configuré.",
     "concierge.errors.aiFailed": "Impossible d’obtenir une réponse. Réessaie.",
     "concierge.errors.server": "Erreur serveur. Réessaie dans un instant.",
+    "concierge.errors.authRequired": "Connecte-toi pour utiliser le chat assistant.",
 
     "deploy.stagingBanner":
       "Environnement de staging — pas le site en production. Teste ici avant de fusionner vers main.",
@@ -1814,6 +1819,7 @@ export const DICTS: Record<Locale, Dict> = {
     "errors.invalidJson": "Requête invalide.",
     "errors.invalidPayload": "Saisie d’outil invalide.",
     "errors.inputTooLong": "La saisie doit faire au plus {max} caractères.",
+    "errors.extraTooLong": "Les instructions supplémentaires doivent faire au plus {max} caractères.",
     "errors.rateLimit": "Trop de requêtes. Attends un peu puis réessaie.",
     "errors.insufficientCredits":
       "Crédits insuffisants pour cette génération. Ajoute des crédits ou choisis un modèle moins cher.",
@@ -2244,6 +2250,7 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.missingProvider": "KI-Anbieter nicht konfiguriert.",
     "concierge.errors.aiFailed": "Keine Antwort erhalten. Bitte erneut versuchen.",
     "concierge.errors.server": "Serverfehler. Bitte kurz warten.",
+    "concierge.errors.authRequired": "Melde dich an, um den Assistenten-Chat zu nutzen.",
 
     "deploy.stagingBanner":
       "Staging-Umgebung — nicht die Live-Seite. Hier testen, dann in main mergen.",
@@ -2480,6 +2487,7 @@ export const DICTS: Record<Locale, Dict> = {
     "errors.invalidJson": "Ungültige Anfrage.",
     "errors.invalidPayload": "Ungültige Tool-Eingabe.",
     "errors.inputTooLong": "Die Eingabe darf höchstens {max} Zeichen haben.",
+    "errors.extraTooLong": "Zusätzliche Anweisungen dürfen höchstens {max} Zeichen haben.",
     "errors.rateLimit": "Zu viele Anfragen. Bitte kurz warten.",
     "errors.insufficientCredits":
       "Nicht genug Credits für diese Generierung. Credits aufladen oder günstigeres Modell wählen.",
@@ -2890,6 +2898,7 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.missingProvider": "AI 提供商未配置。",
     "concierge.errors.aiFailed": "无法获取回复，请重试。",
     "concierge.errors.server": "服务器错误，请稍后重试。",
+    "concierge.errors.authRequired": "请登录后使用助手聊天。",
 
     "deploy.stagingBanner": "预发布环境 — 非正式站点。合并到 main 前请在此测试。",
     "deploy.stagingOpenProduction": "打开正式站 (isendai.com)",
@@ -3119,6 +3128,7 @@ export const DICTS: Record<Locale, Dict> = {
     "errors.invalidJson": "请求无效。",
     "errors.invalidPayload": "工具输入无效。",
     "errors.inputTooLong": "输入不得超过 {max} 个字符。",
+    "errors.extraTooLong": "额外说明不得超过 {max} 个字符。",
     "errors.rateLimit": "请求过于频繁，请稍后再试。",
     "errors.insufficientCredits": "额度不足，无法完成本次生成。请充值或选择更经济的模型。",
     "errors.insufficientCreditsDetail": "额度不足。本次需要 {required} 点；当前余额 {balance} 点。",
@@ -3519,6 +3529,7 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.missingProvider": "Yapay zeka sağlayıcısı yapılandırılmamış.",
     "concierge.errors.aiFailed": "Yanıt alınamadı. Lütfen tekrar dene.",
     "concierge.errors.server": "Sunucu hatası. Kısa süre sonra tekrar dene.",
+    "concierge.errors.authRequired": "Asistan sohbeti için lütfen giriş yap.",
 
     "deploy.stagingBanner":
       "Staging ortamı — müşterilere açık canlı site değil. main’e almadan önce burada test edin.",
@@ -3767,6 +3778,7 @@ export const DICTS: Record<Locale, Dict> = {
     "errors.invalidJson": "Geçersiz istek.",
     "errors.invalidPayload": "Geçersiz araç girdisi.",
     "errors.inputTooLong": "Girdi en fazla {max} karakter olabilir.",
+    "errors.extraTooLong": "Ek talimatlar en fazla {max} karakter olabilir.",
     "errors.rateLimit": "Çok fazla istek. Biraz bekle ve tekrar dene.",
     "errors.insufficientCredits":
       "Bu üretim için kontörünüz yetersiz. Paket yükleyin veya daha uygun bir model seçin.",
