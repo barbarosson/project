@@ -77,6 +77,9 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
               <Link className={pageOutlineButton} href="/account">
                 {d["nav.account"]}
               </Link>
+              <Link className={pageOutlineButton} href={`/?request=${encodeURIComponent(id)}`}>
+                {d["usage.rerun"]}
+              </Link>
               <Link className={premiumCta} href="/">
                 {d["nav.backToHome"]}
               </Link>

@@ -597,7 +597,7 @@ export async function POST(req: Request) {
       p_owner_type: ownerType,
       p_owner_id: ownerId,
       p_default_credits: 0,
-      p_default_max_versions: 5,
+      p_default_max_versions: 9999,
     });
     if (entErr) {
       return NextResponse.json(

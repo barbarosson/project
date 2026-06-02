@@ -2,7 +2,7 @@ import { createSupabaseAdminClientOrNull } from "@/lib/supabase/admin";
 import { billingEnsureEntitlement } from "@/lib/isendai/billing-rpc";
 
 const DEFAULT_FREE_CREDITS = 0;
-const DEFAULT_MAX_VERSIONS = 5;
+const DEFAULT_MAX_VERSIONS = 9999;
 
 /**
  * Idempotently create `isendai.entitlements` row for a newly signed-in user.

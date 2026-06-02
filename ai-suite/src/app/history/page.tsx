@@ -102,6 +102,12 @@ export default async function HistoryPage() {
                       >
                         {d["usage.open"]}
                       </Link>
+                      <Link
+                        className="text-sm font-medium text-cyan-300 hover:text-cyan-200"
+                        href={`/?request=${encodeURIComponent(r.id)}`}
+                      >
+                        {d["usage.rerun"]}
+                      </Link>
                     </div>
                     <p className="text-sm text-slate-300">{new Date(r.created_at).toLocaleString()}</p>
                   </div>

@@ -142,7 +142,7 @@ export async function POST(request: Request) {
       allowanceWhole !== null ? creditsToTenths(allowanceWhole) : null;
     const planKey = variantId ? planKeyFromVariantId(variantId) : null;
 
-    const maxVersions = owner_type === "anon" ? 2 : 5;
+    const maxVersions = owner_type === "anon" ? 2 : 9999;
     const { error: entErr } = await billingEnsureEntitlement(admin, {
       p_owner_type: owner_type,
       p_owner_id: owner_id,
@@ -238,7 +238,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true });
     }
 
-    const maxVersions = owner_type === "anon" ? 2 : 5;
+    const maxVersions = owner_type === "anon" ? 2 : 9999;
     const { error: entErr } = await billingEnsureEntitlement(admin, {
       p_owner_type: owner_type,
       p_owner_id: owner_id,
@@ -342,7 +342,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Persistence error." }, { status: 500 });
     }
 
-    const maxVersions = owner_type === "anon" ? 2 : 5;
+    const maxVersions = owner_type === "anon" ? 2 : 9999;
     const { error: entErr } = await billingEnsureEntitlement(admin, {
       p_owner_type: owner_type,
       p_owner_id: owner_id,

@@ -16,6 +16,7 @@ import {
   TOOLS,
   type ToolCategory,
   type ToolName,
+  type ToolPayload,
   getToolDefinition,
 } from "@/components/ai-suite/tools";
 import { cn } from "@/lib/utils";
@@ -75,16 +76,23 @@ export function HomeClient({
       ? selectedFromUrl
       : selectedState;
   const [toolPrefill, setToolPrefill] = React.useState<string | undefined>();
+  const [toolPrefillPayload, setToolPrefillPayload] = React.useState<ToolPayload | undefined>();
   const [toolPrefillKey, setToolPrefillKey] = React.useState(0);
 
   function selectTool(
     tool: ToolName,
-    opts?: { draftText?: string; scroll?: boolean; updateUrl?: boolean }
+    opts?: { draftText?: string; payload?: ToolPayload; scroll?: boolean; updateUrl?: boolean }
   ) {
     setSelectedState(tool);
     if (opts?.draftText?.trim()) {
       setToolPrefill(opts.draftText.trim());
       setToolPrefillKey((k) => k + 1);
+    }
+    if (opts?.payload) {
+      setToolPrefillPayload(opts.payload);
+      setToolPrefillKey((k) => k + 1);
+    } else {
+      setToolPrefillPayload(undefined);
     }
     if (opts?.updateUrl !== false) {
       router.replace(`/?tool=${tool}`, { scroll: false });
@@ -99,6 +107,7 @@ export function HomeClient({
 
   function selectToolFromSidebar(tool: ToolName) {
     setToolPrefill(undefined);
+    setToolPrefillPayload(undefined);
     selectTool(tool, { scroll: false });
   }
   const [expanded, setExpanded] = React.useState<Record<ToolCategory, boolean>>({
@@ -113,6 +122,31 @@ export function HomeClient({
   });
 
   const selectedDef = getToolDefinition(selected);
+
+  React.useEffect(() => {
+    const requestId = searchParams.get("request");
+    if (!requestId || requestId.length < 10) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/isendai/request/input?id=${encodeURIComponent(requestId)}`, {
+          method: "GET",
+          headers: { "accept": "application/json" },
+        });
+        const json = (await res.json().catch(() => null)) as
+          | { payload?: ToolPayload; tool_id?: ToolName; error?: string }
+          | null;
+        if (cancelled) return;
+        if (!res.ok || !json?.payload || !json?.tool_id) return;
+        selectTool(json.tool_id, { payload: json.payload, scroll: true, updateUrl: true });
+      } catch {
+        // ignore
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [router, searchParams]);
 
   const demoExamples: { tool: ToolName; key: string }[] = [
     { tool: "corporate-whisperer", key: "corp" },
@@ -651,6 +685,7 @@ export function HomeClient({
                 tool={selected}
                 showHeader={false}
                 initialText={toolPrefill}
+                initialPayload={toolPrefillPayload}
               />
             </div>
           </section>

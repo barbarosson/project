@@ -55,11 +55,14 @@ export function ToolCard({
   tool,
   showHeader = true,
   initialText,
+  initialPayload,
 }: {
   tool: ToolName;
   showHeader?: boolean;
   /** Prefill main text (e.g. from `?text=`). Ignored for coverletter-ai. */
   initialText?: string;
+  /** Prefill full stored payload (for reruns from history). */
+  initialPayload?: ToolPayload;
 }) {
   const { t, locale } = useI18n();
   const { profileDefaultModel } = useModel();
@@ -106,6 +109,23 @@ export function ToolCard({
   );
   const [jobLink, setJobLink] = React.useState("");
   const [resume, setResume] = React.useState("");
+
+  React.useEffect(() => {
+    if (!initialPayload) return;
+    if (initialPayload.tool !== tool) return;
+    if (tool === "coverletter-ai") {
+      if ("jobLink" in initialPayload && typeof initialPayload.jobLink === "string") {
+        setJobLink(initialPayload.jobLink);
+      }
+      if ("resume" in initialPayload && typeof initialPayload.resume === "string") {
+        setResume(initialPayload.resume);
+      }
+      return;
+    }
+    if ("text" in initialPayload && typeof initialPayload.text === "string") {
+      setText(initialPayload.text);
+    }
+  }, [initialPayload, tool]);
 
   const payload: ToolPayload =
     tool === "coverletter-ai"

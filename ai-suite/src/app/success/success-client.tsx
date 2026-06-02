@@ -40,6 +40,8 @@ type Stored = { v: 1; savedAt: string; payload: ToolPayload };
 type Version = { v: 1; id: string; createdAt: string; text: string };
 type RequestRef = { v: 1; requestId: string };
 
+const CLIENT_VERSION_CAP = 50;
+
 function isToolName(value: string | null): value is ToolName {
   return typeof value === "string" && value.length > 0;
 }
@@ -93,7 +95,7 @@ function safeLoadVersions(toolName: ToolName): Version[] {
           typeof x.text === "string"
       )
       .map((x) => ({ v: 1, id: x.id!, createdAt: x.createdAt!, text: x.text! }));
-    return cleaned.slice(0, 5);
+    return cleaned.slice(0, CLIENT_VERSION_CAP);
   } catch {
     return [];
   }
@@ -101,7 +103,7 @@ function safeLoadVersions(toolName: ToolName): Version[] {
 
 function persistVersions(toolName: ToolName, next: Version[]) {
   try {
-    sessionStorage.setItem(resultsKey(toolName), JSON.stringify(next.slice(0, 5)));
+    sessionStorage.setItem(resultsKey(toolName), JSON.stringify(next.slice(0, CLIENT_VERSION_CAP)));
   } catch {
     // ignore
   }
@@ -392,7 +394,7 @@ export function SuccessClient({
           createdAt: new Date().toISOString(),
           text,
         };
-        const next: Version[] = [...restoredNow, newVersion].slice(0, 5);
+        const next: Version[] = [...restoredNow, newVersion].slice(0, CLIENT_VERSION_CAP);
         setVersions(next);
         setActiveId(newVersion.id);
         persistVersions(tool, next);
@@ -471,7 +473,7 @@ export function SuccessClient({
         createdAt: new Date().toISOString(),
         text,
       };
-      const next: Version[] = [...versions, newVersion].slice(0, 5);
+      const next: Version[] = [...versions, newVersion].slice(0, CLIENT_VERSION_CAP);
       setVersions(next);
       setActiveId(newVersion.id);
       persistVersions(tool, next);
