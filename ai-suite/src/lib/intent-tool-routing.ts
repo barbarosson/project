@@ -10,6 +10,61 @@ export function isGiftMessageIntent(text: string): boolean {
   );
 }
 
+/** Asking someone out, confessing feelings, or drafting a romantic approach message — not a dating-app bio. */
+export function isRomanticAskOutIntent(text: string): boolean {
+  const t = text.toLowerCase();
+  return (
+    /\b(ask (them|her|him)?\s*out|ask on a date|have a crush|confess(ion)?|tell (her|him|them) i like|romantic feelings)\b/.test(
+      t
+    ) ||
+    /\b(çıkma teklif|çıkmak istiyorum|çıkma teklifi|hoşlanıyorum|beğeniyorum|beğendiğim|seviyorum|aşığım|aşık oldum)\b/.test(
+      t
+    ) ||
+    /\b(hislerimi|flört|teklif etmek|birine (söyle|yaz)|tanışmak istiyorum)\b/.test(t) ||
+    /\b(pedirle salir|declarar(me)?|me gusta alguien|avouer)\b/.test(t)
+  );
+}
+
+/** User pasted or wants help with a dating-app bio / profile — not general crush messaging. */
+export function isDatingProfileIntent(text: string): boolean {
+  const t = text.toLowerCase();
+  return (
+    /\b(bio|profile|tinder|bumble|hinge|dating app|match(es)?)\b/.test(t) ||
+    /\b(biyografi|profil(im)?|flört uygulaması)\b/.test(t) ||
+    /\b(roast my (bio|profile)|improve my bio)\b/.test(t)
+  );
+}
+
+/** Tools that help draft sensitive romantic / social messages (not profile critique). */
+export const ROMANTIC_MESSAGE_TOOLS = [
+  "awkward-text-fixer",
+  "delicate-truth",
+  "relationship-repair-text",
+] as const satisfies readonly ToolName[];
+
+/** True when classifier suggestion and user selection both fit the same detected intent family. */
+export function toolsAlignWithIntent(
+  selected: ToolName,
+  suggested: ToolName | "unknown" | undefined,
+  rawInput: string
+): boolean {
+  if (!suggested || suggested === "unknown") return false;
+  if (selected === suggested) return true;
+
+  const inSet = (ids: readonly ToolName[]) => ids.includes(selected) && ids.includes(suggested);
+
+  if (isRomanticAskOutIntent(rawInput) && !isDatingProfileIntent(rawInput)) {
+    return inSet(ROMANTIC_MESSAGE_TOOLS);
+  }
+  if (isGiftMessageIntent(rawInput) && !isDefineRelationshipIntent(rawInput)) {
+    return inSet(["awkward-text-fixer", "delicate-truth", "guilt-free-no"]);
+  }
+  if (isDefineRelationshipIntent(rawInput)) {
+    return inSet(["relationship-define-the-talk", "delicate-truth", "awkward-text-fixer"]);
+  }
+  return false;
+}
+
 /** "What are we?" / define-the-relationship conversation — not general relationship texting. */
 export function isDefineRelationshipIntent(text: string): boolean {
   const t = text.toLowerCase();
@@ -41,6 +96,10 @@ export function rankToolsForUserIntent(lastUser: string): ToolName[] {
 
   if (isGiftMessageIntent(lastUser)) {
     return pick(["awkward-text-fixer", "delicate-truth", "guilt-free-no"]);
+  }
+
+  if (isRomanticAskOutIntent(lastUser) && !isDatingProfileIntent(lastUser)) {
+    return pick([...ROMANTIC_MESSAGE_TOOLS]);
   }
 
   if (/\b(apolog|sorry|repair|make up)\b/.test(t) || /\b(özür|pardon|telafi|barış)\b/.test(t)) {
@@ -80,6 +139,11 @@ export function alignSuggestedTools(lastUser: string, suggested: ToolName[]): To
   if (isGiftMessageIntent(lastUser) && !isDefineRelationshipIntent(lastUser)) {
     blocked.add("relationship-define-the-talk");
   }
+  if (isRomanticAskOutIntent(lastUser) && !isDatingProfileIntent(lastUser)) {
+    blocked.add("dating-roast");
+    blocked.add("corporate-whisperer");
+    blocked.add("relationship-define-the-talk");
+  }
   if (isDefineRelationshipIntent(lastUser) && !isGiftMessageIntent(lastUser)) {
     // keep DTR tool; no block
   }
@@ -105,6 +169,7 @@ export function looksLikeToolableMessageRequest(lastUser: string): boolean {
     /\b(nachricht|text|schreib|mail)\b/.test(t) ||
     /消息|短信|写|邮件/.test(lastUser) ||
     isGiftMessageIntent(lastUser) ||
-    isDefineRelationshipIntent(lastUser)
+    isDefineRelationshipIntent(lastUser) ||
+    isRomanticAskOutIntent(lastUser)
   );
 }

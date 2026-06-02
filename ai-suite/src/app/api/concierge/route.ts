@@ -334,6 +334,8 @@ export async function POST(req: Request) {
     "If asked anything else, one calm sentence redirecting them to pick a writing tool — no lecturing.\n" +
     "Tool-matching rules:\n" +
     "- Gift / asking what someone wants for a present / awkward message to partner → awkward-text-fixer (NOT relationship-define-the-talk).\n" +
+    "- Asking someone out, crush, confessing feelings, çıkma teklifi / hoşlanıyorum → awkward-text-fixer or delicate-truth (NOT dating-roast unless they pasted a Tinder/Bumble bio).\n" +
+    "- dating-roast ONLY when the user wants help with a dating profile bio text.\n" +
     "- 'What are we?' / define-the-relationship (DTR) talks → relationship-define-the-talk.\n" +
     "- Only put a tool id in suggested_tools if the user's intent clearly fits that tool's description.\n" +
     "When you recommend a tool, include it as a clickable markdown link in your reply using this format:\n" +

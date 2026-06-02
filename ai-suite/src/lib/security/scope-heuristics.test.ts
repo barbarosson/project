@@ -20,4 +20,11 @@ describe("scopeByHeuristicsOnly", () => {
     expect(r.in_scope).toBe(false);
     expect(r.suggested_tool).toBeTruthy();
   });
+
+  it("allows delicate-truth for Turkish ask-out intent", () => {
+    const text =
+      "beğendiğim bir insan var ona çıkma teklif etmek istiyorum bana yardımcı olur musun";
+    const r = scopeByHeuristicsOnly("delicate-truth", text);
+    expect(r.in_scope).toBe(true);
+  });
 });

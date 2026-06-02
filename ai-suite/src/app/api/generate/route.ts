@@ -50,9 +50,12 @@ import { generationDebugHeaders } from "@/lib/security/api-debug-headers";
 import { scopeByHeuristicsOnly } from "@/lib/security/scope-heuristics";
 import { sanitizeStoredRequestInput } from "@/lib/security/stored-request-sanitize";
 import {
+  isDatingProfileIntent,
   isDefineRelationshipIntent,
   isGiftMessageIntent,
+  isRomanticAskOutIntent,
   rankToolsForUserIntent,
+  toolsAlignWithIntent,
 } from "@/lib/intent-tool-routing";
 
 type RequestBody = ToolPayload & { model?: string; extra?: string; locale?: string };
@@ -224,6 +227,32 @@ async function checkScope(payload: RequestBody): Promise<ScopeResult> {
     return { in_scope: true };
   }
 
+  if (isRomanticAskOutIntent(rawInput) && !isDatingProfileIntent(rawInput)) {
+    if (tool === "dating-roast") {
+      return { in_scope: false, suggested_tool: "awkward-text-fixer" };
+    }
+    if (
+      tool === "awkward-text-fixer" ||
+      tool === "delicate-truth" ||
+      tool === "relationship-repair-text"
+    ) {
+      return { in_scope: true };
+    }
+    if (tool === "corporate-whisperer") {
+      return { in_scope: false, suggested_tool: "delicate-truth" };
+    }
+  }
+
+  if (tool === "dating-roast" && !isDatingProfileIntent(rawInput)) {
+    const fallback = isRomanticAskOutIntent(rawInput)
+      ? "delicate-truth"
+      : rankToolsForUserIntent(rawInput)[0];
+    return {
+      in_scope: false,
+      suggested_tool: fallback ?? "unknown",
+    };
+  }
+
   const allowed = [...TOOLS.map((t) => t.tool), "unknown"].join(", ");
 
   if (!hasProviderKey("openai")) {
@@ -238,7 +267,9 @@ async function checkScope(payload: RequestBody): Promise<ScopeResult> {
     "Be permissive: if the selected tool can reasonably help with the user's intent, mark in_scope=true even if they didn't explicitly ask for the final artifact.\n" +
     'Example: graceful-quitter is IN SCOPE for "I want to quit" or "I\'m resigning" even if "write a resignation letter" is not stated.\n' +
     'Example: awkward-text-fixer is IN SCOPE for gift messages like "I want to buy you a gift but don\'t know what you want — tell me".\n' +
-    "relationship-define-the-talk is ONLY for starting a define-the-relationship (what are we?) talk — NOT for gift shopping messages.\n" +
+    'Example: delicate-truth and awkward-text-fixer are IN SCOPE for asking someone out, confessing feelings, or "çıkma teklifi" — even if the user did not paste a draft message yet.\n' +
+    "relationship-define-the-talk is ONLY for starting a define-the-relationship (what are we?) talk — NOT for gift shopping or asking someone on a date.\n" +
+    "dating-roast is ONLY for improving a dating-app bio/profile text — NOT for asking someone out or general crush messages.\n" +
     "For corporate-whisperer specifically, rude/angry/unprofessional drafts are IN SCOPE.\n" +
     "Do not include any extra keys, markdown, or text.";
 
@@ -620,12 +651,11 @@ export async function POST(req: Request) {
       const giftMismatch =
         body.tool === "relationship-define-the-talk" && isGiftMessageIntent(rawInputFor(body));
 
-      // If the classifier says "out of scope" but its own suggested tool equals the tool
-      // the user selected, treat it as classifier uncertainty and do not block generation.
-      // This prevents contradictory UX like: "Try X" while the user is already trying X.
-      if (suggested === body.tool) {
+      // Classifier sometimes contradicts itself (e.g. suggests dating-roast while user picked delicate-truth
+      // for the same romantic-message intent). Allow when both tools fit the same intent family.
+      if (toolsAlignWithIntent(body.tool, suggested, rawInputFor(body))) {
         console.warn(
-          `[scope] classifier mismatch rejected but suggested same tool; allowing generation. tool=${body.tool}`
+          `[scope] classifier mismatch but tools align with intent; allowing generation. tool=${body.tool} suggested=${suggested}`
         );
       } else {
       return NextResponse.json(
