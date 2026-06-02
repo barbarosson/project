@@ -21,6 +21,7 @@ import { SupabaseBrowserConfigProvider } from "@/lib/supabase/browser-config-con
 import { PricingModalProvider } from "@/components/pricing/pricing-modal";
 import { AuthSessionHydrator } from "@/components/auth-session-hydrator";
 import { DeployEnvBanner } from "@/components/deploy-env-banner";
+import { PwaSerwistProvider } from "@/components/pwa/serwist-provider";
 import { pwaViewport } from "@/lib/pwa/metadata";
 
 const inter = Inter({
@@ -106,21 +107,23 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
             />
           </>
         ) : null}
-        <SupabaseBrowserConfigProvider url={supabaseUrl} anonKey={supabaseAnonKey}>
-          <I18nProvider initialLocale={initialLocale}>
-            <ModelProvider initialDefaultAiModel={initialDefaultAiModel}>
-              <PricingModalProvider>
-                <RouteTransition />
-                <GlobalBackground />
-                <SocialProof />
-                <ModelAnnouncement />
-                <DeployEnvBanner />
-                <AuthSessionHydrator />
-                {children}
-              </PricingModalProvider>
-            </ModelProvider>
-          </I18nProvider>
-        </SupabaseBrowserConfigProvider>
+        <PwaSerwistProvider>
+          <SupabaseBrowserConfigProvider url={supabaseUrl} anonKey={supabaseAnonKey}>
+            <I18nProvider initialLocale={initialLocale}>
+              <ModelProvider initialDefaultAiModel={initialDefaultAiModel}>
+                <PricingModalProvider>
+                  <RouteTransition />
+                  <GlobalBackground />
+                  <SocialProof />
+                  <ModelAnnouncement />
+                  <DeployEnvBanner />
+                  <AuthSessionHydrator />
+                  {children}
+                </PricingModalProvider>
+              </ModelProvider>
+            </I18nProvider>
+          </SupabaseBrowserConfigProvider>
+        </PwaSerwistProvider>
         <Toaster theme="dark" richColors closeButton />
       </body>
     </html>

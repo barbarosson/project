@@ -7,15 +7,25 @@ export function isStandaloneDisplayMode(): boolean {
   return nav.standalone === true;
 }
 
-/** iOS Safari (install via Share → Add to Home Screen). */
-export function isIosInstallBrowser(): boolean {
+/** iOS / iPadOS (all browsers use WebKit — install via Share → Add to Home Screen). */
+export function isIosDevice(): boolean {
   if (typeof window === "undefined") return false;
   const ua = window.navigator.userAgent;
-  const isIos =
+  return (
     /iPad|iPhone|iPod/.test(ua) ||
-    (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1);
-  if (!isIos) return false;
-  return /Safari/i.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS|Chrome/i.test(ua);
+    (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1)
+  );
+}
+
+/** @deprecated Use {@link isIosDevice}. */
+export function isIosInstallBrowser(): boolean {
+  return isIosDevice();
+}
+
+/** Android phone/tablet (Chrome install prompt or menu fallback). */
+export function isAndroidDevice(): boolean {
+  if (typeof window === "undefined") return false;
+  return /Android/i.test(window.navigator.userAgent);
 }
 
 export type BeforeInstallPromptEvent = Event & {

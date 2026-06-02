@@ -6,8 +6,9 @@ import { toast } from "sonner";
 
 import { useI18n } from "@/i18n/i18n-provider";
 import {
+  isAndroidDevice,
   isBeforeInstallPromptEvent,
-  isIosInstallBrowser,
+  isIosDevice,
   isStandaloneDisplayMode,
   type BeforeInstallPromptEvent,
 } from "@/lib/pwa/client";
@@ -61,8 +62,8 @@ export function InstallAppButton({ variant = "hero", className }: InstallAppButt
       return;
     }
 
-    if (isIosInstallBrowser()) {
-      toast.message(t("pwa.toastIos"), { duration: 8000 });
+    if (isIosDevice()) {
+      toast.message(t("pwa.toastIos"), { duration: 10000 });
       return;
     }
 
@@ -74,10 +75,18 @@ export function InstallAppButton({ variant = "hero", className }: InstallAppButt
           setVisible(false);
         }
       } catch {
-        toast.message(t("pwa.toastDesktop"), { duration: 9000 });
+        toast.message(
+          isAndroidDevice() ? t("pwa.toastAndroid") : t("pwa.toastDesktop"),
+          { duration: 10000 }
+        );
       } finally {
         setDeferredPrompt(null);
       }
+      return;
+    }
+
+    if (isAndroidDevice()) {
+      toast.message(t("pwa.toastAndroid"), { duration: 10000 });
       return;
     }
 

@@ -264,7 +264,9 @@ export const DICTS: Record<Locale, Dict> = {
     "pwa.install": "Install App",
     "pwa.installShort": "Install",
     "pwa.toastIos":
-      "To install on iPhone: tap Share, then \"Add to Home Screen\".",
+      "To install on iPhone or iPad: tap Share, then \"Add to Home Screen\".",
+    "pwa.toastAndroid":
+      "To install on Android: open the browser menu (⋮) → Install app / Add to Home screen.",
     "pwa.toastInstalled": "isendai is already on your home screen.",
     "pwa.toastUnavailable": "Install isn’t available in this browser right now.",
     "pwa.toastDesktop":
@@ -985,7 +987,9 @@ export const DICTS: Record<Locale, Dict> = {
     "pwa.install": "Instalar app",
     "pwa.installShort": "Instalar",
     "pwa.toastIos":
-      "En iPhone: toca Compartir y luego «Añadir a la pantalla de inicio».",
+      "En iPhone o iPad: toca Compartir y luego «Añadir a la pantalla de inicio».",
+    "pwa.toastAndroid":
+      "En Android: menú del navegador (⋮) → Instalar app / Añadir a la pantalla de inicio.",
     "pwa.toastInstalled": "isendai ya está en tu pantalla de inicio.",
     "pwa.toastUnavailable": "La instalación no está disponible en este navegador.",
     "pwa.toastDesktop":
@@ -1686,7 +1690,9 @@ export const DICTS: Record<Locale, Dict> = {
     "pwa.install": "Installer l’app",
     "pwa.installShort": "Installer",
     "pwa.toastIos":
-      "Sur iPhone : touchez Partager, puis « Sur l’écran d’accueil ».",
+      "Sur iPhone ou iPad : touchez Partager, puis « Sur l’écran d’accueil ».",
+    "pwa.toastAndroid":
+      "Sur Android : menu du navigateur (⋮) → Installer l’app / Ajouter à l’écran d’accueil.",
     "pwa.toastInstalled": "isendai est déjà sur votre écran d’accueil.",
     "pwa.toastUnavailable": "L’installation n’est pas disponible dans ce navigateur.",
     "pwa.toastDesktop":
@@ -2388,7 +2394,9 @@ export const DICTS: Record<Locale, Dict> = {
     "pwa.install": "App installieren",
     "pwa.installShort": "Installieren",
     "pwa.toastIos":
-      "Auf dem iPhone: Teilen tippen, dann „Zum Home-Bildschirm“.",
+      "Auf iPhone oder iPad: Teilen tippen, dann „Zum Home-Bildschirm“.",
+    "pwa.toastAndroid":
+      "Auf Android: Browser-Menü (⋮) → App installieren / Zum Startbildschirm hinzufügen.",
     "pwa.toastInstalled": "isendai ist bereits auf dem Home-Bildschirm.",
     "pwa.toastUnavailable": "Installation in diesem Browser gerade nicht verfügbar.",
     "pwa.toastDesktop":
@@ -3068,7 +3076,8 @@ export const DICTS: Record<Locale, Dict> = {
 
     "pwa.install": "安装应用",
     "pwa.installShort": "安装",
-    "pwa.toastIos": "在 iPhone 上：点分享，然后选择「添加到主屏幕」。",
+    "pwa.toastIos": "在 iPhone 或 iPad 上：点分享，然后选择「添加到主屏幕」。",
+    "pwa.toastAndroid": "在 Android 上：浏览器菜单 (⋮) → 安装应用 / 添加到主屏幕。",
     "pwa.toastInstalled": "isendai 已在主屏幕。",
     "pwa.toastUnavailable": "当前浏览器不支持安装。",
     "pwa.toastDesktop": "安装：Chrome/Edge — 菜单 (⋮) → 安装 isendai。已安装？从主屏幕打开。",
@@ -3732,7 +3741,9 @@ export const DICTS: Record<Locale, Dict> = {
     "pwa.install": "Uygulamayı Yükle",
     "pwa.installShort": "Yükle",
     "pwa.toastIos":
-      "iPhone’da: Paylaş’a dokunun, ardından «Ana Ekrana Ekle».",
+      "iPhone veya iPad’de: Paylaş’a dokunun, ardından «Ana Ekrana Ekle».",
+    "pwa.toastAndroid":
+      "Android’de: tarayıcı menüsü (⋮) → Uygulamayı yükle / Ana ekrana ekle.",
     "pwa.toastInstalled": "isendai zaten ana ekranınızda.",
     "pwa.toastUnavailable": "Bu tarayıcıda yükleme şu an kullanılamıyor.",
     "pwa.toastDesktop":
