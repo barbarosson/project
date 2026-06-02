@@ -13,7 +13,7 @@
     "verify:launch-env:production": "node scripts/verify-launch-env.mjs production",
     "verify:launch-env:staging": "node scripts/verify-launch-env.mjs staging",
     "smoke:routes": "node scripts/smoke-routes.mjs",
-    "lemon:images": "node scripts/generate-lemon-product-images.mjs"
+    "admin:add-credits": "node scripts/admin-add-credits.mjs",
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.76",

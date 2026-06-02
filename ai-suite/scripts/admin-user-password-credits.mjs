@@ -113,6 +113,7 @@ async function main() {
     }
 
     const maxVersions = args["max-versions"] ? Number.parseInt(String(args["max-versions"]).trim(), 10) : 5;
+    const tenths = Math.round(credits * 10);
     const { error: e1 } = await supabase.rpc("ensure_entitlement", {
       p_owner_type: "user",
       p_owner_id: userId,
@@ -124,10 +125,11 @@ async function main() {
     const { data: newBal, error: e2 } = await supabase.rpc("add_credits", {
       p_owner_type: "user",
       p_owner_id: userId,
-      p_amount: credits,
+      p_amount: tenths,
     });
     if (e2) throw e2;
-    console.log("Kontör eklendi. Yeni bakiye:", newBal);
+    const display = newBal % 10 === 0 ? String(newBal / 10) : (newBal / 10).toFixed(1);
+    console.log(`Kontör eklendi: +${credits} (${tenths} tenths). Yeni bakiye: ${display} kontör (${newBal} tenths)`);
   }
 
   if ((password === undefined || password === "") && !willAddCredits) {
