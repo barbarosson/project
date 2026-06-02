@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Download, Smartphone } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { useI18n } from "@/i18n/i18n-provider";
@@ -12,6 +13,7 @@ import {
   isStandaloneDisplayMode,
   type BeforeInstallPromptEvent,
 } from "@/lib/pwa/client";
+import { showInstallGuideToast } from "@/lib/pwa/show-install-toast";
 import { cn } from "@/lib/utils";
 
 type InstallAppButtonProps = {
@@ -22,6 +24,7 @@ type InstallAppButtonProps = {
 
 export function InstallAppButton({ variant = "hero", className }: InstallAppButtonProps) {
   const { t } = useI18n();
+  const router = useRouter();
   const [deferredPrompt, setDeferredPrompt] = React.useState<BeforeInstallPromptEvent | null>(
     null
   );
@@ -63,7 +66,7 @@ export function InstallAppButton({ variant = "hero", className }: InstallAppButt
     }
 
     if (isIosDevice()) {
-      toast.message(t("pwa.toastIos"), { duration: 10000 });
+      showInstallGuideToast(t, router, "pwa.toastIos", "ios");
       return;
     }
 
@@ -73,11 +76,20 @@ export function InstallAppButton({ variant = "hero", className }: InstallAppButt
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === "accepted") {
           setVisible(false);
+        } else if (outcome === "dismissed") {
+          showInstallGuideToast(
+            t,
+            router,
+            isAndroidDevice() ? "pwa.toastAndroid" : "pwa.toastDesktop",
+            isAndroidDevice() ? "android" : "desktop"
+          );
         }
       } catch {
-        toast.message(
-          isAndroidDevice() ? t("pwa.toastAndroid") : t("pwa.toastDesktop"),
-          { duration: 10000 }
+        showInstallGuideToast(
+          t,
+          router,
+          isAndroidDevice() ? "pwa.toastAndroid" : "pwa.toastDesktop",
+          isAndroidDevice() ? "android" : "desktop"
         );
       } finally {
         setDeferredPrompt(null);
@@ -86,11 +98,11 @@ export function InstallAppButton({ variant = "hero", className }: InstallAppButt
     }
 
     if (isAndroidDevice()) {
-      toast.message(t("pwa.toastAndroid"), { duration: 10000 });
+      showInstallGuideToast(t, router, "pwa.toastAndroid", "android");
       return;
     }
 
-    toast.message(t("pwa.toastDesktop"), { duration: 9000 });
+    showInstallGuideToast(t, router, "pwa.toastDesktop", "desktop");
   }
 
   const isHeader = variant === "header";

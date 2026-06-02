@@ -271,6 +271,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pwa.toastUnavailable": "Install isn’t available in this browser right now.",
     "pwa.toastDesktop":
       "To install: Chrome/Edge — menu (⋮) → Install isendai / Save and share. Already installed? Open from your home screen or app list.",
+    "pwa.toastGuideLink": "Step-by-step guide",
 
     "referrals.navLabel": "Get Free Credits",
     "referrals.navLabelShort": "Free Credits",
@@ -994,6 +995,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pwa.toastUnavailable": "La instalación no está disponible en este navegador.",
     "pwa.toastDesktop":
       "Para instalar: Chrome/Edge — menú (⋮) → Instalar isendai. ¿Ya instalada? Ábrela desde la pantalla de inicio.",
+    "pwa.toastGuideLink": "Guía paso a paso",
 
     "referrals.navLabel": "Créditos gratis",
     "referrals.navLabelShort": "Gratis",
@@ -1697,6 +1699,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pwa.toastUnavailable": "L’installation n’est pas disponible dans ce navigateur.",
     "pwa.toastDesktop":
       "Pour installer : Chrome/Edge — menu (⋮) → Installer isendai. Déjà installé ? Ouvrez depuis l’écran d’accueil.",
+    "pwa.toastGuideLink": "Guide pas à pas",
 
     "referrals.navLabel": "Crédits gratuits",
     "referrals.navLabelShort": "Gratuit",
@@ -2401,6 +2404,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pwa.toastUnavailable": "Installation in diesem Browser gerade nicht verfügbar.",
     "pwa.toastDesktop":
       "Installation: Chrome/Edge — Menü (⋮) → isendai installieren. Bereits installiert? Über Startbildschirm öffnen.",
+    "pwa.toastGuideLink": "Schritt-für-Schritt-Anleitung",
 
     "referrals.navLabel": "Gratis-Credits",
     "referrals.navLabelShort": "Gratis",
@@ -3081,6 +3085,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pwa.toastInstalled": "isendai 已在主屏幕。",
     "pwa.toastUnavailable": "当前浏览器不支持安装。",
     "pwa.toastDesktop": "安装：Chrome/Edge — 菜单 (⋮) → 安装 isendai。已安装？从主屏幕打开。",
+    "pwa.toastGuideLink": "分步指南",
 
     "referrals.navLabel": "免费领额度",
     "referrals.navLabelShort": "免费",
@@ -3748,6 +3753,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pwa.toastUnavailable": "Bu tarayıcıda yükleme şu an kullanılamıyor.",
     "pwa.toastDesktop":
       "Yüklemek için: Chrome/Edge — menü (⋮) → isendai'yi yükle / Uygulamayı yükle. Zaten yüklüyse ana ekrandan açın.",
+    "pwa.toastGuideLink": "Adım adım rehber",
 
     "referrals.navLabel": "Ücretsiz Kontör",
     "referrals.navLabelShort": "Ücretsiz",

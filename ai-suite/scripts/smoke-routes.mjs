@@ -12,6 +12,7 @@ const ROUTES = [
   "/",
   "/pricing",
   "/faq",
+  "/install",
   "/contact",
   "/login",
   "/privacy",
