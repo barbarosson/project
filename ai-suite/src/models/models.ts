@@ -68,6 +68,7 @@ export function salesPriceForModel(model: ModelId): SalesPrice {
     model === "o1" ||
     model === "claude-sonnet-4-6" ||
     model === "claude-opus-4-7" ||
+    model === "claude-opus-4-8" ||
     model === "deepseek-v4-pro" ||
     model === "gemini-2.5-pro"
   ) {
@@ -161,6 +162,12 @@ export const MODELS = [
   {
     id: "claude-opus-4-7",
     label: "Anthropic · Claude Opus 4.7",
+    pricing: { inputPer1MTokensUSD: 0.0, outputPer1MTokensUSD: 0.0 },
+    provider: "anthropic",
+  },
+  {
+    id: "claude-opus-4-8",
+    label: "Anthropic · Claude Opus 4.8",
     pricing: { inputPer1MTokensUSD: 0.0, outputPer1MTokensUSD: 0.0 },
     provider: "anthropic",
   },
@@ -262,7 +269,7 @@ export const USER_MODEL_TIERS: ReadonlyArray<{
 }> = [
   { id: "fast-ai", concreteId: "gpt-4o-mini" },
   { id: "pro-ai", concreteId: "claude-haiku-4-5" },
-  { id: "genius-ai", concreteId: "gpt-4o" },
+  { id: "genius-ai", concreteId: "claude-opus-4-8" },
 ];
 
 export type ModelId = UserFacingModelId | CatalogModelId;

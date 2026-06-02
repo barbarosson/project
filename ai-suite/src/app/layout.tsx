@@ -12,6 +12,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { UserFacingModelId } from "@/models/models";
 import { GlobalBackground } from "@/components/global-background";
 import { SocialProof } from "@/components/SocialProof";
+import { ModelAnnouncement } from "@/components/model-announcement";
 import type { Locale } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { rootMetadataForLocale } from "@/lib/site-metadata";
@@ -106,6 +107,7 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
                 <RouteTransition />
                 <GlobalBackground />
                 <SocialProof />
+                <ModelAnnouncement />
                 <AppLocaleBar />
                 <DeployEnvBanner />
                 <AuthSessionHydrator />
