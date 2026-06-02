@@ -619,6 +619,15 @@ export async function POST(req: Request) {
             : undefined;
       const giftMismatch =
         body.tool === "relationship-define-the-talk" && isGiftMessageIntent(rawInputFor(body));
+
+      // If the classifier says "out of scope" but its own suggested tool equals the tool
+      // the user selected, treat it as classifier uncertainty and do not block generation.
+      // This prevents contradictory UX like: "Try X" while the user is already trying X.
+      if (suggested === body.tool) {
+        console.warn(
+          `[scope] classifier mismatch rejected but suggested same tool; allowing generation. tool=${body.tool}`
+        );
+      } else {
       return NextResponse.json(
         {
           error: generateOutOfScopeError(locale, body.tool, {
@@ -630,6 +639,7 @@ export async function POST(req: Request) {
         },
         { status: 400, headers: debugHeaders }
       );
+      }
     }
 
     const inputJson = sanitizeStoredRequestInput(body);
