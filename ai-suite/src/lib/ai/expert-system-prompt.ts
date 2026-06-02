@@ -5,6 +5,7 @@ import {
 } from "@/components/ai-suite/tools";
 import type { Locale } from "@/i18n/dictionaries";
 import { outputLanguageDirective } from "@/lib/ai/output-locale";
+import { usesCompressionStyle } from "@/lib/ai/tool-generation-params";
 import { humanVoiceDirective, offTopicRedirectLine } from "@/lib/ai/writing-style";
 
 export type ExpertPromptOptions = {
@@ -25,8 +26,23 @@ export function buildExpertSystemPrompt(
   options: ExpertPromptOptions = {}
 ): string {
   const def = getToolDefinition(tool);
-  const domain = CATEGORY_META[def.category]?.description ?? "";
   const locale = options.locale ?? "en";
+
+  if (usesCompressionStyle(tool)) {
+    const languageBlock = outputLanguageDirective(locale, options.userText);
+    return [
+      languageBlock,
+      "",
+      "COMPRESSION MODE (overrides default writing rules):",
+      "- Output ONLY the ultra-short translation requested below — never a normal summary, email rewrite, or explanation.",
+      "- Ignore professional tone, flowing paragraphs, politeness, and length guidelines if they conflict with the task.",
+      "- Match the user's input language in the compressed line(s).",
+      "",
+      baseSystem,
+    ].join("\n");
+  }
+
+  const domain = CATEGORY_META[def.category]?.description ?? "";
   const languageBlock = outputLanguageDirective(locale, options.userText);
   const voiceBlock = humanVoiceDirective(locale);
 

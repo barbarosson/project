@@ -24,6 +24,7 @@ export function messageLooksLikeGeminiApiQuotaExhausted(message: string): boolea
 
 type GeminiFlashFallbackArgs = {
   temperature?: number;
+  maxOutputTokens?: number;
   system?: string;
   prompt: string;
 };
@@ -46,6 +47,7 @@ export async function generateTextGoogleWithFlashFallback(
     const result = await generateText({
       model: google(primaryId),
       ...sampling,
+      ...(args.maxOutputTokens ? { maxOutputTokens: args.maxOutputTokens } : {}),
       system: args.system,
       prompt: args.prompt,
     });
@@ -63,6 +65,7 @@ export async function generateTextGoogleWithFlashFallback(
       const result = await generateText({
         model: google(GEMINI_FLASH_FALLBACK_ID),
         ...flashSampling,
+        ...(args.maxOutputTokens ? { maxOutputTokens: args.maxOutputTokens } : {}),
         system: args.system,
         prompt: args.prompt,
       });

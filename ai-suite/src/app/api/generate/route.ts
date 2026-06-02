@@ -38,6 +38,7 @@ import {
   withOptionalTemperature,
 } from "@/lib/ai/generation-sampling";
 import { buildExpertSystemPrompt } from "@/lib/ai/expert-system-prompt";
+import { toolGenerationParams } from "@/lib/ai/tool-generation-params";
 import { formatCreditsFromTenths } from "@/lib/credits-units";
 import {
   generateOutOfScopeError,
@@ -209,6 +210,10 @@ async function checkScope(payload: RequestBody): Promise<ScopeResult> {
   }
 
   if (tool === "awkward-text-fixer" && isGiftMessageIntent(rawInput)) {
+    return { in_scope: true };
+  }
+
+  if (tool === "corporate-to-caveman-translator" && rawInput.trim().length >= 10) {
     return { in_scope: true };
   }
 
@@ -577,6 +582,7 @@ export async function POST(req: Request) {
   }
 
   const { system: baseSystem, user } = promptFor(body);
+  const genParams = toolGenerationParams(body.tool);
   const system = buildExpertSystemPrompt(body.tool, baseSystem, {
     locale,
     userText: user,
@@ -731,7 +737,8 @@ export async function POST(req: Request) {
     let out: Awaited<ReturnType<typeof generateText>>;
     if (provider === "google") {
       const { result, usedFlashFallback } = await generateTextGoogleWithFlashFallback(model, {
-        temperature: 0.6,
+        temperature: genParams.temperature ?? 0.6,
+        maxOutputTokens: genParams.maxOutputTokens,
         system,
         prompt: user,
       });
@@ -741,7 +748,8 @@ export async function POST(req: Request) {
       try {
         out = await generateText({
           model: client(model),
-          ...withOptionalTemperature(model, 0.6),
+          ...withOptionalTemperature(model, genParams.temperature ?? 0.6),
+          ...(genParams.maxOutputTokens ? { maxOutputTokens: genParams.maxOutputTokens } : {}),
           system,
           prompt: user,
         });

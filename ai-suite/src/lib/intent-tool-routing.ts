@@ -107,6 +107,21 @@ export function rankToolsForUserIntent(lastUser: string): ToolName[] {
   }
 
   if (/\b(boss|manager|client|email|work)\b/.test(t) || /\b(iş|mail|e-?posta|patron|müşteri)\b/.test(t)) {
+    const corporateJargon =
+      /\b(circle back|synerg|leverage|bandwidth|offline|stakeholder|as per|touch base|moving forward|best regards)\b/.test(
+        t
+      ) ||
+      /\b(sinerji|değer yarat|paydaş|saygılarımla|görüşmek üzere|yeniden yapılan|optimizasyon|ihbar)\b/.test(
+        t
+      ) ||
+      lastUser.trim().length > 180;
+    if (corporateJargon) {
+      return pick([
+        "corporate-to-caveman-translator",
+        "corporate-whisperer",
+        "deadline-diplomat",
+      ]);
+    }
     return pick(["corporate-whisperer", "deadline-diplomat", "micromanager-tamer"]);
   }
 
