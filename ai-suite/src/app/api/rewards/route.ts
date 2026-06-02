@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import {
   buildInviteUrl,
-  ensureReferralProfileForUser,
+  ensureReferralProfileWithDiagnostics,
   getReferralDashboardStats,
   getReferralRewardStatusForUser,
   logReferralSignupAttribution,
@@ -24,12 +24,28 @@ export async function GET() {
     return NextResponse.json({ error: "Sign in required.", code: "auth_required" }, { status: 401 });
   }
 
-  await ensureReferralProfileForUser(user);
+  const ensured = await ensureReferralProfileWithDiagnostics(user);
+  if (!ensured.ok) {
+    const messages: Record<typeof ensured.code, string> = {
+      no_admin:
+        "Server missing SUPABASE_SERVICE_ROLE_KEY or SUPABASE_DATABASE_URL. Add one in Netlify env vars.",
+      profile_failed:
+        "Could not create referral profile. Expose schema isendai in Supabase API settings or set SUPABASE_DATABASE_URL.",
+      invalid_user: "Invalid user session.",
+    };
+    return NextResponse.json(
+      { error: messages[ensured.code], code: ensured.code },
+      { status: 503 }
+    );
+  }
 
   const stats = await getReferralDashboardStats(user.id);
   if (!stats) {
     return NextResponse.json(
-      { error: "Referral profile unavailable.", code: "unavailable" },
+      {
+        error: "Referral profile unavailable after create.",
+        code: "stats_unavailable",
+      },
       { status: 503 }
     );
   }

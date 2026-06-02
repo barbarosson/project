@@ -6,18 +6,21 @@ import {
   REFERRAL_CODE_LENGTH,
 } from "@/lib/referrals/constants";
 import {
+  directAllocateReferralCode,
+  directGetReferralDashboardStats,
+  directGetReferralProfile,
+  directInsertReferralProfile,
+  directReferrerExists,
+  directUpsertReferralAttribution,
+  getReferralDirectSql,
+  type ReferralProfileRow,
+} from "@/lib/referrals/referral-db";
+import {
   deviceFingerprintFromRequest,
   referralIpFromRequest,
 } from "@/lib/referrals/request-ip";
 import { createSupabaseAdminClientOrNull } from "@/lib/supabase/admin";
 import { tenthsToDisplayCredits } from "@/lib/credits-units";
-
-type ReferralProfileRow = {
-  user_id: string;
-  referral_code: string;
-  referred_by_code: string | null;
-  created_at: string;
-};
 
 type ReferralGrantRow = {
   status: string;
@@ -38,7 +41,12 @@ export function isUserEmailVerified(user: User): boolean {
   return Boolean(user.email_confirmed_at);
 }
 
-async function allocateUniqueCode(
+function isSchemaExposureError(message: string): boolean {
+  const m = message.toLowerCase();
+  return m.includes("invalid schema") || m.includes("does not exist") || m.includes("schema cache");
+}
+
+async function allocateUniqueCodePostgrest(
   admin: NonNullable<ReturnType<typeof createSupabaseAdminClientOrNull>>
 ): Promise<string> {
   for (let attempt = 0; attempt < 12; attempt++) {
@@ -54,7 +62,7 @@ async function allocateUniqueCode(
   throw new Error("Could not allocate referral code");
 }
 
-export async function ensureReferralProfileForUser(
+async function ensureReferralProfilePostgrest(
   user: User,
   opts?: { referredByCode?: string | null }
 ): Promise<ReferralProfileRow | null> {
@@ -64,12 +72,16 @@ export async function ensureReferralProfileForUser(
   const userId = user.id.trim();
   if (!userId) return null;
 
-  const { data: existing } = await admin
+  const { data: existing, error: readErr } = await admin
     .schema("isendai")
     .from("referral_profiles")
     .select("user_id, referral_code, referred_by_code, created_at")
     .eq("user_id", userId)
     .maybeSingle();
+
+  if (readErr && isSchemaExposureError(readErr.message)) {
+    return null;
+  }
 
   if (existing) {
     return existing as ReferralProfileRow;
@@ -92,7 +104,7 @@ export async function ensureReferralProfileForUser(
     }
   }
 
-  const referralCode = await allocateUniqueCode(admin);
+  const referralCode = await allocateUniqueCodePostgrest(admin);
 
   const { data: inserted, error } = await admin
     .schema("isendai")
@@ -106,25 +118,80 @@ export async function ensureReferralProfileForUser(
     .single();
 
   if (error || !inserted) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn("[referrals] profile insert failed:", error?.message);
-    }
+    console.warn("[referrals] PostgREST profile insert failed:", error?.message);
     return null;
   }
 
+  return inserted as ReferralProfileRow;
+}
+
+async function ensureReferralProfileDirect(
+  user: User,
+  opts?: { referredByCode?: string | null }
+): Promise<ReferralProfileRow | null> {
+  const userId = user.id.trim();
+  if (!userId) return null;
+
+  const existing = await directGetReferralProfile(userId);
+  if (existing) return existing;
+
+  const referredBy =
+    normalizeReferralCode(opts?.referredByCode ?? undefined) ??
+    referredByFromUser(user);
+
+  let safeReferredBy: string | null = referredBy;
+  if (safeReferredBy && !(await directReferrerExists(safeReferredBy))) {
+    safeReferredBy = null;
+  }
+
+  const referralCode = await directAllocateReferralCode();
+  return directInsertReferralProfile(userId, referralCode, safeReferredBy);
+}
+
+export async function ensureReferralProfileForUser(
+  user: User,
+  opts?: { referredByCode?: string | null }
+): Promise<ReferralProfileRow | null> {
+  const userId = user.id.trim();
+  if (!userId) return null;
+
+  if (getReferralDirectSql()) {
+    try {
+      const profile = await ensureReferralProfileDirect(user, opts);
+      if (profile) {
+        await syncReferralCodeToUserMetadata(user, profile.referral_code, profile.referred_by_code);
+        return profile;
+      }
+    } catch (e) {
+      console.warn("[referrals] direct SQL profile failed:", e);
+    }
+  }
+
+  const profile = await ensureReferralProfilePostgrest(user, opts);
+  if (profile) {
+    await syncReferralCodeToUserMetadata(user, profile.referral_code, profile.referred_by_code);
+  }
+  return profile;
+}
+
+async function syncReferralCodeToUserMetadata(
+  user: User,
+  referralCode: string,
+  referredBy: string | null
+): Promise<void> {
+  const admin = createSupabaseAdminClientOrNull();
+  if (!admin) return;
   try {
-    await admin.auth.admin.updateUserById(userId, {
+    await admin.auth.admin.updateUserById(user.id, {
       user_metadata: {
         ...((user.user_metadata as Record<string, unknown>) ?? {}),
         referral_code: referralCode,
-        ...(safeReferredBy ? { referred_by: safeReferredBy } : {}),
+        ...(referredBy ? { referred_by: referredBy } : {}),
       },
     });
   } catch {
     // non-fatal
   }
-
-  return inserted as ReferralProfileRow;
 }
 
 /**
@@ -137,11 +204,6 @@ export async function logReferralSignupAttribution(
   req: Request,
   opts?: { referredByCode?: string | null }
 ): Promise<{ logged: boolean; reason?: string }> {
-  const admin = createSupabaseAdminClientOrNull();
-  if (!admin) {
-    return { logged: false, reason: "admin_unavailable" };
-  }
-
   const profile = await ensureReferralProfileForUser(user, opts);
   if (!profile?.referred_by_code) {
     return { logged: false, reason: "no_referrer" };
@@ -152,20 +214,39 @@ export async function logReferralSignupAttribution(
     return { logged: false, reason: "ip_unavailable" };
   }
 
+  const payload = {
+    userId: user.id,
+    referredByCode: profile.referred_by_code,
+    ipAddress: ip,
+    deviceFingerprint: deviceFingerprintFromRequest(req),
+  };
+
+  if (getReferralDirectSql()) {
+    try {
+      const ok = await directUpsertReferralAttribution(payload);
+      if (ok) return { logged: true };
+    } catch (e) {
+      console.warn("[referrals] direct attribution failed:", e);
+    }
+  }
+
+  const admin = createSupabaseAdminClientOrNull();
+  if (!admin) {
+    return { logged: false, reason: "admin_unavailable" };
+  }
+
   const { error } = await admin.schema("isendai").from("referral_signup_attribution").upsert(
     {
       user_id: user.id,
       referred_by_code: profile.referred_by_code,
       ip_address: ip,
-      device_fingerprint: deviceFingerprintFromRequest(req),
+      device_fingerprint: payload.deviceFingerprint,
     },
     { onConflict: "user_id" }
   );
 
   if (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.warn("[referrals] attribution upsert failed:", error.message);
-    }
+    console.warn("[referrals] attribution upsert failed:", error.message);
     return { logged: false, reason: "upsert_failed" };
   }
 
@@ -183,13 +264,17 @@ export type ReferralRewardStatus =
 
 export async function getReferralRewardStatusForUser(user: User): Promise<ReferralRewardStatus> {
   const admin = createSupabaseAdminClientOrNull();
-  if (!admin) {
-    return { status: "error", message: "Billing not configured" };
+  if (!admin && !getReferralDirectSql()) {
+    return { status: "error", message: "Referral backend not configured" };
   }
 
   const profile = await ensureReferralProfileForUser(user);
   if (!profile?.referred_by_code) {
     return { status: "not_eligible", reason: "no_referrer" };
+  }
+
+  if (!admin) {
+    return { status: "pending_processing" };
   }
 
   const { data: grant } = await admin
@@ -230,20 +315,55 @@ export async function getReferralRewardStatusForUser(user: User): Promise<Referr
   return { status: "pending_processing" };
 }
 
+export type EnsureReferralProfileResult =
+  | { ok: true; profile: ReferralProfileRow }
+  | { ok: false; code: "no_admin" | "profile_failed" | "invalid_user" };
+
+export async function ensureReferralProfileWithDiagnostics(
+  user: User,
+  opts?: { referredByCode?: string | null }
+): Promise<EnsureReferralProfileResult> {
+  if (!user.id.trim()) {
+    return { ok: false, code: "invalid_user" };
+  }
+  if (!createSupabaseAdminClientOrNull() && !getReferralDirectSql()) {
+    return { ok: false, code: "no_admin" };
+  }
+  const profile = await ensureReferralProfileForUser(user, opts);
+  if (!profile) {
+    return { ok: false, code: "profile_failed" };
+  }
+  return { ok: true, profile };
+}
+
 export async function getReferralDashboardStats(userId: string): Promise<{
   referralCode: string;
   friendsInvited: number;
   creditsEarnedTenths: number;
 } | null> {
+  if (getReferralDirectSql()) {
+    try {
+      const stats = await directGetReferralDashboardStats(userId);
+      if (stats) return stats;
+    } catch (e) {
+      console.warn("[referrals] direct stats failed:", e);
+    }
+  }
+
   const admin = createSupabaseAdminClientOrNull();
   if (!admin) return null;
 
-  const { data: profile } = await admin
+  const { data: profile, error: profileErr } = await admin
     .schema("isendai")
     .from("referral_profiles")
     .select("referral_code")
     .eq("user_id", userId)
     .maybeSingle();
+
+  if (profileErr) {
+    console.warn("[referrals] stats profile read failed:", profileErr.message);
+    return null;
+  }
 
   if (!profile?.referral_code) return null;
 

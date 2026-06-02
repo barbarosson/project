@@ -48,8 +48,15 @@ export function RewardsDashboardClient() {
       try {
         await fetch("/api/rewards", { method: "POST", credentials: "same-origin" });
         const res = await fetch("/api/rewards", { cache: "no-store", credentials: "same-origin" });
-        const json = (await res.json()) as RewardsPayload & { error?: string };
-        if (!cancelled && res.ok) setData(json);
+        const json = (await res.json()) as RewardsPayload & { error?: string; code?: string };
+        if (!cancelled && res.ok) {
+          setData(json);
+        } else if (!cancelled) {
+          setData(null);
+          if (json.error) {
+            toast.error(json.error);
+          }
+        }
       } catch {
         if (!cancelled) setData(null);
       } finally {
