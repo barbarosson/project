@@ -143,7 +143,7 @@ export const DICTS: Record<Locale, Dict> = {
     "success.insufficientBody":
       "See Pricing for packs and top-ups. For local testing, follow the dev top-up notes on that page, sign in, or ask your admin to add credits.",
     "success.usingSaved": "We’re using your saved input from localStorage.",
-    "success.generating": "Generating with GPT‑4o‑mini…",
+    "success.generating": "Generating…",
     "success.copy": "Copy to Clipboard",
     "success.shareOnX": "Share on X",
     "success.shareOnXAria": "Share this result on X",
@@ -198,6 +198,16 @@ export const DICTS: Record<Locale, Dict> = {
     "home.aiStack.title": "The World's Leading AI Models in One Place 🧠",
     "home.aiStack.body":
       "Behind the scenes, the brains of tech giants like OpenAI (ChatGPT), Anthropic (Claude), Google, and DeepSeek work for you. Don't want to think about which model to pick? Leave it on Auto — we'll choose the best fit for your moment. Or take full control and pick your own intelligence from the menu! (Credit usage is calculated transparently based on the tier of the model you choose.)",
+    "home.expertBots.kicker": "Domain expert bots",
+    "home.expertBots.title": "Not one chatbot — a specialist for every topic",
+    "home.expertBots.lead":
+      "isendai is built like a fleet of expert bots, not a single generic assistant. Each tool is tuned for its niche—work email, cover letters, dating, freelance SOWs, bureaucracy, neighbors, creators, family—with dedicated prompts, scope checks, and smart routing to the best model for that category.",
+    "home.expertBots.point1":
+      "Topic-native bots: 80+ micro-tools across eight life domains, each with its own persona and output format.",
+    "home.expertBots.point2":
+      "Multi-provider engine: OpenAI, Anthropic, Gemini, Groq, and DeepSeek—auto-routed or hand-picked from one menu.",
+    "home.expertBots.point3":
+      "Production-grade stack: per-tool scope gates, transparent credit billing, version history, and replies in your language.",
 
     "concierge.title": "ISENDAI",
     "concierge.welcome":
@@ -807,7 +817,7 @@ export const DICTS: Record<Locale, Dict> = {
     "success.insufficientBody":
       "Mira Precios para paquetes y recargas. En local, sigue las notas de recarga de desarrollo en esa página, inicia sesión o pide créditos al administrador.",
     "success.usingSaved": "Usamos tu texto guardado en localStorage.",
-    "success.generating": "Generando con GPT‑4o‑mini…",
+    "success.generating": "Generando…",
     "success.copy": "Copiar",
     "success.shareOnX": "Compartir en X",
     "success.shareOnXAria": "Compartir este resultado en X",
@@ -863,6 +873,16 @@ export const DICTS: Record<Locale, Dict> = {
     "home.aiStack.title": "Los Principales Modelos de IA del Mundo en Un Solo Lugar 🧠",
     "home.aiStack.body":
       "En segundo plano trabajan para ti los cerebros de gigantes tecnológicos como OpenAI (ChatGPT), Anthropic (Claude), Google y DeepSeek. ¿No quieres pensar qué modelo elegir? Déjalo en «Automático» y elegimos el más adecuado para tu momento. ¡O toma el control y elige tu propia inteligencia en el menú! (El uso de créditos se calcula con transparencia según el nivel del modelo que elijas).",
+    "home.expertBots.kicker": "Bots expertos por tema",
+    "home.expertBots.title": "No es un solo chatbot: un especialista para cada tema",
+    "home.expertBots.lead":
+      "isendai está diseñado como una flota de bots expertos, no un asistente genérico. Cada herramienta está afinada para su nicho—email laboral, cartas, citas, SOW freelance, trámites, vecinos, creadores, familia—con prompts dedicados, control de alcance y enrutado inteligente al mejor modelo.",
+    "home.expertBots.point1":
+      "Bots por dominio: más de 80 micro-herramientas en ocho áreas de la vida, cada una con su propia personalidad y formato.",
+    "home.expertBots.point2":
+      "Motor multi-proveedor: OpenAI, Anthropic, Gemini, Groq y DeepSeek—automático o elegido a mano desde un menú.",
+    "home.expertBots.point3":
+      "Stack de producción: filtros de alcance, créditos transparentes, historial de versiones y respuestas en tu idioma.",
 
     "category.work-career.label": "Brillo Profesional",
     "category.crisis-money.label": "Dinero & Apagafuegos",
@@ -1461,7 +1481,7 @@ export const DICTS: Record<Locale, Dict> = {
     "success.insufficientBody":
       "Voir Tarifs pour les packs et recharges. En local, suis les notes de recharge dev sur cette page, connecte-toi ou demande des crédits à l’admin.",
     "success.usingSaved": "Nous utilisons votre texte sauvegardé (localStorage).",
-    "success.generating": "Génération avec GPT‑4o‑mini…",
+    "success.generating": "Génération…",
     "success.copy": "Copier",
     "success.shareOnX": "Partager sur X",
     "success.shareOnXAria": "Partager ce résultat sur X",
@@ -1517,6 +1537,16 @@ export const DICTS: Record<Locale, Dict> = {
     "home.aiStack.title": "Les Principaux Modèles d'IA au Monde, Réunis 🧠",
     "home.aiStack.body":
       "En coulisses, les cerveaux de géants comme OpenAI (ChatGPT), Anthropic (Claude), Google et DeepSeek travaillent pour vous. Vous ne voulez pas choisir un modèle ? Laissez le mode « Auto » : nous sélectionnons le plus adapté à votre situation. Ou reprenez le contrôle et choisissez votre intelligence dans le menu ! (La consommation de crédits est calculée de façon transparente selon le niveau du modèle choisi).",
+    "home.expertBots.kicker": "Bots experts par sujet",
+    "home.expertBots.title": "Pas un seul chatbot — un spécialiste pour chaque sujet",
+    "home.expertBots.lead":
+      "isendai est conçu comme une flotte de bots experts, pas un assistant générique. Chaque outil est calibré pour sa niche—email pro, lettres, dating, SOW freelance, paperasse, voisins, créateurs, famille—avec prompts dédiés, contrôle de périmètre et routage intelligent vers le meilleur modèle.",
+    "home.expertBots.point1":
+      "Bots par domaine : plus de 80 micro-outils dans huit univers de vie, chacun avec son persona et son format.",
+    "home.expertBots.point2":
+      "Moteur multi-fournisseurs : OpenAI, Anthropic, Gemini, Groq et DeepSeek—auto ou choix manuel dans un menu.",
+    "home.expertBots.point3":
+      "Stack production : garde-fous de scope, crédits transparents, historique de versions et réponses dans votre langue.",
 
     "category.work-career.label": "Boost Carrière",
     "category.crisis-money.label": "SOS Argent",
@@ -2116,7 +2146,7 @@ export const DICTS: Record<Locale, Dict> = {
     "success.insufficientBody":
       "Unter Preise findest du Pakete und Aufladungen. Lokal: Dev‑Top‑up wie auf der Preisseite beschrieben, anmelden oder Admin um Credits bitten.",
     "success.usingSaved": "Wir nutzen deinen gespeicherten Input (localStorage).",
-    "success.generating": "Generiere mit GPT‑4o‑mini…",
+    "success.generating": "Wird generiert…",
     "success.copy": "Kopieren",
     "success.shareOnX": "Auf X teilen",
     "success.shareOnXAria": "Dieses Ergebnis auf X teilen",
@@ -2172,6 +2202,16 @@ export const DICTS: Record<Locale, Dict> = {
     "home.aiStack.title": "Die Führenden KI-Modelle der Welt an Einem Ort 🧠",
     "home.aiStack.body":
       "Im Hintergrund arbeiten die Köpfe von Tech‑Riesen wie OpenAI (ChatGPT), Anthropic (Claude), Google und DeepSeek für dich. Keine Lust, ein Modell zu wählen? Lass es auf „Automatisch“ — wir picken das Passende für deinen Moment. Oder übernimm die Kontrolle und wähle deine Intelligenz im Menü! (Credit‑Verbrauch wird transparent nach der Stufe des gewählten Modells berechnet).",
+    "home.expertBots.kicker": "Fach-Bots pro Thema",
+    "home.expertBots.title": "Kein einzelner Chatbot — ein Spezialist für jedes Thema",
+    "home.expertBots.lead":
+      "isendai ist als Flotte von Experten-Bots gebaut, nicht als generischer Assistent. Jedes Tool ist auf seine Nische abgestimmt—Job-Mail, Anschreiben, Dating, Freelance-SOW, Behörden, Nachbarn, Creator, Familie—mit eigenen Prompts, Scope-Checks und intelligentem Routing zum besten Modell.",
+    "home.expertBots.point1":
+      "Themen-Bots: über 80 Micro-Tools in acht Lebensbereichen, jeweils mit eigener Persona und Ausgabeformat.",
+    "home.expertBots.point2":
+      "Multi-Provider-Engine: OpenAI, Anthropic, Gemini, Groq und DeepSeek—automatisch oder manuell aus einem Menü.",
+    "home.expertBots.point3":
+      "Production-Stack: Scope-Gates, transparente Credits, Versionshistorie und Antworten in deiner Sprache.",
 
     "category.work-career.label": "Karriere‑Boost",
     "category.crisis-money.label": "Geld‑SOS",
@@ -2757,7 +2797,7 @@ export const DICTS: Record<Locale, Dict> = {
     "success.insufficientBody":
       "查看「价格与套餐」购买或充值。本地开发请按该页的 dev 充值说明操作，登录或联系管理员添加额度。",
     "success.usingSaved": "正在使用你在 localStorage 中保存的输入。",
-    "success.generating": "使用 GPT‑4o‑mini 生成中…",
+    "success.generating": "生成中…",
     "success.copy": "复制",
     "success.shareOnX": "分享到 X",
     "success.shareOnXAria": "在 X 上分享此结果",
@@ -2807,6 +2847,16 @@ export const DICTS: Record<Locale, Dict> = {
     "home.aiStack.title": "全球领先的 AI 模型，齐聚一处 🧠",
     "home.aiStack.body":
       "幕后有 OpenAI（ChatGPT）、Anthropic（Claude）、Google、DeepSeek 等科技巨头的大脑为你工作。不想纠结选哪个模型？交给「自动」模式，我们会为当下场景挑选最合适的模型。也可以完全掌控，在菜单里自选你的 AI！（积分按所选模型的智能档位透明计费。）",
+    "home.expertBots.kicker": "分领域专家 Bot",
+    "home.expertBots.title": "不是单一聊天机器人——每个场景都有专属专家",
+    "home.expertBots.lead":
+      "isendai 采用「专家 Bot 舰队」架构，而非通用助手。每个工具针对细分场景深度优化——工作邮件、求职信、约会、自由职业 SOW、政务文书、邻里、创作者、家庭——配备专属提示词、范围校验，并智能路由到该类别最佳模型。",
+    "home.expertBots.point1":
+      "分主题 Bot：80+ 微工具覆盖八大生活领域，各有独立人设与输出格式。",
+    "home.expertBots.point2":
+      "多供应商引擎：OpenAI、Anthropic、Gemini、Groq、DeepSeek——自动路由或菜单手动选择。",
+    "home.expertBots.point3":
+      "生产级技术栈：工具级范围门禁、透明积分计费、多版本历史、按输入语言回复。",
 
     "category.work-career.label": "职场加速",
     "category.crisis-money.label": "钱包急救",
@@ -3377,7 +3427,7 @@ export const DICTS: Record<Locale, Dict> = {
     "success.insufficientBody":
       "Paket ve yükleme için Paketler sayfasına bak. Yerelde aynı sayfadaki dev top‑up notlarını kullan, giriş yap veya yöneticiden kontör iste.",
     "success.usingSaved": "localStorage’daki kaydını kullanıyoruz.",
-    "success.generating": "GPT‑4o‑mini ile üretiliyor…",
+    "success.generating": "Üretiliyor…",
     "success.copy": "Kopyala",
     "success.shareOnX": "X’te paylaş",
     "success.shareOnXAria": "Sonucu X’te paylaş",
@@ -3433,6 +3483,16 @@ export const DICTS: Record<Locale, Dict> = {
     "home.aiStack.title": "Dünyanın Önde Gelen Yapay Zeka Modelleri Tek Bir Yerde 🧠",
     "home.aiStack.body":
       "Arka planda OpenAI (ChatGPT), Anthropic (Claude), Google ve DeepSeek gibi teknoloji devlerinin beyinleri sizin için çalışıyor. Hangi modeli seçeceğinizi düşünmek istemiyor musunuz? İşi \"Otomatik\" moda bırakın, o anki kriziniz için en uygun modeli biz seçelim. Ya da kontrolü tamamen elinize alıp menüden kendi zekanızı kendiniz belirleyin! (Kredi harcamalarınız, seçtiğiniz modelin zeka seviyesine göre şeffaf bir şekilde hesaplanır).",
+    "home.expertBots.kicker": "Konuya özel uzman botlar",
+    "home.expertBots.title": "Tek bir sohbet botu değil — her konuda uzmanlaşmış bot",
+    "home.expertBots.lead":
+      "isendai, genel amaçlı bir asistan değil; konuya göre uzmanlaştırılmış bir bot filosu olarak tasarlandı. Her araç kendi alanına göre ince ayarlıdır — iş e-postası, ön yazı, flört, freelance kapsamı, bürokrasi, komşuluk, içerik üretimi, aile — özel prompt’lar, kapsam kontrolü ve o kategori için en uygun modele akıllı yönlendirme ile.",
+    "home.expertBots.point1":
+      "Alan botları: sekiz yaşam alanında 80+ mikro araç; her birinin kendi kişiliği ve çıktı formatı var.",
+    "home.expertBots.point2":
+      "Çok sağlayıcılı motor: OpenAI, Anthropic, Gemini, Groq ve DeepSeek — otomatik veya tek menüden elle seçim.",
+    "home.expertBots.point3":
+      "Kurumsal düzey altyapı: araç bazlı kapsam kapıları, şeffaf kontör, sürüm geçmişi ve girdi dilinde yanıt.",
 
     "concierge.title": "ISENDAI",
     "concierge.welcome":

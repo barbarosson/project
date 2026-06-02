@@ -23,10 +23,10 @@ export type ModelAnnouncement = {
 };
 
 export const LATEST_MODEL_ANNOUNCEMENT: ModelAnnouncement = {
-  version: "2026-06-02-catalog-v2",
-  modelId: "claude-sonnet-4-6",
+  version: "2026-06-02-opus-4-8",
+  modelId: "claude-opus-4-8",
   releasedOn: "2026-06-02",
-  tier: "pro-ai",
+  tier: "genius-ai",
 };
 
 /** Human-readable model name (without provider prefix), derived from the catalog. */

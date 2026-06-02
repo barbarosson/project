@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowRight, Minus, MoveRight, Plus, Sparkles } from "lucide-react";
+import { ArrowRight, Bot, Minus, MoveRight, Plus, Sparkles } from "lucide-react";
 
 import { ToolCard } from "@/components/ai-suite/tool-card";
 import { PromoCampaignBanner } from "@/components/promo-campaign-banner";
@@ -242,6 +242,58 @@ export function HomeClient({
             <p className="mt-4 w-full min-w-0 text-pretty text-base font-medium leading-relaxed text-slate-200 sm:text-lg lg:text-[1.125rem] lg:leading-relaxed xl:text-xl">
               {t("home.aiStack.body")}
             </p>
+          </div>
+        </section>
+
+        <section
+          className={cn(
+            "relative mt-8 min-w-0 overflow-hidden rounded-3xl border border-cyan-500/25 p-4 sm:p-6 lg:p-10",
+            "bg-gradient-to-br from-cyan-950/40 via-slate-950/85 to-violet-950/45",
+            "shadow-[0_12px_56px_rgba(34,211,238,0.14),inset_0_1px_0_0_rgba(255,255,255,0.08)]",
+            "backdrop-blur-xl"
+          )}
+          aria-labelledby="home-expert-bots-heading"
+        >
+          <div
+            className="pointer-events-none absolute -left-10 top-8 size-44 rounded-full bg-cyan-500/15 blur-3xl"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute -bottom-10 right-0 size-52 rounded-full bg-violet-500/15 blur-3xl"
+            aria-hidden
+          />
+          <div className="relative w-full min-w-0">
+            <p className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-cyan-200 sm:text-sm">
+              <Bot className="size-3.5 shrink-0 text-cyan-300 sm:size-4" aria-hidden />
+              {t("home.expertBots.kicker")}
+            </p>
+            <h2
+              id="home-expert-bots-heading"
+              className={cn(
+                "mt-4 w-full text-pretty text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl",
+                "bg-gradient-to-r from-white via-cyan-100 to-violet-100 bg-clip-text text-transparent"
+              )}
+            >
+              {t("home.expertBots.title")}
+            </h2>
+            <p className="mt-4 w-full min-w-0 text-pretty text-base font-medium leading-relaxed text-slate-200 sm:text-lg lg:text-[1.125rem] lg:leading-relaxed xl:text-xl">
+              {t("home.expertBots.lead")}
+            </p>
+            <ul className="mt-6 grid min-w-0 gap-3 sm:grid-cols-3 sm:gap-4">
+              {(["home.expertBots.point1", "home.expertBots.point2", "home.expertBots.point3"] as const).map(
+                (key) => (
+                  <li
+                    key={key}
+                    className={cn(
+                      "rounded-2xl border border-white/[0.08] px-4 py-3.5 text-sm leading-relaxed text-slate-300",
+                      glassSurface
+                    )}
+                  >
+                    {t(key)}
+                  </li>
+                )
+              )}
+            </ul>
           </div>
         </section>
 
