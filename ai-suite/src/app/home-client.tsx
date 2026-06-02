@@ -79,31 +79,34 @@ export function HomeClient({
   const [toolPrefillPayload, setToolPrefillPayload] = React.useState<ToolPayload | undefined>();
   const [toolPrefillKey, setToolPrefillKey] = React.useState(0);
 
-  function selectTool(
-    tool: ToolName,
-    opts?: { draftText?: string; payload?: ToolPayload; scroll?: boolean; updateUrl?: boolean }
-  ) {
-    setSelectedState(tool);
-    if (opts?.draftText?.trim()) {
-      setToolPrefill(opts.draftText.trim());
-      setToolPrefillKey((k) => k + 1);
-    }
-    if (opts?.payload) {
-      setToolPrefillPayload(opts.payload);
-      setToolPrefillKey((k) => k + 1);
-    } else {
-      setToolPrefillPayload(undefined);
-    }
-    if (opts?.updateUrl !== false) {
-      router.replace(`/?tool=${tool}`, { scroll: false });
-    }
-    if (opts?.scroll) {
-      document.getElementById("home-tool-workspace")?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }
-  }
+  const selectTool = React.useCallback(
+    (
+      tool: ToolName,
+      opts?: { draftText?: string; payload?: ToolPayload; scroll?: boolean; updateUrl?: boolean }
+    ) => {
+      setSelectedState(tool);
+      if (opts?.draftText?.trim()) {
+        setToolPrefill(opts.draftText.trim());
+        setToolPrefillKey((k) => k + 1);
+      }
+      if (opts?.payload) {
+        setToolPrefillPayload(opts.payload);
+        setToolPrefillKey((k) => k + 1);
+      } else {
+        setToolPrefillPayload(undefined);
+      }
+      if (opts?.updateUrl !== false) {
+        router.replace(`/?tool=${tool}`, { scroll: false });
+      }
+      if (opts?.scroll) {
+        document.getElementById("home-tool-workspace")?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    },
+    [router]
+  );
 
   function selectToolFromSidebar(tool: ToolName) {
     setToolPrefill(undefined);
@@ -146,7 +149,7 @@ export function HomeClient({
     return () => {
       cancelled = true;
     };
-  }, [router, searchParams]);
+  }, [router, searchParams, selectTool]);
 
   const demoExamples: { tool: ToolName; key: string }[] = [
     { tool: "corporate-whisperer", key: "corp" },

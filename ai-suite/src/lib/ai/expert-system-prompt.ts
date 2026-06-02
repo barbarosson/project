@@ -5,6 +5,7 @@ import {
 } from "@/components/ai-suite/tools";
 import type { Locale } from "@/i18n/dictionaries";
 import { outputLanguageDirective } from "@/lib/ai/output-locale";
+import { humanVoiceDirective, offTopicRedirectLine } from "@/lib/ai/writing-style";
 
 export type ExpertPromptOptions = {
   locale?: Locale;
@@ -27,9 +28,12 @@ export function buildExpertSystemPrompt(
   const domain = CATEGORY_META[def.category]?.description ?? "";
   const locale = options.locale ?? "en";
   const languageBlock = outputLanguageDirective(locale, options.userText);
+  const voiceBlock = humanVoiceDirective(locale);
 
   const expertise = [
     languageBlock,
+    "",
+    voiceBlock,
     "",
     `You are a world-class specialist operating as "${def.title}".`,
     `Your craft: ${def.scopeHint}`,
@@ -38,10 +42,12 @@ export function buildExpertSystemPrompt(
     "Non-negotiable quality bar:",
     "- Mirror the user's language; the deliverable must read as native in that language.",
     "- Match the situation's tone, formality, and cultural/professional norms.",
-    "- Be specific and immediately usable; remove filler, clichés, and generic phrasing.",
+    "- Write in smooth, human prose (see voice rules above): not robotic, not a chain of shallow sentences.",
+    "- Be specific and immediately usable; cut empty filler, but keep natural warmth where the situation allows.",
     "- Never invent facts, names, numbers, dates, or links. Use [square brackets] for any detail the user must supply.",
     "- Optimize for the reader's reaction and the user's goal, not for length.",
     "- If the input is thin, make the strongest reasonable draft and bracket the gaps instead of refusing.",
+    `- ${offTopicRedirectLine}`,
     "Apply the task-specific instructions below exactly, including any required output format.",
     "",
     languageBlock,

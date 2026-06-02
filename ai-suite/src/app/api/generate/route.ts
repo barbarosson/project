@@ -294,23 +294,10 @@ function promptFor(payload: RequestBody) {
       : base;
   switch (payload.tool) {
     case "corporate-whisperer":
-      return {
-        system:
-          "You are Corporate Whisperer.\n" +
-          "Your ONLY job: rewrite emotional/rough messages into concise, polite, professional corporate emails.\n" +
-          "If the request is not about rewriting a message/email, respond with a short refusal and suggest the correct tool (Cover Letter or Dating Profile) or ask for the message to rewrite.\n" +
-          "Keep meaning, remove aggression, add a clear subject, greeting, and closing.\n" +
-          "Output only the email.",
-        user: withExtra(payload.text),
-      };
+      return { system: def.systemPrompt, user: withExtra(payload.text) };
     case "coverletter-ai":
       return {
-        system:
-          "You are CoverLetter AI.\n" +
-          "Your ONLY job: write a tailored, high-quality cover letter based on the job posting + the candidate resume.\n" +
-          "If the request is not about a cover letter, respond with a short refusal and suggest the correct tool (Corporate Whisperer or Dating Profile) or ask for missing inputs.\n" +
-          "Be specific, confident, and professional.\n" +
-          "Output only the cover letter.",
+        system: def.systemPrompt,
         user: withExtra(
           "jobLink" in payload && "resume" in payload
             ? `Job posting:\n${payload.jobLink}\n\nCandidate resume:\n${payload.resume}`
@@ -319,12 +306,7 @@ function promptFor(payload: RequestBody) {
       };
     case "dating-roast":
       return {
-        system:
-          "You are Dating Roast.\n" +
-          "Your ONLY job: critique and improve a dating profile bio.\n" +
-          "If the request is not about improving a dating bio, respond with a short refusal and suggest the correct tool (Corporate Whisperer or Cover Letter) or ask for the bio.\n" +
-          "Keep it kind, practical, and not mean.\n" +
-          "Output format:\n1) Quick roast (3-6 bullets)\n2) Improved bio (one version)\n3) Optional variants (2 short alternatives)",
+        system: def.systemPrompt,
         user: withExtra("text" in payload ? payload.text : payload.profile),
       };
     case "raise-negotiator":

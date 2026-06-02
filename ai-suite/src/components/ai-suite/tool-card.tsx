@@ -104,28 +104,42 @@ export function ToolCard({
   }
 
   const trimmedInitial = initialText?.trim() ?? "";
-  const [text, setText] = React.useState(() =>
-    tool !== "coverletter-ai" && trimmedInitial.length > 0 ? trimmedInitial : ""
-  );
-  const [jobLink, setJobLink] = React.useState("");
-  const [resume, setResume] = React.useState("");
+  const payloadMatchesTool =
+    initialPayload != null && initialPayload.tool === tool;
 
-  React.useEffect(() => {
-    if (!initialPayload) return;
-    if (initialPayload.tool !== tool) return;
-    if (tool === "coverletter-ai") {
-      if ("jobLink" in initialPayload && typeof initialPayload.jobLink === "string") {
-        setJobLink(initialPayload.jobLink);
-      }
-      if ("resume" in initialPayload && typeof initialPayload.resume === "string") {
-        setResume(initialPayload.resume);
-      }
-      return;
+  const [text, setText] = React.useState(() => {
+    if (tool === "coverletter-ai") return "";
+    if (
+      payloadMatchesTool &&
+      "text" in initialPayload &&
+      typeof initialPayload.text === "string"
+    ) {
+      return initialPayload.text;
     }
-    if ("text" in initialPayload && typeof initialPayload.text === "string") {
-      setText(initialPayload.text);
+    return trimmedInitial.length > 0 ? trimmedInitial : "";
+  });
+  const [jobLink, setJobLink] = React.useState(() => {
+    if (
+      tool === "coverletter-ai" &&
+      payloadMatchesTool &&
+      "jobLink" in initialPayload &&
+      typeof initialPayload.jobLink === "string"
+    ) {
+      return initialPayload.jobLink;
     }
-  }, [initialPayload, tool]);
+    return "";
+  });
+  const [resume, setResume] = React.useState(() => {
+    if (
+      tool === "coverletter-ai" &&
+      payloadMatchesTool &&
+      "resume" in initialPayload &&
+      typeof initialPayload.resume === "string"
+    ) {
+      return initialPayload.resume;
+    }
+    return "";
+  });
 
   const payload: ToolPayload =
     tool === "coverletter-ai"

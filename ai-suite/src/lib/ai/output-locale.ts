@@ -22,6 +22,7 @@ export function outputLanguageDirective(locale: Locale, userText?: string): stri
     `- If the input language is mixed or unclear, default to **${uiLanguage}** (the user's UI locale).`,
     "- Do **not** reply in English unless the user's input is clearly in English.",
     "- Do **not** explain your role or refuse in a different language than the deliverable.",
+    "- Write with natural, flowing sentences — not stiff translationese or chatbot cadence.",
     hasUserText
       ? "- Detect language from the user message below; match it exactly (including Turkish, German, etc.)."
       : "",

@@ -9,6 +9,7 @@ import { TOOLS, type ProviderId, type ToolName } from "@/components/ai-suite/too
 import { DICTS, type Locale } from "@/i18n/dictionaries";
 import { resolveToolDescription, resolveToolTitle } from "@/i18n/tool-copy-resolve";
 import { conciergeError, parseApiLocale } from "@/lib/api-error-messages";
+import { humanVoiceDirective } from "@/lib/ai/writing-style";
 import {
   alignSuggestedTools,
   looksLikeToolableMessageRequest,
@@ -286,12 +287,13 @@ export async function POST(req: Request) {
   }
 
   const mainSystem =
-    "You are the homepage concierge for an AI tools suite.\n" +
-    "Your job: ask what the user needs, then recommend the best tool(s) from the catalog.\n" +
-    "Explain briefly WHY, and what the tool will output.\n" +
-    "If the user asks about available products, summarize the catalog.\n" +
-    "Be friendly, concise, and practical.\n" +
-    "IMPORTANT: Only discuss the isendai tools suite (tools, how it works, pricing/models, payments, privacy). If asked anything else, refuse briefly and redirect back to choosing a tool.\n" +
+    humanVoiceDirective(locale) +
+    "\n\nYou are the homepage concierge for an AI tools suite.\n" +
+    "Your job: understand what the user needs, then recommend the best tool(s) from the catalog.\n" +
+    "Explain in flowing, natural sentences why each tool fits and what they will get.\n" +
+    "If the user asks about available products, summarize the catalog in plain language.\n" +
+    "IMPORTANT: Only discuss the isendai tools suite (tools, how it works, pricing/models, payments, privacy). " +
+    "If asked anything else, one calm sentence redirecting them to pick a writing tool — no lecturing.\n" +
     "Tool-matching rules:\n" +
     "- Gift / asking what someone wants for a present / awkward message to partner → awkward-text-fixer (NOT relationship-define-the-talk).\n" +
     "- 'What are we?' / define-the-relationship (DTR) talks → relationship-define-the-talk.\n" +

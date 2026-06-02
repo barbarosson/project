@@ -466,8 +466,9 @@ export const DICTS: Record<Locale, Dict> = {
     "errors.generationFailed": "Generation failed.",
     "errors.signInRequired": "Please sign in to generate.",
     "errors.noModelResult": "No result returned.",
-    "errors.outOfScope": "This tool is not the right fit. {reason}",
-    "errors.outOfScopeReason.generic": "Choose a tool that matches what you want to write.",
+    "errors.outOfScope": "This choice doesn't quite match your text. {reason}",
+    "errors.outOfScopeReason.generic":
+      "Think of what you want to write in one sentence, then pick the closest tool.",
     "errors.outOfScopeReason.gift":
       "For asking what gift someone wants or polishing that message, use Awkward Text Fixer.",
     "errors.outOfScopeTryTool": "Suggested tool: {toolName}.",
@@ -3757,11 +3758,12 @@ export const DICTS: Record<Locale, Dict> = {
     "errors.generationFailed": "Üretim başarısız.",
     "errors.signInRequired": "Üretim için lütfen giriş yapın.",
     "errors.noModelResult": "Sonuç dönmedi.",
-    "errors.outOfScope": "Bu araç bu istek için uygun değil. {reason}",
-    "errors.outOfScopeReason.generic": "Yazmak istediğin şeye uygun bir aracı seç.",
+    "errors.outOfScope": "Bu seçim metninle tam örtüşmüyor. {reason}",
+    "errors.outOfScopeReason.generic":
+      "Ne yazmak istediğini bir cümleyle düşün; ona en yakın aracı seçmen yeterli.",
     "errors.outOfScopeReason.gift":
-      "Hediye isteğini sormak veya o mesajı düzgün yazmak için Garip Metin Düzeltici aracını kullan.",
-    "errors.outOfScopeTryTool": "Önerilen araç: {toolName}.",
+      "Hediye isteğini sormak veya o mesajı toparlamak için Garip Metin Düzeltici daha uygun.",
+    "errors.outOfScopeTryTool": "Şunu deneyebilirsin: {toolName}.",
     "errors.invalidJson": "Geçersiz istek.",
     "errors.invalidPayload": "Geçersiz araç girdisi.",
     "errors.inputTooLong": "Girdi en fazla {max} karakter olabilir.",
