@@ -1,3 +1,4 @@
+import { categoryProviderFor } from "@/lib/ai/category-provider";
 import { CATEGORY_META, TOOLS_SEED, type ToolCategory, type ToolField } from "./tools-data";
 
 export { CATEGORY_META };
@@ -34,17 +35,6 @@ function mkStorageKey(tool: ToolName) {
   return `ai-suite:payload:${tool}`;
 }
 
-const CATEGORY_PROVIDER: Record<ToolCategory, ProviderId> = {
-  "work-career": "openai",
-  "freelance-business": "openai",
-  "academic-bureaucracy": "openai",
-  "crisis-money": "openai",
-  "neighbors-living": "deepseek",
-  "social-dating": "anthropic",
-  "family-deep-personal": "anthropic",
-  "creators-media": "groq",
-};
-
 const TOOL_PROVIDER_OVERRIDES: Partial<Record<ToolName, ProviderId>> = {
   // Specific tool overrides (deterministic)
   "perfect-apology": "anthropic",
@@ -54,7 +44,7 @@ const TOOL_PROVIDER_OVERRIDES: Partial<Record<ToolName, ProviderId>> = {
 
 function inferProvider(seed: (typeof TOOLS_SEED)[number]): ProviderId {
   const tool = seed.tool as ToolName;
-  return TOOL_PROVIDER_OVERRIDES[tool] ?? CATEGORY_PROVIDER[seed.category];
+  return TOOL_PROVIDER_OVERRIDES[tool] ?? categoryProviderFor(seed.category);
 }
 
 export const TOOLS: ToolDefinition[] = TOOLS_SEED.map((t) => ({

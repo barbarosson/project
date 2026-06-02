@@ -111,6 +111,10 @@ Flow: site → Instagram authorize → Supabase callback → `/auth/callback` �
 | `/terms`, `/privacy` | Legal (shell localized; body English) |
 | `/success` | Generation step after saving tool input (uses credits from balance; chunk-based billing) |
 
+## AI model catalog
+
+Five providers (OpenAI, Anthropic, Google Gemini, Groq, DeepSeek) with a merged static catalog, optional JSON/env overrides, and an advanced model picker (tiers + per-provider models). See [docs/model-catalog.md](./docs/model-catalog.md).
+
 ## API
 
 - `POST /api/generate` — scope check, **rate limit** (`ISENDAI_GENERATE_RPM`), **credit charge** from `creditsForGeneration(model, inputLength)`, generate v1

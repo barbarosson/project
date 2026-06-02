@@ -14,7 +14,7 @@ import { safeNext } from "@/lib/auth/safe-next";
 import { isMembershipProfileComplete } from "@/lib/auth/membership-profile";
 import { readDefaultAiModelFromMetadata } from "@/lib/auth/default-ai-model";
 import { ModelSwitcher } from "@/components/model-switcher";
-import { isUserFacingModelId, type ModelId, type UserFacingModelId } from "@/models/models";
+import type { ModelId } from "@/models/models";
 import { getSortedRegionOptions, legacyCountryToCode } from "@/lib/regions";
 import type { Locale } from "@/i18n/dictionaries";
 
@@ -104,7 +104,7 @@ export function ProfileForm({ nextPath, email, initialMeta }: Props) {
   const [useCase, setUseCase] = React.useState<UseCase>(
     (str(initialMeta.primary_use_case) as UseCase) || ""
   );
-  const [defaultAiModel, setDefaultAiModel] = React.useState<UserFacingModelId>(() =>
+  const [defaultAiModel, setDefaultAiModel] = React.useState<ModelId>(() =>
     readDefaultAiModelFromMetadata(initialMeta)
   );
   const [notes, setNotes] = React.useState(str(initialMeta.profile_notes));
@@ -314,12 +314,7 @@ export function ProfileForm({ nextPath, email, initialMeta }: Props) {
 
       <div className="grid gap-1.5">
         <span className="text-xs font-medium text-slate-300">{t("profile.defaultAiModel")}</span>
-        <ModelSwitcher
-          model={defaultAiModel}
-          onModelChange={(next: ModelId) => {
-            if (isUserFacingModelId(next)) setDefaultAiModel(next);
-          }}
-        />
+        <ModelSwitcher model={defaultAiModel} onModelChange={setDefaultAiModel} />
         <p className="text-xs text-slate-500">{t("profile.defaultAiModelHint")}</p>
       </div>
 

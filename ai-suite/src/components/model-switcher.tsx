@@ -4,6 +4,7 @@ import { SlidersHorizontal } from "lucide-react";
 
 import type { ToolName } from "@/components/ai-suite/tools";
 import {
+  modelsPickerGroups,
   USER_MODEL_TIER_IDS,
   type ModelId,
   type UserFacingModelId,
@@ -19,6 +20,21 @@ const TIER_I18N_KEY: Record<UserFacingModelId, "modelSwitcher.fast" | "modelSwit
   "genius-ai": "modelSwitcher.genius",
 };
 
+const PROVIDER_I18N_KEY: Record<
+  "openai" | "anthropic" | "google" | "groq" | "deepseek",
+  | "modelSwitcher.providerOpenai"
+  | "modelSwitcher.providerAnthropic"
+  | "modelSwitcher.providerGoogle"
+  | "modelSwitcher.providerGroq"
+  | "modelSwitcher.providerDeepseek"
+> = {
+  openai: "modelSwitcher.providerOpenai",
+  anthropic: "modelSwitcher.providerAnthropic",
+  google: "modelSwitcher.providerGoogle",
+  groq: "modelSwitcher.providerGroq",
+  deepseek: "modelSwitcher.providerDeepseek",
+};
+
 export function ModelSwitcher({
   className,
   tool,
@@ -27,7 +43,6 @@ export function ModelSwitcher({
 }: {
   className?: string;
   tool?: ToolName;
-  /** When both are set, the switcher is controlled and ignores global `useModel`. */
   model?: ModelId;
   onModelChange?: (model: ModelId) => void;
 }) {
@@ -39,9 +54,7 @@ export function ModelSwitcher({
   const model = controlled ? controlledModel : global.model;
   const setModel = controlled ? onModelChange : global.setModel;
 
-  const selected = USER_MODEL_TIER_IDS.includes(model as UserFacingModelId)
-    ? (model as UserFacingModelId)
-    : "fast-ai";
+  const pickerGroups = modelsPickerGroups();
 
   return (
     <label
@@ -57,14 +70,26 @@ export function ModelSwitcher({
           "min-w-0 max-w-full flex-1 rounded-md border border-white/[0.12] bg-zinc-950/95 px-2 py-1 text-sm text-zinc-100 shadow-inner outline-none",
           "focus:ring-2 focus:ring-violet-500/35"
         )}
-        value={selected}
-        onChange={(e) => setModel(e.target.value as UserFacingModelId)}
+        value={model}
+        onChange={(e) => setModel(e.target.value as ModelId)}
         aria-label={t("modelSwitcher.ariaLabel")}
       >
-        {USER_MODEL_TIER_IDS.map((id) => (
-          <option key={id} value={id}>
-            {t(TIER_I18N_KEY[id])}
-          </option>
+        <optgroup label={t("modelSwitcher.quickTiers")}>
+          <option value="auto">{t("modelSwitcher.auto")}</option>
+          {USER_MODEL_TIER_IDS.map((id) => (
+            <option key={id} value={id}>
+              {t(TIER_I18N_KEY[id])}
+            </option>
+          ))}
+        </optgroup>
+        {pickerGroups.map((group) => (
+          <optgroup key={group.provider} label={t(PROVIDER_I18N_KEY[group.provider])}>
+            {group.models.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.label}
+              </option>
+            ))}
+          </optgroup>
         ))}
       </select>
     </label>

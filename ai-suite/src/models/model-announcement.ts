@@ -4,8 +4,8 @@ import { MODELS, type ConcreteModelId } from "@/models/models";
  * Single source of truth for the "new AI version" announcement.
  *
  * To roll out a new flagship and notify everyone instantly:
- *   1. Add the model to MODELS (and salesPriceForModel) in `models.ts`.
- *   2. Point the relevant USER_MODEL_TIERS entry at it (if it's the new flagship).
+ *   1. Add the model to `models-catalog-base.ts` (and `salesPriceForModel` in `models.ts`).
+ *   2. Point the relevant tier in `config/model-catalog.json` → `tierModels`.
  *   3. Bump `version` and update `modelId` / `releasedOn` below.
  *
  * The popup keys its "seen" state on `version`, so bumping it re-announces to
@@ -23,10 +23,10 @@ export type ModelAnnouncement = {
 };
 
 export const LATEST_MODEL_ANNOUNCEMENT: ModelAnnouncement = {
-  version: "2026-06-02-opus-4-8",
-  modelId: "claude-opus-4-8",
+  version: "2026-06-02-catalog-v2",
+  modelId: "claude-sonnet-4-6",
   releasedOn: "2026-06-02",
-  tier: "genius-ai",
+  tier: "pro-ai",
 };
 
 /** Human-readable model name (without provider prefix), derived from the catalog. */

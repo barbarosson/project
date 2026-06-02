@@ -16,7 +16,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   creditsForGeneration,
   modelMeta,
-  normalizeUserModelId,
+  parseRequestedModelId,
   resolveConcreteModelId,
 } from "@/models/models";
 import { formatCreditsFromTenths } from "@/lib/credits-units";
@@ -146,7 +146,7 @@ export async function POST(req: Request) {
   const def = getToolDefinition(toolField);
   // Prefer the model the user picked for this alternative; fall back to the original request's model.
   const modelId = requestedModel || String(reqRow.model_id || "");
-  const concreteForRun = resolveConcreteModelId(normalizeUserModelId(modelId));
+  const concreteForRun = resolveConcreteModelId(parseRequestedModelId(modelId));
   const provider: ProviderId = modelMeta(concreteForRun).provider as ProviderId;
 
   if (!hasProviderKey(provider)) {

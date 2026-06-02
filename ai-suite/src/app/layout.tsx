@@ -9,7 +9,7 @@ import { RouteTransition } from "@/components/route-transition";
 import { ModelProvider } from "@/models/model-provider";
 import { readDefaultAiModelFromMetadata } from "@/lib/auth/default-ai-model";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { UserFacingModelId } from "@/models/models";
+import type { ModelId } from "@/models/models";
 import { GlobalBackground } from "@/components/global-background";
 import { SocialProof } from "@/components/SocialProof";
 import { ModelAnnouncement } from "@/components/model-announcement";
@@ -62,7 +62,7 @@ export default async function RootLayout({
       ? cookieLocale
       : undefined;
 
-  let initialDefaultAiModel: UserFacingModelId | null = null;
+  let initialDefaultAiModel: ModelId | null = null;
   try {
     const supabase = await createSupabaseServerClient();
     const { data } = await supabase.auth.getUser();

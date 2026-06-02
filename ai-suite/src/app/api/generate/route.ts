@@ -22,7 +22,8 @@ import {
 import {
   creditsForGeneration,
   modelMeta,
-  normalizeUserModelId,
+  defaultConcreteModelForProvider,
+  parseRequestedModelId,
   resolveConcreteModelId,
 } from "@/models/models";
 import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
@@ -139,7 +140,9 @@ function resolveModelOverride(
   | { provider: ProviderId; client: typeof google; model: string }
   | null {
   if (typeof body.model !== "string") return null;
-  const concrete = resolveConcreteModelId(normalizeUserModelId(body.model));
+  const requested = parseRequestedModelId(body.model);
+  if (requested === "auto") return null;
+  const concrete = resolveConcreteModelId(requested);
   const meta = modelMeta(concrete);
   switch (meta.provider) {
     case "openai":
@@ -156,17 +159,18 @@ function resolveModelOverride(
 }
 
 function modelForProvider(provider: ProviderId) {
+  const modelId = defaultConcreteModelForProvider(provider);
   switch (provider) {
     case "openai":
-      return { client: openai, model: "gpt-4o-mini" };
+      return { client: openai, model: modelId };
     case "anthropic":
-      return { client: anthropic, model: "claude-haiku-4-5" };
+      return { client: anthropic, model: modelId };
     case "groq":
-      return { client: groq, model: "llama-3.1-8b-instant" };
+      return { client: groq, model: modelId };
     case "deepseek":
-      return { client: deepseek, model: "deepseek-chat" };
+      return { client: deepseek, model: modelId };
     case "google":
-      return { client: google, model: "gemini-2.5-flash" };
+      return { client: google, model: modelId };
   }
 }
 
@@ -537,11 +541,10 @@ export async function POST(req: Request) {
   const override = resolveModelOverride(body);
   const provider = override?.provider ?? pickProvider(body);
   const { client, model } = override ?? modelForProvider(provider);
-  const midRaw =
-    typeof (body as RequestBody).model === "string"
-      ? normalizeUserModelId((body as RequestBody).model as string)
-      : "fast-ai";
-  const concreteForCredits = resolveConcreteModelId(midRaw);
+  const requestedModel = parseRequestedModelId(
+    typeof (body as RequestBody).model === "string" ? (body as RequestBody).model : undefined
+  );
+  const concreteForCredits = resolveConcreteModelId(requestedModel);
   const creditCost = creditsForGeneration(concreteForCredits, user.length);
   const debugHeaders: Record<string, string> = {
     "x-ai-provider": provider,

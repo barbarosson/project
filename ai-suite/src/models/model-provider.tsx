@@ -6,7 +6,6 @@ import {
   isModelId,
   normalizeUserModelId,
   type ModelId,
-  type UserFacingModelId,
 } from "./models";
 
 const STORAGE_KEY = "ai-suite:model";
@@ -41,9 +40,9 @@ export function ModelProvider({
 }: {
   children: React.ReactNode;
   /** Server-hydrated membership default (signed-in users). */
-  initialDefaultAiModel?: UserFacingModelId | null;
+  initialDefaultAiModel?: ModelId | null;
 }) {
-  const profileDefaultModel = initialDefaultAiModel ?? (DEFAULT_MODEL as UserFacingModelId);
+  const profileDefaultModel = initialDefaultAiModel ?? DEFAULT_MODEL;
 
   const [model, setModelState] = React.useState<ModelId>(() => {
     if (typeof window === "undefined") return profileDefaultModel;
