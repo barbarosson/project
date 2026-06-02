@@ -7,6 +7,7 @@ import { ArrowRight, Bot, Minus, MoveRight, Plus, Sparkles } from "lucide-react"
 
 import { ToolCard } from "@/components/ai-suite/tool-card";
 import { PromoCampaignBanner } from "@/components/promo-campaign-banner";
+import { InstallAppButton } from "@/components/pwa/install-app-button";
 import { SitePageChrome, SitePageHeader } from "@/components/site-page-layout";
 import { formatCreditsFromTenths } from "@/lib/credits-units";
 import { useI18n } from "@/i18n/i18n-provider";
@@ -228,6 +229,7 @@ export function HomeClient({
             >
               {t("nav.pricing")}
             </Link>
+            <InstallAppButton variant="hero" />
           </div>
           {creditsSnapshot ? (
             <div

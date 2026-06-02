@@ -1,63 +1,113 @@
-/**
- * isendai Chrome extension — Manifest V3 service worker.
- * Right-click selected text → Refine with isendai → opens the web app with ?text=...
- */
+import { apiOrigin, LOGIN_URL, PRICING_URL } from "./lib/config.js";
+import { hasIsendaiSession } from "./lib/auth.js";
+import { fetchWallet, generateMessage } from "./lib/api.js";
 
-const SITE_ORIGIN = "https://isendai.netlify.app";
+const CONTEXT_MENU_ID = "isendai-fix-selection";
+const PENDING_TEXT_KEY = "pendingSelectionText";
 
-const MENU_ROOT = "isendai-root";
-
-/** Maps context menu entry ids to Next.js tool route segments. */
-const MENU_ITEMS = [
-  {
-    id: "isendai-corporate-whisperer",
-    toolId: "corporate-whisperer",
-    title: "Corporate Whisperer (Work)",
-  },
-  {
-    id: "isendai-perfect-apology",
-    toolId: "perfect-apology",
-    title: "The Perfect Apology (Crisis)",
-  },
-  {
-    id: "isendai-ghosting-resurrector",
-    toolId: "ghosting-resurrector",
-    title: "Ghosting Resurrector (Social)",
-  },
-];
-
-function buildToolUrl(toolId, selectionText) {
-  const text = encodeURIComponent(selectionText);
-  return `${SITE_ORIGIN}/tool/${encodeURIComponent(toolId)}?text=${text}`;
-}
-
-function installMenus() {
+function installContextMenu() {
   chrome.contextMenus.removeAll(() => {
     chrome.contextMenus.create({
-      id: MENU_ROOT,
-      title: "Refine with isendai",
+      id: CONTEXT_MENU_ID,
+      title: "Fix with isendai",
       contexts: ["selection"],
     });
-    for (const item of MENU_ITEMS) {
-      chrome.contextMenus.create({
-        id: item.id,
-        parentId: MENU_ROOT,
-        title: item.title,
-        contexts: ["selection"],
-      });
-    }
   });
 }
 
 chrome.runtime.onInstalled.addListener(() => {
-  installMenus();
+  installContextMenu();
 });
 
-chrome.contextMenus.onClicked.addListener((info) => {
-  const entry = MENU_ITEMS.find((x) => x.id === info.menuItemId);
-  const selection = typeof info.selectionText === "string" ? info.selectionText : "";
-  if (!entry || selection.length === 0) return;
+chrome.runtime.onStartup.addListener(() => {
+  installContextMenu();
+});
 
-  const url = buildToolUrl(entry.toolId, selection);
-  chrome.tabs.create({ url });
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+  if (info.menuItemId !== CONTEXT_MENU_ID) return;
+  const selection = typeof info.selectionText === "string" ? info.selectionText.trim() : "";
+  if (!selection || !tab?.id) return;
+
+  await chrome.storage.session.set({ [PENDING_TEXT_KEY]: selection });
+
+  try {
+    await chrome.tabs.sendMessage(tab.id, {
+      type: "ISENDAI_SHOW_PANEL",
+      text: selection,
+    });
+  } catch {
+    // Content script not injected on this tab yet — open popup with pending text.
+  }
+
+  try {
+    await chrome.action.openPopup();
+  } catch {
+    // openPopup unavailable (e.g. no active popup gesture in some builds) — panel or badge only.
+  }
+});
+
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  const type = message?.type;
+
+  if (type === "ISENDAI_GET_SESSION") {
+    hasIsendaiSession()
+      .then((signedIn) => sendResponse({ signedIn, origin: apiOrigin() }))
+      .catch(() => sendResponse({ signedIn: false, origin: apiOrigin() }));
+    return true;
+  }
+
+  if (type === "ISENDAI_GET_WALLET") {
+    fetchWallet()
+      .then((wallet) => sendResponse({ ok: true, wallet }))
+      .catch((e) =>
+        sendResponse({
+          ok: false,
+          error: e instanceof Error ? e.message : "Could not load account.",
+        })
+      );
+    return true;
+  }
+
+  if (type === "ISENDAI_GENERATE") {
+    const { text, model, locale } = message;
+    generateMessage({ text, model, locale })
+      .then((out) => sendResponse(out))
+      .catch((e) =>
+        sendResponse({
+          ok: false,
+          error: e instanceof Error ? e.message : "Generation failed.",
+        })
+      );
+    return true;
+  }
+
+  if (type === "ISENDAI_GET_PENDING_TEXT") {
+    chrome.storage.session
+      .get(PENDING_TEXT_KEY)
+      .then((data) => sendResponse({ text: data[PENDING_TEXT_KEY] ?? "" }))
+      .catch(() => sendResponse({ text: "" }));
+    return true;
+  }
+
+  if (type === "ISENDAI_CLEAR_PENDING_TEXT") {
+    chrome.storage.session
+      .remove(PENDING_TEXT_KEY)
+      .then(() => sendResponse({ ok: true }))
+      .catch(() => sendResponse({ ok: false }));
+    return true;
+  }
+
+  if (type === "ISENDAI_OPEN_LOGIN") {
+    chrome.tabs.create({ url: LOGIN_URL });
+    sendResponse({ ok: true });
+    return false;
+  }
+
+  if (type === "ISENDAI_OPEN_PRICING") {
+    chrome.tabs.create({ url: PRICING_URL });
+    sendResponse({ ok: true });
+    return false;
+  }
+
+  return false;
 });

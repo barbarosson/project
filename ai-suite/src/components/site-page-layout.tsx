@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { AuthStatus } from "@/components/auth-status";
 import { CreditsNav } from "@/components/credits-nav";
 import { IsendaiLogo } from "@/components/isendai-logo";
+import { InstallAppButton } from "@/components/pwa/install-app-button";
 import { useI18n } from "@/i18n/i18n-provider";
 import { MODULUS_SITE_URL } from "@/lib/modulus-site";
 import { getPublicSupportEmail } from "@/lib/support-email";
@@ -137,6 +138,7 @@ export function SitePageHeader({
         />
       </Link>
       <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-1.5 sm:w-auto sm:gap-2">
+        <InstallAppButton variant="header" />
         <CreditsNav />
         <AuthStatus className="shrink-0" initialSignedInLabel={initialSignedInLabel} />
       </div>

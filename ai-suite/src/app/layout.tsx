@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import Script from "next/script";
 import { cookies } from "next/headers";
@@ -22,6 +22,7 @@ import { PricingModalProvider } from "@/components/pricing/pricing-modal";
 import { AppLocaleBar } from "@/components/app-locale-bar";
 import { AuthSessionHydrator } from "@/components/auth-session-hydrator";
 import { DeployEnvBanner } from "@/components/deploy-env-banner";
+import { pwaViewport } from "@/lib/pwa/metadata";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -39,6 +40,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   return rootMetadataForLocale(resolveLocaleFromCookie(cookieLocale));
 }
+
+export const viewport: Viewport = pwaViewport;
 
 export default async function RootLayout({
   children,
@@ -79,6 +82,10 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`dark ${inter.variable} ${spaceGrotesk.variable} h-full font-sans antialiased`}
     >
+      <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      </head>
       <body className="flex min-h-full min-w-0 flex-col overflow-x-clip bg-[#09090b] text-slate-50 antialiased">
         {GA_ID ? (
           <>

@@ -1,15 +1,52 @@
 {
   "manifest_version": 3,
-  "name": "isendai",
-  "version": "0.1.0",
-  "description": "Send selected text to isendai tools (Corporate Whisperer, Perfect Apology, Ghosting Resurrector).",
-  "permissions": ["contextMenus", "storage"],
+  "name": "isendai: Perfect Your Message",
+  "version": "1.0.0",
+  "description": "Fix emails, LinkedIn posts, and DMs with isendai AI — right from the page you're on.",
+  "permissions": ["storage", "activeTab", "scripting", "contextMenus", "cookies"],
+  "host_permissions": [
+    "https://isendai.com/*",
+    "https://www.isendai.com/*",
+    "https://isendai.netlify.app/*",
+    "https://mail.google.com/*",
+    "https://www.linkedin.com/*",
+    "https://linkedin.com/*",
+    "https://twitter.com/*",
+    "https://x.com/*"
+  ],
+  "action": {
+    "default_title": "isendai",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
   "background": {
-    "service_worker": "background.js"
-  }
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://mail.google.com/*",
+        "https://www.linkedin.com/*",
+        "https://linkedin.com/*",
+        "https://twitter.com/*",
+        "https://x.com/*",
+        "https://isendai.com/*",
+        "https://www.isendai.com/*",
+        "https://isendai.netlify.app/*"
+      ],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
 }

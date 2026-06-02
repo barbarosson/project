@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import type { Locale } from "@/i18n/dictionaries";
+import { pwaMetadata } from "@/lib/pwa/metadata";
 
 export function baseSiteUrl(): URL {
   const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
@@ -84,6 +85,7 @@ export function pageMetadataForPath(
   const canonical = new URL(pathname.startsWith("/") ? pathname : `/${pathname}`, metadataBase);
   return {
     metadataBase,
+    ...pwaMetadata(),
     title,
     description,
     keywords: SEO_KEYWORDS[locale],

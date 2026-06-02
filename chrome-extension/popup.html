@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>isendai</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <h1><span>ISEND</span> AI</h1>
+      </header>
+
+      <div id="auth-banner" class="glass auth-banner hidden" role="alert">
+        Please login to your isendai account to generate messages.
+        <button type="button" class="btn btn-ghost" id="btn-login" style="margin-top: 10px">
+          Open isendai.com/login
+        </button>
+      </div>
+
+      <nav class="tabs" role="tablist" aria-label="isendai">
+        <button type="button" class="tab active" data-tab="generate" role="tab" aria-selected="true">
+          Generate
+        </button>
+        <button type="button" class="tab" data-tab="account" role="tab" aria-selected="false">
+          Account
+        </button>
+      </nav>
+
+      <section id="panel-generate" class="panel active glass" style="padding: 12px" role="tabpanel">
+        <div>
+          <label for="input-text">Message to fix</label>
+          <textarea
+            id="input-text"
+            placeholder="Paste the draft you want to polish…"
+            maxlength="2000"
+            spellcheck="true"
+          ></textarea>
+        </div>
+        <div>
+          <label for="input-model">AI model</label>
+          <select id="input-model">
+            <option value="fast-ai">Fast AI — 1 Credit</option>
+            <option value="pro-ai">Pro AI — 25 Credits</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-primary" id="btn-generate">Fix My Message</button>
+        <div id="result-wrap" class="hidden">
+          <label>Result</label>
+          <div id="result-text" class="glass result-box" aria-live="polite"></div>
+          <button type="button" class="btn btn-secondary" id="btn-copy">Copy</button>
+        </div>
+      </section>
+
+      <section id="panel-account" class="panel glass" style="padding: 0" role="tabpanel">
+        <div class="credits-row">
+          <div>
+            <div class="credits-label">Credits balance</div>
+            <div class="credits-value" id="credits-display">—</div>
+          </div>
+          <span aria-hidden="true" style="font-size: 28px">🪙</span>
+        </div>
+        <p class="account-email" id="account-email"></p>
+        <div style="padding: 0 12px 12px">
+          <button type="button" class="btn btn-primary" id="btn-topup">Top Up Credits</button>
+        </div>
+      </section>
+
+      <p id="status" class="status" aria-live="polite"></p>
+    </div>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

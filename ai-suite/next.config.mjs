@@ -1,10 +1,27 @@
+import { spawnSync } from "node:child_process";
+import crypto from "node:crypto";
 import path from "path";
 import { fileURLToPath } from "url";
+
+import withSerwistInit from "@serwist/next";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const isProduction = process.env.NODE_ENV === "production";
+
+function serwistRevision() {
+  const out = spawnSync("git", ["rev-parse", "HEAD"], { encoding: "utf-8" });
+  const hash = out.stdout?.trim();
+  return hash && out.status === 0 ? hash : crypto.randomUUID();
+}
+
+const withSerwist = withSerwistInit({
+  swSrc: "src/app/sw.ts",
+  swDest: "public/sw.js",
+  disable: !isProduction,
+  additionalPrecacheEntries: [{ url: "/~offline", revision: serwistRevision() }],
+});
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -17,6 +34,7 @@ const contentSecurityPolicy = [
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com",
+  "worker-src 'self'",
 ].join("; ");
 
 const cspHeaderKey =
@@ -58,5 +76,5 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+export default withSerwist(nextConfig);
 

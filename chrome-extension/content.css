@@ -1,0 +1,103 @@
+#isendai-extension-root {
+  all: initial;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+#isendai-extension-root .isendai-panel {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 2147483646;
+  width: min(360px, calc(100vw - 32px));
+  max-height: min(420px, calc(100vh - 32px));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(9, 9, 11, 0.92);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.45), 0 0 24px rgba(139, 92, 246, 0.2);
+  color: #f8fafc;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+#isendai-extension-root .isendai-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+#isendai-extension-root .isendai-title {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, #c4b5fd, #67e8f9);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+#isendai-extension-root button {
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+}
+
+#isendai-extension-root .isendai-close {
+  width: 28px;
+  height: 28px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+}
+
+#isendai-extension-root .isendai-close:hover {
+  color: #fff;
+}
+
+#isendai-extension-root .isendai-body {
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 220px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+#isendai-extension-root .isendai-actions {
+  display: flex;
+  gap: 8px;
+}
+
+#isendai-extension-root .isendai-btn-primary {
+  flex: 1;
+  padding: 9px 12px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(90deg, #6366f1, #a855f7, #ec4899);
+}
+
+#isendai-extension-root .isendai-btn-secondary {
+  flex: 1;
+  padding: 9px 12px;
+  font-weight: 600;
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#isendai-extension-root .isendai-muted {
+  color: #94a3b8;
+  font-size: 11px;
+}
+
+#isendai-extension-root .isendai-error {
+  color: #f87171;
+}

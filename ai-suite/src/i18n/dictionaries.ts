@@ -201,7 +201,7 @@ export const DICTS: Record<Locale, Dict> = {
     "home.expertBots.kicker": "Domain expert bots",
     "home.expertBots.title": "Not one chatbot — a specialist for every topic",
     "home.expertBots.lead":
-      "isendai is built like a fleet of expert bots, not a single generic assistant. Each tool is tuned for its niche—work email, cover letters, dating, freelance SOWs, bureaucracy, neighbors, creators, family—with dedicated prompts, scope checks, and smart routing to the best model for that category.",
+      "isendai isn’t one chatbot trying to do everything—it’s a fleet of specialist bots. Work email, cover letters, dating, freelance scopes, bureaucracy, neighbors, creators, family: each tool ships with its own prompts, scope guardrails, and smart routing to the best model for that moment.",
     "home.expertBots.point1":
       "Topic-native bots: 80+ micro-tools across eight life domains, each with its own persona and output format.",
     "home.expertBots.point2":
@@ -260,6 +260,13 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.history": "History",
     "nav.account": "Account",
     "nav.logout": "Log out",
+
+    "pwa.install": "Install App",
+    "pwa.installShort": "Install",
+    "pwa.toastIos":
+      "To install on iPhone: tap Share, then \"Add to Home Screen\".",
+    "pwa.toastInstalled": "isendai is already on your home screen.",
+    "pwa.toastUnavailable": "Install isn’t available in this browser right now.",
 
     "creditsNav.title": "Credits balance",
     "creditsNav.unit": "Credits",
@@ -880,7 +887,7 @@ export const DICTS: Record<Locale, Dict> = {
     "home.expertBots.kicker": "Bots expertos por tema",
     "home.expertBots.title": "No es un solo chatbot: un especialista para cada tema",
     "home.expertBots.lead":
-      "isendai está diseñado como una flota de bots expertos, no un asistente genérico. Cada herramienta está afinada para su nicho—email laboral, cartas, citas, SOW freelance, trámites, vecinos, creadores, familia—con prompts dedicados, control de alcance y enrutado inteligente al mejor modelo.",
+      "isendai no es un chatbot que lo intenta con todo: es una flota de bots especialistas. Email laboral, cartas, citas, freelance, trámites, vecinos, creadores, familia: cada herramienta trae sus prompts, filtros de alcance y enrutado inteligente al mejor modelo para ese momento.",
     "home.expertBots.point1":
       "Bots por dominio: más de 80 micro-herramientas en ocho áreas de la vida, cada una con su propia personalidad y formato.",
     "home.expertBots.point2":
@@ -947,6 +954,13 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.history": "Historial",
     "nav.account": "Mi cuenta",
     "nav.logout": "Cerrar sesión",
+
+    "pwa.install": "Instalar app",
+    "pwa.installShort": "Instalar",
+    "pwa.toastIos":
+      "En iPhone: toca Compartir y luego «Añadir a la pantalla de inicio».",
+    "pwa.toastInstalled": "isendai ya está en tu pantalla de inicio.",
+    "pwa.toastUnavailable": "La instalación no está disponible en este navegador.",
 
     "creditsNav.title": "Saldo de créditos",
     "creditsNav.unit": "Créditos",
@@ -1547,7 +1561,7 @@ export const DICTS: Record<Locale, Dict> = {
     "home.expertBots.kicker": "Bots experts par sujet",
     "home.expertBots.title": "Pas un seul chatbot — un spécialiste pour chaque sujet",
     "home.expertBots.lead":
-      "isendai est conçu comme une flotte de bots experts, pas un assistant générique. Chaque outil est calibré pour sa niche—email pro, lettres, dating, SOW freelance, paperasse, voisins, créateurs, famille—avec prompts dédiés, contrôle de périmètre et routage intelligent vers le meilleur modèle.",
+      "isendai n’est pas un chatbot fourre-tout : c’est une flotte de bots spécialisés. Mail pro, lettres, dating, freelance, paperasse, voisins, créateurs, famille — chaque outil embarque ses prompts, ses garde-fous de périmètre et le routage vers le meilleur modèle pour l’instant.",
     "home.expertBots.point1":
       "Bots par domaine : plus de 80 micro-outils dans huit univers de vie, chacun avec son persona et son format.",
     "home.expertBots.point2":
@@ -1614,6 +1628,13 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.history": "Historique",
     "nav.account": "Mon compte",
     "nav.logout": "Se déconnecter",
+
+    "pwa.install": "Installer l’app",
+    "pwa.installShort": "Installer",
+    "pwa.toastIos":
+      "Sur iPhone : touchez Partager, puis « Sur l’écran d’accueil ».",
+    "pwa.toastInstalled": "isendai est déjà sur votre écran d’accueil.",
+    "pwa.toastUnavailable": "L’installation n’est pas disponible dans ce navigateur.",
 
     "creditsNav.title": "Solde de crédits",
     "creditsNav.unit": "Crédits",
@@ -2215,7 +2236,7 @@ export const DICTS: Record<Locale, Dict> = {
     "home.expertBots.kicker": "Fach-Bots pro Thema",
     "home.expertBots.title": "Kein einzelner Chatbot — ein Spezialist für jedes Thema",
     "home.expertBots.lead":
-      "isendai ist als Flotte von Experten-Bots gebaut, nicht als generischer Assistent. Jedes Tool ist auf seine Nische abgestimmt—Job-Mail, Anschreiben, Dating, Freelance-SOW, Behörden, Nachbarn, Creator, Familie—mit eigenen Prompts, Scope-Checks und intelligentem Routing zum besten Modell.",
+      "isendai ist kein Einheits-Chatbot für alles, sondern eine Flotte von Spezialisten-Bots. Job-Mail, Anschreiben, Dating, Freelance, Behörden, Nachbarn, Creator, Familie: jedes Tool bringt eigene Prompts, Scope-Checks und intelligentes Routing zum passenden Modell mit.",
     "home.expertBots.point1":
       "Themen-Bots: über 80 Micro-Tools in acht Lebensbereichen, jeweils mit eigener Persona und Ausgabeformat.",
     "home.expertBots.point2":
@@ -2282,6 +2303,13 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.history": "Verlauf",
     "nav.account": "Konto",
     "nav.logout": "Abmelden",
+
+    "pwa.install": "App installieren",
+    "pwa.installShort": "Installieren",
+    "pwa.toastIos":
+      "Auf dem iPhone: Teilen tippen, dann „Zum Home-Bildschirm“.",
+    "pwa.toastInstalled": "isendai ist bereits auf dem Home-Bildschirm.",
+    "pwa.toastUnavailable": "Installation in diesem Browser gerade nicht verfügbar.",
 
     "creditsNav.title": "Credit‑Kontostand",
     "creditsNav.unit": "Credits",
@@ -2863,7 +2891,7 @@ export const DICTS: Record<Locale, Dict> = {
     "home.expertBots.kicker": "分领域专家 Bot",
     "home.expertBots.title": "不是单一聊天机器人——每个场景都有专属专家",
     "home.expertBots.lead":
-      "isendai 采用「专家 Bot 舰队」架构，而非通用助手。每个工具针对细分场景深度优化——工作邮件、求职信、约会、自由职业 SOW、政务文书、邻里、创作者、家庭——配备专属提示词、范围校验，并智能路由到该类别最佳模型。",
+      "isendai 不是什么都接的通用助手，而是一支专家 Bot 舰队。工作邮件、求职信、约会、自由职业、政务、邻里、创作、家庭——每个工具自带专属提示词、范围校验，并智能路由到当下最合适的模型。",
     "home.expertBots.point1":
       "分主题 Bot：80+ 微工具覆盖八大生活领域，各有独立人设与输出格式。",
     "home.expertBots.point2":
@@ -2929,6 +2957,12 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.history": "历史记录",
     "nav.account": "我的账户",
     "nav.logout": "退出登录",
+
+    "pwa.install": "安装应用",
+    "pwa.installShort": "安装",
+    "pwa.toastIos": "在 iPhone 上：点分享，然后选择「添加到主屏幕」。",
+    "pwa.toastInstalled": "isendai 已在主屏幕。",
+    "pwa.toastUnavailable": "当前浏览器不支持安装。",
 
     "creditsNav.title": "额度余额",
     "creditsNav.unit": "额度",
@@ -3500,11 +3534,11 @@ export const DICTS: Record<Locale, Dict> = {
     "home.aiStack.body":
       "Arka planda OpenAI (ChatGPT), Anthropic (Claude), Google ve DeepSeek gibi teknoloji devlerinin beyinleri sizin için çalışıyor. Hangi modeli seçeceğinizi düşünmek istemiyor musunuz? İşi \"Otomatik\" moda bırakın, o anki kriziniz için en uygun modeli biz seçelim. Ya da kontrolü tamamen elinize alıp menüden kendi zekanızı kendiniz belirleyin! (Kredi harcamalarınız, seçtiğiniz modelin zeka seviyesine göre şeffaf bir şekilde hesaplanır).",
     "home.expertBots.kicker": "Konuya özel uzman botlar",
-    "home.expertBots.title": "Tek bir sohbet botu değil — her konuda uzmanlaşmış bot",
+    "home.expertBots.title": "Tek sohbet botu değil — her konunun uzmanı",
     "home.expertBots.lead":
-      "isendai, genel amaçlı bir asistan değil; konuya göre uzmanlaştırılmış bir bot filosu olarak tasarlandı. Her araç kendi alanına göre ince ayarlıdır — iş e-postası, ön yazı, flört, freelance kapsamı, bürokrasi, komşuluk, içerik üretimi, aile — özel prompt’lar, kapsam kontrolü ve o kategori için en uygun modele akıllı yönlendirme ile.",
+      "isendai her soruya aynı şablonla cevap veren genel bir asistan değil; iş e-postası, ön yazı, flört, freelance, bürokrasi, komşuluk, içerik ve aile için görevlendirilmiş uzman bot filosu. Her araç kendi prompt’u, kapsam kontrolü ve o anki iş için en uygun modele akıllı yönlendirmesiyle devreye girer.",
     "home.expertBots.point1":
-      "Alan botları: sekiz yaşam alanında 80+ mikro araç; her birinin kendi kişiliği ve çıktı formatı var.",
+      "Sekiz yaşam alanında 80+ mikro araç: her birinin tonu, formatı ve uzmanlık alanı ayrı.",
     "home.expertBots.point2":
       "Çok sağlayıcılı motor: OpenAI, Anthropic, Gemini, Groq ve DeepSeek — otomatik veya tek menüden elle seçim.",
     "home.expertBots.point3":
@@ -3561,6 +3595,13 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.history": "Geçmiş",
     "nav.account": "Hesabım",
     "nav.logout": "Çıkış",
+
+    "pwa.install": "Uygulamayı Yükle",
+    "pwa.installShort": "Yükle",
+    "pwa.toastIos":
+      "iPhone’da: Paylaş’a dokunun, ardından «Ana Ekrana Ekle».",
+    "pwa.toastInstalled": "isendai zaten ana ekranınızda.",
+    "pwa.toastUnavailable": "Bu tarayıcıda yükleme şu an kullanılamıyor.",
 
     "creditsNav.title": "Kontör bakiyesi",
     "creditsNav.unit": "Kontör",
