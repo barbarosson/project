@@ -1,6 +1,19 @@
 import { describe, expect, it } from "vitest";
 
+import {
+  extractLeakedSuggestedTools,
+  sanitizeConciergeReplyText,
+} from "@/lib/concierge-parse";
 import { finalizeConciergeSuggestions } from "@/lib/concierge-suggestions";
+
+describe("sanitizeConciergeReplyText", () => {
+  it("strips English suggested_tools leak from end of reply", () => {
+    const raw =
+      'Önerim: Garip Metin Düzeltici kullan.\n\nSuggested tools: ["awkward-text-fixer"]';
+    expect(sanitizeConciergeReplyText(raw)).toBe("Önerim: Garip Metin Düzeltici kullan.");
+    expect(extractLeakedSuggestedTools(raw)).toEqual(["awkward-text-fixer"]);
+  });
+});
 
 describe("finalizeConciergeSuggestions", () => {
   const lastUser =

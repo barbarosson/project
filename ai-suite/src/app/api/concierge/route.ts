@@ -10,6 +10,12 @@ import { DICTS, type Locale } from "@/i18n/dictionaries";
 import { resolveToolDescription, resolveToolTitle } from "@/i18n/tool-copy-resolve";
 import { conciergeError, parseApiLocale } from "@/lib/api-error-messages";
 import { humanVoiceDirective } from "@/lib/ai/writing-style";
+import {
+  extractLeakedSuggestedTools,
+  parseConciergeModelOutput,
+  parseConciergeProseFallback,
+  sanitizeConciergeReplyText,
+} from "@/lib/concierge-parse";
 import { finalizeConciergeSuggestions } from "@/lib/concierge-suggestions";
 import { looksLikeToolableMessageRequest, rankToolsForUserIntent } from "@/lib/intent-tool-routing";
 import { isConcreteModelId, modelMeta, type ModelId } from "@/models/models";
@@ -87,11 +93,6 @@ type RequestBody = {
   messages: ChatMessage[];
 };
 
-type ConciergeResponse = {
-  reply: string;
-  suggested_tools: ToolName[];
-};
-
 type ConciergeScope = {
   in_scope: boolean;
 };
@@ -135,21 +136,6 @@ function isRequestBody(value: unknown): value is RequestBody {
 
 function isToolName(value: unknown): value is ToolName {
   return typeof value === "string" && TOOLS.some((t) => t.tool === value);
-}
-
-function safeParseResponse(text: string): ConciergeResponse | null {
-  try {
-    const parsed = JSON.parse(text) as unknown;
-    if (!isRecord(parsed)) return null;
-    const reply = parsed.reply;
-    const suggested = parsed.suggested_tools;
-    if (typeof reply !== "string") return null;
-    if (!Array.isArray(suggested)) return null;
-    const suggested_tools = suggested.filter(isToolName).slice(0, 3);
-    return { reply, suggested_tools };
-  } catch {
-    return null;
-  }
 }
 
 function safeParseScope(text: string): ConciergeScope | null {
@@ -350,9 +336,10 @@ export async function POST(req: Request) {
     `- Output MUST be ONLY in ${localeToLanguage(locale)}.\n` +
     `- Do NOT switch languages.\n` +
     `- If user message is in a different language than locale, still follow locale.\n\n` +
-    "Return ONLY valid JSON (no markdown) with keys:\n" +
-    '- reply: string (your message)\n' +
-    "- suggested_tools: array of tool ids (0-3 items)\n\n" +
+    "Return ONLY valid JSON (no markdown wrapper) with keys:\n" +
+    '- reply: string (your message to the user in the required language ONLY)\n' +
+    "- suggested_tools: array of tool ids (0-3 items)\n" +
+    "CRITICAL: Do NOT put suggested_tools, tool ids, or the phrase 'Suggested tools' inside reply. Those belong only in the suggested_tools JSON array.\n\n" +
     `Tool catalog: ${JSON.stringify(toolCatalog)}`;
 
   let result;
@@ -372,26 +359,31 @@ export async function POST(req: Request) {
   }
 
   const content = result.text?.trim() ?? "";
-  const parsed = safeParseResponse(content);
+  const leakedTools = extractLeakedSuggestedTools(content);
+  const parsed = parseConciergeModelOutput(content);
 
-  if (!parsed) {
-    const reply = content || "OK";
+  const prose = parsed ?? (content ? parseConciergeProseFallback(content) : null);
+  if (!prose) {
     const suggested_tools = finalizeSuggestions(
       lastUser,
-      reply,
-      fallbackSuggestedTools(lastUser),
+      "",
+      [...leakedTools, ...fallbackSuggestedTools(lastUser)],
       locale
     );
-    return NextResponse.json({ reply, suggested_tools });
+    return NextResponse.json({ reply: "OK", suggested_tools });
   }
 
-  const llmSuggested = parsed.suggested_tools?.length
-    ? parsed.suggested_tools
-    : fallbackSuggestedTools(lastUser);
-  const suggested_tools = finalizeSuggestions(lastUser, parsed.reply, llmSuggested, locale);
+  const reply = sanitizeConciergeReplyText(prose.reply);
+  const llmSuggested = [
+    ...prose.suggested_tools,
+    ...leakedTools.filter((t) => !prose.suggested_tools.includes(t)),
+  ];
+  const baseSuggested =
+    llmSuggested.length > 0 ? llmSuggested : fallbackSuggestedTools(lastUser);
+  const suggested_tools = finalizeSuggestions(lastUser, reply, baseSuggested, locale);
 
   return NextResponse.json({
-    reply: parsed.reply,
+    reply,
     suggested_tools,
   });
   } catch (e) {
