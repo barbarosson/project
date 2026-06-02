@@ -464,6 +464,15 @@ export const DICTS: Record<Locale, Dict> = {
     "errors.invalidPayload": "Invalid tool input.",
     "errors.inputTooLong": "Input must be at most {max} characters.",
     "errors.rateLimit": "Too many requests. Please wait a moment and try again.",
+    "errors.insufficientCredits":
+      "Not enough credits for this generation. Add credits or choose a cheaper model.",
+    "errors.insufficientCreditsDetail":
+      "Not enough credits. This run needs {required} credits; your balance is {balance}.",
+    "errors.insufficientCreditsAlt": "Not enough credits for another version.",
+    "errors.insufficientCreditsAltDetail":
+      "Not enough credits for another version. Need {required}; balance {balance}.",
+    "errors.aiTemperatureUnsupported":
+      "This model does not support that setting. Try Fast or Pro tier, or pick another model.",
     "legal.termsTitle": "Terms of Service",
     "legal.privacyTitle": "Privacy Policy",
     "legal.effective": "Effective date: {year}-01-01",
@@ -1118,6 +1127,15 @@ export const DICTS: Record<Locale, Dict> = {
     "errors.invalidPayload": "Entrada de herramienta no válida.",
     "errors.inputTooLong": "La entrada debe tener como máximo {max} caracteres.",
     "errors.rateLimit": "Demasiadas peticiones. Espera un momento e inténtalo de nuevo.",
+    "errors.insufficientCredits":
+      "No tienes créditos suficientes para esta generación. Añade créditos o elige un modelo más económico.",
+    "errors.insufficientCreditsDetail":
+      "Créditos insuficientes. Esta acción requiere {required} créditos; tu saldo es {balance}.",
+    "errors.insufficientCreditsAlt": "No hay créditos suficientes para otra versión.",
+    "errors.insufficientCreditsAltDetail":
+      "Créditos insuficientes para otra versión. Necesitas {required}; saldo {balance}.",
+    "errors.aiTemperatureUnsupported":
+      "Este modelo no admite ese ajuste. Prueba el nivel Fast o Pro, u otro modelo de la lista.",
     "legal.termsTitle": "Términos del servicio",
     "legal.privacyTitle": "Política de privacidad",
     "legal.effective": "Vigencia: {year}-01-01",
@@ -1763,6 +1781,15 @@ export const DICTS: Record<Locale, Dict> = {
     "errors.invalidPayload": "Saisie d’outil invalide.",
     "errors.inputTooLong": "La saisie doit faire au plus {max} caractères.",
     "errors.rateLimit": "Trop de requêtes. Attends un peu puis réessaie.",
+    "errors.insufficientCredits":
+      "Crédits insuffisants pour cette génération. Ajoute des crédits ou choisis un modèle moins cher.",
+    "errors.insufficientCreditsDetail":
+      "Crédits insuffisants. Cette action nécessite {required} crédits ; solde {balance}.",
+    "errors.insufficientCreditsAlt": "Crédits insuffisants pour une autre version.",
+    "errors.insufficientCreditsAltDetail":
+      "Crédits insuffisants pour une autre version. Requis {required} ; solde {balance}.",
+    "errors.aiTemperatureUnsupported":
+      "Ce modèle ne prend pas en charge ce réglage. Essaie Fast ou Pro, ou un autre modèle.",
     "legal.termsTitle": "Conditions d’utilisation",
     "legal.privacyTitle": "Politique de confidentialité",
     "legal.effective": "Date d’effet : {year}-01-01",
@@ -2409,6 +2436,15 @@ export const DICTS: Record<Locale, Dict> = {
     "errors.invalidPayload": "Ungültige Tool-Eingabe.",
     "errors.inputTooLong": "Die Eingabe darf höchstens {max} Zeichen haben.",
     "errors.rateLimit": "Zu viele Anfragen. Bitte kurz warten.",
+    "errors.insufficientCredits":
+      "Nicht genug Credits für diese Generierung. Credits aufladen oder günstigeres Modell wählen.",
+    "errors.insufficientCreditsDetail":
+      "Credits reichen nicht. Dieser Lauf braucht {required} Credits; Guthaben {balance}.",
+    "errors.insufficientCreditsAlt": "Nicht genug Credits für eine weitere Version.",
+    "errors.insufficientCreditsAltDetail":
+      "Credits für weitere Version nicht ausreichend. Benötigt {required}; Guthaben {balance}.",
+    "errors.aiTemperatureUnsupported":
+      "Dieses Modell unterstützt diese Einstellung nicht. Probiere Fast oder Pro oder ein anderes Modell.",
     "legal.termsTitle": "Nutzungsbedingungen",
     "legal.privacyTitle": "Datenschutz",
     "legal.effective": "Gültig ab: {year}-01-01",
@@ -3028,6 +3064,11 @@ export const DICTS: Record<Locale, Dict> = {
     "errors.invalidPayload": "工具输入无效。",
     "errors.inputTooLong": "输入不得超过 {max} 个字符。",
     "errors.rateLimit": "请求过于频繁，请稍后再试。",
+    "errors.insufficientCredits": "额度不足，无法完成本次生成。请充值或选择更经济的模型。",
+    "errors.insufficientCreditsDetail": "额度不足。本次需要 {required} 点；当前余额 {balance} 点。",
+    "errors.insufficientCreditsAlt": "额度不足，无法生成另一个版本。",
+    "errors.insufficientCreditsAltDetail": "额度不足，无法生成另一版本。需要 {required} 点；余额 {balance} 点。",
+    "errors.aiTemperatureUnsupported": "该模型不支持此参数。请尝试 Fast/Pro 档位或选择其他模型。",
     "legal.termsTitle": "服务条款",
     "legal.privacyTitle": "隐私政策",
     "legal.effective": "生效日期：{year}-01-01",
@@ -3659,6 +3700,15 @@ export const DICTS: Record<Locale, Dict> = {
     "errors.invalidPayload": "Geçersiz araç girdisi.",
     "errors.inputTooLong": "Girdi en fazla {max} karakter olabilir.",
     "errors.rateLimit": "Çok fazla istek. Biraz bekle ve tekrar dene.",
+    "errors.insufficientCredits":
+      "Bu üretim için kontörünüz yetersiz. Paket yükleyin veya daha uygun bir model seçin.",
+    "errors.insufficientCreditsDetail":
+      "Kontör yetersiz. Bu işlem {required} kontör gerektiriyor; bakiyeniz {balance}.",
+    "errors.insufficientCreditsAlt": "Başka bir sürüm için kontörünüz yetersiz.",
+    "errors.insufficientCreditsAltDetail":
+      "Alternatif sürüm için kontör yetersiz. Gerekli: {required}; bakiye: {balance}.",
+    "errors.aiTemperatureUnsupported":
+      "Bu model bu ayarı desteklemiyor. Fast veya Pro seviyesini deneyin ya da listeden başka bir model seçin.",
     "legal.termsTitle": "Kullanım şartları",
     "legal.privacyTitle": "Gizlilik politikası",
     "legal.effective": "Yürürlük: {year}-01-01",

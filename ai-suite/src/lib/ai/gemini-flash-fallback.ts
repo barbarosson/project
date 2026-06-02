@@ -1,6 +1,8 @@
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 
+import { withOptionalTemperature } from "@/lib/ai/generation-sampling";
+
 /** Model id passed to `@ai-sdk/google` when the requested Gemini hits API quota / free-tier blocks. */
 export const GEMINI_FLASH_FALLBACK_ID = "gemini-2.5-flash";
 
@@ -37,10 +39,13 @@ export async function generateTextGoogleWithFlashFallback(
   const primaryId =
     googleModelId && googleModelId.trim().length > 0 ? googleModelId.trim() : GEMINI_FLASH_FALLBACK_ID;
 
+  const sampling =
+    args.temperature !== undefined ? withOptionalTemperature(primaryId, args.temperature) : {};
+
   try {
     const result = await generateText({
       model: google(primaryId),
-      temperature: args.temperature,
+      ...sampling,
       system: args.system,
       prompt: args.prompt,
     });
@@ -51,9 +56,13 @@ export async function generateTextGoogleWithFlashFallback(
       primaryId !== GEMINI_FLASH_FALLBACK_ID &&
       messageLooksLikeGeminiApiQuotaExhausted(msg)
     ) {
+      const flashSampling =
+        args.temperature !== undefined
+          ? withOptionalTemperature(GEMINI_FLASH_FALLBACK_ID, args.temperature)
+          : {};
       const result = await generateText({
         model: google(GEMINI_FLASH_FALLBACK_ID),
-        temperature: args.temperature,
+        ...flashSampling,
         system: args.system,
         prompt: args.prompt,
       });

@@ -14,7 +14,7 @@ type ModelContextValue = {
   model: ModelId;
   setModel: (model: ModelId) => void;
   /** From membership profile (`user_metadata.default_ai_model`). */
-  profileDefaultModel: UserFacingModelId;
+  profileDefaultModel: ModelId;
 };
 
 const ModelContext = React.createContext<ModelContextValue | null>(null);

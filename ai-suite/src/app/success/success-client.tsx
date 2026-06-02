@@ -12,6 +12,11 @@ import { originalTextFromPayload } from "@/lib/feedback/original-text-from-paylo
 
 import type { ToolName, ToolPayload } from "@/components/ai-suite/tools";
 import { getToolDefinition } from "@/components/ai-suite/tools";
+import {
+  clientInsufficientCreditsAltMessage,
+  clientInsufficientCreditsMessage,
+  clientMapGenerationError,
+} from "@/lib/client-generation-errors";
 import { useI18n } from "@/i18n/i18n-provider";
 import { toolTitle } from "@/i18n/tool-i18n";
 import {
@@ -150,7 +155,7 @@ export function SuccessClient({
   const toolParam = searchParams.get("tool");
   const isTest = searchParams.get("test") === "1";
   const isPaidReturn = searchParams.get("paid") === "1";
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -217,10 +222,18 @@ export function SuccessClient({
           ...parsed.payload,
           model,
           extra,
+          locale,
         }),
       });
       const raw = await res.text();
-      let json: { result?: string; request_id?: string; error?: string; code?: string } | null = null;
+      let json: {
+        result?: string;
+        request_id?: string;
+        error?: string;
+        code?: string;
+        credits_required?: string;
+        credits_balance?: string;
+      } | null = null;
       try {
         json = JSON.parse(raw) as { result?: string; error?: string; code?: string };
       } catch {
@@ -235,9 +248,13 @@ export function SuccessClient({
           throw new Error(`RATELIMIT:${json?.error || ""}`);
         }
         if (res.status === 402 || json?.code === "insufficient_credits") {
-          throw new Error(`INSUFFICIENT:${json?.error || ""}`);
+          throw new Error(`INSUFFICIENT:${clientInsufficientCreditsMessage(t, json)}`);
         }
-        throw new Error(json?.error || t("errors.generationFailed"));
+        throw new Error(
+          json?.code === "ai_failed" && json.error
+            ? json.error
+            : clientMapGenerationError(t, json?.error ?? "")
+        );
       }
 
       if (!json?.result) throw new Error(t("errors.noModelResult"));
@@ -245,7 +262,7 @@ export function SuccessClient({
       setLastModelUsed(modelUsedLabel(toolName, model));
       return json.result;
     },
-    [setLastModelUsed, t]
+    [locale, setLastModelUsed, t]
   );
 
   async function generateAltFromRequest(
@@ -257,7 +274,7 @@ export function SuccessClient({
     const res = await fetch("/api/isendai/request/version", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ request_id: requestId, extra, model }),
+      body: JSON.stringify({ request_id: requestId, extra, model, locale }),
     });
     const raw = await res.text();
     type VersionApiJson = {
@@ -266,6 +283,8 @@ export function SuccessClient({
       idx?: number;
       error?: string;
       code?: string;
+      credits_required?: string;
+      credits_balance?: string;
     };
     let json: VersionApiJson | null = null;
     try {
@@ -281,9 +300,13 @@ export function SuccessClient({
         throw new Error(`RATELIMIT:${json?.error || ""}`);
       }
       if (res.status === 402 || json?.code === "insufficient_credits") {
-        throw new Error(`INSUFFICIENT:${json?.error || ""}`);
+        throw new Error(`INSUFFICIENT:${clientInsufficientCreditsAltMessage(t, json)}`);
       }
-      throw new Error(json?.error || t("errors.generationFailed"));
+      throw new Error(
+        json?.code === "ai_failed" && json.error
+          ? json.error
+          : clientMapGenerationError(t, json?.error ?? "")
+      );
     }
     if (!json?.text) throw new Error(t("errors.noModelResult"));
     const storageKey = getToolDefinition(toolName).storageKey;

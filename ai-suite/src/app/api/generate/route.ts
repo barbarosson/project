@@ -28,9 +28,15 @@ import {
 } from "@/models/models";
 import { TOOL_INPUT_MAX_CHARS } from "@/lib/constants/input-limits";
 import { generateTextGoogleWithFlashFallback } from "@/lib/ai/gemini-flash-fallback";
+import { withOptionalTemperature } from "@/lib/ai/generation-sampling";
 import { buildExpertSystemPrompt } from "@/lib/ai/expert-system-prompt";
 import { formatCreditsFromTenths } from "@/lib/credits-units";
-import { generateOutOfScopeError, parseApiLocale } from "@/lib/api-error-messages";
+import {
+  generateOutOfScopeError,
+  insufficientCreditsError,
+  mapAiProviderError,
+  parseApiLocale,
+} from "@/lib/api-error-messages";
 import { DICTS } from "@/i18n/dictionaries";
 import {
   isDefineRelationshipIntent,
@@ -241,16 +247,19 @@ async function checkScope(payload: RequestBody): Promise<ScopeResult> {
     "If not, set in_scope=false and suggest the best tool (or unknown).\n\n" +
     `User input:\n${rawInput}`;
 
+  const scopeSampling = withOptionalTemperature(model, 0);
   const result =
     provider === "google"
-      ? (await generateTextGoogleWithFlashFallback(model, {
-          temperature: 0,
-          system,
-          prompt,
-        })).result
+      ? (
+          await generateTextGoogleWithFlashFallback(model, {
+            temperature: 0,
+            system,
+            prompt,
+          })
+        ).result
       : await generateText({
           model: client(model),
-          temperature: 0,
+          ...scopeSampling,
           system,
           prompt,
         });
@@ -537,7 +546,10 @@ export async function POST(req: Request) {
   }
 
   const { system: baseSystem, user } = promptFor(body);
-  const system = buildExpertSystemPrompt(body.tool, baseSystem);
+  const system = buildExpertSystemPrompt(body.tool, baseSystem, {
+    locale,
+    userText: user,
+  });
   const override = resolveModelOverride(body);
   const provider = override?.provider ?? pickProvider(body);
   const { client, model } = override ?? modelForProvider(provider);
@@ -653,12 +665,14 @@ export async function POST(req: Request) {
           .eq("owner_type", "user")
           .eq("owner_id", ownerId)
           .maybeSingle();
+        const required = formatCreditsFromTenths(creditCost);
+        const balance = formatCreditsFromTenths(balRow?.credits_balance ?? 0);
         return NextResponse.json(
           {
-            error: "Insufficient credits for this model. Upgrade or add credits.",
+            error: insufficientCreditsError(locale, "generate", { required, balance }),
             code: "insufficient_credits",
-            credits_required: formatCreditsFromTenths(creditCost),
-            credits_balance: formatCreditsFromTenths(balRow?.credits_balance ?? 0),
+            credits_required: required,
+            credits_balance: balance,
           },
           { status: 402, headers: debugHeaders }
         );
@@ -695,7 +709,7 @@ export async function POST(req: Request) {
     } else {
       out = await generateText({
         model: client(model),
-        temperature: 0.6,
+        ...withOptionalTemperature(model, 0.6),
         system,
         prompt: user,
       });
@@ -739,8 +753,11 @@ export async function POST(req: Request) {
     );
     return response;
   } catch (e) {
-    const message = e instanceof Error ? e.message : "AI request failed.";
-    return NextResponse.json({ error: message }, { status: 502, headers: debugHeaders });
+    const raw = e instanceof Error ? e.message : "AI request failed.";
+    return NextResponse.json(
+      { error: mapAiProviderError(locale, raw), code: "ai_failed" },
+      { status: 502, headers: debugHeaders }
+    );
   }
 }
 

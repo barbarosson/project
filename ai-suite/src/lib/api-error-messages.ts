@@ -50,3 +50,44 @@ export function conciergeError(locale: Locale, key: string): string {
   const d = dict(locale);
   return d[key] ?? DICTS.en[key] ?? key;
 }
+
+export type InsufficientCreditsKind = "generate" | "version";
+
+export function insufficientCreditsError(
+  locale: Locale,
+  kind: InsufficientCreditsKind,
+  vars?: { required?: string; balance?: string }
+): string {
+  const d = dict(locale);
+  if (vars?.required != null && vars?.balance != null) {
+    const detailKey =
+      kind === "version"
+        ? "errors.insufficientCreditsAltDetail"
+        : "errors.insufficientCreditsDetail";
+    const template = d[detailKey] ?? DICTS.en[detailKey] ?? "";
+    return fill(template, { required: vars.required, balance: vars.balance });
+  }
+  const key = kind === "version" ? "errors.insufficientCreditsAlt" : "errors.insufficientCredits";
+  return d[key] ?? DICTS.en[key] ?? key;
+}
+
+/** Map raw provider / SDK messages to localized user-facing copy. */
+export function mapAiProviderError(locale: Locale, raw: string): string {
+  const d = dict(locale);
+  const m = raw.toLowerCase();
+
+  if (m.includes("temperature") && (m.includes("deprecated") || m.includes("unsupported") || m.includes("not supported"))) {
+    return d["errors.aiTemperatureUnsupported"] ?? DICTS.en["errors.aiTemperatureUnsupported"] ?? raw;
+  }
+
+  if (
+    m.includes("insufficient") &&
+    (m.includes("credit") || m.includes("balance") || m.includes("quota"))
+  ) {
+    return d["errors.insufficientCredits"] ?? DICTS.en["errors.insufficientCredits"] ?? raw;
+  }
+
+  const trimmed = raw.trim();
+  if (trimmed.length > 0 && trimmed.length <= 280) return trimmed;
+  return d["errors.generationFailed"] ?? DICTS.en["errors.generationFailed"] ?? "Generation failed.";
+}

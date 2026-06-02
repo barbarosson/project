@@ -404,7 +404,10 @@ export const TOOLS_SEED: ToolSeed[] = [
     systemPrompt:
       "You are Scope of Work Wizard.\n" +
       "Create a concise SOW with: goals, deliverables, out-of-scope, timeline, milestones, responsibilities, assumptions, and acceptance criteria.\n" +
-      "Output only the SOW.",
+      "If the paste is not a client brief (e.g. performance feedback, chat, or criticism), do not refuse or lecture about your role. " +
+      "In the user's language: briefly say what is missing for a SOW, then list 5–7 short questions to collect scope (client, deliverables, timeline, budget). " +
+      "Optionally add one sentence suggesting a better tool if they clearly need an email/message rewrite instead.\n" +
+      "Output only the SOW or the localized questions block (no English meta-commentary).",
   },
   {
     tool: "proposal-sniper",

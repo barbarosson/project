@@ -6,6 +6,10 @@ import { toast } from "sonner";
 
 import type { ToolName, ToolPayload } from "./tools";
 import { getToolDefinition } from "./tools";
+import {
+  clientInsufficientCreditsMessage,
+  clientMapGenerationError,
+} from "@/lib/client-generation-errors";
 import { modelSalesTier, resolveConcreteModelId, type ModelId } from "@/models/models";
 import { resolveToolModelPreference } from "@/lib/auth/default-ai-model";
 import { ModelSwitcher } from "@/components/model-switcher";
@@ -144,8 +148,8 @@ export function ToolCard({
         request_id?: string;
         error?: string;
         code?: string;
-        credits_required?: number;
-        credits_balance?: number;
+        credits_required?: string;
+        credits_balance?: string;
       };
       let json: GenJson | null = null;
       try {
@@ -162,7 +166,7 @@ export function ToolCard({
 
       if (res.status === 402 || json?.code === "insufficient_credits") {
         openPricingModal(tool);
-        toast.error(json?.error ?? t("errors.generationFailed"));
+        toast.error(clientInsufficientCreditsMessage(t, json));
         return;
       }
 
@@ -172,7 +176,14 @@ export function ToolCard({
       }
 
       if (!res.ok) {
-        toast.error(json?.error ?? t("errors.generationFailed"));
+        const rawErr = json?.error ?? "";
+        toast.error(
+          rawErr
+            ? json?.code === "ai_failed"
+              ? rawErr
+              : clientMapGenerationError(t, rawErr)
+            : t("errors.generationFailed")
+        );
         return;
       }
 

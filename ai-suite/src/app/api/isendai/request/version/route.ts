@@ -22,13 +22,20 @@ import {
 import { formatCreditsFromTenths } from "@/lib/credits-units";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import { generateTextGoogleWithFlashFallback } from "@/lib/ai/gemini-flash-fallback";
+import { withOptionalTemperature } from "@/lib/ai/generation-sampling";
 import { buildExpertSystemPrompt } from "@/lib/ai/expert-system-prompt";
+import {
+  insufficientCreditsError,
+  mapAiProviderError,
+  parseApiLocale,
+} from "@/lib/api-error-messages";
 
 type Body = {
   request_id?: string;
   extra?: string;
   /** Optional user-facing tier override for this alternative (fast-ai | pro-ai | genius-ai). */
   model?: string;
+  locale?: string;
 };
 
 function providerKeyName(provider: ProviderId) {
@@ -95,6 +102,7 @@ export async function POST(req: Request) {
   }
   const extra = typeof body?.extra === "string" ? body.extra.trim() : "";
   const requestedModel = typeof body?.model === "string" ? body.model.trim() : "";
+  const locale = parseApiLocale(body?.locale);
 
   const rpm = Math.min(300, Math.max(10, Number(process.env.ISENDAI_VERSION_RPM ?? "90")));
   const rl = enforceRateLimit(req, "request-version", rpm, 60_000);
@@ -165,7 +173,10 @@ export async function POST(req: Request) {
   const base = rawInputFor(payload);
   const prompt =
     extra.length > 0 ? `${base}\n\nExtra instructions (apply on top of the tool):\n${extra}` : base;
-  const system = buildExpertSystemPrompt(toolField, def.systemPrompt);
+  const system = buildExpertSystemPrompt(toolField, def.systemPrompt, {
+    locale,
+    userText: prompt,
+  });
 
   const creditCost = creditsForGeneration(concreteForRun, prompt.length);
 
@@ -184,12 +195,14 @@ export async function POST(req: Request) {
         .eq("owner_type", ownerType)
         .eq("owner_id", ownerId)
         .maybeSingle();
+      const required = formatCreditsFromTenths(creditCost);
+      const balance = formatCreditsFromTenths(balRow?.credits_balance ?? 0);
       return NextResponse.json(
         {
-          error: "Insufficient credits for another version.",
+          error: insufficientCreditsError(locale, "version", { required, balance }),
           code: "insufficient_credits",
-          credits_required: formatCreditsFromTenths(creditCost),
-          credits_balance: formatCreditsFromTenths(balRow?.credits_balance ?? 0),
+          credits_required: required,
+          credits_balance: balance,
         },
         { status: 402 }
       );
@@ -197,24 +210,30 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Billing error." }, { status: 503 });
   }
 
-  // Generate
   let out: Awaited<ReturnType<typeof generateText>>;
-  if (provider === "google") {
-    const mid = concreteForRun;
-    const { result } = await generateTextGoogleWithFlashFallback(mid, {
-      // Higher temperature so each alternative meaningfully differs from prior versions.
-      temperature: 0.85,
-      system,
-      prompt,
-    });
-    out = result;
-  } else {
-    out = await generateText({
-      model: modelFor(provider, concreteForRun),
-      temperature: 0.85,
-      system,
-      prompt,
-    });
+  try {
+    if (provider === "google") {
+      const mid = concreteForRun;
+      const { result } = await generateTextGoogleWithFlashFallback(mid, {
+        temperature: 0.85,
+        system,
+        prompt,
+      });
+      out = result;
+    } else {
+      out = await generateText({
+        model: modelFor(provider, concreteForRun),
+        ...withOptionalTemperature(concreteForRun, 0.85),
+        system,
+        prompt,
+      });
+    }
+  } catch (e) {
+    const raw = e instanceof Error ? e.message : "AI request failed.";
+    return NextResponse.json(
+      { error: mapAiProviderError(locale, raw), code: "ai_failed" },
+      { status: 502 }
+    );
   }
   const text = out.text?.trim();
   if (!text) return NextResponse.json({ error: "Empty response." }, { status: 502 });
