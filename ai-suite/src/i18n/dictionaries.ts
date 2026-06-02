@@ -268,6 +268,31 @@ export const DICTS: Record<Locale, Dict> = {
     "pwa.toastInstalled": "isendai is already on your home screen.",
     "pwa.toastUnavailable": "Install isn’t available in this browser right now.",
 
+    "referrals.navLabel": "Get Free Credits",
+    "referrals.navLabelShort": "Free Credits",
+    "referrals.pageTitle": "Earn Free Credits",
+    "referrals.metaDescription":
+      "Invite friends to isendai. You both get 50 free credits when they sign up with your link.",
+    "referrals.pageLead":
+      "Share your link. When a friend joins and verifies their email, you each get {n} free credits—no subscription required.",
+    "referrals.inviteLinkHeading": "Your invite link",
+    "referrals.loading": "Loading your referral link…",
+    "referrals.loadError": "Could not load referral data. Refresh or try again later.",
+    "referrals.copyLink": "Copy link",
+    "referrals.copySuccess": "Invite link copied!",
+    "referrals.copyFailed": "Could not copy—select the link and copy manually.",
+    "referrals.shareWhatsApp": "Share on WhatsApp",
+    "referrals.shareX": "Share on X",
+    "referrals.shareMessage":
+      "I'm using isendai to perfect my emails with AI. Sign up with my link and we both get 50 free credits! {link}",
+    "referrals.statsHeading": "Your referral stats",
+    "referrals.friendsInvited": "Friends invited",
+    "referrals.creditsEarned": "Total free credits earned",
+    "referrals.progressLabel": "Reward momentum",
+    "referrals.statsHint":
+      "Credits are granted after your friend verifies their email. Self-referrals and duplicate accounts are not eligible.",
+    "referrals.topUpLink": "Top up credits",
+
     "creditsNav.title": "Credits balance",
     "creditsNav.unit": "Credits",
     "creditsNav.trialOne": "Trial: 1 day left",
@@ -962,6 +987,31 @@ export const DICTS: Record<Locale, Dict> = {
     "pwa.toastInstalled": "isendai ya está en tu pantalla de inicio.",
     "pwa.toastUnavailable": "La instalación no está disponible en este navegador.",
 
+    "referrals.navLabel": "Créditos gratis",
+    "referrals.navLabelShort": "Gratis",
+    "referrals.pageTitle": "Gana créditos gratis",
+    "referrals.metaDescription":
+      "Invita amigos a isendai. Los dos recibís 50 créditos gratis cuando se registren con tu enlace.",
+    "referrals.pageLead":
+      "Comparte tu enlace. Cuando un amigo se une y verifica su email, cada uno recibe {n} créditos gratis.",
+    "referrals.inviteLinkHeading": "Tu enlace de invitación",
+    "referrals.loading": "Cargando tu enlace…",
+    "referrals.loadError": "No se pudieron cargar los datos. Actualiza la página.",
+    "referrals.copyLink": "Copiar enlace",
+    "referrals.copySuccess": "¡Enlace copiado!",
+    "referrals.copyFailed": "No se pudo copiar.",
+    "referrals.shareWhatsApp": "Compartir en WhatsApp",
+    "referrals.shareX": "Compartir en X",
+    "referrals.shareMessage":
+      "Uso isendai para perfeccionar mis emails con IA. Regístrate con mi enlace y los dos recibimos 50 créditos gratis. {link}",
+    "referrals.statsHeading": "Tus estadísticas",
+    "referrals.friendsInvited": "Amigos invitados",
+    "referrals.creditsEarned": "Créditos gratis ganados",
+    "referrals.progressLabel": "Progreso de recompensas",
+    "referrals.statsHint":
+      "Los créditos se otorgan cuando tu amigo verifica su email.",
+    "referrals.topUpLink": "Recargar créditos",
+
     "creditsNav.title": "Saldo de créditos",
     "creditsNav.unit": "Créditos",
     "creditsNav.trialOne": "Prueba: queda 1 día",
@@ -1635,6 +1685,31 @@ export const DICTS: Record<Locale, Dict> = {
       "Sur iPhone : touchez Partager, puis « Sur l’écran d’accueil ».",
     "pwa.toastInstalled": "isendai est déjà sur votre écran d’accueil.",
     "pwa.toastUnavailable": "L’installation n’est pas disponible dans ce navigateur.",
+
+    "referrals.navLabel": "Crédits gratuits",
+    "referrals.navLabelShort": "Gratuit",
+    "referrals.pageTitle": "Gagnez des crédits gratuits",
+    "referrals.metaDescription":
+      "Invitez des amis sur isendai. Vous recevez chacun 50 crédits gratuits à l’inscription via votre lien.",
+    "referrals.pageLead":
+      "Partagez votre lien. Quand un ami s’inscrit et vérifie son email, vous recevez chacun {n} crédits gratuits.",
+    "referrals.inviteLinkHeading": "Votre lien d’invitation",
+    "referrals.loading": "Chargement du lien…",
+    "referrals.loadError": "Impossible de charger les données.",
+    "referrals.copyLink": "Copier le lien",
+    "referrals.copySuccess": "Lien copié !",
+    "referrals.copyFailed": "Copie impossible.",
+    "referrals.shareWhatsApp": "Partager sur WhatsApp",
+    "referrals.shareX": "Partager sur X",
+    "referrals.shareMessage":
+      "J’utilise isendai pour peaufiner mes emails avec l’IA. Inscrivez-vous avec mon lien : 50 crédits gratuits pour nous deux ! {link}",
+    "referrals.statsHeading": "Vos stats",
+    "referrals.friendsInvited": "Amis invités",
+    "referrals.creditsEarned": "Crédits gratuits gagnés",
+    "referrals.progressLabel": "Progression",
+    "referrals.statsHint":
+      "Les crédits sont accordés après vérification de l’email de votre ami.",
+    "referrals.topUpLink": "Recharger des crédits",
 
     "creditsNav.title": "Solde de crédits",
     "creditsNav.unit": "Crédits",
@@ -2311,6 +2386,31 @@ export const DICTS: Record<Locale, Dict> = {
     "pwa.toastInstalled": "isendai ist bereits auf dem Home-Bildschirm.",
     "pwa.toastUnavailable": "Installation in diesem Browser gerade nicht verfügbar.",
 
+    "referrals.navLabel": "Gratis-Credits",
+    "referrals.navLabelShort": "Gratis",
+    "referrals.pageTitle": "Gratis-Credits verdienen",
+    "referrals.metaDescription":
+      "Freunde zu isendai einladen. Ihr erhaltet je 50 Gratis-Credits bei Anmeldung über deinen Link.",
+    "referrals.pageLead":
+      "Link teilen. Wenn ein Freund beitritt und die E-Mail bestätigt, erhaltet ihr je {n} Gratis-Credits.",
+    "referrals.inviteLinkHeading": "Dein Einladungslink",
+    "referrals.loading": "Link wird geladen…",
+    "referrals.loadError": "Daten konnten nicht geladen werden.",
+    "referrals.copyLink": "Link kopieren",
+    "referrals.copySuccess": "Link kopiert!",
+    "referrals.copyFailed": "Kopieren fehlgeschlagen.",
+    "referrals.shareWhatsApp": "Per WhatsApp teilen",
+    "referrals.shareX": "Auf X teilen",
+    "referrals.shareMessage":
+      "Ich nutze isendai für bessere E-Mails mit KI. Melde dich über meinen Link an – wir bekommen je 50 Gratis-Credits! {link}",
+    "referrals.statsHeading": "Deine Statistik",
+    "referrals.friendsInvited": "Eingeladene Freunde",
+    "referrals.creditsEarned": "Verdiente Gratis-Credits",
+    "referrals.progressLabel": "Fortschritt",
+    "referrals.statsHint":
+      "Credits gibt es, nachdem dein Freund die E-Mail bestätigt hat.",
+    "referrals.topUpLink": "Credits aufladen",
+
     "creditsNav.title": "Credit‑Kontostand",
     "creditsNav.unit": "Credits",
     "creditsNav.trialOne": "Testphase: noch 1 Tag",
@@ -2964,6 +3064,30 @@ export const DICTS: Record<Locale, Dict> = {
     "pwa.toastInstalled": "isendai 已在主屏幕。",
     "pwa.toastUnavailable": "当前浏览器不支持安装。",
 
+    "referrals.navLabel": "免费领额度",
+    "referrals.navLabelShort": "免费",
+    "referrals.pageTitle": "赚取免费额度",
+    "referrals.metaDescription":
+      "邀请好友使用 isendai，好友通过你的链接注册并验证邮箱后，双方各得 50 免费额度。",
+    "referrals.pageLead":
+      "分享你的链接。好友加入并验证邮箱后，你们各得 {n} 免费额度。",
+    "referrals.inviteLinkHeading": "你的邀请链接",
+    "referrals.loading": "正在加载链接…",
+    "referrals.loadError": "无法加载数据，请刷新页面。",
+    "referrals.copyLink": "复制链接",
+    "referrals.copySuccess": "链接已复制！",
+    "referrals.copyFailed": "复制失败。",
+    "referrals.shareWhatsApp": "分享到 WhatsApp",
+    "referrals.shareX": "分享到 X",
+    "referrals.shareMessage":
+      "我在用 isendai 用 AI 完善邮件。用我的链接注册，我们各得 50 免费额度！{link}",
+    "referrals.statsHeading": "邀请数据",
+    "referrals.friendsInvited": "已邀请好友",
+    "referrals.creditsEarned": "已获得免费额度",
+    "referrals.progressLabel": "奖励进度",
+    "referrals.statsHint": "好友验证邮箱后发放额度。",
+    "referrals.topUpLink": "充值额度",
+
     "creditsNav.title": "额度余额",
     "creditsNav.unit": "额度",
     "creditsNav.trialOne": "试用：还剩 1 天",
@@ -3602,6 +3726,31 @@ export const DICTS: Record<Locale, Dict> = {
       "iPhone’da: Paylaş’a dokunun, ardından «Ana Ekrana Ekle».",
     "pwa.toastInstalled": "isendai zaten ana ekranınızda.",
     "pwa.toastUnavailable": "Bu tarayıcıda yükleme şu an kullanılamıyor.",
+
+    "referrals.navLabel": "Ücretsiz Kontör",
+    "referrals.navLabelShort": "Ücretsiz",
+    "referrals.pageTitle": "Ücretsiz Kontör Kazan",
+    "referrals.metaDescription":
+      "Arkadaşlarını isendai'ye davet et. Linkinle kayıt olup e-postasını doğruladığında ikiniz de 50 ücretsiz kontör kazanın.",
+    "referrals.pageLead":
+      "Davet linkini paylaş. Arkadaşın katılıp e-postasını doğruladığında ikiniz de {n} ücretsiz kontör alırsınız.",
+    "referrals.inviteLinkHeading": "Davet linkin",
+    "referrals.loading": "Link yükleniyor…",
+    "referrals.loadError": "Veriler yüklenemedi. Sayfayı yenile.",
+    "referrals.copyLink": "Linki kopyala",
+    "referrals.copySuccess": "Davet linki kopyalandı!",
+    "referrals.copyFailed": "Kopyalanamadı.",
+    "referrals.shareWhatsApp": "WhatsApp'ta paylaş",
+    "referrals.shareX": "X'te paylaş",
+    "referrals.shareMessage":
+      "Maillerimi AI ile düzeltmek için isendai kullanıyorum. Linkimle kayıt ol, ikimiz de 50 ücretsiz kontör kazanalım! {link}",
+    "referrals.statsHeading": "Davet istatistiklerin",
+    "referrals.friendsInvited": "Davet edilen arkadaş",
+    "referrals.creditsEarned": "Kazanılan ücretsiz kontör",
+    "referrals.progressLabel": "Ödül ilerlemesi",
+    "referrals.statsHint":
+      "Kontörler arkadaşın e-postasını doğruladıktan sonra tanımlanır.",
+    "referrals.topUpLink": "Kontör yükle",
 
     "creditsNav.title": "Kontör bakiyesi",
     "creditsNav.unit": "Kontör",

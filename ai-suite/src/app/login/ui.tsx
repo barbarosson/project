@@ -9,6 +9,7 @@ import { useI18n } from "@/i18n/i18n-provider";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSupabaseBrowserRuntimeConfig } from "@/lib/supabase/browser-config-context";
 import { publicBrowserSiteOrigin } from "@/lib/site-public-url";
+import { readReferralCookieClient } from "@/lib/referrals/ref-cookie";
 
 const MIN_PASSWORD_LEN = 6;
 
@@ -84,11 +85,13 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
         toast.error(t("login.missingSupabase"));
         return;
       }
+      const referredBy = readReferralCookieClient();
       const { data, error } = await supabase.auth.signUp({
         email: value,
         password,
         options: {
           emailRedirectTo: emailAuthRedirectUrl(authCallbackUrl, nextAfterAuth),
+          data: referredBy ? { referred_by: referredBy } : undefined,
         },
       });
       if (error) throw error;

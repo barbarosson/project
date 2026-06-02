@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { TOOLS } from "@/components/ai-suite/tools";
+import { SEO_TEMPLATES } from "@/data/seo-templates";
 
 const FALLBACK_SITE = "https://isendai.netlify.app";
 
@@ -27,5 +28,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
-  return [...staticRoutes, ...toolRoutes];
+  const programmaticRoutes: MetadataRoute.Sitemap = SEO_TEMPLATES.map((t) => ({
+    url: `${base}/tools/${t.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.85,
+  }));
+
+  return [...staticRoutes, ...toolRoutes, ...programmaticRoutes];
 }

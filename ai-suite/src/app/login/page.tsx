@@ -21,6 +21,7 @@ import { FacebookSignInButton } from "./facebook-sign-in-button";
 import { GoogleSignInButton } from "./google-sign-in-button";
 import { LoginAuthToast } from "./login-auth-toast";
 import { LoginOAuthCodeForward } from "./login-oauth-code-forward";
+import { LoginReferralCapture } from "@/components/referrals/login-referral-capture";
 import { LoginClient } from "./ui";
 
 export const dynamic = "force-dynamic";
@@ -30,6 +31,7 @@ export default async function LoginPage({
 }: {
   searchParams: Promise<{
     next?: string;
+    ref?: string;
     error?: string;
     detail?: string;
     code?: string;
@@ -71,6 +73,7 @@ export default async function LoginPage({
       <SitePageMain width="auth">
         <Suspense fallback={null}>
           <LoginOAuthCodeForward />
+          <LoginReferralCapture />
         </Suspense>
         <LoginAuthToast error={sp.error} detail={sp.detail} />
         <div className={cn(pageHeroPanel, pageContentSection, "mt-0 p-6 sm:p-8")}>

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { useI18n } from "@/i18n/i18n-provider";
 import { SOCIAL_PROOF_MESSAGES } from "@/i18n/social-proof-messages";
+import { isStagingDeploy } from "@/lib/deploy-env";
 
 function randomBetween(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -23,7 +24,8 @@ export function SocialProof() {
       timeoutId = window.setTimeout(() => {
         if (cancelled) return;
         const msg = messages[randomBetween(0, messages.length - 1)];
-        toast(`${t("socialProof.demoPrefix")} ${msg}`, {
+        const label = isStagingDeploy() ? `${t("socialProof.demoPrefix")} ` : "";
+        toast(`${label}${msg}`, {
           position: "bottom-left",
           duration: 6500,
           className:

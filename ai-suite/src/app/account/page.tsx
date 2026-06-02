@@ -53,6 +53,9 @@ export default async function AccountPage() {
               <Link className={pageOutlineButton} href="/history">
                 {d["nav.history"]}
               </Link>
+              <Link className={pageOutlineButton} href="/dashboard/rewards">
+                {d["referrals.navLabel"]}
+              </Link>
               <Link className={premiumCta} href="/">
                 {d["nav.backToHome"]}
               </Link>

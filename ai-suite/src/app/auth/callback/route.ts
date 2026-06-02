@@ -3,6 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { isMembershipProfileComplete } from "@/lib/auth/membership-profile";
 import { safeNext } from "@/lib/auth/safe-next";
 import { ensureUserEntitlementsBootstrap } from "@/lib/isendai/ensure-user-entitlements";
+import { parseReferralCookie } from "@/lib/referrals/ref-cookie";
+import {
+  ensureReferralProfileForUser,
+  logReferralSignupAttribution,
+} from "@/lib/referrals/referral-service";
 import {
   applyPendingAuthCookies,
   createSupabaseRouteHandlerClient,
@@ -73,6 +78,10 @@ export async function GET(request: NextRequest) {
   }
 
   await ensureUserEntitlementsBootstrap(user.id);
+
+  const referredFromCookie = parseReferralCookie(request.headers.get("cookie"));
+  await ensureReferralProfileForUser(user, { referredByCode: referredFromCookie });
+  await logReferralSignupAttribution(user, request, { referredByCode: referredFromCookie });
 
   let destinationPath: string;
   if (

@@ -36,9 +36,21 @@ export function AuthSessionHydrator() {
       window.history.replaceState(null, "", next);
     }
 
+    async function syncReferralAttribution() {
+      try {
+        await fetch("/api/referrals/attribution", {
+          method: "POST",
+          credentials: "same-origin",
+        });
+      } catch {
+        // non-fatal
+      }
+    }
+
     void (async () => {
       const { data } = await supabase.auth.getSession();
       if (data.session) {
+        if (authSync) await syncReferralAttribution();
         router.refresh();
         stripAuthSyncParam();
         return;
@@ -48,6 +60,7 @@ export function AuthSessionHydrator() {
         await new Promise((r) => setTimeout(r, 200));
         const retry = await supabase.auth.getSession();
         if (retry.data.session) {
+          await syncReferralAttribution();
           router.refresh();
           stripAuthSyncParam();
           break;
@@ -62,6 +75,7 @@ export function AuthSessionHydrator() {
           stripAuthSyncParam();
         }
         if (event === "SIGNED_IN" && session) {
+          void syncReferralAttribution();
           try {
             const key = "isendai:ga_login";
             if (sessionStorage.getItem(key) !== session.user.id) {
