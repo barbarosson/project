@@ -19,7 +19,6 @@ import { rootMetadataForLocale } from "@/lib/site-metadata";
 import { getDeployEnv } from "@/lib/deploy-env";
 import { SupabaseBrowserConfigProvider } from "@/lib/supabase/browser-config-context";
 import { PricingModalProvider } from "@/components/pricing/pricing-modal";
-import { AppLocaleBar } from "@/components/app-locale-bar";
 import { AuthSessionHydrator } from "@/components/auth-session-hydrator";
 import { DeployEnvBanner } from "@/components/deploy-env-banner";
 import { pwaViewport } from "@/lib/pwa/metadata";
@@ -115,7 +114,6 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
                 <GlobalBackground />
                 <SocialProof />
                 <ModelAnnouncement />
-                <AppLocaleBar />
                 <DeployEnvBanner />
                 <AuthSessionHydrator />
                 {children}

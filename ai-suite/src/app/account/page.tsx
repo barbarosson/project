@@ -7,7 +7,6 @@ import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 import { loadAccountEntitlementsAndRequests } from "@/lib/isendai/load-account-data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
 import {
   SitePageChrome,
   SitePageHeader,
@@ -46,7 +45,6 @@ export default async function AccountPage() {
           meta={user.email}
           actions={
             <>
-              <SiteLocaleToolbar />
               <Link className={pageOutlineButton} href="/account/profile">
                 {d["profile.editLink"]}
               </Link>

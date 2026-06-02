@@ -8,6 +8,7 @@ import { CreditsNav } from "@/components/credits-nav";
 import { ReferralRewardsNav } from "@/components/referrals/referral-rewards-nav";
 import { IsendaiLogo } from "@/components/isendai-logo";
 import { InstallAppButton } from "@/components/pwa/install-app-button";
+import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
 import { useI18n } from "@/i18n/i18n-provider";
 import { MODULUS_SITE_URL } from "@/lib/modulus-site";
 import { getPublicSupportEmail } from "@/lib/support-email";
@@ -139,6 +140,7 @@ export function SitePageHeader({
         />
       </Link>
       <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-1.5 sm:w-auto sm:gap-2">
+        <SiteLocaleToolbar />
         <InstallAppButton variant="header" />
         <ReferralRewardsNav />
         <CreditsNav />

@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
-import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
 import {
   SitePageChrome,
   SitePageHeader,
@@ -60,7 +59,6 @@ export default async function AccountProfilePage({
           subtitle={d["profile.subtitle"]}
           actions={
             <>
-              <SiteLocaleToolbar />
               <Link className={pageOutlineButton} href="/account">
                 {d["profile.backToAccount"]}
               </Link>
