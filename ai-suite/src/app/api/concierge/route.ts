@@ -10,11 +10,8 @@ import { DICTS, type Locale } from "@/i18n/dictionaries";
 import { resolveToolDescription, resolveToolTitle } from "@/i18n/tool-copy-resolve";
 import { conciergeError, parseApiLocale } from "@/lib/api-error-messages";
 import { humanVoiceDirective } from "@/lib/ai/writing-style";
-import {
-  alignSuggestedTools,
-  looksLikeToolableMessageRequest,
-  rankToolsForUserIntent,
-} from "@/lib/intent-tool-routing";
+import { finalizeConciergeSuggestions } from "@/lib/concierge-suggestions";
+import { looksLikeToolableMessageRequest, rankToolsForUserIntent } from "@/lib/intent-tool-routing";
 import { isConcreteModelId, modelMeta, type ModelId } from "@/models/models";
 import { conciergeRequiresAuth } from "@/lib/concierge-auth";
 import { enforceRateLimit } from "@/lib/rate-limit";
@@ -171,9 +168,26 @@ function fallbackSuggestedTools(lastUser: string): ToolName[] {
   return rankToolsForUserIntent(lastUser);
 }
 
+function finalizeSuggestions(lastUser: string, reply: string, llmSuggested: ToolName[], locale: Locale) {
+  return finalizeConciergeSuggestions(lastUser, reply, llmSuggested, (tool) =>
+    resolveToolTitle(locale, tool)
+  );
+}
+
 function fillConciergeOffScopeReply(locale: Locale, toolLines: string): string {
   const d = DICTS[locale] ?? DICTS.en;
   return `${d["concierge.offScope.lead"]}\n\n${d["concierge.offScope.try"]}\n${toolLines}`;
+}
+
+function toolMarkdownLines(locale: Locale, toolIds: ToolName[]): string {
+  return toolIds
+    .map((id) => {
+      const t = TOOLS.find((x) => x.tool === id);
+      const label = resolveToolTitle(locale, id);
+      const emoji = t?.emoji ?? "✨";
+      return `- [${emoji} ${label}](/?tool=${id})`;
+    })
+    .join("\n");
 }
 
 export async function POST(req: Request) {
@@ -273,34 +287,24 @@ export async function POST(req: Request) {
   }
 
   if (!scope) {
-    const suggested_tools = alignSuggestedTools(lastUser, fallbackSuggestedTools(lastUser));
-    const toolLines = suggested_tools
-      .map((id) => {
-        const t = TOOLS.find((x) => x.tool === id);
-        const label = resolveToolTitle(locale, id);
-        const emoji = t?.emoji ?? "✨";
-        return `- [${emoji} ${label}](/?tool=${id})`;
-      })
-      .join("\n");
-    return NextResponse.json({
-      reply: fillConciergeOffScopeReply(locale, toolLines),
-      suggested_tools,
-    });
+    const suggested_tools = finalizeSuggestions(
+      lastUser,
+      "",
+      fallbackSuggestedTools(lastUser),
+      locale
+    );
+    const reply = fillConciergeOffScopeReply(locale, toolMarkdownLines(locale, suggested_tools));
+    return NextResponse.json({ reply, suggested_tools });
   }
 
   if (scope.in_scope === false && !looksLikeMessageRequest) {
-    const suggested_tools = alignSuggestedTools(lastUser, fallbackSuggestedTools(lastUser));
-    const toolLines = suggested_tools
-      .map((id) => {
-        const t = TOOLS.find((x) => x.tool === id);
-        const label = resolveToolTitle(locale, id);
-        const emoji = t?.emoji ?? "✨";
-        return `- [${emoji} ${label}](/?tool=${id})`;
-      })
-      .join("\n");
-
-    const reply = fillConciergeOffScopeReply(locale, toolLines);
-
+    const suggested_tools = finalizeSuggestions(
+      lastUser,
+      "",
+      fallbackSuggestedTools(lastUser),
+      locale
+    );
+    const reply = fillConciergeOffScopeReply(locale, toolMarkdownLines(locale, suggested_tools));
     return NextResponse.json({ reply, suggested_tools });
   }
 
@@ -337,6 +341,7 @@ export async function POST(req: Request) {
     "- Asking someone out, crush, confessing feelings, çıkma teklifi / hoşlanıyorum → awkward-text-fixer or delicate-truth (NOT dating-roast unless they pasted a Tinder/Bumble bio).\n" +
     "- dating-roast ONLY when the user wants help with a dating profile bio text.\n" +
     "- 'What are we?' / define-the-relationship (DTR) talks → relationship-define-the-talk.\n" +
+    "- suggested_tools must list ONLY the tools you explicitly recommend in reply (same tools, same count, max 3). Never add extra tool ids.\n" +
     "- Only put a tool id in suggested_tools if the user's intent clearly fits that tool's description.\n" +
     "When you recommend a tool, include it as a clickable markdown link in your reply using this format:\n" +
     "- [<emoji> <tool label>](/?tool=<tool id>)\n" +
@@ -370,16 +375,20 @@ export async function POST(req: Request) {
   const parsed = safeParseResponse(content);
 
   if (!parsed) {
-    return NextResponse.json({
-      reply: content || "OK",
-      suggested_tools: alignSuggestedTools(lastUser, fallbackSuggestedTools(lastUser)),
-    });
+    const reply = content || "OK";
+    const suggested_tools = finalizeSuggestions(
+      lastUser,
+      reply,
+      fallbackSuggestedTools(lastUser),
+      locale
+    );
+    return NextResponse.json({ reply, suggested_tools });
   }
 
-  const suggested_tools = alignSuggestedTools(
-    lastUser,
-    parsed.suggested_tools?.length ? parsed.suggested_tools : fallbackSuggestedTools(lastUser)
-  );
+  const llmSuggested = parsed.suggested_tools?.length
+    ? parsed.suggested_tools
+    : fallbackSuggestedTools(lastUser);
+  const suggested_tools = finalizeSuggestions(lastUser, parsed.reply, llmSuggested, locale);
 
   return NextResponse.json({
     reply: parsed.reply,
