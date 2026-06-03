@@ -1,15 +1,12 @@
 "use client";
 
-import * as React from "react";
+import { useRouter } from "next/navigation";
 import type { Provider } from "@supabase/auth-js";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { useI18n } from "@/i18n/i18n-provider";
-import { createSupabaseBrowserClient } from "@/lib/supabase/client";
-import { useSupabaseBrowserRuntimeConfig } from "@/lib/supabase/browser-config-context";
 import { OauthProviderMark } from "@/components/oauth-brand-icons";
-import { oauthCallbackRedirectUrl } from "@/lib/auth/oauth-callback-url";
+import { useI18n } from "@/i18n/i18n-provider";
+import { buildOAuthConnectingHref } from "@/lib/auth/oauth-connecting";
 import { cn } from "@/lib/utils";
 
 type Row = {
@@ -24,35 +21,9 @@ const OAUTH_ROWS: Row[] = [
   { provider: "custom:tiktok" as Provider, labelKey: "login.oauthTiktok" },
 ];
 
-export function OAuthLoginButtons({ authCallbackUrl }: { authCallbackUrl: string }) {
+export function OAuthLoginButtons({ nextAfterAuth = "/" }: { nextAfterAuth?: string }) {
   const { t } = useI18n();
-  const runtime = useSupabaseBrowserRuntimeConfig();
-  const [busy, setBusy] = React.useState<Provider | null>(null);
-
-  async function signIn(provider: Provider) {
-    const supabase = createSupabaseBrowserClient(runtime);
-    if (!supabase) {
-      toast.error(t("login.missingSupabase"));
-      return;
-    }
-    setBusy(provider);
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: oauthCallbackRedirectUrl(authCallbackUrl),
-        },
-      });
-      if (error) throw error;
-      if (data?.url) {
-        window.location.assign(data.url);
-      }
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("login.oauthFailed"));
-    } finally {
-      setBusy(null);
-    }
-  }
+  const router = useRouter();
 
   return (
     <div className="grid gap-3">
@@ -72,14 +43,11 @@ export function OAuthLoginButtons({ authCallbackUrl }: { authCallbackUrl: string
               (row.provider === "linkedin_oidc" || String(row.provider).includes("tiktok")) &&
                 "border-sky-600/30"
             )}
-            disabled={busy !== null}
-            onClick={() => void signIn(row.provider)}
+            onClick={() => router.push(buildOAuthConnectingHref(row.provider, nextAfterAuth))}
           >
             <span className="inline-flex items-center justify-center gap-2">
               <OauthProviderMark provider={row.provider} />
-              <span className="truncate">
-                {busy === row.provider ? t("login.sending") : t(row.labelKey)}
-              </span>
+              <span className="truncate">{t(row.labelKey)}</span>
             </span>
           </Button>
         ))}

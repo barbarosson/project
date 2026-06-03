@@ -96,10 +96,10 @@ export default async function LoginPage({
               <p className={cn(pageSubtitle, "mt-1")}>{d["login.membershipSocialBody"]}</p>
               <div className="mt-4 grid gap-3">
                 {OAUTH_UI.google ? (
-                  <GoogleSignInButton authCallbackUrl={authCallbackUrl} />
+                  <GoogleSignInButton nextAfterAuth={nextAfterAuth} />
                 ) : null}
                 {OAUTH_UI.facebook ? (
-                  <FacebookSignInButton authCallbackUrl={authCallbackUrl} />
+                  <FacebookSignInButton nextAfterAuth={nextAfterAuth} />
                 ) : null}
               </div>
             </div>

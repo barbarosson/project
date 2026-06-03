@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { isMembershipProfileComplete } from "@/lib/auth/membership-profile";
+import { safeAuthRedirectTarget } from "@/lib/auth/safe-auth-destination";
 import { safeNext } from "@/lib/auth/safe-next";
 import { ensureUserEntitlementsBootstrap } from "@/lib/isendai/ensure-user-entitlements";
 import { parseReferralCookie } from "@/lib/referrals/ref-cookie";
@@ -102,5 +103,11 @@ export async function GET(request: NextRequest) {
   }
   destination.searchParams.set("auth_sync", "1");
 
-  return redirectWithCookies(destination, pendingCookies);
+  const completing = new URL("/auth/completing", siteOrigin);
+  completing.searchParams.set(
+    "to",
+    safeAuthRedirectTarget(destination.pathname + destination.search)
+  );
+
+  return redirectWithCookies(completing, pendingCookies);
 }
