@@ -19,6 +19,7 @@ export async function signInWithGoogleIdToken(
     const msg = e instanceof Error ? e.message : "Google sign-in failed";
     const fallback =
       msg.startsWith("google_prompt_unavailable:") ||
+      /script failed|failed to load|not ready|Content Security|csp/i.test(msg) ||
       /not displayed|skipped|blocked|popup/i.test(msg);
     return { ok: false, message: msg, fallbackToHostedOAuth: fallback };
   }

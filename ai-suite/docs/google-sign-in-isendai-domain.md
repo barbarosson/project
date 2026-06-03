@@ -78,3 +78,4 @@ Sorun çıkarsa: env eksikse veya GIS bloklanırsa eski Supabase redirect devrey
 | Hâlâ supabase.co | `NEXT_PUBLIC_GOOGLE_OAUTH_CLIENT_ID` deploy’da yok veya yanlış |
 | `origin_mismatch` | Google origins’e tam site URL ekleyin |
 | One Tap çıkmıyor | Orta ekranda Google butonu overlay açılır (otomatik fallback) |
+| `Google script failed to load` (sadece canlı) | CSP `accounts.google.com` engelliyordu — `next.config.mjs` güncellendi; redeploy gerekir |

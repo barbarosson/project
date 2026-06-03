@@ -46,10 +46,16 @@ export function loadGoogleGsiScript(): Promise<void> {
     scriptPromise = new Promise((resolve, reject) => {
       const existing = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
       if (existing) {
+        if (window.google?.accounts?.id) {
+          resolve();
+          return;
+        }
         existing.addEventListener("load", () => resolve(), { once: true });
-        existing.addEventListener("error", () => reject(new Error("Google script failed")), {
-          once: true,
-        });
+        existing.addEventListener(
+          "error",
+          () => reject(new Error("Google script failed to load")),
+          { once: true }
+        );
         return;
       }
       const script = document.createElement("script");

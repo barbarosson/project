@@ -23,17 +23,20 @@ const withSerwist = withSerwistInit({
   additionalPrecacheEntries: [{ url: "/~offline", revision: serwistRevision() }],
 });
 
+/** Keep in sync with src/lib/security/content-security-policy.ts */
+const GOOGLE_GIS = "https://accounts.google.com";
 const contentSecurityPolicy = [
   "default-src 'self'",
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
   "object-src 'none'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com",
-  "style-src 'self' 'unsafe-inline'",
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com ${GOOGLE_GIS}`,
+  `style-src 'self' 'unsafe-inline' ${GOOGLE_GIS}`,
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com",
+  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com ${GOOGLE_GIS}`,
+  `frame-src 'self' ${GOOGLE_GIS}`,
   "worker-src 'self'",
 ].join("; ");
 
