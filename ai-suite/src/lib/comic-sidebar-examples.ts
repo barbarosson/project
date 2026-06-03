@@ -9,7 +9,7 @@ export type ComicSidebarExample = {
   after: LocalizedLine;
 };
 
-/** Dev-only gutter copy — separate from home.demo.examples. */
+/** Gutter copy — separate from home.demo.examples. */
 export const COMIC_SIDEBAR_EXAMPLES: ComicSidebarExample[] = [
   {
     tool: "corporate-whisperer",

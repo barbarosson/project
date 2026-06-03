@@ -186,7 +186,7 @@ function ComicGutterColumn({
   );
 }
 
-/** Dev-only: comic speech bubbles in side gutters for full scroll height. */
+/** Comic speech bubbles in side gutters (wide screens, full page scroll height). */
 export function ComicSidebarBackground() {
   const { t, locale } = useI18n();
   const [pageHeight, setPageHeight] = useState(0);
@@ -211,10 +211,6 @@ export function ComicSidebarBackground() {
     () => new Map(COMIC_SIDEBAR_EXAMPLES.map((ex) => [ex.tool, ex])),
     []
   );
-
-  if (process.env.NODE_ENV !== "development") {
-    return null;
-  }
 
   const beforeLabel = t("home.demo.before.label");
   const afterLabel = t("home.demo.after.label");
