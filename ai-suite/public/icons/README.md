@@ -9,12 +9,21 @@ Add branded install icons here (required for “Add to Home Screen” / Play Sto
 
 Paths are referenced in `public/manifest.json` as `/icons/icon-192x192.png` and `/icons/icon-512x512.png`.
 
-Until final brand assets exist, run from `ai-suite/`:
+Master marks:
+
+| File | Use |
+|------|-----|
+| `isendai-mark.svg` | Dark shell (`#09090b`) — PWA PNG source |
+| `isendai-mark-light.svg` | Light shell (`#e8eaef`) — previews / docs |
+
+Regenerate PNGs from `ai-suite/`:
 
 ```bash
 node scripts/generate-pwa-icons.mjs
 ```
 
-That resizes `src/app/favicon.ico` into placeholder PNGs so installs work in dev/staging.
+Uses `public/icons/isendai-mark.svg` → `icon-192x192.png` and `icon-512x512.png`.
+
+Browser tab icon: `src/app/icon.svg` (Next.js App Router).
 
 **Design tips:** square PNG, safe zone for maskable (Android), dark background `#09090b` to match the app shell.

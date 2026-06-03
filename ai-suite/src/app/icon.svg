@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="isendai">
+  <defs>
+    <linearGradient id="brand" x1="8%" y1="6%" x2="92%" y2="94%">
+      <stop offset="0%" stop-color="#c4b5fd" />
+      <stop offset="48%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#f0abfc" />
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="42%" r="58%">
+      <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#09090b" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#09090b" />
+  <circle cx="256" cy="256" r="200" fill="url(#glow)" />
+  <path d="M256 108 L388 188 L388 324 L256 404 L124 324 L124 188 Z" fill="none" stroke="url(#brand)" stroke-width="10" stroke-linejoin="round" />
+  <g fill="url(#brand)">
+    <circle cx="256" cy="168" r="18" />
+    <circle cx="168" cy="248" r="16" />
+    <circle cx="344" cy="248" r="16" />
+    <circle cx="220" cy="332" r="15" />
+    <circle cx="308" cy="332" r="15" />
+  </g>
+  <g stroke="url(#brand)" stroke-width="8" stroke-linecap="round" fill="none">
+    <path d="M256 186 L168 248" />
+    <path d="M256 186 L344 248" />
+    <path d="M168 248 L220 332" />
+    <path d="M344 248 L308 332" />
+    <path d="M220 332 L308 332" />
+  </g>
+</svg>

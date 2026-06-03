@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="isendai">
+  <defs>
+    <linearGradient id="isendai-brand-light" x1="8%" y1="6%" x2="92%" y2="94%">
+      <stop offset="0%" stop-color="#6d28d9" />
+      <stop offset="48%" stop-color="#1d4ed8" />
+      <stop offset="100%" stop-color="#be185d" />
+    </linearGradient>
+    <radialGradient id="isendai-glow-light" cx="50%" cy="42%" r="58%">
+      <stop offset="0%" stop-color="#c4b5fd" stop-opacity="0.55" />
+      <stop offset="100%" stop-color="#e8eaef" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#e8eaef" />
+  <circle cx="256" cy="256" r="200" fill="url(#isendai-glow-light)" />
+  <path
+    d="M256 108 L388 188 L388 324 L256 404 L124 324 L124 188 Z"
+    fill="none"
+    stroke="url(#isendai-brand-light)"
+    stroke-width="10"
+    stroke-linejoin="round"
+    opacity="0.95"
+  />
+  <path
+    d="M256 148 L348 204 L348 308 L256 364 L164 308 L164 204 Z"
+    fill="none"
+    stroke="url(#isendai-brand-light)"
+    stroke-width="3"
+    stroke-opacity="0.3"
+  />
+  <g fill="url(#isendai-brand-light)">
+    <circle cx="256" cy="168" r="18" />
+    <circle cx="168" cy="248" r="16" />
+    <circle cx="344" cy="248" r="16" />
+    <circle cx="220" cy="332" r="15" />
+    <circle cx="308" cy="332" r="15" />
+  </g>
+  <g stroke="url(#isendai-brand-light)" stroke-width="8" stroke-linecap="round" fill="none" opacity="0.92">
+    <path d="M256 186 L168 248" />
+    <path d="M256 186 L344 248" />
+    <path d="M168 248 L220 332" />
+    <path d="M344 248 L308 332" />
+    <path d="M220 332 L308 332" />
+  </g>
+</svg>
