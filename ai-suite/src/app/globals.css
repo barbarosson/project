@@ -388,6 +388,12 @@ svg.lucide {
   }
 }
 
+/* Dev comic side gutters — halftone dot texture inside speech columns */
+.comic-halftone {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.14) 1px, transparent 1px);
+  background-size: 7px 7px;
+}
+
 @keyframes routeCard {
   0% {
     opacity: 0;

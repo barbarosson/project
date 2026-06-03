@@ -10,6 +10,7 @@ import { ModelProvider } from "@/models/model-provider";
 import { readDefaultAiModelFromMetadata } from "@/lib/auth/default-ai-model";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import type { ModelId } from "@/models/models";
+import { ComicSidebarBackground } from "@/components/comic-sidebar-background";
 import { GlobalBackground } from "@/components/global-background";
 import { SocialProof } from "@/components/SocialProof";
 import { ModelAnnouncement } from "@/components/model-announcement";
@@ -118,7 +119,12 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
                   <ModelAnnouncement />
                   <DeployEnvBanner />
                   <AuthSessionHydrator />
-                  {children}
+                  <div className="relative isolate flex min-h-full w-full flex-1 flex-col">
+                    <ComicSidebarBackground />
+                    <div className="relative z-10 flex min-h-full flex-1 flex-col">
+                      {children}
+                    </div>
+                  </div>
                 </PricingModalProvider>
               </ModelProvider>
             </I18nProvider>
