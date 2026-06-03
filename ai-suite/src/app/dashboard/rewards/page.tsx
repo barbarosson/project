@@ -12,6 +12,7 @@ import { loadRewardsPayloadForUser } from "@/lib/referrals/load-rewards-payload"
 import { pageMetadataForPath } from "@/lib/site-metadata";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
+  SitePageBackNav,
   SitePageChrome,
   SitePageHeader,
   SitePageMain,
@@ -52,11 +53,12 @@ export default async function RewardsDashboardPage() {
         initialSignedInLabel={authSnapshot.signedIn ? authSnapshot.label : null}
       />
       <SitePageMain width="narrow" className="pb-16">
+        <SitePageBackNav>{d["nav.backToHome"]}</SitePageBackNav>
         <nav aria-label="Breadcrumb" className="mb-6 text-xs text-slate-400 sm:text-sm">
           <ol className="flex flex-wrap items-center gap-1.5">
             <li>
-              <Link href="/" className="hover:text-violet-200">
-                Home
+              <Link href="/" className="hover:text-violet-200 light:hover:text-violet-800">
+                {d["nav.backToHome"]}
               </Link>
             </li>
             <li aria-hidden className="text-white/25">

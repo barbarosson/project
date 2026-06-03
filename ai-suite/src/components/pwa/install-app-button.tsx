@@ -116,7 +116,7 @@ export function InstallAppButton({ variant = "hero", className }: InstallAppButt
         "border-violet-400/35 bg-violet-500/10 text-violet-100 backdrop-blur-xl",
         "hover:border-violet-400/55 hover:bg-violet-500/20 active:scale-[0.98]",
         isHeader
-          ? "min-h-10 px-3 py-2 text-xs sm:text-sm"
+          ? "min-h-9 px-2 py-1.5 text-xs max-sm:gap-0 sm:min-h-10 sm:gap-2 sm:px-3 sm:py-2 sm:text-sm"
           : "min-h-12 w-full px-5 py-3 text-sm sm:w-auto sm:min-w-[min(100%,12rem)]",
         className
       )}
@@ -127,7 +127,9 @@ export function InstallAppButton({ variant = "hero", className }: InstallAppButt
       ) : (
         <Download className="size-4 shrink-0" aria-hidden />
       )}
-      <span>{isHeader ? t("pwa.installShort") : t("pwa.install")}</span>
+      <span className={isHeader ? "hidden sm:inline" : undefined}>
+        {isHeader ? t("pwa.installShort") : t("pwa.install")}
+      </span>
     </button>
   );
 }

@@ -43,9 +43,12 @@ export default async function UpdatePasswordPage() {
           <div className="mt-6">
             <UpdatePasswordForm email={user.email ?? null} />
           </div>
-          <p className="mt-6 text-center text-sm sm:text-base">
+          <p className="mt-6 flex flex-col items-center gap-2 text-center text-sm sm:text-base">
             <Link className={pageBackLink} href="/login">
               ← {d["nav.login"]}
+            </Link>
+            <Link className={pageBackLink} href="/">
+              ← {d["nav.backToHome"]}
             </Link>
           </p>
         </div>

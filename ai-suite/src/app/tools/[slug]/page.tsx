@@ -10,11 +10,12 @@ import {
   getAllSeoTemplateSlugs,
   getSeoTemplateBySlug,
 } from "@/data/seo-templates";
-import type { Locale } from "@/i18n/dictionaries";
+import { DICTS, type Locale } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 import { programmaticSeoMetadata } from "@/lib/seo/programmatic-page-metadata";
 import {
+  SitePageBackNav,
   SitePageChrome,
   SitePageHeader,
   SitePageMain,
@@ -63,6 +64,9 @@ export default async function ProgrammaticSeoToolPage({ params, searchParams }: 
 
   const breadcrumbTitle =
     template.title.replace(/\s*\|\s*isendai\s*$/i, "").trim() || template.h1;
+  const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
+  const locale = resolveLocaleFromCookie(cookieLocale);
+  const d = DICTS[locale];
 
   return (
     <SitePageChrome>
@@ -70,6 +74,7 @@ export default async function ProgrammaticSeoToolPage({ params, searchParams }: 
         initialSignedInLabel={authSnapshot.signedIn ? authSnapshot.label : null}
       />
       <SitePageMain width="content" className="pb-16">
+        <SitePageBackNav>{d["nav.backToHome"]}</SitePageBackNav>
         <SeoBreadcrumbs currentTitle={breadcrumbTitle} />
         <SeoLandingHero h1={template.h1} paragraph={template.paragraph} />
         <section aria-labelledby="seo-tool-workspace" className="scroll-mt-24">

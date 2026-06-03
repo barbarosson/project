@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Home } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { AuthStatus } from "@/components/auth-status";
@@ -9,6 +11,7 @@ import { ReferralRewardsNav } from "@/components/referrals/referral-rewards-nav"
 import { IsendaiLogo } from "@/components/isendai-logo";
 import { InstallAppButton } from "@/components/pwa/install-app-button";
 import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useI18n } from "@/i18n/i18n-provider";
 import { MODULUS_SITE_URL } from "@/lib/modulus-site";
 import { getPublicSupportEmail } from "@/lib/support-email";
@@ -52,7 +55,7 @@ export function SitePageFooter() {
     "shrink-0 whitespace-nowrap text-xs text-muted-foreground transition-colors hover:text-foreground sm:text-sm";
 
   return (
-    <footer className="mt-auto border-t border-white/[0.08] bg-white/[0.02] backdrop-blur-xl">
+    <footer className="mt-auto border-t border-white/[0.08] bg-white/[0.02] backdrop-blur-xl light:border-slate-300/70 light:bg-white/60">
       <div className={siteContainer("py-6 sm:py-8")}>
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
           <div className="min-w-0 max-w-xl shrink-0 space-y-1">
@@ -65,7 +68,7 @@ export function SitePageFooter() {
                 href={MODULUS_SITE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-semibold text-violet-200 underline-offset-2 transition-colors hover:text-white hover:underline"
+                className="font-semibold text-violet-200 underline-offset-2 transition-colors hover:text-white hover:underline light:text-violet-800 light:hover:text-fuchsia-700"
               >
                 modulusaas.com
               </a>
@@ -112,7 +115,7 @@ export function SitePageFooter() {
           </nav>
         </div>
 
-        <p className="mt-4 border-t border-white/[0.06] pt-4 text-center text-[11px] leading-relaxed text-muted-foreground sm:text-xs lg:text-left">
+        <p className="mt-4 border-t border-white/[0.06] pt-4 text-center text-[11px] leading-relaxed text-muted-foreground sm:text-xs lg:text-left light:border-slate-300/60">
           {t("footer.trust")}
         </p>
       </div>
@@ -125,21 +128,43 @@ export function SitePageHeader({
 }: {
   initialSignedInLabel?: string | null;
 }) {
+  const pathname = usePathname();
+  const { t } = useI18n();
+  const showHomeNav = pathname !== "/";
+
   return (
     <header
       className={siteContainer(
-        "flex flex-wrap items-start justify-between gap-3 py-4 sm:items-center sm:py-5"
+        "flex flex-col gap-2.5 py-4 sm:gap-3 sm:py-5 lg:flex-row lg:items-center lg:justify-between"
       )}
     >
-      <Link href="/" className="flex min-w-0 max-w-[min(100%,20rem)] flex-1 items-center sm:max-w-none">
-        <IsendaiLogo
-          withWordmark
-          className="min-w-0 max-w-full gap-1.5 sm:gap-2 md:gap-3"
-          iconClassName="size-9 shrink-0 sm:size-10 md:size-12 lg:size-14"
-          wordmarkClassName="truncate text-xl sm:text-2xl md:text-3xl lg:text-4xl"
-        />
-      </Link>
-      <div className="flex w-full shrink-0 flex-wrap items-center justify-end gap-1.5 sm:w-auto sm:gap-2">
+      <div className="flex min-w-0 w-full items-center gap-2 lg:w-auto lg:flex-1 lg:justify-start">
+        {showHomeNav ? (
+          <Link
+            href="/"
+            className={cn(
+              pageBackLink,
+              "inline-flex shrink-0 items-center gap-1 rounded-lg border border-white/[0.1] bg-white/[0.04] px-2 py-1.5",
+              "light:border-slate-300/70 light:bg-white/80",
+              "max-lg:px-2"
+            )}
+            aria-label={t("nav.backToHome")}
+            title={t("nav.backToHome")}
+          >
+            <Home className="size-4 shrink-0" aria-hidden />
+            <span className="hidden min-[900px]:inline">{t("nav.backToHome")}</span>
+          </Link>
+        ) : null}
+        <Link href="/" className="inline-flex min-w-0 shrink-0 items-center overflow-visible">
+          <IsendaiLogo
+            withWordmark
+            iconClassName="size-8 shrink-0 sm:size-9 md:size-10 lg:size-12"
+            wordmarkClassName="text-lg sm:text-xl md:text-2xl lg:text-3xl"
+          />
+        </Link>
+      </div>
+      <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2 lg:w-auto lg:shrink-0">
+        <ThemeToggle />
         <SiteLocaleToolbar />
         <InstallAppButton variant="header" />
         <ReferralRewardsNav />

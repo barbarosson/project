@@ -25,8 +25,21 @@ import { aiProductsNav } from "@/lib/ai-products-nav-styles";
 import { MODULUS_SITE_URL } from "@/lib/modulus-site";
 import { siteContainer } from "@/lib/page-layout";
 import {
+  creditsSummaryText,
+  demoAfterText,
+  demoBadge,
+  demoBeforeText,
+  demoCardTitle,
+  demoExampleCard,
+  expertBotsKicker,
   glassInteractive,
   glassSurface,
+  heroKicker,
+  HOW_STEP_STYLES,
+  marketingBody,
+  marketingBodyXL,
+  marketingHeading,
+  marketingLink,
   premiumCta,
   sectionGradientBodySm,
   sectionGradientShell,
@@ -34,6 +47,11 @@ import {
   sectionPanelCyan,
   sectionPanelFuchsia,
   sectionPanelViolet,
+  sectionShellCyan,
+  surfaceBody,
+  surfaceTitle,
+  workspaceHintBadge,
+  workspaceToolShell,
 } from "@/lib/premium-ui";
 
 import type { HomeCreditsSnapshot } from "@/app/home-credits-snapshot";
@@ -173,28 +191,21 @@ export function HomeClient({
           )}
         >
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(124,58,237,0.18)_0%,transparent_70%)]" />
-          <p className="inline-flex items-center gap-2 rounded-full border border-violet-400/35 bg-gradient-to-r from-violet-500/15 to-fuchsia-500/10 px-3 py-1.5 text-xs font-semibold tracking-wide text-violet-100 sm:text-sm">
-            <Sparkles className="size-3.5 shrink-0 text-fuchsia-300 sm:size-4" aria-hidden />
+          <p className={heroKicker}>
+            <Sparkles className="size-3.5 shrink-0 text-fuchsia-300 sm:size-4 light:text-fuchsia-700" aria-hidden />
             {t("hero.kicker")}
           </p>
-          <h1
-            className={cn(
-              "font-display mt-4 w-full text-balance text-3xl font-bold leading-tight tracking-tight sm:text-4xl lg:text-5xl",
-              "bg-gradient-to-r from-white via-violet-100 to-cyan-100 bg-clip-text text-transparent"
-            )}
-          >
+          <h1 className={cn("font-display mt-4 w-full text-balance text-3xl sm:text-4xl lg:text-5xl", marketingHeading)}>
             {t("hero.title")}
           </h1>
-          <p className="mt-4 w-full min-w-0 text-pretty text-base font-medium leading-relaxed text-slate-200 sm:text-lg">
-            {t("hero.subtitle")}
-          </p>
-          <p className="mt-4 text-sm text-slate-400">
+          <p className={cn("mt-4 w-full min-w-0 text-pretty", marketingBody)}>{t("hero.subtitle")}</p>
+          <p className="mt-4 text-sm text-slate-400 light:text-slate-600">
             {t("hero.modulusFamily")}{" "}
             <a
               href={MODULUS_SITE_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-semibold text-violet-200 underline-offset-2 transition-colors hover:text-white hover:underline"
+              className={marketingLink}
             >
               modulusaas.com
             </a>
@@ -238,7 +249,7 @@ export function HomeClient({
                 glassSurface
               )}
             >
-              <p className="font-medium text-slate-100">
+              <p className={creditsSummaryText}>
                 {t("home.creditsSummary")
                   .replace("{credits}", formatCreditsFromTenths(creditsSnapshot.balance))
                   .replace("{max}", String(creditsSnapshot.maxVersions))
@@ -253,44 +264,23 @@ export function HomeClient({
           ) : null}
         </section>
 
-        <section
-          className={cn(
-            "relative mt-8 min-w-0 overflow-hidden rounded-3xl border border-violet-500/30 p-4 sm:p-6 lg:p-10",
-            "bg-gradient-to-br from-violet-950/50 via-slate-950/80 to-indigo-950/50",
-            "shadow-[0_12px_56px_rgba(139,92,246,0.22),inset_0_1px_0_0_rgba(255,255,255,0.08)]",
-            "backdrop-blur-xl"
-          )}
-        >
+        <section className={cn("mt-8", sectionGradientShell)}>
           <div
-            className="pointer-events-none absolute -left-16 top-0 size-48 rounded-full bg-indigo-500/20 blur-3xl"
+            className="pointer-events-none absolute -left-16 top-0 size-48 rounded-full bg-indigo-500/20 blur-3xl light:bg-indigo-400/15"
             aria-hidden
           />
           <div
-            className="pointer-events-none absolute -bottom-12 -right-12 size-40 rounded-full bg-fuchsia-500/15 blur-3xl"
+            className="pointer-events-none absolute -bottom-12 -right-12 size-40 rounded-full bg-fuchsia-500/15 blur-3xl light:bg-fuchsia-400/10"
             aria-hidden
           />
           <div className="relative w-full min-w-0">
-            <h2
-              className={cn(
-                "w-full text-pretty text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl",
-                "bg-gradient-to-r from-white via-violet-100 to-cyan-100 bg-clip-text text-transparent"
-              )}
-            >
-              {t("home.aiStack.title")}
-            </h2>
-            <p className="mt-4 w-full min-w-0 text-pretty text-base font-medium leading-relaxed text-slate-200 sm:text-lg lg:text-[1.125rem] lg:leading-relaxed xl:text-xl">
-              {t("home.aiStack.body")}
-            </p>
+            <h2 className={cn("w-full text-pretty", marketingHeading)}>{t("home.aiStack.title")}</h2>
+            <p className={cn("mt-4 w-full min-w-0 text-pretty", marketingBodyXL)}>{t("home.aiStack.body")}</p>
           </div>
         </section>
 
         <section
-          className={cn(
-            "relative mt-8 min-w-0 overflow-hidden rounded-3xl border border-cyan-500/25 p-4 sm:p-6 lg:p-10",
-            "bg-gradient-to-br from-cyan-950/40 via-slate-950/85 to-violet-950/45",
-            "shadow-[0_12px_56px_rgba(34,211,238,0.14),inset_0_1px_0_0_rgba(255,255,255,0.08)]",
-            "backdrop-blur-xl"
-          )}
+          className={sectionShellCyan}
           aria-labelledby="home-expert-bots-heading"
         >
           <div
@@ -302,22 +292,14 @@ export function HomeClient({
             aria-hidden
           />
           <div className="relative w-full min-w-0">
-            <p className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-cyan-200 sm:text-sm">
-              <Bot className="size-3.5 shrink-0 text-cyan-300 sm:size-4" aria-hidden />
+            <p className={expertBotsKicker}>
+              <Bot className="size-3.5 shrink-0 text-cyan-300 sm:size-4 light:text-cyan-800" aria-hidden />
               {t("home.expertBots.kicker")}
             </p>
-            <h2
-              id="home-expert-bots-heading"
-              className={cn(
-                "mt-4 w-full text-pretty text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl",
-                "bg-gradient-to-r from-white via-cyan-100 to-violet-100 bg-clip-text text-transparent"
-              )}
-            >
+            <h2 id="home-expert-bots-heading" className={cn("mt-4 w-full text-pretty", marketingHeading)}>
               {t("home.expertBots.title")}
             </h2>
-            <p className="mt-4 w-full min-w-0 text-pretty text-base font-medium leading-relaxed text-slate-200 sm:text-lg lg:text-[1.125rem] lg:leading-relaxed xl:text-xl">
-              {t("home.expertBots.lead")}
-            </p>
+            <p className={cn("mt-4 w-full min-w-0 text-pretty", marketingBodyXL)}>{t("home.expertBots.lead")}</p>
             <ul className="mt-6 grid min-w-0 gap-3 sm:grid-cols-3 sm:gap-4">
               {(["home.expertBots.point1", "home.expertBots.point2", "home.expertBots.point3"] as const).map(
                 (key) => (
@@ -336,53 +318,30 @@ export function HomeClient({
           </div>
         </section>
 
-        <section
-          className={cn(
-            "relative mt-8 min-w-0 overflow-hidden rounded-3xl border border-violet-500/30 p-4 sm:p-6 lg:p-10",
-            "bg-gradient-to-br from-violet-950/50 via-slate-950/80 to-indigo-950/50",
-            "shadow-[0_12px_56px_rgba(139,92,246,0.22),inset_0_1px_0_0_rgba(255,255,255,0.08)]",
-            "backdrop-blur-xl"
-          )}
-        >
+        <section className={cn("mt-8", sectionGradientShell)}>
           <div
-            className="pointer-events-none absolute -right-20 -top-20 size-56 rounded-full bg-fuchsia-500/20 blur-3xl"
+            className="pointer-events-none absolute -right-20 -top-20 size-56 rounded-full bg-fuchsia-500/20 blur-3xl light:bg-fuchsia-400/12"
             aria-hidden
           />
           <div
-            className="pointer-events-none absolute -bottom-16 -left-16 size-48 rounded-full bg-cyan-500/15 blur-3xl"
+            className="pointer-events-none absolute -bottom-16 -left-16 size-48 rounded-full bg-cyan-500/15 blur-3xl light:bg-cyan-400/10"
             aria-hidden
           />
           <div className="relative w-full min-w-0">
-            <p className="inline-flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-widest text-violet-200 sm:text-sm">
-              <Sparkles className="size-3.5 shrink-0 text-fuchsia-300 sm:size-4" aria-hidden />
+            <p className={demoBadge}>
+              <Sparkles className="size-3.5 shrink-0 text-fuchsia-300 sm:size-4 light:text-fuchsia-700" aria-hidden />
               {t("home.demo.before.label")} → {t("home.demo.after.label")}
             </p>
-            <h2
-              className={cn(
-                "mt-4 w-full text-pretty text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl",
-                "bg-gradient-to-r from-white via-violet-100 to-cyan-100 bg-clip-text text-transparent"
-              )}
-            >
-              {t("home.demo.title")}
-            </h2>
-            <p className="mt-4 w-full min-w-0 text-pretty text-base font-medium leading-relaxed text-slate-200 sm:text-lg lg:text-[1.125rem] lg:leading-relaxed xl:text-xl">
-              {t("home.demo.subtitle")}
-            </p>
+            <h2 className={cn("mt-4 w-full text-pretty", marketingHeading)}>{t("home.demo.title")}</h2>
+            <p className={cn("mt-4 w-full min-w-0 text-pretty", marketingBodyXL)}>{t("home.demo.subtitle")}</p>
           </div>
 
           <div className="relative mt-8 grid min-w-0 gap-5 lg:grid-cols-2 lg:gap-6">
             {demoExamples.map(({ tool, key }) => (
-              <div
-                key={tool}
-                className={cn(
-                  "min-w-0 overflow-hidden rounded-2xl border border-white/[0.1] bg-black/25 p-4 sm:p-5 lg:p-6",
-                  "shadow-lg backdrop-blur-md transition-all duration-300",
-                  "hover:-translate-y-1 hover:border-violet-400/35 hover:shadow-[0_12px_40px_rgba(139,92,246,0.2)]"
-                )}
-              >
+              <div key={tool} className={demoExampleCard}>
                 <Link
                   href={`/?tool=${tool}`}
-                  className="group flex min-w-0 max-w-full items-center gap-2 sm:gap-3 text-base font-semibold text-white sm:text-lg"
+                  className={demoCardTitle}
                 >
                   <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl border border-violet-400/25 bg-gradient-to-br from-violet-500/20 to-fuchsia-500/10 text-lg shadow-inner sm:size-11">
                     <span aria-hidden="true">{getToolDefinition(tool).emoji}</span>
@@ -398,9 +357,7 @@ export function HomeClient({
                     <p className="text-xs font-bold uppercase tracking-wide text-rose-300 sm:tracking-[0.15em] sm:text-sm">
                       {t("home.demo.before.label")}
                     </p>
-                    <p className="mt-2.5 break-words text-sm leading-relaxed text-slate-100 sm:text-base lg:text-[17px]">
-                      {t(`home.demo.examples.${key}.before`)}
-                    </p>
+                    <p className={demoBeforeText}>{t(`home.demo.examples.${key}.before`)}</p>
                   </div>
                   <div className="flex min-w-0 items-center justify-center py-0.5 lg:py-0">
                     <span className="inline-flex size-10 shrink-0 animate-pulse items-center justify-center rounded-full border border-violet-400/40 bg-gradient-to-br from-indigo-500/30 via-violet-500/25 to-fuchsia-500/20 text-violet-100 shadow-[0_0_24px_rgba(139,92,246,0.35)] sm:size-11 lg:size-12">
@@ -411,9 +368,7 @@ export function HomeClient({
                     <p className="text-xs font-bold uppercase tracking-wide text-emerald-300 sm:tracking-[0.15em] sm:text-sm">
                       {t("home.demo.after.label")}
                     </p>
-                    <p className="mt-2.5 break-words text-sm leading-relaxed text-slate-50 sm:text-base lg:text-[17px]">
-                      {t(`home.demo.examples.${key}.after`)}
-                    </p>
+                    <p className={demoAfterText}>{t(`home.demo.examples.${key}.after`)}</p>
                   </div>
                 </div>
               </div>
@@ -421,92 +376,48 @@ export function HomeClient({
           </div>
         </section>
 
-        <section
-          className={cn(
-            "relative mt-8 min-w-0 overflow-hidden rounded-3xl border border-violet-500/30 p-4 sm:p-6 lg:p-10",
-            "bg-gradient-to-br from-violet-950/50 via-slate-950/80 to-indigo-950/50",
-            "shadow-[0_12px_56px_rgba(139,92,246,0.22),inset_0_1px_0_0_rgba(255,255,255,0.08)]",
-            "backdrop-blur-xl"
-          )}
-        >
+        <section className={cn("mt-8", sectionGradientShell)}>
           <div
-            className="pointer-events-none absolute -left-20 top-8 size-52 rounded-full bg-violet-500/20 blur-3xl"
+            className="pointer-events-none absolute -left-20 top-8 size-52 rounded-full bg-violet-500/20 blur-3xl light:bg-violet-400/12"
             aria-hidden
           />
           <div
-            className="pointer-events-none absolute -bottom-10 right-0 size-44 rounded-full bg-cyan-500/15 blur-3xl"
+            className="pointer-events-none absolute -bottom-10 right-0 size-44 rounded-full bg-cyan-500/15 blur-3xl light:bg-cyan-400/10"
             aria-hidden
           />
           <div className="relative w-full min-w-0">
-            <h2
-              className={cn(
-                "w-full text-pretty text-2xl font-bold leading-tight tracking-tight sm:text-3xl lg:text-4xl",
-                "bg-gradient-to-r from-white via-violet-100 to-cyan-100 bg-clip-text text-transparent"
-              )}
-            >
-              {t("how.detailed.title")}
-            </h2>
-            <p className="mt-4 w-full min-w-0 text-pretty text-base font-medium leading-relaxed text-slate-200 sm:text-lg lg:text-[1.125rem] lg:leading-relaxed xl:text-xl">
-              {t("how.detailed.subtitle")}
-            </p>
+            <h2 className={cn("w-full text-pretty", marketingHeading)}>{t("how.detailed.title")}</h2>
+            <p className={cn("mt-4 w-full min-w-0 text-pretty", marketingBodyXL)}>{t("how.detailed.subtitle")}</p>
           </div>
 
           <div className="relative mt-8 grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
-            {(
-              [
-                {
-                  n: 1,
-                  border: "border-violet-400/35",
-                  bg: "from-violet-500/15 to-violet-950/30",
-                  badge: "bg-violet-500/25 text-violet-100",
-                },
-                {
-                  n: 2,
-                  border: "border-fuchsia-400/35",
-                  bg: "from-fuchsia-500/15 to-fuchsia-950/30",
-                  badge: "bg-fuchsia-500/25 text-fuchsia-100",
-                },
-                {
-                  n: 3,
-                  border: "border-cyan-400/35",
-                  bg: "from-cyan-500/15 to-cyan-950/30",
-                  badge: "bg-cyan-500/25 text-cyan-100",
-                },
-                {
-                  n: 4,
-                  border: "border-emerald-400/35",
-                  bg: "from-emerald-500/15 to-emerald-950/30",
-                  badge: "bg-emerald-500/25 text-emerald-100",
-                },
-              ] as const
-            ).map(({ n, border, bg, badge }) => (
+            {HOW_STEP_STYLES.map((style, index) => {
+              const n = (index + 1) as 1 | 2 | 3 | 4;
+              return (
               <div
                 key={n}
                 className={cn(
                   "min-w-0 rounded-2xl border bg-gradient-to-br p-5 sm:p-6",
                   "shadow-lg backdrop-blur-md transition-all duration-300",
-                  "hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(139,92,246,0.2)]",
-                  border,
-                  bg
+                  "hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(139,92,246,0.2)] light:hover:shadow-[0_12px_32px_rgba(30,58,138,0.1)]",
+                  style.border,
+                  style.bg
                 )}
               >
                 <span
                   className={cn(
-                    "inline-flex size-9 items-center justify-center rounded-xl border border-white/10 text-sm font-bold shadow-inner sm:size-10 sm:text-base",
-                    badge
+                    "inline-flex size-9 items-center justify-center rounded-xl border border-white/10 text-sm font-bold shadow-inner sm:size-10 sm:text-base light:border-slate-400/40",
+                    style.badge
                   )}
                   aria-hidden
                 >
                   {n}
                 </span>
-                <p className="mt-4 text-base font-bold text-white sm:text-lg">
-                  {t(`how.detailed.${n}.title`)}
-                </p>
-                <p className="mt-2.5 break-words text-sm leading-relaxed text-slate-200 sm:text-base">
-                  {t(`how.detailed.${n}.body`)}
-                </p>
+                <p className={cn("mt-4", surfaceTitle)}>{t(`how.detailed.${n}.title`)}</p>
+                <p className={cn("mt-2.5 break-words", surfaceBody)}>{t(`how.detailed.${n}.body`)}</p>
               </div>
-            ))}
+            );
+            })}
           </div>
         </section>
 
@@ -651,7 +562,7 @@ export function HomeClient({
               className={cn(
                 "mb-5 hover:translate-y-0",
                 sectionPanelCyan,
-                "border-cyan-400/35 from-cyan-500/15 to-cyan-950/30"
+                "border-cyan-400/35"
               )}
               onOpenTool={(tool, opts) =>
                 selectTool(tool, {
@@ -678,13 +589,13 @@ export function HomeClient({
                   {toolDescription(t, selected, selectedDef.description)}
                 </p>
               </div>
-              <div className="font-sans inline-flex items-center gap-2 rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-2 text-xs font-semibold text-violet-100 sm:text-sm">
-                <Sparkles className="size-4 shrink-0 text-fuchsia-300" aria-hidden />
+              <div className={workspaceHintBadge}>
+                <Sparkles className="size-4 shrink-0 text-fuchsia-300 light:text-fuchsia-700" aria-hidden />
                 {t("home.workspace.hint")}
               </div>
             </div>
 
-            <div className="mt-5 rounded-2xl border border-violet-400/30 bg-gradient-to-br from-violet-500/10 to-slate-950/40 p-1 shadow-lg backdrop-blur-md sm:p-2">
+            <div className={workspaceToolShell}>
               <ToolCard
                 key={`${selected}-${toolPrefillKey}`}
                 tool={selected}

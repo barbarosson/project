@@ -1,7 +1,10 @@
 @import "tailwindcss";
 
-:root {
-  /* Single theme: dark abyss (#09090b family) */
+@custom-variant dark (&:is(.dark, .dark *));
+@custom-variant light (&:is(.light, .light *));
+
+.dark {
+  /* Dark: abyss + violet / pink glow */
   --background: 240 6% 4%;
   --foreground: 0 0% 98%;
   --card: 240 6% 6%;
@@ -22,6 +25,38 @@
   --input: 230 12% 18%;
   --ring: 330 85% 68%;
   --radius: 0.9rem;
+  --shell-base: 240 6% 4%;
+  --link-accent: 270 95% 75%;
+  --glass-border: 0 0% 100% / 0.08;
+  --glass-bg: 0 0% 100% / 0.03;
+}
+
+.light {
+  /* Light: cool grey, pink accent, navy text */
+  --background: 220 16% 91%;
+  --foreground: 226 48% 16%;
+  --card: 220 18% 96%;
+  --card-foreground: 226 48% 16%;
+  --popover: 220 20% 98%;
+  --popover-foreground: 226 48% 16%;
+  --primary: 330 72% 48%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 226 32% 88%;
+  --secondary-foreground: 226 48% 18%;
+  --muted: 220 14% 84%;
+  --muted-foreground: 226 22% 38%;
+  --accent: 226 42% 92%;
+  --accent-foreground: 226 48% 16%;
+  --destructive: 0 72% 46%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 226 22% 78%;
+  --input: 226 22% 78%;
+  --ring: 330 72% 48%;
+  --radius: 0.9rem;
+  --shell-base: 220 16% 91%;
+  --link-accent: 330 65% 42%;
+  --glass-border: 226 28% 72% / 0.55;
+  --glass-bg: 0 0% 100% / 0.72;
 }
 
 @theme inline {
@@ -135,14 +170,23 @@ body > div {
   }
 }
 
-/* Native selects: OS dropdowns often render light surfaces; keep text/contrast consistent */
-select {
+/* Native selects: match active theme */
+.dark select {
   color-scheme: dark;
 }
 
-option {
+.light select {
+  color-scheme: light;
+}
+
+.dark option {
   background-color: rgb(24 24 27);
   color: rgb(244 244 245);
+}
+
+.light option {
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
 }
 
 /* Sonner: error toasts — readable rose on zinc (app is dark-only) */
@@ -161,12 +205,119 @@ svg.lucide {
   stroke-width: 1.5 !important;
 }
 
+/* Light theme: readability on legacy hard-coded utility classes */
+.light :where(.text-white) {
+  color: hsl(226 50% 11%);
+}
+
+.light :where(.text-slate-50, .text-slate-100) {
+  color: hsl(226 45% 14%);
+}
+
+.light :where(.text-slate-200, .text-slate-300) {
+  color: hsl(226 28% 28%);
+}
+
+.light :where(.text-slate-400, .text-slate-500) {
+  color: hsl(226 22% 38%);
+}
+
+.light :where(.text-violet-200, .text-violet-300) {
+  color: hsl(262 45% 32%);
+}
+
+.light :where(.text-violet-100) {
+  color: hsl(262 50% 26%);
+}
+
+.light :where(.text-cyan-200, .text-cyan-300) {
+  color: hsl(200 55% 30%);
+}
+
+.light :where(.text-fuchsia-300) {
+  color: hsl(320 55% 36%);
+}
+
+.light :where(.text-indigo-300, .text-indigo-400) {
+  color: hsl(230 50% 36%);
+}
+
+.light :where(.text-amber-200, .text-amber-200\/90) {
+  color: hsl(32 85% 28%);
+}
+
+.light :where(.text-emerald-300, .text-rose-300) {
+  filter: saturate(1.15);
+}
+
+.light .border-white\/\[0\.08\],
+.light .border-white\/\[0\.06\],
+.light .border-white\/\[0\.1\],
+.light .border-white\/\[0\.12\] {
+  border-color: hsl(226 22% 72% / 0.9);
+}
+
+.light .bg-white\/\[0\.02\],
+.light .bg-white\/\[0\.04\],
+.light .bg-white\/\[0\.05\],
+.light .bg-white\/\[0\.06\],
+.light .bg-white\/\[0\.07\],
+.light .bg-white\/\[0\.08\] {
+  background-color: hsl(0 0% 100% / 0.82);
+}
+
+.light :where([class*="bg-black/"]) {
+  background-color: hsl(0 0% 100% / 0.9) !important;
+}
+
+.light :where([class*="from-violet-950"][class*="via-slate-950"]),
+.light :where([class*="from-violet-950"][class*="to-indigo-950"]) {
+  background-image: linear-gradient(
+    to bottom right,
+    hsl(265 32% 93%),
+    hsl(220 16% 90%),
+    hsl(226 38% 88%)
+  ) !important;
+}
+
+.light :where([class*="from-cyan-950"][class*="via-slate-950"]) {
+  background-image: linear-gradient(
+    to bottom right,
+    hsl(198 38% 92%),
+    hsl(220 16% 90%),
+    hsl(265 28% 92%)
+  ) !important;
+}
+
+.light :where([class*="to-slate-950"]) {
+  --tw-gradient-to: hsl(220 18% 88%) var(--tw-gradient-to-position) !important;
+}
+
+.light [data-sonner-toast][data-type="error"] {
+  background-color: hsl(0 70% 97%) !important;
+  border-color: hsl(0 72% 45% / 0.45) !important;
+  color: hsl(0 65% 32%) !important;
+}
+
+.light [data-sonner-toast][data-type="error"] [data-title],
+.light [data-sonner-toast][data-type="error"] [data-description] {
+  color: hsl(0 65% 32%) !important;
+}
+
 @layer utilities {
   .text-gradient-hero {
     background-image: linear-gradient(to bottom, rgb(255 255 255), rgb(255 255 255 / 0.6));
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+
+  .light .text-gradient-hero {
+    background-image: linear-gradient(
+      to bottom,
+      hsl(226 48% 14%),
+      hsl(262 35% 32%)
+    );
   }
 
   .hero-cta-glow {
@@ -185,6 +336,19 @@ svg.lucide {
   .legal-document p,
   .legal-document li {
     @apply text-slate-200;
+  }
+
+  .light .legal-document {
+    @apply text-slate-700;
+  }
+
+  .light .legal-document h2 {
+    @apply text-slate-900;
+  }
+
+  .light .legal-document p,
+  .light .legal-document li {
+    @apply text-slate-700;
   }
 
   .legal-document ul {

@@ -21,7 +21,7 @@ export function IsendaiLogo({
   const wordPrefix = hasTerminalAI ? normalized.slice(0, -2) : normalized;
 
   return (
-    <div className={cn("inline-flex min-w-0 max-w-full items-center gap-2", className)}>
+    <div className={cn("inline-flex min-w-0 items-center gap-1.5 sm:gap-2", className)}>
       <svg
         viewBox="0 0 64 64"
         className={cn("size-8", iconClassName)}
@@ -87,7 +87,12 @@ export function IsendaiLogo({
       </svg>
 
       {withWordmark ? (
-        <span className={cn("font-display font-black uppercase leading-none tracking-tight", wordmarkClassName)}>
+        <span
+          className={cn(
+            "font-display shrink-0 whitespace-nowrap font-black uppercase leading-none tracking-tight",
+            wordmarkClassName
+          )}
+        >
           <span
             className={cn(
               "bg-gradient-to-br from-[hsl(255_85%_65%)] via-[hsl(200_95%_55%)] to-[hsl(285_85%_65%)]",

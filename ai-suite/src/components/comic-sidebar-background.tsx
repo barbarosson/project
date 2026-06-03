@@ -50,8 +50,8 @@ function ComicSpeechBubble({
         "comic-bubble relative max-w-[min(100%,18rem)] rounded-2xl border-[2.5px] px-3 py-2.5",
         "font-display text-[11px] leading-snug tracking-tight shadow-[4px_4px_0_rgba(0,0,0,0.45)]",
         isBefore
-          ? "border-rose-200/55 bg-rose-950/55 text-rose-50"
-          : "border-emerald-200/55 bg-emerald-950/55 text-emerald-50",
+          ? "border-rose-200/55 bg-rose-950/55 text-rose-50 light:border-rose-400/60 light:bg-rose-100/85 light:text-rose-950"
+          : "border-emerald-200/55 bg-emerald-950/55 text-emerald-50 light:border-emerald-400/60 light:bg-emerald-100/85 light:text-emerald-950",
         className
       )}
     >

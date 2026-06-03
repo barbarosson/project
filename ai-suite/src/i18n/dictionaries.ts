@@ -235,6 +235,8 @@ export const DICTS: Record<Locale, Dict> = {
     "deploy.stagingOpenProduction": "Open production (isendai.com)",
 
     "nav.backToHome": "Back to Home",
+    "theme.switchToLight": "Switch to light theme",
+    "theme.switchToDark": "Switch to dark theme",
     "nav.pricing": "Pricing",
     "nav.privacy": "Privacy",
     "nav.terms": "Terms",
@@ -959,6 +961,8 @@ export const DICTS: Record<Locale, Dict> = {
     "deploy.stagingOpenProduction": "Abrir producción (isendai.com)",
 
     "nav.backToHome": "Volver al inicio",
+    "theme.switchToLight": "Cambiar a tema claro",
+    "theme.switchToDark": "Cambiar a tema oscuro",
     "nav.pricing": "Precios",
     "nav.privacy": "Privacidad",
     "nav.terms": "Términos",
@@ -1663,6 +1667,8 @@ export const DICTS: Record<Locale, Dict> = {
     "deploy.stagingOpenProduction": "Ouvrir la production (isendai.com)",
 
     "nav.backToHome": "Retour à l’accueil",
+    "theme.switchToLight": "Passer au thème clair",
+    "theme.switchToDark": "Passer au thème sombre",
     "nav.pricing": "Tarifs",
     "nav.privacy": "Confidentialité",
     "nav.terms": "Conditions",
@@ -2368,6 +2374,8 @@ export const DICTS: Record<Locale, Dict> = {
     "deploy.stagingOpenProduction": "Produktion öffnen (isendai.com)",
 
     "nav.backToHome": "Zur Startseite",
+    "theme.switchToLight": "Zum hellen Theme wechseln",
+    "theme.switchToDark": "Zum dunklen Theme wechseln",
     "nav.pricing": "Preise",
     "nav.privacy": "Datenschutz",
     "nav.terms": "AGB",
@@ -3052,6 +3060,8 @@ export const DICTS: Record<Locale, Dict> = {
     "deploy.stagingOpenProduction": "打开正式站 (isendai.com)",
 
     "nav.backToHome": "返回首页",
+    "theme.switchToLight": "切换到浅色主题",
+    "theme.switchToDark": "切换到深色主题",
     "nav.pricing": "价格与套餐",
     "nav.privacy": "隐私",
     "nav.terms": "条款",
@@ -3717,6 +3727,8 @@ export const DICTS: Record<Locale, Dict> = {
     "deploy.stagingOpenProduction": "Canlı siteyi aç (isendai.com)",
 
     "nav.backToHome": "Ana sayfaya dön",
+    "theme.switchToLight": "Açık temaya geç",
+    "theme.switchToDark": "Koyu temaya geç",
     "nav.pricing": "Paketler",
     "nav.privacy": "Gizlilik",
     "nav.terms": "Şartlar",

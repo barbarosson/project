@@ -2,8 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Space_Grotesk } from "next/font/google";
 import Script from "next/script";
 import { cookies } from "next/headers";
-import { Toaster } from "sonner";
 import "./globals.css";
+import { ThemeInitScript } from "@/components/theme-init-script";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ThemedToaster } from "@/components/themed-toaster";
 import { I18nProvider } from "@/i18n/i18n-provider";
 import { RouteTransition } from "@/components/route-transition";
 import { ModelProvider } from "@/models/model-provider";
@@ -24,6 +26,7 @@ import { AuthSessionHydrator } from "@/components/auth-session-hydrator";
 import { DeployEnvBanner } from "@/components/deploy-env-banner";
 import { PwaSerwistProvider } from "@/components/pwa/serwist-provider";
 import { pwaViewport } from "@/lib/pwa/metadata";
+import { resolveThemeFromCookie } from "@/lib/theme";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -55,7 +58,9 @@ export default async function RootLayout({
     pe.NEXT_PUBLIC_SUPABASE_URL?.trim() || pe.SUPABASE_URL?.trim() || null;
   const supabaseAnonKey =
     pe.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim() || pe.SUPABASE_ANON_KEY?.trim() || null;
-  const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
+  const cookieStore = await cookies();
+  const cookieLocale = cookieStore.get("ai-suite-locale")?.value;
+  const initialTheme = resolveThemeFromCookie(cookieStore.get("ai-suite-theme")?.value);
   const initialLocale: Locale | undefined =
     cookieLocale === "en" ||
     cookieLocale === "tr" ||
@@ -81,13 +86,14 @@ export default async function RootLayout({
     <html
       lang={initialLocale ?? "en"}
       suppressHydrationWarning
-      className={`dark ${inter.variable} ${spaceGrotesk.variable} h-full font-sans antialiased`}
+      className={`${initialTheme} ${inter.variable} ${spaceGrotesk.variable} h-full font-sans antialiased`}
     >
       <head>
+        <ThemeInitScript />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
-      <body className="flex min-h-full min-w-0 flex-col overflow-x-clip bg-[#09090b] text-slate-50 antialiased">
+      <body className="flex min-h-full min-w-0 flex-col overflow-x-clip bg-background text-foreground antialiased">
         {GA_ID ? (
           <>
             <Script
@@ -110,6 +116,7 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
         ) : null}
         <PwaSerwistProvider>
           <SupabaseBrowserConfigProvider url={supabaseUrl} anonKey={supabaseAnonKey}>
+            <ThemeProvider initialTheme={initialTheme}>
             <I18nProvider initialLocale={initialLocale}>
               <ModelProvider initialDefaultAiModel={initialDefaultAiModel}>
                 <PricingModalProvider>
@@ -128,9 +135,10 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
                 </PricingModalProvider>
               </ModelProvider>
             </I18nProvider>
+            <ThemedToaster />
+            </ThemeProvider>
           </SupabaseBrowserConfigProvider>
         </PwaSerwistProvider>
-        <Toaster theme="dark" richColors closeButton />
       </body>
     </html>
   );

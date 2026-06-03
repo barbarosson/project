@@ -6,6 +6,7 @@ import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
 import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 import {
+  SitePageBackNav,
   SitePageChrome,
   SitePageHeader,
   SitePageMain,
@@ -53,6 +54,7 @@ export default async function AccountProfilePage({
         initialSignedInLabel={authSnapshot.signedIn ? authSnapshot.label : null}
       />
       <SitePageMain width="narrow">
+        <SitePageBackNav>{d["nav.backToHome"]}</SitePageBackNav>
         <ProfileOauthToast oauthEmail={sp.oauth_email} />
         <SitePageTitleBlock
           title={d["profile.title"]}

@@ -12,17 +12,19 @@ export function GlobalBackground({ className }: { className?: string }) {
       aria-hidden
       className={cn("pointer-events-none fixed inset-0 -z-10 overflow-hidden", className)}
     >
-      <div className="absolute inset-0 bg-[#09090b]" />
+      <div className="absolute inset-0 bg-[hsl(var(--shell-base))]" />
       <div
         className={cn(
           "absolute -left-[22%] -top-[18%] size-[min(120vw,760px)] rounded-full bg-violet-600/20 blur-[150px]",
-          "motion-safe:animate-[ambientPulse_14s_ease-in-out_infinite]"
+          "motion-safe:animate-[ambientPulse_14s_ease-in-out_infinite]",
+          "light:bg-fuchsia-400/25"
         )}
       />
       <div
         className={cn(
           "absolute -bottom-[28%] -right-[18%] size-[min(115vw,720px)] rounded-full bg-blue-600/20 blur-[150px]",
-          "motion-safe:animate-[ambientPulse_16s_ease-in-out_infinite]"
+          "motion-safe:animate-[ambientPulse_16s_ease-in-out_infinite]",
+          "light:bg-indigo-700/20"
         )}
         style={{ animationDelay: "2s" }}
       />
@@ -32,6 +34,7 @@ export function GlobalBackground({ className }: { className?: string }) {
           <div
             className={cn(
               "absolute inset-[6%] rounded-[40%] bg-gradient-to-tr from-violet-600/22 via-fuchsia-500/12 to-blue-600/18 blur-3xl",
+              "light:from-fuchsia-300/30 light:via-rose-200/20 light:to-indigo-400/25",
               "-skew-x-[10deg] skew-y-[7deg]"
             )}
           />
@@ -73,8 +76,8 @@ export function GlobalBackground({ className }: { className?: string }) {
           />
         </svg>
       </div>
-      <div className="global-bg-grid absolute inset-0 opacity-[0.14]" />
-      <div className="global-bg-noise absolute inset-0 opacity-[0.35]" />
+      <div className="global-bg-grid absolute inset-0 opacity-[0.14] light:opacity-[0.22]" />
+      <div className="global-bg-noise absolute inset-0 opacity-[0.35] light:opacity-[0.2]" />
       <div className="global-bg-vignette absolute inset-0" />
     </div>
   );
