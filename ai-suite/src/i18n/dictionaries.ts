@@ -573,6 +573,10 @@ export const DICTS: Record<Locale, Dict> = {
     "auth.completing.stepSession": "Session verified",
     "auth.completing.stepFinish": "Opening isendai",
     "auth.completing.hint": "This usually takes a moment.",
+    "auth.connecting.googleHint":
+      "Tap the Google button below to choose your account. One step on this screen — no floating popup.",
+    "auth.connecting.googleSigningIn": "Signing you in…",
+    "auth.connecting.googleBackLogin": "Back to sign-in options",
     "login.title": "Sign in",
     "login.subtitle":
       "Sign in with email, Google, or Facebook. After your first successful sign-in, we collect a short membership profile (name, country, primary use case).",
@@ -589,6 +593,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthSetupHint":
       "Turn on each provider in Supabase → Authentication → Providers. Redirect URL must include /auth/callback",
     "login.oauthFailed": "Social sign-in failed.",
+    "login.oauthGoogleClientIdInvalid":
+      "Google Client ID on the server is invalid (use the Web Client ID ending in .apps.googleusercontent.com, not the secret). Falling back to standard sign-in.",
     "login.oauthCallbackFailed": "Could not finish sign-in. Try again or use email and password.",
     "login.oauthProviderError":
       "The provider returned an error (cancelled or misconfigured). Check Supabase redirect URLs and Google OAuth client.",
@@ -1309,6 +1315,10 @@ export const DICTS: Record<Locale, Dict> = {
     "auth.completing.stepSession": "Sesión verificada",
     "auth.completing.stepFinish": "Abriendo isendai",
     "auth.completing.hint": "Suele tardar un momento.",
+    "auth.connecting.googleHint":
+      "Pulsa el botón de Google para elegir tu cuenta. Un solo paso en esta pantalla.",
+    "auth.connecting.googleSigningIn": "Iniciando sesión…",
+    "auth.connecting.googleBackLogin": "Volver a opciones de acceso",
     "login.title": "Acceso",
     "login.subtitle":
       "Entra con email, Google o Facebook. Tras el primer acceso, pedimos un perfil breve de membresía (nombre, país, caso de uso principal).",
@@ -2036,6 +2046,10 @@ export const DICTS: Record<Locale, Dict> = {
     "auth.completing.stepSession": "Session vérifiée",
     "auth.completing.stepFinish": "Ouverture d'isendai",
     "auth.completing.hint": "Cela ne prend généralement qu'un instant.",
+    "auth.connecting.googleHint":
+      "Appuyez sur le bouton Google pour choisir votre compte. Une étape sur cet écran.",
+    "auth.connecting.googleSigningIn": "Connexion en cours…",
+    "auth.connecting.googleBackLogin": "Retour aux options de connexion",
     "login.title": "Connexion",
     "login.subtitle":
       "Connectez-vous par e-mail, Google ou Facebook. Après la première connexion, nous demandons un court profil d’adhésion (nom, pays, usage principal).",
@@ -2764,6 +2778,10 @@ export const DICTS: Record<Locale, Dict> = {
     "auth.completing.stepSession": "Sitzung bestätigt",
     "auth.completing.stepFinish": "isendai wird geöffnet",
     "auth.completing.hint": "Das dauert meist nur einen Moment.",
+    "auth.connecting.googleHint":
+      "Tippe auf den Google-Button, um dein Konto zu wählen. Ein Schritt auf diesem Bildschirm.",
+    "auth.connecting.googleSigningIn": "Anmeldung läuft…",
+    "auth.connecting.googleBackLogin": "Zurück zu den Anmeldeoptionen",
     "login.title": "Anmelden",
     "login.subtitle":
       "Melde dich per E‑Mail, Google oder Facebook an. Nach der ersten Anmeldung erfassen wir ein kurzes Mitgliedschaftsprofil (Name, Land, Hauptnutzung).",
@@ -3451,6 +3469,9 @@ export const DICTS: Record<Locale, Dict> = {
     "auth.completing.stepSession": "会话已验证",
     "auth.completing.stepFinish": "正在打开 isendai",
     "auth.completing.hint": "通常只需片刻。",
+    "auth.connecting.googleHint": "点击下方 Google 按钮选择账号。在此页面一步完成。",
+    "auth.connecting.googleSigningIn": "正在登录…",
+    "auth.connecting.googleBackLogin": "返回登录选项",
     "login.title": "登录 / 会员",
     "login.subtitle":
       "可使用邮箱、Google 或 Facebook 登录。首次登录成功后，我们会收集简短的会员资料（姓名、国家/地区、主要用途）。",
@@ -4170,6 +4191,10 @@ export const DICTS: Record<Locale, Dict> = {
     "auth.completing.stepSession": "Oturum doğrulandı",
     "auth.completing.stepFinish": "isendai açılıyor",
     "auth.completing.hint": "Bu genelde birkaç saniye sürer.",
+    "auth.connecting.googleHint":
+      "Hesabınızı seçmek için aşağıdaki Google düğmesine dokunun. Tek ekran, küçük yüzen pencere yok.",
+    "auth.connecting.googleSigningIn": "Giriş yapılıyor…",
+    "auth.connecting.googleBackLogin": "Giriş seçeneklerine dön",
     "login.title": "Üyelik ve giriş",
     "login.subtitle":
       "E-posta, Google veya Facebook ile giriş yap. İlk başarılı oturumdan sonra kısa bir üyelik profili (ad, ülke, ana kullanım) topluyoruz.",
@@ -4186,6 +4211,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthSetupHint":
       "Her sağlayıcıyı Supabase → Authentication → Providers içinde aç. Yönlendirme URL’si /auth/callback olmalı",
     "login.oauthFailed": "Sosyal giriş başarısız.",
+    "login.oauthGoogleClientIdInvalid":
+      "Sunucudaki Google Client ID geçersiz (yalnızca .apps.googleusercontent.com ile biten Web Client ID; secret değil). Standart girişe yönlendiriliyorsunuz.",
     "login.oauthCallbackFailed": "Giriş tamamlanamadı. Tekrar dene veya e-posta + şifre kullan.",
     "login.oauthProviderError":
       "Sağlayıcı hata döndü (iptal veya yanlış yapılandırma). Supabase yönlendirme URL’leri ve Google OAuth istemcisini kontrol et.",

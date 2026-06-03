@@ -4,12 +4,17 @@ import { useRouter, useSearchParams } from "next/navigation";
 import * as React from "react";
 import { toast } from "sonner";
 
+import { GoogleSignInPanel } from "@/components/auth/google-sign-in-panel";
 import { OAuthRedirectScreen } from "@/components/auth/oauth-redirect-screen";
 import { useI18n } from "@/i18n/i18n-provider";
 import {
   connectingSlugToProvider,
   type OAuthConnectingSlug,
 } from "@/lib/auth/oauth-connecting";
+import {
+  getGoogleOAuthClientId,
+  hasInvalidGoogleOAuthClientIdEnv,
+} from "@/lib/auth/google-gis";
 import { safeNext } from "@/lib/auth/safe-next";
 import { startOAuthSignIn } from "@/lib/auth/start-oauth-sign-in";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
@@ -28,8 +33,13 @@ export function OAuthConnectingClient() {
   const slug = (searchParams.get("provider")?.trim().toLowerCase() ?? "") as OAuthConnectingSlug;
   const provider = connectingSlugToProvider(slug);
   const nextPath = safeNext(searchParams.get("next"));
+  const forceHosted = searchParams.get("hosted") === "1";
+  const googleClientId = getGoogleOAuthClientId();
+  const useGooglePanel =
+    slug === "google" && Boolean(googleClientId) && !forceHosted && !hasInvalidGoogleOAuthClientIdEnv();
 
   React.useEffect(() => {
+    if (useGooglePanel) return;
     if (started.current) return;
     if (!provider) {
       router.replace("/login?error=oauth");
@@ -66,11 +76,18 @@ export function OAuthConnectingClient() {
     })();
 
     return () => window.clearTimeout(timer);
-  }, [provider, nextPath, router, runtime, slug, t]);
+  }, [provider, nextPath, router, runtime, slug, t, useGooglePanel]);
 
   if (!provider) {
+    return <OAuthRedirectScreen mode="outbound" providerSlug={null} stepIndex={0} />;
+  }
+
+  if (useGooglePanel && googleClientId) {
     return (
-      <OAuthRedirectScreen mode="outbound" providerSlug={null} stepIndex={0} />
+      <>
+        <OAuthRedirectScreen mode="outbound" providerSlug="google" stepIndex={1} />
+        <GoogleSignInPanel clientId={googleClientId} nextAfterAuth={nextPath} />
+      </>
     );
   }
 

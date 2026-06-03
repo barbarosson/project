@@ -79,3 +79,4 @@ Sorun çıkarsa: env eksikse veya GIS bloklanırsa eski Supabase redirect devrey
 | `origin_mismatch` | Google origins’e tam site URL ekleyin |
 | One Tap çıkmıyor | Orta ekranda Google butonu overlay açılır (otomatik fallback) |
 | `Google script failed to load` (sadece canlı) | CSP `accounts.google.com` engelliyordu — `next.config.mjs` güncellendi; redeploy gerekir |
+| `401 invalid_client` / OAuth client was not found | Netlify `NEXT_PUBLIC_GOOGLE_OAUTH_CLIENT_ID` yanlış veya Client **Secret** yapıştırılmış. Sadece **Client ID** (`….apps.googleusercontent.com`). Değiştirdikten sonra **Clear cache and deploy** |

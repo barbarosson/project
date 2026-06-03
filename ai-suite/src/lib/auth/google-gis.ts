@@ -1,25 +1,24 @@
 type CredentialResponse = { credential?: string };
 
-type PromptNotification = {
-  isDisplayMoment: () => boolean;
-  isDisplayed: () => boolean;
-  isNotDisplayed: () => boolean;
-  getNotDisplayedReason: () => string;
-  isSkippedMoment: () => boolean;
-  getSkippedReason: () => string;
-};
-
 type GoogleIdApi = {
   initialize: (config: {
     client_id: string;
     callback: (response: CredentialResponse) => void;
     auto_select?: boolean;
     cancel_on_tap_outside?: boolean;
+    use_fedcm_for_prompt?: boolean;
   }) => void;
-  prompt: (listener?: (n: PromptNotification) => void) => void;
   renderButton: (
     parent: HTMLElement,
-    options: { type?: string; theme?: string; size?: string; text?: string; width?: number }
+    options: {
+      type?: string;
+      theme?: string;
+      size?: string;
+      text?: string;
+      width?: number;
+      shape?: string;
+      logo_alignment?: string;
+    }
   ) => void;
 };
 
@@ -31,9 +30,22 @@ declare global {
 
 let scriptPromise: Promise<void> | null = null;
 
+/** Web client id from Google Cloud (not the client secret). */
+export function isValidGoogleOAuthClientId(id: string): boolean {
+  return /^\d+-[a-z0-9-]+\.apps\.googleusercontent\.com$/i.test(id.trim());
+}
+
 export function getGoogleOAuthClientId(): string | null {
   const id = process.env.NEXT_PUBLIC_GOOGLE_OAUTH_CLIENT_ID?.trim();
-  return id && id.length > 0 ? id : null;
+  if (!id) return null;
+  if (!isValidGoogleOAuthClientId(id)) return null;
+  return id;
+}
+
+/** True when env is set but not a valid Google Web Client ID (common Netlify typo). */
+export function hasInvalidGoogleOAuthClientIdEnv(): boolean {
+  const raw = process.env.NEXT_PUBLIC_GOOGLE_OAUTH_CLIENT_ID?.trim();
+  return Boolean(raw && !isValidGoogleOAuthClientId(raw));
 }
 
 export function loadGoogleGsiScript(): Promise<void> {
@@ -76,106 +88,68 @@ function idApi(): GoogleIdApi {
   return api;
 }
 
-/** One Tap / account chooser — must run in a user click handler when possible. */
-export function promptGoogleIdToken(clientId: string): Promise<string> {
-  return loadGoogleGsiScript().then(
-    () =>
-      new Promise((resolve, reject) => {
-        let settled = false;
-        const finish = (fn: () => void) => {
-          if (settled) return;
-          settled = true;
-          fn();
-        };
-
-        const timeout = window.setTimeout(() => {
-          finish(() => reject(new Error("Google sign-in timed out")));
-        }, 120_000);
-
-        idApi().initialize({
-          client_id: clientId,
-          auto_select: false,
-          cancel_on_tap_outside: true,
-          callback: (response) => {
-            window.clearTimeout(timeout);
-            const cred = response.credential?.trim();
-            if (cred) {
-              finish(() => resolve(cred));
-            } else {
-              finish(() => reject(new Error("Google returned no credential")));
-            }
-          },
-        });
-
-        idApi().prompt((notification) => {
-          if (!notification.isNotDisplayed() && !notification.isSkippedMoment()) return;
-          const reason =
-            notification.getNotDisplayedReason?.() || notification.getSkippedReason?.() || "unknown";
-          window.clearTimeout(timeout);
-          finish(() => reject(new Error(`google_prompt_unavailable:${reason}`)));
-        });
-      })
-  );
-}
-
-/** Fallback when One Tap is blocked — renders official Google button and waits for callback. */
-export function renderGoogleSignInButton(clientId: string): Promise<string> {
-  return loadGoogleGsiScript().then(
-    () =>
-      new Promise((resolve, reject) => {
-        const host = document.createElement("div");
-        host.style.position = "fixed";
-        host.style.inset = "0";
-        host.style.zIndex = "9999";
-        host.style.display = "flex";
-        host.style.alignItems = "center";
-        host.style.justifyContent = "center";
-        host.style.background = "rgba(15,23,42,0.75)";
-        host.style.backdropFilter = "blur(4px)";
-        const panel = document.createElement("div");
-        panel.style.padding = "24px";
-        panel.style.borderRadius = "16px";
-        panel.style.background = "#0f172a";
-        host.appendChild(panel);
-        document.body.appendChild(host);
-
-        const cleanup = () => host.remove();
-
-        const timeout = window.setTimeout(() => {
-          cleanup();
-          reject(new Error("Google sign-in timed out"));
-        }, 120_000);
-
-        idApi().initialize({
-          client_id: clientId,
-          callback: (response) => {
-            window.clearTimeout(timeout);
-            cleanup();
-            const cred = response.credential?.trim();
-            if (cred) resolve(cred);
-            else reject(new Error("Google returned no credential"));
-          },
-        });
-
-        idApi().renderButton(panel, {
-          type: "standard",
-          theme: "filled_blue",
-          size: "large",
-          text: "continue_with",
-          width: 320,
-        });
-      })
-  );
-}
-
-export async function acquireGoogleIdToken(clientId: string): Promise<string> {
-  try {
-    return await promptGoogleIdToken(clientId);
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : "";
-    if (msg.startsWith("google_prompt_unavailable:")) {
-      return renderGoogleSignInButton(clientId);
-    }
-    throw e;
+/**
+ * Renders the official Google button inside `parent` (no One Tap floater).
+ * Returns dispose cleanup.
+ */
+export async function mountGoogleSignInButton(
+  parent: HTMLElement,
+  clientId: string,
+  handlers: {
+    onCredential: (token: string) => void;
+    onReady?: () => void;
+    onError?: (error: Error) => void;
   }
+): Promise<() => void> {
+  await loadGoogleGsiScript();
+  parent.replaceChildren();
+
+  idApi().initialize({
+    client_id: clientId,
+    auto_select: false,
+    cancel_on_tap_outside: false,
+    use_fedcm_for_prompt: true,
+    callback: (response) => {
+      const cred = response.credential?.trim();
+      if (cred) handlers.onCredential(cred);
+      else handlers.onError?.(new Error("Google returned no credential"));
+    },
+  });
+
+  idApi().renderButton(parent, {
+    type: "standard",
+    theme: "outline",
+    size: "large",
+    text: "continue_with",
+    shape: "pill",
+    logo_alignment: "left",
+    width: Math.min(400, Math.max(280, parent.clientWidth || 320)),
+  });
+
+  handlers.onReady?.();
+
+  return () => parent.replaceChildren();
+}
+
+/** @deprecated Prefer mountGoogleSignInButton on /auth/connecting */
+export async function acquireGoogleIdToken(clientId: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const host = document.createElement("div");
+    host.style.position = "fixed";
+    host.style.left = "-9999px";
+    document.body.appendChild(host);
+    void mountGoogleSignInButton(host, clientId, {
+      onCredential: (token) => {
+        host.remove();
+        resolve(token);
+      },
+      onError: (e) => {
+        host.remove();
+        reject(e);
+      },
+    }).catch((e) => {
+      host.remove();
+      reject(e);
+    });
+  });
 }
