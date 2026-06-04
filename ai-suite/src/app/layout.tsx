@@ -127,9 +127,11 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
                   <DeployEnvBanner />
                   <AuthSessionHydrator />
                   <div className="relative isolate flex min-h-full w-full flex-1 flex-col">
-                    <ComicSidebarBackground />
-                    <div className="relative z-10 flex min-h-full flex-1 flex-col">
-                      {children}
+                    <div className="relative flex min-h-full flex-1 flex-col">
+                      <ComicSidebarBackground />
+                      <div className="relative z-10 flex min-h-full flex-1 flex-col">
+                        {children}
+                      </div>
                     </div>
                   </div>
                 </PricingModalProvider>

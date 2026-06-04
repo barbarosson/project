@@ -4,57 +4,45 @@ import { cn } from "@/lib/utils";
 
 const SHEET_URL = "/images/comic-people-silhouettes.png";
 
-/** Vertical gap between dialogue scenes — sparse rhythm along the page. */
-const SCENE_GAP_PX = 680;
-const SCENE_HEIGHT_PX = 300;
-const SCENE_TOP_OFFSET_PX = 100;
-
 type GutterSide = "left" | "right";
 
-/** Zoomed crop: only ~2 figures visible, grounded at bottom. */
-const DIALOGUE_CROP = {
-  size: "240% auto",
-  anchors: ["28% 88%", "52% 88%"] as const,
-} as const;
+/** Sparse dialogue scenes as % of column height — no pixel loop tied to scrollHeight. */
+const DIALOGUE_SCENES: { top: string; anchor: string }[] = [
+  { top: "10%", anchor: "28% 88%" },
+  { top: "42%", anchor: "52% 88%" },
+  { top: "74%", anchor: "35% 88%" },
+];
 
-function sceneCount(contentHeight: number): number {
-  if (contentHeight <= 0) return 3;
-  const usable = contentHeight - SCENE_TOP_OFFSET_PX;
-  return Math.max(3, Math.ceil(usable / SCENE_GAP_PX) + 1);
-}
+const DIALOGUE_CROP_SIZE = "240% auto";
 
 function DialogueScene({
   side,
   index,
-  topPx,
+  top,
+  anchor,
 }: {
   side: GutterSide;
   index: number;
-  topPx: number;
+  top: string;
+  anchor: string;
 }) {
   const isLeft = side === "left";
-  const cropPos = DIALOGUE_CROP.anchors[index % DIALOGUE_CROP.anchors.length];
 
   return (
     <div
-      className={cn(
-        "absolute inset-x-[4%] flex items-end justify-center",
-        isLeft ? "origin-bottom" : "origin-bottom"
-      )}
-      style={{
-        top: topPx,
-        height: SCENE_HEIGHT_PX,
-      }}
+      className="absolute inset-x-[4%] flex h-[26%] max-h-[260px] min-h-[180px] items-end justify-center"
+      style={{ top }}
     >
       <div
         className={cn(
           "comic-silhouette-sheet h-full w-full max-w-[11rem] bg-no-repeat sm:max-w-[12.5rem]",
-          !isLeft && "-scale-x-100"
+          !isLeft && "-scale-x-100",
+          index % 2 === 1 && "opacity-90"
         )}
         style={{
           backgroundImage: `url(${SHEET_URL})`,
-          backgroundSize: DIALOGUE_CROP.size,
-          backgroundPosition: `${cropPos}`,
+          backgroundSize: DIALOGUE_CROP_SIZE,
+          backgroundPosition: anchor,
         }}
         aria-hidden
       />
@@ -62,19 +50,8 @@ function DialogueScene({
   );
 }
 
-export function ComicGutterSilhouettes({
-  side,
-  contentHeight,
-}: {
-  side: GutterSide;
-  contentHeight: number;
-}) {
+export function ComicGutterSilhouettes({ side }: { side: GutterSide }) {
   const isLeft = side === "left";
-  const count = sceneCount(contentHeight);
-  const minH =
-    contentHeight > 0
-      ? contentHeight
-      : SCENE_GAP_PX * count + SCENE_TOP_OFFSET_PX;
 
   return (
     <div
@@ -84,7 +61,6 @@ export function ComicGutterSilhouettes({
           ? "[mask-image:linear-gradient(to_right,black_0%,black_55%,transparent_95%)]"
           : "[mask-image:linear-gradient(to_left,black_0%,black_55%,transparent_95%)]"
       )}
-      style={{ minHeight: minH }}
       aria-hidden
     >
       <div
@@ -95,12 +71,13 @@ export function ComicGutterSilhouettes({
         )}
       />
 
-      {Array.from({ length: count }, (_, i) => (
+      {DIALOGUE_SCENES.map((scene, i) => (
         <DialogueScene
           key={`${side}-dialogue-${i}`}
           side={side}
           index={i}
-          topPx={SCENE_TOP_OFFSET_PX + i * SCENE_GAP_PX}
+          top={scene.top}
+          anchor={scene.anchor}
         />
       ))}
     </div>
