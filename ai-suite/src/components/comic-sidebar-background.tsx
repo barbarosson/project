@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { getToolDefinition, type ToolName } from "@/components/ai-suite/tools";
 import { useI18n } from "@/i18n/i18n-provider";
 import { toolTitle } from "@/i18n/tool-i18n";
+import { ComicGutterSilhouettes } from "@/components/comic-gutter-silhouettes";
 import {
   COMIC_SIDEBAR_EXAMPLES,
   comicSidebarLine,
@@ -132,6 +133,7 @@ const { left: LEFT_PLACED, right: RIGHT_PLACED } = buildPlacedBubbles();
 function ComicGutterColumn({
   side,
   bubbles,
+  contentHeight,
   beforeLabel,
   afterLabel,
   robotTitle,
@@ -139,6 +141,7 @@ function ComicGutterColumn({
 }: {
   side: "left" | "right";
   bubbles: PlacedBubble[];
+  contentHeight: number;
   beforeLabel: string;
   afterLabel: string;
   robotTitle: (tool: ToolName) => string;
@@ -160,14 +163,15 @@ function ComicGutterColumn({
             : "[mask-image:linear-gradient(to_left,black_0%,black_50%,transparent_100%)]"
         )}
       >
+        <ComicGutterSilhouettes side={side} contentHeight={contentHeight} />
         <div
-          className="comic-halftone pointer-events-none absolute inset-0 opacity-[0.35]"
+          className="comic-halftone pointer-events-none absolute inset-0 z-[1] opacity-[0.35]"
           aria-hidden
         />
         {bubbles.map((bubble) => (
           <div
             key={`${side}-${bubble.id}`}
-            className="absolute w-full max-w-full px-1"
+            className="absolute z-[2] w-full max-w-full px-1"
             style={{ top: `${bubble.topPct}%`, transform: "translateY(-50%)" } as CSSProperties}
           >
             <ComicSpeechBubble
@@ -193,17 +197,28 @@ export function ComicSidebarBackground() {
 
   useEffect(() => {
     const measure = () => {
-      const el = document.documentElement;
-      setPageHeight(Math.max(el.scrollHeight, el.clientHeight));
+      const doc = document.documentElement;
+      const body = document.body;
+      const h = Math.max(
+        doc.scrollHeight,
+        doc.clientHeight,
+        body?.scrollHeight ?? 0,
+        body?.clientHeight ?? 0
+      );
+      setPageHeight(h);
     };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(document.documentElement);
     if (document.body) ro.observe(document.body);
+    const main = document.querySelector("main");
+    if (main) ro.observe(main);
     window.addEventListener("resize", measure);
+    window.addEventListener("scroll", measure, { passive: true });
     return () => {
       ro.disconnect();
       window.removeEventListener("resize", measure);
+      window.removeEventListener("scroll", measure);
     };
   }, []);
 
@@ -226,16 +241,18 @@ export function ComicSidebarBackground() {
   };
 
   const height = pageHeight > 0 ? pageHeight : undefined;
+  const columnHeight = pageHeight > 0 ? pageHeight : 0;
 
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-x-0 top-0 z-0 hidden min-h-full xl:block"
-      style={height ? { height } : { minHeight: "100%" }}
+      className="pointer-events-none absolute inset-x-0 top-0 z-0 hidden xl:block"
+      style={height ? { height, minHeight: height } : { minHeight: "100%" }}
     >
       <ComicGutterColumn
         side="left"
         bubbles={LEFT_PLACED}
+        contentHeight={columnHeight}
         beforeLabel={beforeLabel}
         afterLabel={afterLabel}
         robotTitle={robotTitle}
@@ -244,6 +261,7 @@ export function ComicSidebarBackground() {
       <ComicGutterColumn
         side="right"
         bubbles={RIGHT_PLACED}
+        contentHeight={columnHeight}
         beforeLabel={beforeLabel}
         afterLabel={afterLabel}
         robotTitle={robotTitle}

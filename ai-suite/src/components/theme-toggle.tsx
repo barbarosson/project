@@ -7,7 +7,7 @@ import { useI18n } from "@/i18n/i18n-provider";
 import { cn } from "@/lib/utils";
 
 const btnClass =
-  "inline-flex shrink-0 items-center justify-center rounded-lg border border-white/[0.12] bg-white/[0.04] p-2 text-slate-200 backdrop-blur-xl transition-colors hover:border-violet-500/35 hover:bg-white/[0.08] hover:text-white light:border-slate-400/40 light:bg-white/80 light:text-slate-700 light:hover:border-fuchsia-400/50 light:hover:bg-white light:hover:text-slate-900";
+  "inline-flex shrink-0 items-center justify-center rounded-lg border border-white/[0.18] bg-white/[0.08] p-2 text-slate-100 shadow-sm backdrop-blur-xl transition-colors hover:border-violet-500/35 hover:bg-white/[0.12] hover:text-white light:border-slate-400/55 light:bg-white light:text-slate-800 light:shadow-md light:hover:border-fuchsia-400/50 light:hover:bg-white light:hover:text-slate-900";
 
 export function ThemeToggle({ className }: { className?: string }) {
   const { theme, toggleTheme } = useTheme();

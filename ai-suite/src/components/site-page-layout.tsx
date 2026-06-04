@@ -155,24 +155,31 @@ export function SitePageHeader({
             <span className="hidden min-[900px]:inline">{t("nav.backToHome")}</span>
           </Link>
         ) : null}
-        <Link href="/" className="inline-flex min-w-0 shrink-0 items-center overflow-visible">
+        <Link href="/" className="inline-flex min-w-0 flex-1 items-center overflow-visible lg:flex-none">
           <IsendaiLogo
             withWordmark
             iconClassName="size-8 shrink-0 sm:size-9 md:size-10 lg:size-12"
             wordmarkClassName="text-lg sm:text-xl md:text-2xl lg:text-3xl"
           />
         </Link>
+        {/* Mobile: theme + language stay visible (not inside horizontal scroll). */}
+        <div className="ml-auto flex shrink-0 items-center gap-1.5 lg:hidden">
+          <ThemeToggle className="touch-manipulation" />
+          <SiteLocaleToolbar />
+        </div>
       </div>
       <div
         className={cn(
-          "flex w-full min-w-0 touch-pan-x items-center justify-end gap-1.5 sm:gap-2",
-          "max-lg:flex-nowrap max-lg:overflow-x-auto max-lg:overscroll-x-contain max-lg:pb-0.5",
-          "[-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-          "lg:w-auto lg:shrink-0 lg:flex-wrap lg:overflow-visible lg:pb-0"
+          "flex w-full min-w-0 items-center gap-1.5 sm:gap-2",
+          "max-lg:touch-pan-x max-lg:justify-start max-lg:overflow-x-auto max-lg:overscroll-x-contain max-lg:pb-0.5",
+          "max-lg:[-webkit-overflow-scrolling:touch] max-lg:[scrollbar-width:none] max-lg:[&::-webkit-scrollbar]:hidden",
+          "lg:w-auto lg:shrink-0 lg:flex-wrap lg:justify-end lg:overflow-visible lg:pb-0"
         )}
       >
-        <ThemeToggle className="touch-manipulation" />
-        <SiteLocaleToolbar />
+        <div className="hidden shrink-0 items-center gap-1.5 lg:flex">
+          <ThemeToggle className="touch-manipulation" />
+          <SiteLocaleToolbar />
+        </div>
         <InstallAppButton variant="header" className="max-lg:hidden" />
         <ReferralRewardsNav className="shrink-0 touch-manipulation" />
         <CreditsNav className="shrink-0 touch-manipulation" />

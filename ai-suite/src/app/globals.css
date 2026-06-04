@@ -581,6 +581,24 @@ svg.lucide {
   background-size: 7px 7px;
 }
 
+/* Photo-realistic people silhouettes (white sheet → theme-aware blend) */
+.comic-silhouette-sheet {
+  -webkit-mask-image: linear-gradient(to bottom, black 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 88%, transparent 100%);
+}
+
+.light .comic-silhouette-sheet {
+  mix-blend-mode: multiply;
+  opacity: 0.19;
+  filter: contrast(1.08);
+}
+
+.dark .comic-silhouette-sheet {
+  mix-blend-mode: screen;
+  opacity: 0.11;
+  filter: invert(1) brightness(0.88) contrast(1.05);
+}
+
 @keyframes routeCard {
   0% {
     opacity: 0;
