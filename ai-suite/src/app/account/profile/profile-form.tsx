@@ -175,7 +175,30 @@ export function ProfileForm({ nextPath, email, initialMeta }: Props) {
         },
       });
       if (error) throw error;
-      toast.success(t("profile.saved"));
+
+      try {
+        const bonusRes = await fetch("/api/welcome-bonus", { method: "POST", credentials: "include" });
+        if (bonusRes.ok) {
+          const payload = (await bonusRes.json()) as {
+            result?: { status?: string; credits?: number };
+          };
+          if (payload.result?.status === "granted") {
+            toast.success(
+              t("profile.welcomeCreditsGranted").replace(
+                "{credits}",
+                String(payload.result.credits ?? 100)
+              )
+            );
+          } else {
+            toast.success(t("profile.saved"));
+          }
+        } else {
+          toast.success(t("profile.saved"));
+        }
+      } catch {
+        toast.success(t("profile.saved"));
+      }
+
       router.push(safeNext(nextPath));
       router.refresh();
     } catch (err) {

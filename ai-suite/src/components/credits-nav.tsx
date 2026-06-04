@@ -68,7 +68,7 @@ export function CreditsNav({ className }: { className?: string }) {
       )}
     >
       <span
-        className="inline-flex items-center gap-1 rounded-lg border border-amber-400/25 bg-amber-500/10 px-2 py-1 text-amber-100 backdrop-blur-xl sm:px-3"
+        className="inline-flex items-center gap-1 rounded-lg border border-amber-400/25 bg-amber-500/10 px-2 py-1 text-amber-100 backdrop-blur-xl sm:px-3 light:border-amber-500/40 light:bg-amber-50 light:text-amber-950"
         title={t("creditsNav.title")}
       >
         <span aria-hidden>🪙</span>

@@ -24,10 +24,10 @@ export function PricingCreditUsageGuide({ d }: { d: Dict }) {
       <div
         className={cn(
           "rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.06] p-5 shadow-[0_8px_40px_rgba(16,185,129,0.08)]",
-          "backdrop-blur-md"
+          "backdrop-blur-md light:border-emerald-500/35 light:bg-emerald-50/80"
         )}
       >
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-300/90">
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-300/90 light:text-emerald-800">
           {d["pricing.usageGuide.miniBadge"]}
         </p>
         <p className="mt-1 text-base font-semibold text-white">{d["pricing.usageGuide.miniTitle"]}</p>
@@ -39,7 +39,7 @@ export function PricingCreditUsageGuide({ d }: { d: Dict }) {
 
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           <div className={cn("rounded-2xl p-5", glassInteractive)}>
-            <p className="text-xs font-semibold uppercase tracking-wide text-violet-300/85">
+            <p className="text-xs font-semibold uppercase tracking-wide text-violet-300/85 light:text-violet-900">
               {d["pricing.usageGuide.standardTitle"]}
             </p>
             <ul className="mt-3 space-y-1.5 text-sm text-slate-400">
@@ -73,7 +73,7 @@ export function PricingCreditUsageGuide({ d }: { d: Dict }) {
           </div>
 
           <div className={cn("rounded-2xl p-5", glassInteractive)}>
-            <p className="text-xs font-semibold uppercase tracking-wide text-amber-300/85">
+            <p className="text-xs font-semibold uppercase tracking-wide text-amber-300/85 light:text-amber-900">
               {d["pricing.usageGuide.premiumTitle"]}
             </p>
             <ul className="mt-3 space-y-1.5 text-sm text-slate-400">

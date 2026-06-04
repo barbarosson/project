@@ -4,6 +4,7 @@ import { isMembershipProfileComplete } from "@/lib/auth/membership-profile";
 import { safeAuthRedirectTarget } from "@/lib/auth/safe-auth-destination";
 import { safeNext } from "@/lib/auth/safe-next";
 import { ensureUserEntitlementsBootstrap } from "@/lib/isendai/ensure-user-entitlements";
+import { processWelcomeBonusForUser } from "@/lib/welcome-bonus/welcome-bonus-service";
 import { parseReferralCookie } from "@/lib/referrals/ref-cookie";
 import {
   ensureReferralProfileForUser,
@@ -79,6 +80,7 @@ export async function GET(request: NextRequest) {
   }
 
   await ensureUserEntitlementsBootstrap(user.id);
+  await processWelcomeBonusForUser(user);
 
   const referredFromCookie = parseReferralCookie(request.headers.get("cookie"));
   await ensureReferralProfileForUser(user, { referredByCode: referredFromCookie });

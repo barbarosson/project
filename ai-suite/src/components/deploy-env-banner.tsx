@@ -17,7 +17,7 @@ export function DeployEnvBanner() {
   return (
     <div
       role="status"
-      className="sticky top-0 z-[100] border-b border-amber-400/40 bg-amber-950/95 px-3 py-2 text-center text-xs font-medium text-amber-50 shadow-md backdrop-blur-sm sm:text-sm"
+      className="sticky top-0 z-[100] border-b border-amber-400/40 bg-amber-950/95 px-3 pb-2 pt-[max(0.5rem,env(safe-area-inset-top,0px))] text-center text-xs font-medium text-amber-50 shadow-md backdrop-blur-sm sm:text-sm"
     >
       <span>{t("deploy.stagingBanner")}</span>{" "}
       <Link

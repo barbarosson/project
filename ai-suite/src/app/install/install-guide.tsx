@@ -148,9 +148,24 @@ export function InstallGuide({ content }: InstallGuideProps) {
           ))}
         </ol>
 
-        <div className="mt-6 flex gap-3 rounded-xl border border-amber-500/25 bg-amber-500/10 p-4 sm:p-5">
-          <Lightbulb className="mt-0.5 size-5 shrink-0 text-amber-300" aria-hidden />
-          <p className="text-sm leading-relaxed text-amber-100/95 sm:text-base">{guide.tip}</p>
+        <div
+          className={cn(
+            "mt-6 flex gap-3 rounded-xl border border-amber-500/25 bg-amber-500/10 p-4 sm:p-5",
+            "light:border-amber-500/40 light:bg-amber-50/90"
+          )}
+        >
+          <Lightbulb
+            className="mt-0.5 size-5 shrink-0 text-amber-300 light:text-amber-700"
+            aria-hidden
+          />
+          <p
+            className={cn(
+              "text-sm leading-relaxed text-amber-100/95 sm:text-base",
+              "light:text-amber-950"
+            )}
+          >
+            {guide.tip}
+          </p>
         </div>
       </section>
     </div>

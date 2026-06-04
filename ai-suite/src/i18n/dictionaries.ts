@@ -16,31 +16,42 @@ export const DICTS: Record<Locale, Dict> = {
     "brand.name": "isendai",
     "header.theme": "Toggle theme",
     "socialProof.demoPrefix": "Demo vibe:",
-    "hero.kicker": "Your chaotic draft → send-ready masterpiece ✨",
-    "hero.title": "Don't Send That Yet. Fix It First.",
+    "hero.kicker": "From messy draft to send-ready message ✨",
+    "hero.title": "Don't Send Yet. Fix It First.",
     "hero.subtitle":
-      "AI writing for WhatsApp, email & social — credits when you generate, no forced subscription. Paste the mess; send something you're proud of.",
-    "hero.cta": "Fix My Mess (1st try's on us 🎁)",
+      "We polish your WhatsApp, email, and social posts with AI. You only spend credits when you generate, and there's no forced subscription. Paste your messy draft and get something you'll be proud to send.",
+    "hero.cta": "Join free — 100 welcome credits 🎁",
     "hero.modulusFamily": "Part of the MODULUS family —",
     "hero.badge.noSubscription": "No subscription trap",
-    "hero.badge.noSignups": "Free taste available",
+    "hero.badge.noSignups": "100 credits when you join",
     "hero.badge.payPerUse": "Pay when you generate",
     "promo.isend101.ariaLabel": "Limited-time discount offer",
     "promo.isend101.badge": "Limited-time offer",
-    "promo.isend101.title": "50% off — go feral, pay less 🔥",
+    "promo.isend101.title": "50% off: Pay less, polish more 🔥",
     "promo.isend101.body":
-      "Use code {code} at checkout — {percent}% off any plan or credit pack for a limited time.",
+      "Use code {code} at checkout. It applies {percent}% off any plan or credit pack for a limited time.",
     "promo.isend101.hint": "Enter the code on the secure Lemon Squeezy payment page before you pay.",
     "promo.isend101.codeLabel": "Your code",
     "promo.isend101.copy": "Copy code",
     "promo.isend101.copied": "Code copied to clipboard.",
     "promo.isend101.copiedShort": "Copied",
-    "promo.isend101.copyFailed": "Could not copy — select the code manually.",
+    "promo.isend101.copyFailed": "Could not copy; please select the code manually.",
     "promo.isend101.viewPricing": "View plans & packs",
     "hero.badge.noStore": "We don’t store your text",
 
+    "home.welcomeBonus.ariaLabel": "New member welcome credits",
+    "home.welcomeBonus.kicker": "New member gift",
+    "home.welcomeBonus.title": "{credits} free credits when you complete membership",
+    "home.welcomeBonus.body":
+      "Sign up for free, complete your membership profile, and verify your email. We add {credits} credits to your wallet once — no subscription required.",
+    "home.welcomeBonus.hint": "Credits are added automatically after profile and email verification.",
+    "home.welcomeBonus.cta": "Create your free account",
+
+    "home.floatingJoin.ariaLabel": "Sign up for free membership",
+    "home.floatingJoin.cta": "Join now",
+
     "home.whoFor.kicker": "Who it's for",
-    "home.whoFor.title": "Built for real messages — not generic chat",
+    "home.whoFor.title": "Built for Real Messages",
     "home.whoFor.lead":
       "Pick the situation closest to yours. Each path opens a specialist tool tuned for that tone and stakes.",
     "home.whoFor.tryTool": "Recommended tool",
@@ -53,7 +64,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Builds a winning proposal with clear value, pricing logic, and next steps your client can say yes to.",
     "home.whoFor.business.title": "Small business & support",
     "home.whoFor.business.pain":
-      "When a refund, complaint, or public review lands, you need calm words that still protect the business.",
+      "When a refund, complaint, or bad review arrives, you don't need to panic. You need calm words that still protect your business.",
     "home.whoFor.business.toolName": "Refund Demander",
     "home.whoFor.business.toolBlurb":
       "Drafts a firm, respectful refund or compensation email that cites consumer rights without sounding aggressive.",
@@ -62,13 +73,13 @@ export const DICTS: Record<Locale, Dict> = {
       "Before you email your manager, client, or team, make sure the tone is professional and still sounds like you.",
     "home.whoFor.career.toolName": "Corporate Whisperer",
     "home.whoFor.career.toolBlurb":
-      "Paste what you really want to say — we turn it into a polite, send-ready email your workplace will accept.",
+      "Paste what you really want to say, and we'll turn it into a polite, send-ready email your workplace will accept.",
 
     "home.demo.before.label": "Before",
     "home.demo.after.label": "After",
-    "home.demo.title": "Before & After (the glow-up is real)",
+    "home.demo.title": "Before and after: See the difference",
     "home.demo.subtitle":
-      "Pick a vibe, watch the chaos turn civil, then steal the workflow for your own draft.",
+      "Pick an example, see the transformation, and try it on your own draft.",
     "home.demo.examples.corp.before":
       "This design is garbage, you clearly didn't read my brief!",
     "home.demo.examples.corp.after":
@@ -86,9 +97,9 @@ export const DICTS: Record<Locale, Dict> = {
     "home.demo.examples.caveman.after":
       "I hate this. Later.",
 
-    "section.tools.title": "Pick a tool. Paste chaos. Leave with confidence.",
+    "section.tools.title": "Pick a tool, paste your text, and get a better version instantly.",
     "section.tools.subtitle":
-      "Work emails, job apps, dating bios — micro-tools that fix how you sound, fast.",
+      "Built for work emails, job applications, and dating bios.",
     "tabs.corporate": "Corporate",
     "tabs.coverletter": "Cover Letter",
     "tabs.dating": "Dating Bio",
@@ -98,51 +109,51 @@ export const DICTS: Record<Locale, Dict> = {
     "how.1.body": "Drop your draft, job post, or bio. No formatting needed.",
     "how.2.title": "2) Improve",
     "how.2.body": "AI rewrites with better tone, structure, and clarity.",
-    "how.3.title": "3) Copy & send",
-    "how.3.body": "Get a clean result with a one-click copy button.",
+    "how.3.title": "3) Copy and send",
+    "how.3.body": "Copy the result in one click and send it straight away.",
 
-    "how.detailed.title": "How It Works (4 steps, zero cringe)",
+    "how.detailed.title": "How It Works (4 Simple Steps)",
     "how.detailed.subtitle":
-      "Messy thoughts → send-ready message in under 10 seconds. No corporate tutorial energy.",
+      "Turn messy thoughts into a send-ready message in under ten seconds.",
     "how.detailed.1.title": "1) Choose your tool",
     "how.detailed.1.body":
       "Browse our micro-tools from the menu, or just ask the AI Concierge to find the perfect one for your specific situation.",
     "how.detailed.2.title": "2) Paste your messy draft",
     "how.detailed.2.body":
-      "Drop in your angry email, awkward text, or basic notes. Don't worry about typos or formatting—just brain dump.",
+      "Paste your angry email, awkward text, or rough notes. Typos are fine; just write what you actually mean.",
     "how.detailed.3.title": "3) Select your AI power",
     "how.detailed.3.body":
       "Go with 'Fast AI' (1 Credit) for quick fixes, or 'Pro AI' (25 Credits) for high-stakes messages. The exact credit cost is always transparent on the button.",
-    "how.detailed.4.title": "4) Polish & Send",
+    "how.detailed.4.title": "4) Copy and send",
     "how.detailed.4.body":
       "Review the polished result, copy it, or ask the AI to generate a different variation. Hit send with 100% confidence.",
 
-    "products.title": "The hits (fast, punchy, unhinged in a good way)",
-    "products.subtitle": "One job each: make you sound human, hired, or dateable — faster.",
+    "products.title": "Featured tools",
+    "products.subtitle": "Each one has a single job: help you make a better impression.",
     "products.corp.title": "The Corporate Whisperer",
     "products.corp.slogan": "Say it firmly. Send it safely.",
     "products.cover.title": "1-Click Cover Letter",
     "products.cover.slogan": "Tailored, ATS-friendly, interview-ready.",
     "products.dating.title": "Dating Profile Roast & Fix",
-    "products.dating.slogan": "Less cringe. More matches.",
+    "products.dating.slogan": "Less awkward, more matches.",
 
     "faq.q1": "Do you store my text?",
     "faq.a1":
-      "No. Your input is kept in your browser (localStorage) to complete the flow.",
+      "No. Your text is stored temporarily in your browser (localStorage) to complete the flow.",
     "faq.q2": "How does payment work?",
-    "faq.a2": "Pay per use. Secure checkout via Lemon Squeezy. No subscription traps.",
+    "faq.a2": "You pay as you go. Checkout is secure via Lemon Squeezy, and there's no subscription trap.",
     "faq.q3": "What do I get?",
     "faq.a3":
-      "A polished output you can copy immediately—email, cover letter, or bio.",
+      "A polished message you can copy right away, whether it's an email, cover letter, or bio.",
 
     "footer.copyright": "© 2026 isendai.com. Crafted for better communication.",
     "footer.trust":
-      "🔒 Lemon Squeezy checkout | ⚡ AI-powered glow-ups | 🚫 We don't hoard your drafts",
+      "🔒 Secure checkout via Lemon Squeezy | ⚡ AI-powered polish | 🚫 We don't hoard your drafts",
     "footer.modulusLead": "Part of the MODULUS family —",
     "footer.modulus": "MODULUS corporate site",
 
     "tool.corp.desc":
-      "Want to yell at your boss or client? Don't. Type your angry, unfiltered thoughts here, and we'll turn it into a polite, HR-friendly masterpiece.",
+      "Write what you really want to say here, and we'll turn it into a respectful, clear, workplace-ready email.",
     "tool.corp.placeholder":
       `Type what you REALLY want to say... (e.g., "This design is garbage and you clearly didn't read my brief.")`,
     "tool.corp.button": "Translate to Professional",
@@ -154,7 +165,7 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.cover.button": "Generate Cover Letter",
 
     "tool.dating.desc":
-      "Not getting matches? Our AI will brutally roast your current bio, tell you exactly why it's failing, and write a magnetic new one for you.",
+      "Not getting matches? We'll review your bio, explain what's not working, and write a stronger version for you.",
     "tool.dating.placeholder":
       "Paste your current Tinder/Bumble bio or describe your vibe...",
     "tool.dating.button": "Roast & Fix My Profile",
@@ -198,7 +209,7 @@ export const DICTS: Record<Locale, Dict> = {
     "success.shareTikTokToast": "Text copied! Paste it in your TikTok caption.",
     "success.shareCopyFailed":
       "Couldn't copy to clipboard. Try copying the text manually.",
-    "success.ready": "Ready when you are.",
+    "success.ready": "When your message is ready, send it with confidence.",
 
     "success.ephemeral.title": "Heads up",
     "success.ephemeral.body":
@@ -219,31 +230,31 @@ export const DICTS: Record<Locale, Dict> = {
     "success.feedback.thumbsDownAria": "Poor result",
 
     "home.sidebar.title": "AI Products",
-    "home.workspace.hint": "Paste → Generate → Copy",
+    "home.workspace.hint": "Paste, generate, copy",
     "home.aiStack.title": "The World's Leading AI Models in One Place 🧠",
     "home.aiStack.body":
-      "Behind the scenes, the brains of tech giants like OpenAI (ChatGPT), Anthropic (Claude), Google, and DeepSeek work for you. Don't want to think about which model to pick? Leave it on Auto — we'll choose the best fit for your moment. Or take full control and pick your own intelligence from the menu! (Credit usage is calculated transparently based on the tier of the model you choose.)",
+      "Behind the scenes, models from OpenAI (ChatGPT), Anthropic (Claude), Google, and DeepSeek work for you. If you don't want to choose, leave it on Auto and we'll pick the best fit for the moment. Prefer control? Choose your model from the menu. Credit usage is calculated transparently based on the tier you select.",
     "home.expertBots.kicker": "Domain expert bots",
-    "home.expertBots.title": "Not one chatbot — a specialist for every topic",
+    "home.expertBots.title": "Not one chatbot; a specialist for every topic",
     "home.expertBots.lead":
-      "isendai isn’t one chatbot trying to do everything—it’s a fleet of specialist bots. Work email, cover letters, dating, freelance scopes, bureaucracy, neighbors, creators, family: each tool ships with its own prompts, scope guardrails, and smart routing to the best model for that moment.",
+      "isendai isn't one chatbot trying to do everything. It's a fleet of specialist bots for work email, cover letters, dating, freelance work, bureaucracy, neighbors, creators, and family. Each tool has its own prompts, scope guardrails, and smart routing to the best model for that job.",
     "home.expertBots.point1":
-      "Topic-native bots: 80+ micro-tools across eight life domains, each with its own persona and output format.",
+      "More than 80 micro-tools across eight life domains, each with its own tone and output format.",
     "home.expertBots.point2":
-      "Multi-provider engine: OpenAI, Anthropic, Gemini, Groq, and DeepSeek—auto-routed or hand-picked from one menu.",
+      "Multi-provider engine with OpenAI, Anthropic, Gemini, Groq, and DeepSeek. Use Auto or pick a model from one menu.",
     "home.expertBots.point3":
       "Production-grade stack: per-tool scope gates, transparent credit billing, version history, and replies in your language.",
 
     "concierge.title": "ISENDAI",
     "concierge.welcome":
-      "Hi — what do you need help with today? (e.g., a work email, a cover letter, a refund message, a dating bio)",
+      "Hi, what can we help you with today? (For example, a work email, cover letter, refund message, or dating bio.)",
     "concierge.placeholder": "Tell me what you’re trying to do…",
     "concierge.send": "Send",
     "concierge.thinking": "Thinking…",
     "concierge.modelLabel": "AI model for replies",
     "concierge.openTool": "Open tool",
     "concierge.offScope.lead":
-      "We can help with isendai writing tools—for example drafting a smoother message to ask what gift they want.",
+      "We can help with isendai writing tools, for example by turning your gift request into a smoother message.",
     "concierge.offScope.try": "Try these tools:",
     "concierge.errors.chatFailed": "Chat failed. Please try again.",
     "concierge.errors.noReply": "No reply from the assistant.",
@@ -377,15 +388,15 @@ export const DICTS: Record<Locale, Dict> = {
       "Payments: Lemon Squeezy is not fully configured on this deploy. Set LEMON_SQUEEZY_* env vars or use dev top-up on staging.",
     "pricing.title": "Pricing",
     "pricing.subtitle":
-      "Same credits everywhere: monthly from $7.99, yearly ~17% off, or one-time packs from $1. No subscription trap — load credits, generate when you need polish.",
-    "pricing.hero.intro": "Three ways to load credits — same rules everywhere in the app:",
+      "The same credit system applies everywhere. Monthly plans start at $7.99, yearly plans save about 17%, and one-time packs start at $1. There's no forced subscription; load credits and generate when you need polish.",
+    "pricing.hero.intro": "There are three ways to load credits, and the rules are the same across the app:",
     "pricing.hero.tagMonthly": "Monthly",
     "pricing.hero.tagAnnual": "Annual",
     "pricing.hero.annualSaveBadge": "~17% off",
     "pricing.hero.tagPaygo": "Pay-as-you-go",
     "pricing.hero.paygoHint": "Larger packs unlock more models.",
     "pricing.hero.footerMain":
-      "Economy & GPT‑4o mini: 0.2 credits per 100 characters. Standard: 3; Premium: 5 — each extra block stacks.",
+      "Economy and GPT‑4o mini use 0.2 credits per 100 characters. Standard uses 3 credits per block, and Premium uses 5. Each extra block adds on top.",
     "pricing.hero.footerJump": "How credits work",
     "pricing.monthly.sectionTitle": "Monthly credit bundles",
     "pricing.monthly.sectionLead":
@@ -722,6 +733,8 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.save": "Save and continue",
     "profile.saving": "Saving…",
     "profile.saved": "Profile saved.",
+    "profile.welcomeCreditsGranted":
+      "Profile saved. {credits} welcome credits were added to your account.",
     "profile.errors.required": "Please fill in all required fields.",
     "profile.errors.emailRequired": "Please enter your email address.",
     "profile.errors.emailInvalid": "Please enter a valid email address.",
@@ -794,35 +807,46 @@ export const DICTS: Record<Locale, Dict> = {
     "brand.name": "isendai",
     "header.theme": "Cambiar tema",
     "socialProof.demoPrefix": "Demo:",
-    "hero.kicker": "Tu borrador caótico → mensaje listo para enviar ✨",
+    "hero.kicker": "Del borrador caótico al mensaje listo para enviar ✨",
     "hero.title": "Aún no pulses Enviar. Arréglalo primero.",
     "hero.subtitle":
-      "IA para WhatsApp, email y redes — pagas con créditos al generar, sin suscripción obligatoria. Pega el desastre; envía algo de lo que estés orgulloso.",
-    "hero.cta": "Arreglar mi desastre (1.er intento gratis 🎁)",
+      "Pulimos tus textos de WhatsApp, email y redes con IA. Solo gastas créditos al generar y no hay suscripción obligatoria. Pega tu borrador desordenado y recibe algo que enviarás con orgullo.",
+    "hero.cta": "Únete gratis — 100 créditos de regalo 🎁",
     "hero.modulusFamily": "Parte de la familia MODULUS —",
     "hero.badge.noSubscription": "Sin trampa de suscripción",
-    "hero.badge.noSignups": "Prueba gratis disponible",
+    "hero.badge.noSignups": "100 créditos al unirte",
     "hero.badge.payPerUse": "Pagas al generar",
     "promo.isend101.ariaLabel": "Oferta por tiempo limitado",
     "promo.isend101.badge": "Oferta por tiempo limitado",
-    "promo.isend101.title": "50 % off — desata el caos, paga menos 🔥",
+    "promo.isend101.title": "50 % de descuento: Paga menos, mejora más 🔥",
     "promo.isend101.body":
-      "Usa el código {code} al pagar — {percent} % de descuento en cualquier plan o pack por tiempo limitado.",
+      "Usa el código {code} al pagar. Aplica un {percent} % de descuento en cualquier plan o pack por tiempo limitado.",
     "promo.isend101.hint": "Introduce el código en la página de pago segura de Lemon Squeezy antes de pagar.",
     "promo.isend101.codeLabel": "Tu código",
     "promo.isend101.copy": "Copiar código",
     "promo.isend101.copied": "Código copiado.",
     "promo.isend101.copiedShort": "Copiado",
-    "promo.isend101.copyFailed": "No se pudo copiar — selecciona el código manualmente.",
+    "promo.isend101.copyFailed": "No se pudo copiar; selecciona el código manualmente.",
     "promo.isend101.viewPricing": "Ver planes y packs",
     "hero.badge.noStore": "No guardamos tu texto",
 
+    "home.welcomeBonus.ariaLabel": "Créditos de bienvenida para nuevos miembros",
+    "home.welcomeBonus.kicker": "Regalo de bienvenida",
+    "home.welcomeBonus.title": "{credits} créditos gratis al completar la membresía",
+    "home.welcomeBonus.body":
+      "Regístrate gratis, completa tu perfil de membresía y verifica tu correo. Añadimos {credits} créditos a tu cuenta una sola vez, sin suscripción obligatoria.",
+    "home.welcomeBonus.hint": "Los créditos se añaden automáticamente tras el perfil y la verificación del correo.",
+    "home.welcomeBonus.cta": "Crear cuenta gratis",
+
+    "home.floatingJoin.ariaLabel": "Registro gratuito de membresía",
+    "home.floatingJoin.cta": "Únete ya",
+
     "home.whoFor.kicker": "Para quién es",
-    "home.whoFor.title": "Hecho para mensajes reales — no chat genérico",
+    "home.whoFor.title": "Hecho para mensajes reales",
     "home.whoFor.lead":
-      "Elige la situación más cercana a la tuya. Cada camino abre una herramienta especializada para ese tono y esas apuestas.",
-    "home.whoFor.tryTool": "Empieza aquí",
-    "home.whoFor.openTool": "Abrir herramienta",
+      "Elige la situación más cercana a la tuya. Cada tarjeta te lleva a una herramienta preparada para ese contexto.",
+    "home.whoFor.tryTool": "Herramienta recomendada",
+    "home.whoFor.openTool": "Probar ahora",
     "home.whoFor.freelance.title": "Freelance y consultores",
     "home.whoFor.freelance.pain":
       "Tus propuestas y seguimientos deben sonar claros y seguros. Define el alcance desde el principio y mantén un tono profesional sin rigidez.",
@@ -831,7 +855,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Redacta una propuesta ganadora con valor claro, lógica de precios y próximos pasos que el cliente pueda aceptar.",
     "home.whoFor.business.title": "Pymes y atención al cliente",
     "home.whoFor.business.pain":
-      "Cuando llega un reembolso, una queja o una reseña negativa, necesitas palabras calmadas que aun así protejan el negocio.",
+      "Cuando llega un reembolso, una queja o una reseña negativa, no hace falta entrar en pánico. Necesitas palabras calmadas que protejan tu negocio.",
     "home.whoFor.business.toolName": "Refund Demander",
     "home.whoFor.business.toolBlurb":
       "Redacta un correo de reembolso o compensación firme y respetuoso, con referencia a derechos del consumidor.",
@@ -840,13 +864,13 @@ export const DICTS: Record<Locale, Dict> = {
       "Antes de escribir a tu jefe, cliente o equipo, revisa el tono: profesional y aun así humano.",
     "home.whoFor.career.toolName": "Corporate Whisperer",
     "home.whoFor.career.toolBlurb":
-      "Pega lo que quieres decir de verdad; lo convertimos en un correo educado y listo para enviar.",
+      "Pega lo que quieres decir de verdad y lo convertimos en un correo educado y listo para enviar.",
 
     "home.demo.before.label": "Antes",
     "home.demo.after.label": "Después",
-    "home.demo.title": "Antes y después",
+    "home.demo.title": "Antes y después: Mira la diferencia",
     "home.demo.subtitle":
-      "Elige un producto, mira la transformación y haz clic para generar el tuyo.",
+      "Elige un ejemplo, mira la transformación y pruébalo con tu propio borrador.",
     "home.demo.examples.corp.before":
       "Este diseño es un desastre, ¡está claro que no leíste mi briefing!",
     "home.demo.examples.corp.after":
@@ -864,9 +888,9 @@ export const DICTS: Record<Locale, Dict> = {
     "home.demo.examples.caveman.after":
       "Odio esto. Luego.",
 
-    "section.tools.title": "Elige una herramienta. Pega tu texto. Mejora al instante.",
+    "section.tools.title": "Elige una herramienta, pega tu texto y obtén una mejor versión al instante.",
     "section.tools.subtitle":
-      "Para la vida real: correos de trabajo, solicitudes y biografías de citas.",
+      "Pensado para correos de trabajo, solicitudes y biografías de citas.",
     "tabs.corporate": "Corporativo",
     "tabs.coverletter": "Carta",
     "tabs.dating": "Bio",
@@ -876,7 +900,7 @@ export const DICTS: Record<Locale, Dict> = {
     "how.2.title": "2) Mejora",
     "how.2.body": "La IA reescribe con mejor tono, estructura y claridad.",
     "how.3.title": "3) Copia y envía",
-    "how.3.body": "Obtén un resultado limpio con copiar en un clic.",
+    "how.3.body": "Copia el resultado con un clic y envíalo directamente.",
 
     "how.detailed.title": "Cómo funciona (4 pasos sencillos)",
     "how.detailed.subtitle":
@@ -886,34 +910,34 @@ export const DICTS: Record<Locale, Dict> = {
       "Explora nuestras microherramientas en el menú o pide al AI Concierge que encuentre la ideal para tu situación.",
     "how.detailed.2.title": "2) Pega tu borrador",
     "how.detailed.2.body":
-      "Pega tu correo enfadado, mensaje incómodo o notas sueltas. No te preocupes por faltas ni formato: suelta todo.",
+      "Pega tu correo enfadado, mensaje incómodo o notas sueltas. Las faltas no importan; escribe lo que realmente quieres decir.",
     "how.detailed.3.title": "3) Elige tu potencia de IA",
     "how.detailed.3.body":
       "Usa 'Fast AI' (1 crédito) para arreglos rápidos o 'Pro AI' (25 créditos) para mensajes importantes. El coste exacto siempre aparece en el botón.",
     "how.detailed.4.title": "4) Pulir y enviar",
     "how.detailed.4.body":
       "Revisa el resultado, cópialo o pide otra variación. Envía con total confianza.",
-    "products.title": "Productos (rápidos y efectivos)",
-    "products.subtitle": "Herramientas con una sola misión: sonar mejor, más rápido.",
-    "products.corp.title": "The Corporate Whisperer",
-    "products.corp.slogan": "Firme, pero seguro.",
-    "products.cover.title": "1-Click Cover Letter",
-    "products.cover.slogan": "A medida, ATS, listo para entrevista.",
-    "products.dating.title": "Dating Profile Roast & Fix",
-    "products.dating.slogan": "Menos cringe. Más matches.",
+    "products.title": "Herramientas destacadas",
+    "products.subtitle": "Cada una tiene una sola misión: ayudarte a causar una mejor impresión.",
+    "products.corp.title": "Corporate Whisperer",
+    "products.corp.slogan": "Piensa con firmeza, envía con seguridad.",
+    "products.cover.title": "Carta de presentación en un clic",
+    "products.cover.slogan": "A medida, compatible con ATS y lista para la entrevista.",
+    "products.dating.title": "Roast y mejora de bio de citas",
+    "products.dating.slogan": "Menos vergüenza, más matches.",
     "faq.q1": "¿Guardan mi texto?",
-    "faq.a1": "No. Se guarda en tu navegador (localStorage) para completar el flujo.",
+    "faq.a1": "No. Tu texto se guarda temporalmente en el navegador (localStorage) para completar el flujo.",
     "faq.q2": "¿Cómo funciona el pago?",
-    "faq.a2": "Pago por uso. Checkout seguro con Lemon Squeezy. Sin trampas.",
+    "faq.a2": "Pagas según usas. El pago es seguro con Lemon Squeezy y no hay trampa de suscripción.",
     "faq.q3": "¿Qué recibo?",
-    "faq.a3": "Un texto pulido que puedes copiar al instante.",
+    "faq.a3": "Un texto pulido que puedes copiar de inmediato, ya sea un correo, carta o bio.",
     "footer.copyright": "© 2026 isendai.com. Hecho para comunicar mejor.",
     "footer.modulusLead": "Parte de la familia MODULUS —",
     "footer.modulus": "Sitio corporativo MODULUS",
     "footer.trust":
       "🔒 Pagos seguros con Lemon Squeezy | ⚡ Impulsado por IA | 🚫 No guardamos tus datos.",
     "tool.corp.desc":
-      "¿Quieres gritarle a tu jefe o cliente? No lo hagas. Escribe lo que piensas y lo convertimos en un correo educado y apto para RR. HH.",
+      "Escribe lo que realmente quieres decir y lo convertimos en un correo respetuoso, claro y apto para el trabajo.",
     "tool.corp.placeholder":
       `Escribe lo que REALMENTE quieres decir... (p. ej., "Este diseño es basura y ni leíste el brief.")`,
     "tool.corp.button": "Traducir a profesional",
@@ -925,7 +949,7 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.cover.placeholder2": "Pega tu CV o habilidades clave...",
     "tool.cover.button": "Generar carta",
     "tool.dating.desc":
-      "¿Pocos matches? La IA critica tu bio, te dice por qué falla y escribe una nueva y magnética.",
+      "¿Pocos matches? Revisamos tu bio, explicamos qué no funciona y escribimos una versión más atractiva.",
     "tool.dating.placeholder": "Pega tu bio de Tinder/Bumble o describe tu vibra...",
     "tool.dating.button": "Roast y arreglar",
     "success.test": "Modo test. Generando…",
@@ -968,7 +992,7 @@ export const DICTS: Record<Locale, Dict> = {
       "¡Texto copiado! Pégalo en la descripción de TikTok.",
     "success.shareCopyFailed":
       "No se pudo copiar al portapapeles. Intenta copiar el texto manualmente.",
-    "success.ready": "Listo cuando tú lo estés.",
+    "success.ready": "Cuando tu mensaje esté listo, envíalo con confianza.",
 
     "success.ephemeral.title": "Aviso",
     "success.ephemeral.body":
@@ -989,7 +1013,7 @@ export const DICTS: Record<Locale, Dict> = {
     "success.feedback.thumbsDownAria": "Mal resultado",
 
     "home.sidebar.title": "Productos de IA",
-    "home.workspace.hint": "Pega → Genera → Copia",
+    "home.workspace.hint": "Pega, genera y copia",
     "home.aiStack.title": "Los Principales Modelos de IA del Mundo en Un Solo Lugar 🧠",
     "home.aiStack.body":
       "En segundo plano trabajan para ti los cerebros de gigantes tecnológicos como OpenAI (ChatGPT), Anthropic (Claude), Google y DeepSeek. ¿No quieres pensar qué modelo elegir? Déjalo en «Automático» y elegimos el más adecuado para tu momento. ¡O toma el control y elige tu propia inteligencia en el menú! (El uso de créditos se calcula con transparencia según el nivel del modelo que elijas).",
@@ -1015,13 +1039,13 @@ export const DICTS: Record<Locale, Dict> = {
 
     "concierge.title": "ISENDAI",
     "concierge.welcome":
-      "Hola — ¿en qué necesitas ayuda hoy? (p. ej., un email de trabajo, una carta de presentación, un mensaje de reembolso, una bio de citas)",
+      "Hola, ¿en qué podemos ayudarte hoy? (Por ejemplo, un correo de trabajo, carta de presentación, mensaje de reembolso o bio de citas.)",
     "concierge.placeholder": "Cuéntame qué quieres lograr…",
     "concierge.send": "Enviar",
     "concierge.thinking": "Pensando…",
     "concierge.modelLabel": "Modelo de IA para respuestas",
     "concierge.offScope.lead":
-      "Podemos ayudarte con las herramientas de escritura de isendai—por ejemplo un mensaje más natural para preguntar qué regalo quiere.",
+      "Podemos ayudarte con las herramientas de escritura de isendai, por ejemplo convirtiendo tu petición de regalo en un mensaje más natural.",
     "concierge.offScope.try": "Prueba estas herramientas:",
     "concierge.errors.chatFailed": "El chat falló. Inténtalo de nuevo.",
     "concierge.errors.noReply": "No hubo respuesta del asistente.",
@@ -1155,15 +1179,15 @@ export const DICTS: Record<Locale, Dict> = {
       "Pagos: Lemon Squeezy no está configurado en este deploy. Define LEMON_SQUEEZY_* o usa top-up dev en staging.",
     "pricing.title": "Precios",
     "pricing.subtitle":
-      "Mismos créditos en todas partes: mensual desde $7.99, anual ~17 % menos o packs desde $1. Sin trampa de suscripción — carga créditos y genera cuando lo necesites.",
-    "pricing.hero.intro": "Tres formas de cargar créditos — mismas reglas en toda la app:",
+      "El mismo sistema de créditos vale en todas partes. Los planes mensuales empiezan en 7,99 $, el anual ahorra alrededor del 17 % y los packs únicos desde 1 $. No hay suscripción obligatoria: carga créditos y genera cuando lo necesites.",
+    "pricing.hero.intro": "Hay tres formas de cargar créditos y las reglas son las mismas en toda la app:",
     "pricing.hero.tagMonthly": "Mensual",
     "pricing.hero.tagAnnual": "Anual",
     "pricing.hero.annualSaveBadge": "~17 % menos",
     "pricing.hero.tagPaygo": "Pago por uso",
     "pricing.hero.paygoHint": "Los packs mayores desbloquean más modelos.",
     "pricing.hero.footerMain":
-      "Economy y GPT‑4o mini: 1 crédito por bloque de 500 caracteres. Estándar: 15; Premium: 25 — cada bloque extra se acumula.",
+      "Economy y GPT‑4o mini gastan 0,2 créditos por cada 100 caracteres. Estándar usa 3 créditos por bloque y Premium usa 5. Cada bloque extra se suma.",
     "pricing.hero.footerJump": "Cómo se usan los créditos",
     "pricing.monthly.sectionTitle": "Paquetes mensuales de créditos",
     "pricing.monthly.sectionLead":
@@ -1487,6 +1511,8 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.save": "Guardar y continuar",
     "profile.saving": "Guardando…",
     "profile.saved": "Perfil guardado.",
+    "profile.welcomeCreditsGranted":
+      "Perfil guardado. Se añadieron {credits} créditos de bienvenida a tu cuenta.",
     "profile.errors.required": "Completa todos los campos obligatorios.",
     "profile.errors.emailRequired": "Introduce tu dirección de correo.",
     "profile.errors.emailInvalid": "Introduce un correo válido.",
@@ -1550,35 +1576,46 @@ export const DICTS: Record<Locale, Dict> = {
     "brand.name": "isendai",
     "header.theme": "Changer le thème",
     "socialProof.demoPrefix": "Démo :",
-    "hero.kicker": "Brouillon chaotique → message prêt à envoyer ✨",
+    "hero.kicker": "Du brouillon chaotique au message prêt à envoyer ✨",
     "hero.title": "N’envoyez pas encore. Corrigez d’abord.",
     "hero.subtitle":
-      "IA pour WhatsApp, e-mail et réseaux — crédits à la génération, sans abonnement forcé. Collez le brouillon ; envoyez quelque chose dont vous êtes fier.",
-    "hero.cta": "Corriger mon bazar (1er essai offert 🎁)",
+      "Nous peaufinons vos textes WhatsApp, e-mail et réseaux avec l’IA. Vous ne dépensez des crédits qu’à la génération, sans abonnement forcé. Collez votre brouillon et recevez un message dont vous serez fier.",
+    "hero.cta": "Inscription gratuite — 100 crédits offerts 🎁",
     "hero.modulusFamily": "Une offre de la famille MODULUS —",
     "hero.badge.noSubscription": "Pas de piège d’abonnement",
-    "hero.badge.noSignups": "Essai gratuit dispo",
+    "hero.badge.noSignups": "100 crédits à l’inscription",
     "hero.badge.payPerUse": "Payez à la génération",
     "promo.isend101.ariaLabel": "Offre à durée limitée",
     "promo.isend101.badge": "Offre à durée limitée",
-    "promo.isend101.title": "−50 % — lâchez-vous, payez moins 🔥",
+    "promo.isend101.title": "−50 % : Payez moins, écrivez mieux 🔥",
     "promo.isend101.body":
-      "Code {code} au paiement — {percent} % de réduction sur tout forfait ou pack pour une durée limitée.",
+      "Utilisez le code {code} au paiement. Il offre {percent} % de réduction sur tout forfait ou pack pour une durée limitée.",
     "promo.isend101.hint": "Saisissez le code sur la page de paiement Lemon Squeezy avant de régler.",
     "promo.isend101.codeLabel": "Votre code",
     "promo.isend101.copy": "Copier le code",
     "promo.isend101.copied": "Code copié.",
     "promo.isend101.copiedShort": "Copié",
-    "promo.isend101.copyFailed": "Copie impossible — sélectionnez le code manuellement.",
+    "promo.isend101.copyFailed": "Copie impossible ; sélectionnez le code manuellement.",
     "promo.isend101.viewPricing": "Voir forfaits et packs",
     "hero.badge.noStore": "Nous ne stockons pas votre texte",
 
+    "home.welcomeBonus.ariaLabel": "Crédits de bienvenue pour les nouveaux membres",
+    "home.welcomeBonus.kicker": "Cadeau de bienvenue",
+    "home.welcomeBonus.title": "{credits} crédits offerts à l’inscription",
+    "home.welcomeBonus.body":
+      "Inscrivez-vous gratuitement, complétez votre profil membre et vérifiez votre e-mail. Nous ajoutons {credits} crédits une seule fois, sans abonnement obligatoire.",
+    "home.welcomeBonus.hint": "Les crédits sont ajoutés automatiquement après le profil et la vérification de l’e-mail.",
+    "home.welcomeBonus.cta": "Créer un compte gratuit",
+
+    "home.floatingJoin.ariaLabel": "Inscription gratuite à l’adhésion",
+    "home.floatingJoin.cta": "S’inscrire",
+
     "home.whoFor.kicker": "Pour qui",
-    "home.whoFor.title": "Pensé pour de vrais messages — pas un chat générique",
+    "home.whoFor.title": "Pensé pour de vrais messages",
     "home.whoFor.lead":
-      "Choisis la situation la plus proche de la tienne. Chaque parcours ouvre un outil spécialisé pour ce ton et ces enjeux.",
-    "home.whoFor.tryTool": "Commencer ici",
-    "home.whoFor.openTool": "Ouvrir l’outil",
+      "Choisissez la situation la plus proche de la vôtre. Chaque carte mène à un outil préparé pour ce contexte.",
+    "home.whoFor.tryTool": "Outil recommandé",
+    "home.whoFor.openTool": "Essayer maintenant",
     "home.whoFor.freelance.title": "Freelances et consultants",
     "home.whoFor.freelance.pain":
       "Vos propositions et relances doivent sonner claires et assurées. Cadrez le périmètre dès le départ, sans ton rigide.",
@@ -1587,7 +1624,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Rédige une proposition gagnante avec valeur claire, logique tarifaire et prochaines étapes concrètes.",
     "home.whoFor.business.title": "PME et support",
     "home.whoFor.business.pain":
-      "Remboursement, plainte ou avis négatif : il vous faut des mots calmes qui protègent quand même l’entreprise.",
+      "Remboursement, plainte ou avis négatif : pas de panique. Il vous faut des mots calmes qui protègent quand même votre entreprise.",
     "home.whoFor.business.toolName": "Refund Demander",
     "home.whoFor.business.toolBlurb":
       "Rédige un e-mail de remboursement ou compensation ferme et respectueux, avec référence aux droits du consommateur.",
@@ -1596,13 +1633,13 @@ export const DICTS: Record<Locale, Dict> = {
       "Avant d’écrire à votre manager, client ou équipe, vérifiez le ton : professionnel et humain.",
     "home.whoFor.career.toolName": "Corporate Whisperer",
     "home.whoFor.career.toolBlurb":
-      "Collez ce que vous voulez vraiment dire ; nous le transformons en e-mail poli, prêt à envoyer.",
+      "Collez ce que vous voulez vraiment dire et nous le transformons en e-mail poli, prêt à envoyer.",
 
     "home.demo.before.label": "Avant",
     "home.demo.after.label": "Après",
-    "home.demo.title": "Avant / Après",
+    "home.demo.title": "Avant et après : Voyez la différence",
     "home.demo.subtitle":
-      "Choisissez un produit, voyez la transformation, puis cliquez pour générer le vôtre.",
+      "Choisissez un exemple, voyez la transformation et essayez avec votre propre brouillon.",
     "home.demo.examples.corp.before":
       "Ce design est nul, vous n’avez clairement pas lu mon brief !",
     "home.demo.examples.corp.after":
@@ -1620,9 +1657,9 @@ export const DICTS: Record<Locale, Dict> = {
     "home.demo.examples.caveman.after":
       "J’aime pas. Plus tard.",
 
-    "section.tools.title": "Choisissez un outil. Collez votre texte. Améliorez instantanément.",
+    "section.tools.title": "Choisissez un outil, collez votre texte et obtenez une meilleure version instantanément.",
     "section.tools.subtitle":
-      "Pour la vraie vie : emails pro, candidatures, bios de rencontre.",
+      "Conçu pour les e-mails pro, candidatures et bios de rencontre.",
     "tabs.corporate": "Corporate",
     "tabs.coverletter": "Lettre",
     "tabs.dating": "Bio",
@@ -1632,7 +1669,7 @@ export const DICTS: Record<Locale, Dict> = {
     "how.2.title": "2) Améliorez",
     "how.2.body": "L’IA réécrit avec meilleur ton, structure et clarté.",
     "how.3.title": "3) Copiez & envoyez",
-    "how.3.body": "Résultat propre avec copie en un clic.",
+    "how.3.body": "Copiez le résultat en un clic et envoyez-le directement.",
 
     "how.detailed.title": "Comment ça marche (4 étapes simples)",
     "how.detailed.subtitle":
@@ -1642,34 +1679,34 @@ export const DICTS: Record<Locale, Dict> = {
       "Parcourez nos micro‑outils dans le menu ou demandez à l’AI Concierge de trouver le bon pour votre situation.",
     "how.detailed.2.title": "2) Collez votre brouillon",
     "how.detailed.2.body":
-      "Collez votre e‑mail énervé, SMS maladroit ou notes brutes. Pas besoin de corriger : videz votre sac.",
+      "Collez votre e-mail énervé, SMS maladroit ou notes brutes. Les fautes n’ont pas d’importance ; écrivez ce que vous pensez vraiment.",
     "how.detailed.3.title": "3) Choisissez votre puissance IA",
     "how.detailed.3.body":
       "Optez pour 'Fast AI' (1 crédit) pour des retouches rapides ou 'Pro AI' (25 crédits) pour les messages importants. Le coût exact est toujours affiché sur le bouton.",
     "how.detailed.4.title": "4) Peaufinez et envoyez",
     "how.detailed.4.body":
       "Relisez le résultat, copiez‑le ou demandez une autre variante. Envoyez en toute confiance.",
-    "products.title": "Produits (rapides, efficaces)",
-    "products.subtitle": "Des outils simples : mieux écrire, plus vite.",
-    "products.corp.title": "The Corporate Whisperer",
-    "products.corp.slogan": "Ferme. Sûr. Pro.",
-    "products.cover.title": "1-Click Cover Letter",
-    "products.cover.slogan": "Sur-mesure, ATS, prêt entretien.",
-    "products.dating.title": "Dating Profile Roast & Fix",
-    "products.dating.slogan": "Moins cringe. Plus de matchs.",
+    "products.title": "Outils phares",
+    "products.subtitle": "Chacun a une seule mission : vous aider à faire meilleure impression.",
+    "products.corp.title": "Corporate Whisperer",
+    "products.corp.slogan": "Pensez fermement, envoyez en sécurité.",
+    "products.cover.title": "Lettre de motivation en un clic",
+    "products.cover.slogan": "Sur mesure, compatible ATS, prête pour l’entretien.",
+    "products.dating.title": "Roast et amélioration de bio",
+    "products.dating.slogan": "Moins gênant, plus de matchs.",
     "faq.q1": "Stockez-vous mon texte ?",
-    "faq.a1": "Non. Il reste dans votre navigateur (localStorage) pour terminer le flux.",
+    "faq.a1": "Non. Votre texte reste temporairement dans votre navigateur (localStorage) pour terminer le flux.",
     "faq.q2": "Comment fonctionne le paiement ?",
-    "faq.a2": "Paiement à l’usage. Paiement sécurisé via Lemon Squeezy. Pas de pièges.",
+    "faq.a2": "Vous payez à l’usage. Le paiement est sécurisé via Lemon Squeezy, sans piège d’abonnement.",
     "faq.q3": "Qu’est-ce que je reçois ?",
-    "faq.a3": "Un texte peaufiné que vous pouvez copier immédiatement.",
+    "faq.a3": "Un texte peaufiné que vous pouvez copier tout de suite, qu’il s’agisse d’un e-mail, d’une lettre ou d’une bio.",
     "footer.copyright": "© 2026 isendai.com. Conçu pour mieux communiquer.",
     "footer.modulusLead": "Une offre de la famille MODULUS —",
     "footer.modulus": "Site corporate MODULUS",
     "footer.trust":
       "🔒 Paiements sécurisés via Lemon Squeezy | ⚡ Propulsé par l’IA | 🚫 Nous ne stockons pas vos données.",
     "tool.corp.desc":
-      "Envie de crier sur votre boss ou client ? Ne le faites pas. Écrivez tout, on le transforme en email poli et OK RH.",
+      "Écrivez ce que vous voulez vraiment dire et nous le transformons en e-mail respectueux, clair et adapté au travail.",
     "tool.corp.placeholder":
       `Tapez ce que vous voulez VRAIMENT dire... (ex. "Ce design est nul et vous n’avez pas lu le brief.")`,
     "tool.corp.button": "Traduire en pro",
@@ -1681,7 +1718,7 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.cover.placeholder2": "Collez votre CV ou compétences clés...",
     "tool.cover.button": "Générer la lettre",
     "tool.dating.desc":
-      "Pas assez de matchs ? L’IA roast votre bio, explique pourquoi ça bloque, puis écrit une nouvelle bio magnétique.",
+      "Pas assez de matchs ? Nous analysons votre bio, expliquons ce qui bloque et écrivons une version plus convaincante.",
     "tool.dating.placeholder": "Collez votre bio Tinder/Bumble ou décrivez votre vibe...",
     "tool.dating.button": "Roast & corriger",
     "success.test": "Mode test. Génération…",
@@ -1724,7 +1761,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Texte copié ! Collez-le dans la description TikTok.",
     "success.shareCopyFailed":
       "Impossible de copier dans le presse-papiers. Copiez le texte manuellement.",
-    "success.ready": "Quand vous voulez.",
+    "success.ready": "Quand votre message est prêt, envoyez-le en toute confiance.",
 
     "success.ephemeral.title": "Info",
     "success.ephemeral.body":
@@ -1745,7 +1782,7 @@ export const DICTS: Record<Locale, Dict> = {
     "success.feedback.thumbsDownAria": "Mauvais résultat",
 
     "home.sidebar.title": "Produits IA",
-    "home.workspace.hint": "Coller → Générer → Copier",
+    "home.workspace.hint": "Collez, générez, copiez",
     "home.aiStack.title": "Les Principaux Modèles d'IA au Monde, Réunis 🧠",
     "home.aiStack.body":
       "En coulisses, les cerveaux de géants comme OpenAI (ChatGPT), Anthropic (Claude), Google et DeepSeek travaillent pour vous. Vous ne voulez pas choisir un modèle ? Laissez le mode « Auto » : nous sélectionnons le plus adapté à votre situation. Ou reprenez le contrôle et choisissez votre intelligence dans le menu ! (La consommation de crédits est calculée de façon transparente selon le niveau du modèle choisi).",
@@ -1771,13 +1808,13 @@ export const DICTS: Record<Locale, Dict> = {
 
     "concierge.title": "ISENDAI",
     "concierge.welcome":
-      "Bonjour — de quoi avez-vous besoin aujourd’hui ? (ex. un email pro, une lettre de motivation, une demande de remboursement, une bio de rencontre)",
+      "Bonjour, comment pouvons-nous vous aider aujourd’hui ? (Par exemple, un e-mail pro, une lettre de motivation, une demande de remboursement ou une bio de rencontre.)",
     "concierge.placeholder": "Dites-moi ce que vous cherchez à faire…",
     "concierge.send": "Envoyer",
     "concierge.thinking": "Réflexion…",
     "concierge.modelLabel": "Modèle IA pour les réponses",
     "concierge.offScope.lead":
-      "Nous pouvons t’aider avec les outils d’écriture isendai—par exemple un message plus naturel pour demander quel cadeau la personne veut.",
+      "Nous pouvons vous aider avec les outils d’écriture isendai, par exemple en transformant votre demande de cadeau en un message plus naturel.",
     "concierge.offScope.try": "Essaie ces outils :",
     "concierge.errors.chatFailed": "Échec du chat. Réessaie.",
     "concierge.errors.noReply": "Aucune réponse de l’assistant.",
@@ -1911,15 +1948,15 @@ export const DICTS: Record<Locale, Dict> = {
       "Paiements : Lemon Squeezy non configuré sur ce déploiement. Variables LEMON_SQUEEZY_* ou recharge dev staging.",
     "pricing.title": "Tarifs",
     "pricing.subtitle":
-      "Mêmes crédits partout : mensuel dès 7,99 $, annuel ~17 % moins cher, ou packs à l’usage dès 1 $. Pas d’abonnement forcé — chargez et générez quand il faut.",
-    "pricing.hero.intro": "Trois façons de charger des crédits — mêmes règles partout :",
+      "Le même système de crédits s’applique partout. Les forfaits mensuels commencent à 7,99 $, l’annuel fait économiser environ 17 % et les packs uniques dès 1 $. Pas d’abonnement forcé : chargez et générez quand vous en avez besoin.",
+    "pricing.hero.intro": "Il y a trois façons de charger des crédits et les règles sont les mêmes partout :",
     "pricing.hero.tagMonthly": "Mensuel",
     "pricing.hero.tagAnnual": "Annuel",
     "pricing.hero.annualSaveBadge": "~17 %",
     "pricing.hero.tagPaygo": "À l’usage",
     "pricing.hero.paygoHint": "Les packs plus grands ouvrent plus de modèles.",
     "pricing.hero.footerMain":
-      "Entrée de gamme et GPT‑4o mini : 1 crédit par bloc de 500 caractères. Standard : 15 ; Premium : 25 — chaque bloc supplémentaire s’ajoute.",
+      "Le niveau Economy et GPT‑4o mini utilisent 0,2 crédit pour 100 caractères. Le niveau Standard en utilise 3 par bloc, et Premium 5. Chaque bloc supplémentaire s’ajoute.",
     "pricing.hero.footerJump": "Utilisation des crédits",
     "pricing.monthly.sectionTitle": "Forfaits mensuels de crédits",
     "pricing.monthly.sectionLead":
@@ -2243,6 +2280,8 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.save": "Enregistrer et continuer",
     "profile.saving": "Enregistrement…",
     "profile.saved": "Profil enregistré.",
+    "profile.welcomeCreditsGranted":
+      "Profil enregistré. {credits} crédits de bienvenue ont été ajoutés à votre compte.",
     "profile.errors.required": "Remplis tous les champs obligatoires.",
     "profile.errors.emailRequired": "Saisis ton adresse e-mail.",
     "profile.errors.emailInvalid": "Saisis une adresse e-mail valide.",
@@ -2306,38 +2345,49 @@ export const DICTS: Record<Locale, Dict> = {
     "brand.name": "isendai",
     "header.theme": "Theme wechseln",
     "socialProof.demoPrefix": "Demo:",
-    "hero.kicker": "Chaos-Entwurf → sendefertige Nachricht ✨",
-    "hero.title": "Noch nicht senden. Erst fixen.",
+    "hero.kicker": "Vom chaotischen Entwurf zur sendefertigen Nachricht ✨",
+    "hero.title": "Noch nicht senden. Erst überarbeiten.",
     "hero.subtitle":
-      "KI für WhatsApp, E-Mail & Social — Credits beim Generieren, kein Abo-Zwang. Chaos einfügen; etwas senden, worauf du stolz bist.",
-    "hero.cta": "Mein Chaos fixen (1. Versuch gratis 🎁)",
+      "Wir polieren deine WhatsApp-, E-Mail- und Social-Texte mit KI. Du gibst nur beim Generieren Credits aus, ohne Abo-Zwang. Füge deinen rohen Entwurf ein und erhalte etwas, das du gern abschickst.",
+    "hero.cta": "Kostenlos registrieren — 100 Credits geschenkt 🎁",
     "hero.modulusFamily": "Teil der MODULUS-Produktfamilie —",
     "hero.badge.noSubscription": "Kein Abo-Falle",
-    "hero.badge.noSignups": "Gratis-Probe möglich",
+    "hero.badge.noSignups": "100 Credits bei Anmeldung",
     "hero.badge.payPerUse": "Zahlst beim Generieren",
     "promo.isend101.ariaLabel": "Zeitlich begrenztes Angebot",
     "promo.isend101.badge": "Zeitlich begrenztes Angebot",
-    "promo.isend101.title": "50 % Rabatt — wild werden, weniger zahlen 🔥",
+    "promo.isend101.title": "50 % Rabatt: Weniger zahlen, besser klingen 🔥",
     "promo.isend101.body":
-      "Code {code} beim Checkout — {percent} % auf jeden Plan oder Credit-Pack für begrenzte Zeit.",
+      "Nutze den Code {code} beim Checkout. Er gilt {percent} % Rabatt auf jeden Plan oder Credit-Pack für begrenzte Zeit.",
     "promo.isend101.hint": "Code auf der Lemon-Squeezy-Zahlungsseite vor dem Bezahlen eingeben.",
     "promo.isend101.codeLabel": "Dein Code",
     "promo.isend101.copy": "Code kopieren",
     "promo.isend101.copied": "Code kopiert.",
     "promo.isend101.copiedShort": "Kopiert",
-    "promo.isend101.copyFailed": "Kopieren fehlgeschlagen — Code manuell markieren.",
+    "promo.isend101.copyFailed": "Kopieren fehlgeschlagen; bitte den Code manuell markieren.",
     "promo.isend101.viewPricing": "Pläne & Pakete ansehen",
     "hero.badge.noStore": "Wir speichern deinen Text nicht",
 
+    "home.welcomeBonus.ariaLabel": "Willkommens-Credits für neue Mitglieder",
+    "home.welcomeBonus.kicker": "Willkommensgeschenk",
+    "home.welcomeBonus.title": "{credits} Gratis-Credits nach Abschluss der Mitgliedschaft",
+    "home.welcomeBonus.body":
+      "Registriere dich kostenlos, vervollständige dein Mitgliedsprofil und bestätige deine E-Mail. Wir laden einmalig {credits} Credits gut, ohne Abo-Zwang.",
+    "home.welcomeBonus.hint": "Credits werden nach Profil und E-Mail-Bestätigung automatisch gutgeschrieben.",
+    "home.welcomeBonus.cta": "Kostenloses Konto erstellen",
+
+    "home.floatingJoin.ariaLabel": "Kostenlose Mitgliedschaft registrieren",
+    "home.floatingJoin.cta": "Jetzt registrieren",
+
     "home.whoFor.kicker": "Für wen",
-    "home.whoFor.title": "Für echte Nachrichten — kein generischer Chat",
+    "home.whoFor.title": "Für echte Nachrichten",
     "home.whoFor.lead":
-      "Wähle die Situation, die am nächsten dran ist. Jeder Weg öffnet ein Spezial-Tool für Ton und Einsatz.",
-    "home.whoFor.tryTool": "Hier starten",
-    "home.whoFor.openTool": "Tool öffnen",
+      "Wähle die Situation, die am nächsten dran ist. Jede Karte führt zu einem Tool, das für genau diesen Kontext gebaut ist.",
+    "home.whoFor.tryTool": "Empfohlenes Tool",
+    "home.whoFor.openTool": "Jetzt testen",
     "home.whoFor.freelance.title": "Freelancer & Berater",
     "home.whoFor.freelance.pain":
-      "Angebote und Follow-ups sollen klar und souverän klingen. Scope früh festlegen — professionell, nicht steif.",
+      "Angebote und Follow-ups sollen klar und souverän klingen. Lege den Scope früh fest und bleib professionell, ohne steif zu wirken.",
     "home.whoFor.freelance.toolName": "Proposal Sniper",
     "home.whoFor.freelance.toolBlurb":
       "Erstellt ein überzeugendes Angebot mit klarem Nutzen, Preislogik und nächsten Schritten.",
@@ -2349,16 +2399,16 @@ export const DICTS: Record<Locale, Dict> = {
       "Formuliert eine feste, respektvolle Erstattungs-E-Mail mit Bezug auf Verbraucherrechte.",
     "home.whoFor.career.title": "Büro & Karriere",
     "home.whoFor.career.pain":
-      "Bevor Sie Chef, Kunde oder Team schreiben: Ton prüfen — professionell und menschlich.",
+      "Bevor du Chef, Kunde oder Team anschreibst, lies den Ton noch einmal. Er soll professionell bleiben und trotzdem nach dir klingen.",
     "home.whoFor.career.toolName": "Corporate Whisperer",
     "home.whoFor.career.toolBlurb":
-      "Fügen Sie ein, was Sie wirklich sagen wollen — wir machen daraus eine höfliche, sendefertige E-Mail.",
+      "Füge ein, was du wirklich sagen willst, und wir machen daraus eine höfliche, sendefertige E-Mail.",
 
     "home.demo.before.label": "Vorher",
     "home.demo.after.label": "Nachher",
-    "home.demo.title": "Vorher / Nachher",
+    "home.demo.title": "Vorher und nachher: Sieh den Unterschied",
     "home.demo.subtitle":
-      "Produkt wählen, Transformation sehen und direkt klicken, um deine Version zu generieren.",
+      "Wähle ein Beispiel, sieh die Veränderung und probiere es mit deinem eigenen Entwurf.",
     "home.demo.examples.corp.before":
       "Das Design ist Müll, du hast mein Briefing eindeutig nicht gelesen!",
     "home.demo.examples.corp.after":
@@ -2377,9 +2427,9 @@ export const DICTS: Record<Locale, Dict> = {
       "Ich hasse das. Später.",
 
     "section.tools.title":
-      "Tool wählen. Text einfügen. Sofort eine bessere Version erhalten.",
+      "Wähle ein Tool, füge deinen Text ein und erhalte sofort eine bessere Version.",
     "section.tools.subtitle":
-      "Fürs echte Leben: Business‑Mails, Bewerbungen und Dating‑Bios.",
+      "Für Business-Mails, Bewerbungen und Dating-Bios gemacht.",
     "tabs.corporate": "Business",
     "tabs.coverletter": "Anschreiben",
     "tabs.dating": "Dating‑Bio",
@@ -2389,7 +2439,7 @@ export const DICTS: Record<Locale, Dict> = {
     "how.2.title": "2) Verbessern",
     "how.2.body": "KI schreibt mit besserem Ton, Struktur und Klarheit um.",
     "how.3.title": "3) Kopieren & senden",
-    "how.3.body": "Sauberes Ergebnis mit Copy‑Button.",
+    "how.3.body": "Kopiere das Ergebnis mit einem Klick und sende es direkt ab.",
 
     "how.detailed.title": "So funktioniert’s (4 einfache Schritte)",
     "how.detailed.subtitle":
@@ -2399,34 +2449,34 @@ export const DICTS: Record<Locale, Dict> = {
       "Durchstöbere unsere Micro‑Tools im Menü oder frag den AI Concierge nach dem passenden Tool für deine Situation.",
     "how.detailed.2.title": "2) Füge deinen Entwurf ein",
     "how.detailed.2.body":
-      "Füge wütende E‑Mails, ungeschickte Texte oder Notizen ein. Rechtschreibung egal – einfach alles rauslassen.",
+      "Füge wütende E-Mails, ungeschickte Texte oder Notizen ein. Rechtschreibung ist egal; schreib einfach, was du wirklich meinst.",
     "how.detailed.3.title": "3) Wähle deine KI‑Power",
     "how.detailed.3.body":
       "Nimm 'Fast AI' (1 Credit) für schnelle Fixes oder 'Pro AI' (25 Credits) für wichtige Nachrichten. Die genauen Kosten stehen immer auf dem Button.",
     "how.detailed.4.title": "4) Feinschliff & absenden",
     "how.detailed.4.body":
       "Prüfe das Ergebnis, kopiere es oder lass eine andere Variante erzeugen. Sende mit voller Sicherheit.",
-    "products.title": "Produkte (kurz, knackig, effektiv)",
-    "products.subtitle": "Tools mit einem Ziel: besser klingen – schneller.",
-    "products.corp.title": "The Corporate Whisperer",
-    "products.corp.slogan": "Klar sagen. Sicher senden.",
-    "products.cover.title": "1-Click Cover Letter",
-    "products.cover.slogan": "Passgenau. ATS‑ready. Interview‑ready.",
-    "products.dating.title": "Dating Profile Roast & Fix",
-    "products.dating.slogan": "Weniger cringe. Mehr Matches.",
+    "products.title": "Ausgewählte Tools",
+    "products.subtitle": "Jedes Tool hat ein Ziel: dir helfen, einen besseren Eindruck zu hinterlassen.",
+    "products.corp.title": "Corporate Whisperer",
+    "products.corp.slogan": "Klar denken, sicher senden.",
+    "products.cover.title": "Anschreiben mit einem Klick",
+    "products.cover.slogan": "Passgenau, ATS-tauglich und interviewbereit.",
+    "products.dating.title": "Dating-Bio Roast & Fix",
+    "products.dating.slogan": "Weniger peinlich, mehr Matches.",
     "faq.q1": "Speichert ihr meinen Text?",
-    "faq.a1": "Nein. Er bleibt in deinem Browser (localStorage) für den Flow.",
+    "faq.a1": "Nein. Dein Text bleibt vorübergehend in deinem Browser (localStorage), um den Ablauf abzuschließen.",
     "faq.q2": "Wie funktioniert die Zahlung?",
-    "faq.a2": "Pay‑per‑use. Sicher via Lemon Squeezy. Kein Abo‑Trick.",
+    "faq.a2": "Du zahlst nach Nutzung. Der Checkout läuft sicher über Lemon Squeezy, ohne Abo-Falle.",
     "faq.q3": "Was bekomme ich?",
-    "faq.a3": "Einen polierten Text zum sofortigen Kopieren.",
+    "faq.a3": "Einen polierten Text, den du sofort kopieren kannst, ob E-Mail, Anschreiben oder Bio.",
     "footer.copyright": "© 2026 isendai.com. Für bessere Kommunikation.",
     "footer.modulusLead": "Teil der MODULUS-Produktfamilie —",
     "footer.modulus": "MODULUS Unternehmensseite",
     "footer.trust":
       "🔒 Sichere Zahlungen via Lemon Squeezy | ⚡ Powered by AI | 🚫 Wir speichern deine Daten nicht.",
     "tool.corp.desc":
-      "Du willst deinen Chef/Client anschreien? Tu’s nicht. Schreib’s hier rein – wir machen daraus eine höfliche, HR‑taugliche Mail.",
+      "Schreib hier, was du wirklich sagen willst, und wir machen daraus eine respektvolle, klare, arbeitsplatztaugliche E-Mail.",
     "tool.corp.placeholder":
       `Schreib, was du WIRKLICH sagen willst... (z. B. "Dieses Design ist Müll und du hast mein Briefing nicht gelesen.")`,
     "tool.corp.button": "Professionell umschreiben",
@@ -2438,7 +2488,7 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.cover.placeholder2": "Lebenslauf oder Skills einfügen...",
     "tool.cover.button": "Anschreiben generieren",
     "tool.dating.desc":
-      "Zu wenig Matches? KI roastet deine Bio, sagt dir warum’s nicht klappt, und schreibt eine neue, magnetische Version.",
+      "Zu wenig Matches? Wir prüfen deine Bio, erklären, was nicht funktioniert, und schreiben eine stärkere Version.",
     "tool.dating.placeholder": "Tinder/Bumble Bio einfügen oder deinen Vibe beschreiben...",
     "tool.dating.button": "Roast & Fix",
     "success.test": "Testmodus. Generiere…",
@@ -2481,7 +2531,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Text kopiert! Füge ihn in deine TikTok-Beschreibung ein.",
     "success.shareCopyFailed":
       "Konnte nicht in die Zwischenablage kopieren. Kopiere den Text manuell.",
-    "success.ready": "Bereit, wenn du es bist.",
+    "success.ready": "Wenn deine Nachricht fertig ist, kannst du sie mit gutem Gefühl abschicken.",
 
     "success.ephemeral.title": "Hinweis",
     "success.ephemeral.body":
@@ -2502,7 +2552,7 @@ export const DICTS: Record<Locale, Dict> = {
     "success.feedback.thumbsDownAria": "Schlechtes Ergebnis",
 
     "home.sidebar.title": "KI‑Produkte",
-    "home.workspace.hint": "Einfügen → Generieren → Kopieren",
+    "home.workspace.hint": "Einfügen, generieren, kopieren",
     "home.aiStack.title": "Die Führenden KI-Modelle der Welt an Einem Ort 🧠",
     "home.aiStack.body":
       "Im Hintergrund arbeiten die Köpfe von Tech‑Riesen wie OpenAI (ChatGPT), Anthropic (Claude), Google und DeepSeek für dich. Keine Lust, ein Modell zu wählen? Lass es auf „Automatisch“ — wir picken das Passende für deinen Moment. Oder übernimm die Kontrolle und wähle deine Intelligenz im Menü! (Credit‑Verbrauch wird transparent nach der Stufe des gewählten Modells berechnet).",
@@ -2528,13 +2578,13 @@ export const DICTS: Record<Locale, Dict> = {
 
     "concierge.title": "ISENDAI",
     "concierge.welcome":
-      "Hi — wobei brauchst du heute Hilfe? (z. B. eine Business‑Mail, ein Anschreiben, eine Rückerstattungsnachricht, eine Dating‑Bio)",
+      "Hallo, wobei können wir dir heute helfen? (Zum Beispiel eine Business-Mail, ein Anschreiben, eine Erstattungsnachricht oder eine Dating-Bio.)",
     "concierge.placeholder": "Sag mir kurz, was du erreichen willst…",
     "concierge.send": "Senden",
     "concierge.thinking": "Denke nach…",
     "concierge.modelLabel": "KI-Modell für Antworten",
     "concierge.offScope.lead":
-      "Mit isendai-Schreibtools können wir helfen—z. B. eine natürlichere Nachricht, um nach Geschenkwünschen zu fragen.",
+      "Mit den isendai-Schreibtools können wir helfen, zum Beispiel indem wir deine Geschenkbitte in eine natürlichere Nachricht umwandeln.",
     "concierge.offScope.try": "Probiere diese Tools:",
     "concierge.errors.chatFailed": "Chat fehlgeschlagen. Bitte erneut versuchen.",
     "concierge.errors.noReply": "Keine Antwort vom Assistenten.",
@@ -2668,15 +2718,15 @@ export const DICTS: Record<Locale, Dict> = {
       "Zahlungen: Lemon Squeezy hier nicht konfiguriert. LEMON_SQUEEZY_* setzen oder Dev-Top-up auf Staging.",
     "pricing.title": "Preise",
     "pricing.subtitle":
-      "Überall dieselben Credits: monatlich ab $7.99, jährlich ~17 % sparen oder Einmal-Packs ab $1. Kein Abo-Zwang — laden und generieren, wenn du es brauchst.",
-    "pricing.hero.intro": "Drei Wege, Credits zu laden — überall dieselben Regeln:",
+      "Überall gilt dasselbe Credit-System. Monatspläne starten bei 7,99 $, Jahrespläne sparen rund 17 % und Einmal-Packs ab 1 $. Kein Abo-Zwang: Credits laden und generieren, wenn du sie brauchst.",
+    "pricing.hero.intro": "Es gibt drei Wege, Credits zu laden, und die Regeln sind überall gleich:",
     "pricing.hero.tagMonthly": "Monatlich",
     "pricing.hero.tagAnnual": "Jährlich",
     "pricing.hero.annualSaveBadge": "~17 %",
     "pricing.hero.tagPaygo": "Pay‑as‑you‑go",
     "pricing.hero.paygoHint": "Größere Packs öffnen mehr Modelle.",
     "pricing.hero.footerMain":
-      "Economy & GPT‑4o mini: 1 Credit pro 500‑Zeichen‑Block. Standard: 15; Premium: 25 — jeder weitere Block addiert sich.",
+      "Economy und GPT‑4o mini verbrauchen 0,2 Credits pro 100 Zeichen. Standard verbraucht 3 Credits pro Block, Premium 5. Jeder weitere Block addiert sich.",
     "pricing.hero.footerJump": "Credit‑Nutzung",
     "pricing.monthly.sectionTitle": "Monatliche Credit‑Pakete",
     "pricing.monthly.sectionLead":
@@ -3000,6 +3050,8 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.save": "Speichern und weiter",
     "profile.saving": "Speichern…",
     "profile.saved": "Profil gespeichert.",
+    "profile.welcomeCreditsGranted":
+      "Profil gespeichert. {credits} Willkommens-Credits wurden deinem Konto gutgeschrieben.",
     "profile.errors.required": "Bitte alle Pflichtfelder ausfüllen.",
     "profile.errors.emailRequired": "Bitte gib deine E-Mail-Adresse ein.",
     "profile.errors.emailInvalid": "Bitte gib eine gültige E-Mail-Adresse ein.",
@@ -3059,40 +3111,51 @@ export const DICTS: Record<Locale, Dict> = {
     "brand.name": "isendai",
     "header.theme": "切换主题",
     "socialProof.demoPrefix": "演示：",
-    "hero.kicker": "混乱草稿 → 敢发出去的消息 ✨",
-    "hero.title": "先别发送。先修好。",
+    "hero.kicker": "从杂乱草稿到敢发出去的消息 ✨",
+    "hero.title": "先别发送，先修好。",
     "hero.subtitle":
-      "面向 WhatsApp、邮件与社交的 AI 写作 — 按生成扣额度，无强制订阅。粘贴草稿，发出你真正敢发出去的内容。",
-    "hero.cta": "修好我的烂摊子（首次免费 🎁）",
+      "我们用 AI 帮你润色 WhatsApp、邮件和社交文案。只在生成时扣额度，没有强制订阅。粘贴你的草稿，得到一份你真正敢发出去的内容。",
+    "hero.cta": "免费加入 — 赠送 100 欢迎额度 🎁",
     "hero.modulusFamily": "MODULUS 产品家族的一员 —",
     "hero.badge.noSubscription": "无订阅陷阱",
-    "hero.badge.noSignups": "可免费尝鲜",
+    "hero.badge.noSignups": "注册即赠 100 额度",
     "hero.badge.payPerUse": "按生成付费",
     "promo.isend101.ariaLabel": "限时优惠",
     "promo.isend101.badge": "限时优惠",
-    "promo.isend101.title": "限时 5 折 — 放飞自我，少付钱 🔥",
+    "promo.isend101.title": "限时 5 折：少付钱，文案更出彩 🔥",
     "promo.isend101.body":
-      "结账时使用优惠码 {code} — 任意套餐或积分包限时享 {percent}% 折扣。",
+      "结账时使用优惠码 {code}。限时适用于任意套餐或积分包，享 {percent}% 折扣。",
     "promo.isend101.hint": "请在 Lemon Squeezy 安全支付页付款前输入优惠码。",
     "promo.isend101.codeLabel": "优惠码",
     "promo.isend101.copy": "复制优惠码",
     "promo.isend101.copied": "已复制到剪贴板。",
     "promo.isend101.copiedShort": "已复制",
-    "promo.isend101.copyFailed": "无法复制 — 请手动选择优惠码。",
+    "promo.isend101.copyFailed": "无法复制，请手动选择优惠码。",
     "promo.isend101.viewPricing": "查看套餐与积分包",
     "hero.badge.noStore": "不保存你的文本",
 
+    "home.welcomeBonus.ariaLabel": "新会员欢迎额度",
+    "home.welcomeBonus.kicker": "新会员礼遇",
+    "home.welcomeBonus.title": "完成会员资料即赠 {credits} 额度",
+    "home.welcomeBonus.body":
+      "免费注册，完成会员资料并验证邮箱后，我们会一次性为你充值 {credits} 额度，无强制订阅。",
+    "home.welcomeBonus.hint": "完成资料与邮箱验证后，额度会自动到账。",
+    "home.welcomeBonus.cta": "创建免费账户",
+
+    "home.floatingJoin.ariaLabel": "免费注册会员",
+    "home.floatingJoin.cta": "立即加入",
+
     "home.whoFor.kicker": "适合谁",
-    "home.whoFor.title": "为真实消息而生 — 不是泛用聊天",
-    "home.whoFor.lead": "选择最接近你场景的路径。每条路径打开针对该语气与风险的专业工具。",
-    "home.whoFor.tryTool": "从这里开始",
-    "home.whoFor.openTool": "打开工具",
+    "home.whoFor.title": "为真实消息而生",
+    "home.whoFor.lead": "选择最接近你场景的方向。每张卡片都会带你进入为该场景准备的专业工具。",
+    "home.whoFor.tryTool": "推荐工具",
+    "home.whoFor.openTool": "立即试用",
     "home.whoFor.freelance.title": "自由职业与顾问",
     "home.whoFor.freelance.pain": "提案与跟进应清晰自信。尽早界定范围，保持专业而不生硬。",
     "home.whoFor.freelance.toolName": "Proposal Sniper",
     "home.whoFor.freelance.toolBlurb": "生成结构清晰、易获认可的提案：阐明价值、定价逻辑与可执行的下一步。",
     "home.whoFor.business.title": "小企业与客服",
-    "home.whoFor.business.pain": "遇到退款、投诉或差评时，需要冷静措辞，同时保护业务立场。",
+    "home.whoFor.business.pain": "遇到退款、投诉或差评时，不必慌张。你需要冷静措辞，同时保护业务立场。",
     "home.whoFor.business.toolName": "Refund Demander",
     "home.whoFor.business.toolBlurb": "起草坚定而礼貌的退款/补偿邮件，并合理引用消费者权益。",
     "home.whoFor.career.title": "职场与办公",
@@ -3102,8 +3165,8 @@ export const DICTS: Record<Locale, Dict> = {
 
     "home.demo.before.label": "改写前",
     "home.demo.after.label": "改写后",
-    "home.demo.title": "前后对比",
-    "home.demo.subtitle": "按产品查看改写效果，点击即可生成你的版本。",
+    "home.demo.title": "前后对比：看看差别",
+    "home.demo.subtitle": "选择一个示例，查看改写效果，再用你自己的草稿试一试。",
     "home.demo.examples.corp.before": "这设计太烂了，你明显没看我的需求文档！",
     "home.demo.examples.corp.after":
       "我感觉我们稍微偏离了最初的 brief。能否一起过一遍设计，确保它与一开始的愿景一致？",
@@ -3128,7 +3191,7 @@ export const DICTS: Record<Locale, Dict> = {
     "how.2.title": "2) 优化",
     "how.2.body": "AI 提升语气、结构与清晰度。",
     "how.3.title": "3) 复制发送",
-    "how.3.body": "一键复制，直接发送。",
+    "how.3.body": "一键复制结果，然后直接发送。",
 
     "how.detailed.title": "如何使用（4 个简单步骤）",
     "how.detailed.subtitle": "10 秒内把杂乱想法变成完美消息。",
@@ -3144,26 +3207,26 @@ export const DICTS: Record<Locale, Dict> = {
     "how.detailed.4.title": "4) 润色并发送",
     "how.detailed.4.body":
       "查看润色结果，复制或让 AI 生成另一版。放心发送。",
-    "products.title": "产品（快速、好用、有效）",
-    "products.subtitle": "每个工具只做一件事：让你更会说话。",
-    "products.corp.title": "The Corporate Whisperer",
-    "products.corp.slogan": "强硬但得体。",
-    "products.cover.title": "1-Click Cover Letter",
-    "products.cover.slogan": "定制、ATS 友好、面试加分。",
-    "products.dating.title": "Dating Profile Roast & Fix",
-    "products.dating.slogan": "少尴尬，多匹配。",
+    "products.title": "精选工具",
+    "products.subtitle": "每个工具只有一个目标：帮你留下更好的印象。",
+    "products.corp.title": "职场话术润色",
+    "products.corp.slogan": "想得坚定，发得稳妥。",
+    "products.cover.title": "一键求职信",
+    "products.cover.slogan": "量身定制，兼容 ATS，为面试加分。",
+    "products.dating.title": "约会简介优化",
+    "products.dating.slogan": "少一点尴尬，多一点匹配。",
     "faq.q1": "会保存我的文本吗？",
-    "faq.a1": "不会。文本仅保存在你的浏览器（localStorage）以完成流程。",
+    "faq.a1": "不会。你的文本只会暂时保存在浏览器（localStorage）中，用于完成当前流程。",
     "faq.q2": "支付如何进行？",
-    "faq.a2": "按次付费。Lemon Squeezy 安全支付。没有订阅套路。",
+    "faq.a2": "按使用量付费，通过 Lemon Squeezy 安全结账，没有强制订阅。",
     "faq.q3": "我会得到什么？",
-    "faq.a3": "可立即复制的优化结果：邮件/求职信/简介。",
+    "faq.a3": "你会得到一份可以立即复制的润色结果，无论是邮件、求职信还是简介。",
     "footer.copyright": "© 2026 isendai.com. 为更好的沟通而生。",
     "footer.modulusLead": "MODULUS 产品家族的一员 —",
     "footer.modulus": "MODULUS 企业站",
     "footer.trust": "🔒 Lemon Squeezy 安全支付 | ⚡ AI 驱动 | 🚫 不存储你的数据",
     "tool.corp.desc":
-      "想对老板/客户发火？别。把真实想法写下来，我们帮你变成礼貌、HR 友好的邮件。",
+      "写下你真正想说的话，我们会把它改成尊重、清晰、适合职场的邮件。",
     "tool.corp.placeholder":
       `写下你“真正”想说的话…（例如：“这个设计太烂了，你根本没看 brief。”）`,
     "tool.corp.button": "改写成职场语气",
@@ -3175,7 +3238,7 @@ export const DICTS: Record<Locale, Dict> = {
     "tool.cover.placeholder2": "粘贴简历内容或关键技能…",
     "tool.cover.button": "生成求职信",
     "tool.dating.desc":
-      "匹配太少？AI 会吐槽你的简介、指出问题，并给你一版更有吸引力的新简介。",
+      "匹配太少？我们会分析你的简介，说明哪里不够好，并帮你写一版更有吸引力的内容。",
     "tool.dating.placeholder": "粘贴你的 Tinder/Bumble 简介或描述你的风格…",
     "tool.dating.button": "吐槽并修复",
     "success.test": "测试模式：生成中…",
@@ -3211,7 +3274,7 @@ export const DICTS: Record<Locale, Dict> = {
     "success.shareOnTikTokAria": "在 TikTok 上分享此结果",
     "success.shareTikTokToast": "文本已复制！粘贴到你的 TikTok 描述中。",
     "success.shareCopyFailed": "无法复制到剪贴板，请手动复制文本。",
-    "success.ready": "准备就绪。",
+    "success.ready": "文案准备好后，你就可以放心发送了。",
 
     "success.ephemeral.title": "提示",
     "success.ephemeral.body":
@@ -3232,7 +3295,7 @@ export const DICTS: Record<Locale, Dict> = {
     "success.feedback.thumbsDownAria": "结果不佳",
 
     "home.sidebar.title": "AI 产品",
-    "home.workspace.hint": "粘贴 → 生成 → 复制",
+    "home.workspace.hint": "粘贴、生成、复制",
     "home.aiStack.title": "全球领先的 AI 模型，齐聚一处 🧠",
     "home.aiStack.body":
       "幕后有 OpenAI（ChatGPT）、Anthropic（Claude）、Google、DeepSeek 等科技巨头的大脑为你工作。不想纠结选哪个模型？交给「自动」模式，我们会为当下场景挑选最合适的模型。也可以完全掌控，在菜单里自选你的 AI！（积分按所选模型的智能档位透明计费。）",
@@ -3258,13 +3321,13 @@ export const DICTS: Record<Locale, Dict> = {
 
     "concierge.title": "ISENDAI",
     "concierge.welcome":
-      "你好 — 你今天需要什么帮助？（例如：工作邮件、求职信、退款消息、约会简介）",
+      "你好，我们今天能帮你什么？（例如工作邮件、求职信、退款消息或约会简介。）",
     "concierge.placeholder": "告诉我你想做什么…",
     "concierge.send": "发送",
     "concierge.thinking": "思考中…",
     "concierge.modelLabel": "回复所用的 AI 模型",
     "concierge.offScope.lead":
-      "我们可以用 isendai 写作工具帮你——例如润色一条更自然的消息，询问对方想要什么礼物。",
+      "我们可以用 isendai 写作工具帮你，例如把你想问礼物的想法润色成更自然的消息。",
     "concierge.offScope.try": "试试这些工具：",
     "concierge.errors.chatFailed": "对话失败，请重试。",
     "concierge.errors.noReply": "助手没有返回回复。",
@@ -3392,15 +3455,15 @@ export const DICTS: Record<Locale, Dict> = {
       "支付：此环境未配置 Lemon Squeezy。请设置 LEMON_SQUEEZY_* 或在 staging 使用开发充值。",
     "pricing.title": "价格与套餐",
     "pricing.subtitle":
-      "全站同一套额度：月付 $7.99 起、年付约省 17%，或 $1 起一次性包。无强制订阅 — 按需充值、按需生成。",
-    "pricing.hero.intro": "三种充值方式 — 规则全站一致：",
+      "全站使用同一套额度规则。月付从 $7.99 起，年付约省 17%，也可从 $1 起购买一次性包。没有强制订阅，按需充值、按需生成。",
+    "pricing.hero.intro": "有三种充值方式，规则在全站保持一致：",
     "pricing.hero.tagMonthly": "月付",
     "pricing.hero.tagAnnual": "年付",
     "pricing.hero.annualSaveBadge": "约省 17%",
     "pricing.hero.tagPaygo": "按次购买",
     "pricing.hero.paygoHint": "额度包越大，可解锁模型越多。",
     "pricing.hero.footerMain":
-      "经济档与 GPT‑4o mini：每 500 字一块 1 额度。标准档：15；高级档：25 — 每多一块叠加。",
+      "经济档与 GPT‑4o mini 每 100 字消耗 0.2 额度。标准档每块 3 额度，高级档每块 5 额度。每增加一块都会叠加计算。",
     "pricing.hero.footerJump": "额度怎么扣",
     "pricing.monthly.sectionTitle": "月度额度套餐",
     "pricing.monthly.sectionLead":
@@ -3704,6 +3767,7 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.save": "保存并继续",
     "profile.saving": "保存中…",
     "profile.saved": "资料已保存。",
+    "profile.welcomeCreditsGranted": "资料已保存。已向你的账户添加 {credits} 欢迎额度。",
     "profile.errors.required": "请填写所有必填项。",
     "profile.errors.emailRequired": "请输入邮箱地址。",
     "profile.errors.emailInvalid": "请输入有效的邮箱地址。",
@@ -3758,35 +3822,46 @@ export const DICTS: Record<Locale, Dict> = {
     "brand.name": "isendai",
     "header.theme": "Tema değiştir",
     "socialProof.demoPrefix": "Demo:",
-    "hero.kicker": "Dağınık taslak → göndermeye cesaret edilen metin ✨",
-    "hero.title": "Henüz Gönderme. Önce Düzelt.",
+    "hero.kicker": "Dağınık taslaktan, göndermeye hazır metne ✨",
+    "hero.title": "Göndermeden Önce Bir Kez Düzeltin",
     "hero.subtitle":
-      "WhatsApp, e-posta ve sosyal için AI metin — üretince kontör, zorunlu abonelik yok. Karmaşayı yapıştır; gururla göndereceğin metni al.",
-    "hero.cta": "Dağınıklığı Düzelt (ilk deneme bizden 🎁)",
+      "WhatsApp, e-posta ve sosyal medya için yazdığınız metinleri yapay zekâ ile toparlıyoruz. Ürettiğiniz kadar kontör harcarsınız; zorunlu abonelik yoktur. Dağınık taslağınızı yapıştırın, gönül rahatlığıyla gönderebileceğiniz bir metin alın.",
+    "hero.cta": "Ücretsiz üye ol — 100 kontör bedava 🎁",
     "hero.modulusFamily": "MODULUS ürün ailesinin bir parçası —",
     "hero.badge.noSubscription": "Abonelik tuzağı yok",
-    "hero.badge.noSignups": "Ücretsiz tadım var",
-    "hero.badge.payPerUse": "Ürettikçe öde",
+    "hero.badge.noSignups": "Üyelikte 100 kontör hediye",
+    "hero.badge.payPerUse": "Ürettikçe ödersiniz",
     "promo.isend101.ariaLabel": "Sınırlı süre indirim kampanyası",
     "promo.isend101.badge": "Sınırlı süre kampanyası",
-    "promo.isend101.title": "%50 indirim — az öde, çok glow-up 🔥",
+    "promo.isend101.title": "%50 indirim: Daha az ödeyin, metniniz parlasın 🔥",
     "promo.isend101.body":
-      "Ödeme sırasında {code} kodunu kullanın — tüm plan ve kontör paketlerinde geçerli, sınırlı süre için %{percent} indirim.",
+      "Ödeme sırasında {code} kodunu kullanın. Kod, tüm plan ve kontör paketlerinde sınırlı süre için %{percent} indirim sağlar.",
     "promo.isend101.hint": "Kodu Lemon Squeezy güvenli ödeme sayfasında, ödemeden önce girin.",
     "promo.isend101.codeLabel": "Kampanya kodu",
     "promo.isend101.copy": "Kodu kopyala",
     "promo.isend101.copied": "Kod panoya kopyalandı.",
     "promo.isend101.copiedShort": "Kopyalandı",
-    "promo.isend101.copyFailed": "Kopyalanamadı — kodu elle seçin.",
+    "promo.isend101.copyFailed": "Kopyalanamadı; lütfen kodu elle seçin.",
     "promo.isend101.viewPricing": "Paketleri gör",
-    "hero.badge.noStore": "Metnini saklamayız",
+    "hero.badge.noStore": "Metninizi saklamayız",
+
+    "home.welcomeBonus.ariaLabel": "Yeni üye hoş geldin kontörü",
+    "home.welcomeBonus.kicker": "Yeni üye hediyesi",
+    "home.welcomeBonus.title": "Üyeliği tamamlayana {credits} kontör hediye",
+    "home.welcomeBonus.body":
+      "Ücretsiz kayıt olun, üyelik profilinizi tamamlayın ve e-postanızı doğrulayın. {credits} kontör hesabınıza tek seferlik yüklenir; zorunlu abonelik yok.",
+    "home.welcomeBonus.hint": "Kontörler profil ve e-posta doğrulamasından sonra otomatik tanımlanır.",
+    "home.welcomeBonus.cta": "Ücretsiz hesap oluştur",
+
+    "home.floatingJoin.ariaLabel": "Ücretsiz üyelik kaydı",
+    "home.floatingJoin.cta": "Hemen üye ol",
 
     "home.whoFor.kicker": "Kimler için?",
     "home.whoFor.title": "Gerçek Mesajlar İçin Tasarlandı",
     "home.whoFor.lead":
       "Aşağıdan size en yakın alanı seçin. Her kart, o iş için özel hazırlanmış bir araca götürür.",
     "home.whoFor.tryTool": "Önerilen araç",
-    "home.whoFor.openTool": "Hemen dene",
+    "home.whoFor.openTool": "Hemen deneyin",
     "home.whoFor.freelance.title": "Freelancer & Danışman",
     "home.whoFor.freelance.pain":
       "Müşteriye giden teklif ve takip mailleriniz net olsun. Kapsamı baştan netleştirin; samimi kalın, profesyonel görünün.",
@@ -3795,22 +3870,22 @@ export const DICTS: Record<Locale, Dict> = {
       "Değerinizi anlatan, fiyatı ve sonraki adımı açıkça yazan, kazanma şansını artıran bir teklif metni hazırlar.",
     "home.whoFor.business.title": "KOBİ & Müşteri Desteği",
     "home.whoFor.business.pain":
-      "İade, şikâyet veya olumsuz yorum geldiğinde panik yok. Sakin, anlaşılır ve sonuç alan bir yanıt yazın.",
+      "İade, şikâyet veya olumsuz yorum geldiğinde panik yapmanıza gerek yok. Sakin, anlaşılır ve sonuç alan bir yanıt yazabilirsiniz.",
     "home.whoFor.business.toolName": "Geri Ödeme Talebi",
     "home.whoFor.business.toolBlurb":
       "Tüketici haklarına saygılı, resmi ama gereğinden uzun olmayan bir iade veya tazminat e-postası oluşturur.",
     "home.whoFor.career.title": "Ofis & Kariyer",
     "home.whoFor.career.pain":
-      "Yöneticiye, müşteriye veya ekibe mail atmadan önce bir kez daha bakın. İnsan gibi duyulan, boş kurumsal laf olmayan bir ton.",
+      "Yöneticiye, müşteriye veya ekibe mail atmadan önce bir kez daha okuyun. Tonunuz profesyonel kalsın; boş kurumsal laflardan uzak dursun.",
     "home.whoFor.career.toolName": "Kurumsal Çevirmen",
     "home.whoFor.career.toolBlurb":
       "İçinizden geleni yazın; biz onu saygılı, net ve gönderilmeye hazır bir e-postaya dönüştürelim.",
 
     "home.demo.before.label": "Önce",
     "home.demo.after.label": "Sonra",
-    "home.demo.title": "Önce / Sonra (glow-up gerçek)",
+    "home.demo.title": "Önce ve sonra: Farkı görün",
     "home.demo.subtitle":
-      "Bir vibe seç, kaosu medeni hale getir, kendi taslağına uygula.",
+      "Bir örnek seçin, dönüşümü görün ve kendi taslağınızda deneyin.",
     "home.demo.examples.corp.before":
       "Bu tasarım berbat, brifimi okumamışsınız belli!",
     "home.demo.examples.corp.after":
@@ -3829,9 +3904,9 @@ export const DICTS: Record<Locale, Dict> = {
       "Sevmem. Sonra.",
 
     "section.tools.title":
-      "Aracını seç. Metni yapıştır. Daha iyi versiyonu anında al.",
+      "Aracınızı seçin, metni yapıştırın ve daha iyi bir sürümü anında alın.",
     "section.tools.subtitle":
-      "Gerçek hayat için: iş e-postaları, iş başvuruları ve flört biyoları.",
+      "İş e-postaları, başvurular ve flört biyoları için tasarlandı.",
     "tabs.corporate": "Kurumsal",
     "tabs.coverletter": "Ön yazı",
     "tabs.dating": "Flört biyo",
@@ -3840,8 +3915,8 @@ export const DICTS: Record<Locale, Dict> = {
     "how.1.body": "Taslağını, ilan metnini veya biyonu yapıştır. Format şart değil.",
     "how.2.title": "2) İyileştir",
     "how.2.body": "AI tonu, yapıyı ve netliği güçlendirerek yeniden yazar.",
-    "how.3.title": "3) Kopyala & gönder",
-    "how.3.body": "Tek tıkla kopyala, direkt gönder.",
+    "how.3.title": "3) Kopyalayın ve gönderin",
+    "how.3.body": "Sonucu tek tıkla kopyalayıp doğrudan gönderebilirsiniz.",
 
     "how.detailed.title": "Nasıl Çalışır? (4 Basit Adım)",
     "how.detailed.subtitle":
@@ -3851,46 +3926,46 @@ export const DICTS: Record<Locale, Dict> = {
       "Menüden mikro araçlarımızı inceleyin veya tam durumunuza uygun aracı bulması için AI Concierge asistanımıza danışın.",
     "how.detailed.2.title": "2) Taslağınızı yapıştırın",
     "how.detailed.2.body":
-      "Öfkeli e-postanızı, kaba metninizi veya basit notlarınızı yapıştırın. İmla kurallarını dert etmeyin; sadece içinizi dökün.",
+      "Öfkeli e-postanızı, kaba mesajınızı veya notlarınızı yapıştırın. Yazım hatası dert değil; içinizden geçeni olduğu gibi yazmanız yeterli.",
     "how.detailed.3.title": "3) Yapay zeka gücünüzü seçin",
     "how.detailed.3.body":
       "Hızlı düzeltmeler için 'Fast AI' (1 Kredi), kritik mesajlar için 'Pro AI' (25 Kredi) seçin. Harcanacak kredi miktarı butonda her zaman şeffafça yazar.",
-    "how.detailed.4.title": "4) Kopyala ve Gönder",
+    "how.detailed.4.title": "4) Kopyalayın ve gönderin",
     "how.detailed.4.body":
       "Kusursuzlaştırılmış sonucu inceleyin, kopyalayın veya farklı bir ton için yeniden üretin. Artık %100 özgüvenle gönderebilirsiniz.",
-    "products.title": "Ürünler (hızlı, net, etkili)",
-    "products.subtitle": "Tek işi var: daha iyi görünmeni sağlamak.",
-    "products.corp.title": "The Corporate Whisperer",
-    "products.corp.slogan": "Sert söyle. Güvenli gönder.",
-    "products.cover.title": "1-Click Cover Letter",
-    "products.cover.slogan": "Özel, ATS uyumlu, mülakat odaklı.",
-    "products.dating.title": "Dating Profile Roast & Fix",
-    "products.dating.slogan": "Daha az cringe. Daha çok match.",
+    "products.title": "Öne çıkan araçlar",
+    "products.subtitle": "Her birinin tek görevi var: size daha iyi bir izlenim bırakmak.",
+    "products.corp.title": "Kurumsal Çevirmen",
+    "products.corp.slogan": "Sert düşünün, güvenle gönderin.",
+    "products.cover.title": "Tek Tık Ön Yazı",
+    "products.cover.slogan": "İlana özel, ATS uyumlu, mülakata hazır.",
+    "products.dating.title": "Flört Biyosu Roast & Fix",
+    "products.dating.slogan": "Daha az garip, daha çok eşleşme.",
     "faq.q1": "Metnimi saklıyor musunuz?",
-    "faq.a1": "Hayır. Akışı tamamlamak için tarayıcında (localStorage) tutulur.",
+    "faq.a1": "Hayır. Metin yalnızca tarayıcınızda (localStorage) geçici olarak tutulur.",
     "faq.q2": "Ödeme nasıl çalışıyor?",
-    "faq.a2": "Kullandıkça öde. Lemon Squeezy ile güvenli ödeme. Abonelik tuzağı yok.",
+    "faq.a2": "Kullandıkça ödersiniz. Ödemeler Lemon Squeezy ile güvenli şekilde alınır; zorunlu abonelik yoktur.",
     "faq.q3": "Ne elde edeceğim?",
-    "faq.a3": "Hemen kopyalayabileceğin parlatılmış bir çıktı.",
+    "faq.a3": "Hemen kopyalayabileceğiniz, cilalanmış bir metin alırsınız.",
     "footer.copyright": "© 2026 isendai.com. Daha iyi iletişim için üretildi.",
     "footer.modulusLead": "MODULUS ürün ailesinin bir parçası —",
     "footer.modulus": "MODULUS kurumsal sitesi",
     "footer.trust":
-      "🔒 Lemon Squeezy ödeme | ⚡ AI glow-up | 🚫 Taslaklarını hortumlamıyoruz",
+      "🔒 Lemon Squeezy ile güvenli ödeme | ⚡ Yapay zekâ ile metin parlatma | 🚫 Taslaklarınızı toplu olarak saklamıyoruz",
     "tool.corp.desc":
-      "Patronuna/müşterine bağırmak mı istiyorsun? Sakın. Buraya yaz; biz de kibar, HR-dostu bir e-postaya çevirelim.",
+      "Söylemek istediğinizi buraya yazın; biz onu saygılı, net ve iş yerine uygun bir e-postaya dönüştürelim.",
     "tool.corp.placeholder":
       `GERÇEKTEN söylemek istediğini yaz... (örn. "Bu tasarım berbat ve brief’i hiç okumamışsın.")`,
     "tool.corp.button": "Kurumsala çevir",
     "tool.action.generic": "Oluştur",
     "tool.placeholder.generic": "Metnini buraya yapıştır…",
     "tool.cover.desc":
-      "Her ilana aynı ön yazıyı yazmaktan yoruldun mu? İlan URL/metnini ve becerilerini yapıştır. Özel bir ön yazı üretelim.",
+      "Her ilana aynı ön yazıyı yazmaktan yorulduysanız ilan metnini veya bağlantısını ile becerilerinizi yapıştırın; size özel bir ön yazı hazırlayalım.",
     "tool.cover.placeholder1": "İlan metni veya URL yapıştır...",
     "tool.cover.placeholder2": "CV metnini veya ana becerilerini yapıştır...",
     "tool.cover.button": "Ön yazı üret",
     "tool.dating.desc":
-      "Match yok mu? AI biyonu roastlar, neden olmadığını söyler ve daha çekici bir biyo yazar.",
+      "Eşleşme gelmiyorsa biyografinizi inceler, neden işe yaramadığını açıklar ve daha çekici bir sürüm yazar.",
     "tool.dating.placeholder": "Tinder/Bumble biyonu yapıştır ya da tarzını anlat...",
     "tool.dating.button": "Roastla & düzelt",
     "success.test": "Test modu. Sonuç hazırlanıyor…",
@@ -3900,7 +3975,7 @@ export const DICTS: Record<Locale, Dict> = {
     "success.insufficientFallback": "Bu üretim için yeterli kontör yok.",
     "success.insufficientTitle": "Kontör bitti",
     "success.insufficientBody":
-      "Paket ve yükleme için Paketler sayfasına bak. Yerelde aynı sayfadaki dev top‑up notlarını kullan, giriş yap veya yöneticiden kontör iste.",
+      "Paket ve yükleme seçenekleri için Paketler sayfasına bakın. Yerelde aynı sayfadaki geliştirici top-up notlarını kullanabilir, giriş yapabilir veya yöneticiden kontör isteyebilirsiniz.",
     "success.usingSaved": "localStorage’daki kaydını kullanıyoruz.",
     "success.generating": "Üretiliyor…",
     "success.copy": "Kopyala",
@@ -3933,7 +4008,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Metin kopyalandı! TikTok açıklamasına yapıştırın.",
     "success.shareCopyFailed":
       "Panoya kopyalanamadı. Metni elle kopyalamayı deneyin.",
-    "success.ready": "Hazır olduğunda.",
+    "success.ready": "Metniniz hazır olduğunda gönderebilirsiniz.",
 
     "success.ephemeral.title": "Bilgi",
     "success.ephemeral.body":
@@ -3954,31 +4029,31 @@ export const DICTS: Record<Locale, Dict> = {
     "success.feedback.thumbsDownAria": "Zayıf sonuç",
 
     "home.sidebar.title": "AI Ürünleri",
-    "home.workspace.hint": "Yapıştır → Üret → Kopyala",
+    "home.workspace.hint": "Yapıştırın, üretin, kopyalayın",
     "home.aiStack.title": "Dünyanın Önde Gelen Yapay Zeka Modelleri Tek Bir Yerde 🧠",
     "home.aiStack.body":
-      "Arka planda OpenAI (ChatGPT), Anthropic (Claude), Google ve DeepSeek gibi teknoloji devlerinin beyinleri sizin için çalışıyor. Hangi modeli seçeceğinizi düşünmek istemiyor musunuz? İşi \"Otomatik\" moda bırakın, o anki kriziniz için en uygun modeli biz seçelim. Ya da kontrolü tamamen elinize alıp menüden kendi zekanızı kendiniz belirleyin! (Kredi harcamalarınız, seçtiğiniz modelin zeka seviyesine göre şeffaf bir şekilde hesaplanır).",
+      "Arka planda OpenAI (ChatGPT), Anthropic (Claude), Google ve DeepSeek gibi sağlayıcıların modelleri sizin için çalışır. Hangi modeli seçeceğinizi düşünmek istemiyorsanız Otomatik moda bırakın; o anki ihtiyacınız için en uygun modeli biz seçeriz. Kontrolü elinize almak isterseniz menüden modeli kendiniz belirleyebilirsiniz. Kontör harcaması, seçtiğiniz modelin seviyesine göre şeffaf şekilde hesaplanır.",
     "home.expertBots.kicker": "Konuya özel uzman botlar",
-    "home.expertBots.title": "Tek sohbet botu değil — her konunun uzmanı",
+    "home.expertBots.title": "Tek sohbet botu değil; her konunun uzmanı",
     "home.expertBots.lead":
-      "isendai her soruya aynı şablonla cevap veren genel bir asistan değil; iş e-postası, ön yazı, flört, freelance, bürokrasi, komşuluk, içerik ve aile için görevlendirilmiş uzman bot filosu. Her araç kendi prompt’u, kapsam kontrolü ve o anki iş için en uygun modele akıllı yönlendirmesiyle devreye girer.",
+      "isendai her soruya aynı şablonla cevap veren genel bir asistan değil. İş e-postası, ön yazı, flört, freelance, bürokrasi, komşuluk, içerik ve aile için ayrı uzman botlar sunar. Her araç kendi yönergeleri, kapsam kontrolü ve o iş için en uygun modele akıllı yönlendirmesiyle çalışır.",
     "home.expertBots.point1":
       "Sekiz yaşam alanında 80+ mikro araç: her birinin tonu, formatı ve uzmanlık alanı ayrı.",
     "home.expertBots.point2":
-      "Çok sağlayıcılı motor: OpenAI, Anthropic, Gemini, Groq ve DeepSeek — otomatik veya tek menüden elle seçim.",
+      "Çok sağlayıcılı motor: OpenAI, Anthropic, Gemini, Groq ve DeepSeek. Otomatik seçim yapabilir veya tek menüden modeli kendiniz belirleyebilirsiniz.",
     "home.expertBots.point3":
       "Kurumsal düzey altyapı: araç bazlı kapsam kapıları, şeffaf kontör, sürüm geçmişi ve girdi dilinde yanıt.",
 
     "concierge.title": "ISENDAI",
     "concierge.welcome":
-      "Merhaba — bugün neye ihtiyacın var? (örn. iş e-postası, ön yazı, iade talebi, flört biyosu)",
+      "Merhaba — bugün size nasıl yardımcı olabiliriz? (Örn. iş e-postası, ön yazı, iade talebi, flört biyosu)",
     "concierge.placeholder": "Ne yapmak istediğini kısaca yaz…",
     "concierge.send": "Gönder",
     "concierge.thinking": "Düşünüyor…",
     "concierge.modelLabel": "Yanıtlar için yapay zeka modeli",
     "concierge.openTool": "Aracı aç",
     "concierge.offScope.lead":
-      "isendai yazım araçlarıyla yardımcı olabiliriz—örneğin hediye isteğini kibarca sormak için daha akıcı bir mesaj taslağı.",
+      "isendai yazım araçlarıyla yardımcı olabiliriz; örneğin hediye isteğinizi daha akıcı bir mesaja dönüştürmek için.",
     "concierge.offScope.try": "Şu araçları dene:",
     "concierge.errors.chatFailed": "Sohbet başarısız. Lütfen tekrar dene.",
     "concierge.errors.noReply": "Asistandan yanıt gelmedi.",
@@ -3991,7 +4066,7 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.authRequired": "Asistan sohbeti için lütfen giriş yap.",
 
     "deploy.stagingBanner":
-      "Staging ortamı — müşterilere açık canlı site değil. main’e almadan önce burada test edin.",
+      "Bu ortam yalnızca test içindir; müşterilere açık canlı site değildir. main dalına almadan önce burada doğrulayın.",
     "deploy.stagingOpenProduction": "Canlı siteyi aç (isendai.com)",
 
     "nav.backToHome": "Ana sayfaya dön",
@@ -4005,17 +4080,17 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.contact.lead": "Sorularınız için e-posta:",
     "announce.newModel.badge": "Yeni",
     "announce.newModel.title": "{model} geldi",
-    "announce.newModel.body": "{tier} katmanımız artık {model} ile çalışıyor — aynı kontörle daha keskin ve güvenilir sonuçlar.",
+    "announce.newModel.body": "{tier} katmanımız artık {model} ile çalışıyor; aynı kontörle daha keskin ve güvenilir sonuçlar alırsınız.",
     "announce.dismiss": "Anladım",
     "contact.title": "İletişim",
-    "contact.lead": "Fatura, hesap veya ürün soruların mı var? Mesaj gönder veya e-posta at:",
+    "contact.lead": "Fatura, hesap veya ürün sorularınız mı var? Mesaj gönderin veya e-posta yazın:",
     "contact.nameLabel": "Ad",
     "contact.emailLabel": "E-posta",
     "contact.subjectLabel": "Konu (isteğe bağlı)",
     "contact.messageLabel": "Mesaj",
     "contact.submit": "Mesaj gönder",
     "contact.sending": "Gönderiliyor…",
-    "contact.successToast": "Mesajın gönderildi — kısa sürede döneceğiz.",
+    "contact.successToast": "Mesajınız gönderildi; kısa sürede size döneceğiz.",
     "contact.successBody": "Teşekkürler! Mesajını aldık. Genelde bir iş günü içinde yanıtlarız.",
     "contact.errors.send": "Gönderilemedi. Tekrar dene veya destek e-postasına yaz.",
     "nav.login": "Üyelik / Giriş",
@@ -4051,7 +4126,7 @@ export const DICTS: Record<Locale, Dict> = {
     "referrals.shareWhatsApp": "WhatsApp'ta paylaş",
     "referrals.shareX": "X'te paylaş",
     "referrals.shareMessage":
-      "Maillerimi AI ile düzeltmek için isendai kullanıyorum. Linkimle kayıt ol, ikimiz de 50 ücretsiz kontör kazanalım! {link}",
+      "Maillerimi yapay zekâ ile düzeltmek için isendai kullanıyorum. Linkimle kayıt olun, ikimiz de 50 ücretsiz kontör kazanalım! {link}",
     "referrals.statsHeading": "Davet istatistiklerin",
     "referrals.friendsInvited": "Davet edilen arkadaş",
     "referrals.creditsEarned": "Kazanılan ücretsiz kontör",
@@ -4105,22 +4180,22 @@ export const DICTS: Record<Locale, Dict> = {
     "ui.copyFailed": "Kopyalanamadı.",
 
     "billing.lemon.pendingReview":
-      "Ödeme: Lemon mağaza incelemesi sürüyor. Checkout test modunda; canlı tahsilat onay sonrası. Kontör: staging dev top-up veya info@modulustech.app / İletişim.",
+      "Ödeme: Lemon mağaza incelemesi sürüyor. Ödeme sayfası şu an test modunda olabilir; canlı tahsilat onay sonrası açılır. Kontör için staging geliştirici top-up veya info@modulustech.app / İletişim sayfasını kullanın.",
     "billing.lemon.testMode":
-      "Ödeme: Lemon Squeezy test modunda. Test kartları kullanın; canlı için Lemon ve Netlify’da live mod gerekir.",
+      "Ödeme: Lemon Squeezy test modundadır. Test kartları kullanın; canlı tahsilat için Lemon ve Netlify ortamında live mod gerekir.",
     "billing.lemon.unconfigured":
-      "Ödeme: Bu deploy’da Lemon Squeezy tam yapılandırılmamış. LEMON_SQUEEZY_* veya staging dev top-up.",
+      "Ödeme: Bu ortamda Lemon Squeezy tam yapılandırılmamış. LEMON_SQUEEZY_* değişkenlerini tanımlayın veya staging geliştirici top-up kullanın.",
     "pricing.title": "Paketler",
     "pricing.subtitle":
-      "Her yerde aynı kontör: aylık $7.99’dan, yıllıkta ~%17 tasarruf veya $1’den tek seferlik paketler. Zorunlu abonelik yok — kontör yükle, ihtiyaç olunca üret.",
-    "pricing.hero.intro": "Kontör yüklemenin üç yolu — her yerde aynı kurallar:",
+      "Her yerde aynı kontör sistemi geçerlidir: Aylık paketler 7,99 $’dan başlar, yıllık planda yaklaşık %17 tasarruf edersiniz veya 1 $’dan tek seferlik paket alabilirsiniz. Zorunlu abonelik yoktur; kontör yükleyip ihtiyaç duyduğunuzda üretin.",
+    "pricing.hero.intro": "Kontör yüklemenin üç yolu vardır; kurallar uygulamanın her yerinde aynıdır:",
     "pricing.hero.tagMonthly": "Aylık",
     "pricing.hero.tagAnnual": "Yıllık",
     "pricing.hero.annualSaveBadge": "~%17",
     "pricing.hero.tagPaygo": "Kullandıkça öde",
     "pricing.hero.paygoHint": "Daha büyük paketler daha fazla model açar.",
     "pricing.hero.footerMain":
-      "Ekonomi ve GPT‑4o mini: 100 karakter başına 0,2 kontör. Standart: 3; Premium: 5 — bloklar üst üste eklenir.",
+      "Ekonomi ve GPT‑4o mini katmanında 100 karakter başına 0,2 kontör harcanır. Standart katmanda 3, Premium katmanda 5 kontör uygulanır; her ek blok üst üste eklenir.",
     "pricing.hero.footerJump": "Kontör kullanımı",
     "pricing.monthly.sectionTitle": "Aylık kontör paketleri",
     "pricing.monthly.sectionLead":
@@ -4176,7 +4251,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricing.checkoutFailed": "Ödeme başlatılamadı. Lemon Squeezy varyantlarını yapılandır veya tekrar dene.",
     "pricing.checkoutSignInRequired": "Abonelik satın almak için giriş yap.",
     "pricing.checkoutProfileRequired":
-      "Satın almadan önce üyelik profilini tamamla — şimdi oraya yönlendiriliyorsun.",
+      "Satın almadan önce üyelik profilinizi tamamlamanız gerekir; şimdi o sayfaya yönlendiriliyorsunuz.",
     "pricing.pack.budget": "10 kontör · $1",
     "pricing.pack.standard": "25 kontör · $1,49",
     "pricing.pack.premium": "50 kontör · $1,99",
@@ -4198,7 +4273,7 @@ export const DICTS: Record<Locale, Dict> = {
       "$1,99 · anında 50 kontör\nFast, Pro ve Genius AI açılır\nSık kullananlar için en iyi kontör/$\nAbonelik yok",
     "pricing.usageGuide.sectionTitle": "Kontör nasıl harcanır (her üretim)",
     "pricing.usageGuide.intro":
-      "100 karakterlik bloklar halinde ücret (yukarı yuvarlanır). Yapıştırdığın metin ve araç bağlamı uzunluğa dahil.",
+      "Ücret, 100 karakterlik bloklar üzerinden hesaplanır ve yukarı yuvarlanır. Yapıştırdığınız metin ile araç bağlamı uzunluğa dahil edilir.",
     "pricing.usageGuide.miniBadge": "Ekonomi & mini",
     "pricing.usageGuide.miniTitle": "GPT‑4o mini ve ekonomi",
     "pricing.usageGuide.miniDesc":
@@ -4256,7 +4331,7 @@ export const DICTS: Record<Locale, Dict> = {
     "pricingModal.trialAlreadyUsedToast":
       "Bu tarayıcıdan zaten bir abonelik denemesi başlattın.",
     "pricingModal.oneTimePacksTitle": "Tek seferlik kontör paketleri",
-    "pricingModal.oneTimePacksLead": "Abonelik yok. Tek ödeme; sipariş ödendikten sonra kontör yüklenir.",
+    "pricingModal.oneTimePacksLead": "Abonelik yoktur. Tek seferlik ödeme yaparsınız; sipariş ödendikten sonra kontör hesabınıza yüklenir.",
 
     "notFound.title": "Sayfa bulunamadı",
     "notFound.description": "Aradığın sayfa yok.",
@@ -4297,7 +4372,7 @@ export const DICTS: Record<Locale, Dict> = {
     "legal.paymentsStub":
       "Paket ve abonelikler Lemon Squeezy ile satılır. Mağaza incelemesi sürerken yalnızca test checkout veya operatör kontörü.",
     "growth.zeroCreditsHint":
-      "Bakiye 0: Paketler’deki dev top-up (yalnızca lokal), giriş veya yöneticiden kontör iste.",
+      "Bakiyeniz sıfırsa Paketler sayfasındaki geliştirici top-up seçeneğini (yalnızca yerelde), giriş yapmayı veya yöneticiden kontör istemeyi deneyin.",
     "growth.freeTrial.ctaButton": "İlk mesajını ücretsiz oluştur 🎁",
     "growth.freeTrial.modalTitle": "İlk ücretsiz üretiminizi açın",
     "growth.freeTrial.modalBody":
@@ -4340,7 +4415,7 @@ export const DICTS: Record<Locale, Dict> = {
     "auth.connecting.googleBackLogin": "Giriş seçeneklerine dön",
     "login.title": "Üyelik ve giriş",
     "login.subtitle":
-      "E-posta, Google veya Facebook ile giriş yap. İlk başarılı oturumdan sonra kısa bir üyelik profili (ad, ülke, ana kullanım) topluyoruz.",
+      "E-posta, Google veya Facebook ile giriş yapabilirsiniz. İlk başarılı oturumdan sonra ad, ülke ve ana kullanım alanlarını içeren kısa bir üyelik profili isteriz.",
     "login.send": "Bağlantı gönder",
     "login.sending": "Gönderiliyor…",
     "login.emailDivider": "Ya da e-posta ile giriş",
@@ -4458,6 +4533,8 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.save": "Kaydet ve devam et",
     "profile.saving": "Kaydediliyor…",
     "profile.saved": "Profil kaydedildi.",
+    "profile.welcomeCreditsGranted":
+      "Profil kaydedildi. Hesabınıza {credits} hoş geldin kontörü yüklendi.",
     "profile.errors.required": "Zorunlu alanları doldur.",
     "profile.errors.emailRequired": "E-posta adresini gir.",
     "profile.errors.emailInvalid": "Geçerli bir e-posta adresi gir.",
@@ -4465,7 +4542,7 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.errors.save": "Profil kaydedilemedi. Tekrar dene.",
 
     "tool.flow.hint":
-      "Sırada sonuç sayfası var; üretim kontör bakiyenden düşer. Kontör lazımsa Fiyatlandırma’dan Lemon Squeezy ile satın al.",
+      "Sırada sonuç sayfası vardır ve üretim kontör bakiyenizden düşülür. Kontör gerekiyorsa Paketler sayfasından Lemon Squeezy ile satın alabilirsiniz.",
     "tool.modelSelectLabel": "Bu istek için yapay zeka modeli",
     "tool.ctaCreditSuffix": " — modele ve uzunluğa göre",
     "tool.priceReference": "Bu model kademesi için kullandıkça öde paketi: {pack}.",
@@ -4497,21 +4574,21 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.corporate-whisperer.label": "Kurumsal Çevirmen",
     "tool.corporate-whisperer.desc":
-      "Patronuna ya da müşterine bağırmak mı istiyorsun? Sakın. Buraya filtresiz yaz; biz de kibar, HR‑dostu kurumsal e-postaya çevirelim.",
+      "Söylemek istediğinizi buraya yazın; biz onu saygılı, net ve iş yerine uygun bir e-postaya dönüştürelim.",
     "tool.corporate-whisperer.action": "Kurumsala Çevir",
     "tool.corporate-whisperer.placeholder.text":
       `GERÇEKTEN söylemek istediğini yaz... (örn. "Bu tasarım berbat ve brief’i hiç okumamışsın.")`,
 
     "tool.coverletter-ai.label": "Tek Tık Ön Yazı",
     "tool.coverletter-ai.desc":
-      "Her ilana aynı metni yazmaktan yoruldun mu? İlan URL/metnini ve becerilerini yapıştır; ATS uyumlu, özelleştirilmiş bir ön yazı üretelim.",
+      "Her ilana aynı metni yazmaktan yorulduysanız ilan metnini veya bağlantısını ile becerilerinizi yapıştırın; ATS uyumlu, size özel bir ön yazı hazırlayalım.",
     "tool.coverletter-ai.action": "Ön Yazı Üret",
     "tool.coverletter-ai.placeholder.jobLink": "İlan metni veya URL yapıştır...",
     "tool.coverletter-ai.placeholder.resume": "CV metnini veya ana becerilerini yapıştır...",
 
     "tool.dating-roast.label": "Flört Biyosu Roast & Fix",
     "tool.dating-roast.desc":
-      "Match yok mu? AI biyonu roastlar, neden işlemediğini söyler ve daha çekici bir versiyon yazar.",
+      "Eşleşme gelmiyorsa biyografinizi inceler, neden işe yaramadığını açıklar ve daha çekici bir sürüm yazar.",
     "tool.dating-roast.action": "Roastla & Düzelt",
     "tool.dating-roast.placeholder.text": "Tinder/Bumble biyonu yapıştır ya da tarzını anlat...",
 

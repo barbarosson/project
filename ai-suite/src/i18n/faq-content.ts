@@ -14,7 +14,7 @@ export const FAQ_CONTENT: Record<Locale, FaqPageContent> = {
   en: {
     title: "Frequently Asked Questions",
     intro:
-      "Quick answers about isendai — credits, AI models, privacy, payments, and how to get the most from your generations.",
+      "Quick answers about isendai: credits, AI models, privacy, payments, and how to get the most from your generations.",
     metaDescription:
       "FAQ for isendai: credits, AI tiers, billing, privacy, tools, sharing, and support.",
     items: [
@@ -26,7 +26,7 @@ export const FAQ_CONTENT: Record<Locale, FaqPageContent> = {
       {
         question: "Do I need a subscription?",
         answer:
-          "No subscription is required. You can buy one-time credit packs or choose an optional monthly or yearly plan. You must sign in and have enough credits in your balance for each generation; usage is deducted by AI tier and input length. New accounts start with zero credits — not unlimited free use. Purchases go through Lemon Squeezy when checkout is enabled in your environment (see Pricing).",
+          "No subscription is required. You can buy one-time credit packs or choose an optional monthly or yearly plan. You must sign in and have enough credits in your balance for each generation; usage is deducted by AI tier and input length. New members receive 100 welcome credits once after completing membership profile and email verification (one time per account). Purchases go through Lemon Squeezy when checkout is enabled in your environment (see Pricing).",
       },
       {
         question: "How do credits work?",
@@ -98,7 +98,7 @@ export const FAQ_CONTENT: Record<Locale, FaqPageContent> = {
   tr: {
     title: "Sıkça Sorulan Sorular",
     intro:
-      "isendai hakkında hızlı yanıtlar — kontörler, AI modelleri, gizlilik, ödemeler ve üretimlerden en iyi şekilde yararlanma.",
+      "isendai hakkında hızlı yanıtlar: kontörler, yapay zekâ modelleri, gizlilik, ödemeler ve üretimlerden en iyi şekilde yararlanma.",
     metaDescription:
       "isendai SSS: kontör, AI katmanları, faturalama, gizlilik, araçlar, paylaşım ve destek.",
     items: [
@@ -110,7 +110,7 @@ export const FAQ_CONTENT: Record<Locale, FaqPageContent> = {
       {
         question: "Abonelik gerekli mi?",
         answer:
-          "Abonelik zorunlu değildir. Tek seferlik kontör paketi alabilir veya isteğe bağlı aylık/yıllık plan seçebilirsiniz. Her üretim için giriş yapmanız ve bakiyenizde yeterli kontör olması gerekir; kullanım, AI katmanı ve giriş uzunluğuna göre düşülür. Yeni hesaplar sıfır kontörle başlar — sınırsız ücretsiz kullanım yoktur. Ortamınızda ödeme açıksa satın almalar Lemon Squeezy üzerinden yapılır (Paketler sayfasına bakın).",
+          "Abonelik zorunlu değildir. Tek seferlik kontör paketi alabilir veya isteğe bağlı aylık/yıllık plan seçebilirsiniz. Her üretim için giriş yapmanız ve bakiyenizde yeterli kontör olması gerekir; kullanım, AI katmanı ve giriş uzunluğuna göre düşülür. Yeni üyeler, üyelik profilini tamamlayıp e-postayı doğruladıktan sonra tek seferlik 100 hoş geldin kontörü alır (hesap başına bir kez). Ortamınızda ödeme açıksa satın almalar Lemon Squeezy üzerinden yapılır (Paketler sayfasına bakın).",
       },
       {
         question: "Kontörler nasıl çalışır?",
@@ -266,7 +266,7 @@ export const FAQ_CONTENT: Record<Locale, FaqPageContent> = {
   fr: {
     title: "Foire aux questions",
     intro:
-      "Réponses rapides sur isendai — crédits, modèles IA, confidentialité, paiements et bonnes pratiques pour vos générations.",
+      "Réponses rapides sur isendai : crédits, modèles IA, confidentialité, paiements et bonnes pratiques pour vos générations.",
     metaDescription:
       "FAQ isendai : crédits, niveaux IA, facturation, confidentialité, outils, partage et assistance.",
     items: [
@@ -278,7 +278,7 @@ export const FAQ_CONTENT: Record<Locale, FaqPageContent> = {
       {
         question: "Faut-il un abonnement ?",
         answer:
-          "Aucun abonnement n’est obligatoire. Vous pouvez acheter des packs de crédits ponctuels ou choisir un forfait mensuel ou annuel optionnel. Vous devez être connecté et disposer de crédits suffisants ; chaque génération est débitée selon le niveau IA et la longueur du texte. Les nouveaux comptes démarrent à zéro crédit — pas d’usage gratuit illimité. Les achats passent par Lemon Squeezy lorsque le paiement est activé dans votre environnement (voir Tarifs).",
+          "Aucun abonnement n’est obligatoire. Vous pouvez acheter des packs de crédits ponctuels ou choisir un forfait mensuel ou annuel optionnel. Vous devez être connecté et disposer de crédits suffisants ; chaque génération est débitée selon le niveau IA et la longueur du texte. Les nouveaux membres reçoivent 100 crédits de bienvenue une fois après avoir complété le profil membre et vérifié l’e-mail (une fois par compte). Les achats passent par Lemon Squeezy lorsque le paiement est activé dans votre environnement (voir Tarifs).",
       },
       {
         question: "Comment fonctionnent les crédits ?",
@@ -362,7 +362,7 @@ export const FAQ_CONTENT: Record<Locale, FaqPageContent> = {
       {
         question: "Brauche ich ein Abo?",
         answer:
-          "Ein Abo ist nicht Pflicht. Du kannst einmalige Credit-Pakete kaufen oder optional einen Monats- oder Jahresplan wählen. Für jede Generierung musst du angemeldet sein und genug Credits auf dem Konto haben; abgerechnet wird nach KI-Stufe und Textlänge. Neue Konten starten mit null Credits — kein unbegrenzter Gratiszugang. Käufe laufen über Lemon Squeezy, wenn Checkout in deiner Umgebung aktiv ist (siehe Preise).",
+          "Ein Abo ist nicht Pflicht. Du kannst einmalige Credit-Pakete kaufen oder optional einen Monats- oder Jahresplan wählen. Für jede Generierung musst du angemeldet sein und genug Credits auf dem Konto haben; abgerechnet wird nach KI-Stufe und Textlänge. Neue Mitglieder erhalten einmalig 100 Willkommens-Credits, nachdem Profil und E-Mail bestätigt sind (einmal pro Konto). Käufe laufen über Lemon Squeezy, wenn Checkout in deiner Umgebung aktiv ist (siehe Preise).",
       },
       {
         question: "Wie funktionieren Credits?",
@@ -445,7 +445,7 @@ export const FAQ_CONTENT: Record<Locale, FaqPageContent> = {
       {
         question: "需要订阅吗？",
         answer:
-          "不强制订阅。可购买一次性积分包，或选择可选的月付/年付计划。每次生成须登录且余额充足；按 AI 层级与输入长度扣费。新账户初始积分为零，并非无限免费使用。在您的环境中启用结账时，购买通过 Lemon Squeezy 完成（见定价页）。",
+          "不强制订阅。可购买一次性积分包，或选择可选的月付/年付计划。每次生成须登录且余额充足；按 AI 层级与输入长度扣费。新会员在完成会员资料并验证邮箱后，可一次性获得 100 欢迎额度（每账户一次）。在您的环境中启用结账时，购买通过 Lemon Squeezy 完成（见定价页）。",
       },
       {
         question: "积分如何运作？",

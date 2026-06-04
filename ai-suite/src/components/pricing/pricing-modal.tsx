@@ -182,7 +182,7 @@ function InnerPlan({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-lg font-semibold text-white">{title}</h3>
         {badge ? (
-          <span className="rounded-full border border-amber-400/40 bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-200">
+          <span className="rounded-full border border-amber-400/40 bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold text-amber-200 light:border-amber-500/45 light:bg-amber-100 light:text-amber-950">
             {badge}
           </span>
         ) : null}

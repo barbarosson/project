@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { ensureUserEntitlementsBootstrap } from "@/lib/isendai/ensure-user-entitlements";
+import { processWelcomeBonusForUser } from "@/lib/welcome-bonus/welcome-bonus-service";
 import {
   ensureReferralProfileForUser,
   logReferralSignupAttribution,
@@ -20,10 +21,11 @@ export async function POST(req: Request) {
   }
 
   await ensureUserEntitlementsBootstrap(user.id);
+  const welcome = await processWelcomeBonusForUser(user);
 
   const referredFromCookie = parseReferralCookie(req.headers.get("cookie"));
   await ensureReferralProfileForUser(user, { referredByCode: referredFromCookie });
   await logReferralSignupAttribution(user, req, { referredByCode: referredFromCookie });
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, welcome_bonus: welcome });
 }

@@ -21,7 +21,8 @@ export function pwaMetadata(): Pick<
     applicationName: "isendai",
     appleWebApp: {
       capable: true,
-      statusBarStyle: "black-translucent",
+      /** Opaque bar keeps controls below the clock/battery — avoids dead tap zone on mobile. */
+      statusBarStyle: "default",
       title: "isendai",
     },
     formatDetection: {

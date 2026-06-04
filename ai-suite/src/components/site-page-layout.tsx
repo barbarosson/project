@@ -135,7 +135,7 @@ export function SitePageHeader({
   return (
     <header
       className={siteContainer(
-        "flex flex-col gap-2.5 py-4 sm:gap-3 sm:py-5 lg:flex-row lg:items-center lg:justify-between"
+        "relative z-20 flex flex-col gap-2 safe-area-top pb-3 sm:gap-2.5 sm:pb-4 lg:flex-row lg:items-center lg:justify-between lg:pb-5"
       )}
     >
       <div className="flex min-w-0 w-full items-center gap-2 lg:w-auto lg:flex-1 lg:justify-start">
@@ -163,13 +163,20 @@ export function SitePageHeader({
           />
         </Link>
       </div>
-      <div className="flex w-full min-w-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2 lg:w-auto lg:shrink-0">
-        <ThemeToggle />
+      <div
+        className={cn(
+          "flex w-full min-w-0 touch-pan-x items-center justify-end gap-1.5 sm:gap-2",
+          "max-lg:flex-nowrap max-lg:overflow-x-auto max-lg:overscroll-x-contain max-lg:pb-0.5",
+          "[-webkit-overflow-scrolling:touch] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+          "lg:w-auto lg:shrink-0 lg:flex-wrap lg:overflow-visible lg:pb-0"
+        )}
+      >
+        <ThemeToggle className="touch-manipulation" />
         <SiteLocaleToolbar />
-        <InstallAppButton variant="header" />
-        <ReferralRewardsNav />
-        <CreditsNav />
-        <AuthStatus className="shrink-0" initialSignedInLabel={initialSignedInLabel} />
+        <InstallAppButton variant="header" className="max-lg:hidden" />
+        <ReferralRewardsNav className="shrink-0 touch-manipulation" />
+        <CreditsNav className="shrink-0 touch-manipulation" />
+        <AuthStatus className="shrink-0 touch-manipulation" initialSignedInLabel={initialSignedInLabel} />
       </div>
     </header>
   );

@@ -91,7 +91,7 @@ export default async function RootLayout({
       <head>
         <ThemeInitScript />
         <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body className="flex min-h-full min-w-0 flex-col overflow-x-clip bg-background text-foreground antialiased">
         {GA_ID ? (

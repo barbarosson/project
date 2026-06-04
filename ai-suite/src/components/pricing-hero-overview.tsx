@@ -76,8 +76,8 @@ export function PricingHeroOverview({ d }: Props) {
 
         {/* PAYGO */}
         <div className={cn("flex flex-col rounded-xl p-4", glassSurface)}>
-          <div className="flex items-center gap-2 text-violet-200/95">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-amber-500/15 text-amber-200">
+          <div className="flex items-center gap-2 text-violet-200/95 light:text-violet-900">
+            <span className="flex size-8 items-center justify-center rounded-lg bg-amber-500/15 text-amber-200 light:bg-amber-100 light:text-amber-900">
               <WalletCards className="size-4" aria-hidden />
             </span>
             <span className="text-xs font-semibold uppercase tracking-wide">{d["pricing.hero.tagPaygo"]}</span>

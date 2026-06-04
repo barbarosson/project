@@ -8,6 +8,8 @@ import { ArrowRight, Bot, Minus, MoveRight, Plus, Sparkles } from "lucide-react"
 import { ToolCard } from "@/components/ai-suite/tool-card";
 import { HomeWhoForSection } from "@/components/marketing/home-who-for-section";
 import { PromoCampaignBanner } from "@/components/promo-campaign-banner";
+import { FloatingJoinCta } from "@/components/marketing/floating-join-cta";
+import { WelcomeMembershipBanner } from "@/components/marketing/welcome-membership-banner";
 import { InstallAppButton } from "@/components/pwa/install-app-button";
 import { SitePageChrome, SitePageHeader } from "@/components/site-page-layout";
 import { formatCreditsFromTenths } from "@/lib/credits-units";
@@ -79,10 +81,6 @@ export function HomeClient({
   ];
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  function scrollToTools() {
-    document.getElementById("home-tools")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
 
   const selectedFromUrl = searchParams.get("tool") as ToolName | null;
   const defaultTool = TOOLS[0]?.tool ?? "corporate-whisperer";
@@ -211,18 +209,18 @@ export function HomeClient({
               modulusaas.com
             </a>
           </p>
-          <PromoCampaignBanner className="mt-6" showPricingLink />
+          <WelcomeMembershipBanner className="mt-6" />
+          <PromoCampaignBanner className="mt-4" showPricingLink />
           <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-            <button
-              type="button"
-              onClick={scrollToTools}
+            <Link
+              href="/login"
               className={cn(
                 premiumCta,
                 "hero-cta-glow min-h-14 w-full rounded-xl px-6 py-4 text-center text-base font-bold sm:w-auto sm:min-w-[min(100%,22rem)] sm:text-lg"
               )}
             >
               {t("hero.cta")}
-            </button>
+            </Link>
             <Link
               href="/login"
               className={cn(
@@ -257,7 +255,7 @@ export function HomeClient({
                   .replace("{scope}", t("home.creditsScopeUser"))}
               </p>
               {creditsSnapshot.balance === 0 ? (
-                <p className="mt-2 text-[11px] leading-relaxed text-amber-200/90 sm:text-xs">
+                <p className="mt-2 text-[11px] leading-relaxed text-amber-200/90 sm:text-xs light:text-amber-900">
                   {t("growth.zeroCreditsHint")}
                 </p>
               ) : null}
@@ -612,6 +610,7 @@ export function HomeClient({
         </section>
       </main>
 
+      <FloatingJoinCta visible={!authSnapshot?.signedIn} />
     </SitePageChrome>
   );
 }

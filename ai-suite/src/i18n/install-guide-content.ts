@@ -26,13 +26,13 @@ export const INSTALL_GUIDE_CONTENT: Record<Locale, InstallGuideContent> = {
   en: {
     title: "Install isendai on your device",
     intro:
-      "Add isendai to your home screen or desktop for quick access — like a native app, without an app store download.",
+      "Add isendai to your home screen or desktop for quick access, like a native app, without downloading from an app store.",
     metaDescription:
       "Step-by-step guide to install the isendai PWA on iPhone, iPad, Android, and desktop browsers.",
     selectPlatform: "Choose your device",
     stepLabel: "Step",
     alreadyInstalledTitle: "Already installed?",
-    alreadyInstalledBody: "Open isendai from your home screen or app list — it runs full-screen without the browser bar.",
+    alreadyInstalledBody: "Open isendai from your home screen or app list; it runs full-screen without the browser bar.",
     tryInstallCta: "Try install from this page",
     platforms: {
       ios: {
@@ -109,14 +109,14 @@ export const INSTALL_GUIDE_CONTENT: Record<Locale, InstallGuideContent> = {
   tr: {
     title: "isendai'yi cihazınıza yükleyin",
     intro:
-      "isendai'yi ana ekrana veya masaüstüne ekleyin — mağaza indirmesi olmadan uygulama gibi hızlı erişim.",
+      "isendai'yi ana ekrana veya masaüstüne ekleyerek mağaza indirmesi olmadan uygulama gibi hızlı erişim sağlayın.",
     metaDescription:
       "isendai PWA kurulum rehberi: iPhone, iPad, Android ve masaüstü tarayıcılar için adım adım talimatlar.",
     selectPlatform: "Cihazınızı seçin",
     stepLabel: "Adım",
     alreadyInstalledTitle: "Zaten yüklü mü?",
     alreadyInstalledBody:
-      "isendai'yi ana ekrandan veya uygulama listesinden açın — tarayıcı çubuğu olmadan tam ekran çalışır.",
+      "isendai'yi ana ekrandan veya uygulama listesinden açın; tarayıcı çubuğu olmadan tam ekran çalışır.",
     tryInstallCta: "Bu sayfadan yüklemeyi dene",
     platforms: {
       ios: {
@@ -289,7 +289,7 @@ export const INSTALL_GUIDE_CONTENT: Record<Locale, InstallGuideContent> = {
   de: {
     title: "isendai auf dem Gerät installieren",
     intro:
-      "isendai zum Home-Bildschirm oder Desktop hinzufügen — schneller Zugriff wie eine native App ohne Store.",
+      "Füge isendai zum Home-Bildschirm oder Desktop hinzu, für schnellen Zugriff wie bei einer nativen App, ohne App-Store-Download.",
     metaDescription:
       "Schritt-für-Schritt-Anleitung: isendai PWA auf iPhone, iPad, Android und Desktop installieren.",
     selectPlatform: "Gerät wählen",

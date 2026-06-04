@@ -167,9 +167,9 @@ export function RewardsDashboardClient({
             <p className="text-xs uppercase tracking-wide text-slate-400">
               {t("referrals.creditsEarned")}
             </p>
-            <p className="mt-1 text-3xl font-bold text-amber-200">
+            <p className="mt-1 text-3xl font-bold text-amber-200 light:text-amber-900">
               {data?.credits_earned ?? 0}
-              <span className="ml-1 text-base font-semibold text-amber-100/80">🪙</span>
+              <span className="ml-1 text-base font-semibold text-amber-100/80 light:text-amber-800">🪙</span>
             </p>
           </div>
         </div>

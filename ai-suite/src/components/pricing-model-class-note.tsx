@@ -24,9 +24,9 @@ const TIER_ACCENT: Record<UserFacingModelId, string> = {
 };
 
 const TIER_HEADING: Record<UserFacingModelId, string> = {
-  "fast-ai": "text-emerald-300/90",
-  "pro-ai": "text-violet-300/90",
-  "genius-ai": "text-amber-300/90",
+  "fast-ai": "text-emerald-300/90 light:text-emerald-800",
+  "pro-ai": "text-violet-300/90 light:text-violet-800",
+  "genius-ai": "text-amber-300/90 light:text-amber-900",
 };
 
 export function PricingModelClassNote({ d }: { d: Dict }) {
