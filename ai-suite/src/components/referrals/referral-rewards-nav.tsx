@@ -10,7 +10,7 @@ export function ReferralRewardsNav({ className }: { className?: string }) {
 
   return (
     <Link
-      href="/dashboard/rewards"
+      href="/free-credits"
       className={cn(
         "inline-flex items-center gap-1 rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 px-2 py-1 text-xs font-semibold text-fuchsia-100 backdrop-blur-xl transition-colors hover:border-fuchsia-400/50 hover:bg-fuchsia-500/20 sm:px-3 sm:text-sm",
         className

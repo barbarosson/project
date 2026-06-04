@@ -336,6 +336,14 @@ export const DICTS: Record<Locale, Dict> = {
       "Credits are granted after your friend verifies their email. Self-referrals and duplicate accounts are not eligible.",
     "referrals.topUpLink": "Top up credits",
 
+    "freeCredits.pageTitle": "Free Credits",
+    "freeCredits.metaDescription":
+      "Earn free credits on isendai: a one-time welcome bonus for new members and referral rewards when you invite verified friends.",
+    "freeCredits.pageLead":
+      "Two ways to earn free credits—no subscription required. Sign up to claim your welcome bonus; invite friends after you join.",
+    "freeCredits.referralSectionTitle": "Invite friends",
+    "freeCredits.ctaSignUp": "Create your free account",
+
     "creditsNav.title": "Credits balance",
     "creditsNav.unit": "Credits",
     "creditsNav.trialOne": "Trial: 1 day left",
@@ -1127,6 +1135,14 @@ export const DICTS: Record<Locale, Dict> = {
       "Los créditos se otorgan cuando tu amigo verifica su email.",
     "referrals.topUpLink": "Recargar créditos",
 
+    "freeCredits.pageTitle": "Créditos gratis",
+    "freeCredits.metaDescription":
+      "Gana créditos gratis en isendai: bono de bienvenida para nuevos miembros y recompensas por invitar amigos verificados.",
+    "freeCredits.pageLead":
+      "Dos formas de ganar créditos gratis, sin suscripción. Regístrate para el bono de bienvenida; invita amigos cuando ya seas miembro.",
+    "freeCredits.referralSectionTitle": "Invita amigos",
+    "freeCredits.ctaSignUp": "Crear cuenta gratis",
+
     "creditsNav.title": "Saldo de créditos",
     "creditsNav.unit": "Créditos",
     "creditsNav.trialOne": "Prueba: queda 1 día",
@@ -1895,6 +1911,14 @@ export const DICTS: Record<Locale, Dict> = {
     "referrals.statsHint":
       "Les crédits sont accordés après vérification de l’email de votre ami.",
     "referrals.topUpLink": "Recharger des crédits",
+
+    "freeCredits.pageTitle": "Crédits gratuits",
+    "freeCredits.metaDescription":
+      "Gagnez des crédits gratuits sur isendai : bonus de bienvenue pour les nouveaux membres et récompenses de parrainage.",
+    "freeCredits.pageLead":
+      "Deux façons d’obtenir des crédits gratuits, sans abonnement. Inscrivez-vous pour le bonus de bienvenue ; invitez des amis une fois membre.",
+    "freeCredits.referralSectionTitle": "Inviter des amis",
+    "freeCredits.ctaSignUp": "Créer un compte gratuit",
 
     "creditsNav.title": "Solde de crédits",
     "creditsNav.unit": "Crédits",
@@ -2666,6 +2690,14 @@ export const DICTS: Record<Locale, Dict> = {
       "Credits gibt es, nachdem dein Freund die E-Mail bestätigt hat.",
     "referrals.topUpLink": "Credits aufladen",
 
+    "freeCredits.pageTitle": "Gratis-Credits",
+    "freeCredits.metaDescription":
+      "Gratis-Credits bei isendai: Willkommensbonus für neue Mitglieder und Belohnungen für verifizierte Freundeseinladungen.",
+    "freeCredits.pageLead":
+      "Zwei Wege zu Gratis-Credits – ohne Abo. Registrieren für den Willkommensbonus; Freunde einladen nach der Anmeldung.",
+    "freeCredits.referralSectionTitle": "Freunde einladen",
+    "freeCredits.ctaSignUp": "Kostenloses Konto erstellen",
+
     "creditsNav.title": "Credit‑Kontostand",
     "creditsNav.unit": "Credits",
     "creditsNav.trialOne": "Testphase: noch 1 Tag",
@@ -3404,6 +3436,14 @@ export const DICTS: Record<Locale, Dict> = {
     "referrals.statsHint": "好友验证邮箱后发放额度。",
     "referrals.topUpLink": "充值额度",
 
+    "freeCredits.pageTitle": "免费额度",
+    "freeCredits.metaDescription":
+      "在 isendai 赚取免费额度：新会员一次性欢迎礼遇，以及邀请已验证好友的推荐奖励。",
+    "freeCredits.pageLead":
+      "两种方式获得免费额度，无需订阅。注册领取欢迎礼遇；加入后可邀请好友。",
+    "freeCredits.referralSectionTitle": "邀请好友",
+    "freeCredits.ctaSignUp": "创建免费账户",
+
     "creditsNav.title": "额度余额",
     "creditsNav.unit": "额度",
     "creditsNav.trialOne": "试用：还剩 1 天",
@@ -4134,6 +4174,14 @@ export const DICTS: Record<Locale, Dict> = {
     "referrals.statsHint":
       "Kontörler arkadaşın e-postasını doğruladıktan sonra tanımlanır.",
     "referrals.topUpLink": "Kontör yükle",
+
+    "freeCredits.pageTitle": "Ücretsiz Kontör",
+    "freeCredits.metaDescription":
+      "isendai'de ücretsiz kontör: yeni üyelere tek seferlik hoş geldin hediyesi ve doğrulanmış arkadaş davetleriyle kazanç.",
+    "freeCredits.pageLead":
+      "Abonelik gerekmeden ücretsiz kontör kazanmanın iki yolu. Hoş geldin hediyesi için üye olun; davet linkiniz üyelikten sonra aktif olur.",
+    "freeCredits.referralSectionTitle": "Arkadaş davet et",
+    "freeCredits.ctaSignUp": "Ücretsiz hesap oluştur",
 
     "creditsNav.title": "Kontör bakiyesi",
     "creditsNav.unit": "Kontör",

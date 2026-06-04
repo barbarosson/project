@@ -32,7 +32,7 @@ export function IsendaiLogo({
       {withWordmark ? (
         <span
           className={cn(
-            "font-display shrink-0 whitespace-nowrap font-black uppercase leading-none tracking-tight",
+            "font-display min-w-0 whitespace-nowrap font-black uppercase leading-none tracking-tight",
             wordmarkClassName
           )}
         >

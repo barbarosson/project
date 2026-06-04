@@ -132,13 +132,16 @@ export function SitePageHeader({
   const { t } = useI18n();
   const showHomeNav = pathname !== "/";
 
+  const headerToolClass = "relative z-10 shrink-0 touch-manipulation";
+
   return (
     <header
       className={siteContainer(
-        "relative z-20 flex flex-col gap-2 safe-area-top pb-3 sm:gap-2.5 sm:pb-4 lg:flex-row lg:items-center lg:justify-between lg:pb-5"
+        "relative z-20 flex flex-col gap-2 safe-area-top pb-3 sm:gap-2.5 sm:pb-4 lg:flex-row lg:items-center lg:justify-between lg:gap-3 lg:pb-5"
       )}
     >
-      <div className="flex min-w-0 w-full items-center gap-2 lg:w-auto lg:flex-1 lg:justify-start">
+      {/* Brand: icon-only below lg so tools never overlap the ISENDAI wordmark. */}
+      <div className="flex min-w-0 w-full items-center gap-2 lg:min-w-0 lg:max-w-[min(100%,28rem)] lg:flex-1 xl:max-w-none">
         {showHomeNav ? (
           <Link
             href="/"
@@ -155,35 +158,38 @@ export function SitePageHeader({
             <span className="hidden min-[900px]:inline">{t("nav.backToHome")}</span>
           </Link>
         ) : null}
-        <Link href="/" className="inline-flex min-w-0 flex-1 items-center overflow-visible lg:flex-none">
+        <Link
+          href="/"
+          className="inline-flex min-w-0 shrink-0 items-center overflow-hidden lg:min-w-0 lg:shrink"
+          aria-label="isendai"
+        >
           <IsendaiLogo
             withWordmark
             iconClassName="size-8 shrink-0 sm:size-9 md:size-10 lg:size-12"
-            wordmarkClassName="text-lg sm:text-xl md:text-2xl lg:text-3xl"
+            wordmarkClassName={cn(
+              "hidden truncate lg:inline",
+              "text-lg sm:text-xl md:text-2xl lg:max-w-[11rem] lg:text-2xl xl:max-w-[14rem] xl:text-3xl 2xl:max-w-none"
+            )}
           />
         </Link>
-        {/* Mobile: theme + language stay visible (not inside horizontal scroll). */}
-        <div className="ml-auto flex shrink-0 items-center gap-1.5 lg:hidden">
-          <ThemeToggle className="touch-manipulation" />
-          <SiteLocaleToolbar />
-        </div>
       </div>
+      {/* Toolbar: theme, locale, credits, auth — one row; scroll on small screens when signed in. */}
       <div
+        role="toolbar"
+        aria-label="Header"
         className={cn(
           "flex w-full min-w-0 items-center gap-1.5 sm:gap-2",
-          "max-lg:touch-pan-x max-lg:justify-start max-lg:overflow-x-auto max-lg:overscroll-x-contain max-lg:pb-0.5",
+          "max-lg:justify-start max-lg:overflow-x-auto max-lg:overscroll-x-contain max-lg:pb-0.5",
           "max-lg:[-webkit-overflow-scrolling:touch] max-lg:[scrollbar-width:none] max-lg:[&::-webkit-scrollbar]:hidden",
-          "lg:w-auto lg:shrink-0 lg:flex-wrap lg:justify-end lg:overflow-visible lg:pb-0"
+          "lg:ml-auto lg:w-auto lg:min-w-0 lg:flex-1 lg:flex-wrap lg:justify-end lg:overflow-visible lg:pb-0"
         )}
       >
-        <div className="hidden shrink-0 items-center gap-1.5 lg:flex">
-          <ThemeToggle className="touch-manipulation" />
-          <SiteLocaleToolbar />
-        </div>
+        <ThemeToggle className={headerToolClass} />
+        <SiteLocaleToolbar />
         <InstallAppButton variant="header" className="max-lg:hidden" />
-        <ReferralRewardsNav className="shrink-0 touch-manipulation" />
-        <CreditsNav className="shrink-0 touch-manipulation" />
-        <AuthStatus className="shrink-0 touch-manipulation" initialSignedInLabel={initialSignedInLabel} />
+        <ReferralRewardsNav className={headerToolClass} />
+        <CreditsNav className={headerToolClass} />
+        <AuthStatus className={headerToolClass} initialSignedInLabel={initialSignedInLabel} />
       </div>
     </header>
   );
