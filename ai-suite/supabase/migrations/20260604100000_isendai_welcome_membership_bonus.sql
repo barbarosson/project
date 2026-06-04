@@ -94,3 +94,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+DROP TRIGGER IF EXISTS on_auth_user_email_verified ON auth.users;
+DROP TRIGGER IF EXISTS on_auth_user_verified ON auth.users;
+
+CREATE TRIGGER on_auth_user_verified
+  AFTER INSERT OR UPDATE OF email_confirmed_at ON auth.users
+  FOR EACH ROW
+  EXECUTE FUNCTION isendai.on_auth_user_email_verified();
