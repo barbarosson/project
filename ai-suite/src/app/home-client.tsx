@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Bot, Minus, MoveRight, Plus, Sparkles } from "lucide-react";
 
 import { ToolCard } from "@/components/ai-suite/tool-card";
+import { HomeWhoForSection } from "@/components/marketing/home-who-for-section";
 import { PromoCampaignBanner } from "@/components/promo-campaign-banner";
 import { InstallAppButton } from "@/components/pwa/install-app-button";
 import { SitePageChrome, SitePageHeader } from "@/components/site-page-layout";
@@ -263,6 +264,8 @@ export function HomeClient({
             </div>
           ) : null}
         </section>
+
+        <HomeWhoForSection />
 
         <section className={cn("mt-8", sectionGradientShell)}>
           <div

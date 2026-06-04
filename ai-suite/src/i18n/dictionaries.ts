@@ -19,7 +19,7 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.kicker": "Your chaotic draft → send-ready masterpiece ✨",
     "hero.title": "Don't Send That Yet. Fix It First.",
     "hero.subtitle":
-      "Rage-email? Awkward text? Mid cover letter? Paste the mess. Get something you'd actually hit send on — in seconds.",
+      "AI writing for WhatsApp, email & social — credits when you generate, no forced subscription. Paste the mess; send something you're proud of.",
     "hero.cta": "Fix My Mess (1st try's on us 🎁)",
     "hero.modulusFamily": "Part of the MODULUS family —",
     "hero.badge.noSubscription": "No subscription trap",
@@ -38,6 +38,31 @@ export const DICTS: Record<Locale, Dict> = {
     "promo.isend101.copyFailed": "Could not copy — select the code manually.",
     "promo.isend101.viewPricing": "View plans & packs",
     "hero.badge.noStore": "We don’t store your text",
+
+    "home.whoFor.kicker": "Who it's for",
+    "home.whoFor.title": "Built for real messages — not generic chat",
+    "home.whoFor.lead":
+      "Pick the situation closest to yours. Each path opens a specialist tool tuned for that tone and stakes.",
+    "home.whoFor.tryTool": "Recommended tool",
+    "home.whoFor.openTool": "Try it now",
+    "home.whoFor.freelance.title": "Freelancers & consultants",
+    "home.whoFor.freelance.pain":
+      "Your proposals and follow-ups should sound confident and clear. Set scope early so you stay professional without sounding stiff.",
+    "home.whoFor.freelance.toolName": "Proposal Sniper",
+    "home.whoFor.freelance.toolBlurb":
+      "Builds a winning proposal with clear value, pricing logic, and next steps your client can say yes to.",
+    "home.whoFor.business.title": "Small business & support",
+    "home.whoFor.business.pain":
+      "When a refund, complaint, or public review lands, you need calm words that still protect the business.",
+    "home.whoFor.business.toolName": "Refund Demander",
+    "home.whoFor.business.toolBlurb":
+      "Drafts a firm, respectful refund or compensation email that cites consumer rights without sounding aggressive.",
+    "home.whoFor.career.title": "Office & career",
+    "home.whoFor.career.pain":
+      "Before you email your manager, client, or team, make sure the tone is professional and still sounds like you.",
+    "home.whoFor.career.toolName": "Corporate Whisperer",
+    "home.whoFor.career.toolBlurb":
+      "Paste what you really want to say — we turn it into a polite, send-ready email your workplace will accept.",
 
     "home.demo.before.label": "Before",
     "home.demo.after.label": "After",
@@ -352,7 +377,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Payments: Lemon Squeezy is not fully configured on this deploy. Set LEMON_SQUEEZY_* env vars or use dev top-up on staging.",
     "pricing.title": "Pricing",
     "pricing.subtitle":
-      "Monthly from $7.99, yearly ~17% off, or pay-as-you-go from $1. Economy & GPT‑4o mini: 1 credit per 500 chars; Standard 15; Premium 25 (per chunk, rounded up).",
+      "Same credits everywhere: monthly from $7.99, yearly ~17% off, or one-time packs from $1. No subscription trap — load credits, generate when you need polish.",
     "pricing.hero.intro": "Three ways to load credits — same rules everywhere in the app:",
     "pricing.hero.tagMonthly": "Monthly",
     "pricing.hero.tagAnnual": "Annual",
@@ -772,7 +797,7 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.kicker": "Tu borrador caótico → mensaje listo para enviar ✨",
     "hero.title": "Aún no pulses Enviar. Arréglalo primero.",
     "hero.subtitle":
-      "¿Email de rabia? ¿Texto incómodo? ¿Carta a medias? Pega el desastre. Llévate algo que sí enviarías — en segundos.",
+      "IA para WhatsApp, email y redes — pagas con créditos al generar, sin suscripción obligatoria. Pega el desastre; envía algo de lo que estés orgulloso.",
     "hero.cta": "Arreglar mi desastre (1.er intento gratis 🎁)",
     "hero.modulusFamily": "Parte de la familia MODULUS —",
     "hero.badge.noSubscription": "Sin trampa de suscripción",
@@ -791,6 +816,31 @@ export const DICTS: Record<Locale, Dict> = {
     "promo.isend101.copyFailed": "No se pudo copiar — selecciona el código manualmente.",
     "promo.isend101.viewPricing": "Ver planes y packs",
     "hero.badge.noStore": "No guardamos tu texto",
+
+    "home.whoFor.kicker": "Para quién es",
+    "home.whoFor.title": "Hecho para mensajes reales — no chat genérico",
+    "home.whoFor.lead":
+      "Elige la situación más cercana a la tuya. Cada camino abre una herramienta especializada para ese tono y esas apuestas.",
+    "home.whoFor.tryTool": "Empieza aquí",
+    "home.whoFor.openTool": "Abrir herramienta",
+    "home.whoFor.freelance.title": "Freelance y consultores",
+    "home.whoFor.freelance.pain":
+      "Tus propuestas y seguimientos deben sonar claros y seguros. Define el alcance desde el principio y mantén un tono profesional sin rigidez.",
+    "home.whoFor.freelance.toolName": "Proposal Sniper",
+    "home.whoFor.freelance.toolBlurb":
+      "Redacta una propuesta ganadora con valor claro, lógica de precios y próximos pasos que el cliente pueda aceptar.",
+    "home.whoFor.business.title": "Pymes y atención al cliente",
+    "home.whoFor.business.pain":
+      "Cuando llega un reembolso, una queja o una reseña negativa, necesitas palabras calmadas que aun así protejan el negocio.",
+    "home.whoFor.business.toolName": "Refund Demander",
+    "home.whoFor.business.toolBlurb":
+      "Redacta un correo de reembolso o compensación firme y respetuoso, con referencia a derechos del consumidor.",
+    "home.whoFor.career.title": "Oficina y carrera",
+    "home.whoFor.career.pain":
+      "Antes de escribir a tu jefe, cliente o equipo, revisa el tono: profesional y aun así humano.",
+    "home.whoFor.career.toolName": "Corporate Whisperer",
+    "home.whoFor.career.toolBlurb":
+      "Pega lo que quieres decir de verdad; lo convertimos en un correo educado y listo para enviar.",
 
     "home.demo.before.label": "Antes",
     "home.demo.after.label": "Después",
@@ -1105,7 +1155,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Pagos: Lemon Squeezy no está configurado en este deploy. Define LEMON_SQUEEZY_* o usa top-up dev en staging.",
     "pricing.title": "Precios",
     "pricing.subtitle":
-      "Desde $7.99/mes, anual ~17 % menos o pago por uso desde $1. Economy y GPT‑4o mini: 1 crédito por 500 caracteres; Estándar 15; Premium 25 (por bloque, redondeo superior).",
+      "Mismos créditos en todas partes: mensual desde $7.99, anual ~17 % menos o packs desde $1. Sin trampa de suscripción — carga créditos y genera cuando lo necesites.",
     "pricing.hero.intro": "Tres formas de cargar créditos — mismas reglas en toda la app:",
     "pricing.hero.tagMonthly": "Mensual",
     "pricing.hero.tagAnnual": "Anual",
@@ -1503,7 +1553,7 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.kicker": "Brouillon chaotique → message prêt à envoyer ✨",
     "hero.title": "N’envoyez pas encore. Corrigez d’abord.",
     "hero.subtitle":
-      "Mail rageux ? SMS gênant ? Lettre bancale ? Collez le chaos. Repartez avec un message que vous oseriez envoyer — en quelques secondes.",
+      "IA pour WhatsApp, e-mail et réseaux — crédits à la génération, sans abonnement forcé. Collez le brouillon ; envoyez quelque chose dont vous êtes fier.",
     "hero.cta": "Corriger mon bazar (1er essai offert 🎁)",
     "hero.modulusFamily": "Une offre de la famille MODULUS —",
     "hero.badge.noSubscription": "Pas de piège d’abonnement",
@@ -1522,6 +1572,31 @@ export const DICTS: Record<Locale, Dict> = {
     "promo.isend101.copyFailed": "Copie impossible — sélectionnez le code manuellement.",
     "promo.isend101.viewPricing": "Voir forfaits et packs",
     "hero.badge.noStore": "Nous ne stockons pas votre texte",
+
+    "home.whoFor.kicker": "Pour qui",
+    "home.whoFor.title": "Pensé pour de vrais messages — pas un chat générique",
+    "home.whoFor.lead":
+      "Choisis la situation la plus proche de la tienne. Chaque parcours ouvre un outil spécialisé pour ce ton et ces enjeux.",
+    "home.whoFor.tryTool": "Commencer ici",
+    "home.whoFor.openTool": "Ouvrir l’outil",
+    "home.whoFor.freelance.title": "Freelances et consultants",
+    "home.whoFor.freelance.pain":
+      "Vos propositions et relances doivent sonner claires et assurées. Cadrez le périmètre dès le départ, sans ton rigide.",
+    "home.whoFor.freelance.toolName": "Proposal Sniper",
+    "home.whoFor.freelance.toolBlurb":
+      "Rédige une proposition gagnante avec valeur claire, logique tarifaire et prochaines étapes concrètes.",
+    "home.whoFor.business.title": "PME et support",
+    "home.whoFor.business.pain":
+      "Remboursement, plainte ou avis négatif : il vous faut des mots calmes qui protègent quand même l’entreprise.",
+    "home.whoFor.business.toolName": "Refund Demander",
+    "home.whoFor.business.toolBlurb":
+      "Rédige un e-mail de remboursement ou compensation ferme et respectueux, avec référence aux droits du consommateur.",
+    "home.whoFor.career.title": "Bureau et carrière",
+    "home.whoFor.career.pain":
+      "Avant d’écrire à votre manager, client ou équipe, vérifiez le ton : professionnel et humain.",
+    "home.whoFor.career.toolName": "Corporate Whisperer",
+    "home.whoFor.career.toolBlurb":
+      "Collez ce que vous voulez vraiment dire ; nous le transformons en e-mail poli, prêt à envoyer.",
 
     "home.demo.before.label": "Avant",
     "home.demo.after.label": "Après",
@@ -1836,7 +1911,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Paiements : Lemon Squeezy non configuré sur ce déploiement. Variables LEMON_SQUEEZY_* ou recharge dev staging.",
     "pricing.title": "Tarifs",
     "pricing.subtitle":
-      "Forfaits dès 7,99 $/mois, annuel ~17 % moins cher, ou à l’usage dès 1 $. Entrée de gamme et GPT‑4o mini : 1 crédit par 500 caractères ; Standard 15 ; Premium 25 (par bloc, arrondi supérieur).",
+      "Mêmes crédits partout : mensuel dès 7,99 $, annuel ~17 % moins cher, ou packs à l’usage dès 1 $. Pas d’abonnement forcé — chargez et générez quand il faut.",
     "pricing.hero.intro": "Trois façons de charger des crédits — mêmes règles partout :",
     "pricing.hero.tagMonthly": "Mensuel",
     "pricing.hero.tagAnnual": "Annuel",
@@ -2234,7 +2309,7 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.kicker": "Chaos-Entwurf → sendefertige Nachricht ✨",
     "hero.title": "Noch nicht senden. Erst fixen.",
     "hero.subtitle":
-      "Wut-Mail? Peinliche SMS? Halbe Bewerbung? Chaos einfügen. In Sekunden etwas, das du wirklich abschicken würdest.",
+      "KI für WhatsApp, E-Mail & Social — Credits beim Generieren, kein Abo-Zwang. Chaos einfügen; etwas senden, worauf du stolz bist.",
     "hero.cta": "Mein Chaos fixen (1. Versuch gratis 🎁)",
     "hero.modulusFamily": "Teil der MODULUS-Produktfamilie —",
     "hero.badge.noSubscription": "Kein Abo-Falle",
@@ -2253,6 +2328,31 @@ export const DICTS: Record<Locale, Dict> = {
     "promo.isend101.copyFailed": "Kopieren fehlgeschlagen — Code manuell markieren.",
     "promo.isend101.viewPricing": "Pläne & Pakete ansehen",
     "hero.badge.noStore": "Wir speichern deinen Text nicht",
+
+    "home.whoFor.kicker": "Für wen",
+    "home.whoFor.title": "Für echte Nachrichten — kein generischer Chat",
+    "home.whoFor.lead":
+      "Wähle die Situation, die am nächsten dran ist. Jeder Weg öffnet ein Spezial-Tool für Ton und Einsatz.",
+    "home.whoFor.tryTool": "Hier starten",
+    "home.whoFor.openTool": "Tool öffnen",
+    "home.whoFor.freelance.title": "Freelancer & Berater",
+    "home.whoFor.freelance.pain":
+      "Angebote und Follow-ups sollen klar und souverän klingen. Scope früh festlegen — professionell, nicht steif.",
+    "home.whoFor.freelance.toolName": "Proposal Sniper",
+    "home.whoFor.freelance.toolBlurb":
+      "Erstellt ein überzeugendes Angebot mit klarem Nutzen, Preislogik und nächsten Schritten.",
+    "home.whoFor.business.title": "KMU & Support",
+    "home.whoFor.business.pain":
+      "Bei Erstattung, Beschwerde oder schlechter Bewertung brauchen Sie ruhige Worte, die das Geschäft schützen.",
+    "home.whoFor.business.toolName": "Refund Demander",
+    "home.whoFor.business.toolBlurb":
+      "Formuliert eine feste, respektvolle Erstattungs-E-Mail mit Bezug auf Verbraucherrechte.",
+    "home.whoFor.career.title": "Büro & Karriere",
+    "home.whoFor.career.pain":
+      "Bevor Sie Chef, Kunde oder Team schreiben: Ton prüfen — professionell und menschlich.",
+    "home.whoFor.career.toolName": "Corporate Whisperer",
+    "home.whoFor.career.toolBlurb":
+      "Fügen Sie ein, was Sie wirklich sagen wollen — wir machen daraus eine höfliche, sendefertige E-Mail.",
 
     "home.demo.before.label": "Vorher",
     "home.demo.after.label": "Nachher",
@@ -2568,7 +2668,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Zahlungen: Lemon Squeezy hier nicht konfiguriert. LEMON_SQUEEZY_* setzen oder Dev-Top-up auf Staging.",
     "pricing.title": "Preise",
     "pricing.subtitle":
-      "Ab $7.99/Monat, Jahrespaket ~17 % günstiger oder PAYG ab $1. Economy & GPT‑4o mini: 1 Credit pro 500 Zeichen; Standard 15; Premium 25 (pro Block, aufgerundet).",
+      "Überall dieselben Credits: monatlich ab $7.99, jährlich ~17 % sparen oder Einmal-Packs ab $1. Kein Abo-Zwang — laden und generieren, wenn du es brauchst.",
     "pricing.hero.intro": "Drei Wege, Credits zu laden — überall dieselben Regeln:",
     "pricing.hero.tagMonthly": "Monatlich",
     "pricing.hero.tagAnnual": "Jährlich",
@@ -2962,7 +3062,7 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.kicker": "混乱草稿 → 敢发出去的消息 ✨",
     "hero.title": "先别发送。先修好。",
     "hero.subtitle":
-      "暴怒邮件？尴尬短信？半成品求职信？粘贴混乱内容，几秒内得到你真的敢发出去的文字。",
+      "面向 WhatsApp、邮件与社交的 AI 写作 — 按生成扣额度，无强制订阅。粘贴草稿，发出你真正敢发出去的内容。",
     "hero.cta": "修好我的烂摊子（首次免费 🎁）",
     "hero.modulusFamily": "MODULUS 产品家族的一员 —",
     "hero.badge.noSubscription": "无订阅陷阱",
@@ -2981,6 +3081,24 @@ export const DICTS: Record<Locale, Dict> = {
     "promo.isend101.copyFailed": "无法复制 — 请手动选择优惠码。",
     "promo.isend101.viewPricing": "查看套餐与积分包",
     "hero.badge.noStore": "不保存你的文本",
+
+    "home.whoFor.kicker": "适合谁",
+    "home.whoFor.title": "为真实消息而生 — 不是泛用聊天",
+    "home.whoFor.lead": "选择最接近你场景的路径。每条路径打开针对该语气与风险的专业工具。",
+    "home.whoFor.tryTool": "从这里开始",
+    "home.whoFor.openTool": "打开工具",
+    "home.whoFor.freelance.title": "自由职业与顾问",
+    "home.whoFor.freelance.pain": "提案与跟进应清晰自信。尽早界定范围，保持专业而不生硬。",
+    "home.whoFor.freelance.toolName": "Proposal Sniper",
+    "home.whoFor.freelance.toolBlurb": "生成结构清晰、易获认可的提案：阐明价值、定价逻辑与可执行的下一步。",
+    "home.whoFor.business.title": "小企业与客服",
+    "home.whoFor.business.pain": "遇到退款、投诉或差评时，需要冷静措辞，同时保护业务立场。",
+    "home.whoFor.business.toolName": "Refund Demander",
+    "home.whoFor.business.toolBlurb": "起草坚定而礼貌的退款/补偿邮件，并合理引用消费者权益。",
+    "home.whoFor.career.title": "职场与办公",
+    "home.whoFor.career.pain": "发给上级、客户或团队前再检查语气：专业、自然、不空洞。",
+    "home.whoFor.career.toolName": "Corporate Whisperer",
+    "home.whoFor.career.toolBlurb": "粘贴你想说的真话，我们将其转为得体、可直接发送的邮件。",
 
     "home.demo.before.label": "改写前",
     "home.demo.after.label": "改写后",
@@ -3274,7 +3392,7 @@ export const DICTS: Record<Locale, Dict> = {
       "支付：此环境未配置 Lemon Squeezy。请设置 LEMON_SQUEEZY_* 或在 staging 使用开发充值。",
     "pricing.title": "价格与套餐",
     "pricing.subtitle":
-      "月付 $7.99 起、年付约省 17%，或按次 $1 起。经济档与 GPT‑4o mini：每 500 字 1 额度；标准档 15；高级档 25（按块向上取整）。",
+      "全站同一套额度：月付 $7.99 起、年付约省 17%，或 $1 起一次性包。无强制订阅 — 按需充值、按需生成。",
     "pricing.hero.intro": "三种充值方式 — 规则全站一致：",
     "pricing.hero.tagMonthly": "月付",
     "pricing.hero.tagAnnual": "年付",
@@ -3643,7 +3761,7 @@ export const DICTS: Record<Locale, Dict> = {
     "hero.kicker": "Dağınık taslak → göndermeye cesaret edilen metin ✨",
     "hero.title": "Henüz Gönderme. Önce Düzelt.",
     "hero.subtitle":
-      "Öfke maili mi? Garip mesaj mı? Yarım ön yazı mı? Karmaşayı yapıştır; saniyeler içinde gerçekten gönderebileceğin bir şey al.",
+      "WhatsApp, e-posta ve sosyal için AI metin — üretince kontör, zorunlu abonelik yok. Karmaşayı yapıştır; gururla göndereceğin metni al.",
     "hero.cta": "Dağınıklığı Düzelt (ilk deneme bizden 🎁)",
     "hero.modulusFamily": "MODULUS ürün ailesinin bir parçası —",
     "hero.badge.noSubscription": "Abonelik tuzağı yok",
@@ -3662,6 +3780,31 @@ export const DICTS: Record<Locale, Dict> = {
     "promo.isend101.copyFailed": "Kopyalanamadı — kodu elle seçin.",
     "promo.isend101.viewPricing": "Paketleri gör",
     "hero.badge.noStore": "Metnini saklamayız",
+
+    "home.whoFor.kicker": "Kimler için?",
+    "home.whoFor.title": "Gerçek Mesajlar İçin Tasarlandı",
+    "home.whoFor.lead":
+      "Aşağıdan size en yakın alanı seçin. Her kart, o iş için özel hazırlanmış bir araca götürür.",
+    "home.whoFor.tryTool": "Önerilen araç",
+    "home.whoFor.openTool": "Hemen dene",
+    "home.whoFor.freelance.title": "Freelancer & Danışman",
+    "home.whoFor.freelance.pain":
+      "Müşteriye giden teklif ve takip mailleriniz net olsun. Kapsamı baştan netleştirin; samimi kalın, profesyonel görünün.",
+    "home.whoFor.freelance.toolName": "Teklif Keskin Nişancı",
+    "home.whoFor.freelance.toolBlurb":
+      "Değerinizi anlatan, fiyatı ve sonraki adımı açıkça yazan, kazanma şansını artıran bir teklif metni hazırlar.",
+    "home.whoFor.business.title": "KOBİ & Müşteri Desteği",
+    "home.whoFor.business.pain":
+      "İade, şikâyet veya olumsuz yorum geldiğinde panik yok. Sakin, anlaşılır ve sonuç alan bir yanıt yazın.",
+    "home.whoFor.business.toolName": "Geri Ödeme Talebi",
+    "home.whoFor.business.toolBlurb":
+      "Tüketici haklarına saygılı, resmi ama gereğinden uzun olmayan bir iade veya tazminat e-postası oluşturur.",
+    "home.whoFor.career.title": "Ofis & Kariyer",
+    "home.whoFor.career.pain":
+      "Yöneticiye, müşteriye veya ekibe mail atmadan önce bir kez daha bakın. İnsan gibi duyulan, boş kurumsal laf olmayan bir ton.",
+    "home.whoFor.career.toolName": "Kurumsal Çevirmen",
+    "home.whoFor.career.toolBlurb":
+      "İçinizden geleni yazın; biz onu saygılı, net ve gönderilmeye hazır bir e-postaya dönüştürelim.",
 
     "home.demo.before.label": "Önce",
     "home.demo.after.label": "Sonra",
@@ -3969,7 +4112,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Ödeme: Bu deploy’da Lemon Squeezy tam yapılandırılmamış. LEMON_SQUEEZY_* veya staging dev top-up.",
     "pricing.title": "Paketler",
     "pricing.subtitle":
-      "$7.99’dan aylık, yıllıkta ~%17 tasarruf veya $1’den kullandıkça öde. Ekonomi ve GPT‑4o mini: 100 karakterde 0,2 kontör; Standart 3; Premium 5 (yukarı yuvarlanır).",
+      "Her yerde aynı kontör: aylık $7.99’dan, yıllıkta ~%17 tasarruf veya $1’den tek seferlik paketler. Zorunlu abonelik yok — kontör yükle, ihtiyaç olunca üret.",
     "pricing.hero.intro": "Kontör yüklemenin üç yolu — her yerde aynı kurallar:",
     "pricing.hero.tagMonthly": "Aylık",
     "pricing.hero.tagAnnual": "Yıllık",
