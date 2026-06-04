@@ -265,6 +265,9 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.aiFailed": "Could not get a reply. Please try again.",
     "concierge.errors.server": "Server error. Please try again shortly.",
     "concierge.errors.authRequired": "Sign in to use the assistant chat.",
+    "concierge.fabAriaLabel": "Open ISENDAI assistant",
+    "concierge.fabHint": "What do you need?",
+    "concierge.close": "Close assistant",
 
     "deploy.stagingBanner":
       "Staging environment — not live for customers. Test here before merging to main.",
@@ -1064,6 +1067,9 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.aiFailed": "No se pudo obtener respuesta. Inténtalo de nuevo.",
     "concierge.errors.server": "Error del servidor. Inténtalo en un momento.",
     "concierge.errors.authRequired": "Inicia sesión para usar el chat del asistente.",
+    "concierge.fabAriaLabel": "Abrir asistente ISENDAI",
+    "concierge.fabHint": "¿En qué te ayudamos?",
+    "concierge.close": "Cerrar asistente",
 
     "deploy.stagingBanner":
       "Entorno de pruebas — no es el sitio en vivo. Prueba aquí antes de fusionar a main.",
@@ -1841,6 +1847,9 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.aiFailed": "Impossible d’obtenir une réponse. Réessaie.",
     "concierge.errors.server": "Erreur serveur. Réessaie dans un instant.",
     "concierge.errors.authRequired": "Connecte-toi pour utiliser le chat assistant.",
+    "concierge.fabAriaLabel": "Ouvrir l’assistant ISENDAI",
+    "concierge.fabHint": "De quoi avez-vous besoin ?",
+    "concierge.close": "Fermer l’assistant",
 
     "deploy.stagingBanner":
       "Environnement de staging — pas le site en production. Teste ici avant de fusionner vers main.",
@@ -2619,6 +2628,9 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.aiFailed": "Keine Antwort erhalten. Bitte erneut versuchen.",
     "concierge.errors.server": "Serverfehler. Bitte kurz warten.",
     "concierge.errors.authRequired": "Melde dich an, um den Assistenten-Chat zu nutzen.",
+    "concierge.fabAriaLabel": "ISENDAI-Assistent öffnen",
+    "concierge.fabHint": "Wobei brauchst du Hilfe?",
+    "concierge.close": "Assistent schließen",
 
     "deploy.stagingBanner":
       "Staging-Umgebung — nicht die Live-Seite. Hier testen, dann in main mergen.",
@@ -3370,6 +3382,9 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.aiFailed": "无法获取回复，请重试。",
     "concierge.errors.server": "服务器错误，请稍后重试。",
     "concierge.errors.authRequired": "请登录后使用助手聊天。",
+    "concierge.fabAriaLabel": "打开 ISENDAI 助手",
+    "concierge.fabHint": "需要什么帮助？",
+    "concierge.close": "关闭助手",
 
     "deploy.stagingBanner": "预发布环境 — 非正式站点。合并到 main 前请在此测试。",
     "deploy.stagingOpenProduction": "打开正式站 (isendai.com)",
@@ -4104,6 +4119,9 @@ export const DICTS: Record<Locale, Dict> = {
     "concierge.errors.aiFailed": "Yanıt alınamadı. Lütfen tekrar dene.",
     "concierge.errors.server": "Sunucu hatası. Kısa süre sonra tekrar dene.",
     "concierge.errors.authRequired": "Asistan sohbeti için lütfen giriş yap.",
+    "concierge.fabAriaLabel": "ISENDAI asistanını aç",
+    "concierge.fabHint": "Ne ihtiyacınız var?",
+    "concierge.close": "Asistanı kapat",
 
     "deploy.stagingBanner":
       "Bu ortam yalnızca test içindir; müşterilere açık canlı site değildir. main dalına almadan önce burada doğrulayın.",

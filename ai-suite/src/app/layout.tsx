@@ -24,6 +24,7 @@ import { SupabaseBrowserConfigProvider } from "@/lib/supabase/browser-config-con
 import { PricingModalProvider } from "@/components/pricing/pricing-modal";
 import { AuthSessionHydrator } from "@/components/auth-session-hydrator";
 import { DeployEnvBanner } from "@/components/deploy-env-banner";
+import { FloatingConciergeWidget } from "@/components/marketing/floating-concierge-widget";
 import { PwaSerwistProvider } from "@/components/pwa/serwist-provider";
 import { pwaViewport } from "@/lib/pwa/metadata";
 import { resolveThemeFromCookie } from "@/lib/theme";
@@ -125,6 +126,7 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
                   <SocialProof />
                   <ModelAnnouncement />
                   <DeployEnvBanner />
+                  <FloatingConciergeWidget />
                   <AuthSessionHydrator />
                   <div className="relative isolate flex min-h-full w-full flex-1 flex-col">
                     <div className="relative flex min-h-full flex-1 flex-col">

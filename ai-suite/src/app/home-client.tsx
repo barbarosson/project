@@ -145,6 +145,24 @@ export function HomeClient({
   const selectedDef = getToolDefinition(selected);
 
   React.useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("ai-suite:concierge-draft");
+      if (!raw) return;
+      sessionStorage.removeItem("ai-suite:concierge-draft");
+      const parsed = JSON.parse(raw) as { tool?: ToolName; draftText?: string };
+      if (parsed?.tool && TOOLS.some((x) => x.tool === parsed.tool)) {
+        selectTool(parsed.tool, {
+          draftText: parsed.draftText,
+          scroll: true,
+          updateUrl: true,
+        });
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [selectTool]);
+
+  React.useEffect(() => {
     const requestId = searchParams.get("request");
     if (!requestId || requestId.length < 10) return;
     let cancelled = false;

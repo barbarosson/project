@@ -81,9 +81,12 @@ function renderMarkdownLinks(
 
 export function ConciergeChat({
   className,
+  compact = false,
   onOpenTool,
 }: {
   className?: string;
+  /** Tighter layout for the floating concierge panel. */
+  compact?: boolean;
   /** Open the workspace tool panel (and optional draft prefill from the last user message). */
   onOpenTool?: (tool: ToolName, opts?: { draftText?: string; scroll?: boolean }) => void;
 }) {
@@ -178,10 +181,11 @@ export function ConciergeChat({
           />
         </CardTitle>
       </CardHeader>
-      <CardContent className="grid min-w-0 gap-3">
+      <CardContent className={cn("grid min-w-0 gap-3", compact && "px-4 pb-4")}>
         <div
           className={cn(
-            "max-h-56 min-w-0 space-y-2 overflow-y-auto overflow-x-hidden rounded-xl p-3 text-sm text-slate-200",
+            "min-w-0 space-y-2 overflow-y-auto overflow-x-hidden rounded-xl p-3 text-sm text-slate-200",
+            compact ? "max-h-[min(42vh,14rem)]" : "max-h-56",
             sectionPanelViolet,
             "border-violet-400/25 from-violet-500/10 to-violet-950/20 shadow-inner"
           )}
