@@ -14,6 +14,7 @@ import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useI18n } from "@/i18n/i18n-provider";
 import { MODULUS_SITE_URL } from "@/lib/modulus-site";
+import { getModulusLinkedInUrl } from "@/lib/social-links";
 import { getPublicSupportEmail } from "@/lib/support-email";
 import { siteContainer, type PageShellVariant } from "@/lib/page-layout";
 import {
@@ -48,6 +49,7 @@ function FooterDot() {
 export function SitePageFooter() {
   const { t } = useI18n();
   const supportEmail = getPublicSupportEmail();
+  const modulusLinkedInUrl = getModulusLinkedInUrl();
 
   const navLink =
     "shrink-0 whitespace-nowrap text-xs font-medium text-foreground/85 transition-colors hover:text-foreground sm:text-sm";
@@ -111,6 +113,19 @@ export function SitePageFooter() {
               <Link className={navLinkMuted} href="/terms">
                 {t("nav.terms")}
               </Link>
+              {modulusLinkedInUrl ? (
+                <>
+                  <FooterDot />
+                  <a
+                    className={navLinkMuted}
+                    href={modulusLinkedInUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    LinkedIn
+                  </a>
+                </>
+              ) : null}
             </div>
           </nav>
         </div>

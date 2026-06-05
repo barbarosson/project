@@ -2,10 +2,10 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Facebook, Twitter, Linkedin, Github } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
 import { useSiteConfig } from '@/contexts/site-config-context'
 import { ModulusLogo } from '@/components/modulus-logo'
+import { getModulusSocialLinks } from '@/lib/social-links'
 
 export function MarketingFooter() {
   const { t, language } = useLanguage()
@@ -54,12 +54,7 @@ export function MarketingFooter() {
     },
   }
 
-  const socialLinks = [
-    { name: 'Twitter', icon: Twitter, href: '#' },
-    { name: 'LinkedIn', icon: Linkedin, href: '#' },
-    { name: 'Facebook', icon: Facebook, href: '#' },
-    { name: 'GitHub', icon: Github, href: '#' },
-  ]
+  const socialLinks = getModulusSocialLinks()
 
   return (
     <footer className="bg-gray-50 border-t">
@@ -100,21 +95,25 @@ export function MarketingFooter() {
                 © 2026 ModulusTech. {t.marketing.footer.allRightsReserved}
               </p>
 
-              <div className="flex items-center gap-4">
-                {socialLinks.map((social) => {
-                  const Icon = social.icon
-                  return (
-                    <Link
-                      key={social.name}
-                      href={social.href}
-                      className="text-auto-contrast-muted-light hover:text-foreground transition-colors"
-                      aria-label={social.name}
-                    >
-                      <Icon className="h-5 w-5" />
-                    </Link>
-                  )
-                })}
-              </div>
+              {socialLinks.length > 0 ? (
+                <div className="flex items-center gap-4">
+                  {socialLinks.map((social) => {
+                    const Icon = social.icon
+                    return (
+                      <a
+                        key={social.name}
+                        href={social.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-auto-contrast-muted-light hover:text-foreground transition-colors"
+                        aria-label={social.name}
+                      >
+                        <Icon className="h-5 w-5" />
+                      </a>
+                    )
+                  })}
+                </div>
+              ) : null}
             </div>
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3 opacity-90">

@@ -3,9 +3,10 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { ModulusLogo } from '@/components/modulus-logo'
-import { Facebook, Twitter, Linkedin, Github, Circle } from 'lucide-react'
+import { Circle } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
 import { useSiteConfig } from '@/contexts/site-config-context'
+import { getModulusSocialLinks } from '@/lib/social-links'
 
 export function ModulusFooter() {
   const { language } = useLanguage()
@@ -74,12 +75,7 @@ export function ModulusFooter() {
     },
   }
 
-  const socialLinks = [
-    { name: 'Twitter', icon: Twitter, href: '#' },
-    { name: 'LinkedIn', icon: Linkedin, href: '#' },
-    { name: 'Facebook', icon: Facebook, href: '#' },
-    { name: 'GitHub', icon: Github, href: '#' }
-  ]
+  const socialLinks = getModulusSocialLinks()
 
   return (
     <footer
@@ -171,22 +167,26 @@ export function ModulusFooter() {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-4">
-                  {socialLinks.map((social) => {
-                    const Icon = social.icon
-                    return (
-                      <Link
-                        key={social.name}
-                        href={social.href}
-                        className="transition-colors duration-200 hover:text-[#00D4AA]"
-                        style={{ color: 'rgba(255,255,255,0.4)' }}
-                        aria-label={social.name}
-                      >
-                        <Icon className="h-5 w-5" />
-                      </Link>
-                    )
-                  })}
-                </div>
+                {socialLinks.length > 0 ? (
+                  <div className="flex items-center gap-4">
+                    {socialLinks.map((social) => {
+                      const Icon = social.icon
+                      return (
+                        <a
+                          key={social.name}
+                          href={social.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="transition-colors duration-200 hover:text-[#00D4AA]"
+                          style={{ color: 'rgba(255,255,255,0.4)' }}
+                          aria-label={social.name}
+                        >
+                          <Icon className="h-5 w-5" />
+                        </a>
+                      )
+                    })}
+                  </div>
+                ) : null}
               </div>
             </div>
 
