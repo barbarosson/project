@@ -29,13 +29,16 @@ export function FloatingJoinCta({ visible }: Props) {
       href="/login"
       className={cn(
         interactiveClick,
-        "fixed z-[65] inline-flex h-10 max-w-[10.75rem] items-center gap-1.5 rounded-full border px-2.5 py-1.5",
-        "border-violet-400/35 bg-slate-950/45 text-xs font-bold text-white shadow-[0_4px_20px_rgba(0,0,0,0.22)] backdrop-blur-xl",
+        "fixed z-[65] inline-flex items-center gap-1.5 rounded-full border shadow-lg backdrop-blur-xl",
+        "border-violet-400/35 bg-slate-950/45 font-bold text-white",
         "hover:border-violet-400/55 hover:bg-slate-950/60 hover:shadow-[0_6px_24px_rgba(124,58,237,0.28)]",
         "light:border-violet-300/55 light:bg-white/72 light:text-violet-950 light:shadow-[0_4px_18px_rgba(30,58,138,0.14)]",
         "light:hover:border-violet-400/65 light:hover:bg-white/85",
-        "bottom-[max(0.75rem,env(safe-area-inset-bottom,0px))]",
-        "right-[max(0.75rem,env(safe-area-inset-right,0px))]",
+        "max-md:bottom-[max(0.75rem,env(safe-area-inset-bottom,0px))]",
+        "max-md:right-[max(0.75rem,env(safe-area-inset-right,0px))]",
+        "max-md:h-10 max-md:max-w-[10.75rem] max-md:px-2.5 max-md:py-1.5 max-md:text-xs",
+        "max-md:shadow-[0_4px_20px_rgba(0,0,0,0.22)]",
+        "md:bottom-8 md:right-10 md:h-11 md:max-w-[12rem] md:px-3.5 md:py-2 md:text-sm",
         "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
       )}
       aria-label={t("home.floatingJoin.ariaLabel")}
