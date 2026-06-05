@@ -1,0 +1,34 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pageBg" x1="0" y1="0" x2="1200" y2="630">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="55%" stop-color="#F6F9FC" />
+      <stop offset="100%" stop-color="#FFFFFF" />
+    </linearGradient>
+    <linearGradient id="iconBg" x1="0" y1="0" x2="200" y2="200">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#1E293B" />
+    </linearGradient>
+    <radialGradient id="glow" cx="85%" cy="20%" r="45%">
+      <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.18" />
+      <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0" />
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#pageBg)" />
+  <rect width="1200" height="630" fill="url(#glow)" />
+
+  <g transform="translate(120, 215)">
+    <rect width="200" height="200" rx="38" fill="url(#iconBg)" />
+    <rect x="10" y="10" width="180" height="180" rx="32" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="3" />
+    <rect x="38" y="44" width="19" height="112" fill="#FFFFFF" opacity="0.95" />
+    <rect x="144" y="44" width="19" height="112" fill="#FFFFFF" opacity="0.95" />
+    <path d="M47 44L100 112L153 44" fill="none" stroke="#FFFFFF" stroke-width="19" stroke-linecap="square" stroke-linejoin="miter" opacity="0.95" />
+    <rect x="91" y="88" width="19" height="68" fill="#FFFFFF" opacity="0.85" />
+    <line x1="31" y1="165" x2="169" y2="165" stroke="rgba(255,255,255,0.15)" stroke-width="3" />
+  </g>
+
+  <text x="360" y="285" fill="#0F172A" font-family="Arial, Helvetica, sans-serif" font-size="108" font-weight="800" letter-spacing="8">MODULUS</text>
+  <text x="365" y="345" fill="#64748B" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="500" letter-spacing="18">BUSINESS</text>
+  <text x="365" y="405" fill="#425466" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="400">Technology products by Songurtech</text>
+</svg>
