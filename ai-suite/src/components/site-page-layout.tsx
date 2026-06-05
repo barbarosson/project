@@ -140,8 +140,8 @@ export function SitePageHeader({
         "relative z-20 flex flex-col gap-2 safe-area-top pb-3 sm:gap-2.5 sm:pb-4 lg:flex-row lg:items-center lg:justify-between lg:gap-3 lg:pb-5"
       )}
     >
-      {/* Brand: icon-only below lg so tools never overlap the ISENDAI wordmark. */}
-      <div className="flex min-w-0 w-full items-center gap-2 lg:min-w-0 lg:max-w-[min(100%,28rem)] lg:flex-1 xl:max-w-none">
+      {/* Row 1 — brand + mobile theme/locale (no horizontal scroll). */}
+      <div className="flex min-w-0 w-full items-center gap-1.5 sm:gap-2 lg:min-w-0 lg:max-w-[min(100%,28rem)] lg:flex-1 xl:max-w-none">
         {showHomeNav ? (
           <Link
             href="/"
@@ -149,7 +149,7 @@ export function SitePageHeader({
               pageBackLink,
               "inline-flex shrink-0 items-center gap-1 rounded-lg border border-white/[0.1] bg-white/[0.04] px-2 py-1.5",
               "light:border-slate-300/70 light:bg-white/80",
-              "max-lg:px-2"
+              "max-lg:px-1.5 max-lg:py-1"
             )}
             aria-label={t("nav.backToHome")}
             title={t("nav.backToHome")}
@@ -172,22 +172,26 @@ export function SitePageHeader({
             )}
           />
         </Link>
+        <div className="ml-auto flex shrink-0 items-center gap-1 lg:hidden">
+          <ThemeToggle className={headerToolClass} />
+          <SiteLocaleToolbar compact />
+        </div>
       </div>
-      {/* Toolbar: theme, locale, credits, auth — one row; scroll on small screens when signed in. */}
+      {/* Row 2 — credits, referral, auth; wraps on narrow screens instead of scrolling. */}
       <div
         role="toolbar"
         aria-label="Header"
         className={cn(
-          "flex w-full min-w-0 items-center gap-1.5 sm:gap-2",
-          "max-lg:justify-start max-lg:overflow-x-auto max-lg:overscroll-x-contain max-lg:pb-0.5",
-          "max-lg:[-webkit-overflow-scrolling:touch] max-lg:[scrollbar-width:none] max-lg:[&::-webkit-scrollbar]:hidden",
-          "lg:ml-auto lg:w-auto lg:min-w-0 lg:flex-1 lg:flex-wrap lg:justify-end lg:overflow-visible lg:pb-0"
+          "flex w-full min-w-0 flex-wrap items-center justify-end gap-1 max-lg:gap-1 sm:gap-1.5 lg:gap-2",
+          "lg:ml-auto lg:w-auto lg:min-w-0 lg:flex-1 lg:justify-end"
         )}
       >
-        <ThemeToggle className={headerToolClass} />
-        <SiteLocaleToolbar />
+        <div className="hidden shrink-0 items-center gap-1.5 lg:flex">
+          <ThemeToggle className={headerToolClass} />
+          <SiteLocaleToolbar />
+        </div>
         <InstallAppButton variant="header" className="max-lg:hidden" />
-        <ReferralRewardsNav className={headerToolClass} />
+        <ReferralRewardsNav className={cn(headerToolClass, "max-lg:px-1.5 max-lg:py-0.5")} />
         <CreditsNav className={headerToolClass} />
         <AuthStatus className={headerToolClass} initialSignedInLabel={initialSignedInLabel} />
       </div>

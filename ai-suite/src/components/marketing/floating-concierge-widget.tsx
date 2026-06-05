@@ -13,47 +13,16 @@ import { cn } from "@/lib/utils";
 
 const CONCIERGE_DRAFT_KEY = "ai-suite:concierge-draft";
 
-type Props = {
-  /** From server layout — avoids layout jump on home when join CTA is visible. */
-  initialSignedIn?: boolean;
-};
-
-export function FloatingConciergeWidget({ initialSignedIn = false }: Props) {
+export function FloatingConciergeWidget() {
   const { t } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
   const [mounted, setMounted] = React.useState(false);
   const [open, setOpen] = React.useState(false);
-  const [signedIn, setSignedIn] = React.useState(initialSignedIn);
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
-
-  React.useEffect(() => {
-    setSignedIn(initialSignedIn);
-  }, [initialSignedIn]);
-
-  React.useEffect(() => {
-    if (pathname !== "/") return;
-    function syncAuth() {
-      void fetch("/api/me/wallet", { cache: "no-store", credentials: "same-origin" })
-        .then((r) => r.json() as Promise<{ signed_in?: boolean }>)
-        .then((body) => {
-          if (typeof body.signed_in === "boolean") setSignedIn(body.signed_in);
-        })
-        .catch(() => {
-          /* ignore */
-        });
-    }
-    syncAuth();
-    window.addEventListener("focus", syncAuth);
-    return () => window.removeEventListener("focus", syncAuth);
-  }, [pathname]);
-
-  const isHome = pathname === "/";
-  /** Home guests: join CTA is bottom-right — concierge stays bottom-left. */
-  const anchorLeft = isHome && !signedIn;
 
   const handleOpenTool = React.useCallback(
     (tool: ToolName, opts?: { draftText?: string; scroll?: boolean }) => {
@@ -91,19 +60,10 @@ export function FloatingConciergeWidget({ initialSignedIn = false }: Props) {
   return createPortal(
     <div
       className={cn(
-        "pointer-events-none fixed z-[70] flex flex-col gap-2",
-        anchorLeft ? "items-start" : "items-end",
-        anchorLeft
-          ? [
-              "max-md:bottom-[max(0.75rem,env(safe-area-inset-bottom,0px))]",
-              "max-md:left-[max(0.75rem,env(safe-area-inset-left,0px))]",
-              "md:bottom-8 md:left-10",
-            ]
-          : [
-              "max-md:bottom-[max(0.75rem,env(safe-area-inset-bottom,0px))]",
-              "max-md:right-[max(0.75rem,env(safe-area-inset-right,0px))]",
-              "md:bottom-8 md:right-10",
-            ]
+        "pointer-events-none fixed z-[70] flex flex-col items-end gap-2",
+        "max-md:bottom-[max(0.75rem,env(safe-area-inset-bottom,0px))]",
+        "max-md:right-[max(0.75rem,env(safe-area-inset-right,0px))]",
+        "md:bottom-8 md:right-10"
       )}
     >
       {open ? (
@@ -113,9 +73,8 @@ export function FloatingConciergeWidget({ initialSignedIn = false }: Props) {
           aria-modal="true"
           aria-label={t("concierge.fabAriaLabel")}
           className={cn(
-            "pointer-events-auto absolute bottom-[calc(3.25rem+0.5rem)] w-[min(92vw,22rem)]",
-            "shadow-[0_12px_40px_rgba(0,0,0,0.35)]",
-            anchorLeft ? "left-0" : "right-0"
+            "pointer-events-auto absolute bottom-[calc(3.25rem+0.5rem)] right-0 w-[min(92vw,22rem)]",
+            "shadow-[0_12px_40px_rgba(0,0,0,0.35)]"
           )}
         >
           <div className="relative">
@@ -142,8 +101,7 @@ export function FloatingConciergeWidget({ initialSignedIn = false }: Props) {
         onClick={() => setOpen((v) => !v)}
         className={cn(
           interactiveClick,
-          "pointer-events-auto flex items-center gap-2 rounded-full border py-2 pl-2 pr-3 shadow-lg backdrop-blur-xl",
-          anchorLeft ? "self-start" : "ml-auto self-end",
+          "pointer-events-auto ml-auto flex items-center gap-2 self-end rounded-full border py-2 pl-2 pr-3 shadow-lg backdrop-blur-xl",
           "border-violet-400/40 bg-slate-950/75 text-white",
           "hover:border-violet-400/60 hover:bg-slate-950/90 hover:shadow-[0_8px_28px_rgba(124,58,237,0.35)]",
           "light:border-violet-300/55 light:bg-white/88 light:text-violet-950 light:hover:bg-white",

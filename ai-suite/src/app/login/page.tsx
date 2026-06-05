@@ -18,11 +18,12 @@ import { cn } from "@/lib/utils";
 import { pageBackLink, pageContentSection, pageHeroPanel, pageSubtitle, pageTitle } from "@/lib/premium-ui";
 import { OAUTH_UI } from "@/lib/auth/oauth-ui";
 import { FacebookSignInButton } from "./facebook-sign-in-button";
-import { GoogleSignInButton } from "./google-sign-in-button";
+import { LoginGoogleSignIn } from "./login-google-sign-in";
 import { LoginAuthToast } from "./login-auth-toast";
 import { LoginOAuthCodeForward } from "./login-oauth-code-forward";
 import { LoginReferralCapture } from "@/components/referrals/login-referral-capture";
 import { LoginClient } from "./ui";
+import { LoginOnboardingCarousel } from "@/components/auth/login-onboarding-carousel";
 
 export const dynamic = "force-dynamic";
 
@@ -74,12 +75,33 @@ export default async function LoginPage({
         <Suspense fallback={null}>
           <LoginOAuthCodeForward />
           <LoginReferralCapture />
+          <LoginOnboardingCarousel />
         </Suspense>
         <LoginAuthToast error={sp.error} detail={sp.detail} />
         <div className={cn(pageHeroPanel, pageContentSection, "mt-0 p-6 sm:p-8")}>
           <h1 className={pageTitle}>{d["login.title"]}</h1>
           <p className={cn(pageSubtitle, "mt-2")}>{d["login.subtitle"]}</p>
-          <div className="mt-6 border-t border-white/[0.08] pt-6">
+
+          {(OAUTH_UI.google || OAUTH_UI.facebook) && (
+            <div className="mt-6">
+              <div className="grid gap-3">
+                {OAUTH_UI.google ? <LoginGoogleSignIn nextAfterAuth={nextAfterAuth} /> : null}
+                {OAUTH_UI.facebook ? (
+                  <FacebookSignInButton nextAfterAuth={nextAfterAuth} />
+                ) : null}
+              </div>
+            </div>
+          )}
+
+          <div className="relative mt-6 flex items-center gap-3">
+            <span className="h-px flex-1 bg-white/[0.08] light:bg-slate-300/70" aria-hidden />
+            <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-slate-400 light:text-slate-600">
+              {d["login.emailDivider"]}
+            </span>
+            <span className="h-px flex-1 bg-white/[0.08] light:bg-slate-300/70" aria-hidden />
+          </div>
+
+          <div className="mt-6">
             <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90 sm:text-sm">
               {d["login.membershipEmailTitle"]}
             </h2>
@@ -88,22 +110,6 @@ export default async function LoginPage({
               <LoginClient authCallbackUrl={authCallbackUrl} nextAfterAuth={nextAfterAuth} />
             </div>
           </div>
-          {(OAUTH_UI.google || OAUTH_UI.facebook) && (
-            <div className="mt-6 border-t border-white/[0.08] pt-6">
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-violet-200/90 sm:text-sm">
-                {d["login.membershipSocialTitle"]}
-              </h2>
-              <p className={cn(pageSubtitle, "mt-1")}>{d["login.membershipSocialBody"]}</p>
-              <div className="mt-4 grid gap-3">
-                {OAUTH_UI.google ? (
-                  <GoogleSignInButton nextAfterAuth={nextAfterAuth} />
-                ) : null}
-                {OAUTH_UI.facebook ? (
-                  <FacebookSignInButton nextAfterAuth={nextAfterAuth} />
-                ) : null}
-              </div>
-            </div>
-          )}
           <p className="mt-5 text-sm leading-relaxed text-slate-200 sm:text-base">
             {d["login.legalLead"]}{" "}
             <Link className={pageBackLink} href="/terms">

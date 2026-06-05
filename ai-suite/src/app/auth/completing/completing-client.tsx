@@ -6,7 +6,7 @@ import * as React from "react";
 import { OAuthRedirectScreen } from "@/components/auth/oauth-redirect-screen";
 import { safeAuthRedirectTarget } from "@/lib/auth/safe-auth-destination";
 
-const MIN_DISPLAY_MS = 1100;
+const MIN_DISPLAY_MS = 320;
 
 export function OAuthCompletingClient() {
   const router = useRouter();

@@ -12,7 +12,7 @@ export function ReferralRewardsNav({ className }: { className?: string }) {
     <Link
       href="/free-credits"
       className={cn(
-        "inline-flex items-center gap-1 rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 px-2 py-1 text-xs font-semibold text-fuchsia-100 backdrop-blur-xl transition-colors hover:border-fuchsia-400/50 hover:bg-fuchsia-500/20 sm:px-3 sm:text-sm",
+        "inline-flex items-center gap-0.5 rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 px-1.5 py-0.5 text-[11px] font-semibold text-fuchsia-100 backdrop-blur-xl transition-colors hover:border-fuchsia-400/50 hover:bg-fuchsia-500/20 sm:gap-1 sm:px-3 sm:py-1 sm:text-sm",
         className
       )}
     >

@@ -35,10 +35,10 @@ export function FloatingJoinCta({ visible }: Props) {
         "light:border-violet-300/55 light:bg-white/72 light:text-violet-950 light:shadow-[0_4px_18px_rgba(30,58,138,0.14)]",
         "light:hover:border-violet-400/65 light:hover:bg-white/85",
         "max-md:bottom-[max(0.75rem,env(safe-area-inset-bottom,0px))]",
-        "max-md:right-[max(0.75rem,env(safe-area-inset-right,0px))]",
+        "max-md:left-[max(0.75rem,env(safe-area-inset-left,0px))]",
         "max-md:h-10 max-md:max-w-[10.75rem] max-md:px-2.5 max-md:py-1.5 max-md:text-xs",
         "max-md:shadow-[0_4px_20px_rgba(0,0,0,0.22)]",
-        "md:bottom-8 md:right-10 md:h-11 md:max-w-[12rem] md:px-3.5 md:py-2 md:text-sm",
+        "md:bottom-8 md:left-10 md:h-11 md:max-w-[12rem] md:px-3.5 md:py-2 md:text-sm",
         "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
       )}
       aria-label={t("home.floatingJoin.ariaLabel")}

@@ -20,7 +20,7 @@ import { startOAuthSignIn } from "@/lib/auth/start-oauth-sign-in";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSupabaseBrowserRuntimeConfig } from "@/lib/supabase/browser-config-context";
 
-const REDIRECT_DELAY_MS = 480;
+const REDIRECT_DELAY_MS = 0;
 
 export function OAuthConnectingClient() {
   const { t } = useI18n();
@@ -71,7 +71,6 @@ export function OAuthConnectingClient() {
         router.replace("/login?error=oauth");
         return;
       }
-      await new Promise((r) => setTimeout(r, REDIRECT_DELAY_MS));
       window.location.assign(result.url);
     })();
 
@@ -83,12 +82,7 @@ export function OAuthConnectingClient() {
   }
 
   if (useGooglePanel && googleClientId) {
-    return (
-      <>
-        <OAuthRedirectScreen mode="outbound" providerSlug="google" stepIndex={1} />
-        <GoogleSignInPanel clientId={googleClientId} nextAfterAuth={nextPath} />
-      </>
-    );
+    return <GoogleSignInPanel clientId={googleClientId} nextAfterAuth={nextPath} />;
   }
 
   return <OAuthRedirectScreen mode="outbound" providerSlug={slug} stepIndex={stepIndex} />;

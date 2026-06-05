@@ -666,6 +666,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Instagram sign-in is not configured yet. Add the custom:instagram provider in Supabase (see README).",
     "login.membershipOtherTitle": "Other providers",
     "login.oauthGoogle": "Continue with Google",
+    "login.googleTrust": "Secure Google sign-in — no password to remember.",
     "login.oauthFacebook": "Continue with Facebook",
     "login.oauthOtherTitle": "More sign-in options",
     "login.emailInvalid": "Please enter a valid email address.",
@@ -702,6 +703,27 @@ export const DICTS: Record<Locale, Dict> = {
     "login.legalLead": "By continuing, you agree to our",
     "login.legalMid": "and",
     "login.legalEnd": ".",
+
+    "loginOnboarding.ariaLabel": "Welcome to isendai",
+    "loginOnboarding.skip": "Skip",
+    "loginOnboarding.next": "Next",
+    "loginOnboarding.back": "Back",
+    "loginOnboarding.start": "Create free membership",
+    "loginOnboarding.viewPricing": "View plans & packs",
+    "loginOnboarding.slide1.title": "Don't send that yet — fix it first",
+    "loginOnboarding.slide1.body":
+      "Paste your messy draft. Get an email, text, or cover letter you'd actually send — in seconds, in your language.",
+    "loginOnboarding.slide2.title": "80+ specialist AI micro-tools",
+    "loginOnboarding.slide2.body":
+      "Work email, dating bio, refunds, bureaucracy, freelancing, and more. Each tool has expert prompts — not one generic chatbot.",
+    "loginOnboarding.slide3.title": "{credits} free credits when you join",
+    "loginOnboarding.slide3.body":
+      "Sign up for free, complete your profile, and verify your email. Credits land automatically — no subscription required.",
+    "loginOnboarding.slide4.title": "Membership + limited-time discount",
+    "loginOnboarding.slide4.body":
+      "Pick a plan or pay-as-you-go pack after signup. Use code {code} at checkout for {percent}% off.",
+    "loginOnboarding.slide4.promoHint":
+      "Enter the code on the Lemon Squeezy checkout page before you pay.",
 
     "profile.title": "Membership profile",
     "profile.oauthEmailMissing":
@@ -1455,6 +1477,7 @@ export const DICTS: Record<Locale, Dict> = {
       "El inicio con Instagram no está configurado. Añade el proveedor custom:instagram en Supabase (ver README).",
     "login.membershipOtherTitle": "Otros proveedores",
     "login.oauthGoogle": "Continuar con Google",
+    "login.googleTrust": "Inicio de sesión seguro con Google — sin contraseña que recordar.",
     "login.oauthFacebook": "Continuar con Facebook",
     "login.oauthOtherTitle": "Más opciones de acceso",
     "login.emailInvalid": "Introduce un email válido.",
@@ -1491,6 +1514,27 @@ export const DICTS: Record<Locale, Dict> = {
     "login.legalLead": "Al continuar, aceptas nuestros",
     "login.legalMid": "y",
     "login.legalEnd": ".",
+
+    "loginOnboarding.ariaLabel": "Bienvenido a isendai",
+    "loginOnboarding.skip": "Omitir",
+    "loginOnboarding.next": "Siguiente",
+    "loginOnboarding.back": "Atrás",
+    "loginOnboarding.start": "Crear cuenta gratis",
+    "loginOnboarding.viewPricing": "Ver planes y packs",
+    "loginOnboarding.slide1.title": "No lo envíes todavía — perfecciónalo",
+    "loginOnboarding.slide1.body":
+      "Pega tu borrador. Obtén un email, mensaje o carta que realmente enviarías — en segundos y en tu idioma.",
+    "loginOnboarding.slide2.title": "Más de 80 microherramientas de IA",
+    "loginOnboarding.slide2.body":
+      "Email laboral, bio de citas, reembolsos, trámites, freelance y más. Cada herramienta tiene prompts expertos — no un chatbot genérico.",
+    "loginOnboarding.slide3.title": "{credits} créditos gratis al unirte",
+    "loginOnboarding.slide3.body":
+      "Regístrate gratis, completa tu perfil y verifica tu email. Los créditos se añaden solos — sin suscripción.",
+    "loginOnboarding.slide4.title": "Membresía + descuento limitado",
+    "loginOnboarding.slide4.body":
+      "Elige un plan o pack tras registrarte. Usa el código {code} en el pago para un {percent}% de descuento.",
+    "loginOnboarding.slide4.promoHint":
+      "Introduce el código en la página de pago de Lemon Squeezy antes de pagar.",
 
     "profile.title": "Perfil de membresía",
     "profile.oauthEmailMissing":
@@ -2235,6 +2279,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Connexion Instagram non configurée. Ajoute le fournisseur custom:instagram dans Supabase (voir README).",
     "login.membershipOtherTitle": "Autres fournisseurs",
     "login.oauthGoogle": "Continuer avec Google",
+    "login.googleTrust": "Connexion Google sécurisée — pas de mot de passe à retenir.",
     "login.oauthFacebook": "Continuer avec Facebook",
     "login.oauthOtherTitle": "Plus d’options de connexion",
     "login.emailInvalid": "Saisis une adresse email valide.",
@@ -2271,6 +2316,27 @@ export const DICTS: Record<Locale, Dict> = {
     "login.legalLead": "En continuant, vous acceptez nos",
     "login.legalMid": "et",
     "login.legalEnd": ".",
+
+    "loginOnboarding.ariaLabel": "Bienvenue sur isendai",
+    "loginOnboarding.skip": "Passer",
+    "loginOnboarding.next": "Suivant",
+    "loginOnboarding.back": "Retour",
+    "loginOnboarding.start": "Créer un compte gratuit",
+    "loginOnboarding.viewPricing": "Voir les offres",
+    "loginOnboarding.slide1.title": "N’envoyez pas encore — peaufinez",
+    "loginOnboarding.slide1.body":
+      "Collez votre brouillon. Obtenez un email, message ou lettre que vous enverriez vraiment — en quelques secondes, dans votre langue.",
+    "loginOnboarding.slide2.title": "Plus de 80 micro-outils IA spécialisés",
+    "loginOnboarding.slide2.body":
+      "Email pro, bio dating, remboursements, démarches, freelance et plus. Chaque outil a ses prompts experts — pas un chatbot générique.",
+    "loginOnboarding.slide3.title": "{credits} crédits offerts à l’inscription",
+    "loginOnboarding.slide3.body":
+      "Inscrivez-vous gratuitement, complétez votre profil et vérifiez votre email. Les crédits arrivent automatiquement — sans abonnement.",
+    "loginOnboarding.slide4.title": "Adhésion + remise limitée",
+    "loginOnboarding.slide4.body":
+      "Choisissez un forfait ou pack après inscription. Code {code} au paiement pour {percent}% de réduction.",
+    "loginOnboarding.slide4.promoHint":
+      "Saisissez le code sur la page de paiement Lemon Squeezy avant de payer.",
 
     "profile.title": "Profil d’adhésion",
     "profile.oauthEmailMissing":
@@ -3016,6 +3082,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Instagram‑Login ist nicht eingerichtet. Provider custom:instagram in Supabase hinzufügen (siehe README).",
     "login.membershipOtherTitle": "Weitere Anbieter",
     "login.oauthGoogle": "Mit Google fortfahren",
+    "login.googleTrust": "Sichere Google-Anmeldung — kein Passwort nötig.",
     "login.oauthFacebook": "Mit Facebook fortfahren",
     "login.oauthOtherTitle": "Weitere Login‑Optionen",
     "login.emailInvalid": "Bitte eine gültige E‑Mail‑Adresse eingeben.",
@@ -3052,6 +3119,27 @@ export const DICTS: Record<Locale, Dict> = {
     "login.legalLead": "Mit Fortfahren akzeptierst du unsere",
     "login.legalMid": "und",
     "login.legalEnd": ".",
+
+    "loginOnboarding.ariaLabel": "Willkommen bei isendai",
+    "loginOnboarding.skip": "Überspringen",
+    "loginOnboarding.next": "Weiter",
+    "loginOnboarding.back": "Zurück",
+    "loginOnboarding.start": "Kostenloses Konto erstellen",
+    "loginOnboarding.viewPricing": "Pläne & Pakete ansehen",
+    "loginOnboarding.slide1.title": "Noch nicht senden — erst perfektionieren",
+    "loginOnboarding.slide1.body":
+      "Entwurf einfügen. E-Mail, Nachricht oder Anschreiben, das du wirklich senden würdest — in Sekunden, in deiner Sprache.",
+    "loginOnboarding.slide2.title": "Über 80 spezialisierte KI-Micro-Tools",
+    "loginOnboarding.slide2.body":
+      "Arbeits-E-Mail, Dating-Bio, Rückerstattungen, Behörden, Freelance und mehr. Jedes Tool hat eigene Experten-Prompts — kein generischer Chatbot.",
+    "loginOnboarding.slide3.title": "{credits} Gratis-Credits bei Anmeldung",
+    "loginOnboarding.slide3.body":
+      "Kostenlos registrieren, Profil vervollständigen und E-Mail bestätigen. Credits werden automatisch gutgeschrieben — ohne Abo.",
+    "loginOnboarding.slide4.title": "Mitgliedschaft + zeitlich begrenzter Rabatt",
+    "loginOnboarding.slide4.body":
+      "Nach der Anmeldung Plan oder Paket wählen. Code {code} an der Kasse für {percent}% Rabatt.",
+    "loginOnboarding.slide4.promoHint":
+      "Code auf der Lemon-Squeezy-Zahlungsseite vor dem Bezahlen eingeben.",
 
     "profile.title": "Mitgliedschaftsprofil",
     "profile.oauthEmailMissing":
@@ -3746,6 +3834,7 @@ export const DICTS: Record<Locale, Dict> = {
       "尚未配置 Instagram 登录。请在 Supabase 添加 custom:instagram 提供商（见 README）。",
     "login.membershipOtherTitle": "其他登录方式",
     "login.oauthGoogle": "使用 Google 继续",
+    "login.googleTrust": "Google 安全登录 — 无需记住密码。",
     "login.oauthFacebook": "使用 Facebook 继续",
     "login.oauthOtherTitle": "更多登录选项",
     "login.emailInvalid": "请输入有效的邮箱地址。",
@@ -3780,6 +3869,27 @@ export const DICTS: Record<Locale, Dict> = {
     "login.legalLead": "继续即表示你同意我们的",
     "login.legalMid": "与",
     "login.legalEnd": "。",
+
+    "loginOnboarding.ariaLabel": "欢迎使用 isendai",
+    "loginOnboarding.skip": "跳过",
+    "loginOnboarding.next": "下一步",
+    "loginOnboarding.back": "上一步",
+    "loginOnboarding.start": "创建免费账户",
+    "loginOnboarding.viewPricing": "查看套餐与额度包",
+    "loginOnboarding.slide1.title": "先别发送——先完善",
+    "loginOnboarding.slide1.body":
+      "粘贴草稿。几秒内得到你真正会发送的邮件、消息或求职信，支持你的语言。",
+    "loginOnboarding.slide2.title": "80+ 专业 AI 微工具",
+    "loginOnboarding.slide2.body":
+      "工作邮件、交友简介、退款、政务、自由职业等。每个工具有专属提示词——不是通用聊天机器人。",
+    "loginOnboarding.slide3.title": "加入即赠 {credits} 额度",
+    "loginOnboarding.slide3.body":
+      "免费注册，完善资料并验证邮箱。额度自动到账——无需订阅。",
+    "loginOnboarding.slide4.title": "会员 + 限时折扣",
+    "loginOnboarding.slide4.body":
+      "注册后选择订阅或按次额度包。结账时使用代码 {code} 享 {percent}% 折扣。",
+    "loginOnboarding.slide4.promoHint":
+      "付款前在 Lemon Squeezy 结账页输入优惠码。",
 
     "profile.title": "会员资料",
     "profile.oauthEmailMissing":
@@ -4521,6 +4631,7 @@ export const DICTS: Record<Locale, Dict> = {
       "Instagram girişi henüz yapılandırılmadı. Supabase’te custom:instagram sağlayıcısını ekleyin (README).",
     "login.membershipOtherTitle": "Diğer sağlayıcılar",
     "login.oauthGoogle": "Google ile devam et",
+    "login.googleTrust": "Güvenli Google girişi — şifre hatırlamanıza gerek yok.",
     "login.oauthFacebook": "Facebook ile devam et",
     "login.oauthOtherTitle": "Diğer giriş seçenekleri",
     "login.emailInvalid": "Geçerli bir e-posta gir.",
@@ -4557,6 +4668,27 @@ export const DICTS: Record<Locale, Dict> = {
     "login.legalLead": "Devam ederek",
     "login.legalMid": "ve",
     "login.legalEnd": " kabul etmiş olursun.",
+
+    "loginOnboarding.ariaLabel": "isendai'ye hoş geldiniz",
+    "loginOnboarding.skip": "Atla",
+    "loginOnboarding.next": "İleri",
+    "loginOnboarding.back": "Geri",
+    "loginOnboarding.start": "Ücretsiz üyelik oluştur",
+    "loginOnboarding.viewPricing": "Paketleri gör",
+    "loginOnboarding.slide1.title": "Göndermeden önce mükemmelleştir",
+    "loginOnboarding.slide1.body":
+      "Taslak metnini yapıştır. Gerçekten göndereceğin e-posta, mesaj veya ön yazıyı saniyeler içinde, kendi dilinde al.",
+    "loginOnboarding.slide2.title": "80+ uzman yapay zeka aracı",
+    "loginOnboarding.slide2.body":
+      "İş e-postası, flört bio'su, iade talebi, bürokrasi, freelance ve daha fazlası. Her aracın kendi uzman prompt'ları var — tek bir genel chatbot değil.",
+    "loginOnboarding.slide3.title": "Üyelikte {credits} kontör hediye",
+    "loginOnboarding.slide3.body":
+      "Ücretsiz kayıt ol, profilini tamamla ve e-postanı doğrula. Kontörler otomatik tanımlanır — abonelik şart değil.",
+    "loginOnboarding.slide4.title": "Üyelik + sınırlı süre indirim",
+    "loginOnboarding.slide4.body":
+      "Kayıttan sonra plan veya kontör paketi seç. Ödeme sayfasında {code} koduyla %{percent} indirim.",
+    "loginOnboarding.slide4.promoHint":
+      "Kodu Lemon Squeezy ödeme sayfasında, ödemeden önce gir.",
 
     "profile.title": "Üyelik profili",
     "profile.oauthEmailMissing":

@@ -68,15 +68,15 @@ export function CreditsNav({ className }: { className?: string }) {
       )}
     >
       <span
-        className="inline-flex items-center gap-1 rounded-lg border border-amber-400/25 bg-amber-500/10 px-2 py-1 text-amber-100 backdrop-blur-xl sm:px-3 light:border-amber-500/40 light:bg-amber-50 light:text-amber-950"
+        className="inline-flex items-center gap-0.5 rounded-lg border border-amber-400/25 bg-amber-500/10 px-1.5 py-0.5 text-amber-100 backdrop-blur-xl sm:gap-1 sm:px-3 sm:py-1 light:border-amber-500/40 light:bg-amber-50 light:text-amber-950"
         title={t("creditsNav.title")}
       >
         <span aria-hidden>🪙</span>
         <span>{creditsDisplay}</span>
-        <span className="hidden text-slate-400 sm:inline">{t("creditsNav.unit")}</span>
+        <span className="hidden text-slate-400 md:inline">{t("creditsNav.unit")}</span>
       </span>
       {trial !== null ? (
-        <span className="rounded-lg border border-violet-400/25 bg-violet-500/10 px-2 py-1 text-violet-100 backdrop-blur-xl sm:px-3">
+        <span className="hidden rounded-lg border border-violet-400/25 bg-violet-500/10 px-2 py-1 text-violet-100 backdrop-blur-xl sm:inline sm:px-3">
           {trial === 1
             ? t("creditsNav.trialOne")
             : t("creditsNav.trialMany").replace("{days}", String(trial))}

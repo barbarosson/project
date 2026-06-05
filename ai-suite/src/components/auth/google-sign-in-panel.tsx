@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useI18n } from "@/i18n/i18n-provider";
@@ -17,9 +18,11 @@ import { cn } from "@/lib/utils";
 export function GoogleSignInPanel({
   clientId,
   nextAfterAuth,
+  variant = "page",
 }: {
   clientId: string;
   nextAfterAuth: string;
+  variant?: "inline" | "page";
 }) {
   const { t } = useI18n();
   const router = useRouter();
@@ -47,12 +50,12 @@ export function GoogleSignInPanel({
         void finishGoogleSignInFromToken(supabase, token, nextAfterAuth).then((result) => {
           setBusy(false);
           if (result.ok) {
-            router.push(result.completingPath);
+            router.replace(result.destination);
+            router.refresh();
             return;
           }
           if (result.fallbackToHostedOAuth) {
-            const hosted = `${buildOAuthConnectingHref("google", nextAfterAuth)}&hosted=1`;
-            window.location.assign(hosted);
+            window.location.assign(`${buildOAuthConnectingHref("google", nextAfterAuth)}&hosted=1`);
             return;
           }
           toast.error(result.message || t("login.oauthFailed"));
@@ -74,6 +77,31 @@ export function GoogleSignInPanel({
       cleanup?.();
     };
   }, [clientId, nextAfterAuth, router, runtime, t]);
+
+  if (variant === "inline") {
+    return (
+      <div className={cn("w-full", busy && "pointer-events-none opacity-80")}>
+        <div
+          className={cn(
+            "flex min-h-[44px] w-full items-center justify-center overflow-hidden rounded-xl",
+            !ready && "animate-pulse bg-white/[0.04] light:bg-slate-100"
+          )}
+          ref={buttonHostRef}
+          aria-busy={!ready || busy}
+        />
+        {busy ? (
+          <p className="mt-2 flex items-center justify-center gap-2 text-center text-xs text-violet-200/90 light:text-violet-800">
+            <Loader2 className="size-3.5 animate-spin" aria-hidden />
+            {t("auth.connecting.googleSigningIn")}
+          </p>
+        ) : (
+          <p className="mt-2 text-center text-xs leading-relaxed text-slate-400 light:text-slate-600">
+            {t("login.googleTrust")}
+          </p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div

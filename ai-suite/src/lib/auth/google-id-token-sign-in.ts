@@ -4,7 +4,7 @@ import { acquireGoogleIdToken } from "@/lib/auth/google-gis";
 import { resolvePostLoginDestination } from "@/lib/auth/resolve-post-login-destination";
 
 export type GoogleIdTokenSignInResult =
-  | { ok: true; completingPath: string }
+  | { ok: true; destination: string }
   | { ok: false; message: string; fallbackToHostedOAuth: boolean };
 
 export async function finishGoogleSignInFromToken(
@@ -36,7 +36,7 @@ export async function finishGoogleSignInFromToken(
   }
 
   const destination = resolvePostLoginDestination(user, nextAfterAuth);
-  return { ok: true, completingPath: `/auth/completing?to=${encodeURIComponent(destination)}` };
+  return { ok: true, destination };
 }
 
 /** Legacy: One Tap / overlay (prefer `/auth/connecting` + GoogleSignInPanel). */

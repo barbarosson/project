@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, User } from "lucide-react";
+import { LogIn, LogOut, User } from "lucide-react";
 
 import { createSupabaseBrowserClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client";
 import { useSupabaseBrowserRuntimeConfig } from "@/lib/supabase/browser-config-context";
@@ -115,6 +115,11 @@ export function AuthStatus({ className, omitAccountLink, initialSignedInLabel }:
     );
   }
 
+  const authBtnClass = cn(
+    interactiveClick,
+    "inline-flex items-center gap-1.5 rounded-lg border border-white/[0.12] bg-white/[0.05] px-1.5 py-1 text-xs font-semibold text-slate-200 backdrop-blur-xl hover:border-violet-500/35 hover:bg-white/[0.09] sm:gap-2 sm:px-3 sm:py-2 sm:text-sm"
+  );
+
   if (signedInLabel) {
     const logoutBtn = (
       <button
@@ -122,32 +127,28 @@ export function AuthStatus({ className, omitAccountLink, initialSignedInLabel }:
         onClick={signOut}
         disabled={busy}
         title={signedInLabel}
-        className={cn(
-          interactiveClick,
-          "inline-flex items-center gap-2 rounded-lg border border-white/[0.12] bg-white/[0.05] px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl hover:border-violet-500/35 hover:bg-white/[0.09] disabled:opacity-60 sm:px-3 sm:py-2 sm:text-sm"
-        )}
+        aria-label={t("nav.logout")}
+        className={cn(authBtnClass, "disabled:opacity-60")}
       >
-        <LogOut className="size-4 text-indigo-400" strokeWidth={1.5} />
-        {t("nav.logout")}
+        <LogOut className="size-4 shrink-0 text-indigo-400" strokeWidth={1.5} />
+        <span className="hidden sm:inline">{t("nav.logout")}</span>
       </button>
     );
 
     if (omitAccountLink) {
-      return <div className={cn("flex items-center gap-2", className)}>{logoutBtn}</div>;
+      return <div className={cn("flex items-center gap-1 sm:gap-2", className)}>{logoutBtn}</div>;
     }
 
     return (
-      <div className={cn("flex items-center gap-2", className)}>
+      <div className={cn("flex items-center gap-1 sm:gap-2", className)}>
         <Link
           href="/account"
-          className={cn(
-            interactiveClick,
-            "inline-flex items-center gap-2 rounded-lg border border-white/[0.12] bg-white/[0.05] px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl hover:border-violet-500/35 hover:bg-white/[0.09] sm:px-3 sm:py-2 sm:text-sm"
-          )}
+          className={authBtnClass}
           title={signedInLabel}
+          aria-label={t("nav.account")}
         >
-          <User className="size-4 text-indigo-400" strokeWidth={1.5} />
-          {t("nav.account")}
+          <User className="size-4 shrink-0 text-indigo-400" strokeWidth={1.5} />
+          <span className="hidden sm:inline">{t("nav.account")}</span>
         </Link>
         {logoutBtn}
       </div>
@@ -157,13 +158,12 @@ export function AuthStatus({ className, omitAccountLink, initialSignedInLabel }:
   return (
     <Link
       href="/login"
-      className={cn(
-        interactiveClick,
-        "inline-flex items-center rounded-lg border border-white/[0.12] bg-white/[0.05] px-2 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl hover:border-violet-500/35 hover:bg-white/[0.09] sm:px-3 sm:py-2 sm:text-sm",
-        className
-      )}
+      className={cn(authBtnClass, className)}
+      aria-label={t("nav.login")}
+      title={t("nav.login")}
     >
-      {t("nav.login")}
+      <LogIn className="size-4 shrink-0 text-indigo-400" strokeWidth={1.5} />
+      <span className="hidden sm:inline">{t("nav.login")}</span>
     </Link>
   );
 }

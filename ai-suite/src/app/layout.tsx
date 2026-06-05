@@ -28,7 +28,6 @@ import { FloatingConciergeWidget } from "@/components/marketing/floating-concier
 import { PwaSerwistProvider } from "@/components/pwa/serwist-provider";
 import { pwaViewport } from "@/lib/pwa/metadata";
 import { resolveThemeFromCookie } from "@/lib/theme";
-import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -74,21 +73,14 @@ export default async function RootLayout({
       : undefined;
 
   let initialDefaultAiModel: ModelId | null = null;
-  let authSignedIn = false;
   try {
     const supabase = await createSupabaseServerClient();
     const { data } = await supabase.auth.getUser();
     if (data.user) {
-      authSignedIn = true;
       initialDefaultAiModel = readDefaultAiModelFromMetadata(data.user.user_metadata);
     }
   } catch {
     initialDefaultAiModel = null;
-  }
-
-  if (!authSignedIn) {
-    const authSnapshot = await readServerAuthSnapshot();
-    authSignedIn = authSnapshot.signedIn;
   }
 
   return (
@@ -134,7 +126,7 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
                   <SocialProof />
                   <ModelAnnouncement />
                   <DeployEnvBanner />
-                  <FloatingConciergeWidget initialSignedIn={authSignedIn} />
+                  <FloatingConciergeWidget />
                   <AuthSessionHydrator />
                   <div className="relative isolate flex min-h-full w-full flex-1 flex-col">
                     <div className="relative flex min-h-full flex-1 flex-col">
