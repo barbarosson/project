@@ -126,14 +126,18 @@ export function LoginOnboardingCarousel() {
         aria-modal="true"
         aria-label={t("loginOnboarding.ariaLabel")}
         className={cn(
-          "relative z-[101] flex w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border border-white/[0.12] sm:rounded-3xl",
+          "relative isolate z-[101] flex w-full max-w-lg flex-col overflow-hidden rounded-t-3xl border border-white/[0.12] sm:rounded-3xl",
           glassSurface,
           "max-h-[min(92vh,36rem)] shadow-2xl"
         )}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
-        <div className="flex items-center justify-between gap-2 border-b border-white/[0.08] px-4 py-3 light:border-slate-300/60">
+        <div
+          className="onboarding-silhouette-bg pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[min(42%,11rem)]"
+          aria-hidden
+        />
+        <div className="relative z-[1] flex items-center justify-between gap-2 border-b border-white/[0.08] px-4 py-3 light:border-slate-300/60">
           <p className="text-xs font-semibold uppercase tracking-wider text-violet-300 light:text-violet-800">
             {index + 1} / {SLIDE_COUNT}
           </p>
@@ -221,7 +225,7 @@ export function LoginOnboardingCarousel() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 border-t border-white/[0.08] px-4 py-4 light:border-slate-300/60 sm:px-6">
+        <div className="relative z-[1] flex flex-col gap-3 border-t border-white/[0.08] px-4 py-4 light:border-slate-300/60 sm:px-6">
           <div className="flex justify-center gap-1.5" aria-hidden>
             {slides.map((_, i) => (
               <span
@@ -277,7 +281,7 @@ export function LoginOnboardingCarousel() {
           onClick={close}
           className={cn(
             interactiveClick,
-            "absolute right-3 top-3 rounded-lg p-1.5 text-slate-400 hover:bg-white/[0.06] hover:text-white light:hover:text-slate-900",
+            "absolute right-3 top-3 z-[2] rounded-lg p-1.5 text-slate-400 hover:bg-white/[0.06] hover:text-white light:hover:text-slate-900",
             "max-sm:hidden"
           )}
           aria-label={t("loginOnboarding.skip")}

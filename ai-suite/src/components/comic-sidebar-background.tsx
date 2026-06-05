@@ -51,8 +51,8 @@ function ComicSpeechBubble({
         "comic-bubble relative max-w-[min(100%,18rem)] rounded-2xl border-[2.5px] px-3 py-2.5",
         "font-display text-[11px] leading-snug tracking-tight shadow-[4px_4px_0_rgba(0,0,0,0.45)]",
         isBefore
-          ? "border-rose-200/55 bg-rose-950/55 text-rose-50 light:border-rose-400/60 light:bg-rose-100/85 light:text-rose-950"
-          : "border-emerald-200/55 bg-emerald-950/55 text-emerald-50 light:border-emerald-400/60 light:bg-emerald-100/85 light:text-emerald-950",
+          ? "border-rose-200/60 bg-rose-950/72 text-rose-50 backdrop-blur-[2px] light:border-rose-400/70 light:bg-rose-50/92 light:text-rose-950 light:shadow-[0_2px_12px_rgba(190,24,93,0.08)]"
+          : "border-emerald-200/60 bg-emerald-950/72 text-emerald-50 backdrop-blur-[2px] light:border-emerald-400/70 light:bg-emerald-50/92 light:text-emerald-950 light:shadow-[0_2px_12px_rgba(5,150,105,0.08)]",
         className
       )}
     >
@@ -154,7 +154,7 @@ function ComicGutterColumn({
     >
       <div
         className={cn(
-          "relative h-full w-full px-3 py-8 opacity-[0.38] sm:px-4 sm:opacity-[0.42]",
+          "relative h-full w-full px-3 py-8",
           side === "left"
             ? "[mask-image:linear-gradient(to_right,black_0%,black_50%,transparent_100%)]"
             : "[mask-image:linear-gradient(to_left,black_0%,black_50%,transparent_100%)]"
@@ -162,26 +162,32 @@ function ComicGutterColumn({
       >
         <ComicGutterSilhouettes side={side} />
         <div
-          className="comic-halftone pointer-events-none absolute inset-0 z-[1] opacity-[0.35]"
-          aria-hidden
-        />
-        {bubbles.map((bubble) => (
-          <div
-            key={`${side}-${bubble.id}`}
-            className="absolute z-[2] w-full max-w-full px-1"
-            style={{ top: `${bubble.topPct}%`, transform: "translateY(-50%)" } as CSSProperties}
-          >
-            <ComicSpeechBubble
-              variant={bubble.variant}
-              tail={bubble.tail}
-              tool={bubble.tool}
-              label={bubble.variant === "before" ? beforeLabel : afterLabel}
-              robotName={robotTitle(bubble.tool)}
-              text={lineFor(bubble.tool, bubble.variant)}
-              className={bubble.className}
-            />
-          </div>
-        ))}
+          className={cn(
+            "pointer-events-none absolute inset-0 z-[2]",
+            side === "left"
+              ? "[mask-image:linear-gradient(to_right,black_0%,black_50%,transparent_100%)]"
+              : "[mask-image:linear-gradient(to_left,black_0%,black_50%,transparent_100%)]"
+          )}
+        >
+          <div className="comic-halftone absolute inset-0 opacity-[0.22]" aria-hidden />
+          {bubbles.map((bubble) => (
+            <div
+              key={`${side}-${bubble.id}`}
+              className="absolute z-[1] w-full max-w-full px-1"
+              style={{ top: `${bubble.topPct}%`, transform: "translateY(-50%)" } as CSSProperties}
+            >
+              <ComicSpeechBubble
+                variant={bubble.variant}
+                tail={bubble.tail}
+                tool={bubble.tool}
+                label={bubble.variant === "before" ? beforeLabel : afterLabel}
+                robotName={robotTitle(bubble.tool)}
+                text={lineFor(bubble.tool, bubble.variant)}
+                className={bubble.className}
+              />
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -212,7 +218,7 @@ export function ComicSidebarBackground() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none absolute inset-0 z-0 hidden overflow-hidden xl:block"
+      className="pointer-events-none absolute inset-0 z-[15] hidden overflow-hidden xl:block"
     >
       <ComicGutterColumn
         side="left"

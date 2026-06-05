@@ -581,22 +581,66 @@ svg.lucide {
   background-size: 7px 7px;
 }
 
-/* Photo-realistic people silhouettes (white sheet → theme-aware blend) */
-.comic-silhouette-sheet {
-  -webkit-mask-image: linear-gradient(to bottom, black 88%, transparent 100%);
-  mask-image: linear-gradient(to bottom, black 88%, transparent 100%);
-}
-
-.light .comic-silhouette-sheet {
+/* Gutter crowd wash — full-column faint backdrop behind speech bubbles */
+.comic-gutter-silhouette-layer {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 6%,
+    black 94%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%);
   mix-blend-mode: multiply;
-  opacity: 0.19;
-  filter: contrast(1.08);
+  opacity: 0.17;
+  filter: saturate(0.8) contrast(0.96);
 }
 
-.dark .comic-silhouette-sheet {
+.comic-gutter-silhouette-layer--ghost {
+  opacity: 0.1;
+}
+
+.light .comic-gutter-silhouette-layer {
+  mix-blend-mode: multiply;
+  opacity: 0.14;
+  filter: saturate(0.7) contrast(1);
+}
+
+.light .comic-gutter-silhouette-layer--ghost {
+  opacity: 0.085;
+}
+
+.dark .comic-gutter-silhouette-layer {
   mix-blend-mode: screen;
-  opacity: 0.11;
-  filter: invert(1) brightness(0.88) contrast(1.05);
+  opacity: 0.34;
+  filter: invert(1) hue-rotate(180deg) saturate(1.55) brightness(0.96) contrast(1.06);
+}
+
+.dark .comic-gutter-silhouette-layer--ghost {
+  opacity: 0.22;
+  filter: invert(1) hue-rotate(180deg) saturate(1.4) brightness(0.92) contrast(1.04);
+}
+
+/* Login onboarding popup — profile silhouettes anchored to modal floor */
+.onboarding-silhouette-bg {
+  background-image: url("/images/onboarding-profile-silhouettes.png");
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 108% auto;
+  -webkit-mask-image: linear-gradient(to top, black 0%, black 48%, transparent 92%);
+  mask-image: linear-gradient(to top, black 0%, black 48%, transparent 92%);
+}
+
+.light .onboarding-silhouette-bg {
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+  filter: contrast(1.04) saturate(1.18);
+}
+
+.dark .onboarding-silhouette-bg {
+  mix-blend-mode: screen;
+  opacity: 0.34;
+  filter: invert(1) hue-rotate(180deg) saturate(1.28) brightness(0.9);
 }
 
 @keyframes routeCard {

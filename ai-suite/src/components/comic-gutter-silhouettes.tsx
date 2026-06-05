@@ -6,80 +6,69 @@ const SHEET_URL = "/images/comic-people-silhouettes.png";
 
 type GutterSide = "left" | "right";
 
-/** Sparse dialogue scenes as % of column height — no pixel loop tied to scrollHeight. */
-const DIALOGUE_SCENES: { top: string; anchor: string }[] = [
-  { top: "10%", anchor: "28% 88%" },
-  { top: "42%", anchor: "52% 88%" },
-  { top: "74%", anchor: "35% 88%" },
-];
-
-const DIALOGUE_CROP_SIZE = "240% auto";
-
-function DialogueScene({
-  side,
-  index,
-  top,
-  anchor,
-}: {
-  side: GutterSide;
-  index: number;
-  top: string;
-  anchor: string;
-}) {
-  const isLeft = side === "left";
-
-  return (
-    <div
-      className="absolute inset-x-[4%] flex h-[26%] max-h-[260px] min-h-[180px] items-end justify-center"
-      style={{ top }}
-    >
-      <div
-        className={cn(
-          "comic-silhouette-sheet h-full w-full max-w-[11rem] bg-no-repeat sm:max-w-[12.5rem]",
-          !isLeft && "-scale-x-100",
-          index % 2 === 1 && "opacity-90"
-        )}
-        style={{
-          backgroundImage: `url(${SHEET_URL})`,
-          backgroundSize: DIALOGUE_CROP_SIZE,
-          backgroundPosition: anchor,
-        }}
-        aria-hidden
-      />
-    </div>
-  );
-}
-
 export function ComicGutterSilhouettes({ side }: { side: GutterSide }) {
   const isLeft = side === "left";
 
   return (
     <div
       className={cn(
-        "pointer-events-none absolute inset-0 z-0",
+        "pointer-events-none absolute inset-0 isolate z-[1] overflow-hidden",
         isLeft
-          ? "[mask-image:linear-gradient(to_right,black_0%,black_55%,transparent_95%)]"
-          : "[mask-image:linear-gradient(to_left,black_0%,black_55%,transparent_95%)]"
+          ? "[mask-image:linear-gradient(to_right,black_0%,black_78%,transparent_100%)]"
+          : "[mask-image:linear-gradient(to_left,black_0%,black_78%,transparent_100%)]"
       )}
       aria-hidden
     >
       <div
+        className="absolute inset-0 bg-[hsl(var(--shell-base))]"
+        aria-hidden
+      />
+      <div
         className={cn(
           "absolute inset-0",
-          "bg-gradient-to-b from-transparent via-violet-950/[0.03] to-violet-950/15",
-          "light:via-slate-200/15 light:to-slate-300/10"
+          "bg-gradient-to-b from-fuchsia-500/[0.07] via-violet-500/[0.1] to-cyan-400/[0.09]",
+          "dark:from-fuchsia-400/[0.12] dark:via-violet-400/[0.14] dark:to-cyan-300/[0.11]"
+        )}
+        aria-hidden
+      />
+      <div
+        className={cn(
+          "comic-gutter-silhouette-layer absolute inset-[-10%_-4%] bg-no-repeat",
+          !isLeft && "-scale-x-100"
+        )}
+        style={{
+          backgroundImage: `url(${SHEET_URL})`,
+          backgroundSize: "185% auto",
+          backgroundRepeat: "repeat-y",
+          backgroundPosition: isLeft ? "8% 100%" : "92% 100%",
+        }}
+      />
+      <div
+        className={cn(
+          "comic-gutter-silhouette-layer comic-gutter-silhouette-layer--ghost absolute inset-[-6%_-2%] bg-no-repeat",
+          !isLeft && "-scale-x-100"
+        )}
+        style={{
+          backgroundImage: `url(${SHEET_URL})`,
+          backgroundSize: "145% auto",
+          backgroundRepeat: "repeat-y",
+          backgroundPosition: isLeft ? "62% 88%" : "38% 88%",
+        }}
+      />
+      <div
+        className={cn(
+          "absolute inset-0 hidden",
+          "light:block light:opacity-20",
+          "bg-gradient-to-b from-[hsl(var(--shell-base))] via-transparent to-[hsl(var(--shell-base))]/80"
         )}
       />
-
-      {DIALOGUE_SCENES.map((scene, i) => (
-        <DialogueScene
-          key={`${side}-dialogue-${i}`}
-          side={side}
-          index={i}
-          top={scene.top}
-          anchor={scene.anchor}
-        />
-      ))}
+      <div
+        className={cn(
+          "absolute inset-0 hidden",
+          "light:block",
+          "bg-gradient-to-b from-transparent via-violet-200/20 to-slate-200/15"
+        )}
+      />
     </div>
   );
 }
