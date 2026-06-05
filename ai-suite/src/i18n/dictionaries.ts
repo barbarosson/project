@@ -4088,13 +4088,13 @@ export const DICTS: Record<Locale, Dict> = {
       "Karmaşık düşüncelerinizi 10 saniyenin altında kusursuz mesajlara dönüştürün.",
     "how.detailed.1.title": "1) Aracınızı seçin",
     "how.detailed.1.body":
-      "Menüden mikro araçlarımızı inceleyin veya tam durumunuza uygun aracı bulması için AI Concierge asistanımıza danışın.",
+      "Menüden mikro araçlarımızı inceleyin veya tam durumunuza uygun aracı bulması için ISENDAI asistanımıza danışın.",
     "how.detailed.2.title": "2) Taslağınızı yapıştırın",
     "how.detailed.2.body":
       "Öfkeli e-postanızı, kaba mesajınızı veya notlarınızı yapıştırın. Yazım hatası dert değil; içinizden geçeni olduğu gibi yazmanız yeterli.",
     "how.detailed.3.title": "3) Yapay zeka gücünüzü seçin",
     "how.detailed.3.body":
-      "Hızlı düzeltmeler için 'Fast AI' (1 Kredi), kritik mesajlar için 'Pro AI' (25 Kredi) seçin. Harcanacak kredi miktarı butonda her zaman şeffafça yazar.",
+      "Kısa düzeltmeler için Hızlı AI, önemli mesajlar için Pro AI yeterli; kontör maliyeti her üretimde butonda görünür.",
     "how.detailed.4.title": "4) Kopyalayın ve gönderin",
     "how.detailed.4.body":
       "Kusursuzlaştırılmış sonucu inceleyin, kopyalayın veya farklı bir ton için yeniden üretin. Artık %100 özgüvenle gönderebilirsiniz.",
