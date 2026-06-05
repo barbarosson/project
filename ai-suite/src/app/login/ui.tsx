@@ -32,11 +32,19 @@ function mapAuthEmailErrorToMessage(
   return msg || t(fallbackKey);
 }
 
-function emailAuthRedirectUrl(authCallbackUrl: string, nextAfterAuth: string): string {
+function authCallbackUrlForNext(authCallbackUrl: string, nextPath: string): string {
   const trimmed = authCallbackUrl.trim();
-  if (trimmed) return trimmed;
+  if (trimmed) {
+    try {
+      const url = new URL(trimmed);
+      url.searchParams.set("next", nextPath);
+      return url.toString();
+    } catch {
+      /* fall through */
+    }
+  }
   const origin = publicBrowserSiteOrigin();
-  return `${origin}/auth/callback?next=${encodeURIComponent(nextAfterAuth)}`;
+  return `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
 }
 
 type LoginClientProps = {
@@ -49,7 +57,9 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
   const runtime = useSupabaseBrowserRuntimeConfig();
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [busy, setBusy] = React.useState<null | "register" | "signin" | "resend" | "reset">(null);
+  const [busy, setBusy] = React.useState<
+    null | "register" | "signin" | "resend" | "reset" | "magic"
+  >(null);
 
   function validateEmail(): string | null {
     const value = email.trim();
@@ -90,7 +100,7 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
         email: value,
         password,
         options: {
-          emailRedirectTo: emailAuthRedirectUrl(authCallbackUrl, nextAfterAuth),
+          emailRedirectTo: authCallbackUrlForNext(authCallbackUrl, nextAfterAuth),
           data: referredBy ? { referred_by: referredBy } : undefined,
         },
       });
@@ -164,11 +174,36 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
         type: "signup",
         email: value,
         options: {
-          emailRedirectTo: emailAuthRedirectUrl(authCallbackUrl, nextAfterAuth),
+          emailRedirectTo: authCallbackUrlForNext(authCallbackUrl, nextAfterAuth),
         },
       });
       if (error) throw error;
       toast.success(t("login.resendConfirmToast"));
+    } catch (e) {
+      toast.error(mapAuthEmailErrorToMessage(t, e));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function sendMagicLink() {
+    const value = validateEmail();
+    if (!value) return;
+    setBusy("magic");
+    try {
+      const supabase = createSupabaseBrowserClient(runtime);
+      if (!supabase) {
+        toast.error(t("login.missingSupabase"));
+        return;
+      }
+      const { error } = await supabase.auth.signInWithOtp({
+        email: value,
+        options: {
+          emailRedirectTo: authCallbackUrlForNext(authCallbackUrl, nextAfterAuth),
+        },
+      });
+      if (error) throw error;
+      toast.success(t("login.emailSent"));
     } catch (e) {
       toast.error(mapAuthEmailErrorToMessage(t, e));
     } finally {
@@ -186,9 +221,8 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
         toast.error(t("login.missingSupabase"));
         return;
       }
-      const origin = publicBrowserSiteOrigin();
       const { error } = await supabase.auth.resetPasswordForEmail(value, {
-        redirectTo: `${origin}/auth/callback?next=${encodeURIComponent("/auth/update-password")}`,
+        redirectTo: authCallbackUrlForNext(authCallbackUrl, "/auth/update-password"),
       });
       if (error) throw error;
       toast.success(t("login.resetEmailSent"));
@@ -252,6 +286,22 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
           {busy === "reset" ? t("login.sending") : t("login.forgotPasswordButton")}
         </button>
       </div>
+      <div className="relative mt-4 flex items-center gap-3">
+        <span className="h-px flex-1 bg-white/[0.08] light:bg-slate-300/70" aria-hidden />
+        <span className="shrink-0 text-xs font-medium uppercase tracking-wide text-slate-400 light:text-slate-600">
+          {t("login.magicLinkDivider")}
+        </span>
+        <span className="h-px flex-1 bg-white/[0.08] light:bg-slate-300/70" aria-hidden />
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        className="mt-3 w-full border-violet-400/30 bg-violet-500/5 text-violet-100 hover:bg-violet-500/15 light:border-violet-400/50 light:text-violet-900"
+        onClick={() => void sendMagicLink()}
+        disabled={loading}
+      >
+        {busy === "magic" ? t("login.sending") : t("login.magicLinkButton")}
+      </Button>
     </div>
   );
 }

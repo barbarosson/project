@@ -149,6 +149,8 @@ export const DICTS: Record<Locale, Dict> = {
     "footer.copyright": "© 2026 isendai.com. Crafted for better communication.",
     "footer.trust":
       "🔒 Secure checkout via Lemon Squeezy | ⚡ AI-powered polish | 🚫 We don't hoard your drafts",
+    "footer.security":
+      "🔒 Payments are processed securely by Lemon Squeezy. Your texts stay private—we don't sell or share your drafts.",
     "footer.modulusLead": "Part of the MODULUS family —",
     "footer.modulus": "MODULUS corporate site",
 
@@ -700,6 +702,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.passwordUpdated": "Password updated.",
     "login.authFailed": "Could not complete sign-in.",
     "login.magicLinkDivider": "Or sign in without a password",
+    "login.magicLinkButton": "Email me a sign-in link",
     "login.legalLead": "By continuing, you agree to our",
     "login.legalMid": "and",
     "login.legalEnd": ".",
@@ -969,6 +972,8 @@ export const DICTS: Record<Locale, Dict> = {
     "footer.modulus": "Sitio corporativo MODULUS",
     "footer.trust":
       "🔒 Pagos seguros con Lemon Squeezy | ⚡ Impulsado por IA | 🚫 No guardamos tus datos.",
+    "footer.security":
+      "🔒 Los pagos se procesan de forma segura con Lemon Squeezy. Tus textos son privados: no vendemos ni compartimos tus borradores.",
     "tool.corp.desc":
       "Escribe lo que realmente quieres decir y lo convertimos en un correo respetuoso, claro y apto para el trabajo.",
     "tool.corp.placeholder":
@@ -1511,6 +1516,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.passwordUpdated": "Contraseña actualizada.",
     "login.authFailed": "No se pudo completar el acceso.",
     "login.magicLinkDivider": "O entrar sin contraseña",
+    "login.magicLinkButton": "Enviar enlace de acceso por correo",
     "login.legalLead": "Al continuar, aceptas nuestros",
     "login.legalMid": "y",
     "login.legalEnd": ".",
@@ -1771,6 +1777,8 @@ export const DICTS: Record<Locale, Dict> = {
     "footer.modulus": "Site corporate MODULUS",
     "footer.trust":
       "🔒 Paiements sécurisés via Lemon Squeezy | ⚡ Propulsé par l’IA | 🚫 Nous ne stockons pas vos données.",
+    "footer.security":
+      "🔒 Les paiements sont sécurisés via Lemon Squeezy. Vos textes restent privés — nous ne vendons ni ne partageons vos brouillons.",
     "tool.corp.desc":
       "Écrivez ce que vous voulez vraiment dire et nous le transformons en e-mail respectueux, clair et adapté au travail.",
     "tool.corp.placeholder":
@@ -2313,6 +2321,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.passwordUpdated": "Mot de passe mis à jour.",
     "login.authFailed": "Connexion impossible.",
     "login.magicLinkDivider": "Ou te connecter sans mot de passe",
+    "login.magicLinkButton": "Recevoir un lien de connexion par e-mail",
     "login.legalLead": "En continuant, vous acceptez nos",
     "login.legalMid": "et",
     "login.legalEnd": ".",
@@ -2574,6 +2583,8 @@ export const DICTS: Record<Locale, Dict> = {
     "footer.modulus": "MODULUS Unternehmensseite",
     "footer.trust":
       "🔒 Sichere Zahlungen via Lemon Squeezy | ⚡ Powered by AI | 🚫 Wir speichern deine Daten nicht.",
+    "footer.security":
+      "🔒 Zahlungen laufen sicher über Lemon Squeezy. Deine Texte bleiben privat — wir verkaufen oder teilen deine Entwürfe nicht.",
     "tool.corp.desc":
       "Schreib hier, was du wirklich sagen willst, und wir machen daraus eine respektvolle, klare, arbeitsplatztaugliche E-Mail.",
     "tool.corp.placeholder":
@@ -3116,6 +3127,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.passwordUpdated": "Passwort aktualisiert.",
     "login.authFailed": "Anmeldung fehlgeschlagen.",
     "login.magicLinkDivider": "Oder ohne Passwort anmelden",
+    "login.magicLinkButton": "Login-Link per E-Mail senden",
     "login.legalLead": "Mit Fortfahren akzeptierst du unsere",
     "login.legalMid": "und",
     "login.legalEnd": ".",
@@ -3357,6 +3369,8 @@ export const DICTS: Record<Locale, Dict> = {
     "footer.modulusLead": "MODULUS 产品家族的一员 —",
     "footer.modulus": "MODULUS 企业站",
     "footer.trust": "🔒 Lemon Squeezy 安全支付 | ⚡ AI 驱动 | 🚫 不存储你的数据",
+    "footer.security":
+      "🔒 支付由 Lemon Squeezy 安全处理。你的文字保持私密，我们不会出售或分享你的草稿。",
     "tool.corp.desc":
       "写下你真正想说的话，我们会把它改成尊重、清晰、适合职场的邮件。",
     "tool.corp.placeholder":
@@ -3866,6 +3880,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.passwordUpdated": "密码已更新。",
     "login.authFailed": "无法完成登录。",
     "login.magicLinkDivider": "或不使用密码登录",
+    "login.magicLinkButton": "通过邮件发送登录链接",
     "login.legalLead": "继续即表示你同意我们的",
     "login.legalMid": "与",
     "login.legalEnd": "。",
@@ -3988,7 +4003,7 @@ export const DICTS: Record<Locale, Dict> = {
     "header.theme": "Tema değiştir",
     "socialProof.demoPrefix": "Demo:",
     "hero.kicker": "Dağınık taslaktan, göndermeye hazır metne ✨",
-    "hero.title": "Göndermeden Önce Bir Kez Düzeltin",
+    "hero.title": "Göndermeden Önce Bir de Birlikte Mi Baksak",
     "hero.subtitle":
       "WhatsApp, e-posta ve sosyal medya için yazdığınız metinleri yapay zekâ ile toparlıyoruz. Ürettiğiniz kadar kontör harcarsınız; zorunlu abonelik yoktur. Dağınık taslağınızı yapıştırın, gönül rahatlığıyla gönderebileceğiniz bir metin alın.",
     "hero.cta": "Ücretsiz üye ol — 100 kontör bedava 🎁",
@@ -4014,8 +4029,8 @@ export const DICTS: Record<Locale, Dict> = {
     "home.welcomeBonus.kicker": "Yeni üye hediyesi",
     "home.welcomeBonus.title": "Üyeliği tamamlayana {credits} kontör hediye",
     "home.welcomeBonus.body":
-      "Ücretsiz kayıt olun, üyelik profilinizi tamamlayın ve e-postanızı doğrulayın. {credits} kontör hesabınıza tek seferlik yüklenir; zorunlu abonelik yok.",
-    "home.welcomeBonus.hint": "Kontörler profil ve e-posta doğrulamasından sonra otomatik tanımlanır.",
+      "Ücretsiz üye ol, profilini tamamla ve e-postanı doğrula — {credits} kontör hediyen hesabına otomatik yüklensin. Abonelik zorunlu değil; sadece kullandığın kadar öde.",
+    "home.welcomeBonus.hint": "Profil ve e-posta doğrulamasından sonra kontörlerin birkaç dakika içinde hazır olur.",
     "home.welcomeBonus.cta": "Ücretsiz hesap oluştur",
 
     "home.floatingJoin.ariaLabel": "Ücretsiz üyelik kaydı",
@@ -4052,15 +4067,15 @@ export const DICTS: Record<Locale, Dict> = {
     "home.demo.subtitle":
       "Bir örnek seçin, dönüşümü görün ve kendi taslağınızda deneyin.",
     "home.demo.examples.corp.before":
-      "Bu tasarım berbat, brifimi okumamışsınız belli!",
+      "Bu tasarım berbat, açıklamalarımı okumamışsınız belli!",
     "home.demo.examples.corp.after":
-      "Briften biraz sapmış gibi hissediyorum. Tasarımı, ilk vizyonumuzla uyumlu olduğundan emin olmak için birlikte gözden geçirebilir miyiz?",
+      "Açıklamalarımdan biraz sapmış gibi hissediyorum. Tasarımı, ilk vizyonumuzla uyumlu olduğundan emin olmak için birlikte gözden geçirebilir miyiz?",
     "home.demo.examples.quit.before":
       "Bıktım. İstifa ediyorum. Bir daha yazmayın.",
     "home.demo.examples.quit.after":
       "Merhaba [İsim] — [tarih] itibarıyla görevimden ayrılmak istiyorum. Fırsat için teşekkür ederim. Ayrılmadan önce sorumluluklarımı devretmek ve dokümantasyonu paylaşmak için destek olacağım.",
     "home.demo.examples.gift.before":
-      "Sana hediye almak istiyorum ama ne istediğini hiç bilmiyorum. Söyle işte.",
+      "Sana hediye almak istiyorum ama ne istediğini hiç bilmiyorum.",
     "home.demo.examples.gift.after":
       "Seni gerçekten mutlu edecek bir sürpriz yapmak istiyorum. Son zamanlarda aklında olan tek bir şey seçsen, ne olurdu?",
     "home.demo.examples.caveman.before":
@@ -4117,6 +4132,8 @@ export const DICTS: Record<Locale, Dict> = {
     "footer.modulus": "MODULUS kurumsal sitesi",
     "footer.trust":
       "🔒 Lemon Squeezy ile güvenli ödeme | ⚡ Yapay zekâ ile metin parlatma | 🚫 Taslaklarınızı toplu olarak saklamıyoruz",
+    "footer.security":
+      "🔒 Ödemeler Lemon Squeezy ile güvenle işlenir. Metinleriniz gizli kalır; taslaklarınızı satmıyor veya paylaşmıyoruz.",
     "tool.corp.desc":
       "Söylemek istediğinizi buraya yazın; biz onu saygılı, net ve iş yerine uygun bir e-postaya dönüştürelim.",
     "tool.corp.placeholder":
@@ -4665,6 +4682,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.passwordUpdated": "Şifre güncellendi.",
     "login.authFailed": "Giriş tamamlanamadı.",
     "login.magicLinkDivider": "Ya da şifresiz giriş",
+    "login.magicLinkButton": "Giriş bağlantısını e-postayla gönder",
     "login.legalLead": "Devam ederek",
     "login.legalMid": "ve",
     "login.legalEnd": " kabul etmiş olursun.",
@@ -4683,7 +4701,7 @@ export const DICTS: Record<Locale, Dict> = {
       "İş e-postası, flört bio'su, iade talebi, bürokrasi, freelance ve daha fazlası. Her aracın kendi uzman prompt'ları var — tek bir genel chatbot değil.",
     "loginOnboarding.slide3.title": "Üyelikte {credits} kontör hediye",
     "loginOnboarding.slide3.body":
-      "Ücretsiz kayıt ol, profilini tamamla ve e-postanı doğrula. Kontörler otomatik tanımlanır — abonelik şart değil.",
+      "Ücretsiz üye ol, profilini tamamla ve e-postanı doğrula — hediye kontörlerin kısa sürede hesabına düşer. Abone olmak zorunda değilsin.",
     "loginOnboarding.slide4.title": "Üyelik + sınırlı süre indirim",
     "loginOnboarding.slide4.body":
       "Kayıttan sonra plan veya kontör paketi seç. Ödeme sayfasında {code} koduyla %{percent} indirim.",

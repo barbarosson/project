@@ -329,9 +329,9 @@ export const corporateCopy = {
           {
             emoji: '💼',
             title: 'Kurumsal İletişim Ustası',
-            before: 'Bu tasarım berbat, brifimi okumamışsınız belli!',
+            before: 'Bu tasarım berbat, açıklamalarımı okumamışsınız belli!',
             after:
-              'Briften biraz sapmış gibi hissediyorum. Tasarımı, ilk vizyonumuzla uyumlu olduğundan emin olmak için birlikte gözden geçirebilir miyiz?',
+              'Açıklamalarımdan biraz sapmış gibi hissediyorum. Tasarımı, ilk vizyonumuzla uyumlu olduğundan emin olmak için birlikte gözden geçirebilir miyiz?',
           },
           {
             emoji: '🚪',
@@ -343,7 +343,7 @@ export const corporateCopy = {
           {
             emoji: '🎁',
             title: 'Garip Metin Düzeltici',
-            before: 'Sana hediye almak istiyorum ama ne istediğini hiç bilmiyorum. Söyle işte.',
+            before: 'Sana hediye almak istiyorum ama ne istediğini hiç bilmiyorum.',
             after:
               'Seni gerçekten mutlu edecek bir sürpriz yapmak istiyorum. Son zamanlarda aklında olan tek bir şey seçsen, ne olurdu?',
           },

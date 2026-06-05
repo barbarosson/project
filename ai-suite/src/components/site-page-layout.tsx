@@ -37,8 +37,26 @@ export function SitePageChrome({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-full min-w-0 flex-col overflow-x-clip">
       <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+      <SiteSecurityStrip />
       <SitePageFooter />
     </div>
+  );
+}
+
+function SiteSecurityStrip() {
+  const { t } = useI18n();
+
+  return (
+    <aside
+      className="mt-auto border-t border-white/[0.06] bg-white/[0.03] backdrop-blur-md light:border-slate-300/60 light:bg-slate-50/80"
+      aria-label="Security"
+    >
+      <div className={siteChromeContainer("py-3 sm:py-3.5")}>
+        <p className="text-pretty text-center text-[11px] leading-relaxed text-muted-foreground sm:text-xs">
+          {t("footer.security")}
+        </p>
+      </div>
+    </aside>
   );
 }
 
