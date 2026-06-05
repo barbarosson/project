@@ -17,9 +17,16 @@ type AuthStatusProps = {
   omitAccountLink?: boolean;
   /** Pre-populate signed-in label from the server (eliminates the "Login" flash after OAuth). */
   initialSignedInLabel?: string | null;
+  /** Icon-only labels until xl — keeps the site header on one row. */
+  compact?: boolean;
 };
 
-export function AuthStatus({ className, omitAccountLink, initialSignedInLabel }: AuthStatusProps) {
+export function AuthStatus({
+  className,
+  omitAccountLink,
+  initialSignedInLabel,
+  compact = false,
+}: AuthStatusProps) {
   const { t } = useI18n();
   const router = useRouter();
   const runtime = useSupabaseBrowserRuntimeConfig();
@@ -115,9 +122,11 @@ export function AuthStatus({ className, omitAccountLink, initialSignedInLabel }:
     );
   }
 
+  const labelClass = compact ? "hidden xl:inline" : "hidden sm:inline";
   const authBtnClass = cn(
     interactiveClick,
-    "inline-flex items-center gap-1.5 rounded-lg border border-white/[0.12] bg-white/[0.05] px-1.5 py-1 text-xs font-semibold text-slate-200 backdrop-blur-xl hover:border-violet-500/35 hover:bg-white/[0.09] sm:gap-2 sm:px-3 sm:py-2 sm:text-sm"
+    "inline-flex shrink-0 items-center gap-1 rounded-lg border border-white/[0.12] bg-white/[0.05] px-1.5 py-1 text-xs font-semibold text-slate-200 backdrop-blur-xl hover:border-violet-500/35 hover:bg-white/[0.09] sm:gap-1.5 sm:px-2 sm:py-1.5",
+    compact ? "xl:gap-2 xl:px-3 xl:py-2 xl:text-sm" : "sm:gap-2 sm:px-3 sm:py-2 sm:text-sm"
   );
 
   if (signedInLabel) {
@@ -131,7 +140,7 @@ export function AuthStatus({ className, omitAccountLink, initialSignedInLabel }:
         className={cn(authBtnClass, "disabled:opacity-60")}
       >
         <LogOut className="size-4 shrink-0 text-indigo-400" strokeWidth={1.5} />
-        <span className="hidden sm:inline">{t("nav.logout")}</span>
+        <span className={labelClass}>{t("nav.logout")}</span>
       </button>
     );
 
@@ -148,7 +157,7 @@ export function AuthStatus({ className, omitAccountLink, initialSignedInLabel }:
           aria-label={t("nav.account")}
         >
           <User className="size-4 shrink-0 text-indigo-400" strokeWidth={1.5} />
-          <span className="hidden sm:inline">{t("nav.account")}</span>
+          <span className={labelClass}>{t("nav.account")}</span>
         </Link>
         {logoutBtn}
       </div>
@@ -163,7 +172,7 @@ export function AuthStatus({ className, omitAccountLink, initialSignedInLabel }:
       title={t("nav.login")}
     >
       <LogIn className="size-4 shrink-0 text-indigo-400" strokeWidth={1.5} />
-      <span className="hidden sm:inline">{t("nav.login")}</span>
+      <span className={labelClass}>{t("nav.login")}</span>
     </Link>
   );
 }

@@ -16,7 +16,7 @@ import { useI18n } from "@/i18n/i18n-provider";
 import { MODULUS_SITE_URL } from "@/lib/modulus-site";
 import { getModulusLinkedInUrl } from "@/lib/social-links";
 import { getPublicSupportEmail } from "@/lib/support-email";
-import { siteContainer, type PageShellVariant } from "@/lib/page-layout";
+import { siteChromeContainer, siteContainer, type PageShellVariant } from "@/lib/page-layout";
 import {
   pageBackLink,
   pageContentSection,
@@ -43,7 +43,7 @@ export function SitePageChrome({ children }: { children: ReactNode }) {
 }
 
 function FooterDot() {
-  return <span className="hidden shrink-0 text-white/25 sm:inline" aria-hidden>·</span>;
+  return <span className="shrink-0 text-[10px] text-white/25 light:text-slate-400" aria-hidden>·</span>;
 }
 
 export function SitePageFooter() {
@@ -52,36 +52,33 @@ export function SitePageFooter() {
   const modulusLinkedInUrl = getModulusLinkedInUrl();
 
   const navLink =
-    "shrink-0 whitespace-nowrap text-xs font-medium text-foreground/85 transition-colors hover:text-foreground sm:text-sm";
+    "shrink-0 whitespace-nowrap text-[11px] font-medium text-foreground/85 transition-colors hover:text-foreground sm:text-xs xl:text-sm";
   const navLinkMuted =
-    "shrink-0 whitespace-nowrap text-xs text-muted-foreground transition-colors hover:text-foreground sm:text-sm";
+    "shrink-0 whitespace-nowrap text-[11px] text-muted-foreground transition-colors hover:text-foreground sm:text-xs xl:text-sm";
 
   return (
     <footer className="mt-auto border-t border-white/[0.08] bg-white/[0.02] backdrop-blur-xl light:border-slate-300/70 light:bg-white/60">
-      <div className={siteContainer("py-6 sm:py-8")}>
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
-          <div className="min-w-0 max-w-xl shrink-0 space-y-1">
-            <p className="text-pretty text-xs leading-snug text-muted-foreground sm:text-sm">
+      <div className={siteChromeContainer("py-5 sm:py-6")}>
+        <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3">
+          <div className="min-w-0 max-w-[min(100%,14rem)] shrink space-y-0.5 sm:max-w-[min(100%,18rem)] md:max-w-[min(100%,22rem)]">
+            <p className="truncate text-[11px] leading-snug text-muted-foreground sm:text-xs">
               {t("footer.copyright")}
             </p>
-            <p className="flex min-w-0 flex-wrap items-baseline gap-x-1 gap-y-0.5 text-pretty text-xs leading-snug text-muted-foreground sm:text-sm">
-              <span>{t("footer.modulusLead")}</span>
+            <p className="flex min-w-0 items-baseline gap-x-1 truncate text-[11px] leading-snug text-muted-foreground sm:text-xs">
+              <span className="truncate">{t("footer.modulusLead")}</span>
               <a
                 href={MODULUS_SITE_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-semibold text-violet-200 underline-offset-2 transition-colors hover:text-white hover:underline light:text-violet-800 light:hover:text-fuchsia-700"
+                className="shrink-0 font-semibold text-violet-200 underline-offset-2 transition-colors hover:text-white hover:underline light:text-violet-800 light:hover:text-fuchsia-700"
               >
                 modulusaas.com
               </a>
             </p>
           </div>
 
-          <nav
-            className="min-w-0 lg:flex-1 lg:justify-end"
-            aria-label="Footer"
-          >
-            <div className="-mx-1 flex min-w-0 items-center gap-x-2 gap-y-2 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] sm:flex-wrap sm:overflow-visible sm:pb-0 lg:justify-end [&::-webkit-scrollbar]:hidden">
+          <nav className="min-w-0 shrink" aria-label="Footer">
+            <div className="flex flex-nowrap items-center justify-end gap-x-1 overflow-x-auto pb-0.5 [scrollbar-width:none] sm:gap-x-1.5 [&::-webkit-scrollbar]:hidden">
               <Link className={navLink} href="/login">
                 {t("nav.login")}
               </Link>
@@ -102,8 +99,9 @@ export function SitePageFooter() {
                 {t("nav.contact")}
               </Link>
               <FooterDot />
-              <a className={navLinkMuted} href={`mailto:${supportEmail}`}>
-                {supportEmail}
+              <a className={navLinkMuted} href={`mailto:${supportEmail}`} title={supportEmail}>
+                <span className="2xl:hidden">Email</span>
+                <span className="hidden 2xl:inline">{supportEmail}</span>
               </a>
               <FooterDot />
               <Link className={navLinkMuted} href="/privacy">
@@ -130,7 +128,7 @@ export function SitePageFooter() {
           </nav>
         </div>
 
-        <p className="mt-4 border-t border-white/[0.06] pt-4 text-center text-[11px] leading-relaxed text-muted-foreground sm:text-xs lg:text-left light:border-slate-300/60">
+        <p className="mt-3 border-t border-white/[0.06] pt-3 text-center text-[11px] leading-relaxed text-muted-foreground sm:text-xs md:text-left light:border-slate-300/60">
           {t("footer.trust")}
         </p>
       </div>
@@ -151,64 +149,57 @@ export function SitePageHeader({
 
   return (
     <header
-      className={siteContainer(
-        "relative z-20 flex flex-col gap-2 safe-area-top pb-3 sm:gap-2.5 sm:pb-4 lg:flex-row lg:items-center lg:justify-between lg:gap-3 lg:pb-5"
+      className={siteChromeContainer(
+        "relative z-20 flex flex-nowrap items-center justify-between gap-1.5 safe-area-top pb-3 sm:gap-2 sm:pb-4"
       )}
     >
-      {/* Row 1 — brand + mobile theme/locale (no horizontal scroll). */}
-      <div className="flex min-w-0 w-full items-center gap-1.5 sm:gap-2 lg:min-w-0 lg:max-w-[min(100%,28rem)] lg:flex-1 xl:max-w-none">
+      <div className="flex min-w-0 shrink items-center gap-1 sm:gap-1.5">
         {showHomeNav ? (
           <Link
             href="/"
             className={cn(
               pageBackLink,
-              "inline-flex shrink-0 items-center gap-1 rounded-lg border border-white/[0.1] bg-white/[0.04] px-2 py-1.5",
+              "inline-flex shrink-0 items-center gap-1 rounded-lg border border-white/[0.1] bg-white/[0.04] px-1.5 py-1",
               "light:border-slate-300/70 light:bg-white/80",
-              "max-lg:px-1.5 max-lg:py-1"
+              "sm:px-2 sm:py-1.5"
             )}
             aria-label={t("nav.backToHome")}
             title={t("nav.backToHome")}
           >
             <Home className="size-4 shrink-0" aria-hidden />
-            <span className="hidden min-[900px]:inline">{t("nav.backToHome")}</span>
+            <span className="hidden xl:inline">{t("nav.backToHome")}</span>
           </Link>
         ) : null}
         <Link
           href="/"
-          className="inline-flex min-w-0 shrink-0 items-center overflow-hidden lg:min-w-0 lg:shrink"
+          className="inline-flex min-w-0 shrink-0 items-center overflow-hidden"
           aria-label="isendai"
         >
           <IsendaiLogo
             withWordmark
-            iconClassName="size-8 shrink-0 sm:size-9 md:size-10 lg:size-12"
+            iconClassName="size-7 shrink-0 sm:size-8 md:size-9 lg:size-10"
             wordmarkClassName={cn(
-              "hidden truncate lg:inline",
-              "text-lg sm:text-xl md:text-2xl lg:max-w-[11rem] lg:text-2xl xl:max-w-[14rem] xl:text-3xl 2xl:max-w-none"
+              "hidden truncate md:inline",
+              "text-base sm:text-lg md:text-xl lg:text-2xl"
             )}
           />
         </Link>
-        <div className="ml-auto flex shrink-0 items-center gap-1 lg:hidden">
-          <ThemeToggle className={headerToolClass} />
-          <SiteLocaleToolbar compact />
-        </div>
       </div>
-      {/* Row 2 — credits, referral, auth; wraps on narrow screens instead of scrolling. */}
       <div
         role="toolbar"
         aria-label="Header"
-        className={cn(
-          "flex w-full min-w-0 flex-wrap items-center justify-end gap-1 max-lg:gap-1 sm:gap-1.5 lg:gap-2",
-          "lg:ml-auto lg:w-auto lg:min-w-0 lg:flex-1 lg:justify-end"
-        )}
+        className="flex min-w-0 flex-nowrap items-center justify-end gap-1 overflow-x-auto [scrollbar-width:none] sm:gap-1.5 [&::-webkit-scrollbar]:hidden"
       >
-        <div className="hidden shrink-0 items-center gap-1.5 lg:flex">
-          <ThemeToggle className={headerToolClass} />
-          <SiteLocaleToolbar />
-        </div>
-        <InstallAppButton variant="header" className="max-lg:hidden" />
-        <ReferralRewardsNav className={cn(headerToolClass, "max-lg:px-1.5 max-lg:py-0.5")} />
-        <CreditsNav className={headerToolClass} />
-        <AuthStatus className={headerToolClass} initialSignedInLabel={initialSignedInLabel} />
+        <ThemeToggle className={headerToolClass} />
+        <SiteLocaleToolbar compact />
+        <InstallAppButton variant="header" className={headerToolClass} />
+        <ReferralRewardsNav compact className={headerToolClass} />
+        <CreditsNav className={cn(headerToolClass, "flex-nowrap")} />
+        <AuthStatus
+          compact
+          className={headerToolClass}
+          initialSignedInLabel={initialSignedInLabel}
+        />
       </div>
     </header>
   );

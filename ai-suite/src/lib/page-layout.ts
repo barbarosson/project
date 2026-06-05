@@ -40,3 +40,14 @@ export function pageMain(
 export function siteContainer(extra?: string): string {
   return cn("mx-auto w-full", siteMinWidth0, "max-w-6xl", siteGutter, extra);
 }
+
+/** Wider chrome with tighter gutters — keeps header/footer actions on one row. */
+export function siteChromeContainer(extra?: string): string {
+  return cn(
+    "mx-auto w-full",
+    siteMinWidth0,
+    "max-w-[96rem]",
+    "px-3 sm:px-4 md:px-5 lg:px-6",
+    extra
+  );
+}

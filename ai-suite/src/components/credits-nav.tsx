@@ -73,7 +73,7 @@ export function CreditsNav({ className }: { className?: string }) {
       >
         <span aria-hidden>🪙</span>
         <span>{creditsDisplay}</span>
-        <span className="hidden text-slate-400 md:inline">{t("creditsNav.unit")}</span>
+        <span className="hidden text-slate-400 xl:inline">{t("creditsNav.unit")}</span>
       </span>
       {trial !== null ? (
         <span className="hidden rounded-lg border border-violet-400/25 bg-violet-500/10 px-2 py-1 text-violet-100 backdrop-blur-xl sm:inline sm:px-3">

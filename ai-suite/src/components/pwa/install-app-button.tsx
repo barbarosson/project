@@ -127,7 +127,7 @@ export function InstallAppButton({ variant = "hero", className }: InstallAppButt
       ) : (
         <Download className="size-4 shrink-0" aria-hidden />
       )}
-      <span className={isHeader ? "hidden sm:inline" : undefined}>
+      <span className={isHeader ? "hidden xl:inline" : undefined}>
         {isHeader ? t("pwa.installShort") : t("pwa.install")}
       </span>
     </button>
