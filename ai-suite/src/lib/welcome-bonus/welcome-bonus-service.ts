@@ -94,7 +94,38 @@ async function readWelcomeBonusStatus(
     if (!isMembershipProfileComplete(authUser.user_metadata)) {
       return { status: "pending_profile" };
     }
-    return { status: "pending_profile" };
+
+    const { error: retryErr } = await admin.rpc("process_welcome_bonus_for_user", {
+      p_user_id: userId,
+    });
+    if (retryErr) {
+      return { status: "error", message: retryErr.message ?? "rpc_retry_failed" };
+    }
+
+    const { data: retryRow, error: retryReadErr } = await admin
+      .schema("isendai")
+      .from("welcome_bonus_grants")
+      .select("status, credits_tenths")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (retryReadErr) {
+      return { status: "error", message: retryReadErr.message };
+    }
+    if (!retryRow) {
+      return { status: "error", message: "welcome_bonus_not_granted" };
+    }
+
+    const retry = retryRow as { status: string; credits_tenths: number };
+    if (retry.status === "granted") {
+      const credits =
+        retry.credits_tenths > 0
+          ? retry.credits_tenths / 10
+          : WELCOME_MEMBERSHIP_BONUS_CREDITS_WHOLE;
+      return { status: "granted", credits };
+    }
+
+    return { status: "already_granted", credits: WELCOME_MEMBERSHIP_BONUS_CREDITS_WHOLE };
   }
 
   const row = data as { status: string; credits_tenths: number };

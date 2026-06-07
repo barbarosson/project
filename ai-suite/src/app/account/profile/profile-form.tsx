@@ -176,6 +176,8 @@ export function ProfileForm({ nextPath, email, initialMeta }: Props) {
       });
       if (error) throw error;
 
+      await supabase.auth.refreshSession();
+
       try {
         const bonusRes = await fetch("/api/welcome-bonus", { method: "POST", credentials: "include" });
         if (bonusRes.ok) {
