@@ -11,12 +11,11 @@ import { ReferralRewardsNav } from "@/components/referrals/referral-rewards-nav"
 import { IsendaiLogo } from "@/components/isendai-logo";
 import { InstallAppButton } from "@/components/pwa/install-app-button";
 import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { useI18n } from "@/i18n/i18n-provider";
 import { MODULUS_SITE_URL } from "@/lib/modulus-site";
 import { getModulusLinkedInUrl } from "@/lib/social-links";
 import { getPublicSupportEmail } from "@/lib/support-email";
-import { siteChromeContainer, siteContainer, type PageShellVariant } from "@/lib/page-layout";
+import { siteContainer, type PageShellVariant } from "@/lib/page-layout";
 import {
   pageBackLink,
   pageContentSection,
@@ -51,7 +50,7 @@ function SiteSecurityStrip() {
       className="mt-auto border-t border-white/[0.06] bg-white/[0.03] backdrop-blur-md light:border-slate-300/60 light:bg-slate-50/80"
       aria-label="Security"
     >
-      <div className={siteChromeContainer("py-3 sm:py-3.5")}>
+      <div className={siteContainer("py-3 sm:py-3.5")}>
         <p className="text-pretty text-center text-[11px] leading-relaxed text-muted-foreground sm:text-xs">
           {t("footer.security")}
         </p>
@@ -76,7 +75,7 @@ export function SitePageFooter() {
 
   return (
     <footer className="mt-auto border-t border-white/[0.08] bg-white/[0.02] backdrop-blur-xl light:border-slate-300/70 light:bg-white/60">
-      <div className={siteChromeContainer("py-5 sm:py-6")}>
+      <div className={siteContainer("py-5 sm:py-6")}>
         <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3">
           <div className="min-w-0 max-w-[min(100%,14rem)] shrink space-y-0.5 sm:max-w-[min(100%,18rem)] md:max-w-[min(100%,22rem)]">
             <p className="truncate text-[11px] leading-snug text-muted-foreground sm:text-xs">
@@ -166,58 +165,65 @@ export function SitePageHeader({
   const headerToolClass = "relative z-10 shrink-0 touch-manipulation";
 
   return (
-    <header
-      className={siteChromeContainer(
-        "relative z-20 flex flex-nowrap items-center justify-between gap-1.5 safe-area-top pb-3 sm:gap-2 sm:pb-4"
-      )}
-    >
-      <div className="flex min-w-0 shrink items-center gap-1 sm:gap-1.5">
-        {showHomeNav ? (
+    <header className="relative z-30 safe-area-top pb-3 sm:pb-4">
+      <div
+        className={siteContainer(
+          "flex flex-nowrap items-center gap-2 sm:gap-3 md:gap-4"
+        )}
+      >
+        <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+          {showHomeNav ? (
+            <Link
+              href="/"
+              className={cn(
+                pageBackLink,
+                "inline-flex shrink-0 items-center gap-1 rounded-lg border border-white/[0.1] bg-white/[0.04] px-1.5 py-1",
+                "light:border-slate-300/70 light:bg-white/80",
+                "sm:px-2 sm:py-1.5"
+              )}
+              aria-label={t("nav.backToHome")}
+              title={t("nav.backToHome")}
+            >
+              <Home className="size-4 shrink-0" aria-hidden />
+              <span className="hidden xl:inline">{t("nav.backToHome")}</span>
+            </Link>
+          ) : null}
           <Link
             href="/"
             className={cn(
-              pageBackLink,
-              "inline-flex shrink-0 items-center gap-1 rounded-lg border border-white/[0.1] bg-white/[0.04] px-1.5 py-1",
-              "light:border-slate-300/70 light:bg-white/80",
-              "sm:px-2 sm:py-1.5"
+              "relative z-10 inline-flex shrink-0 items-center rounded-xl",
+              "bg-white/90 px-2 py-1 shadow-[0_2px_14px_rgba(30,27,75,0.08)]",
+              "ring-1 ring-violet-200/70 backdrop-blur-sm",
+              "transition-shadow hover:bg-white hover:shadow-[0_4px_18px_rgba(109,40,217,0.12)]",
+              "sm:px-2.5 sm:py-1.5"
             )}
-            aria-label={t("nav.backToHome")}
-            title={t("nav.backToHome")}
+            aria-label="isendai"
           >
-            <Home className="size-4 shrink-0" aria-hidden />
-            <span className="hidden xl:inline">{t("nav.backToHome")}</span>
+            <IsendaiLogo
+              withWordmark
+              iconClassName="size-7 shrink-0 sm:size-8 md:size-9"
+              wordmarkClassName={cn(
+                "hidden whitespace-nowrap sm:inline",
+                "text-base sm:text-lg md:text-xl"
+              )}
+            />
           </Link>
-        ) : null}
-        <Link
-          href="/"
-          className="inline-flex min-w-0 shrink-0 items-center overflow-hidden"
-          aria-label="isendai"
+        </div>
+        <div
+          role="toolbar"
+          aria-label="Header"
+          className="ml-auto flex min-w-0 flex-nowrap items-center justify-end gap-1 overflow-x-auto [scrollbar-width:none] sm:gap-1.5 [&::-webkit-scrollbar]:hidden"
         >
-          <IsendaiLogo
-            withWordmark
-            iconClassName="size-7 shrink-0 sm:size-8 md:size-9 lg:size-10"
-            wordmarkClassName={cn(
-              "hidden truncate md:inline",
-              "text-base sm:text-lg md:text-xl lg:text-2xl"
-            )}
+          <SiteLocaleToolbar compact />
+          <InstallAppButton variant="header" className={headerToolClass} />
+          <ReferralRewardsNav compact className={headerToolClass} />
+          <CreditsNav className={cn(headerToolClass, "flex-nowrap")} />
+          <AuthStatus
+            compact
+            className={headerToolClass}
+            initialSignedInLabel={initialSignedInLabel}
           />
-        </Link>
-      </div>
-      <div
-        role="toolbar"
-        aria-label="Header"
-        className="flex min-w-0 flex-nowrap items-center justify-end gap-1 overflow-x-auto [scrollbar-width:none] sm:gap-1.5 [&::-webkit-scrollbar]:hidden"
-      >
-        <ThemeToggle className={headerToolClass} />
-        <SiteLocaleToolbar compact />
-        <InstallAppButton variant="header" className={headerToolClass} />
-        <ReferralRewardsNav compact className={headerToolClass} />
-        <CreditsNav className={cn(headerToolClass, "flex-nowrap")} />
-        <AuthStatus
-          compact
-          className={headerToolClass}
-          initialSignedInLabel={initialSignedInLabel}
-        />
+        </div>
       </div>
     </header>
   );

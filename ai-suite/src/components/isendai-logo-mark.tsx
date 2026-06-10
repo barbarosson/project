@@ -8,31 +8,16 @@ export type IsendaiLogoMarkProps = {
   className?: string;
 };
 
-function MarkSvg({
-  className,
-  uid,
-  palette,
-}: {
-  className?: string;
-  uid: string;
-  palette: "dark" | "light";
-}) {
+function MarkSvg({ className, uid }: { className?: string; uid: string }) {
   const grad = `${uid}-grad`;
   const glow = `${uid}-glow`;
   const softGlow = `${uid}-soft`;
 
-  const stops =
-    palette === "light"
-      ? [
-          { offset: "0%", color: "#6d28d9" },
-          { offset: "48%", color: "#1d4ed8" },
-          { offset: "100%", color: "#be185d" },
-        ]
-      : [
-          { offset: "0%", color: "#c4b5fd" },
-          { offset: "48%", color: "#38bdf8" },
-          { offset: "100%", color: "#f0abfc" },
-        ];
+  const stops = [
+    { offset: "0%", color: "#6d28d9" },
+    { offset: "48%", color: "#1d4ed8" },
+    { offset: "100%", color: "#be185d" },
+  ];
 
   return (
     <svg viewBox="0 0 64 64" className={className} aria-hidden>
@@ -43,11 +28,7 @@ function MarkSvg({
           ))}
         </linearGradient>
         <radialGradient id={glow} cx="50%" cy="42%" r="58%">
-          <stop
-            offset="0%"
-            stopColor={palette === "light" ? "#c4b5fd" : "#8b5cf6"}
-            stopOpacity={palette === "light" ? "0.45" : "0.5"}
-          />
+          <stop offset="0%" stopColor="#c4b5fd" stopOpacity="0.45" />
           <stop offset="100%" stopColor="transparent" />
         </radialGradient>
         <filter id={softGlow} x="-40%" y="-40%" width="180%" height="180%">
@@ -97,26 +78,8 @@ function MarkSvg({
   );
 }
 
-/**
- * Brand mark: hexagon frame + neural nodes (violet · cyan · fuchsia).
- * Renders dark + light SVG from html.dark / html.light (no theme hook — reliable HMR).
- */
+/** Brand mark: hexagon frame + neural nodes (violet · blue · fuchsia). */
 export function IsendaiLogoMark({ className }: IsendaiLogoMarkProps) {
   const uid = useId().replace(/:/g, "");
-  const sizeClass = cn("size-8 shrink-0", className);
-
-  return (
-    <span className="relative inline-flex shrink-0">
-      <MarkSvg
-        uid={`${uid}-d`}
-        palette="dark"
-        className={cn(sizeClass, "hidden dark:block")}
-      />
-      <MarkSvg
-        uid={`${uid}-l`}
-        palette="light"
-        className={cn(sizeClass, "block dark:hidden")}
-      />
-    </span>
-  );
+  return <MarkSvg uid={uid} className={cn("size-8 shrink-0", className)} />;
 }

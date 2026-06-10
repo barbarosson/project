@@ -156,8 +156,8 @@ function ComicGutterColumn({
         className={cn(
           "relative h-full w-full px-3 py-8",
           side === "left"
-            ? "[mask-image:linear-gradient(to_right,black_0%,black_50%,transparent_100%)]"
-            : "[mask-image:linear-gradient(to_left,black_0%,black_50%,transparent_100%)]"
+            ? "[mask-image:linear-gradient(to_right,black_0%,black_58%,transparent_100%)]"
+            : "[mask-image:linear-gradient(to_left,black_0%,black_58%,transparent_100%)]"
         )}
       >
         <ComicGutterSilhouettes side={side} />
@@ -165,11 +165,11 @@ function ComicGutterColumn({
           className={cn(
             "pointer-events-none absolute inset-0 z-[2]",
             side === "left"
-              ? "[mask-image:linear-gradient(to_right,black_0%,black_50%,transparent_100%)]"
-              : "[mask-image:linear-gradient(to_left,black_0%,black_50%,transparent_100%)]"
+              ? "[mask-image:linear-gradient(to_right,black_0%,black_58%,transparent_100%)]"
+              : "[mask-image:linear-gradient(to_left,black_0%,black_58%,transparent_100%)]"
           )}
         >
-          <div className="comic-halftone absolute inset-0 opacity-[0.22]" aria-hidden />
+          <div className="comic-halftone absolute inset-0 opacity-[0.38]" aria-hidden />
           {bubbles.map((bubble) => (
             <div
               key={`${side}-${bubble.id}`}

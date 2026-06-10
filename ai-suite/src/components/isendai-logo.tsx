@@ -23,7 +23,7 @@ export function IsendaiLogo({
 
   return (
     <div
-      className={cn("inline-flex min-w-0 items-center gap-1.5 sm:gap-2", className)}
+      className={cn("inline-flex shrink-0 items-center gap-2 sm:gap-2.5", className)}
       role="img"
       aria-label="isendai"
     >
@@ -32,38 +32,33 @@ export function IsendaiLogo({
       {withWordmark ? (
         <span
           className={cn(
-            "font-display min-w-0 whitespace-nowrap font-black uppercase leading-none tracking-tight",
+            "font-display relative inline-flex min-w-0 items-baseline gap-1.5 whitespace-nowrap font-black uppercase leading-none tracking-[0.04em]",
             wordmarkClassName
           )}
         >
           <span
             className={cn(
-              "bg-gradient-to-br from-[hsl(255_85%_65%)] via-[hsl(200_95%_55%)] to-[hsl(285_85%_65%)]",
+              "relative bg-gradient-to-r from-violet-950 via-indigo-950 to-slate-900",
               "bg-clip-text text-transparent",
-              "[text-shadow:0_0_22px_hsl(255_85%_65%_/_0.15)]",
-              "light:from-violet-800 light:via-indigo-800 light:to-fuchsia-800 light:[text-shadow:none]"
+              "drop-shadow-[0_1px_0_rgba(255,255,255,0.95)]",
+              "after:pointer-events-none after:absolute after:inset-x-0 after:-bottom-0.5 after:h-px",
+              "after:bg-gradient-to-r after:from-violet-500/70 after:via-fuchsia-500/50 after:to-indigo-500/60"
             )}
           >
             {wordPrefix}
           </span>
           {hasTerminalAI ? (
-            <>
-              <span className="inline-block w-[0.22em]" aria-hidden="true" />
-              <span className="inline-flex items-center align-baseline">
-                <span
-                  className={cn(
-                    "inline-flex items-center justify-center rounded-full",
-                    "h-[1.35em] min-w-[1.35em] px-[0.38em]",
-                    "text-[0.92em] font-black tracking-[0.08em]",
-                    "border border-slate-900/20 bg-white text-slate-950",
-                    "shadow-[0_0_20px_hsl(200_95%_55%_/_0.25)]",
-                    "light:border-indigo-900/25 light:bg-indigo-950 light:text-white light:shadow-[0_0_16px_hsl(262_55%_45%_/_0.2)]"
-                  )}
-                >
-                  AI
-                </span>
-              </span>
-            </>
+            <span
+              className={cn(
+                "inline-flex h-[1.28em] min-w-[1.28em] shrink-0 items-center justify-center rounded-md px-[0.34em]",
+                "bg-gradient-to-br from-violet-600 via-fuchsia-600 to-indigo-700",
+                "text-[0.82em] font-black tracking-[0.14em] text-white",
+                "shadow-[0_2px_10px_rgba(109,40,217,0.35),inset_0_1px_0_rgba(255,255,255,0.22)]",
+                "ring-1 ring-violet-900/15"
+              )}
+            >
+              AI
+            </span>
           ) : null}
         </span>
       ) : null}

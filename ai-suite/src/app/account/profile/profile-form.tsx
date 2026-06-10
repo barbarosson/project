@@ -66,7 +66,7 @@ function ProfileCountrySelect({
     <select
       id="country"
       className="flex h-10 w-full rounded-xl border border-white/[0.08] bg-white/[0.03] px-3 py-2 text-sm text-slate-300 shadow-inner backdrop-blur-xl ring-offset-[#09090b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#09090b] disabled:cursor-not-allowed disabled:opacity-50"
-      style={{ colorScheme: "dark" }}
+      style={{ colorScheme: "light" }}
       value={countryCode}
       onChange={(e) => {
         const v = e.target.value;

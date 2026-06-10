@@ -1,35 +1,6 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark, .dark *));
 @custom-variant light (&:is(.light, .light *));
-
-.dark {
-  /* Dark: abyss + violet / pink glow */
-  --background: 240 6% 4%;
-  --foreground: 0 0% 98%;
-  --card: 240 6% 6%;
-  --card-foreground: 0 0% 98%;
-  --popover: 230 18% 9%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 330 85% 68%;
-  --primary-foreground: 230 20% 12%;
-  --secondary: 230 12% 16%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 230 12% 16%;
-  --muted-foreground: 230 8% 70%;
-  --accent: 230 12% 16%;
-  --accent-foreground: 0 0% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 230 12% 18%;
-  --input: 230 12% 18%;
-  --ring: 330 85% 68%;
-  --radius: 0.9rem;
-  --shell-base: 240 6% 4%;
-  --link-accent: 270 95% 75%;
-  --glass-border: 0 0% 100% / 0.08;
-  --glass-bg: 0 0% 100% / 0.03;
-}
 
 .light {
   /* Light: cool grey, pink accent, navy text */
@@ -183,18 +154,9 @@ body > div {
   }
 }
 
-/* Native selects: match active theme */
-.dark select {
-  color-scheme: dark;
-}
-
+/* Native selects: light theme */
 .light select {
   color-scheme: light;
-}
-
-.dark option {
-  background-color: rgb(24 24 27);
-  color: rgb(244 244 245);
 }
 
 .light option {
@@ -202,15 +164,16 @@ body > div {
   color: hsl(var(--foreground));
 }
 
-/* Sonner: error toasts — readable rose on zinc (app is dark-only) */
-[data-sonner-toast][data-type="error"] {
-  background-color: rgb(39 39 42 / 0.96) !important;
-  border-color: rgb(251 113 133 / 0.45) !important;
-  color: rgb(254 205 211) !important;
+/* Sonner: error toasts */
+.light [data-sonner-toast][data-type="error"] {
+  background-color: hsl(0 70% 97%) !important;
+  border-color: hsl(0 72% 45% / 0.45) !important;
+  color: hsl(0 65% 32%) !important;
 }
-[data-sonner-toast][data-type="error"] [data-title],
-[data-sonner-toast][data-type="error"] [data-description] {
-  color: rgb(254 205 211) !important;
+
+.light [data-sonner-toast][data-type="error"] [data-title],
+.light [data-sonner-toast][data-type="error"] [data-description] {
+  color: hsl(0 65% 32%) !important;
 }
 
 /* Lucide: thinner strokes for a refined tech look */
@@ -314,17 +277,6 @@ svg.lucide {
 
 .light :where([class*="to-slate-950"]) {
   --tw-gradient-to: hsl(220 18% 88%) var(--tw-gradient-to-position) !important;
-}
-
-.light [data-sonner-toast][data-type="error"] {
-  background-color: hsl(0 70% 97%) !important;
-  border-color: hsl(0 72% 45% / 0.45) !important;
-  color: hsl(0 65% 32%) !important;
-}
-
-.light [data-sonner-toast][data-type="error"] [data-title],
-.light [data-sonner-toast][data-type="error"] [data-description] {
-  color: hsl(0 65% 32%) !important;
 }
 
 @layer utilities {
@@ -577,48 +529,37 @@ svg.lucide {
 
 /* Comic side gutters — halftone dot texture inside speech columns */
 .comic-halftone {
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.14) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(76, 29, 149, 0.22) 1px, transparent 1px);
   background-size: 7px 7px;
 }
 
-/* Gutter crowd wash — full-column faint backdrop behind speech bubbles */
+/* Gutter crowd wash — full-column backdrop behind speech bubbles */
 .comic-gutter-silhouette-layer {
   -webkit-mask-image: linear-gradient(
     to bottom,
     transparent 0%,
-    black 6%,
-    black 94%,
+    black 4%,
+    black 96%,
     transparent 100%
   );
-  mask-image: linear-gradient(to bottom, transparent 0%, black 6%, black 94%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%);
   mix-blend-mode: multiply;
-  opacity: 0.17;
-  filter: saturate(0.8) contrast(0.96);
+  opacity: 0.34;
+  filter: saturate(1.08) contrast(1.12);
 }
 
 .comic-gutter-silhouette-layer--ghost {
-  opacity: 0.1;
+  opacity: 0.22;
 }
 
 .light .comic-gutter-silhouette-layer {
   mix-blend-mode: multiply;
-  opacity: 0.14;
-  filter: saturate(0.7) contrast(1);
+  opacity: 0.36;
+  filter: saturate(1.12) contrast(1.14);
 }
 
 .light .comic-gutter-silhouette-layer--ghost {
-  opacity: 0.085;
-}
-
-.dark .comic-gutter-silhouette-layer {
-  mix-blend-mode: screen;
-  opacity: 0.34;
-  filter: invert(1) hue-rotate(180deg) saturate(1.55) brightness(0.96) contrast(1.06);
-}
-
-.dark .comic-gutter-silhouette-layer--ghost {
-  opacity: 0.22;
-  filter: invert(1) hue-rotate(180deg) saturate(1.4) brightness(0.92) contrast(1.04);
+  opacity: 0.24;
 }
 
 /* Login onboarding popup — profile silhouettes anchored to modal floor */
@@ -635,12 +576,6 @@ svg.lucide {
   mix-blend-mode: multiply;
   opacity: 0.5;
   filter: contrast(1.04) saturate(1.18);
-}
-
-.dark .onboarding-silhouette-bg {
-  mix-blend-mode: screen;
-  opacity: 0.34;
-  filter: invert(1) hue-rotate(180deg) saturate(1.28) brightness(0.9);
 }
 
 @keyframes routeCard {

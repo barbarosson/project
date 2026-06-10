@@ -20,13 +20,13 @@ export function CopyVersionButton({ text }: { text: string }) {
       className={cn(
         "h-8 gap-1.5 px-3 text-xs",
         "transition-colors transition-transform duration-150",
-        "hover:bg-slate-200 dark:hover:bg-slate-800",
+        "hover:bg-slate-200 light:hover:bg-slate-100",
         "active:scale-95"
       )}
       aria-label={isCopied ? t("ui.copied") : t("ui.copy")}
     >
       {isCopied ? (
-        <Check className="size-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden />
+        <Check className="size-3.5 text-emerald-600 light:text-emerald-700" aria-hidden />
       ) : (
         <Copy className="size-3.5" aria-hidden />
       )}

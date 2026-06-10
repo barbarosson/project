@@ -1,24 +1,15 @@
-import { THEME_COOKIE } from "@/lib/theme";
-
-/** Runs before paint to avoid theme flash (pairs with ThemeProvider). */
+/** Ensures the document root stays on the light theme (no dark mode). */
 export function ThemeInitScript() {
   const snippet = `
 (function(){
   try {
-    var key=${JSON.stringify(THEME_COOKIE)};
-    var stored=localStorage.getItem("ai-suite:theme");
-    var m=document.cookie.match(new RegExp("(?:^|; )"+key+"=(light|dark)"));
-    var t=(m&&m[1])||(stored==="light"||stored==="dark"?stored:null)||"dark";
     var r=document.documentElement;
     r.classList.remove("light","dark");
-    r.classList.add(t);
+    r.classList.add("light");
+    localStorage.setItem("ai-suite:theme","light");
   } catch(e) {}
 })();
 `.trim();
 
-  return (
-    <script
-      dangerouslySetInnerHTML={{ __html: snippet }}
-    />
-  );
+  return <script dangerouslySetInnerHTML={{ __html: snippet }} />;
 }

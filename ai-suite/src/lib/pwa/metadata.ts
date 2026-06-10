@@ -1,14 +1,14 @@
 import type { Metadata, Viewport } from "next";
 
-/** Matches `globals.css` / layout body background. */
-export const PWA_THEME_COLOR = "#09090b";
+/** Matches `globals.css` light shell background. */
+export const PWA_THEME_COLOR = "#e3e6ec";
 
 export const pwaViewport: Viewport = {
   themeColor: PWA_THEME_COLOR,
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  colorScheme: "dark",
+  colorScheme: "light",
 };
 
 /** PWA manifest + Apple web app tags (merged into root metadata). */

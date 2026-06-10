@@ -65,14 +65,14 @@ export function CopyOutputButton({ text, className, onCopied }: CopyOutputButton
       className={cn(
         "absolute right-3 top-3 z-10 size-9 shrink-0 rounded-lg border-white/15 bg-background/90 shadow-sm backdrop-blur-md",
         "transition-colors transition-transform duration-150",
-        "hover:bg-slate-200 dark:hover:bg-slate-800",
+        "hover:bg-slate-200 light:hover:bg-slate-100",
         "active:scale-95",
         className
       )}
       aria-label={isCopied ? t("ui.copied") : t("success.copy")}
     >
       {isCopied ? (
-        <Check className="size-4 text-emerald-600 dark:text-emerald-400" strokeWidth={2.25} aria-hidden />
+        <Check className="size-4 text-emerald-600 light:text-emerald-700" strokeWidth={2.25} aria-hidden />
       ) : (
         <Copy className="size-4" aria-hidden />
       )}

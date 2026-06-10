@@ -14,20 +14,23 @@ export function ComicGutterSilhouettes({ side }: { side: GutterSide }) {
       className={cn(
         "pointer-events-none absolute inset-0 isolate z-[1] overflow-hidden",
         isLeft
-          ? "[mask-image:linear-gradient(to_right,black_0%,black_78%,transparent_100%)]"
-          : "[mask-image:linear-gradient(to_left,black_0%,black_78%,transparent_100%)]"
+          ? "[mask-image:linear-gradient(to_right,black_0%,black_86%,transparent_100%)]"
+          : "[mask-image:linear-gradient(to_left,black_0%,black_86%,transparent_100%)]"
       )}
       aria-hidden
     >
+      <div className="absolute inset-0 bg-[hsl(var(--shell-base))]" aria-hidden />
       <div
-        className="absolute inset-0 bg-[hsl(var(--shell-base))]"
+        className={cn(
+          "absolute inset-0",
+          "bg-gradient-to-b from-violet-200/55 via-fuchsia-100/45 to-indigo-200/50"
+        )}
         aria-hidden
       />
       <div
         className={cn(
-          "absolute inset-0",
-          "bg-gradient-to-b from-fuchsia-500/[0.07] via-violet-500/[0.1] to-cyan-400/[0.09]",
-          "dark:from-fuchsia-400/[0.12] dark:via-violet-400/[0.14] dark:to-cyan-300/[0.11]"
+          "absolute inset-y-0 w-[72%]",
+          isLeft ? "left-0 bg-gradient-to-r from-violet-300/25 to-transparent" : "right-0 bg-gradient-to-l from-indigo-300/25 to-transparent"
         )}
         aria-hidden
       />
@@ -57,16 +60,14 @@ export function ComicGutterSilhouettes({ side }: { side: GutterSide }) {
       />
       <div
         className={cn(
-          "absolute inset-0 hidden",
-          "light:block light:opacity-20",
-          "bg-gradient-to-b from-[hsl(var(--shell-base))] via-transparent to-[hsl(var(--shell-base))]/80"
+          "absolute inset-0 opacity-25",
+          "bg-gradient-to-b from-[hsl(var(--shell-base))] via-transparent to-[hsl(var(--shell-base))]/85"
         )}
       />
       <div
         className={cn(
-          "absolute inset-0 hidden",
-          "light:block",
-          "bg-gradient-to-b from-transparent via-violet-200/20 to-slate-200/15"
+          "absolute inset-0",
+          "bg-gradient-to-b from-violet-300/15 via-fuchsia-200/20 to-cyan-200/15"
         )}
       />
     </div>
