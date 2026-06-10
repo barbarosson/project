@@ -10,6 +10,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSupabaseBrowserRuntimeConfig } from "@/lib/supabase/browser-config-context";
 import { publicBrowserSiteOrigin } from "@/lib/site-public-url";
 import { readReferralCookieClient } from "@/lib/referrals/ref-cookie";
+import { isPlausibleAuthEmail, normalizeEmailForAuth } from "@/lib/auth/normalize-email";
 
 const MIN_PASSWORD_LEN = 6;
 
@@ -28,6 +29,9 @@ function mapAuthEmailErrorToMessage(
     lower.includes("too many emails")
   ) {
     return t("login.emailRateLimit");
+  }
+  if (lower.includes("unable to validate email address")) {
+    return t("login.emailInvalid");
   }
   return msg || t(fallbackKey);
 }
@@ -62,8 +66,8 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
   >(null);
 
   function validateEmail(): string | null {
-    const value = email.trim();
-    if (!value || !value.includes("@")) {
+    const value = normalizeEmailForAuth(email);
+    if (!isPlausibleAuthEmail(value)) {
       toast.error(t("login.emailInvalid"));
       return null;
     }

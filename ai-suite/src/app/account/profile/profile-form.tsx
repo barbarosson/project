@@ -17,6 +17,7 @@ import { ModelSwitcher } from "@/components/model-switcher";
 import type { ModelId } from "@/models/models";
 import { getSortedRegionOptions, legacyCountryToCode } from "@/lib/regions";
 import type { Locale } from "@/i18n/dictionaries";
+import { isPlausibleAuthEmail, normalizeEmailForAuth } from "@/lib/auth/normalize-email";
 
 type UseCase = "work" | "personal" | "creator" | "student" | "agency" | "other" | "";
 
@@ -35,7 +36,7 @@ function bool(v: unknown): boolean {
 }
 
 function isValidEmail(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+  return isPlausibleAuthEmail(value);
 }
 
 type RegionOptions = ReturnType<typeof getSortedRegionOptions>;
@@ -117,7 +118,7 @@ export function ProfileForm({ nextPath, email, initialMeta }: Props) {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const emailToSave = accountEmail.trim();
+    const emailToSave = normalizeEmailForAuth(accountEmail);
     if (!hasAccountEmail) {
       if (!emailToSave) {
         toast.error(t("profile.errors.emailRequired"));
