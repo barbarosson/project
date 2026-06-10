@@ -7,6 +7,11 @@ export function normalizeEmailForAuth(raw: string): string {
     .replace(/[\u200B-\u200D\uFEFF]/g, "");
 }
 
+/** Fix frequent domain typos before Supabase DNS validation rejects signup. */
+export function fixCommonAuthEmailTypos(email: string): string {
+  return email.replace(/@modulsutech\.app$/i, "@modulustech.app");
+}
+
 /** Practical client-side check; Supabase Auth validates again server-side. */
 export function isPlausibleAuthEmail(value: string): boolean {
   const email = normalizeEmailForAuth(value);
@@ -18,4 +23,9 @@ export function isPlausibleAuthEmail(value: string): boolean {
   if (!local || !domain.includes(".")) return false;
   if (/\s/.test(email)) return false;
   return true;
+}
+
+/** Normalize + fix typos for auth API calls. */
+export function prepareEmailForAuth(raw: string): string {
+  return fixCommonAuthEmailTypos(normalizeEmailForAuth(raw));
 }

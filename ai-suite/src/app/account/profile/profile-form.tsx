@@ -17,7 +17,7 @@ import { ModelSwitcher } from "@/components/model-switcher";
 import type { ModelId } from "@/models/models";
 import { getSortedRegionOptions, legacyCountryToCode } from "@/lib/regions";
 import type { Locale } from "@/i18n/dictionaries";
-import { isPlausibleAuthEmail, normalizeEmailForAuth } from "@/lib/auth/normalize-email";
+import { isPlausibleAuthEmail, prepareEmailForAuth } from "@/lib/auth/normalize-email";
 
 type UseCase = "work" | "personal" | "creator" | "student" | "agency" | "other" | "";
 
@@ -118,7 +118,7 @@ export function ProfileForm({ nextPath, email, initialMeta }: Props) {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const emailToSave = normalizeEmailForAuth(accountEmail);
+    const emailToSave = prepareEmailForAuth(accountEmail);
     if (!hasAccountEmail) {
       if (!emailToSave) {
         toast.error(t("profile.errors.emailRequired"));

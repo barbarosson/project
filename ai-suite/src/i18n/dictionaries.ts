@@ -693,6 +693,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthFacebook": "Continue with Facebook",
     "login.oauthOtherTitle": "More sign-in options",
     "login.emailInvalid": "Please enter a valid email address.",
+    "login.emailTypoModulus": "Check the domain spelling: use modulustech.app (not modulsutech).",
+    "login.emailDomainInvalid": "That email domain looks invalid. Check spelling and try again.",
     "login.emailSent": "Check your email for the sign-in link.",
     "login.sendFailed": "Could not send the sign-in link.",
     "login.emailRateLimit":
@@ -1529,6 +1531,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthFacebook": "Continuar con Facebook",
     "login.oauthOtherTitle": "Más opciones de acceso",
     "login.emailInvalid": "Introduce un email válido.",
+    "login.emailTypoModulus": "Revisa el dominio: usa modulustech.app (no modulsutech).",
+    "login.emailDomainInvalid": "El dominio del correo no parece válido. Revisa la ortografía.",
     "login.emailSent": "Revisa tu correo para el enlace de acceso.",
     "login.sendFailed": "No se pudo enviar el enlace.",
     "login.emailRateLimit":
@@ -2356,6 +2360,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthFacebook": "Continuer avec Facebook",
     "login.oauthOtherTitle": "Plus d’options de connexion",
     "login.emailInvalid": "Saisis une adresse email valide.",
+    "login.emailTypoModulus": "Vérifie le domaine : modulustech.app (pas modulsutech).",
+    "login.emailDomainInvalid": "Le domaine de l’e-mail semble invalide. Vérifie l’orthographe.",
     "login.emailSent": "Vérifie tes emails pour le lien de connexion.",
     "login.sendFailed": "Impossible d’envoyer le lien.",
     "login.emailRateLimit":
@@ -3184,6 +3190,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthFacebook": "Mit Facebook fortfahren",
     "login.oauthOtherTitle": "Weitere Login‑Optionen",
     "login.emailInvalid": "Bitte eine gültige E‑Mail‑Adresse eingeben.",
+    "login.emailTypoModulus": "Domain prüfen: modulustech.app (nicht modulsutech).",
+    "login.emailDomainInvalid": "Die E-Mail-Domain wirkt ungültig. Schreibweise prüfen.",
     "login.emailSent": "Prüfe dein Postfach für den Login‑Link.",
     "login.sendFailed": "Link konnte nicht gesendet werden.",
     "login.emailRateLimit":
@@ -3961,6 +3969,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthFacebook": "使用 Facebook 继续",
     "login.oauthOtherTitle": "更多登录选项",
     "login.emailInvalid": "请输入有效的邮箱地址。",
+    "login.emailTypoModulus": "请检查域名：应为 modulustech.app（不是 modulsutech）。",
+    "login.emailDomainInvalid": "邮箱域名似乎无效，请检查拼写。",
     "login.emailSent": "请查收邮件中的登录链接。",
     "login.sendFailed": "无法发送登录链接。",
     "login.emailRateLimit":
@@ -4783,6 +4793,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthFacebook": "Facebook ile devam et",
     "login.oauthOtherTitle": "Diğer giriş seçenekleri",
     "login.emailInvalid": "Geçerli bir e-posta gir.",
+    "login.emailTypoModulus": "Alan adını kontrol edin: modulustech.app (modulsutech değil).",
+    "login.emailDomainInvalid": "E-posta alan adı geçersiz görünüyor. Yazımı kontrol edip tekrar deneyin.",
     "login.emailSent": "Giriş bağlantısı için e-postanı kontrol et.",
     "login.sendFailed": "Bağlantı gönderilemedi.",
     "login.emailRateLimit":

@@ -10,7 +10,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSupabaseBrowserRuntimeConfig } from "@/lib/supabase/browser-config-context";
 import { publicBrowserSiteOrigin } from "@/lib/site-public-url";
 import { readReferralCookieClient } from "@/lib/referrals/ref-cookie";
-import { isPlausibleAuthEmail, normalizeEmailForAuth } from "@/lib/auth/normalize-email";
+import { isPlausibleAuthEmail, prepareEmailForAuth } from "@/lib/auth/normalize-email";
 
 const MIN_PASSWORD_LEN = 6;
 
@@ -32,6 +32,12 @@ function mapAuthEmailErrorToMessage(
   }
   if (lower.includes("unable to validate email address")) {
     return t("login.emailInvalid");
+  }
+  if (lower.includes("email address") && lower.includes("invalid")) {
+    if (msg.includes("modulsutech")) {
+      return t("login.emailTypoModulus");
+    }
+    return t("login.emailDomainInvalid");
   }
   return msg || t(fallbackKey);
 }
@@ -66,7 +72,7 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
   >(null);
 
   function validateEmail(): string | null {
-    const value = normalizeEmailForAuth(email);
+    const value = prepareEmailForAuth(email);
     if (!isPlausibleAuthEmail(value)) {
       toast.error(t("login.emailInvalid"));
       return null;
