@@ -201,7 +201,7 @@ export function HomeClient({
       />
 
       <main className={siteContainer("flex min-w-0 flex-col overflow-x-clip pb-4 lg:pb-16")}>
-        <div className="order-2 hidden lg:block">
+        <div className="order-2 max-lg:hidden">
         <section
           className={cn(
             "relative overflow-hidden rounded-2xl px-6 py-8 sm:px-10",
@@ -460,7 +460,7 @@ export function HomeClient({
 
           <div className="relative grid min-w-0 gap-6 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
           {/* Left: tool list */}
-          <aside className={cn("hidden min-w-0 p-5 lg:block", sectionPanelViolet)}>
+          <aside className={cn("min-w-0 p-5 max-lg:hidden", sectionPanelViolet)}>
             <div className="mb-5 flex items-center justify-between gap-3">
               <p className={aiProductsNav.sidebarTitle}>{t("home.sidebar.title")}</p>
               <span className={aiProductsNav.countBadge}>{TOOLS.length}</span>
@@ -587,7 +587,7 @@ export function HomeClient({
 
             <ConciergeChat
               className={cn(
-                "mb-5 hidden hover:translate-y-0 lg:block",
+                "mb-5 max-lg:hidden hover:translate-y-0",
                 sectionPanelCyan,
                 "border-cyan-400/35"
               )}

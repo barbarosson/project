@@ -118,7 +118,7 @@ export function PromoCampaignBanner({ className, showPricingLink = false }: Prop
       </div>
 
       {/* Desktop: full banner */}
-      <div className="relative hidden flex-wrap items-start gap-3 sm:gap-4 lg:flex">
+      <div className="relative flex flex-wrap items-start gap-3 max-lg:hidden sm:gap-4">
         <span
           className={cn(
             "flex size-10 shrink-0 items-center justify-center rounded-xl border border-amber-400/30 bg-amber-500/15 text-amber-200",

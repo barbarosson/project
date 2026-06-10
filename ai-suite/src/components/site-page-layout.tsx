@@ -101,7 +101,7 @@ export function SitePageFooter() {
         </nav>
       </div>
 
-      <div className={cn(siteContainer("hidden py-5 sm:py-6 lg:block"))}>
+      <div className={cn(siteContainer("py-5 max-lg:hidden sm:py-6"))}>
         <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3">
           <div className="min-w-0 max-w-[min(100%,14rem)] shrink space-y-0.5 sm:max-w-[min(100%,18rem)] md:max-w-[min(100%,22rem)]">
             <p className="truncate text-[11px] leading-snug text-muted-foreground sm:text-xs">
@@ -249,7 +249,7 @@ export function SitePageHeader({
       </header>
 
       {/* Desktop shell (≥ lg) */}
-      <header className="relative z-30 hidden safe-area-top pb-3 sm:pb-4 lg:block">
+      <header className="relative z-30 max-lg:hidden safe-area-top pb-3 sm:pb-4">
         <div className={siteContainer("flex flex-nowrap items-center gap-2 sm:gap-3 md:gap-4")}>
           <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
             {showHomeNav ? (

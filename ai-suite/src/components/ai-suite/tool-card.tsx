@@ -305,8 +305,8 @@ export function ToolCard({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0 space-y-1">
             <p className="text-xs text-slate-400 lg:hidden">{t("tool.flow.hintMobile")}</p>
-            <p className="hidden text-sm text-slate-300 lg:block">{t("tool.flow.hint")}</p>
-            <div className="hidden space-y-1 text-xs text-slate-500 lg:block">
+            <p className="text-sm text-slate-300 max-lg:hidden light:text-slate-700">{t("tool.flow.hint")}</p>
+            <div className="max-lg:hidden space-y-1 text-xs text-slate-500 light:text-slate-600">
               <p>{t("tool.priceReference").replace("{pack}", packLabel)}</p>
               <p className="text-[11px] leading-snug text-slate-500">{t("tool.pricePackFlex")}</p>
             </div>
