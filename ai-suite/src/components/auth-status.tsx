@@ -19,6 +19,8 @@ type AuthStatusProps = {
   initialSignedInLabel?: string | null;
   /** Icon-only labels until xl — keeps the site header on one row. */
   compact?: boolean;
+  /** Compact shell: single account/login icon; logout lives in overflow menu. */
+  iconOnly?: boolean;
 };
 
 export function AuthStatus({
@@ -26,6 +28,7 @@ export function AuthStatus({
   omitAccountLink,
   initialSignedInLabel,
   compact = false,
+  iconOnly = false,
 }: AuthStatusProps) {
   const { t } = useI18n();
   const router = useRouter();
@@ -122,14 +125,29 @@ export function AuthStatus({
     );
   }
 
-  const labelClass = compact ? "hidden xl:inline" : "hidden sm:inline";
+  const labelClass = iconOnly ? "sr-only" : compact ? "hidden xl:inline" : "hidden sm:inline";
   const authBtnClass = cn(
     interactiveClick,
     "inline-flex shrink-0 items-center gap-1 rounded-lg border border-white/[0.12] bg-white/[0.05] px-1.5 py-1 text-xs font-semibold text-slate-200 backdrop-blur-xl hover:border-violet-500/35 hover:bg-white/[0.09] sm:gap-1.5 sm:px-2 sm:py-1.5",
-    compact ? "xl:gap-2 xl:px-3 xl:py-2 xl:text-sm" : "sm:gap-2 sm:px-3 sm:py-2 sm:text-sm"
+    iconOnly ? "size-9 justify-center p-0 light:border-slate-300/80 light:bg-white/90" : "",
+    compact && !iconOnly ? "xl:gap-2 xl:px-3 xl:py-2 xl:text-sm" : !iconOnly ? "sm:gap-2 sm:px-3 sm:py-2 sm:text-sm" : ""
   );
 
   if (signedInLabel) {
+    if (iconOnly && !omitAccountLink) {
+      return (
+        <Link
+          href="/account"
+          className={cn(authBtnClass, className)}
+          title={signedInLabel}
+          aria-label={t("nav.account")}
+        >
+          <User className="size-4 shrink-0 text-indigo-600 light:text-indigo-700" strokeWidth={1.5} />
+          <span className={labelClass}>{t("nav.account")}</span>
+        </Link>
+      );
+    }
+
     const logoutBtn = (
       <button
         type="button"

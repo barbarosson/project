@@ -8,6 +8,8 @@ import type { ReactNode } from "react";
 import { AuthStatus } from "@/components/auth-status";
 import { CreditsNav } from "@/components/credits-nav";
 import { ReferralRewardsNav } from "@/components/referrals/referral-rewards-nav";
+import { HeaderOverflowMenu } from "@/components/mobile/header-overflow-menu";
+import { MobileBottomNav } from "@/components/mobile/bottom-nav";
 import { IsendaiLogo } from "@/components/isendai-logo";
 import { InstallAppButton } from "@/components/pwa/install-app-button";
 import { SiteLocaleToolbar } from "@/components/site-locale-toolbar";
@@ -34,10 +36,11 @@ const innerWidth: Record<PageShellVariant, string> = {
 
 export function SitePageChrome({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-full min-w-0 flex-col overflow-x-clip">
+    <div className="flex min-h-full min-w-0 flex-col overflow-x-clip pb-[calc(4.25rem+env(safe-area-inset-bottom,0px))] lg:pb-0">
       <div className="flex min-h-0 flex-1 flex-col">{children}</div>
       <SiteSecurityStrip />
       <SitePageFooter />
+      <MobileBottomNav />
     </div>
   );
 }
@@ -75,7 +78,30 @@ export function SitePageFooter() {
 
   return (
     <footer className="mt-auto border-t border-white/[0.08] bg-white/[0.02] backdrop-blur-xl light:border-slate-300/70 light:bg-white/60">
-      <div className={siteContainer("py-5 sm:py-6")}>
+      <div className={cn(siteContainer("py-4 sm:py-5"), "lg:hidden")}>
+        <p className="text-center text-[11px] leading-relaxed text-muted-foreground">
+          {t("footer.copyright")}
+        </p>
+        <nav
+          className="mt-3 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px]"
+          aria-label="Footer"
+        >
+          <Link className={navLinkMuted} href="/faq">
+            {t("nav.faq")}
+          </Link>
+          <Link className={navLinkMuted} href="/contact">
+            {t("nav.contact")}
+          </Link>
+          <Link className={navLinkMuted} href="/privacy">
+            {t("nav.privacy")}
+          </Link>
+          <Link className={navLinkMuted} href="/terms">
+            {t("nav.terms")}
+          </Link>
+        </nav>
+      </div>
+
+      <div className={cn(siteContainer("hidden py-5 sm:py-6 lg:block"))}>
         <div className="flex flex-nowrap items-center justify-between gap-2 sm:gap-3">
           <div className="min-w-0 max-w-[min(100%,14rem)] shrink space-y-0.5 sm:max-w-[min(100%,18rem)] md:max-w-[min(100%,22rem)]">
             <p className="truncate text-[11px] leading-snug text-muted-foreground sm:text-xs">
@@ -153,6 +179,31 @@ export function SitePageFooter() {
   );
 }
 
+function HeaderLogoLink({ wordmarkClassName }: { wordmarkClassName?: string }) {
+  return (
+    <Link
+      href="/"
+      className={cn(
+        "relative z-10 inline-flex shrink-0 items-center rounded-xl",
+        "bg-white/90 px-2 py-1 shadow-[0_2px_14px_rgba(30,27,75,0.08)]",
+        "ring-1 ring-violet-200/70 backdrop-blur-sm",
+        "transition-shadow hover:bg-white hover:shadow-[0_4px_18px_rgba(109,40,217,0.12)]",
+        "sm:px-2.5 sm:py-1.5"
+      )}
+      aria-label="isendai"
+    >
+      <IsendaiLogo
+        withWordmark
+        iconClassName="size-7 shrink-0 sm:size-8"
+        wordmarkClassName={cn(
+          "whitespace-nowrap text-sm sm:text-base md:text-lg",
+          wordmarkClassName
+        )}
+      />
+    </Link>
+  );
+}
+
 export function SitePageHeader({
   initialSignedInLabel = null,
 }: {
@@ -161,71 +212,82 @@ export function SitePageHeader({
   const pathname = usePathname();
   const { t } = useI18n();
   const showHomeNav = pathname !== "/";
+  const signedIn = Boolean(initialSignedInLabel);
 
   const headerToolClass = "relative z-10 shrink-0 touch-manipulation";
 
   return (
-    <header className="relative z-30 safe-area-top pb-3 sm:pb-4">
-      <div
-        className={siteContainer(
-          "flex flex-nowrap items-center gap-2 sm:gap-3 md:gap-4"
-        )}
-      >
-        <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
-          {showHomeNav ? (
-            <Link
-              href="/"
-              className={cn(
-                pageBackLink,
-                "inline-flex shrink-0 items-center gap-1 rounded-lg border border-white/[0.1] bg-white/[0.04] px-1.5 py-1",
-                "light:border-slate-300/70 light:bg-white/80",
-                "sm:px-2 sm:py-1.5"
-              )}
-              aria-label={t("nav.backToHome")}
-              title={t("nav.backToHome")}
-            >
-              <Home className="size-4 shrink-0" aria-hidden />
-              <span className="hidden xl:inline">{t("nav.backToHome")}</span>
-            </Link>
-          ) : null}
-          <Link
-            href="/"
-            className={cn(
-              "relative z-10 inline-flex shrink-0 items-center rounded-xl",
-              "bg-white/90 px-2 py-1 shadow-[0_2px_14px_rgba(30,27,75,0.08)]",
-              "ring-1 ring-violet-200/70 backdrop-blur-sm",
-              "transition-shadow hover:bg-white hover:shadow-[0_4px_18px_rgba(109,40,217,0.12)]",
-              "sm:px-2.5 sm:py-1.5"
-            )}
-            aria-label="isendai"
-          >
-            <IsendaiLogo
-              withWordmark
-              iconClassName="size-7 shrink-0 sm:size-8 md:size-9"
-              wordmarkClassName={cn(
-                "hidden whitespace-nowrap sm:inline",
-                "text-base sm:text-lg md:text-xl"
-              )}
+    <>
+      {/* Compact shell: phone + tablet (< lg) */}
+      <header className="relative z-30 safe-area-top pb-2 lg:hidden">
+        <div className={siteContainer("flex items-center gap-2")}>
+          <div className="flex min-w-0 flex-1 items-center gap-1.5">
+            {showHomeNav ? (
+              <Link
+                href="/"
+                className={cn(
+                  pageBackLink,
+                  "inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-slate-300/70 bg-white/90"
+                )}
+                aria-label={t("nav.backToHome")}
+              >
+                <Home className="size-4 shrink-0" aria-hidden />
+              </Link>
+            ) : null}
+            <HeaderLogoLink wordmarkClassName="inline" />
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <CreditsNav className={headerToolClass} />
+            <AuthStatus
+              iconOnly
+              className={headerToolClass}
+              initialSignedInLabel={initialSignedInLabel}
             />
-          </Link>
+            <HeaderOverflowMenu signedIn={signedIn} className={headerToolClass} />
+          </div>
         </div>
-        <div
-          role="toolbar"
-          aria-label="Header"
-          className="ml-auto flex min-w-0 flex-nowrap items-center justify-end gap-1 overflow-x-auto [scrollbar-width:none] sm:gap-1.5 [&::-webkit-scrollbar]:hidden"
-        >
-          <SiteLocaleToolbar compact />
-          <InstallAppButton variant="header" className={headerToolClass} />
-          <ReferralRewardsNav compact className={headerToolClass} />
-          <CreditsNav className={cn(headerToolClass, "flex-nowrap")} />
-          <AuthStatus
-            compact
-            className={headerToolClass}
-            initialSignedInLabel={initialSignedInLabel}
-          />
+      </header>
+
+      {/* Desktop shell (≥ lg) */}
+      <header className="relative z-30 hidden safe-area-top pb-3 sm:pb-4 lg:block">
+        <div className={siteContainer("flex flex-nowrap items-center gap-2 sm:gap-3 md:gap-4")}>
+          <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+            {showHomeNav ? (
+              <Link
+                href="/"
+                className={cn(
+                  pageBackLink,
+                  "inline-flex shrink-0 items-center gap-1 rounded-lg border border-white/[0.1] bg-white/[0.04] px-1.5 py-1",
+                  "light:border-slate-300/70 light:bg-white/80",
+                  "sm:px-2 sm:py-1.5"
+                )}
+                aria-label={t("nav.backToHome")}
+                title={t("nav.backToHome")}
+              >
+                <Home className="size-4 shrink-0" aria-hidden />
+                <span className="hidden xl:inline">{t("nav.backToHome")}</span>
+              </Link>
+            ) : null}
+            <HeaderLogoLink wordmarkClassName="hidden sm:inline" />
+          </div>
+          <div
+            role="toolbar"
+            aria-label="Header"
+            className="ml-auto flex min-w-0 flex-nowrap items-center justify-end gap-1 overflow-x-auto [scrollbar-width:none] sm:gap-1.5 [&::-webkit-scrollbar]:hidden"
+          >
+            <SiteLocaleToolbar compact />
+            <InstallAppButton variant="header" className={headerToolClass} />
+            <ReferralRewardsNav compact className={headerToolClass} />
+            <CreditsNav className={cn(headerToolClass, "flex-nowrap")} />
+            <AuthStatus
+              compact
+              className={headerToolClass}
+              initialSignedInLabel={initialSignedInLabel}
+            />
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }
 

@@ -61,9 +61,9 @@ export function FloatingConciergeWidget() {
     <div
       className={cn(
         "pointer-events-none fixed z-[70] flex flex-col items-end gap-2",
-        "max-md:bottom-[max(0.75rem,env(safe-area-inset-bottom,0px))]",
-        "max-md:right-[max(0.75rem,env(safe-area-inset-right,0px))]",
-        "md:bottom-8 md:right-10"
+        "max-lg:bottom-[calc(4.25rem+max(0.75rem,env(safe-area-inset-bottom,0px)))]",
+        "max-lg:right-[max(0.75rem,env(safe-area-inset-right,0px))]",
+        "lg:bottom-8 lg:right-10"
       )}
     >
       {open ? (

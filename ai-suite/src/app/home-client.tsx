@@ -200,7 +200,8 @@ export function HomeClient({
         initialSignedInLabel={authSnapshot?.signedIn ? authSnapshot.label : null}
       />
 
-      <main className={siteContainer("min-w-0 overflow-x-clip pb-16")}>
+      <main className={siteContainer("flex min-w-0 flex-col overflow-x-clip pb-4 lg:pb-16")}>
+        <div className="order-2 hidden lg:block">
         <section
           className={cn(
             "relative overflow-hidden rounded-2xl px-6 py-8 sm:px-10",
@@ -439,8 +440,9 @@ export function HomeClient({
             })}
           </div>
         </section>
+        </div>
 
-        <section id="home-tools" className={cn("mt-8 scroll-mt-24", sectionGradientShell)}>
+        <section id="home-tools" className={cn("order-1 mt-0 scroll-mt-20 lg:order-3 lg:mt-8 lg:scroll-mt-24", sectionGradientShell)}>
           <div
             className="pointer-events-none absolute -right-16 top-0 size-52 rounded-full bg-fuchsia-500/20 blur-3xl"
             aria-hidden
@@ -449,6 +451,12 @@ export function HomeClient({
             className="pointer-events-none absolute -bottom-12 -left-16 size-48 rounded-full bg-violet-500/15 blur-3xl"
             aria-hidden
           />
+
+          <div className="relative mb-4 rounded-xl border border-violet-200/70 bg-white/80 px-4 py-3 lg:hidden">
+            <p className="text-sm font-medium leading-snug text-slate-700">{t("home.compact.lead")}</p>
+            <WelcomeMembershipBanner className="mt-3" />
+            <PromoCampaignBanner className="mt-3" showPricingLink />
+          </div>
 
           <div className="relative grid min-w-0 gap-6 lg:grid-cols-[minmax(0,380px)_minmax(0,1fr)]">
           {/* Left: tool list */}
@@ -579,7 +587,7 @@ export function HomeClient({
 
             <ConciergeChat
               className={cn(
-                "mb-5 hover:translate-y-0",
+                "mb-5 hidden hover:translate-y-0 lg:block",
                 sectionPanelCyan,
                 "border-cyan-400/35"
               )}

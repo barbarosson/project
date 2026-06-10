@@ -304,6 +304,16 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.account": "Account",
     "nav.logout": "Log out",
 
+    "mobileNav.ariaLabel": "Main navigation",
+    "mobileNav.home": "Home",
+    "mobileNav.tools": "Tools",
+    "mobileNav.credits": "Credits",
+    "header.menu": "Menu",
+    "header.menuTitle": "More options",
+    "header.menuClose": "Close menu",
+    "home.compact.lead": "Fix messages before you send — pick a tool and go.",
+    "home.compact.ctaTools": "Choose a tool",
+
     "pwa.install": "Install App",
     "pwa.installShort": "Install",
     "pwa.toastIos":
@@ -1142,6 +1152,16 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.account": "Mi cuenta",
     "nav.logout": "Cerrar sesión",
 
+    "mobileNav.ariaLabel": "Navegación principal",
+    "mobileNav.home": "Inicio",
+    "mobileNav.tools": "Herramientas",
+    "mobileNav.credits": "Créditos",
+    "header.menu": "Menú",
+    "header.menuTitle": "Más opciones",
+    "header.menuClose": "Cerrar menú",
+    "home.compact.lead": "Mejora tus mensajes antes de enviar — elige una herramienta y listo.",
+    "home.compact.ctaTools": "Elegir herramienta",
+
     "pwa.install": "Instalar app",
     "pwa.installShort": "Instalar",
     "pwa.toastIos":
@@ -1957,6 +1977,16 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.history": "Historique",
     "nav.account": "Mon compte",
     "nav.logout": "Se déconnecter",
+
+    "mobileNav.ariaLabel": "Navigation principale",
+    "mobileNav.home": "Accueil",
+    "mobileNav.tools": "Outils",
+    "mobileNav.credits": "Crédits",
+    "header.menu": "Menu",
+    "header.menuTitle": "Plus d’options",
+    "header.menuClose": "Fermer le menu",
+    "home.compact.lead": "Améliorez vos messages avant l’envoi — choisissez un outil.",
+    "home.compact.ctaTools": "Choisir un outil",
 
     "pwa.install": "Installer l’app",
     "pwa.installShort": "Installer",
@@ -2775,6 +2805,16 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.account": "Konto",
     "nav.logout": "Abmelden",
 
+    "mobileNav.ariaLabel": "Hauptnavigation",
+    "mobileNav.home": "Start",
+    "mobileNav.tools": "Tools",
+    "mobileNav.credits": "Credits",
+    "header.menu": "Menü",
+    "header.menuTitle": "Weitere Optionen",
+    "header.menuClose": "Menü schließen",
+    "home.compact.lead": "Nachrichten vor dem Senden verbessern — Tool wählen und los.",
+    "home.compact.ctaTools": "Tool wählen",
+
     "pwa.install": "App installieren",
     "pwa.installShort": "Installieren",
     "pwa.toastIos":
@@ -3564,6 +3604,16 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.account": "我的账户",
     "nav.logout": "退出登录",
 
+    "mobileNav.ariaLabel": "主导航",
+    "mobileNav.home": "首页",
+    "mobileNav.tools": "工具",
+    "mobileNav.credits": "积分",
+    "header.menu": "菜单",
+    "header.menuTitle": "更多选项",
+    "header.menuClose": "关闭菜单",
+    "home.compact.lead": "发送前先优化文案 — 选择工具即可开始。",
+    "home.compact.ctaTools": "选择工具",
+
     "pwa.install": "安装应用",
     "pwa.installShort": "安装",
     "pwa.toastIos": "在 iPhone 或 iPad 上：点分享，然后选择「添加到主屏幕」。",
@@ -4337,6 +4387,16 @@ export const DICTS: Record<Locale, Dict> = {
     "nav.history": "Geçmiş",
     "nav.account": "Hesabım",
     "nav.logout": "Çıkış",
+
+    "mobileNav.ariaLabel": "Ana gezinme",
+    "mobileNav.home": "Ana",
+    "mobileNav.tools": "Araçlar",
+    "mobileNav.credits": "Kontör",
+    "header.menu": "Menü",
+    "header.menuTitle": "Diğer seçenekler",
+    "header.menuClose": "Menüyü kapat",
+    "home.compact.lead": "Göndermeden önce mesajını düzelt — aracı seç ve başla.",
+    "home.compact.ctaTools": "Araç seç",
 
     "pwa.install": "Uygulamayı Yükle",
     "pwa.installShort": "Yükle",
