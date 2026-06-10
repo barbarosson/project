@@ -10,7 +10,7 @@ import {
   clientInsufficientCreditsMessage,
   clientMapGenerationError,
 } from "@/lib/client-generation-errors";
-import { modelSalesTier, resolveConcreteModelId, type ModelId } from "@/models/models";
+import { resolveConcreteModelId, type ModelId } from "@/models/models";
 import { resolveToolModelPreference } from "@/lib/auth/default-ai-model";
 import { ModelSwitcher } from "@/components/model-switcher";
 import { useModel } from "@/models/model-provider";
@@ -151,8 +151,6 @@ export function ToolCard({
       ? jobLink.trim().length >= 8 && resume.trim().length >= 20
       : text.trim().length >= 10;
 
-  const salesTier = modelSalesTier(concreteModel);
-  const packLabel = t(`pricing.pack.${salesTier}`);
   const paidGenerateLabel = toolPrimaryActionLabel(t, tool, def.actionLabel);
 
   async function runPaidGeneration() {
@@ -303,14 +301,9 @@ export function ToolCard({
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="min-w-0 space-y-1">
-            <p className="text-xs text-slate-400 lg:hidden">{t("tool.flow.hintMobile")}</p>
-            <p className="text-sm text-slate-300 max-lg:hidden light:text-slate-700">{t("tool.flow.hint")}</p>
-            <div className="max-lg:hidden space-y-1 text-xs text-slate-500 light:text-slate-600">
-              <p>{t("tool.priceReference").replace("{pack}", packLabel)}</p>
-              <p className="text-[11px] leading-snug text-slate-500">{t("tool.pricePackFlex")}</p>
-            </div>
-          </div>
+          <p className="min-w-0 text-xs leading-snug text-slate-500 light:text-slate-600 sm:max-w-md sm:text-sm">
+            {t("tool.flow.hintMobile")}
+          </p>
           <Button className="shrink-0" onClick={() => void runPaidGeneration()} disabled={busy}>
             {paidGenerateLabel}
           </Button>
