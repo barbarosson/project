@@ -800,7 +800,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "Next we open the result page and generate using your credit balance. Need more credits? Visit Pricing for Lemon Squeezy checkout.",
-    "tool.flow.hintMobile": "Uses credits · results on the next page.",
+    "tool.flow.hintMobile": "When you generate, credits are used—you'll see the result on the next page.",
     "tool.ctaCreditSuffix": " — varies by model and length",
     "tool.modelSelectLabel": "AI model for this request",
     "tool.priceReference": "Pay-as-you-go pack for this model tier: {pack}.",
@@ -1636,7 +1636,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "A continuación abrimos la página de resultado y generamos con tu saldo. ¿Necesitas más créditos? Ve a Precios y paga con Lemon Squeezy.",
-    "tool.flow.hintMobile": "Gasta créditos · resultado en la siguiente página.",
+    "tool.flow.hintMobile": "Al generar se usan créditos; verás el resultado en la página siguiente.",
     "tool.modelSelectLabel": "Modelo de IA para esta solicitud",
     "tool.ctaCreditSuffix": " — según modelo y longitud",
     "tool.priceReference": "Paquete de pago por uso para este nivel: {pack}.",
@@ -2463,7 +2463,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "Ensuite nous ouvrons la page de résultat et générons avec votre solde. Besoin de crédits ? Tarifs et paiement Lemon Squeezy.",
-    "tool.flow.hintMobile": "Utilise des crédits · résultat à la page suivante.",
+    "tool.flow.hintMobile": "Quand vous générez, des crédits sont utilisés — le résultat s’affiche sur la page suivante.",
     "tool.modelSelectLabel": "Modèle IA pour cette requête",
     "tool.ctaCreditSuffix": " — selon modèle et longueur",
     "tool.priceReference": "Pack à l’usage pour ce palier : {pack}.",
@@ -3291,7 +3291,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "Als Nächstes öffnen wir die Ergebnisseite und generieren mit deinem Guthaben. Mehr Credits? Preise und Lemon-Squeezy-Checkout.",
-    "tool.flow.hintMobile": "Verbraucht Credits · Ergebnis auf der nächsten Seite.",
+    "tool.flow.hintMobile": "Beim Generieren werden Credits verwendet; das Ergebnis sehen Sie auf der nächsten Seite.",
     "tool.modelSelectLabel": "KI‑Modell für diese Anfrage",
     "tool.ctaCreditSuffix": " — je nach Modell und Länge",
     "tool.priceReference": "Pay-as-you-go-Paket für diese Modellstufe: {pack}.",
@@ -4065,7 +4065,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "接下来会打开结果页并用余额生成。需要更多额度？请前往定价页通过 Lemon Squeezy 购买。",
-    "tool.flow.hintMobile": "消耗额度 · 下一页查看结果。",
+    "tool.flow.hintMobile": "生成时会消耗额度，结果在下一页显示。",
     "tool.modelSelectLabel": "本次请求使用的 AI 模型",
     "tool.ctaCreditSuffix": " — 按模型与长度计费",
     "tool.priceReference": "该模型档位的一次性额度包：{pack}。",
@@ -4890,7 +4890,7 @@ export const DICTS: Record<Locale, Dict> = {
 
     "tool.flow.hint":
       "Sırada sonuç sayfası vardır ve üretim kontör bakiyenizden düşülür. Kontör gerekiyorsa Paketler sayfasından Lemon Squeezy ile satın alabilirsiniz.",
-    "tool.flow.hintMobile": "Kontör düşer · sonuç sonraki sayfada.",
+    "tool.flow.hintMobile": "Oluşturduğunuzda kontör kullanılır; sonucu bir sonraki sayfada görürsünüz.",
     "tool.modelSelectLabel": "Bu istek için yapay zeka modeli",
     "tool.ctaCreditSuffix": " — modele ve uzunluğa göre",
     "tool.priceReference": "Bu model kademesi için kullandıkça öde paketi: {pack}.",
