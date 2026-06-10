@@ -35,22 +35,90 @@ export function PromoCampaignBanner({ className, showPricingLink = false }: Prop
     .replace("{code}", PROMO_CODE_ISEND101)
     .replace("{percent}", String(PROMO_ISEND101_DISCOUNT_PERCENT));
 
+  const copyButton = (
+    <button
+      type="button"
+      onClick={() => void copyCode()}
+      aria-label={copied ? t("promo.isend101.copiedShort") : t("promo.isend101.copy")}
+      className={cn(
+        interactiveClick,
+        "inline-flex shrink-0 items-center justify-center gap-1 rounded-lg border border-white/[0.12] bg-white/[0.06] px-2.5 py-1.5 text-xs font-semibold text-slate-100 hover:border-amber-400/40 hover:bg-amber-500/10",
+        "light:border-slate-300/80 light:bg-white light:text-slate-800 light:hover:border-amber-500/50 light:hover:bg-amber-50"
+      )}
+    >
+      {copied ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
+      <span className="hidden min-[380px]:inline">
+        {copied ? t("promo.isend101.copiedShort") : t("promo.isend101.copy")}
+      </span>
+    </button>
+  );
+
   return (
     <aside
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-amber-400/35 bg-gradient-to-br from-amber-500/12 via-violet-500/10 to-fuchsia-500/10 p-4 sm:p-5",
+        "relative overflow-hidden rounded-2xl border border-amber-400/35 bg-gradient-to-br from-amber-500/12 via-violet-500/10 to-fuchsia-500/10",
         "shadow-[0_8px_32px_rgba(251,191,36,0.12),inset_0_1px_0_0_rgba(255,255,255,0.08)]",
         "light:border-amber-500/50 light:from-amber-50/95 light:via-violet-50/70 light:to-fuchsia-50/50",
         "light:shadow-[0_8px_28px_rgba(180,120,20,0.12),inset_0_1px_0_0_rgba(255,255,255,0.9)]",
+        "p-3 lg:p-5",
         className
       )}
       aria-label={t("promo.isend101.ariaLabel")}
     >
       <div
-        className="pointer-events-none absolute -right-8 -top-8 size-32 rounded-full bg-amber-400/10 blur-2xl light:bg-amber-300/25"
+        className="pointer-events-none absolute -right-8 -top-8 hidden size-32 rounded-full bg-amber-400/10 blur-2xl light:bg-amber-300/25 lg:block"
         aria-hidden
       />
-      <div className="relative flex flex-wrap items-start gap-3 sm:gap-4">
+
+      {/* Mobile: compact strip — title + inline code/copy */}
+      <div className="relative lg:hidden">
+        <div className="flex items-start gap-2.5">
+          <span
+            className={cn(
+              "flex size-8 shrink-0 items-center justify-center rounded-lg border border-amber-400/30 bg-amber-500/15 text-amber-200",
+              "light:border-amber-600/35 light:bg-amber-100 light:text-amber-900"
+            )}
+            aria-hidden
+          >
+            <Percent className="size-4" strokeWidth={1.5} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-200/95 light:text-amber-900">
+              {t("promo.isend101.badge")}
+            </p>
+            <p className="mt-0.5 text-sm font-bold leading-snug text-white light:text-slate-900">
+              {t("promo.isend101.title")}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-2.5 flex items-center gap-2">
+          <code
+            className={cn(
+              "min-w-0 flex-1 truncate rounded-lg border border-amber-400/25 bg-white/10 px-2.5 py-1.5 text-center font-mono text-sm font-bold tracking-wider text-amber-100",
+              "light:border-amber-500/35 light:bg-white/90 light:text-amber-950"
+            )}
+          >
+            {PROMO_CODE_ISEND101}
+          </code>
+          {copyButton}
+        </div>
+
+        {showPricingLink ? (
+          <Link
+            href="/pricing"
+            className={cn(
+              "mt-2 inline-flex text-xs font-semibold text-violet-300 underline-offset-2 hover:text-violet-200 hover:underline",
+              "light:text-violet-800 light:hover:text-violet-950"
+            )}
+          >
+            {t("promo.isend101.viewPricing")} →
+          </Link>
+        ) : null}
+      </div>
+
+      {/* Desktop: full banner */}
+      <div className="relative hidden flex-wrap items-start gap-3 sm:gap-4 lg:flex">
         <span
           className={cn(
             "flex size-10 shrink-0 items-center justify-center rounded-xl border border-amber-400/30 bg-amber-500/15 text-amber-200",
