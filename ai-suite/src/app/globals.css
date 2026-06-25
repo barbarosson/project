@@ -528,6 +528,17 @@ svg.lucide {
 }
 
 /* Comic side gutters — halftone dot texture inside speech columns */
+.comic-page-canvas {
+  min-height: 100%;
+}
+
+@media (min-width: 1280px) {
+  .comic-page-canvas {
+    /* Match home scroll height so gutter bubbles use the same spacing on every page. */
+    min-height: max(100%, 5200px);
+  }
+}
+
 .comic-halftone {
   background-image: radial-gradient(circle, rgba(76, 29, 149, 0.22) 1px, transparent 1px);
   background-size: 7px 7px;

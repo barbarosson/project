@@ -125,7 +125,7 @@ gtag('config', '${GA_ID}', { anonymize_ip: true });
                   <FloatingConciergeWidget />
                   <AuthSessionHydrator />
                   <div className="relative isolate flex min-h-full w-full flex-1 flex-col">
-                    <div className="relative flex min-h-full flex-1 flex-col">
+                    <div className="comic-page-canvas relative flex min-h-full flex-1 flex-col">
                       <ComicSidebarBackground />
                       <div className="relative z-10 flex min-h-full flex-1 flex-col">
                         {children}

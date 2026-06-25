@@ -9,7 +9,8 @@ export type ComicSidebarExample = {
   after: LocalizedLine;
 };
 
-/** Gutter copy — separate from home.demo.examples. */
+/** Min canvas height (xl) so short pages spread gutter bubbles like the home page. */
+export const COMIC_GUTTER_CANVAS_MIN_HEIGHT = "max(100%, 5200px)";
 export const COMIC_SIDEBAR_EXAMPLES: ComicSidebarExample[] = [
   {
     tool: "corporate-whisperer",

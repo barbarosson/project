@@ -218,7 +218,7 @@ export function ComicSidebarBackground() {
   return (
     <div
       aria-hidden
-      className="pointer-events-none fixed inset-0 z-[15] hidden overflow-hidden xl:block"
+      className="pointer-events-none absolute inset-0 z-[15] hidden overflow-hidden xl:block"
     >
       <ComicGutterColumn
         side="left"
