@@ -12,6 +12,7 @@ import { authCallbackRedirectUrl } from "@/lib/auth/oauth-callback-url";
 import { resolvePostLoginDestination } from "@/lib/auth/resolve-post-login-destination";
 import { readReferralCookieClient } from "@/lib/referrals/ref-cookie";
 import { isPlausibleAuthEmail, prepareEmailForAuth } from "@/lib/auth/normalize-email";
+import { signupLikelyExistingAccount } from "@/lib/auth/signup-response";
 
 const MIN_PASSWORD_LEN = 6;
 
@@ -110,9 +111,9 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
         await navigateAfterSession(supabase);
         return;
       }
-      // Supabase hides duplicate-email signup errors; empty identities ⇒ account likely exists → no mail sent.
-      const identities = data.user?.identities;
-      if (Array.isArray(identities) && identities.length === 0) {
+      // Supabase hides duplicate-email signup errors; empty identities or an old
+      // created_at usually means no new confirmation mail was queued.
+      if (signupLikelyExistingAccount(data.user)) {
         toast.warning(t("login.signUpExistingEmail"));
         return;
       }
