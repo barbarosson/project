@@ -43,7 +43,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
   const { data: reqRow } = await admin
     .schema("isendai")
     .from("requests")
-    .select("id,owner_type,owner_id,tool_id,model_id,created_at,credits_charged,max_versions,input_json")
+    .select("id,owner_type,owner_id,tool_id,model_id,created_at,credits_charged,input_json")
     .eq("id", id)
     .maybeSingle();
 
@@ -70,8 +70,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
           meta={`${reqRow.tool_id} · ${reqRow.model_id}`}
           subtitle={d["request.timeCreditsLine"]
             .replace("{date}", dateStr)
-            .replace("{charged}", formatCreditsFromTenths(reqRow.credits_charged))
-            .replace("{max}", String(reqRow.max_versions))}
+            .replace("{charged}", formatCreditsFromTenths(reqRow.credits_charged))}
           actions={
             <>
               <Link className={pageOutlineButton} href="/account">

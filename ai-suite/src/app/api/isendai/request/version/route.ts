@@ -267,10 +267,6 @@ export async function POST(req: Request) {
     p_text: text,
   });
   if (addErr) {
-    const msg = String(addErr.message || "");
-    if (msg.includes("version_limit_reached")) {
-      return NextResponse.json({ error: "Version limit reached." }, { status: 409 });
-    }
     return NextResponse.json({ error: "Failed to save version." }, { status: 500 });
   }
 

@@ -30,7 +30,6 @@ export default async function Home() {
       if (w !== "rpc_missing") {
         creditsSnapshot = {
           balance: Number(w.credits_balance ?? 0),
-          maxVersions: Number(w.max_versions_per_request ?? 5) || 5,
         };
       } else {
         const admin = createSupabaseAdminClientOrNull();
@@ -40,13 +39,12 @@ export default async function Home() {
           const { data: ent } = await admin
             .schema("isendai")
             .from("entitlements")
-            .select("credits_balance,max_versions_per_request")
+            .select("credits_balance")
             .eq("owner_type", "user")
             .eq("owner_id", String(ownerId).trim())
             .maybeSingle();
           creditsSnapshot = {
             balance: ent?.credits_balance ?? 0,
-            maxVersions: ent?.max_versions_per_request ?? 5,
           };
         }
       }

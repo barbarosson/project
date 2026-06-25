@@ -71,7 +71,7 @@ export const FAQ_CONTENT: Record<Locale, FaqPageContent> = {
       {
         question: "Can I generate alternative versions?",
         answer:
-          "Yes. After a result is ready, you can request alternative versions (up to a per-generation limit) with optional extra instructions, and switch between saved versions on the results screen.",
+          "Yes. After a result is ready, you can request as many alternative versions as your credit balance allows, with optional extra instructions, and switch between saved versions on the results screen.",
       },
       {
         question: "How do payments work?",
@@ -155,7 +155,7 @@ export const FAQ_CONTENT: Record<Locale, FaqPageContent> = {
       {
         question: "Alternatif sürümler üretebilir miyim?",
         answer:
-          "Evet. Sonuç hazır olduktan sonra isteğe bağlı ek talimatlarla alternatif sürümler (üretim başına bir limite kadar) isteyebilir ve sonuç ekranında kayıtlı sürümler arasında geçiş yapabilirsiniz.",
+          "Evet. Sonuç hazır olduktan sonra kontör bakiyeniz yeterli olduğu sürece isteğe bağlı ek talimatlarla istediğiniz kadar alternatif sürüm isteyebilir ve sonuç ekranında kayıtlı sürümler arasında geçiş yapabilirsiniz.",
       },
       {
         question: "Ödemeler nasıl işler?",
@@ -239,7 +239,7 @@ export const FAQ_CONTENT: Record<Locale, FaqPageContent> = {
       {
         question: "¿Puedo generar versiones alternativas?",
         answer:
-          "Sí. Tras un resultado puedes pedir versiones alternativas (hasta un límite por generación) con instrucciones extra y cambiar entre versiones guardadas en la pantalla de resultados.",
+          "Sí. Tras un resultado puedes pedir tantas versiones alternativas como permita tu saldo de créditos, con instrucciones extra y cambiar entre versiones guardadas en la pantalla de resultados.",
       },
       {
         question: "¿Cómo funcionan los pagos?",
@@ -323,7 +323,7 @@ export const FAQ_CONTENT: Record<Locale, FaqPageContent> = {
       {
         question: "Puis-je générer des versions alternatives ?",
         answer:
-          "Oui. Après un résultat, vous pouvez demander des versions alternatives (dans une limite par génération) avec des instructions supplémentaires et basculer entre les versions enregistrées.",
+          "Oui. Après un résultat, vous pouvez demander autant de versions alternatives que votre solde de crédits le permet, avec des instructions supplémentaires, et basculer entre les versions enregistrées.",
       },
       {
         question: "Comment fonctionnent les paiements ?",
@@ -407,7 +407,7 @@ export const FAQ_CONTENT: Record<Locale, FaqPageContent> = {
       {
         question: "Kann ich alternative Versionen erzeugen?",
         answer:
-          "Ja. Nach einem Ergebnis kannst du Alternativen (bis zu einem Limit pro Generierung) mit Zusatzanweisungen anfordern und zwischen gespeicherten Versionen wechseln.",
+          "Ja. Nach einem Ergebnis kannst du so viele Alternativen anfordern, wie dein Credit-Guthaben erlaubt — mit Zusatzanweisungen — und zwischen gespeicherten Versionen wechseln.",
       },
       {
         question: "Wie funktionieren Zahlungen?",
@@ -489,7 +489,7 @@ export const FAQ_CONTENT: Record<Locale, FaqPageContent> = {
       {
         question: "可以生成多个版本吗？",
         answer:
-          "可以。结果就绪后，可请求替代版本（每次生成有上限），并可附加说明，在结果页切换已保存的版本。",
+          "可以。结果就绪后，只要额度充足，就可请求任意数量的替代版本，并可附加说明，在结果页切换已保存的版本。",
       },
       {
         question: "付款如何运作？",

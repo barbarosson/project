@@ -109,7 +109,7 @@ export async function GET(req: NextRequest) {
         credits: tenthsToDisplayCredits(Number(w.credits_balance ?? 0)),
         trial_days_left: trial,
         subscription_status: w.subscription_status ?? null,
-        max_versions_per_request: Number(w.max_versions_per_request ?? 5) || 5,
+        max_versions_per_request: Number(w.max_versions_per_request ?? 9999) || 9999,
       };
       if (process.env.NODE_ENV === "development" && Number(w.credits_balance ?? 0) === 0) {
         console.warn(

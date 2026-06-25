@@ -40,8 +40,6 @@ type Stored = { v: 1; savedAt: string; payload: ToolPayload };
 type Version = { v: 1; id: string; createdAt: string; text: string };
 type RequestRef = { v: 1; requestId: string };
 
-const CLIENT_VERSION_CAP = 50;
-
 function isToolName(value: string | null): value is ToolName {
   return typeof value === "string" && value.length > 0;
 }
@@ -95,7 +93,7 @@ function safeLoadVersions(toolName: ToolName): Version[] {
           typeof x.text === "string"
       )
       .map((x) => ({ v: 1, id: x.id!, createdAt: x.createdAt!, text: x.text! }));
-    return cleaned.slice(0, CLIENT_VERSION_CAP);
+    return cleaned;
   } catch {
     return [];
   }
@@ -103,7 +101,7 @@ function safeLoadVersions(toolName: ToolName): Version[] {
 
 function persistVersions(toolName: ToolName, next: Version[]) {
   try {
-    sessionStorage.setItem(resultsKey(toolName), JSON.stringify(next.slice(0, CLIENT_VERSION_CAP)));
+    sessionStorage.setItem(resultsKey(toolName), JSON.stringify(next));
   } catch {
     // ignore
   }
@@ -380,11 +378,6 @@ export function SuccessClient({
         const restoredNow = safeLoadVersions(tool);
         const shouldGenerate = restoredNow.length === 0 || hasPendingAlt(tool);
         if (!shouldGenerate) return;
-        if (restoredNow.length >= 5) {
-          setPendingAlt(tool, false);
-          return;
-        }
-
         const text = await generate(tool, parsed, model);
         if (cancelled) return;
 
@@ -394,7 +387,7 @@ export function SuccessClient({
           createdAt: new Date().toISOString(),
           text,
         };
-        const next: Version[] = [...restoredNow, newVersion].slice(0, CLIENT_VERSION_CAP);
+        const next: Version[] = [...restoredNow, newVersion];
         setVersions(next);
         setActiveId(newVersion.id);
         persistVersions(tool, next);
@@ -436,12 +429,11 @@ export function SuccessClient({
   }, [active, cleanup]);
 
   function canGenerateAnother() {
-    return tool && versions.length < 5 && !loading;
+    return tool && !loading;
   }
 
   async function payAndGenerateAlternative() {
     if (!tool) return;
-    if (versions.length >= 5) return;
 
     const storageKey = getToolDefinition(tool).storageKey;
     storageKeyRef.current = storageKey;
@@ -473,7 +465,7 @@ export function SuccessClient({
         createdAt: new Date().toISOString(),
         text,
       };
-      const next: Version[] = [...versions, newVersion].slice(0, CLIENT_VERSION_CAP);
+      const next: Version[] = [...versions, newVersion];
       setVersions(next);
       setActiveId(newVersion.id);
       persistVersions(tool, next);
@@ -669,7 +661,7 @@ export function SuccessClient({
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-xs text-slate-400">
-                      {t("success.versions")} {versions.length}/5
+                      {t("success.versions")} {versions.length}
                     </p>
                     <Button
                       onClick={payAndGenerateAlternative}
@@ -718,11 +710,6 @@ export function SuccessClient({
                   </div>
                 ) : null}
 
-                {tool && versions.length >= 5 ? (
-                  <div className={cn("rounded-lg p-3 text-sm text-slate-400", glassSurface)}>
-                    {t("success.alt.limit")}
-                  </div>
-                ) : null}
               </>
             ) : (
               <p className="text-sm text-slate-300">{t("success.ready")}</p>

@@ -36,7 +36,7 @@ export async function loadAccountEntitlementsAndRequests(
   if (wallet !== "rpc_missing") {
     ent = {
       credits_balance: Number(wallet.credits_balance ?? 0),
-      max_versions_per_request: Number(wallet.max_versions_per_request ?? 5) || 5,
+      max_versions_per_request: Number(wallet.max_versions_per_request ?? 9999) || 9999,
       plan_id: null,
       plan_status: wallet.subscription_status ?? null,
       current_period_end: null,

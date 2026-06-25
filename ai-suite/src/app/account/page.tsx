@@ -67,9 +67,6 @@ export default async function AccountPage() {
         <SitePageSection className="mt-0">
           <h2 className={pageSectionLabel}>{d["usage.creditsHeading"]}</h2>
           <p className={pageStatValue}>{formatCreditsFromTenths(ent?.credits_balance ?? 0)}</p>
-          <p className={cn("mt-2", "text-sm leading-relaxed text-slate-200 sm:text-base")}>
-            {d["usage.versionsLine"].replace("{max}", String(ent?.max_versions_per_request ?? 5))}
-          </p>
         </SitePageSection>
 
         <SitePageSection>
@@ -106,9 +103,7 @@ export default async function AccountPage() {
                     {d["usage.modelLabel"]}: {r.model_id}
                   </p>
                   <p className="mt-2 text-sm text-slate-200">
-                    {d["usage.chargedLine"]
-                      .replace("{charged}", formatCreditsFromTenths(r.credits_charged))
-                      .replace("{max}", String(r.max_versions))}
+                    {d["usage.chargedLine"].replace("{charged}", formatCreditsFromTenths(r.credits_charged))}
                   </p>
                 </div>
               ))}

@@ -272,7 +272,6 @@ export function HomeClient({
               <p className={creditsSummaryText}>
                 {t("home.creditsSummary")
                   .replace("{credits}", formatCreditsFromTenths(creditsSnapshot.balance))
-                  .replace("{max}", String(creditsSnapshot.maxVersions))
                   .replace("{scope}", t("home.creditsScopeUser"))}
               </p>
               {creditsSnapshot.balance === 0 ? (

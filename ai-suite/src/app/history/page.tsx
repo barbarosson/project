@@ -38,7 +38,7 @@ export default async function HistoryPage() {
   const { data: ent } = await admin
     .schema("isendai")
     .from("entitlements")
-    .select("credits_balance,max_versions_per_request,plan_id,plan_status,current_period_end")
+    .select("credits_balance,plan_id,plan_status,current_period_end")
     .eq("owner_type", "user")
     .eq("owner_id", userId)
     .maybeSingle();
@@ -46,13 +46,11 @@ export default async function HistoryPage() {
   const { data: requests } = await admin
     .schema("isendai")
     .from("requests")
-    .select("id,tool_id,model_id,created_at,credits_charged,max_versions")
+    .select("id,tool_id,model_id,created_at,credits_charged")
     .eq("owner_type", "user")
     .eq("owner_id", userId)
     .order("created_at", { ascending: false })
     .limit(50);
-
-  const maxV = ent?.max_versions_per_request ?? 5;
 
   return (
     <SitePageChrome>
@@ -78,9 +76,6 @@ export default async function HistoryPage() {
         <SitePageSection className="mt-0">
           <h2 className={pageSectionLabel}>{d["usage.creditsHeading"]}</h2>
           <p className={pageStatValue}>{formatCreditsFromTenths(ent?.credits_balance ?? 0)}</p>
-          <p className={cn("mt-2", "text-sm leading-relaxed text-slate-200 sm:text-base")}>
-            {d["usage.versionsLine"].replace("{max}", String(maxV))}
-          </p>
         </SitePageSection>
 
         <SitePageSection>
@@ -115,9 +110,7 @@ export default async function HistoryPage() {
                     {d["usage.modelLabel"]}: {r.model_id}
                   </p>
                   <p className="mt-2 text-sm text-slate-200">
-                    {d["usage.chargedLine"]
-                      .replace("{charged}", formatCreditsFromTenths(r.credits_charged))
-                      .replace("{max}", String(r.max_versions))}
+                    {d["usage.chargedLine"].replace("{charged}", formatCreditsFromTenths(r.credits_charged))}
                   </p>
                 </div>
               ))}
