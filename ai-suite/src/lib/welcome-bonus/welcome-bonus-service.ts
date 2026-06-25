@@ -13,58 +13,55 @@ export type WelcomeBonusStatus =
   | { status: "not_configured" }
   | { status: "error"; message: string };
 
-function emailIsConfirmed(user: User): boolean {
-  return Boolean(user.email_confirmed_at);
+type WelcomeBonusAttemptOptions = {
+  maxAttempts?: number;
+  delayMs?: number;
+};
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function processWelcomeBonusForUserId(
+function emailIsConfirmed(user: User): boolean {
+  const u = user as User & { confirmed_at?: string | null };
+  return Boolean(user.email_confirmed_at ?? u.confirmed_at);
+}
+
+function grantStatusFromRow(row: { status: string; credits_tenths: number }): WelcomeBonusStatus {
+  if (row.status === "granted") {
+    const credits =
+      row.credits_tenths > 0 ? row.credits_tenths / 10 : WELCOME_MEMBERSHIP_BONUS_CREDITS_WHOLE;
+    return { status: "granted", credits };
+  }
+  if (row.status === "blocked") {
+    return { status: "error", message: "welcome_bonus_blocked" };
+  }
+  return { status: "already_granted", credits: WELCOME_MEMBERSHIP_BONUS_CREDITS_WHOLE };
+}
+
+async function resolveAuthUserForBonus(
+  admin: NonNullable<ReturnType<typeof createSupabaseAdminClientOrNull>>,
+  userId: string
+): Promise<User | null> {
+  const { data: authRow } = await admin.auth.admin.getUserById(userId);
+  return authRow?.user ?? null;
+}
+
+async function pendingStatusForUser(
+  admin: NonNullable<ReturnType<typeof createSupabaseAdminClientOrNull>>,
   userId: string
 ): Promise<WelcomeBonusStatus> {
-  const id = userId?.trim();
-  if (!id) {
-    return { status: "error", message: "missing_user_id" };
+  const authUser = await resolveAuthUserForBonus(admin, userId);
+  if (!authUser) {
+    return { status: "error", message: "user_not_found" };
   }
-
-  const admin = createSupabaseAdminClientOrNull();
-  if (!admin) {
-    return { status: "not_configured" };
-  }
-
-  await ensureUserEntitlementsBootstrap(id);
-
-  const { error: rpcError } = await admin.rpc("process_welcome_bonus_for_user", {
-    p_user_id: id,
-  });
-
-  if (rpcError) {
-    const msg = rpcError.message ?? "rpc_failed";
-    if (process.env.NODE_ENV === "development") {
-      console.warn("[welcome-bonus] RPC failed:", msg);
-    }
-    return { status: "error", message: msg };
-  }
-
-  return readWelcomeBonusStatus(admin, id);
-}
-
-async function resolveAuthUserForBonus(user: User): Promise<User> {
-  const admin = createSupabaseAdminClientOrNull();
-  if (!admin) return user;
-
-  const { data: authRow } = await admin.auth.admin.getUserById(user.id);
-  return authRow?.user ?? user;
-}
-
-export async function processWelcomeBonusForUser(user: User): Promise<WelcomeBonusStatus> {
-  const authUser = await resolveAuthUserForBonus(user);
-
   if (!emailIsConfirmed(authUser)) {
     return { status: "pending_email_verification" };
   }
   if (!isMembershipProfileComplete(authUser.user_metadata)) {
     return { status: "pending_profile" };
   }
-  return processWelcomeBonusForUserId(authUser.id);
+  return { status: "error", message: "welcome_bonus_not_granted" };
 }
 
 async function readWelcomeBonusStatus(
@@ -82,64 +79,69 @@ async function readWelcomeBonusStatus(
     return { status: "error", message: error.message };
   }
 
-  if (!data) {
-    const { data: authRow } = await admin.auth.admin.getUserById(userId);
-    const authUser = authRow?.user;
-    if (!authUser) {
-      return { status: "error", message: "user_not_found" };
-    }
-    if (!emailIsConfirmed(authUser)) {
-      return { status: "pending_email_verification" };
-    }
-    if (!isMembershipProfileComplete(authUser.user_metadata)) {
-      return { status: "pending_profile" };
+  if (data) {
+    return grantStatusFromRow(data as { status: string; credits_tenths: number });
+  }
+
+  return pendingStatusForUser(admin, userId);
+}
+
+export async function processWelcomeBonusForUserId(
+  userId: string,
+  opts?: WelcomeBonusAttemptOptions
+): Promise<WelcomeBonusStatus> {
+  const id = userId?.trim();
+  if (!id) {
+    return { status: "error", message: "missing_user_id" };
+  }
+
+  const admin = createSupabaseAdminClientOrNull();
+  if (!admin) {
+    return { status: "not_configured" };
+  }
+
+  await ensureUserEntitlementsBootstrap(id);
+
+  const maxAttempts = Math.max(1, opts?.maxAttempts ?? 1);
+  const delayMs = Math.max(0, opts?.delayMs ?? 0);
+  let lastStatus: WelcomeBonusStatus = { status: "error", message: "welcome_bonus_not_granted" };
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    if (attempt > 0 && delayMs > 0) {
+      await sleep(delayMs);
     }
 
-    const { error: retryErr } = await admin.rpc("process_welcome_bonus_for_user", {
-      p_user_id: userId,
+    const { error: rpcError } = await admin.rpc("process_welcome_bonus_for_user", {
+      p_user_id: id,
     });
-    if (retryErr) {
-      return { status: "error", message: retryErr.message ?? "rpc_retry_failed" };
+
+    if (rpcError) {
+      const msg = rpcError.message ?? "rpc_failed";
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[welcome-bonus] RPC failed:", msg);
+      }
+      return { status: "error", message: msg };
     }
 
-    const { data: retryRow, error: retryReadErr } = await admin
-      .schema("isendai")
-      .from("welcome_bonus_grants")
-      .select("status, credits_tenths")
-      .eq("user_id", userId)
-      .maybeSingle();
-
-    if (retryReadErr) {
-      return { status: "error", message: retryReadErr.message };
+    lastStatus = await readWelcomeBonusStatus(admin, id);
+    if (lastStatus.status === "granted" || lastStatus.status === "already_granted") {
+      return lastStatus;
     }
-    if (!retryRow) {
-      return { status: "error", message: "welcome_bonus_not_granted" };
+    if (lastStatus.status === "pending_email_verification" || lastStatus.status === "pending_profile") {
+      return lastStatus;
     }
-
-    const retry = retryRow as { status: string; credits_tenths: number };
-    if (retry.status === "granted") {
-      const credits =
-        retry.credits_tenths > 0
-          ? retry.credits_tenths / 10
-          : WELCOME_MEMBERSHIP_BONUS_CREDITS_WHOLE;
-      return { status: "granted", credits };
-    }
-
-    return { status: "already_granted", credits: WELCOME_MEMBERSHIP_BONUS_CREDITS_WHOLE };
   }
 
-  const row = data as { status: string; credits_tenths: number };
-  if (row.status === "granted") {
-    const credits =
-      row.credits_tenths > 0
-        ? row.credits_tenths / 10
-        : WELCOME_MEMBERSHIP_BONUS_CREDITS_WHOLE;
-    return { status: "granted", credits };
+  return lastStatus;
+}
+
+export async function processWelcomeBonusForUser(user: User): Promise<WelcomeBonusStatus> {
+  const admin = createSupabaseAdminClientOrNull();
+  if (!admin) {
+    return { status: "not_configured" };
   }
 
-  if (row.status === "blocked") {
-    return { status: "error", message: "welcome_bonus_blocked" };
-  }
-
-  return { status: "already_granted", credits: WELCOME_MEMBERSHIP_BONUS_CREDITS_WHOLE };
+  const authUser = (await resolveAuthUserForBonus(admin, user.id)) ?? user;
+  // Retry: profile metadata can lag briefly right after updateUser on the client.
+  return processWelcomeBonusForUserId(authUser.id, { maxAttempts: 4, delayMs: 300 });
 }

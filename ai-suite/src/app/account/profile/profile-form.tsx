@@ -185,13 +185,19 @@ export function ProfileForm({ nextPath, email, initialMeta }: Props) {
           const payload = (await bonusRes.json()) as {
             result?: { status?: string; credits?: number };
           };
-          if (payload.result?.status === "granted") {
+          const status = payload.result?.status;
+          if (status === "granted") {
             toast.success(
               t("profile.welcomeCreditsGranted").replace(
                 "{credits}",
-                String(payload.result.credits ?? 100)
+                String(payload.result?.credits ?? 100)
               )
             );
+          } else if (status === "pending_email_verification") {
+            toast.success(t("profile.saved"));
+            toast.info(t("profile.welcomeCreditsPendingEmail"));
+          } else if (status === "already_granted") {
+            toast.success(t("profile.saved"));
           } else {
             toast.success(t("profile.saved"));
           }

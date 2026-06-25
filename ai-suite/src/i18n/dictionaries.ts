@@ -797,6 +797,8 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.saved": "Profile saved.",
     "profile.welcomeCreditsGranted":
       "Profile saved. {credits} welcome credits were added to your account.",
+    "profile.welcomeCreditsPendingEmail":
+      "Verify your email to receive your 100 welcome credits. They are added automatically after verification.",
     "profile.errors.required": "Please fill in all required fields.",
     "profile.errors.emailRequired": "Please enter your email address.",
     "profile.errors.emailInvalid": "Please enter a valid email address.",
@@ -1638,6 +1640,8 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.saved": "Perfil guardado.",
     "profile.welcomeCreditsGranted":
       "Perfil guardado. Se añadieron {credits} créditos de bienvenida a tu cuenta.",
+    "profile.welcomeCreditsPendingEmail":
+      "Verifica tu correo para recibir tus 100 créditos de bienvenida. Se añaden automáticamente tras la verificación.",
     "profile.errors.required": "Completa todos los campos obligatorios.",
     "profile.errors.emailRequired": "Introduce tu dirección de correo.",
     "profile.errors.emailInvalid": "Introduce un correo válido.",
@@ -2470,6 +2474,8 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.saved": "Profil enregistré.",
     "profile.welcomeCreditsGranted":
       "Profil enregistré. {credits} crédits de bienvenue ont été ajoutés à votre compte.",
+    "profile.welcomeCreditsPendingEmail":
+      "Vérifiez votre e-mail pour recevoir vos 100 crédits de bienvenue. Ils sont ajoutés automatiquement après vérification.",
     "profile.errors.required": "Remplis tous les champs obligatoires.",
     "profile.errors.emailRequired": "Saisis ton adresse e-mail.",
     "profile.errors.emailInvalid": "Saisis une adresse e-mail valide.",
@@ -3303,6 +3309,8 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.saved": "Profil gespeichert.",
     "profile.welcomeCreditsGranted":
       "Profil gespeichert. {credits} Willkommens-Credits wurden deinem Konto gutgeschrieben.",
+    "profile.welcomeCreditsPendingEmail":
+      "Bestätige deine E-Mail, um 100 Willkommens-Credits zu erhalten. Sie werden nach der Verifizierung automatisch gutgeschrieben.",
     "profile.errors.required": "Bitte alle Pflichtfelder ausfüllen.",
     "profile.errors.emailRequired": "Bitte gib deine E-Mail-Adresse ein.",
     "profile.errors.emailInvalid": "Bitte gib eine gültige E-Mail-Adresse ein.",
@@ -4082,6 +4090,8 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.saving": "保存中…",
     "profile.saved": "资料已保存。",
     "profile.welcomeCreditsGranted": "资料已保存。已向你的账户添加 {credits} 欢迎额度。",
+    "profile.welcomeCreditsPendingEmail":
+      "验证邮箱后即可获得 100 欢迎额度，验证通过后会自动到账。",
     "profile.errors.required": "请填写所有必填项。",
     "profile.errors.emailRequired": "请输入邮箱地址。",
     "profile.errors.emailInvalid": "请输入有效的邮箱地址。",
@@ -4912,6 +4922,8 @@ export const DICTS: Record<Locale, Dict> = {
     "profile.saved": "Profil kaydedildi.",
     "profile.welcomeCreditsGranted":
       "Profil kaydedildi. Hesabınıza {credits} hoş geldin kontörü yüklendi.",
+    "profile.welcomeCreditsPendingEmail":
+      "100 hoş geldin kontörünü almak için e-postanı doğrula. Doğrulamadan sonra kontörler otomatik yüklenir.",
     "profile.errors.required": "Zorunlu alanları doldur.",
     "profile.errors.emailRequired": "E-posta adresini gir.",
     "profile.errors.emailInvalid": "Geçerli bir e-posta adresi gir.",
