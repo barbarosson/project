@@ -24,7 +24,6 @@ import { LoginAuthToast } from "./login-auth-toast";
 import { LoginOAuthCodeForward } from "./login-oauth-code-forward";
 import { LoginReferralCapture } from "@/components/referrals/login-referral-capture";
 import { LoginClient } from "./ui";
-import { LoginOnboardingCarousel } from "@/components/auth/login-onboarding-carousel";
 
 export const dynamic = "force-dynamic";
 
@@ -88,7 +87,6 @@ export default async function LoginPage({
         <Suspense fallback={null}>
           <LoginOAuthCodeForward />
           <LoginReferralCapture />
-          <LoginOnboardingCarousel />
         </Suspense>
         <LoginAuthToast error={sp.error} detail={sp.detail} />
         <div className={cn(pageHeroPanel, pageContentSection, "mt-0 p-6 sm:p-8")}>
