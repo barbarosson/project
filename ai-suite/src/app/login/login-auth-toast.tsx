@@ -4,6 +4,22 @@ import * as React from "react";
 import { toast } from "sonner";
 
 import { useI18n } from "@/i18n/i18n-provider";
+import { isPkceAuthExchangeError } from "@/lib/auth/auth-callback-next";
+
+function authErrorToastMessage(
+  t: (key: string) => string,
+  detail: string | null
+): string {
+  if (!detail) return t("login.oauthCallbackFailed");
+  if (detail === "pkce_mismatch" || isPkceAuthExchangeError(detail)) {
+    return t("login.confirmLinkPkceFailed");
+  }
+  if (detail === "link_expired") return t("login.confirmLinkExpired");
+  if (detail === "missing_type" || detail === "missing_params") {
+    return t("login.confirmLinkInvalid");
+  }
+  return `${t("login.oauthCallbackFailed")} (${detail})`;
+}
 
 /** Shows a toast for `/login?error=…` then strips the query param from the URL. */
 export function LoginAuthToast({
@@ -22,9 +38,7 @@ export function LoginAuthToast({
     const detail =
       detailProp ?? new URLSearchParams(window.location.search).get("detail");
     if (error === "auth") {
-      toast.error(
-        detail ? `${t("login.oauthCallbackFailed")} (${detail})` : t("login.oauthCallbackFailed")
-      );
+      toast.error(authErrorToastMessage(t, detail));
     } else if (error === "oauth") {
       toast.error(
         detail ? `${t("login.oauthProviderError")} (${detail})` : t("login.oauthProviderError")

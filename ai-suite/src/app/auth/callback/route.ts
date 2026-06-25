@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import type { EmailOtpType } from "@supabase/supabase-js";
 
+import { authCallbackErrorDetail } from "@/lib/auth/auth-callback-next";
 import { isMembershipProfileComplete } from "@/lib/auth/membership-profile";
 import { safeNext } from "@/lib/auth/safe-next";
 import { ensureUserEntitlementsBootstrap } from "@/lib/isendai/ensure-user-entitlements";
@@ -36,6 +38,8 @@ function redirectWithCookies(
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
+  const tokenHash = url.searchParams.get("token_hash");
+  const otpType = url.searchParams.get("type") as EmailOtpType | null;
   const nextPath = safeNext(url.searchParams.get("next"));
   const siteOrigin = redirectOrigin(request, url.origin);
 
@@ -43,7 +47,7 @@ export async function GET(request: NextRequest) {
     url.searchParams.get("error") ||
     url.searchParams.get("error_code") ||
     url.searchParams.get("error_description");
-  if (oauthErr && !code) {
+  if (oauthErr && !code && !tokenHash) {
     const login = new URL("/login", siteOrigin);
     login.searchParams.set("error", "oauth");
     if (url.searchParams.get("error_description")) {
@@ -55,19 +59,35 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(login);
   }
 
-  if (!code) {
-    return NextResponse.redirect(new URL("/", siteOrigin));
+  if (!code && !(tokenHash && otpType)) {
+    const login = new URL("/login", siteOrigin);
+    login.searchParams.set("error", "auth");
+    login.searchParams.set("detail", tokenHash ? "missing_type" : "missing_params");
+    return NextResponse.redirect(login);
   }
 
   const pendingCookies: PendingAuthCookie[] = [];
   const supabase = createSupabaseRouteHandlerClient(request, pendingCookies);
 
-  const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-  if (exchangeError) {
-    const login = new URL("/login", siteOrigin);
-    login.searchParams.set("error", "auth");
-    login.searchParams.set("detail", exchangeError.message.slice(0, 200));
-    return redirectWithCookies(login, pendingCookies);
+  if (tokenHash && otpType) {
+    const { error: verifyError } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: otpType,
+    });
+    if (verifyError) {
+      const login = new URL("/login", siteOrigin);
+      login.searchParams.set("error", "auth");
+      login.searchParams.set("detail", authCallbackErrorDetail(verifyError.message));
+      return redirectWithCookies(login, pendingCookies);
+    }
+  } else if (code) {
+    const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+    if (exchangeError) {
+      const login = new URL("/login", siteOrigin);
+      login.searchParams.set("error", "auth");
+      login.searchParams.set("detail", authCallbackErrorDetail(exchangeError.message));
+      return redirectWithCookies(login, pendingCookies);
+    }
   }
 
   const { data: userData } = await supabase.auth.getUser();

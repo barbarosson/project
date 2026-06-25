@@ -6,7 +6,9 @@ Bu klasördeki HTML dosyalarını **Supabase Dashboard → Authentication → Em
 
 1. [Email Templates](https://supabase.com/dashboard/project/_/auth/templates) sayfasını açın.
 2. Her şablon için aşağıdaki tablodaki **Subject** satırını konu alanına, **Body** için `.html` dosyasının tam içeriğini yapıştırın.
-3. **Kaydedin.** Şablonda `{{ .ConfirmationURL }}` gibi ifadeleri değiştirmeyin; Supabase bunları otomatik doldurur.
+3. **Kaydedin.** `{{ .RedirectTo }}`, `{{ .TokenHash }}`, `{{ .Email }}` gibi ifadeleri değiştirmeyin; Supabase bunları otomatik doldurur.
+
+**Mobil uyumluluk:** Onay, magic link ve şifre sıfırlama şablonları `{{ .ConfirmationURL }}` yerine `token_hash` ile `/auth/callback` adresine gider. Böylece kullanıcı mail uygulamasından (Gmail, Apple Mail vb.) farklı bir tarayıcıda açsa bile oturum oluşur.
 
 ## Dosya eşlemesi
 

@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { useI18n } from "@/i18n/i18n-provider";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSupabaseBrowserRuntimeConfig } from "@/lib/supabase/browser-config-context";
-import { publicBrowserSiteOrigin } from "@/lib/site-public-url";
+import { authCallbackRedirectUrl } from "@/lib/auth/oauth-callback-url";
+import { resolvePostLoginDestination } from "@/lib/auth/resolve-post-login-destination";
 import { readReferralCookieClient } from "@/lib/referrals/ref-cookie";
 import { isPlausibleAuthEmail, prepareEmailForAuth } from "@/lib/auth/normalize-email";
 
@@ -42,21 +43,6 @@ function mapAuthEmailErrorToMessage(
   return msg || t(fallbackKey);
 }
 
-function authCallbackUrlForNext(authCallbackUrl: string, nextPath: string): string {
-  const trimmed = authCallbackUrl.trim();
-  if (trimmed) {
-    try {
-      const url = new URL(trimmed);
-      url.searchParams.set("next", nextPath);
-      return url.toString();
-    } catch {
-      /* fall through */
-    }
-  }
-  const origin = publicBrowserSiteOrigin();
-  return `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`;
-}
-
 type LoginClientProps = {
   authCallbackUrl: string;
   nextAfterAuth: string;
@@ -88,7 +74,12 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
       toast.error(t("login.authFailed"));
       return;
     }
-    window.location.assign(nextAfterAuth);
+    try {
+      await fetch("/api/auth/bootstrap", { method: "POST", credentials: "same-origin" });
+    } catch {
+      // non-fatal
+    }
+    window.location.assign(resolvePostLoginDestination(user, nextAfterAuth));
   }
 
   async function registerWithPassword() {
@@ -110,7 +101,7 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
         email: value,
         password,
         options: {
-          emailRedirectTo: authCallbackUrlForNext(authCallbackUrl, nextAfterAuth),
+          emailRedirectTo: authCallbackRedirectUrl(authCallbackUrl, nextAfterAuth),
           data: referredBy ? { referred_by: referredBy } : undefined,
         },
       });
@@ -184,7 +175,7 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
         type: "signup",
         email: value,
         options: {
-          emailRedirectTo: authCallbackUrlForNext(authCallbackUrl, nextAfterAuth),
+          emailRedirectTo: authCallbackRedirectUrl(authCallbackUrl, nextAfterAuth),
         },
       });
       if (error) throw error;
@@ -209,7 +200,7 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
       const { error } = await supabase.auth.signInWithOtp({
         email: value,
         options: {
-          emailRedirectTo: authCallbackUrlForNext(authCallbackUrl, nextAfterAuth),
+          emailRedirectTo: authCallbackRedirectUrl(authCallbackUrl, nextAfterAuth),
         },
       });
       if (error) throw error;
@@ -232,7 +223,7 @@ export function LoginClient({ authCallbackUrl, nextAfterAuth }: LoginClientProps
         return;
       }
       const { error } = await supabase.auth.resetPasswordForEmail(value, {
-        redirectTo: authCallbackUrlForNext(authCallbackUrl, "/auth/update-password"),
+        redirectTo: authCallbackRedirectUrl(authCallbackUrl, "/auth/update-password"),
       });
       if (error) throw error;
       toast.success(t("login.resetEmailSent"));

@@ -1,27 +1,36 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+import { authCallbackNextFallback } from "@/lib/auth/auth-callback-next";
 import { safeNext } from "@/lib/auth/safe-next";
 import { requiredEnv } from "@/lib/env";
 
-/** Supabase may land `?code=` on Site URL (`/`) instead of `/auth/callback` — forward so the session is created. */
-function redirectOAuthCodeToCallback(req: NextRequest): NextResponse | null {
+/** Supabase may land auth params on Site URL (`/`) instead of `/auth/callback` — forward so the session is created. */
+function redirectAuthParamsToCallback(req: NextRequest): NextResponse | null {
   const code = req.nextUrl.searchParams.get("code");
-  if (!code || req.nextUrl.pathname === "/auth/callback") return null;
+  const tokenHash = req.nextUrl.searchParams.get("token_hash");
+  const otpType = req.nextUrl.searchParams.get("type");
+  if ((!code && !(tokenHash && otpType)) || req.nextUrl.pathname === "/auth/callback") return null;
 
   const callback = new URL("/auth/callback", req.url);
-  callback.searchParams.set("code", code);
+  if (code) callback.searchParams.set("code", code);
+  if (tokenHash) callback.searchParams.set("token_hash", tokenHash);
+  if (otpType) callback.searchParams.set("type", otpType);
   const nextRaw = req.nextUrl.searchParams.get("next");
-  const fallbackNext = req.nextUrl.pathname === "/" ? "/" : req.nextUrl.pathname;
-  callback.searchParams.set("next", safeNext(nextRaw ?? fallbackNext));
+  callback.searchParams.set(
+    "next",
+    safeNext(nextRaw ?? authCallbackNextFallback(req.nextUrl.pathname))
+  );
   req.nextUrl.searchParams.forEach((value, key) => {
-    if (key !== "code" && key !== "next") callback.searchParams.set(key, value);
+    if (key !== "code" && key !== "next" && key !== "token_hash" && key !== "type") {
+      callback.searchParams.set(key, value);
+    }
   });
   return NextResponse.redirect(callback);
 }
 
 export async function middleware(req: NextRequest) {
-  const oauthRedirect = redirectOAuthCodeToCallback(req);
+  const oauthRedirect = redirectAuthParamsToCallback(req);
   if (oauthRedirect) return oauthRedirect;
 
   const res = NextResponse.next();

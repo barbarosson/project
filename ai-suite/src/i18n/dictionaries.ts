@@ -666,6 +666,10 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthGoogleClientIdInvalid":
       "Google Client ID on the server is invalid (use the Web Client ID ending in .apps.googleusercontent.com, not the secret). Falling back to standard sign-in.",
     "login.oauthCallbackFailed": "Could not finish sign-in. Try again or use email and password.",
+    "login.confirmLinkPkceFailed":
+      "This confirmation link was opened in a different browser than where you signed up. Tap “Resend confirmation email” and open the new link from your phone’s mail app.",
+    "login.confirmLinkExpired": "This link has expired. Request a new confirmation or magic link from the login page.",
+    "login.confirmLinkInvalid": "This sign-in link is incomplete or invalid. Request a new email from the login page.",
     "login.oauthProviderError":
       "The provider returned an error (cancelled or misconfigured). Check Supabase redirect URLs and Google OAuth client.",
     "login.missingSupabase": "Sign-in is not configured (missing Supabase keys).",
@@ -705,7 +709,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.signInPasswordButton": "Sign in with password",
     "login.passwordTooShort": "Password must be at least 6 characters.",
     "login.passwordRequired": "Enter your password.",
-    "login.confirmEmailSent": "Check your email to confirm your account, then sign in.",
+    "login.confirmEmailSent":
+      "We sent a confirmation link to that address. Open it from your mail app (mobile or desktop), then complete your profile if prompted.",
     "login.signUpExistingEmail":
       "This email may already be registered—no new confirmation email was sent. Try signing in with your password or request a magic link below.",
     "login.invalidCredentialsHint":
@@ -1504,6 +1509,10 @@ export const DICTS: Record<Locale, Dict> = {
       "Activa cada proveedor en Supabase → Authentication → Providers. Añade la URL de retorno /auth/callback",
     "login.oauthFailed": "Error al iniciar sesión social.",
     "login.oauthCallbackFailed": "No se pudo completar el acceso. Inténtalo de nuevo o usa email y contraseña.",
+    "login.confirmLinkPkceFailed":
+      "Este enlace se abrió en otro navegador distinto al del registro. Pulsa «Reenviar email de confirmación» y abre el nuevo enlace desde tu app de correo.",
+    "login.confirmLinkExpired": "Este enlace ha caducado. Pide uno nuevo en la página de acceso.",
+    "login.confirmLinkInvalid": "Este enlace de acceso está incompleto o no es válido. Pide un email nuevo en acceso.",
     "login.oauthProviderError":
       "El proveedor devolvió un error (cancelado o mal configurado). Revisa las URLs de redirección en Supabase y el cliente OAuth de Google.",
     "login.missingSupabase": "Inicio no configurado (faltan claves de Supabase).",
@@ -1543,7 +1552,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.signInPasswordButton": "Entrar con contraseña",
     "login.passwordTooShort": "La contraseña debe tener al menos 6 caracteres.",
     "login.passwordRequired": "Introduce tu contraseña.",
-    "login.confirmEmailSent": "Revisa tu correo para confirmar la cuenta y luego entra.",
+    "login.confirmEmailSent":
+      "Enviamos un enlace de confirmación. Ábrelo desde tu app de correo (móvil o escritorio) y completa el perfil si se te pide.",
     "login.signUpExistingEmail":
       "Es posible que este correo ya esté registrado; no enviamos otro email de confirmación. Entra con tu contraseña o pide el enlace mágico abajo.",
     "login.invalidCredentialsHint":
@@ -2333,6 +2343,10 @@ export const DICTS: Record<Locale, Dict> = {
       "Activez chaque fournisseur dans Supabase → Authentication → Providers. URL de redirection : /auth/callback",
     "login.oauthFailed": "Échec de la connexion sociale.",
     "login.oauthCallbackFailed": "Connexion impossible. Réessaie ou utilise email + mot de passe.",
+    "login.confirmLinkPkceFailed":
+      "Ce lien a été ouvert dans un autre navigateur que celui de l’inscription. Clique sur « Renvoyer l’email de confirmation » et ouvre le nouveau lien depuis ton app mail.",
+    "login.confirmLinkExpired": "Ce lien a expiré. Demande un nouveau lien sur la page de connexion.",
+    "login.confirmLinkInvalid": "Ce lien de connexion est incomplet ou invalide. Demande un nouvel email sur la page de connexion.",
     "login.oauthProviderError":
       "Erreur du fournisseur (annulé ou mauvaise config). Vérifie les URL de redirection Supabase et le client OAuth Google.",
     "login.missingSupabase": "Connexion non configurée (clés Supabase manquantes).",
@@ -2372,7 +2386,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.signInPasswordButton": "Se connecter avec mot de passe",
     "login.passwordTooShort": "Le mot de passe doit contenir au moins 6 caractères.",
     "login.passwordRequired": "Saisis ton mot de passe.",
-    "login.confirmEmailSent": "Vérifie tes emails pour confirmer le compte, puis connecte-toi.",
+    "login.confirmEmailSent":
+      "Nous avons envoyé un lien de confirmation. Ouvre-le depuis ton app mail (mobile ou bureau), puis complète le profil si demandé.",
     "login.signUpExistingEmail":
       "Cette adresse est peut‑être déjà enregistrée—aucun nouvel email de confirmation n’a été envoyé. Connecte‑toi avec ton mot de passe ou demande un lien magique ci‑dessous.",
     "login.invalidCredentialsHint":
@@ -3163,6 +3178,10 @@ export const DICTS: Record<Locale, Dict> = {
       "Aktiviere die Anbieter in Supabase → Authentication → Providers. Redirect‑URL: /auth/callback",
     "login.oauthFailed": "Social‑Login fehlgeschlagen.",
     "login.oauthCallbackFailed": "Anmeldung konnte nicht abgeschlossen werden. Bitte erneut versuchen oder E‑Mail + Passwort nutzen.",
+    "login.confirmLinkPkceFailed":
+      "Dieser Link wurde in einem anderen Browser geöffnet als bei der Registrierung. Tippe auf „Bestätigungs‑E‑Mail erneut senden“ und öffne den neuen Link in deiner Mail‑App.",
+    "login.confirmLinkExpired": "Dieser Link ist abgelaufen. Fordere auf der Anmeldeseite einen neuen an.",
+    "login.confirmLinkInvalid": "Dieser Anmeldelink ist unvollständig oder ungültig. Fordere auf der Anmeldeseite eine neue E‑Mail an.",
     "login.oauthProviderError":
       "Der Anbieter meldet einen Fehler (abgebrochen oder falsch konfiguriert). Prüfe Supabase‑Redirect‑URLs und den Google‑OAuth‑Client.",
     "login.missingSupabase": "Login nicht konfiguriert (Supabase‑Keys fehlen).",
@@ -3202,7 +3221,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.signInPasswordButton": "Mit Passwort anmelden",
     "login.passwordTooShort": "Das Passwort muss mindestens 6 Zeichen haben.",
     "login.passwordRequired": "Passwort eingeben.",
-    "login.confirmEmailSent": "Bitte E‑Mail zur Bestätigung prüfen, danach anmelden.",
+    "login.confirmEmailSent":
+      "Wir haben einen Bestätigungslink gesendet. Öffne ihn in deiner Mail‑App (mobil oder Desktop) und vervollständige ggf. dein Profil.",
     "login.signUpExistingEmail":
       "Diese E‑Mail ist möglicherweise schon registriert—es wurde keine neue Bestätigungs‑Mail gesendet. Melde dich mit Passwort an oder fordere unten einen Magic‑Link an.",
     "login.invalidCredentialsHint":
@@ -3943,6 +3963,10 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthSetupHint": "在 Supabase → Authentication → Providers 启用各提供商，回调 URL 需包含 /auth/callback",
     "login.oauthFailed": "社交登录失败。",
     "login.oauthCallbackFailed": "无法完成登录，请重试或使用邮箱和密码。",
+    "login.confirmLinkPkceFailed":
+      "此确认链接在与注册不同的浏览器中打开。请点击“重新发送确认邮件”，并在邮件应用中打开新链接。",
+    "login.confirmLinkExpired": "此链接已过期。请在登录页重新申请。",
+    "login.confirmLinkInvalid": "此登录链接不完整或无效。请在登录页重新申请邮件。",
     "login.oauthProviderError": "登录提供方返回错误（已取消或配置有误）。请检查 Supabase 重定向 URL 与 Google OAuth 客户端。",
     "login.missingSupabase": "未配置登录（缺少 Supabase 密钥）。",
     "login.membershipEmailTitle": "邮箱",
@@ -3981,7 +4005,7 @@ export const DICTS: Record<Locale, Dict> = {
     "login.signInPasswordButton": "密码登录",
     "login.passwordTooShort": "密码至少 6 个字符。",
     "login.passwordRequired": "请输入密码。",
-    "login.confirmEmailSent": "请查收邮件确认账户后再登录。",
+    "login.confirmEmailSent": "我们已发送确认链接。请在邮件应用（手机或电脑）中打开，并按提示完善资料。",
     "login.signUpExistingEmail":
       "该邮箱可能已注册，因此未发送新的确认邮件。请尝试用密码登录或在下方请求魔法链接。",
     "login.invalidCredentialsHint":
@@ -4766,6 +4790,10 @@ export const DICTS: Record<Locale, Dict> = {
     "login.oauthGoogleClientIdInvalid":
       "Sunucudaki Google Client ID geçersiz (yalnızca .apps.googleusercontent.com ile biten Web Client ID; secret değil). Standart girişe yönlendiriliyorsunuz.",
     "login.oauthCallbackFailed": "Giriş tamamlanamadı. Tekrar dene veya e-posta + şifre kullan.",
+    "login.confirmLinkPkceFailed":
+      "Bu onay bağlantısı kayıt olduğun tarayıcıdan farklı bir yerde açıldı. “Onay mailini yeniden gönder”e bas ve yeni bağlantıyı telefonundaki mail uygulamasından aç.",
+    "login.confirmLinkExpired": "Bu bağlantının süresi dolmuş. Giriş sayfasından yeni bir tane iste.",
+    "login.confirmLinkInvalid": "Bu giriş bağlantısı eksik veya geçersiz. Giriş sayfasından yeni e-posta iste.",
     "login.oauthProviderError":
       "Sağlayıcı hata döndü (iptal veya yanlış yapılandırma). Supabase yönlendirme URL’leri ve Google OAuth istemcisini kontrol et.",
     "login.missingSupabase": "Giriş yapılandırılmadı (Supabase anahtarları eksik).",
@@ -4805,7 +4833,8 @@ export const DICTS: Record<Locale, Dict> = {
     "login.signInPasswordButton": "Şifreyle giriş",
     "login.passwordTooShort": "Şifre en az 6 karakter olmalı.",
     "login.passwordRequired": "Şifreni gir.",
-    "login.confirmEmailSent": "Hesabı onaylamak için e-postanı kontrol et, sonra giriş yap.",
+    "login.confirmEmailSent":
+      "Onay bağlantısı e-postana gönderildi. Mail uygulamasından (mobil veya masaüstü) aç; profil adımları istenirse tamamla.",
     "login.signUpExistingEmail":
       "Bu denemede onay maili gönderilmedi (adres zaten kayıtlı olabilir); gelen kutuda görmemen normal. Şifren varsa «Şifreyle giriş» yap, yoksa alttan tek kullanımlık bağlantı iste — o ayrı bir e-posta. O da gelmezse spam ve Supabase’te SMTP / Auth loglarına bak.",
     "login.invalidCredentialsHint":

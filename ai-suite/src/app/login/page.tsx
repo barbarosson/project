@@ -5,8 +5,9 @@ import { Suspense } from "react";
 
 import { DICTS } from "@/i18n/dictionaries";
 import { resolveLocaleFromCookie } from "@/i18n/resolve-locale";
+import { resolvePostLoginDestination } from "@/lib/auth/resolve-post-login-destination";
 import { resolvePostLoginNext, safeNext } from "@/lib/auth/safe-next";
-import { resolveAuthPublicOrigin } from "@/lib/site-public-url";
+import { resolveAuthCallbackOrigin } from "@/lib/site-public-url";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 import {
@@ -36,6 +37,8 @@ export default async function LoginPage({
     error?: string;
     detail?: string;
     code?: string;
+    token_hash?: string;
+    type?: string;
     error_description?: string;
   }>;
 }) {
@@ -49,18 +52,28 @@ export default async function LoginPage({
     redirect(`/auth/callback?${q.toString()}`);
   }
 
+  if (sp.token_hash && sp.type) {
+    const next = safeNext(sp.next);
+    const q = new URLSearchParams({
+      token_hash: sp.token_hash,
+      type: sp.type,
+      next,
+    });
+    redirect(`/auth/callback?${q.toString()}`);
+  }
+
   const cookieLocale = (await cookies()).get("ai-suite-locale")?.value;
   const locale = resolveLocaleFromCookie(cookieLocale);
   const d = DICTS[locale];
   const supabase = await createSupabaseServerClient();
   const { data: auth } = await supabase.auth.getUser();
   if (auth.user) {
-    redirect(resolvePostLoginNext(sp.next));
+    redirect(resolvePostLoginDestination(auth.user, sp.next));
   }
 
   const authSnapshot = await readServerAuthSnapshot();
   const h = await headers();
-  const origin = resolveAuthPublicOrigin(h);
+  const origin = resolveAuthCallbackOrigin(h);
   const nextAfterAuth = resolvePostLoginNext(sp.next);
   const authCallbackUrl = origin
     ? `${origin}/auth/callback?next=${encodeURIComponent(nextAfterAuth)}`
