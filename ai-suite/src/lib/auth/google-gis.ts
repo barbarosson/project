@@ -7,6 +7,7 @@ type GoogleIdApi = {
     auto_select?: boolean;
     cancel_on_tap_outside?: boolean;
     use_fedcm_for_prompt?: boolean;
+    locale?: string;
   }) => void;
   renderButton: (
     parent: HTMLElement,
@@ -30,6 +31,13 @@ declare global {
 
 let scriptPromise: Promise<void> | null = null;
 
+/** Map app locale to Google Identity Services `locale` / `hl` codes. */
+export function googleGisLocale(locale: string): string {
+  const normalized = locale.trim().toLowerCase();
+  if (normalized === "zh") return "zh-CN";
+  return normalized || "en";
+}
+
 /** Web client id from Google Cloud (not the client secret). */
 export function isValidGoogleOAuthClientId(id: string): boolean {
   return /^\d+-[a-z0-9-]+\.apps\.googleusercontent\.com$/i.test(id.trim());
@@ -48,15 +56,20 @@ export function hasInvalidGoogleOAuthClientIdEnv(): boolean {
   return Boolean(raw && !isValidGoogleOAuthClientId(raw));
 }
 
-export function loadGoogleGsiScript(): Promise<void> {
+export function loadGoogleGsiScript(locale?: string): Promise<void> {
   if (typeof window === "undefined") {
     return Promise.reject(new Error("Google sign-in requires a browser."));
   }
   if (window.google?.accounts?.id) return Promise.resolve();
 
+  const hl = locale ? googleGisLocale(locale) : null;
+  const scriptUrl = hl
+    ? `https://accounts.google.com/gsi/client?hl=${encodeURIComponent(hl)}`
+    : "https://accounts.google.com/gsi/client";
+
   if (!scriptPromise) {
     scriptPromise = new Promise((resolve, reject) => {
-      const existing = document.querySelector('script[src*="accounts.google.com/gsi/client"]');
+      const existing = document.querySelector(`script[src="${scriptUrl}"]`);
       if (existing) {
         if (window.google?.accounts?.id) {
           resolve();
@@ -71,7 +84,7 @@ export function loadGoogleGsiScript(): Promise<void> {
         return;
       }
       const script = document.createElement("script");
-      script.src = "https://accounts.google.com/gsi/client";
+      script.src = scriptUrl;
       script.async = true;
       script.defer = true;
       script.onload = () => resolve();
@@ -99,9 +112,11 @@ export async function mountGoogleSignInButton(
     onCredential: (token: string) => void;
     onReady?: () => void;
     onError?: (error: Error) => void;
-  }
+  },
+  locale?: string
 ): Promise<() => void> {
-  await loadGoogleGsiScript();
+  const gisLocale = locale ? googleGisLocale(locale) : undefined;
+  await loadGoogleGsiScript(gisLocale);
   parent.replaceChildren();
 
   idApi().initialize({
@@ -109,6 +124,7 @@ export async function mountGoogleSignInButton(
     auto_select: false,
     cancel_on_tap_outside: false,
     use_fedcm_for_prompt: true,
+    ...(gisLocale ? { locale: gisLocale } : {}),
     callback: (response) => {
       const cred = response.credential?.trim();
       if (cred) handlers.onCredential(cred);

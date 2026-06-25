@@ -24,7 +24,7 @@ export function GoogleSignInPanel({
   nextAfterAuth: string;
   variant?: "inline" | "page";
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const router = useRouter();
   const runtime = useSupabaseBrowserRuntimeConfig();
   const buttonHostRef = React.useRef<HTMLDivElement>(null);
@@ -37,8 +37,12 @@ export function GoogleSignInPanel({
 
     let cleanup: (() => void) | undefined;
     let cancelled = false;
+    setReady(false);
 
-    void mountGoogleSignInButton(host, clientId, {
+    void mountGoogleSignInButton(
+      host,
+      clientId,
+      {
       onCredential: (token) => {
         if (cancelled) return;
         const supabase = createSupabaseBrowserClient(runtime);
@@ -67,7 +71,9 @@ export function GoogleSignInPanel({
       onError: () => {
         if (!cancelled) toast.error(t("login.oauthFailed"));
       },
-    }).then((dispose) => {
+    },
+      locale
+    ).then((dispose) => {
       if (cancelled) dispose();
       else cleanup = dispose;
     });
@@ -76,7 +82,7 @@ export function GoogleSignInPanel({
       cancelled = true;
       cleanup?.();
     };
-  }, [clientId, nextAfterAuth, router, runtime, t]);
+  }, [clientId, locale, nextAfterAuth, router, runtime, t]);
 
   if (variant === "inline") {
     return (
