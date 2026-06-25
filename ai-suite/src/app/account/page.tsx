@@ -8,6 +8,7 @@ import { readServerAuthSnapshot } from "@/lib/auth/server-auth-snapshot";
 import { loadAccountEntitlementsAndRequests } from "@/lib/isendai/load-account-data";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { DeleteAccountPanel } from "@/components/account/delete-account-panel";
+import { SignOutButton } from "@/components/auth/sign-out-button";
 import {
   SitePageChrome,
   SitePageHeader,
@@ -55,6 +56,7 @@ export default async function AccountPage() {
               <Link className={pageOutlineButton} href="/dashboard/rewards">
                 {d["referrals.navLabel"]}
               </Link>
+              <SignOutButton />
               <Link className={premiumCta} href="/">
                 {d["nav.backToHome"]}
               </Link>

@@ -19,7 +19,7 @@ type AuthStatusProps = {
   initialSignedInLabel?: string | null;
   /** Icon-only labels until xl — keeps the site header on one row. */
   compact?: boolean;
-  /** Compact shell: single account/login icon; logout lives in overflow menu. */
+  /** Compact shell: account + logout icon buttons in the header. */
   iconOnly?: boolean;
 };
 
@@ -125,7 +125,11 @@ export function AuthStatus({
     );
   }
 
-  const labelClass = iconOnly ? "sr-only" : compact ? "hidden xl:inline" : "hidden sm:inline";
+  const labelClass = iconOnly
+    ? "sr-only"
+    : compact
+      ? "hidden lg:inline"
+      : "hidden sm:inline";
   const authBtnClass = cn(
     interactiveClick,
     "inline-flex shrink-0 items-center gap-1 rounded-lg border border-white/[0.12] bg-white/[0.05] px-1.5 py-1 text-xs font-semibold text-slate-200 backdrop-blur-xl hover:border-violet-500/35 hover:bg-white/[0.09] sm:gap-1.5 sm:px-2 sm:py-1.5",
@@ -134,26 +138,12 @@ export function AuthStatus({
   );
 
   if (signedInLabel) {
-    if (iconOnly && !omitAccountLink) {
-      return (
-        <Link
-          href="/account"
-          className={cn(authBtnClass, className)}
-          title={signedInLabel}
-          aria-label={t("nav.account")}
-        >
-          <User className="size-4 shrink-0 text-indigo-600 light:text-indigo-700" strokeWidth={1.5} />
-          <span className={labelClass}>{t("nav.account")}</span>
-        </Link>
-      );
-    }
-
     const logoutBtn = (
       <button
         type="button"
         onClick={signOut}
         disabled={busy}
-        title={signedInLabel}
+        title={t("nav.logout")}
         aria-label={t("nav.logout")}
         className={cn(authBtnClass, "disabled:opacity-60")}
       >
@@ -161,6 +151,23 @@ export function AuthStatus({
         <span className={labelClass}>{t("nav.logout")}</span>
       </button>
     );
+
+    if (iconOnly && !omitAccountLink) {
+      return (
+        <div className={cn("flex items-center gap-1", className)}>
+          <Link
+            href="/account"
+            className={authBtnClass}
+            title={signedInLabel}
+            aria-label={t("nav.account")}
+          >
+            <User className="size-4 shrink-0 text-indigo-600 light:text-indigo-700" strokeWidth={1.5} />
+            <span className={labelClass}>{t("nav.account")}</span>
+          </Link>
+          {logoutBtn}
+        </div>
+      );
+    }
 
     if (omitAccountLink) {
       return <div className={cn("flex items-center gap-1 sm:gap-2", className)}>{logoutBtn}</div>;
