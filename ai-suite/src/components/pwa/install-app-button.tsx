@@ -14,6 +14,7 @@ import {
   type BeforeInstallPromptEvent,
 } from "@/lib/pwa/client";
 import { showInstallGuideToast } from "@/lib/pwa/show-install-toast";
+import { useIsClient } from "@/lib/use-is-client";
 import { cn } from "@/lib/utils";
 
 type InstallAppButtonProps = {
@@ -25,18 +26,14 @@ type InstallAppButtonProps = {
 export function InstallAppButton({ variant = "hero", className }: InstallAppButtonProps) {
   const { t } = useI18n();
   const router = useRouter();
+  const isClient = useIsClient();
+  const standalone = isClient && isStandaloneDisplayMode();
   const [deferredPrompt, setDeferredPrompt] = React.useState<BeforeInstallPromptEvent | null>(
     null
   );
-  const [visible, setVisible] = React.useState(false);
 
   React.useEffect(() => {
-    if (isStandaloneDisplayMode()) {
-      setVisible(false);
-      return;
-    }
-
-    setVisible(true);
+    if (!isClient || standalone) return;
 
     const onBeforeInstall = (e: Event) => {
       if (!isBeforeInstallPromptEvent(e)) return;
@@ -46,7 +43,6 @@ export function InstallAppButton({ variant = "hero", className }: InstallAppButt
 
     const onInstalled = () => {
       setDeferredPrompt(null);
-      setVisible(false);
     };
 
     window.addEventListener("beforeinstallprompt", onBeforeInstall);
@@ -55,9 +51,9 @@ export function InstallAppButton({ variant = "hero", className }: InstallAppButt
       window.removeEventListener("beforeinstallprompt", onBeforeInstall);
       window.removeEventListener("appinstalled", onInstalled);
     };
-  }, []);
+  }, [isClient, standalone]);
 
-  if (!visible) return null;
+  if (!isClient || standalone) return null;
 
   async function handleClick() {
     if (isStandaloneDisplayMode()) {
@@ -75,7 +71,7 @@ export function InstallAppButton({ variant = "hero", className }: InstallAppButt
         await deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === "accepted") {
-          setVisible(false);
+          setDeferredPrompt(null);
         } else if (outcome === "dismissed") {
           showInstallGuideToast(
             t,

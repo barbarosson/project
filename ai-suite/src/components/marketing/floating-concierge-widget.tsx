@@ -9,6 +9,7 @@ import { ConciergeChat } from "@/components/concierge-chat";
 import type { ToolName } from "@/components/ai-suite/tools";
 import { useI18n } from "@/i18n/i18n-provider";
 import { interactiveClick } from "@/lib/premium-ui";
+import { useIsClient } from "@/lib/use-is-client";
 import { cn } from "@/lib/utils";
 
 const CONCIERGE_DRAFT_KEY = "ai-suite:concierge-draft";
@@ -17,12 +18,8 @@ export function FloatingConciergeWidget() {
   const { t } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
-  const [mounted, setMounted] = React.useState(false);
+  const mounted = useIsClient();
   const [open, setOpen] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const handleOpenTool = React.useCallback(
     (tool: ToolName, opts?: { draftText?: string; scroll?: boolean }) => {

@@ -5,6 +5,7 @@ import { CheckCircle2, Lightbulb, Monitor, Smartphone, TabletSmartphone } from "
 
 import { InstallAppButton } from "@/components/pwa/install-app-button";
 import type { InstallGuideContent } from "@/i18n/install-guide-content";
+import { useIsClient } from "@/lib/use-is-client";
 import {
   isAndroidDevice,
   isIosDevice,
@@ -36,29 +37,31 @@ function platformFromHash(): InstallPlatform | null {
   return null;
 }
 
+function readPlatform(): InstallPlatform {
+  return platformFromHash() ?? detectPlatform();
+}
+
+function subscribePlatform(onStoreChange: () => void) {
+  window.addEventListener("hashchange", onStoreChange);
+  return () => window.removeEventListener("hashchange", onStoreChange);
+}
+
 type InstallGuideProps = {
   content: InstallGuideContent;
 };
 
 export function InstallGuide({ content }: InstallGuideProps) {
-  const [platform, setPlatform] = React.useState<InstallPlatform>("ios");
-  const [standalone, setStandalone] = React.useState(false);
-
-  React.useEffect(() => {
-    setStandalone(isStandaloneDisplayMode());
-    setPlatform(platformFromHash() ?? detectPlatform());
-
-    const onHashChange = () => {
-      const fromHash = platformFromHash();
-      if (fromHash) setPlatform(fromHash);
-    };
-    window.addEventListener("hashchange", onHashChange);
-    return () => window.removeEventListener("hashchange", onHashChange);
-  }, []);
+  const isClient = useIsClient();
+  const platform = React.useSyncExternalStore(
+    subscribePlatform,
+    readPlatform,
+    () => "ios" as InstallPlatform
+  );
+  const standalone = isClient && isStandaloneDisplayMode();
 
   function selectPlatform(next: InstallPlatform) {
-    setPlatform(next);
     window.history.replaceState(null, "", `#${next}`);
+    window.dispatchEvent(new HashChangeEvent("hashchange"));
   }
 
   const guide = content.platforms[platform];

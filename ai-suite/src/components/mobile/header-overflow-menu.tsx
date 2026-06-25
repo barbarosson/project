@@ -31,10 +31,6 @@ export function HeaderOverflowMenu({ signedIn: initialSignedIn = false, classNam
   const supportEmail = getPublicSupportEmail();
 
   React.useEffect(() => {
-    setSignedIn(initialSignedIn);
-  }, [initialSignedIn]);
-
-  React.useEffect(() => {
     if (!isSupabaseBrowserConfigured(runtime)) return;
     const supabase = createSupabaseBrowserClient(runtime);
     if (!supabase) return;

@@ -151,10 +151,12 @@ export function HomeClient({
       sessionStorage.removeItem("ai-suite:concierge-draft");
       const parsed = JSON.parse(raw) as { tool?: ToolName; draftText?: string };
       if (parsed?.tool && TOOLS.some((x) => x.tool === parsed.tool)) {
-        selectTool(parsed.tool, {
-          draftText: parsed.draftText,
-          scroll: true,
-          updateUrl: true,
+        queueMicrotask(() => {
+          selectTool(parsed.tool!, {
+            draftText: parsed.draftText,
+            scroll: true,
+            updateUrl: true,
+          });
         });
       }
     } catch {

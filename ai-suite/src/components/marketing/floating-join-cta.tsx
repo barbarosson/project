@@ -1,12 +1,12 @@
 "use client";
 
-import * as React from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { UserPlus } from "lucide-react";
 
 import { useI18n } from "@/i18n/i18n-provider";
 import { interactiveClick } from "@/lib/premium-ui";
+import { useIsClient } from "@/lib/use-is-client";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -18,11 +18,7 @@ type Props = {
 
 export function FloatingJoinCta({ visible, hideOnCompact = true }: Props) {
   const { t } = useI18n();
-  const [mounted, setMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsClient();
 
   if (!visible || !mounted) return null;
 

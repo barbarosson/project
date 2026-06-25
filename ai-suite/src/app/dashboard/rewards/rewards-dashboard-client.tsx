@@ -36,10 +36,9 @@ export function RewardsDashboardClient({
   const [data, setData] = React.useState<RewardsPayloadView | null>(initialData);
   const [loading, setLoading] = React.useState(initialData == null);
 
-  const shareMessage = React.useMemo(() => {
-    if (!data?.invite_url) return "";
-    return t("referrals.shareMessage").replace("{link}", data.invite_url);
-  }, [data?.invite_url, t]);
+  const shareMessage = data?.invite_url
+    ? t("referrals.shareMessage").replace("{link}", data.invite_url)
+    : "";
 
   React.useEffect(() => {
     let cancelled = false;
