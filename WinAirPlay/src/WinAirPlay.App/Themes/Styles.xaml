@@ -152,7 +152,7 @@
                                    VerticalAlignment="Center"
                                    Foreground="{StaticResource MutedBrush}"
                                    Visibility="Collapsed"
-                                   Text="Cihaz bulunamadı" />
+                                   Text="{TemplateBinding Tag}" />
 
                         <Path Margin="0,0,14,0"
                               HorizontalAlignment="Right"
@@ -253,6 +253,24 @@
                             </Track.Thumb>
                         </Track>
                     </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="SplashProgressBar" TargetType="ProgressBar">
+        <Setter Property="Background" Value="{StaticResource BorderBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ProgressBar">
+                    <Border Background="{TemplateBinding Background}" CornerRadius="2" ClipToBounds="True">
+                        <Border x:Name="PART_Indicator"
+                                Background="{TemplateBinding Foreground}"
+                                CornerRadius="2"
+                                HorizontalAlignment="Left" />
+                    </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

@@ -148,7 +148,7 @@ public sealed class CliOptions
 
                 case "--latency":
                     var latencyRaw = RequireValue(args, ref i, arg);
-                    if (!int.TryParse(latencyRaw, out var latency) || latency is < 50 or > 10000)
+                    if (!int.TryParse(latencyRaw, out var latency) || latency is < 0 or > 10000)
                     {
                         throw new ArgumentException($"'{arg}' 50-10000 ms aralığında bir değer bekliyor.");
                     }

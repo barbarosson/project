@@ -22,7 +22,7 @@ public partial class MainWindow : Window
 
         _statisticsTimer = new DispatcherTimer(DispatcherPriority.Background)
         {
-            Interval = TimeSpan.FromMilliseconds(150),
+            Interval = TimeSpan.FromMilliseconds(250),
         };
 
         _statisticsTimer.Tick += (_, _) => _viewModel.RefreshStatistics();
@@ -52,10 +52,9 @@ public partial class MainWindow : Window
     /// <summary>Set by the tray host so closing the window hides it instead of ending the session.</summary>
     public bool AllowClose { get; set; }
 
-    private async void OnLoaded(object sender, RoutedEventArgs e)
+    private void OnLoaded(object sender, RoutedEventArgs e)
     {
         _statisticsTimer.Start();
-        await _viewModel.InitializeAsync();
     }
 
     private void OnClosing(object? sender, CancelEventArgs e)

@@ -203,3 +203,14 @@ tam yığın izi aynı klasördeki `error.log` dosyasına yazılır.
 ```powershell
 dotnet test
 ```
+
+## Microsoft Store (MSIX)
+
+Store paketi için `src/WinAirPlay.Package/` projesi ve `docs/STORE_PUBLISHING.md` rehberine bakın.
+
+```powershell
+# Logo PNG'lerini üret ve MSIX derle (Visual Studio MSIX workload gerekir)
+.\scripts\build-msix.ps1
+```
+
+Minimum Windows sürümü: **10.0.19041** (2004). Gizlilik politikası: `docs/PRIVACY_POLICY.md`.

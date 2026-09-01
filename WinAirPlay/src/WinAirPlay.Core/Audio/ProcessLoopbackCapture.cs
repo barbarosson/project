@@ -145,20 +145,65 @@ internal sealed class ProcessLoopbackCapture : IWaveIn
     private void Pump(NativeAudioCaptureClient capture)
     {
         var blockAlign = WaveFormat.BlockAlign;
+        const int MaxTransientErrors = 50;
+        var transientErrors = 0;
+        Exception? fatal = null;
 
-        while (_recording && !_stopRequested)
+        while (_recording && !_stopRequested && fatal is null)
         {
-            Marshal.ThrowExceptionForHR(capture.GetNextPacketSize(out var framesInNext));
+            var hr = capture.GetNextPacketSize(out var framesInNext);
+            if (hr < 0)
+            {
+                if (IsFatalCaptureError(hr))
+                {
+                    fatal = Marshal.GetExceptionForHR(hr)
+                        ?? new InvalidOperationException($"WASAPI yakalama hatası (0x{hr:X8}).");
+                    break;
+                }
+
+                transientErrors++;
+                if (transientErrors >= MaxTransientErrors)
+                {
+                    Marshal.ThrowExceptionForHR(hr);
+                }
+
+                Thread.Sleep(10);
+                continue;
+            }
+
+            transientErrors = 0;
+
             if (framesInNext == 0)
             {
                 Thread.Sleep(5);
                 continue;
             }
 
-            while (framesInNext != 0 && _recording)
+            while (framesInNext != 0 && _recording && fatal is null)
             {
-                Marshal.ThrowExceptionForHR(capture.GetBuffer(
-                    out var pointer, out var frames, out var flags, out _, out _));
+                hr = capture.GetBuffer(
+                    out var pointer, out var frames, out var flags, out _, out _);
+
+                if (hr < 0)
+                {
+                    if (IsFatalCaptureError(hr))
+                    {
+                        fatal = Marshal.GetExceptionForHR(hr)
+                            ?? new InvalidOperationException($"WASAPI yakalama hatası (0x{hr:X8}).");
+                        break;
+                    }
+
+                    transientErrors++;
+                    if (transientErrors >= MaxTransientErrors)
+                    {
+                        Marshal.ThrowExceptionForHR(hr);
+                    }
+
+                    Thread.Sleep(10);
+                    break;
+                }
+
+                transientErrors = 0;
 
                 var bytes = (int)frames * blockAlign;
                 if (bytes > 0)
@@ -181,11 +226,55 @@ internal sealed class ProcessLoopbackCapture : IWaveIn
                     DataAvailable?.Invoke(this, new WaveInEventArgs(_recordBuffer, bytes));
                 }
 
-                Marshal.ThrowExceptionForHR(capture.ReleaseBuffer(frames));
-                Marshal.ThrowExceptionForHR(capture.GetNextPacketSize(out framesInNext));
+                hr = capture.ReleaseBuffer(frames);
+                if (hr < 0 && IsFatalCaptureError(hr))
+                {
+                    fatal = Marshal.GetExceptionForHR(hr)
+                        ?? new InvalidOperationException($"WASAPI yakalama hatası (0x{hr:X8}).");
+                    break;
+                }
+
+                if (hr < 0)
+                {
+                    transientErrors++;
+                    if (transientErrors >= MaxTransientErrors)
+                    {
+                        Marshal.ThrowExceptionForHR(hr);
+                    }
+
+                    break;
+                }
+
+                hr = capture.GetNextPacketSize(out framesInNext);
+                if (hr < 0 && IsFatalCaptureError(hr))
+                {
+                    fatal = Marshal.GetExceptionForHR(hr)
+                        ?? new InvalidOperationException($"WASAPI yakalama hatası (0x{hr:X8}).");
+                    break;
+                }
+
+                if (hr < 0)
+                {
+                    transientErrors++;
+                    if (transientErrors >= MaxTransientErrors)
+                    {
+                        Marshal.ThrowExceptionForHR(hr);
+                    }
+
+                    break;
+                }
             }
         }
+
+        if (fatal is not null)
+        {
+            RecordingStopped?.Invoke(this, new StoppedEventArgs(fatal));
+        }
     }
+
+    private static bool IsFatalCaptureError(int hr) =>
+        hr == unchecked((int)0x88890004) // AUDCLNT_E_DEVICE_INVALIDATED
+        || hr == unchecked((int)0x88890008); // AUDCLNT_E_STREAMFLAGS_NOT_SUPPORTED / endpoint gone
 
     private static IntPtr AllocPcmWaveFormatEx(WaveFormat format)
     {

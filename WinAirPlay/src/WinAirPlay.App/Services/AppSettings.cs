@@ -1,4 +1,5 @@
 using System;
+using WinAirPlay.App.Localization;
 using WinAirPlay.Core.Raop;
 
 namespace WinAirPlay.App.Services;
@@ -9,10 +10,22 @@ namespace WinAirPlay.App.Services;
 /// </summary>
 public sealed class AppSettings
 {
-    public const int MinLatencyMs = 50;
+    public const int MinLatencyMs = 0;
     public const int MaxLatencyMs = 2000;
+    public const int LatencyStepMs = 10;
     public const double MinVolumeDb = -30;
     public const double MaxVolumeDb = 0;
+
+    /// <summary>Maps receiver dB attenuation (-30…0) to a 0–100% slider value.</summary>
+    public static double DbToPercent(double decibels) =>
+        Math.Clamp((decibels - MinVolumeDb) / (MaxVolumeDb - MinVolumeDb) * 100.0, 0, 100);
+
+    /// <summary>Maps a 0–100% slider value back to receiver dB attenuation.</summary>
+    public static double PercentToDb(double percent)
+    {
+        var clamped = Math.Clamp(percent, 0, 100);
+        return MinVolumeDb + (clamped / 100.0) * (MaxVolumeDb - MinVolumeDb);
+    }
 
     /// <summary>Hardware id of the receiver last streamed to, so it can be reselected after a scan.</summary>
     public string? LastDeviceId { get; set; }
@@ -38,11 +51,18 @@ public sealed class AppSettings
     /// </summary>
     public bool MuteLocalSpeakers { get; set; } = true;
 
+    public AppLanguage Language { get; set; } = AppLanguage.Tr;
+
     /// <summary>Brings values back into the ranges the UI and the receiver accept.</summary>
     public AppSettings Normalize()
     {
         LatencyMs = Math.Clamp(LatencyMs, MinLatencyMs, MaxLatencyMs);
         VolumeDb = Math.Clamp(double.IsFinite(VolumeDb) ? VolumeDb : -20, MinVolumeDb, MaxVolumeDb);
+
+        if (!Enum.IsDefined(Language))
+        {
+            Language = AppLanguage.Tr;
+        }
 
         if (!Enum.IsDefined(Codec))
         {

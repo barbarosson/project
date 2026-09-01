@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  IgnorableNamespaces="uap rescap">
+
+  <!--
+    Partner Center'da uygulamayı ilişkilendirdiğinizde Name ve Publisher otomatik güncellenir.
+    Yerel derleme için geçici sertifika kullanılır (WinAirPlay.Package_TemporaryKey.pfx).
+  -->
+  <Identity
+    Name="WinAirPlay.AudioStreamer"
+    Publisher="CN=WinAirPlay Dev"
+    Version="1.0.0.0" />
+
+  <Properties>
+    <DisplayName>WinAirPlay</DisplayName>
+    <PublisherDisplayName>WinAirPlay</PublisherDisplayName>
+    <Logo>Images\StoreLogo.png</Logo>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily
+      Name="Windows.Desktop"
+      MinVersion="10.0.19041.0"
+      MaxVersionTested="10.0.22621.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="tr-TR" />
+    <Resource Language="en-US" />
+  </Resources>
+
+  <Applications>
+    <Application
+      Id="WinAirPlay"
+      Executable="WinAirPlay.App\WinAirPlay.exe"
+      EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="WinAirPlay"
+        Description="Windows sistem sesini yerel ağdaki AirPlay uyumlu hoparlörlere aktarır. Apple ile resmi bir bağlantısı yoktur."
+        BackgroundColor="#14161A"
+        Square150x150Logo="Images\Square150x150Logo.png"
+        Square44x44Logo="Images\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <!-- mDNS keşfi, RTSP el sıkışması ve RTP/UDP ses akışı -->
+    <uap:Capability Name="privateNetworkClientServer" />
+    <!-- WPF masaüstü uygulaması; WASAPI loopback ve sistem tepsisi -->
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

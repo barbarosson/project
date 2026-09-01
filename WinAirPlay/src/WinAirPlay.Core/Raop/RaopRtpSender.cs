@@ -1,6 +1,8 @@
+using System.Buffers;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Security.Cryptography;
+using System.Threading.Channels;
 using WinAirPlay.Core.Audio;
 
 namespace WinAirPlay.Core.Raop;
@@ -10,8 +12,8 @@ public sealed class RaopStreamOptions
     /// <summary>
     /// How far ahead of the play position audio is timestamped, in samples. The classic AirPlay
     /// value is 88200 (two seconds), which hides almost any Wi-Fi hiccup at the cost of lag; 2205
-    /// (50 ms) measured well on a wired-quality network and is the better default here. Raise it
-    /// again if the stream starts breaking up.
+    /// (50 ms) measured well on a wired-quality network and is the better default here. 0 is allowed
+    /// for the lowest possible lag on a stable LAN.
     /// </summary>
     public int LatencySamples { get; set; } = 2205;
 
@@ -31,6 +33,11 @@ public sealed class RaopStreamOptions
 /// </summary>
 public sealed class RaopRtpSender : IAudioSink
 {
+    /// <summary>
+    /// A couple of frames is enough to absorb ALAC encoding time without adding noticeable lag.
+    /// </summary>
+    private const int SendQueueDepth = 3;
+
     private readonly RaopSession _session;
     private readonly RaopStreamOptions _options;
     private readonly UdpClient _audioSocket;
@@ -43,7 +50,14 @@ public sealed class RaopRtpSender : IAudioSink
     private readonly uint _ssrc;
     private readonly int _framesPerPacket;
     private readonly object _sendLock = new();
+    private readonly Channel<byte[]> _sendQueue = Channel.CreateBounded<byte[]>(new BoundedChannelOptions(SendQueueDepth)
+    {
+        FullMode = BoundedChannelFullMode.DropOldest,
+        SingleReader = true,
+        SingleWriter = false,
+    });
 
+    private Thread? _sendThread;
     private Timer? _syncTimer;
     private ushort _sequence;
     private long _rtpTimestamp;
@@ -116,10 +130,21 @@ public sealed class RaopRtpSender : IAudioSink
             return;
         }
 
+        _sendThread = new Thread(SendLoop)
+        {
+            IsBackground = true,
+            Name = "WinAirPlay.RtpSend",
+            Priority = ThreadPriority.AboveNormal,
+        };
+        _sendThread.Start();
+
         SendSync(isFirst: true);
         _syncTimer = new Timer(_ => SendSync(isFirst: false), null, _options.SyncInterval, _options.SyncInterval);
     }
 
+    /// <summary>
+    /// Copies the PCM block and returns immediately so capture never waits on ALAC or the network.
+    /// </summary>
     public void Write(ReadOnlySpan<byte> pcm)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
@@ -130,6 +155,44 @@ public sealed class RaopRtpSender : IAudioSink
                 $"Blok {PayloadLength} bayt olmalı, {pcm.Length} bayt geldi.", nameof(pcm));
         }
 
+        var block = ArrayPool<byte>.Shared.Rent(PayloadLength);
+        pcm.CopyTo(block);
+        _sendQueue.Writer.TryWrite(block);
+    }
+
+    private void SendLoop()
+    {
+        try
+        {
+            while (_sendQueue.Reader.WaitToReadAsync().AsTask().GetAwaiter().GetResult())
+            {
+                while (_sendQueue.Reader.TryRead(out var block))
+                {
+                    if (_disposed)
+                    {
+                        ArrayPool<byte>.Shared.Return(block);
+                        continue;
+                    }
+
+                    try
+                    {
+                        SendBlock(block);
+                    }
+                    finally
+                    {
+                        ArrayPool<byte>.Shared.Return(block);
+                    }
+                }
+            }
+        }
+        catch (ChannelClosedException)
+        {
+            // Normal shutdown.
+        }
+    }
+
+    private void SendBlock(ReadOnlySpan<byte> pcm)
+    {
         lock (_sendLock)
         {
             var timestamp = (uint)Interlocked.Read(ref _rtpTimestamp);
@@ -211,7 +274,14 @@ public sealed class RaopRtpSender : IAudioSink
         }
 
         _disposed = true;
+        _sendQueue.Writer.TryComplete();
         _syncTimer?.Dispose();
+
+        if (_sendThread is { IsAlive: true } thread)
+        {
+            thread.Join(TimeSpan.FromSeconds(2));
+        }
+
         _cipher?.Dispose();
         _audioSocket.Dispose();
     }

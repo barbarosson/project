@@ -1,3 +1,5 @@
+using WinAirPlay.App.Localization;
+using WinAirPlay.App.Mvvm;
 using WinAirPlay.App.Services;
 using WinAirPlay.App.Tray;
 using WinAirPlay.App.ViewModels;
@@ -21,7 +23,8 @@ public class MainViewModelTests
         enumerator.Devices.Add(new AudioDeviceInfo("id-default", "Hoparlör", IsDefault: true));
         enumerator.Devices.Add(new AudioDeviceInfo("id-hdmi", "HDMI", IsDefault: false));
 
-        var viewModel = new MainViewModel(controller, store, enumerator, new ImmediateDispatcher());
+        var localization = new LocalizationService();
+        var viewModel = new MainViewModel(controller, store, enumerator, new ImmediateDispatcher(), localization);
 
         return (viewModel, controller, store);
     }
@@ -120,7 +123,7 @@ public class MainViewModelTests
     }
 
     [Fact]
-    public void LatencySliderRetunesTheLiveStreamAndPersists()
+    public async Task LatencySliderRetunesTheLiveStreamAndPersists()
     {
         var (viewModel, controller, store) = Build();
 
@@ -129,12 +132,48 @@ public class MainViewModelTests
         Assert.Equal(400, viewModel.LatencyMs);
         Assert.Equal("400 ms", viewModel.LatencyText);
         Assert.Equal(new[] { 400 }, controller.LatencyUpdates);
+
+        await Task.Delay(450);
+
         Assert.Equal(400, store.Current.LatencyMs);
+    }
+
+    [Fact]
+    public void SwitchingToEnglishUpdatesButtonLabels()
+    {
+        var (viewModel, _, _) = Build();
+
+        viewModel.Language = AppLanguage.En;
+
+        Assert.Equal("Connect", viewModel.ConnectionButtonText);
+        Assert.Equal("Scan", viewModel.ScanButtonText);
+        Assert.Equal("Not connected", viewModel.StateText);
+    }
+
+    [Fact]
+    public void LatencyStepButtonsAdjustByTenMilliseconds()
+    {
+        var (viewModel, controller, _) = Build(new AppSettings { LatencyMs = 50 });
+
+        ((RelayCommand)viewModel.IncreaseLatencyCommand).Execute(null);
+
+        Assert.Equal(60, viewModel.LatencyMs);
+        Assert.Equal(new[] { 60 }, controller.LatencyUpdates);
+
+        ((RelayCommand)viewModel.DecreaseLatencyCommand).Execute(null);
+        ((RelayCommand)viewModel.DecreaseLatencyCommand).Execute(null);
+        ((RelayCommand)viewModel.DecreaseLatencyCommand).Execute(null);
+        ((RelayCommand)viewModel.DecreaseLatencyCommand).Execute(null);
+        ((RelayCommand)viewModel.DecreaseLatencyCommand).Execute(null);
+        ((RelayCommand)viewModel.DecreaseLatencyCommand).Execute(null);
+
+        Assert.Equal(0, viewModel.LatencyMs);
+        Assert.False(((RelayCommand)viewModel.DecreaseLatencyCommand).CanExecute(null));
     }
 
     [Theory]
     [InlineData(5000, AppSettings.MaxLatencyMs)]
-    [InlineData(1, AppSettings.MinLatencyMs)]
+    [InlineData(-1, AppSettings.MinLatencyMs)]
     public void LatencySliderRefusesValuesOutsideTheSupportedRange(int input, int expected)
     {
         var (viewModel, _, _) = Build();
@@ -149,21 +188,22 @@ public class MainViewModelTests
     {
         var (viewModel, controller, store) = Build();
 
-        viewModel.VolumeDb = -9;
+        viewModel.VolumePercent = 70;
 
         Assert.Equal(new[] { -9d }, controller.VolumeUpdates);
         Assert.Equal(-9, store.Current.VolumeDb);
-        Assert.Equal("-9 dB", viewModel.VolumeText);
+        Assert.Equal("70%", viewModel.VolumeText);
     }
 
     [Fact]
-    public void LowestVolumeReadsAsMuted()
+    public void LowestVolumeReadsAsZeroPercent()
     {
         var (viewModel, _, _) = Build();
 
-        viewModel.VolumeDb = AppSettings.MinVolumeDb;
+        viewModel.VolumePercent = 0;
 
-        Assert.Equal("kısık", viewModel.VolumeText);
+        Assert.Equal(AppSettings.MinVolumeDb, viewModel.VolumeDb);
+        Assert.Equal("0%", viewModel.VolumeText);
     }
 
     [Fact]

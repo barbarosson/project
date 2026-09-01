@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using WinAirPlay.Core.Discovery;
 using WinAirPlay.Core.Rtsp;
 
@@ -97,6 +98,23 @@ public sealed class RaopSession : IAsyncDisposable
 
     public IPEndPoint RemoteTimingEndPoint => new(Device.Address!, Transport.TimingPort);
 
+    /// <summary>
+    /// No-op RTSP request that keeps the control connection alive. Receivers fade out after ~30 s
+    /// without one, even while RTP audio continues.
+    /// </summary>
+    public async Task SendKeepAliveAsync(CancellationToken cancellationToken = default)
+    {
+        var request = new RtspRequest("OPTIONS", "*")
+            .WithHeader("Apple-Challenge", CreateAppleChallenge());
+
+        var response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+        if (!response.IsSuccess)
+        {
+            throw new RtspException($"RTSP keepalive başarısız: {response.StatusLine}", response);
+        }
+    }
+
     /// <param name="decibels">-30 (quiet) to 0 (loud); -144 mutes.</param>
     public async Task SetVolumeAsync(double decibels, CancellationToken cancellationToken = default)
     {
@@ -142,4 +160,7 @@ public sealed class RaopSession : IAsyncDisposable
         TimingSocket.Dispose();
         await _client.DisposeAsync().ConfigureAwait(false);
     }
+
+    private static string CreateAppleChallenge() =>
+        Convert.ToBase64String(RandomNumberGenerator.GetBytes(16)).TrimEnd('=');
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using WinAirPlay.App.Localization;
 using WinAirPlay.Core.Audio;
 using WinAirPlay.Core.Discovery;
 using WinAirPlay.Core.Raop;
@@ -75,10 +76,12 @@ public sealed class StreamController : IStreamController
     private readonly IAirPlayDiscovery _discovery;
     private readonly Func<RaopHandshakeOptions, IRaopHandshake> _handshakeFactory;
     private readonly ILocalOutputSilencer _silencer;
+    private readonly ILocalizationService _localization;
     private readonly SemaphoreSlim _gate = new(1, 1);
 
     private RaopSession? _session;
     private RaopRtpSender? _sender;
+    private RaopSessionKeepAlive? _keepAlive;
     private AudioPipeline? _pipeline;
     private WasapiLoopbackCaptureSource? _source;
     private RaopStreamOptions? _streamOptions;
@@ -87,10 +90,12 @@ public sealed class StreamController : IStreamController
 
     public StreamController(
         IAirPlayDiscovery discovery,
+        ILocalizationService localization,
         Func<RaopHandshakeOptions, IRaopHandshake>? handshakeFactory = null,
         ILocalOutputSilencer? silencer = null)
     {
         _discovery = discovery ?? throw new ArgumentNullException(nameof(discovery));
+        _localization = localization ?? throw new ArgumentNullException(nameof(localization));
         _handshakeFactory = handshakeFactory ?? (options => new RaopHandshake(options));
         _silencer = silencer ?? new WasapiLocalOutputSilencer();
     }
@@ -150,7 +155,7 @@ public sealed class StreamController : IStreamController
             State = StreamState.Scanning;
         }
 
-        Report("Ağ taranıyor...");
+        Report(_localization.Get(LocKeys.ScanningNetwork));
 
         try
         {
@@ -166,19 +171,19 @@ public sealed class StreamController : IStreamController
             }
 
             Report(receivers.Count == 0
-                ? "Ses akışı kabul eden cihaz bulunamadı."
-                : $"{receivers.Count} cihaz bulundu.");
+                ? _localization.Get(LocKeys.NoReceiversFound)
+                : _localization.Format(LocKeys.DevicesFound, receivers.Count));
 
             return receivers;
         }
         catch (OperationCanceledException)
         {
-            Report("Tarama iptal edildi.");
+            Report(_localization.Get(LocKeys.ScanCancelled));
             return Array.Empty<AirPlayDevice>();
         }
         catch (Exception ex)
         {
-            Report($"Tarama başarısız: {ex.Message}");
+            Report(_localization.Format(LocKeys.ScanFailed, ex.Message));
             return Array.Empty<AirPlayDevice>();
         }
         finally
@@ -209,7 +214,7 @@ public sealed class StreamController : IStreamController
             }
 
             State = StreamState.Connecting;
-            Report($"{device.Name} cihazına bağlanılıyor...");
+            Report(_localization.Format(LocKeys.ConnectingTo, device.Name));
 
             var handshake = _handshakeFactory(new RaopHandshakeOptions
             {
@@ -238,6 +243,10 @@ public sealed class StreamController : IStreamController
             _sender = new RaopRtpSender(_session, _source.Format, _streamOptions);
             _sender.SendFailed += OnSendFailed;
 
+            _keepAlive = new RaopSessionKeepAlive(_session);
+            _keepAlive.KeepAliveFailed += OnKeepAliveFailed;
+            _keepAlive.Start();
+
             _pipeline = new AudioPipeline(_source, ownsSource: false);
             _pipeline.AddSink(_sender);
             _pipeline.Stopped += OnCaptureStopped;
@@ -253,15 +262,15 @@ public sealed class StreamController : IStreamController
                 }
                 else
                 {
-                    Report("Hoparlör kapatılmadı: Windows sesi cihaz mute'undan önce yakalayamadı.");
+                    Report(_localization.Get(LocKeys.SpeakersNotMuted));
                 }
             }
 
             ConnectedDevice = device;
             State = StreamState.Streaming;
             Report(settings.MuteLocalSpeakers && _source.CapturesBeforeDeviceVolume
-                ? $"{device.Name} cihazına yayın başladı. Hoparlör susturuldu."
-                : $"{device.Name} cihazına yayın başladı.");
+                ? _localization.Format(LocKeys.StreamStartedMuted, device.Name)
+                : _localization.Format(LocKeys.StreamStarted, device.Name));
             return true;
         }
         catch (Exception ex)
@@ -294,7 +303,9 @@ public sealed class StreamController : IStreamController
             await TeardownAsync().ConfigureAwait(false);
 
             State = StreamState.Idle;
-            Report(name is null ? "Bağlantı kapatıldı." : $"{name} bağlantısı kapatıldı.");
+            Report(name is null
+                ? _localization.Get(LocKeys.Disconnected)
+                : _localization.Format(LocKeys.DisconnectedFrom, name));
         }
         finally
         {
@@ -315,7 +326,7 @@ public sealed class StreamController : IStreamController
         }
         catch (Exception ex)
         {
-            Report($"Ses seviyesi ayarlanamadı: {ex.Message}");
+            Report(_localization.Format(LocKeys.VolumeFailed, ex.Message));
         }
     }
 
@@ -334,10 +345,16 @@ public sealed class StreamController : IStreamController
     }
 
     private static int ToSamples(int milliseconds, int sampleRate) =>
-        Math.Max(1, milliseconds * sampleRate / 1000);
+        Math.Max(0, milliseconds * sampleRate / 1000);
 
     private async Task TeardownAsync()
     {
+        if (_keepAlive is { } keepAlive)
+        {
+            keepAlive.KeepAliveFailed -= OnKeepAliveFailed;
+            keepAlive.Dispose();
+        }
+
         if (_sender is { } sender)
         {
             sender.SendFailed -= OnSendFailed;
@@ -361,27 +378,60 @@ public sealed class StreamController : IStreamController
 
         _pipeline = null;
         _sender = null;
+        _keepAlive = null;
         _source = null;
         _session = null;
         _streamOptions = null;
         ConnectedDevice = null;
     }
 
-    private static string DescribeFailure(AirPlayDevice device, Exception exception) => exception switch
+    private string DescribeFailure(AirPlayDevice device, Exception exception) => exception switch
     {
-        OperationCanceledException => "Bağlantı iptal edildi.",
-        _ => $"{device.Name} cihazına bağlanılamadı: {exception.Message}",
+        OperationCanceledException => _localization.Get(LocKeys.ConnectionCancelled),
+        _ => _localization.Format(LocKeys.ConnectFailed, device.Name, exception.Message),
     };
 
     private void OnSendFailed(object? sender, Exception exception) =>
-        Report($"Paket gönderilemedi: {exception.Message}");
+        Report(_localization.Format(LocKeys.PacketSendFailed, exception.Message));
+
+    private void OnKeepAliveFailed(object? sender, Exception exception)
+    {
+        Report(_localization.Format(LocKeys.KeepAliveFailed, exception.Message));
+        _ = HandleStreamFailureAsync();
+    }
 
     private void OnCaptureStopped(object? sender, CaptureStoppedEventArgs e)
     {
         if (e.Exception is { } exception)
         {
-            Report($"Ses yakalama durdu: {exception.Message}");
+            Report(_localization.Format(LocKeys.CaptureStopped, exception.Message));
+            _ = HandleStreamFailureAsync(exception);
+        }
+    }
+
+    private async Task HandleStreamFailureAsync(Exception? exception = null)
+    {
+        await _gate.WaitAsync().ConfigureAwait(false);
+
+        try
+        {
+            if (State is not StreamState.Streaming and not StreamState.Connecting)
+            {
+                return;
+            }
+
             State = StreamState.Faulted;
+            var name = ConnectedDevice?.Name;
+            await TeardownAsync().ConfigureAwait(false);
+
+            if (exception is not null && name is not null)
+            {
+                Report(_localization.Format(LocKeys.StreamStopped, name, exception.Message));
+            }
+        }
+        finally
+        {
+            _gate.Release();
         }
     }
 

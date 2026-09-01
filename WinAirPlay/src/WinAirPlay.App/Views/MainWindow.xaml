@@ -47,7 +47,19 @@
         <!-- Header -->
         <Grid Grid.Row="0" Margin="0,0,0,18">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="WinAirPlay" FontSize="20" FontWeight="SemiBold" />
+                <Border Width="40"
+                        Height="40"
+                        CornerRadius="10"
+                        Background="{StaticResource PanelBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        Margin="0,0,12,0">
+                    <Image Width="30"
+                           Height="30"
+                           Source="{Binding AppLogo}"
+                           RenderOptions.BitmapScalingMode="HighQuality" />
+                </Border>
+                <TextBlock Text="WinAirPlay" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" />
                 <Border Margin="12,0,0,0"
                         VerticalAlignment="Center"
                         Background="{StaticResource PanelBrush}"
@@ -71,7 +83,7 @@
         <!-- Target device -->
         <Border Style="{StaticResource Card}" Margin="0,0,0,14">
             <StackPanel>
-                <TextBlock Text="HEDEF CİHAZ" Style="{StaticResource CaptionText}" />
+                <TextBlock Text="{Binding TargetDeviceCaption}" Style="{StaticResource CaptionText}" />
 
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -80,6 +92,7 @@
                     </Grid.ColumnDefinitions>
 
                     <ComboBox Grid.Column="0"
+                              Tag="{Binding NoDevicesText}"
                               Style="{StaticResource ModernComboBox}"
                               ItemContainerStyle="{StaticResource ModernComboBoxItem}"
                               ItemsSource="{Binding Devices}"
@@ -104,12 +117,12 @@
 
                     <Button Grid.Column="1"
                             Margin="10,0,0,0"
-                            Content="Tara"
+                            Content="{Binding ScanButtonText}"
                             Style="{StaticResource GhostButton}"
                             Command="{Binding ScanCommand}" />
                 </Grid>
 
-                <TextBlock Margin="0,14,0,6" Text="SES KAYNAĞI" Style="{StaticResource CaptionText}" />
+                <TextBlock Margin="0,14,0,6" Text="{Binding AudioSourceCaption}" Style="{StaticResource CaptionText}" />
                 <ComboBox Style="{StaticResource ModernComboBox}"
                           ItemContainerStyle="{StaticResource ModernComboBoxItem}"
                           ItemsSource="{Binding CaptureDevices}"
@@ -122,13 +135,31 @@
         <Border Style="{StaticResource Card}" Margin="0,0,0,14">
             <StackPanel>
                 <Grid>
-                    <TextBlock Text="TAMPON (GECİKME)" Style="{StaticResource CaptionText}" />
-                    <TextBlock HorizontalAlignment="Right"
-                               Style="{StaticResource ValueText}"
-                               Text="{Binding LatencyText}" />
+                    <TextBlock Text="{Binding BufferLatencyCaption}" Style="{StaticResource CaptionText}" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Button Content="−"
+                                Width="32"
+                                Height="28"
+                                Padding="0"
+                                Margin="0,0,8,0"
+                                Style="{StaticResource GhostButton}"
+                                Command="{Binding DecreaseLatencyCommand}" />
+                        <TextBlock Style="{StaticResource ValueText}"
+                                   VerticalAlignment="Center"
+                                   MinWidth="52"
+                                   TextAlignment="Center"
+                                   Text="{Binding LatencyText}" />
+                        <Button Content="+"
+                                Width="32"
+                                Height="28"
+                                Padding="0"
+                                Margin="8,0,0,0"
+                                Style="{StaticResource GhostButton}"
+                                Command="{Binding IncreaseLatencyCommand}" />
+                    </StackPanel>
                 </Grid>
                 <Slider Style="{StaticResource ModernSlider}"
-                        Minimum="50"
+                        Minimum="0"
                         Maximum="2000"
                         SmallChange="10"
                         LargeChange="100"
@@ -138,26 +169,26 @@
                 <TextBlock Margin="0,4,0,0"
                            FontSize="11"
                            Foreground="{StaticResource MutedBrush}"
-                           Text="Düşük değer gecikmeyi azaltır, ağ dalgalanmasında kesilmeye yol açar." />
+                           Text="{Binding LatencyHint}" />
 
                 <Grid Margin="0,18,0,0">
-                    <TextBlock Text="SES SEVİYESİ" Style="{StaticResource CaptionText}" />
+                    <TextBlock Text="{Binding VolumeCaption}" Style="{StaticResource CaptionText}" />
                     <TextBlock HorizontalAlignment="Right"
                                Style="{StaticResource ValueText}"
                                Text="{Binding VolumeText}" />
                 </Grid>
                 <Slider Style="{StaticResource ModernSlider}"
-                        Minimum="-30"
-                        Maximum="0"
+                        Minimum="0"
+                        Maximum="100"
                         SmallChange="1"
-                        LargeChange="5"
-                        Value="{Binding VolumeDb, Mode=TwoWay}" />
+                        LargeChange="10"
+                        Value="{Binding VolumePercent, Mode=TwoWay}" />
 
                 <CheckBox Margin="0,18,0,0"
                           Foreground="{StaticResource TextBrush}"
                           IsEnabled="{Binding IsStreaming, Converter={StaticResource Not}}"
                           IsChecked="{Binding UseAlac, Mode=TwoWay}"
-                          Content="ALAC kodlama" />
+                          Content="{Binding AlacEncodingText}" />
                 <TextBlock Margin="24,2,0,0"
                            FontSize="11"
                            Foreground="{StaticResource MutedBrush}"
@@ -167,28 +198,37 @@
                           Foreground="{StaticResource TextBrush}"
                           IsEnabled="{Binding IsStreaming, Converter={StaticResource Not}}"
                           IsChecked="{Binding MuteLocalSpeakers, Mode=TwoWay}"
-                          Content="Yayın sırasında hoparlörü kapat" />
+                          Content="{Binding MuteSpeakersText}" />
                 <TextBlock Margin="24,2,0,0"
                            FontSize="11"
                            Foreground="{StaticResource MutedBrush}"
-                           Text="Ses yalnızca AirPlay cihazından gelir. Kapatılmazsa ikisinden birden duyulur." />
+                           Text="{Binding MuteSpeakersHint}" />
 
                 <CheckBox Margin="0,14,0,0"
                           Foreground="{StaticResource TextBrush}"
                           IsChecked="{Binding AutoConnect, Mode=TwoWay}"
-                          Content="Açılışta son cihaza bağlan" />
+                          Content="{Binding AutoConnectText}" />
 
                 <CheckBox Margin="0,10,0,0"
                           Foreground="{StaticResource TextBrush}"
                           IsChecked="{Binding StartMinimized, Mode=TwoWay}"
-                          Content="Simge durumunda başlat" />
+                          Content="{Binding StartMinimizedText}" />
+
+                <TextBlock Margin="0,18,0,6" Text="{Binding LanguageCaption}" Style="{StaticResource CaptionText}" />
+                <ComboBox Style="{StaticResource ModernComboBox}"
+                          ItemContainerStyle="{StaticResource ModernComboBoxItem}"
+                          ItemsSource="{Binding LanguageOptions}"
+                          SelectedValue="{Binding Language, Mode=TwoWay}"
+                          SelectedValuePath="Value"
+                          DisplayMemberPath="Label"
+                          IsEnabled="{Binding IsStreaming, Converter={StaticResource Not}}" />
             </StackPanel>
         </Border>
 
         <!-- Live statistics -->
         <Border Style="{StaticResource Card}">
             <StackPanel>
-                <TextBlock Text="YAYIN" Style="{StaticResource CaptionText}" />
+                <TextBlock Text="{Binding StreamingCaption}" Style="{StaticResource CaptionText}" />
 
                 <Grid Margin="0,0,0,10">
                     <Grid.ColumnDefinitions>
@@ -216,19 +256,19 @@
                     </Grid.RowDefinitions>
 
                     <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,8,0,0">
-                        <TextBlock Text="SÜRE" Style="{StaticResource CaptionText}" />
+                        <TextBlock Text="{Binding DurationCaption}" Style="{StaticResource CaptionText}" />
                         <TextBlock Style="{StaticResource ValueText}" Text="{Binding PositionText}" />
                     </StackPanel>
                     <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,8,0,0">
-                        <TextBlock Text="AKIŞ HIZI" Style="{StaticResource CaptionText}" />
+                        <TextBlock Text="{Binding ThroughputCaption}" Style="{StaticResource CaptionText}" />
                         <TextBlock Style="{StaticResource ValueText}" Text="{Binding ThroughputText}" />
                     </StackPanel>
                     <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,14,0,0">
-                        <TextBlock Text="PAKET" Style="{StaticResource CaptionText}" />
+                        <TextBlock Text="{Binding PacketsCaption}" Style="{StaticResource CaptionText}" />
                         <TextBlock Style="{StaticResource ValueText}" Text="{Binding PacketText}" />
                     </StackPanel>
                     <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,14,0,0">
-                        <TextBlock Text="KODLAMA" Style="{StaticResource CaptionText}" />
+                        <TextBlock Text="{Binding EncodingCaption}" Style="{StaticResource CaptionText}" />
                         <TextBlock Style="{StaticResource ValueText}" Text="{Binding CodecText}" />
                     </StackPanel>
                 </Grid>

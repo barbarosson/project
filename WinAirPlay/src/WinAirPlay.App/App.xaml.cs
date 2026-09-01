@@ -1,7 +1,8 @@
 using System;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
+using WinAirPlay.App.Branding;
+using WinAirPlay.App.Localization;
 using WinAirPlay.App.Services;
 using WinAirPlay.App.Tray;
 using WinAirPlay.App.ViewModels;
@@ -16,6 +17,7 @@ public partial class App : Application
     private StreamController? _controller;
     private TrayIconHost? _tray;
     private MainWindow? _window;
+    private ILocalizationService? _localization;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -26,27 +28,45 @@ public partial class App : Application
         var settingsStore = new JsonSettingsStore();
         var settings = settingsStore.Load();
 
-        _controller = new StreamController(new ZeroconfAirPlayDiscovery());
+        _localization = new LocalizationService { Language = settings.Language };
+
+        var splash = new SplashWindow(_localization);
+        splash.Show();
+
+        _controller = new StreamController(new ZeroconfAirPlayDiscovery(), _localization);
 
         var viewModel = new MainViewModel(
             _controller,
             settingsStore,
             new WasapiDeviceEnumerator(),
-            new WpfDispatcher(Dispatcher));
+            new WpfDispatcher(Dispatcher),
+            _localization);
 
         _window = new MainWindow(viewModel);
-        _tray = new TrayIconHost(_window, viewModel, _controller);
+        _window.Icon = AppBranding.GetLogo(32);
+        _tray = new TrayIconHost(_window, viewModel, _controller, _localization);
 
-        if (settings.StartMinimized)
+        Dispatcher.InvokeAsync(async () =>
         {
-            // Loaded still fires for a hidden window, so discovery starts either way.
-            _window.Show();
-            _window.Hide();
-        }
-        else
-        {
-            _tray.ShowWindow();
-        }
+            try
+            {
+                await viewModel.InitializeAsync().ConfigureAwait(true);
+            }
+            finally
+            {
+                splash.Close();
+
+                if (settings.StartMinimized)
+                {
+                    _window.Show();
+                    _window.Hide();
+                }
+                else
+                {
+                    _tray.ShowWindow();
+                }
+            }
+        });
     }
 
     protected override void OnExit(ExitEventArgs e)
@@ -65,10 +85,11 @@ public partial class App : Application
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         var log = WriteCrashLog(e.Exception);
+        var localization = _localization ?? new LocalizationService();
 
         MessageBox.Show(
-            $"{e.Exception.Message}\n\nAyrıntılar: {log}",
-            "WinAirPlay — beklenmeyen hata",
+            localization.Format(LocKeys.CrashDetails, e.Exception.Message, log),
+            localization.Get(LocKeys.CrashTitle),
             MessageBoxButton.OK,
             MessageBoxImage.Error);
 

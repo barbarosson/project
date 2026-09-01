@@ -9,13 +9,15 @@ public ref struct AlacBitWriter
     private readonly Span<byte> _buffer;
     private int _bitPosition;
 
-    public AlacBitWriter(Span<byte> buffer)
+    public AlacBitWriter(Span<byte> buffer, int startBit = 0)
     {
         _buffer = buffer;
-        _bitPosition = 0;
+        _bitPosition = startBit;
 
-        // Bits are OR-ed in, so the buffer has to start clean.
-        buffer.Clear();
+        if (startBit == 0)
+        {
+            buffer.Clear();
+        }
     }
 
     public readonly int BitLength => _bitPosition;
@@ -61,6 +63,13 @@ public ref struct AlacBitWriter
         }
 
         _bitPosition += 8;
+    }
+
+    /// <summary>Writes a little-endian PCM sample as big-endian ALAC bits.</summary>
+    public void WriteSample16(ReadOnlySpan<byte> sample)
+    {
+        WriteByte((byte)(sample[1]));
+        WriteByte(sample[0]);
     }
 
     private readonly void EnsureCapacity(int bitCount)

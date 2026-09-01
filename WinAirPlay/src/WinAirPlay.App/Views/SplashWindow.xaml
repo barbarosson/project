@@ -1,0 +1,61 @@
+<Window x:Class="WinAirPlay.App.Views.SplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="WinAirPlay"
+        Width="360"
+        Height="360"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        Topmost="True"
+        ResizeMode="NoResize">
+
+    <Border Background="{StaticResource SurfaceBrush}"
+            BorderBrush="{StaticResource BorderBrush}"
+            BorderThickness="1"
+            CornerRadius="18"
+            Padding="28">
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+            <Border Width="128"
+                    Height="128"
+                    CornerRadius="28"
+                    Background="{StaticResource PanelBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1"
+                    HorizontalAlignment="Center">
+                <Image x:Name="LogoImage"
+                       Width="96"
+                       Height="96"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
+            </Border>
+
+            <TextBlock Margin="0,22,0,0"
+                       Text="WinAirPlay"
+                       FontSize="24"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center" />
+
+            <TextBlock x:Name="TaglineText"
+                       Margin="0,8,0,0"
+                       FontSize="12"
+                       Foreground="{StaticResource MutedBrush}"
+                       TextAlignment="Center"
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Center" />
+
+            <ProgressBar Margin="0,24,0,0"
+                         Height="4"
+                         Width="220"
+                         IsIndeterminate="True"
+                         Style="{StaticResource SplashProgressBar}" />
+
+            <TextBlock x:Name="LoadingText"
+                       Margin="0,12,0,0"
+                       FontSize="11"
+                       Foreground="{StaticResource MutedBrush}"
+                       HorizontalAlignment="Center" />
+        </StackPanel>
+    </Border>
+</Window>

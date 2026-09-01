@@ -501,14 +501,17 @@ public static class Program
             using var source = new WasapiLoopbackCaptureSource(captureOptions);
             using var silencer = new WasapiLocalOutputSilencer();
             using var sender = new RaopRtpSender(session, source.Format, streamOptions);
+            using var keepAlive = new RaopSessionKeepAlive(session);
             using var pipeline = new AudioPipeline(source, ownsSource: false);
             pipeline.AddSink(sender);
 
             Exception? failure = null;
             sender.SendFailed += (_, ex) => failure ??= ex;
+            keepAlive.KeepAliveFailed += (_, ex) => failure ??= ex;
             pipeline.Stopped += (_, e) => failure ??= e.Exception;
 
             sender.Start();
+            keepAlive.Start();
             pipeline.Start();
 
             if (!options.KeepLocalSpeakers)

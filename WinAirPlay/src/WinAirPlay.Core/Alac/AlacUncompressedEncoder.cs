@@ -21,6 +21,8 @@ public sealed class AlacUncompressedEncoder : IRaopPayloadEncoder
 
     private const int TrailerBits = 3;
 
+    private static readonly byte[] UncompressedHeader = BuildUncompressedHeader();
+
     private readonly RaopAudioParameters _audio;
 
     public AlacUncompressedEncoder(RaopAudioParameters? audio = null)
@@ -55,27 +57,33 @@ public sealed class AlacUncompressedEncoder : IRaopPayloadEncoder
                 $"Hedef en az {length} bayt olmalı, {destination.Length} bayt verildi.", nameof(destination));
         }
 
-        var writer = new AlacBitWriter(destination[..length]);
-
-        writer.Write(1, 3);   // element tag: a stereo channel pair
-        writer.Write(0, 4);   // unused
-        writer.Write(0, 8);   // unused
-        writer.Write(0, 4);   // unused
-        writer.Write(0, 1);   // no explicit frame size; the magic cookie already carries it
-        writer.Write(0, 2);   // no wasted bytes
-        writer.Write(1, 1);   // samples follow uncompressed
+        UncompressedHeader.CopyTo(destination);
+        var writer = new AlacBitWriter(destination, HeaderBits);
 
         for (var i = 0; i < pcm.Length; i += 4)
         {
-            // Left then right, each byte-swapped to big endian.
-            writer.WriteByte(pcm[i + 1]);
-            writer.WriteByte(pcm[i]);
-            writer.WriteByte(pcm[i + 3]);
-            writer.WriteByte(pcm[i + 2]);
+            writer.WriteSample16(pcm[i..(i + 2)]);
+            writer.WriteSample16(pcm[(i + 2)..(i + 4)]);
         }
 
         writer.Write(EndOfFrameTag, TrailerBits);
 
         return writer.ByteLength;
+    }
+
+    private static byte[] BuildUncompressedHeader()
+    {
+        Span<byte> buffer = stackalloc byte[4];
+        var writer = new AlacBitWriter(buffer);
+
+        writer.Write(1, 3);
+        writer.Write(0, 4);
+        writer.Write(0, 8);
+        writer.Write(0, 4);
+        writer.Write(0, 1);
+        writer.Write(0, 2);
+        writer.Write(1, 1);
+
+        return buffer[..writer.ByteLength].ToArray();
     }
 }

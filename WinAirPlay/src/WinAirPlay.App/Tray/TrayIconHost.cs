@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using Forms = System.Windows.Forms;
+using WinAirPlay.App.Localization;
 using WinAirPlay.App.Services;
 using WinAirPlay.App.ViewModels;
 using WinAirPlay.App.Views;
@@ -16,25 +17,35 @@ public sealed class TrayIconHost : IDisposable
     private readonly MainWindow _window;
     private readonly MainViewModel _viewModel;
     private readonly IStreamController _controller;
+    private readonly ILocalizationService _localization;
     private readonly TrayIconFactory _icons = new();
     private readonly Forms.NotifyIcon _notifyIcon;
+    private readonly Forms.ToolStripMenuItem _showWindowItem;
     private readonly Forms.ToolStripMenuItem _toggleItem;
+    private readonly Forms.ToolStripMenuItem _exitItem;
 
     private bool _disposed;
 
-    public TrayIconHost(MainWindow window, MainViewModel viewModel, IStreamController controller)
+    public TrayIconHost(
+        MainWindow window,
+        MainViewModel viewModel,
+        IStreamController controller,
+        ILocalizationService localization)
     {
         _window = window ?? throw new ArgumentNullException(nameof(window));
         _viewModel = viewModel ?? throw new ArgumentNullException(nameof(viewModel));
         _controller = controller ?? throw new ArgumentNullException(nameof(controller));
+        _localization = localization ?? throw new ArgumentNullException(nameof(localization));
 
-        _toggleItem = new Forms.ToolStripMenuItem("Bağlan", null, (_, _) => Toggle());
+        _showWindowItem = new Forms.ToolStripMenuItem(string.Empty, null, (_, _) => ShowWindow());
+        _toggleItem = new Forms.ToolStripMenuItem(string.Empty, null, (_, _) => Toggle());
+        _exitItem = new Forms.ToolStripMenuItem(string.Empty, null, (_, _) => Exit());
 
         var menu = new Forms.ContextMenuStrip();
-        menu.Items.Add(new Forms.ToolStripMenuItem("Pencereyi Göster", null, (_, _) => ShowWindow()));
+        menu.Items.Add(_showWindowItem);
         menu.Items.Add(_toggleItem);
         menu.Items.Add(new Forms.ToolStripSeparator());
-        menu.Items.Add(new Forms.ToolStripMenuItem("Çıkış", null, (_, _) => Exit()));
+        menu.Items.Add(_exitItem);
 
         _notifyIcon = new Forms.NotifyIcon
         {
@@ -48,6 +59,7 @@ public sealed class TrayIconHost : IDisposable
         _window.Icon = _icons.GetImageSource(StreamState.Idle);
 
         _controller.StateChanged += OnStateChanged;
+        _localization.LanguageChanged += OnLanguageChanged;
         Refresh(_controller.State);
     }
 
@@ -69,6 +81,9 @@ public sealed class TrayIconHost : IDisposable
     private void OnStateChanged(object? sender, StreamState state) =>
         _window.Dispatcher.BeginInvoke(() => Refresh(state));
 
+    private void OnLanguageChanged(object? sender, EventArgs e) =>
+        _window.Dispatcher.BeginInvoke(() => Refresh(_controller.State));
+
     private void Refresh(StreamState state)
     {
         if (_disposed)
@@ -77,18 +92,23 @@ public sealed class TrayIconHost : IDisposable
         }
 
         _notifyIcon.Icon = _icons.Get(state);
-        _toggleItem.Text = state == StreamState.Streaming ? "Bağlantıyı Kes" : "Bağlan";
+        _showWindowItem.Text = _localization.Get(LocKeys.TrayShowWindow);
+        _toggleItem.Text = state == StreamState.Streaming
+            ? _localization.Get(LocKeys.Disconnect)
+            : _localization.Get(LocKeys.Connect);
+        _exitItem.Text = _localization.Get(LocKeys.TrayExit);
 
         var device = _controller.ConnectedDevice?.Name;
         var caption = state switch
         {
-            StreamState.Streaming when device is not null => $"Yayında — {device}",
-            StreamState.Streaming => "Yayında",
-            StreamState.Connecting => "Bağlanıyor...",
-            StreamState.Scanning => "Ağ taranıyor...",
-            StreamState.Stopping => "Durduruluyor...",
-            StreamState.Faulted => "Hata",
-            _ => "Bağlı değil",
+            StreamState.Streaming when device is not null =>
+                _localization.Format(LocKeys.TrayStreamingWithDevice, device),
+            StreamState.Streaming => _localization.Get(LocKeys.TrayStreaming),
+            StreamState.Connecting => _localization.Get(LocKeys.TrayConnecting),
+            StreamState.Scanning => _localization.Get(LocKeys.TrayScanning),
+            StreamState.Stopping => _localization.Get(LocKeys.TrayStopping),
+            StreamState.Faulted => _localization.Get(LocKeys.TrayFaulted),
+            _ => _localization.Get(LocKeys.TrayNotConnected),
         };
 
         // The tray tooltip is capped at 63 characters; a long device name would throw otherwise.
@@ -107,6 +127,7 @@ public sealed class TrayIconHost : IDisposable
 
         _disposed = true;
         _controller.StateChanged -= OnStateChanged;
+        _localization.LanguageChanged -= OnLanguageChanged;
         _notifyIcon.Visible = false;
         _notifyIcon.Dispose();
         _icons.Dispose();

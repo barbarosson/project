@@ -1,0 +1,20 @@
+WinAirPlay — Third-Party Notices
+================================
+
+This application includes the following open-source components:
+
+NAudio (NAudio.Core, NAudio.Wasapi) — MIT License
+Copyright (c) Mark Heath and contributors
+https://github.com/naudio/NAudio
+
+Zeroconf — MIT License (see upstream repository for copyright holders)
+https://github.com/onovotny/Zeroconf
+
+.NET Runtime — MIT License
+Copyright (c) .NET Foundation and contributors
+https://github.com/dotnet/runtime
+
+Full license texts are available in the NuGet packages referenced by this project.
+
+Apple, AirPlay, HomePod, and Apple TV are trademarks of Apple Inc.
+WinAirPlay is not affiliated with or endorsed by Apple Inc.

@@ -7,7 +7,7 @@ namespace WinAirPlay.Core.Tests;
 public class AppSettingsTests
 {
     [Theory]
-    [InlineData(0, AppSettings.MinLatencyMs)]
+    [InlineData(0, 0)]
     [InlineData(-500, AppSettings.MinLatencyMs)]
     [InlineData(50, 50)]
     [InlineData(750, 750)]
@@ -28,6 +28,25 @@ public class AppSettingsTests
         var settings = new AppSettings { VolumeDb = input }.Normalize();
 
         Assert.Equal(expected, settings.VolumeDb);
+    }
+
+    [Theory]
+    [InlineData(-30, 0)]
+    [InlineData(-20, 33.333333333333336)]
+    [InlineData(-9, 70)]
+    [InlineData(0, 100)]
+    public void DbToPercentMapsTheReceiverRange(double decibels, double expectedPercent)
+    {
+        Assert.Equal(expectedPercent, AppSettings.DbToPercent(decibels), precision: 6);
+    }
+
+    [Theory]
+    [InlineData(0, -30)]
+    [InlineData(70, -9)]
+    [InlineData(100, 0)]
+    public void PercentToDbMapsBackToTheReceiverRange(double percent, double expectedDb)
+    {
+        Assert.Equal(expectedDb, AppSettings.PercentToDb(percent), precision: 6);
     }
 
     [Fact]
