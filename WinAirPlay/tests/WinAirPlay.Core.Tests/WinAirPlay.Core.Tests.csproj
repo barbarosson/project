@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>WinAirPlay.Core.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <!-- Needed to reference the WPF app project and exercise its view models. -->
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- UseWPF pulls in System.Windows.Shapes, whose Path collides with System.IO.Path, so the SDK
+         drops System.IO. Tests need file APIs far more than shapes. -->
+    <Using Remove="System.Windows.Shapes" />
+    <Using Include="System.IO" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\WinAirPlay.Core\WinAirPlay.Core.csproj" />
+    <ProjectReference Include="..\..\src\WinAirPlay.Cli\WinAirPlay.Cli.csproj" />
+    <ProjectReference Include="..\..\src\WinAirPlay.App\WinAirPlay.App.csproj" />
+  </ItemGroup>
+
+</Project>

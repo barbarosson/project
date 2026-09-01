@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>WinAirPlay.App</RootNamespace>
+    <AssemblyName>WinAirPlay</AssemblyName>
+    <UseWPF>true</UseWPF>
+    <!-- The system tray lives in Windows Forms; WPF has no equivalent of NotifyIcon. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <!-- WPF resolves a specific culture for every binding; invariant mode makes that throw. -->
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Both frameworks define Application, MessageBox and Clipboard; WinForms is reached through
+         an explicit alias instead so WPF keeps the unqualified names. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\WinAirPlay.Core\WinAirPlay.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="WinAirPlay.Core.Tests" />
+  </ItemGroup>
+
+</Project>

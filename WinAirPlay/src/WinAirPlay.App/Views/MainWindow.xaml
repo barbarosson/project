@@ -1,0 +1,264 @@
+<Window x:Class="WinAirPlay.App.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:views="clr-namespace:WinAirPlay.App.Views"
+        Title="WinAirPlay"
+        Width="440"
+        Height="880"
+        MinWidth="400"
+        MinHeight="480"
+        Background="{StaticResource SurfaceBrush}"
+        WindowStartupLocation="CenterScreen"
+        TextOptions.TextRenderingMode="ClearType">
+
+    <Window.Resources>
+        <views:StateToBrushConverter x:Key="StateToBrush" />
+        <views:InverseBooleanConverter x:Key="Not" />
+        <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+
+        <Style x:Key="MeterBar" TargetType="ProgressBar">
+            <Setter Property="Minimum" Value="0" />
+            <Setter Property="Maximum" Value="1" />
+            <Setter Property="Height" Value="6" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ProgressBar">
+                        <Border Background="{StaticResource BorderBrush}" CornerRadius="3" ClipToBounds="True">
+                            <Grid x:Name="PART_Track">
+                                <Border x:Name="PART_Indicator"
+                                        Background="{StaticResource SuccessBrush}"
+                                        CornerRadius="3"
+                                        HorizontalAlignment="Left" />
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="22">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,18">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Text="WinAirPlay" FontSize="20" FontWeight="SemiBold" />
+                <Border Margin="12,0,0,0"
+                        VerticalAlignment="Center"
+                        Background="{StaticResource PanelBrush}"
+                        BorderBrush="{StaticResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="10"
+                        Padding="10,4">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse Width="8" Height="8" VerticalAlignment="Center"
+                                 Fill="{Binding State, Converter={StaticResource StateToBrush}}" />
+                        <TextBlock Margin="7,0,0,0" FontSize="11" Text="{Binding StateText}" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <!-- Leaves room for the scrollbar so hint text is never hidden underneath it. -->
+            <StackPanel Margin="0,0,4,0">
+
+        <!-- Target device -->
+        <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+            <StackPanel>
+                <TextBlock Text="HEDEF CİHAZ" Style="{StaticResource CaptionText}" />
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <ComboBox Grid.Column="0"
+                              Style="{StaticResource ModernComboBox}"
+                              ItemContainerStyle="{StaticResource ModernComboBoxItem}"
+                              ItemsSource="{Binding Devices}"
+                              SelectedItem="{Binding SelectedDevice, Mode=TwoWay}"
+                              IsEnabled="{Binding IsStreaming, Converter={StaticResource Not}}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Name}" />
+                                    <TextBlock FontSize="11" Foreground="{StaticResource MutedBrush}">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="{}{0}  ·  {1}">
+                                                <Binding Path="Address" />
+                                                <Binding Path="Model" TargetNullValue="AirPlay" />
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <Button Grid.Column="1"
+                            Margin="10,0,0,0"
+                            Content="Tara"
+                            Style="{StaticResource GhostButton}"
+                            Command="{Binding ScanCommand}" />
+                </Grid>
+
+                <TextBlock Margin="0,14,0,6" Text="SES KAYNAĞI" Style="{StaticResource CaptionText}" />
+                <ComboBox Style="{StaticResource ModernComboBox}"
+                          ItemContainerStyle="{StaticResource ModernComboBoxItem}"
+                          ItemsSource="{Binding CaptureDevices}"
+                          SelectedItem="{Binding SelectedCaptureDevice, Mode=TwoWay}"
+                          IsEnabled="{Binding IsStreaming, Converter={StaticResource Not}}" />
+            </StackPanel>
+        </Border>
+
+        <!-- Tuning -->
+        <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+            <StackPanel>
+                <Grid>
+                    <TextBlock Text="TAMPON (GECİKME)" Style="{StaticResource CaptionText}" />
+                    <TextBlock HorizontalAlignment="Right"
+                               Style="{StaticResource ValueText}"
+                               Text="{Binding LatencyText}" />
+                </Grid>
+                <Slider Style="{StaticResource ModernSlider}"
+                        Minimum="50"
+                        Maximum="2000"
+                        SmallChange="10"
+                        LargeChange="100"
+                        TickFrequency="10"
+                        IsSnapToTickEnabled="True"
+                        Value="{Binding LatencyMs, Mode=TwoWay}" />
+                <TextBlock Margin="0,4,0,0"
+                           FontSize="11"
+                           Foreground="{StaticResource MutedBrush}"
+                           Text="Düşük değer gecikmeyi azaltır, ağ dalgalanmasında kesilmeye yol açar." />
+
+                <Grid Margin="0,18,0,0">
+                    <TextBlock Text="SES SEVİYESİ" Style="{StaticResource CaptionText}" />
+                    <TextBlock HorizontalAlignment="Right"
+                               Style="{StaticResource ValueText}"
+                               Text="{Binding VolumeText}" />
+                </Grid>
+                <Slider Style="{StaticResource ModernSlider}"
+                        Minimum="-30"
+                        Maximum="0"
+                        SmallChange="1"
+                        LargeChange="5"
+                        Value="{Binding VolumeDb, Mode=TwoWay}" />
+
+                <CheckBox Margin="0,18,0,0"
+                          Foreground="{StaticResource TextBrush}"
+                          IsEnabled="{Binding IsStreaming, Converter={StaticResource Not}}"
+                          IsChecked="{Binding UseAlac, Mode=TwoWay}"
+                          Content="ALAC kodlama" />
+                <TextBlock Margin="24,2,0,0"
+                           FontSize="11"
+                           Foreground="{StaticResource MutedBrush}"
+                           Text="{Binding CodecHint}" />
+
+                <CheckBox Margin="0,14,0,0"
+                          Foreground="{StaticResource TextBrush}"
+                          IsEnabled="{Binding IsStreaming, Converter={StaticResource Not}}"
+                          IsChecked="{Binding MuteLocalSpeakers, Mode=TwoWay}"
+                          Content="Yayın sırasında hoparlörü kapat" />
+                <TextBlock Margin="24,2,0,0"
+                           FontSize="11"
+                           Foreground="{StaticResource MutedBrush}"
+                           Text="Ses yalnızca AirPlay cihazından gelir. Kapatılmazsa ikisinden birden duyulur." />
+
+                <CheckBox Margin="0,14,0,0"
+                          Foreground="{StaticResource TextBrush}"
+                          IsChecked="{Binding AutoConnect, Mode=TwoWay}"
+                          Content="Açılışta son cihaza bağlan" />
+
+                <CheckBox Margin="0,10,0,0"
+                          Foreground="{StaticResource TextBrush}"
+                          IsChecked="{Binding StartMinimized, Mode=TwoWay}"
+                          Content="Simge durumunda başlat" />
+            </StackPanel>
+        </Border>
+
+        <!-- Live statistics -->
+        <Border Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Text="YAYIN" Style="{StaticResource CaptionText}" />
+
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                        <TextBlock Text="L" FontSize="10" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,4" />
+                        <TextBlock Text="R" FontSize="10" Foreground="{StaticResource MutedBrush}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                        <ProgressBar Style="{StaticResource MeterBar}" Value="{Binding PeakLeft, Mode=OneWay}" Margin="0,0,0,5" />
+                        <ProgressBar Style="{StaticResource MeterBar}" Value="{Binding PeakRight, Mode=OneWay}" />
+                    </StackPanel>
+                </Grid>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,8,0,0">
+                        <TextBlock Text="SÜRE" Style="{StaticResource CaptionText}" />
+                        <TextBlock Style="{StaticResource ValueText}" Text="{Binding PositionText}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,8,0,0">
+                        <TextBlock Text="AKIŞ HIZI" Style="{StaticResource CaptionText}" />
+                        <TextBlock Style="{StaticResource ValueText}" Text="{Binding ThroughputText}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,14,0,0">
+                        <TextBlock Text="PAKET" Style="{StaticResource CaptionText}" />
+                        <TextBlock Style="{StaticResource ValueText}" Text="{Binding PacketText}" />
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,14,0,0">
+                        <TextBlock Text="KODLAMA" Style="{StaticResource CaptionText}" />
+                        <TextBlock Style="{StaticResource ValueText}" Text="{Binding CodecText}" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer -->
+        <StackPanel Grid.Row="2" Margin="0,16,0,0">
+            <TextBlock Margin="2,0,0,12"
+                       FontSize="11"
+                       TextWrapping="Wrap"
+                       Foreground="{StaticResource MutedBrush}"
+                       Text="{Binding StatusText}" />
+
+            <Button Height="44"
+                    Content="{Binding ConnectionButtonText}"
+                    Command="{Binding ToggleConnectionCommand}">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource AccentButton}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsStreaming}" Value="True">
+                                <Setter Property="Background" Value="{StaticResource DangerBrush}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+    </Grid>
+</Window>
