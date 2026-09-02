@@ -25,7 +25,7 @@ public static class RtpTimingPacket
     {
         if (packet.Length < Length)
         {
-            throw new ArgumentException($"Timing paketi en az {Length} bayt olmalı.", nameof(packet));
+            throw new ArgumentException($"Timing packet must be at least {Length} bytes.", nameof(packet));
         }
 
         return NtpTimestamp.ReadBigEndian(packet[24..32]);

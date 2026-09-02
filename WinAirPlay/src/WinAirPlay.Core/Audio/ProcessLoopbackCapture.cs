@@ -39,7 +39,7 @@ internal sealed class ProcessLoopbackCapture : IWaveIn
         {
             _stopRequested = true;
             _start.Set();
-            throw new TimeoutException("Windows işlem loopback yakalamasını zamanında başlatamadı.");
+            throw new TimeoutException("Windows did not start process loopback capture in time.");
         }
 
         if (_initError is not null)
@@ -122,7 +122,7 @@ internal sealed class ProcessLoopbackCapture : IWaveIn
         catch (Exception ex)
         {
             _initError = new InvalidOperationException(
-                $"İşlem loopback başlatılamadı (0x{ex.HResult:X8}): {ex.Message}", ex);
+                $"Process loopback failed to start (0x{ex.HResult:X8}): {ex.Message}", ex);
             _ready.Set();
             RecordingStopped?.Invoke(this, new StoppedEventArgs(_initError));
         }
@@ -157,7 +157,7 @@ internal sealed class ProcessLoopbackCapture : IWaveIn
                 if (IsFatalCaptureError(hr))
                 {
                     fatal = Marshal.GetExceptionForHR(hr)
-                        ?? new InvalidOperationException($"WASAPI yakalama hatası (0x{hr:X8}).");
+                        ?? new InvalidOperationException($"WASAPI capture error (0x{hr:X8}).");
                     break;
                 }
 
@@ -189,7 +189,7 @@ internal sealed class ProcessLoopbackCapture : IWaveIn
                     if (IsFatalCaptureError(hr))
                     {
                         fatal = Marshal.GetExceptionForHR(hr)
-                            ?? new InvalidOperationException($"WASAPI yakalama hatası (0x{hr:X8}).");
+                            ?? new InvalidOperationException($"WASAPI capture error (0x{hr:X8}).");
                         break;
                     }
 
@@ -230,7 +230,7 @@ internal sealed class ProcessLoopbackCapture : IWaveIn
                 if (hr < 0 && IsFatalCaptureError(hr))
                 {
                     fatal = Marshal.GetExceptionForHR(hr)
-                        ?? new InvalidOperationException($"WASAPI yakalama hatası (0x{hr:X8}).");
+                        ?? new InvalidOperationException($"WASAPI capture error (0x{hr:X8}).");
                     break;
                 }
 
@@ -249,7 +249,7 @@ internal sealed class ProcessLoopbackCapture : IWaveIn
                 if (hr < 0 && IsFatalCaptureError(hr))
                 {
                     fatal = Marshal.GetExceptionForHR(hr)
-                        ?? new InvalidOperationException($"WASAPI yakalama hatası (0x{hr:X8}).");
+                        ?? new InvalidOperationException($"WASAPI capture error (0x{hr:X8}).");
                     break;
                 }
 
@@ -431,7 +431,7 @@ internal sealed class ActivateCompletionHandler : IActivateAudioInterfaceComplet
 
             if (unknown == IntPtr.Zero)
             {
-                throw new InvalidOperationException("ActivateAudioInterfaceAsync IAudioClient döndürmedi.");
+                throw new InvalidOperationException("ActivateAudioInterfaceAsync did not return IAudioClient.");
             }
 
             _client = (NativeAudioClient)Marshal.GetObjectForIUnknown(unknown);
@@ -467,7 +467,7 @@ internal sealed class ActivateCompletionHandler : IActivateAudioInterfaceComplet
     {
         if (!_done.Wait(TimeSpan.FromSeconds(5)))
         {
-            throw new TimeoutException("Windows işlem loopback yakalamasını zamanında başlatamadı.");
+            throw new TimeoutException("Windows did not start process loopback capture in time.");
         }
 
         if (_error is not null)

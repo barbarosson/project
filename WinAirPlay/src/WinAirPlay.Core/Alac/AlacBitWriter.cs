@@ -28,7 +28,7 @@ public ref struct AlacBitWriter
     {
         if (bitCount is < 1 or > 32)
         {
-            throw new ArgumentOutOfRangeException(nameof(bitCount), bitCount, "1-32 bit yazılabilir.");
+            throw new ArgumentOutOfRangeException(nameof(bitCount), bitCount, "Can write 1-32 bits.");
         }
 
         EnsureCapacity(bitCount);

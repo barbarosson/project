@@ -59,7 +59,6 @@ public sealed class TrayIconHost : IDisposable
         _window.Icon = _icons.GetImageSource(StreamState.Idle);
 
         _controller.StateChanged += OnStateChanged;
-        _localization.LanguageChanged += OnLanguageChanged;
         Refresh(_controller.State);
     }
 
@@ -80,9 +79,6 @@ public sealed class TrayIconHost : IDisposable
 
     private void OnStateChanged(object? sender, StreamState state) =>
         _window.Dispatcher.BeginInvoke(() => Refresh(state));
-
-    private void OnLanguageChanged(object? sender, EventArgs e) =>
-        _window.Dispatcher.BeginInvoke(() => Refresh(_controller.State));
 
     private void Refresh(StreamState state)
     {
@@ -127,7 +123,6 @@ public sealed class TrayIconHost : IDisposable
 
         _disposed = true;
         _controller.StateChanged -= OnStateChanged;
-        _localization.LanguageChanged -= OnLanguageChanged;
         _notifyIcon.Visible = false;
         _notifyIcon.Dispose();
         _icons.Dispose();

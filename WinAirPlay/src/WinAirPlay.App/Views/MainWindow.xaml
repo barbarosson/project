@@ -46,11 +46,6 @@
 
         <!-- Header -->
         <Grid Grid.Row="0" Margin="0,0,0,18">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <Border Width="40"
                         Height="40"
@@ -61,6 +56,8 @@
                         Margin="0,0,12,0">
                     <Image Width="30"
                            Height="30"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
                            Source="{Binding AppLogo}"
                            RenderOptions.BitmapScalingMode="HighQuality" />
                 </Border>
@@ -79,25 +76,6 @@
                     </StackPanel>
                 </Border>
             </StackPanel>
-
-            <Border Grid.Column="1"
-                    VerticalAlignment="Center"
-                    Margin="12,0,0,0"
-                    Background="{StaticResource PanelBrush}"
-                    BorderBrush="{StaticResource BorderBrush}"
-                    BorderThickness="1"
-                    CornerRadius="8">
-                <StackPanel Orientation="Horizontal">
-                    <RadioButton GroupName="AppLanguage"
-                                 Content="TR"
-                                 Style="{StaticResource LanguageChip}"
-                                 IsChecked="{Binding IsTurkish, Mode=TwoWay}" />
-                    <RadioButton GroupName="AppLanguage"
-                                 Content="EN"
-                                 Style="{StaticResource LanguageChip}"
-                                 IsChecked="{Binding IsEnglish, Mode=TwoWay}" />
-                </StackPanel>
-            </Border>
         </Grid>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
@@ -166,8 +144,15 @@
                           ItemsSource="{Binding RoutingOptions}"
                           SelectedValue="{Binding RoutingMode, Mode=TwoWay}"
                           SelectedValuePath="Value"
-                          DisplayMemberPath="Label"
-                          IsEnabled="{Binding IsStreaming, Converter={StaticResource Not}}" />
+                          IsEnabled="{Binding IsStreaming, Converter={StaticResource Not}}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Label}"
+                                       TextTrimming="CharacterEllipsis"
+                                       TextWrapping="NoWrap" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
                 <TextBlock Margin="0,4,0,0"
                            FontSize="11"
                            TextWrapping="Wrap"

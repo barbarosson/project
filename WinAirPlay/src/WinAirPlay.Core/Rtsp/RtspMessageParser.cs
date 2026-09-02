@@ -55,7 +55,7 @@ public static class RtspMessageParser
             !parts[0].StartsWith("RTSP/", StringComparison.OrdinalIgnoreCase) ||
             !int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var statusCode))
         {
-            throw new RtspException($"Geçersiz RTSP durum satırı: '{statusLine}'");
+            throw new RtspException($"Invalid RTSP status line: '{statusLine}'");
         }
 
         return (statusCode, parts.Length == 3 ? parts[2].Trim() : string.Empty);

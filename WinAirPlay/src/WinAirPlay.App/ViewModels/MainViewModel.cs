@@ -54,10 +54,7 @@ public sealed class MainViewModel : ObservableObject
         _localization = localization ?? throw new ArgumentNullException(nameof(localization));
 
         _settings = _settingsStore.Load().Normalize();
-        _localization.Language = _settings.Language;
         _statusText = _localization.Get(LocKeys.Ready);
-
-        _localization.LanguageChanged += (_, _) => _dispatcher.Post(NotifyLanguageChanged);
 
         _controller.StateChanged += (_, state) => _dispatcher.Post(() => State = state);
         _controller.StatusChanged += (_, message) => _dispatcher.Post(() => StatusText = message);
@@ -89,49 +86,6 @@ public sealed class MainViewModel : ObservableObject
     public ICommand IncreaseLatencyCommand { get; }
 
     public ICommand DecreaseLatencyCommand { get; }
-
-    public AppLanguage Language
-    {
-        get => _settings.Language;
-        set
-        {
-            if (_settings.Language == value)
-            {
-                return;
-            }
-
-            _settings.Language = value;
-            _localization.Language = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(IsTurkish));
-            OnPropertyChanged(nameof(IsEnglish));
-            PersistSettings();
-        }
-    }
-
-    public bool IsTurkish
-    {
-        get => Language == AppLanguage.Tr;
-        set
-        {
-            if (value)
-            {
-                Language = AppLanguage.Tr;
-            }
-        }
-    }
-
-    public bool IsEnglish
-    {
-        get => Language == AppLanguage.En;
-        set
-        {
-            if (value)
-            {
-                Language = AppLanguage.En;
-            }
-        }
-    }
 
     public string TargetDeviceCaption => _localization.Get(LocKeys.TargetDevice);
     public string AudioSourceCaption => _localization.Get(LocKeys.AudioSource);
@@ -718,42 +672,5 @@ public sealed class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(IsMuteSpeakersEnabled));
         OnPropertyChanged(nameof(IsFollowWindowsVolumeEnabled));
         OnPropertyChanged(nameof(RoutingHint));
-    }
-
-    private void NotifyLanguageChanged()
-    {
-        OnPropertyChanged(nameof(ConnectionButtonText));
-        OnPropertyChanged(nameof(StateText));
-        OnPropertyChanged(nameof(LatencyText));
-        OnPropertyChanged(nameof(VolumeText));
-        OnPropertyChanged(nameof(CodecHint));
-        OnPropertyChanged(nameof(TargetDeviceCaption));
-        OnPropertyChanged(nameof(AudioSourceCaption));
-        OnPropertyChanged(nameof(BufferLatencyCaption));
-        OnPropertyChanged(nameof(VolumeCaption));
-        OnPropertyChanged(nameof(StreamingCaption));
-        OnPropertyChanged(nameof(DurationCaption));
-        OnPropertyChanged(nameof(ThroughputCaption));
-        OnPropertyChanged(nameof(PacketsCaption));
-        OnPropertyChanged(nameof(EncodingCaption));
-        OnPropertyChanged(nameof(ScanButtonText));
-        OnPropertyChanged(nameof(LatencyHint));
-        OnPropertyChanged(nameof(AlacEncodingText));
-        OnPropertyChanged(nameof(MuteSpeakersText));
-        OnPropertyChanged(nameof(MuteSpeakersHint));
-        OnPropertyChanged(nameof(RoutingCaption));
-        OnPropertyChanged(nameof(RoutingOptions));
-        OnPropertyChanged(nameof(RoutingHint));
-        OnPropertyChanged(nameof(FollowWindowsVolumeText));
-        OnPropertyChanged(nameof(FollowWindowsVolumeHint));
-        OnPropertyChanged(nameof(VolumeHint));
-        OnPropertyChanged(nameof(AutoConnectText));
-        OnPropertyChanged(nameof(StartMinimizedText));
-        OnPropertyChanged(nameof(NoDevicesText));
-
-        if (State == StreamState.Streaming)
-        {
-            RefreshStatistics();
-        }
     }
 }

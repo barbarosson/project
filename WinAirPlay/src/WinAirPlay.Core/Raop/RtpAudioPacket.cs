@@ -23,12 +23,12 @@ public static class RtpAudioPacket
     {
         if (destination.Length < HeaderLength)
         {
-            throw new ArgumentException($"RTP başlığı için {HeaderLength} bayt gerekli.", nameof(destination));
+            throw new ArgumentException($"RTP header requires {HeaderLength} bytes.", nameof(destination));
         }
 
         if (payloadType is < 0 or > 0x7F)
         {
-            throw new ArgumentOutOfRangeException(nameof(payloadType), payloadType, "Payload type 0-127 olmalı.");
+            throw new ArgumentOutOfRangeException(nameof(payloadType), payloadType, "Payload type must be 0-127.");
         }
 
         destination[0] = Version2;
@@ -76,12 +76,12 @@ public static class PcmByteOrder
     {
         if (source.Length % 2 != 0)
         {
-            throw new ArgumentException("16-bit PCM çift sayıda bayt içermeli.", nameof(source));
+            throw new ArgumentException("16-bit PCM must contain an even number of bytes.", nameof(source));
         }
 
         if (destination.Length < source.Length)
         {
-            throw new ArgumentException("Hedef tampon kaynaktan küçük olamaz.", nameof(destination));
+            throw new ArgumentException("Destination buffer cannot be smaller than the source.", nameof(destination));
         }
 
         for (var i = 0; i < source.Length; i += 2)

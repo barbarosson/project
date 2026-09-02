@@ -145,7 +145,7 @@
                                           VerticalAlignment="Center"
                                           IsHitTestVisible="False"
                                           Content="{TemplateBinding SelectionBoxItem}"
-                                          ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" />
+                                          ContentTemplate="{TemplateBinding ItemTemplate}" />
 
                         <TextBlock x:Name="Placeholder"
                                    Margin="12,0,34,0"
@@ -266,44 +266,6 @@
                             </Track.Thumb>
                         </Track>
                     </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style x:Key="LanguageChip" TargetType="RadioButton">
-        <Setter Property="Cursor" Value="Hand" />
-        <Setter Property="FontFamily" Value="Segoe UI" />
-        <Setter Property="FontSize" Value="11" />
-        <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="RadioButton">
-                    <Border x:Name="Root"
-                            Background="Transparent"
-                            CornerRadius="6"
-                            Padding="11,5"
-                            Margin="2">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Root" Property="Background" Value="{StaticResource AccentBrush}" />
-                            <Setter Property="Foreground" Value="White" />
-                        </Trigger>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Root" Property="Background" Value="{StaticResource PanelHoverBrush}" />
-                        </Trigger>
-                        <MultiTrigger>
-                            <MultiTrigger.Conditions>
-                                <Condition Property="IsChecked" Value="True" />
-                                <Condition Property="IsMouseOver" Value="True" />
-                            </MultiTrigger.Conditions>
-                            <Setter TargetName="Root" Property="Background" Value="{StaticResource AccentHoverBrush}" />
-                            <Setter Property="Foreground" Value="White" />
-                        </MultiTrigger>
-                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

@@ -111,7 +111,7 @@ public sealed class RaopSession : IAsyncDisposable
 
         if (!response.IsSuccess)
         {
-            throw new RtspException($"RTSP keepalive başarısız: {response.StatusLine}", response);
+            throw new RtspException($"RTSP keepalive failed: {response.StatusLine}", response);
         }
     }
 
@@ -127,7 +127,7 @@ public sealed class RaopSession : IAsyncDisposable
 
         if (!response.IsSuccess)
         {
-            throw new RtspException($"Ses seviyesi ayarlanamadı: {response.StatusLine}", response);
+            throw new RtspException($"Could not set volume: {response.StatusLine}", response);
         }
     }
 

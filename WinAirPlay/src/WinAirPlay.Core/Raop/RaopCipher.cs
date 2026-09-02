@@ -83,7 +83,7 @@ public sealed class RaopPacketCipher : IDisposable
     {
         if (destination.Length < payload.Length)
         {
-            throw new ArgumentException("Hedef tampon yükten küçük olamaz.", nameof(destination));
+            throw new ArgumentException("Destination buffer cannot be smaller than the payload.", nameof(destination));
         }
 
         var blockBytes = payload.Length & ~15;

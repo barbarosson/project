@@ -15,7 +15,7 @@ public static class AppLogoRenderer
     {
         if (size < 16)
         {
-            throw new ArgumentOutOfRangeException(nameof(size), "Logo en az 16 px olmalı.");
+            throw new ArgumentOutOfRangeException(nameof(size), "Logo must be at least 16 px.");
         }
 
         waveColor ??= DefaultWave;
@@ -52,6 +52,14 @@ public static class AppLogoRenderer
     }
 
     /// <summary>
+    /// Nudge the head+waves left so the group sits in the optical center of the tile
+    /// (waves used to pull the silhouette toward the right edge).
+    /// </summary>
+    private const float FigureShiftX = -0.10f;
+
+    private static float NX(float x) => x + FigureShiftX;
+
+    /// <summary>
     /// Side-profile head: round skull, small nose, lips, chin and neck — still reading left-to-right
     /// like the AirPlay cast triangle.
     /// </summary>
@@ -59,7 +67,7 @@ public static class AppLogoRenderer
     {
         using var brush = new SolidBrush(color);
 
-        graphics.FillEllipse(brush, size * 0.25f, size * 0.25f, size * 0.34f, size * 0.42f);
+        graphics.FillEllipse(brush, size * NX(0.25f), size * 0.25f, size * 0.34f, size * 0.42f);
 
         using (var face = CreateFacePath(size))
         {
@@ -71,7 +79,7 @@ public static class AppLogoRenderer
             graphics.FillPath(brush, neck);
         }
 
-        graphics.FillEllipse(brush, size * 0.27f, size * 0.42f, size * 0.09f, size * 0.13f);
+        graphics.FillEllipse(brush, size * NX(0.27f), size * 0.42f, size * 0.09f, size * 0.13f);
 
         if (size >= 28)
         {
@@ -81,7 +89,7 @@ public static class AppLogoRenderer
 
     private static GraphicsPath CreateFacePath(int size)
     {
-        PointF P(float x, float y) => new(size * x, size * y);
+        PointF P(float x, float y) => new(size * NX(x), size * y);
 
         var path = new GraphicsPath();
         path.AddBezier(P(0.48f, 0.30f), P(0.54f, 0.30f), P(0.56f, 0.34f), P(0.56f, 0.38f));
@@ -97,7 +105,7 @@ public static class AppLogoRenderer
 
     private static GraphicsPath CreateNeckPath(int size)
     {
-        PointF P(float x, float y) => new(size * x, size * y);
+        PointF P(float x, float y) => new(size * NX(x), size * y);
 
         var path = new GraphicsPath();
         path.AddBezier(P(0.36f, 0.60f), P(0.34f, 0.68f), P(0.34f, 0.74f), P(0.36f, 0.76f));
@@ -112,7 +120,7 @@ public static class AppLogoRenderer
     {
         var w = Math.Max(2.2f, size * 0.052f);
         var h = Math.Max(2.0f, size * 0.044f);
-        var x = size * 0.46f;
+        var x = size * NX(0.46f);
         var y = size * 0.40f;
 
         using var brush = new SolidBrush(Color.FromArgb(0x14, 0x16, 0x1A));
@@ -123,7 +131,7 @@ public static class AppLogoRenderer
     private static void DrawMouthWaves(Graphics graphics, int size, Color waveColor)
     {
         var stroke = Math.Max(2.2f, size / 12f);
-        var anchorX = size * 0.60f;
+        var anchorX = size * NX(0.60f);
         var anchorY = size * 0.52f;
 
         for (var i = 0; i < 3; i++)

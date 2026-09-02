@@ -1,5 +1,4 @@
 using System;
-using WinAirPlay.App.Localization;
 using WinAirPlay.Core.Audio;
 using WinAirPlay.Core.Raop;
 
@@ -66,18 +65,11 @@ public sealed class AppSettings
     /// </summary>
     public bool FollowWindowsVolume { get; set; } = true;
 
-    public AppLanguage Language { get; set; } = AppLanguage.Tr;
-
     /// <summary>Brings values back into the ranges the UI and the receiver accept.</summary>
     public AppSettings Normalize()
     {
         LatencyMs = Math.Clamp(LatencyMs, MinLatencyMs, MaxLatencyMs);
         VolumeDb = Math.Clamp(double.IsFinite(VolumeDb) ? VolumeDb : -20, MinVolumeDb, MaxVolumeDb);
-
-        if (!Enum.IsDefined(Language))
-        {
-            Language = AppLanguage.Tr;
-        }
 
         if (!Enum.IsDefined(Codec))
         {

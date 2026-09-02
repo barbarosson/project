@@ -32,7 +32,7 @@ public sealed class AlacUncompressedEncoder : IRaopPayloadEncoder
         if (_audio.Channels != 2 || _audio.BitDepth != 16)
         {
             throw new ArgumentException(
-                $"Yalnızca 16-bit stereo destekleniyor, {_audio.BitDepth}-bit/{_audio.Channels}ch istendi.",
+                $"Only 16-bit stereo is supported, got {_audio.BitDepth}-bit/{_audio.Channels}ch.",
                 nameof(audio));
         }
     }
@@ -46,7 +46,7 @@ public sealed class AlacUncompressedEncoder : IRaopPayloadEncoder
     {
         if (pcm.Length % 4 != 0)
         {
-            throw new ArgumentException("16-bit stereo blok 4'ün katı olmalı.", nameof(pcm));
+            throw new ArgumentException("16-bit stereo block length must be a multiple of 4.", nameof(pcm));
         }
 
         var length = GetMaxEncodedLength(pcm.Length);
@@ -54,7 +54,7 @@ public sealed class AlacUncompressedEncoder : IRaopPayloadEncoder
         if (destination.Length < length)
         {
             throw new ArgumentException(
-                $"Hedef en az {length} bayt olmalı, {destination.Length} bayt verildi.", nameof(destination));
+                $"Destination must be at least {length} bytes, got {destination.Length} bytes.", nameof(destination));
         }
 
         UncompressedHeader.CopyTo(destination);

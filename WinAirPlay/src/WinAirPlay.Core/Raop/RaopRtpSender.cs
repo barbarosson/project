@@ -149,7 +149,7 @@ public sealed class RaopRtpSender : IAudioSink
         if (pcm.Length != PayloadLength)
         {
             throw new ArgumentException(
-                $"Blok {PayloadLength} bayt olmalı, {pcm.Length} bayt geldi.", nameof(pcm));
+                $"Block must be {PayloadLength} bytes, got {pcm.Length} bytes.", nameof(pcm));
         }
 
         // ArrayPool.Rent may return a buffer larger than requested. Only PayloadLength bytes are

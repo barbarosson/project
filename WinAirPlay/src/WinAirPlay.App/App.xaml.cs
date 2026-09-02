@@ -33,7 +33,7 @@ public partial class App : Application
         var settingsStore = new JsonSettingsStore();
         var settings = settingsStore.Load();
 
-        _localization = new LocalizationService { Language = settings.Language };
+        _localization = new LocalizationService();
 
         var splash = new SplashWindow(_localization);
         splash.Show();

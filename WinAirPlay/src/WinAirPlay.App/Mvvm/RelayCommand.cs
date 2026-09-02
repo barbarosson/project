@@ -26,7 +26,7 @@ public sealed class RelayCommand : ICommand
 
 /// <summary>
 /// Runs an async handler and refuses to start a second run while the first is in flight, which is
-/// what keeps a double-click on "Bağlan" from opening two RTSP sessions.
+/// what keeps a double-click on "Connect" from opening two RTSP sessions.
 /// </summary>
 public sealed class AsyncRelayCommand : ICommand
 {

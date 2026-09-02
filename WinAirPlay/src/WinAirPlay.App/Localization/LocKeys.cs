@@ -40,7 +40,6 @@ internal static class LocKeys
     internal const string VolumeHint = "ui.volume_hint";
     internal const string AutoConnect = "ui.auto_connect";
     internal const string StartMinimized = "ui.start_minimized";
-    internal const string Language = "ui.language";
     internal const string NoDevices = "ui.no_devices";
 
     internal const string VolumeMuted = "volume.muted";

@@ -56,7 +56,7 @@ public sealed class PolicyConfigAudioEndpoint : IDefaultAudioEndpointPolicy
             return;
         }
 
-        throw new InvalidOperationException("Windows varsayılan ses çıkışı değiştirilemedi (PolicyConfig).");
+        throw new InvalidOperationException("Could not change the Windows default audio output (PolicyConfig).");
     }
 
     private static Role ToNAudio(AudioDeviceRole role) => role switch

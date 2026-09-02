@@ -48,7 +48,7 @@ public sealed class RtspClient : IAsyncDisposable
 
         if (_tcp is not null)
         {
-            throw new InvalidOperationException("Bu istemci zaten bağlı.");
+            throw new InvalidOperationException("This client is already connected.");
         }
 
         var tcp = new TcpClient(endPoint.AddressFamily) { NoDelay = true };
@@ -63,12 +63,12 @@ public sealed class RtspClient : IAsyncDisposable
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             tcp.Dispose();
-            throw new RtspException($"{endPoint} adresine {_timeout.TotalSeconds:F0} saniyede bağlanılamadı.");
+            throw new RtspException($"Could not connect to {endPoint} within {_timeout.TotalSeconds:F0} seconds.");
         }
         catch (SocketException ex)
         {
             tcp.Dispose();
-            throw new RtspException($"{endPoint} adresine bağlanılamadı: {ex.Message}");
+            throw new RtspException($"Could not connect to {endPoint}: {ex.Message}");
         }
 
         _tcp = tcp;
@@ -82,7 +82,7 @@ public sealed class RtspClient : IAsyncDisposable
 
         if (_stream is null)
         {
-            throw new InvalidOperationException("İstek göndermeden önce ConnectAsync çağrılmalı.");
+            throw new InvalidOperationException("Call ConnectAsync before sending a request.");
         }
 
         await _exchangeLock.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -108,7 +108,7 @@ public sealed class RtspClient : IAsyncDisposable
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
                 throw new RtspException(
-                    $"{request.Method} isteğine {_timeout.TotalSeconds:F0} saniyede yanıt gelmedi.");
+                    $"{request.Method} did not get a response within {_timeout.TotalSeconds:F0} seconds.");
             }
 
             stopwatch.Stop();
@@ -156,7 +156,7 @@ public sealed class RtspClient : IAsyncDisposable
             var read = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
             if (read == 0)
             {
-                throw new RtspException("Yanıt alınmadan bağlantı karşı taraftan kapatıldı.");
+                throw new RtspException("The connection was closed before a response arrived.");
             }
 
             accumulated.AddRange(buffer[..read]);
@@ -181,7 +181,7 @@ public sealed class RtspClient : IAsyncDisposable
             var read = await stream.ReadAsync(body.AsMemory(copied), cancellationToken).ConfigureAwait(false);
             if (read == 0)
             {
-                throw new RtspException("Yanıt gövdesi eksik geldi.");
+                throw new RtspException("The response body was truncated.");
             }
 
             copied += read;

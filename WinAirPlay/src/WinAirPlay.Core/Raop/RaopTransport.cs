@@ -16,7 +16,7 @@ public sealed record RaopTransport(int AudioPort, int ControlPort, int TimingPor
         if (audioPort is null)
         {
             throw new RtspException(
-                $"SETUP yanıtında server_port bulunamadı. Transport: '{transportHeader}'");
+                $"SETUP response did not include server_port. Transport: '{transportHeader}'");
         }
 
         return new RaopTransport(

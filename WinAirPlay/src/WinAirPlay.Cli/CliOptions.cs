@@ -110,7 +110,7 @@ public sealed class CliOptions
                     var raw = RequireValue(args, ref i, arg);
                     if (!int.TryParse(raw, out var seconds) || seconds <= 0)
                     {
-                        throw new ArgumentException($"'{arg}' pozitif bir tam sayı bekliyor, '{raw}' geldi.");
+                        throw new ArgumentException($"'{arg}' expects a positive integer, got '{raw}'.");
                     }
 
                     duration = seconds;
@@ -142,7 +142,7 @@ public sealed class CliOptions
                     {
                         "pcm" or "l16" or "raw" => RaopStreamCodec.RawPcm,
                         "alac" or "lossless" => RaopStreamCodec.AppleLossless,
-                        _ => throw new ArgumentException($"Bilinmeyen codec: '{codecName}'. pcm veya alac kullanın."),
+                        _ => throw new ArgumentException($"Unknown codec: '{codecName}'. Use pcm or alac."),
                     };
                     break;
 
@@ -150,7 +150,7 @@ public sealed class CliOptions
                     var latencyRaw = RequireValue(args, ref i, arg);
                     if (!int.TryParse(latencyRaw, out var latency) || latency is < 0 or > 10000)
                     {
-                        throw new ArgumentException($"'{arg}' 50-10000 ms aralığında bir değer bekliyor.");
+                        throw new ArgumentException($"'{arg}' expects a value between 0 and 10000 ms.");
                     }
 
                     latencyMs = latency;
@@ -173,7 +173,7 @@ public sealed class CliOptions
                     break;
 
                 default:
-                    throw new ArgumentException($"Bilinmeyen argüman: {arg}");
+                    throw new ArgumentException($"Unknown argument: {arg}");
             }
         }
 
@@ -198,7 +198,7 @@ public sealed class CliOptions
     {
         if (index + 1 >= args.Length)
         {
-            throw new ArgumentException($"'{argName}' bir değer bekliyor.");
+            throw new ArgumentException($"'{argName}' requires a value.");
         }
 
         return args[++index];

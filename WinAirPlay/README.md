@@ -1,204 +1,176 @@
 # WinAirPlay
 
-Windows sistem sesini (WASAPI loopback) yakalayıp yerel ağdaki bir AirPlay alıcısına
-(HomePod mini) gerçek zamanlı aktaran masaüstü uygulaması.
+Desktop app that captures Windows system audio (WASAPI loopback) and streams it in real time to an AirPlay receiver on the local network, such as a HomePod mini.
 
-## Yol Haritası
+The UI is English-only.
 
-| Faz | Kapsam | Durum |
+## Roadmap
+
+| Phase | Scope | Status |
 | --- | --- | --- |
-| 1 | Çekirdek ses yakalama (WASAPI loopback → 44.1 kHz / 16-bit / stereo PCM) | Tamam |
-| 2 | mDNS ile AirPlay cihaz keşfi (`_raop._tcp`, `_airplay._tcp`) | Tamam |
-| 3 | RTSP el sıkışması (ANNOUNCE / SETUP / RECORD) | Tamam |
-| 4.1 | Şifresiz ham PCM (L16) RTP/UDP yayını + zamanlama | Tamam |
-| 4.2 | ALAC kodlama ve AES şifreleme | Tamam |
-| 5 | WPF + System Tray arayüzü (MVVM) | Checkpoint bekliyor |
+| 1 | Core audio capture (WASAPI loopback → 44.1 kHz / 16-bit / stereo PCM) | Done |
+| 2 | AirPlay discovery over mDNS (`_raop._tcp`, `_airplay._tcp`) | Done |
+| 3 | RTSP handshake (ANNOUNCE / SETUP / RECORD) | Done |
+| 4.1 | Unencrypted raw PCM (L16) RTP/UDP plus timing | Done |
+| 4.2 | ALAC encoding and AES encryption | Done |
+| 5 | WPF + system tray UI (MVVM) | Done |
 
-## Proje Yapısı
+## Project layout
 
 ```
 WinAirPlay/
 ├── src/
-│   ├── WinAirPlay.Core/     Ses motoru (arayüz tabanlı, UI'dan bağımsız)
-│   ├── WinAirPlay.Cli/      Faz doğrulamaları için konsol uygulaması
-│   └── WinAirPlay.App/      WPF masaüstü uygulaması (MVVM + sistem tepsisi)
+│   ├── WinAirPlay.Core/     Audio engine (interface-based, UI-independent)
+│   ├── WinAirPlay.Cli/      Console app for phase checks
+│   └── WinAirPlay.App/      WPF desktop app (MVVM + system tray)
 └── tests/
     └── WinAirPlay.Core.Tests/
 ```
 
-`WinAirPlay.Core` sadece arayüzler üzerinden konuşur, böylece sonraki fazlarda WAV yazıcı
-yerine AirPlay göndericisi takılabilir ve testlerde donanım/ağ mock'lanabilir.
+`WinAirPlay.Core` talks only through interfaces, so later phases can swap a WAV writer for an AirPlay sender and tests can mock hardware and the network.
 
-`Audio/` — ses motoru:
+`Audio/` — audio engine:
 
-- `IAudioCaptureSource` — PCM blok üreticisi (`WasapiLoopbackCaptureSource`)
-- `IAudioSink` — PCM blok tüketicisi (`WaveFileAudioSink`, ileride `AirPlayRtpSink`)
-- `AudioPipeline` — kaynağı sink'lere bağlar, sayaç ve seviye ölçümü tutar
-- `IAudioDeviceEnumerator` — yakalanabilir çıkış cihazları (`WasapiDeviceEnumerator`)
+- `IAudioCaptureSource` — PCM block producer (`WasapiLoopbackCaptureSource`)
+- `IAudioSink` — PCM block consumer (`WaveFileAudioSink`, later `AirPlayRtpSink`)
+- `AudioPipeline` — connects source to sinks, keeps counters and levels
+- `IAudioDeviceEnumerator` — capturable output devices (`WasapiDeviceEnumerator`)
+- `AudioOutputRouter` — switches the Windows default output to a virtual cable when one is installed, otherwise mutes the speakers
 
-`Discovery/` — ağ keşfi:
+`Discovery/` — network discovery:
 
-- `IAirPlayDiscovery` — mDNS taraması (`ZeroconfAirPlayDiscovery`)
-- `MdnsServiceRecord` — Zeroconf'tan bağımsız ham servis kaydı
-- `RaopTxtRecordParser` — TXT kayıtları → `RaopCapabilities` (kodek, şifreleme, format)
-- `AirPlayDeviceCatalog` — `_raop` + `_airplay` kayıtlarını tek `AirPlayDevice`'ta birleştirir
-- `AirPlayDeviceSelector` — sıra no / isim / IP / donanım kimliği ile cihaz seçimi
+- `IAirPlayDiscovery` — mDNS scan (`ZeroconfAirPlayDiscovery`)
+- `MdnsServiceRecord` — raw service record independent of Zeroconf
+- `RaopTxtRecordParser` — TXT records → `RaopCapabilities` (codec, encryption, format)
+- `AirPlayDeviceCatalog` — merges `_raop` + `_airplay` records into one `AirPlayDevice`
+- `AirPlayDeviceSelector` — pick a device by index / name / IP / hardware id
 
-`Rtsp/` — protokol taşıması:
+`Rtsp/` — protocol transport:
 
-- `RtspClient` — kalıcı TCP bağlantısı, CSeq yönetimi, `Traced` olayıyla tam diyalog dökümü
-- `RtspMessageParser` — durum satırı, katlanmış başlıklar, `Transport` parametreleri
+- `RtspClient` — persistent TCP connection, CSeq handling, full dialog dump via the `Traced` event
+- `RtspMessageParser` — status line, folded headers, `Transport` parameters
 
-`Raop/` — AirPlay oturumu:
+`Raop/` — AirPlay session:
 
-- `RaopHandshake` — OPTIONS → ANNOUNCE → SETUP → RECORD akışı
-- `SdpBuilder` — ANNOUNCE gövdesindeki ALAC tanımı
-- `RaopTimingResponder` — cihazın NTP saat sorgularını yanıtlar (SETUP bunu bekler)
-- `RaopSession` — anlaşılan portlar, oturum kimliği, ses seviyesi ve TEARDOWN
-- `RaopMediaFormat` — codec seçimi (L16 ham PCM / ALAC) ve RTP payload tipi
-- `IRaopPayloadEncoder` — PCM bloğunu RTP yüküne çevirir; `PcmPassthroughEncoder` ve
-  `AlacUncompressedEncoder` uygulamaları var
-- `RaopEncryptionKeys` / `RaopPacketCipher` — AES-128-CBC yük şifrelemesi ve anahtarın
-  Apple'ın açık RSA anahtarıyla sarmalanması
-- `RaopRtpSender` — `IAudioSink` olarak blokları kodlayıp RTP'ye sarar ve UDP ile gönderir,
-  arka planda periyodik sync paketleriyle saati sabitler
+- `RaopHandshake` — OPTIONS → ANNOUNCE → SETUP → RECORD
+- `SdpBuilder` — ALAC description in the ANNOUNCE body
+- `RaopTimingResponder` — answers the device’s NTP clock queries (SETUP requires this)
+- `RaopSession` — negotiated ports, session id, volume, and TEARDOWN
+- `RaopMediaFormat` — codec selection (L16 raw PCM / ALAC) and RTP payload type
+- `IRaopPayloadEncoder` — turns a PCM block into an RTP payload; `PcmPassthroughEncoder` and `AlacUncompressedEncoder` implementations
+- `RaopEncryptionKeys` / `RaopPacketCipher` — AES-128-CBC payload encryption and wrapping the key with Apple’s public RSA key
+- `RaopRtpSender` — as an `IAudioSink`, encodes blocks, wraps them in RTP, sends over UDP, and keeps the clock aligned with periodic sync packets
 
-## Gereksinimler
+## Requirements
 
 - .NET 8 SDK (`winget install --id Microsoft.DotNet.SDK.8 -e`)
 - Windows 10/11
 - NuGet: `NAudio.Core` 2.2.1, `NAudio.Wasapi` 2.2.1, `Zeroconf` 3.7.16
 
-## Kullanım (Faz 1)
+## Usage (Phase 1)
 
 ```powershell
 dotnet build
 
-# Yakalanabilir ses çıkış cihazlarını listele
+# List capturable audio output devices
 dotnet run --project src\WinAirPlay.Cli -- list
 
-# Sistem sesini yakala; Enter'a basınca durur
+# Capture system audio; press Enter to stop
 dotnet run --project src\WinAirPlay.Cli -- capture
 
-# 20 saniye kaydet, belirli bir dosyaya yaz
+# Record for 20 seconds to a specific file
 dotnet run --project src\WinAirPlay.Cli -- capture -s 20 -o test_capture.wav
 ```
 
-Seçenekler:
+Options:
 
-| Seçenek | Açıklama |
+| Option | Description |
 | --- | --- |
-| `-o, --out <yol>` | Çıktı dosyası (varsayılan `test_capture.wav`, solution klasörüne yazılır) |
-| `-s, --seconds <n>` | n saniye sonra otomatik dur |
-| `-d, --device <id>` | Belirli bir çıkış cihazını yakala |
-| `--silence` | Hiçbir şey çalmazken sessizlik bloklarıyla akışı sürdür |
+| `-o, --out <path>` | Output file (default `test_capture.wav`, written next to the solution) |
+| `-s, --seconds <n>` | Stop automatically after n seconds |
+| `-d, --device <id>` | Capture a specific output device |
+| `--silence` | Keep the stream alive with silence blocks when nothing is playing |
 
-WASAPI loopback sessizken hiç veri üretmez; kayıt sırasında bilgisayarda bir şey çalıyor
-olmalıdır. Faz 4'teki canlı yayın için `--silence` davranışı varsayılan hâle gelecek.
+WASAPI loopback produces no data while silent; something must be playing during capture. For live streaming in phase 4, `--silence` becomes the default behavior.
 
-## Kullanım (Faz 2)
+## Usage (Phase 2)
 
 ```powershell
-# Ağdaki AirPlay cihazlarını ara (varsayılan 10 saniye)
+# Discover AirPlay devices on the network (default 10 seconds)
 dotnet run --project src\WinAirPlay.Cli -- scan
 
-# Daha uzun tara ve tüm TXT kayıtlarını dök
+# Scan longer and dump every TXT record
 dotnet run --project src\WinAirPlay.Cli -- scan -s 15 -v
 ```
 
-Cihaz bulunamazsa: bilgisayar ile HomePod aynı Wi-Fi ağında olmalı, ağ profili "Özel"
-seçilmeli ve güvenlik duvarı UDP 5353 (mDNS) trafiğine izin vermelidir.
+If no device is found: the PC and HomePod must be on the same Wi-Fi network, the network profile should be Private, and the firewall must allow UDP 5353 (mDNS).
 
-## Kullanım (Faz 3)
+## Usage (Phase 3)
 
 ```powershell
-# Tara, listeden seç, RTSP el sıkışmasını yap
+# Scan, pick from the list, run the RTSP handshake
 dotnet run --project src\WinAirPlay.Cli -- connect
 
-# Hedefi doğrudan ver: sıra no, isim, IP veya donanım kimliği
+# Target directly: index, name, IP, or hardware id
 dotnet run --project src\WinAirPlay.Cli -- connect -t 192.168.0.121
 ```
 
-Tüm RTSP trafiği konsola dökülür: giden istekler `>>`, gelen yanıtlar `<<` ile işaretlenir.
-Başarılı bir el sıkışmadan sonra cihazın ayırdığı ses / kontrol / zamanlama portları
-listelenir; Faz 4 bu portlara RTP gönderecek.
+All RTSP traffic is printed: outgoing requests `>>`, incoming responses `<<`. After a successful handshake the device’s audio / control / timing ports are listed; phase 4 sends RTP to those ports.
 
-## Kullanım (Faz 4)
+## Usage (Phase 4)
 
 ```powershell
-# Sistem sesini seçilen cihaza canlı aktar (varsayılan: ALAC, şifresiz, 50 ms tampon)
+# Live-stream system audio to the selected device (default: ALAC, unencrypted, 50 ms buffer)
 dotnet run --project src\WinAirPlay.Cli -- stream
 
-# Hedefi ver, 30 saniye yayınla, RTSP diyaloğunu da göster
+# Give a target, stream for 30 seconds, and show the RTSP dialog
 dotnet run --project src\WinAirPlay.Cli -- stream -t 192.168.0.121 -s 30 -v
 
-# Ham PCM'e (Faz 4.1 yolu) dön
+# Fall back to raw PCM (phase 4.1 path)
 dotnet run --project src\WinAirPlay.Cli -- stream --codec pcm
 
-# Kesilme olursa tamponu büyüt
+# Increase the buffer if the stream cuts out
 dotnet run --project src\WinAirPlay.Cli -- stream --latency 500
 
-# Hoparlörü açık bırak (varsayılan: yayın boyunca susturulur)
+# Leave PC speakers unmuted (default: mute unless a virtual cable is used)
 dotnet run --project src\WinAirPlay.Cli -- stream --keep-speakers
 ```
 
-Yayın başladığında yerel hoparlör susturulur; ses yalnızca AirPlay cihazından gelir.
-Kopunca hoparlör eski haline döner. WASAPI cihaz-loopback mute ile birlikte sessiz
-kalacağı için yakalama, Windows 10 2004+'daki işlem loopback API'si ile hoparlörden
-*önce* yapılır.
+When a virtual audio cable (VB-Audio Cable or VoiceMeeter) is installed, the Windows default output is switched to that cable for the session so speakers stay on and Windows volume keys control the HomePod. Without a cable, compatibility mode mutes the PC speakers so sound only comes from the AirPlay device. Disconnect restores the previous default output and unmute.
 
-### Kodlama hakkında
+WASAPI device-loopback would go silent with mute, so capture uses the process-loopback API (Windows 10 2004+) and happens *before* the speakers.
 
-ALAC çerçeveleri biçimin "sıkıştırılmamış" kipiyle üretilir: bitstream ve magic cookie bir
-alıcının beklediğinin aynısıdır, ama örnekler öngörücü ve Rice kodlayıcıdan geçmek yerine
-olduğu gibi saklanır. Bu, uyumluluk kazandırır, bant genişliği kazandırmaz — çerçeve
-taşıdığı PCM'den 3 bayt büyüktür, yani yük hâlâ ~1,4 Mbit/s'tir. Gerçek sıkıştırma sonraki
-bir adımın işi.
+### Encoding
 
-### Şifreleme hakkında
+ALAC frames are produced in the format’s “uncompressed” mode: the bitstream and magic cookie match what a receiver expects, but samples are stored as-is instead of going through the predictor and Rice encoder. That buys compatibility, not bandwidth — the frame is 3 bytes larger than the PCM it carries, so the payload is still ~1.4 Mbit/s. Real compression is a later step.
 
-`--encrypt` klasik RAOP şifrelemesini açar: rastgele bir AES-128 anahtarı Apple'ın açık RSA
-anahtarıyla sarmalanıp SDP'ye konur, her yük CBC ile şifrelenir (son tam olmayan blok açık
-kalır, IV her pakette sıfırlanır).
+### Encryption
 
-Modern AirPlay 2 cihazları bu eski akışı kabul etmez: HomePod bu ANNOUNCE'a
-`406 Not Acceptable` döner, çünkü eşleştirme tabanlı şifreleme bekler. Bu cihazlarda
-şifresiz yayın zaten sorunsuz çalışır, o yüzden varsayılan kapalıdır. Seçenek eski
-AirPort Express ve Apple TV modelleri için duruyor.
+`--encrypt` turns on classic RAOP encryption: a random AES-128 key is wrapped with Apple’s public RSA key and placed in the SDP; each payload is encrypted with CBC (the leftover partial block stays in the clear, the IV is reset every packet).
 
-## Kullanım (Faz 5 — masaüstü uygulaması)
+Modern AirPlay 2 devices reject that legacy flow: a HomePod returns `406 Not Acceptable` on this ANNOUNCE because it expects pairing-based encryption. Unencrypted streaming already works on those devices, so encryption is off by default. The option remains for older AirPort Express and Apple TV models.
+
+## Usage (Phase 5 — desktop app)
 
 ```powershell
 dotnet run --project src\WinAirPlay.App
 ```
 
-Pencere açılır açılmaz ağı tarar, en son kullanılan cihazı seçer ve beklemeye geçer.
-Kapatma düğmesi uygulamayı sonlandırmaz, saatin yanına indirir; yayın arka planda sürer.
-Tepsi simgesi durumu renkle gösterir (gri: bağlı değil, sarı: çalışıyor, yeşil: yayında,
-kırmızı: hata) ve sağ tık menüsünden pencere açılıp bağlantı kesilebilir. Çıkmak için
-tepsi menüsündeki "Çıkış" kullanılır.
+The window scans the network as soon as it opens, selects the last used device, and waits. The close button does not quit the app; it hides to the notification area and streaming continues in the background. The tray icon shows state by color (gray: not connected, yellow: working, green: streaming, red: error). Right-click to show the window or disconnect. Use **Exit** in the tray menu to quit.
 
-Tampon kaydırıcısı yayın sırasında da çalışır: değeri değiştirdiğinizde bir sonraki sync
-paketi yeni değerle gider, alıcı saatini yeniden hizalarken kısa bir kesinti duyulur.
-Ses seviyesi kaydırıcısı RTSP `SET_PARAMETER` ile cihazın kendi ses seviyesini değiştirir,
-Windows'unkini değil.
+The buffer slider works while streaming: the next sync packet carries the new value, and you may hear a short glitch while the receiver realigns its clock. The volume slider changes the device’s own volume via RTSP `SET_PARAMETER`, not Windows volume.
 
-"Yayın sırasında hoparlörü kapat" varsayılan olarak açıktır: bağlanınca PC hoparlörü
-susar, ses yalnızca HomePod'dan gelir; bağlantı kesilince hoparlör geri açılır.
+**Audio routing** defaults to Auto: use a virtual cable when Windows has one, otherwise mute the speakers. **Apply Windows volume to HomePod** is on by default so system volume keys and the mixer carry through.
 
-Ayarlar `%APPDATA%\WinAirPlay\settings.json` içinde tutulur; beklenmeyen bir hata olursa
-tam yığın izi aynı klasördeki `error.log` dosyasına yazılır.
+Settings live in `%APPDATA%\WinAirPlay\settings.json`. Unexpected errors write a full stack trace to `error.log` in the same folder.
 
-`WinAirPlay.App` katmanları:
+`WinAirPlay.App` layers:
 
-- `Services/StreamController` — keşif, el sıkışma, yakalama ve gönderimi tek bir durum
-  makinesinde toplar; arayüzün bildiği tek şey budur
-- `ViewModels/MainViewModel` — bağlanabilir durum; `IStreamController`, `ISettingsStore` ve
-  `IUiDispatcher` üzerinden konuştuğu için pencere olmadan test edilebilir
-- `Tray/TrayIconHost` — bildirim alanı simgesi ve menüsü; simge `TrayIconFactory` tarafından
-  çalışma anında çizilir, projede ikon dosyası yoktur
+- `Services/StreamController` — discovery, handshake, capture, and send in one state machine; that is all the UI knows about
+- `ViewModels/MainViewModel` — bindable state; talks through `IStreamController`, `ISettingsStore`, and `IUiDispatcher` so it can be tested without a window
+- `Tray/TrayIconHost` — notification-area icon and menu; the icon is drawn at runtime by `TrayIconFactory`, there is no icon file in the project
 
-## Testler
+## Tests
 
 ```powershell
 dotnet test
@@ -206,11 +178,11 @@ dotnet test
 
 ## Microsoft Store (MSIX)
 
-Store paketi için `src/WinAirPlay.Package/` projesi ve `docs/STORE_PUBLISHING.md` rehberine bakın.
+See `src/WinAirPlay.Package/` and `docs/STORE_PUBLISHING.md`.
 
 ```powershell
-# Logo PNG'lerini üret ve MSIX derle (Visual Studio MSIX workload gerekir)
+# Generate logo PNGs and build the MSIX (Visual Studio MSIX workload required)
 .\scripts\build-msix.ps1
 ```
 
-Minimum Windows sürümü: **10.0.19041** (2004). Gizlilik politikası: `docs/PRIVACY_POLICY.md`.
+Minimum Windows version: **10.0.19041** (2004). Privacy policy: `docs/PRIVACY_POLICY.md`.

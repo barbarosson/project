@@ -60,7 +60,7 @@ public sealed class RaopHandshake : IRaopHandshake
         if (device.RtspEndPoint is not { } endPoint)
         {
             throw new InvalidOperationException(
-                $"'{device.Name}' bir RAOP (ses) portu yayınlamıyor, bağlanılamaz.");
+                $"'{device.Name}' is not advertising a RAOP (audio) port and cannot be connected.");
         }
 
         var client = new RtspClient(_options.Timeout);
@@ -178,9 +178,9 @@ public sealed class RaopHandshake : IRaopHandshake
         if (response.StatusCode == 406 && encryption is not null)
         {
             throw new RtspException(
-                "ANNOUNCE başarısız: cihaz eski RSA/AES anahtar değişimini kabul etmiyor. " +
-                "AirPlay 2 cihazları (HomePod, yeni Apple TV) bunun yerine eşleştirme tabanlı " +
-                "şifreleme bekler; şifreleme olmadan tekrar deneyin.",
+                "ANNOUNCE failed: the device does not accept the legacy RSA/AES key exchange. " +
+                "AirPlay 2 devices (HomePod, newer Apple TV) expect pairing-based encryption instead; " +
+                "try again without encryption.",
                 response);
         }
 
@@ -207,7 +207,7 @@ public sealed class RaopHandshake : IRaopHandshake
         EnsureSuccess(response, "SETUP");
 
         client.SessionId = response["Session"]
-            ?? throw new RtspException("SETUP yanıtında Session başlığı yok.", response);
+            ?? throw new RtspException("SETUP response is missing the Session header.", response);
 
         return RaopTransport.Parse(response["Transport"]);
     }
@@ -238,13 +238,13 @@ public sealed class RaopHandshake : IRaopHandshake
 
         var hint = response.StatusCode switch
         {
-            401 or 403 => " Cihaz kimlik doğrulama (pairing) istiyor.",
-            406 => " Cihaz istenen biçimi desteklemiyor.",
-            453 => " Cihaz başka bir kaynaktan yayın alıyor.",
+            401 or 403 => " The device requires authentication (pairing).",
+            406 => " The device does not support the requested format.",
+            453 => " The device is already streaming from another source.",
             _ => string.Empty,
         };
 
-        throw new RtspException($"{step} başarısız: {response.StatusLine}.{hint}", response);
+        throw new RtspException($"{step} failed: {response.StatusLine}.{hint}", response);
     }
 
     /// <summary>16 random bytes, base64 without padding — what iTunes sends to prove liveness.</summary>

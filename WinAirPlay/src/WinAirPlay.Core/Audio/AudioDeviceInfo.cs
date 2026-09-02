@@ -2,7 +2,7 @@ namespace WinAirPlay.Core.Audio;
 
 public sealed record AudioDeviceInfo(string Id, string Name, bool IsDefault)
 {
-    public override string ToString() => IsDefault ? $"{Name} (varsayılan)" : Name;
+    public override string ToString() => IsDefault ? $"{Name} (default)" : Name;
 }
 
 public interface IAudioDeviceEnumerator

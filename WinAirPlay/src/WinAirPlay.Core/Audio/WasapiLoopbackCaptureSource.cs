@@ -220,7 +220,7 @@ public sealed class WasapiLoopbackCaptureSource : IAudioCaptureSource
 
         if (!enumerator.HasDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia))
         {
-            throw new InvalidOperationException("Sistemde varsayılan bir ses çıkış cihazı bulunamadı.");
+            throw new InvalidOperationException("No default audio output device was found.");
         }
 
         return enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);

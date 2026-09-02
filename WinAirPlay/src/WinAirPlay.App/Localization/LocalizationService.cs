@@ -4,128 +4,15 @@ namespace WinAirPlay.App.Localization;
 
 public sealed class LocalizationService : ILocalizationService
 {
-    private static readonly IReadOnlyDictionary<string, string> Turkish = BuildTurkish();
-    private static readonly IReadOnlyDictionary<string, string> English = BuildEnglish();
-
-    private AppLanguage _language = AppLanguage.Tr;
-
-    public AppLanguage Language
-    {
-        get => _language;
-        set
-        {
-            if (_language == value)
-            {
-                return;
-            }
-
-            _language = value;
-            LanguageChanged?.Invoke(this, EventArgs.Empty);
-        }
-    }
-
-    public event EventHandler? LanguageChanged;
+    private static readonly IReadOnlyDictionary<string, string> Strings = BuildStrings();
 
     public string Get(string key) =>
-        Resolve(key) ?? key;
+        Strings.TryGetValue(key, out var value) ? value : key;
 
     public string Format(string key, params object[] args) =>
         string.Format(CultureInfo.InvariantCulture, Get(key), args);
 
-    private string? Resolve(string key) =>
-        (_language == AppLanguage.En ? English : Turkish).TryGetValue(key, out var value) ? value : null;
-
-    private static Dictionary<string, string> BuildTurkish() => new()
-    {
-        [LocKeys.Ready] = "Hazır.",
-        [LocKeys.Connect] = "Bağlan",
-        [LocKeys.Disconnect] = "Bağlantıyı Kes",
-
-        [LocKeys.StateIdle] = "Bağlı değil",
-        [LocKeys.StateScanning] = "Taranıyor",
-        [LocKeys.StateConnecting] = "Bağlanıyor",
-        [LocKeys.StateStreaming] = "Yayında",
-        [LocKeys.StateStopping] = "Durduruluyor",
-        [LocKeys.StateFaulted] = "Hata",
-
-        [LocKeys.TargetDevice] = "HEDEF CİHAZ",
-        [LocKeys.AudioSource] = "SES KAYNAĞI",
-        [LocKeys.BufferLatency] = "TAMPON (GECİKME)",
-        [LocKeys.Volume] = "SES SEVİYESİ",
-        [LocKeys.Streaming] = "YAYIN",
-        [LocKeys.Duration] = "SÜRE",
-        [LocKeys.Throughput] = "AKIŞ HIZI",
-        [LocKeys.Packets] = "PAKET",
-        [LocKeys.Encoding] = "KODLAMA",
-        [LocKeys.Scan] = "Tara",
-        [LocKeys.LatencyHint] = "0 ms en düşük gecikme; ağ dalgalanmasında kesilmeye yol açabilir.",
-        [LocKeys.AlacEncoding] = "ALAC kodlama",
-        [LocKeys.MuteSpeakers] = "Uyumlu modda hoparlörü kapat",
-        [LocKeys.MuteSpeakersHint] = "Sanal kablo yokken hoparlör susturulur. VB-Audio Cable veya VoiceMeeter kurarsanız hoparlör açık kalır.",
-        [LocKeys.RoutingCaption] = "SES YÖNLENDİRME",
-        [LocKeys.RoutingAuto] = "Otomatik",
-        [LocKeys.RoutingVirtual] = "Sanal kablo",
-        [LocKeys.RoutingMute] = "Hoparlörü kapat",
-        [LocKeys.RoutingHintRedirect] = "Hoparlör açık kalır. Yayın süresince varsayılan çıkış {0} olur; Windows ses tuşları HomePod’u kontrol eder.",
-        [LocKeys.RoutingHintMute] = "Windows bu karışımı hoparlöre kopyalar; susturmadan HomePod’a taşıyamaz. Uyumlu mod: hoparlör kapanır, Windows sesi yine HomePod’a uygulanır.",
-        [LocKeys.RoutingHintNoCable] = "Sanal kablo bulunamadı. VB-Audio Cable veya VoiceMeeter kurun; yoksa uyumlu mod (hoparlör susturma) kullanılır.",
-        [LocKeys.FollowWindowsVolume] = "Windows ses seviyesini HomePod’a uygula",
-        [LocKeys.FollowWindowsVolumeHint] = "Sistem ses tuşları ve karıştırıcı, yakalanan çıkışın seviyesini HomePod’a taşır.",
-        [LocKeys.VolumeHint] = "HomePod ek kısma. Ana kontrol Windows ses ayarıdır.",
-        [LocKeys.AutoConnect] = "Açılışta son cihaza bağlan",
-        [LocKeys.StartMinimized] = "Simge durumunda başlat",
-        [LocKeys.Language] = "DİL",
-        [LocKeys.NoDevices] = "Cihaz bulunamadı",
-
-        [LocKeys.VolumeMuted] = "kısık",
-        [LocKeys.LatencyMs] = "{0} ms",
-        [LocKeys.ThroughputKbps] = "{0} kbit/s",
-        [LocKeys.PacketsSync] = "{0} paket · {1} sync",
-        [LocKeys.CodecEncrypted] = "{0} · şifreli",
-        [LocKeys.CodecAlacHint] = "ALAC — cihazın ilan ettiği biçim",
-        [LocKeys.CodecPcmHint] = "Ham PCM (L16) — yalnızca sorun giderme için",
-
-        [LocKeys.ScanningNetwork] = "Ağ taranıyor...",
-        [LocKeys.NoReceiversFound] = "Ses akışı kabul eden cihaz bulunamadı.",
-        [LocKeys.DevicesFound] = "{0} cihaz bulundu.",
-        [LocKeys.DevicesFoundList] = "{0} cihaz bulundu: {1}",
-        [LocKeys.ScanCancelled] = "Tarama iptal edildi.",
-        [LocKeys.ScanFailed] = "Tarama başarısız: {0}",
-        [LocKeys.ConnectingTo] = "{0} cihazına bağlanılıyor...",
-        [LocKeys.SpeakersNotMuted] = "Hoparlör kapatılmadı: Windows sesi cihaz mute'undan önce yakalayamadı.",
-        [LocKeys.StreamStartedMuted] = "{0} cihazına yayın başladı. Hoparlör susturuldu (uyumlu mod).",
-        [LocKeys.StreamStarted] = "{0} cihazına yayın başladı.",
-        [LocKeys.StreamStartedRedirected] = "{0} cihazına yayın başladı. Varsayılan çıkış {1}; hoparlör açık.",
-        [LocKeys.RoutingRedirectFailed] = "Varsayılan çıkış sanal kabloya alınamadı; uyumlu moda (hoparlör susturma) geçildi.",
-        [LocKeys.Disconnected] = "Bağlantı kapatıldı.",
-        [LocKeys.DisconnectedFrom] = "{0} bağlantısı kapatıldı.",
-        [LocKeys.VolumeFailed] = "Ses seviyesi ayarlanamadı: {0}",
-        [LocKeys.ConnectionCancelled] = "Bağlantı iptal edildi.",
-        [LocKeys.ConnectFailed] = "{0} cihazına bağlanılamadı: {1}",
-        [LocKeys.PacketSendFailed] = "Paket gönderilemedi: {0}",
-        [LocKeys.KeepAliveFailed] = "Oturum yenilenemedi: {0}",
-        [LocKeys.CaptureStopped] = "Ses yakalama durdu: {0}",
-        [LocKeys.StreamStopped] = "{0} yayını durdu: {1}",
-        [LocKeys.CaptureDevicesFailed] = "Ses cihazları listelenemedi: {0}",
-
-        [LocKeys.TrayShowWindow] = "Pencereyi Göster",
-        [LocKeys.TrayExit] = "Çıkış",
-        [LocKeys.TrayStreamingWithDevice] = "Yayında — {0}",
-        [LocKeys.TrayStreaming] = "Yayında",
-        [LocKeys.TrayConnecting] = "Bağlanıyor...",
-        [LocKeys.TrayScanning] = "Ağ taranıyor...",
-        [LocKeys.TrayStopping] = "Durduruluyor...",
-        [LocKeys.TrayFaulted] = "Hata",
-        [LocKeys.TrayNotConnected] = "Bağlı değil",
-
-        [LocKeys.CrashTitle] = "WinAirPlay — beklenmeyen hata",
-        [LocKeys.CrashDetails] = "{0}\n\nAyrıntılar: {1}",
-
-        [LocKeys.SplashTagline] = "Windows sesini AirPlay cihazlarına aktarın",
-        [LocKeys.SplashLoading] = "Başlatılıyor...",
-    };
-
-    private static Dictionary<string, string> BuildEnglish() => new()
+    private static Dictionary<string, string> BuildStrings() => new()
     {
         [LocKeys.Ready] = "Ready.",
         [LocKeys.Connect] = "Connect",
@@ -164,7 +51,6 @@ public sealed class LocalizationService : ILocalizationService
         [LocKeys.VolumeHint] = "HomePod trim. Windows volume is the main control.",
         [LocKeys.AutoConnect] = "Connect to last device on startup",
         [LocKeys.StartMinimized] = "Start minimized to tray",
-        [LocKeys.Language] = "LANGUAGE",
         [LocKeys.NoDevices] = "No devices found",
 
         [LocKeys.VolumeMuted] = "muted",

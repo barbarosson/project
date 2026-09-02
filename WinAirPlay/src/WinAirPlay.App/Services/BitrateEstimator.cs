@@ -19,7 +19,7 @@ public sealed class BitrateEstimator
     {
         if (smoothing is <= 0 or > 1)
         {
-            throw new ArgumentOutOfRangeException(nameof(smoothing), smoothing, "0 ile 1 arasında olmalı.");
+            throw new ArgumentOutOfRangeException(nameof(smoothing), smoothing, "Must be between 0 and 1.");
         }
 
         _smoothing = smoothing;

@@ -20,7 +20,7 @@ public class MainViewModelTests
 
         var store = new InMemorySettingsStore(settings);
         var enumerator = new FakeAudioDeviceEnumerator();
-        enumerator.Devices.Add(new AudioDeviceInfo("id-default", "Hoparlör", IsDefault: true));
+        enumerator.Devices.Add(new AudioDeviceInfo("id-default", "Speakers", IsDefault: true));
         enumerator.Devices.Add(new AudioDeviceInfo("id-hdmi", "HDMI", IsDefault: false));
 
         var localization = new LocalizationService();
@@ -67,7 +67,7 @@ public class MainViewModelTests
         Assert.True(viewModel.IsStreaming);
         Assert.True(viewModel.CanDisconnect);
         Assert.False(viewModel.CanConnect);
-        Assert.Equal("Bağlantıyı Kes", viewModel.ConnectionButtonText);
+        Assert.Equal("Disconnect", viewModel.ConnectionButtonText);
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public class MainViewModelTests
         await viewModel.ToggleConnectionAsync();
 
         Assert.Equal(StreamState.Idle, viewModel.State);
-        Assert.Equal("Bağlan", viewModel.ConnectionButtonText);
+        Assert.Equal("Connect", viewModel.ConnectionButtonText);
     }
 
     [Fact]
@@ -141,36 +141,13 @@ public class MainViewModelTests
     }
 
     [Fact]
-    public void SwitchingToEnglishUpdatesButtonLabels()
+    public void LabelsAreEnglish()
     {
         var (viewModel, _, _) = Build();
-
-        viewModel.Language = AppLanguage.En;
 
         Assert.Equal("Connect", viewModel.ConnectionButtonText);
         Assert.Equal("Scan", viewModel.ScanButtonText);
         Assert.Equal("Not connected", viewModel.StateText);
-        Assert.True(viewModel.IsEnglish);
-        Assert.False(viewModel.IsTurkish);
-    }
-
-    [Fact]
-    public void LanguageChipTogglesBetweenTurkishAndEnglish()
-    {
-        var (viewModel, _, store) = Build();
-
-        Assert.True(viewModel.IsTurkish);
-
-        viewModel.IsEnglish = true;
-
-        Assert.Equal(AppLanguage.En, viewModel.Language);
-        Assert.Equal(AppLanguage.En, store.Current.Language);
-        Assert.True(viewModel.IsEnglish);
-
-        viewModel.IsTurkish = true;
-
-        Assert.Equal(AppLanguage.Tr, viewModel.Language);
-        Assert.True(viewModel.IsTurkish);
     }
 
     [Fact]
@@ -284,7 +261,7 @@ public class MainViewModelTests
 
         Assert.Equal(AudioRoutingMode.MuteSpeakers, store.Current.RoutingMode);
         Assert.False(store.Current.FollowWindowsVolume);
-        Assert.Contains("sustur", viewModel.RoutingHint, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("mute", viewModel.RoutingHint, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -319,7 +296,7 @@ public class MainViewModelTests
         var (viewModel, controller, _) = Build();
         controller.Statistics = new StreamStatistics(
             TimeSpan.FromSeconds(90), 1000, 2048, 5, 3, TimeSpan.FromMilliseconds(50),
-            new PcmLevel(0.5f, 0.25f), RaopStreamCodec.AppleLossless, false, "Hoparlör");
+            new PcmLevel(0.5f, 0.25f), RaopStreamCodec.AppleLossless, false, "Speakers");
 
         viewModel.RefreshStatistics();
 
@@ -336,13 +313,13 @@ public class MainViewModelTests
 
         controller.Statistics = new StreamStatistics(
             TimeSpan.FromSeconds(3661), 1234, 4096, 7, 2, TimeSpan.FromMilliseconds(50),
-            new PcmLevel(0.5f, 0.25f), RaopStreamCodec.AppleLossless, IsEncrypted: true, "Hoparlör");
+            new PcmLevel(0.5f, 0.25f), RaopStreamCodec.AppleLossless, IsEncrypted: true, "Speakers");
 
         viewModel.RefreshStatistics();
 
         Assert.Equal("01:01:01", viewModel.PositionText);
-        Assert.Contains("1.234 paket", viewModel.PacketText.Replace(',', '.'));
-        Assert.Contains("şifreli", viewModel.CodecText);
+        Assert.Contains("1.234 packets", viewModel.PacketText.Replace(',', '.'));
+        Assert.Contains("encrypted", viewModel.CodecText);
         Assert.Equal(0.5f, viewModel.PeakLeft);
         Assert.Equal(0.25f, viewModel.PeakRight);
     }
@@ -356,7 +333,7 @@ public class MainViewModelTests
 
         controller.Statistics = new StreamStatistics(
             TimeSpan.FromSeconds(30), 500, 1024, 3, 1, TimeSpan.FromMilliseconds(50),
-            new PcmLevel(0.8f, 0.8f), RaopStreamCodec.AppleLossless, false, "Hoparlör");
+            new PcmLevel(0.8f, 0.8f), RaopStreamCodec.AppleLossless, false, "Speakers");
         viewModel.RefreshStatistics();
 
         await viewModel.DisconnectAsync();

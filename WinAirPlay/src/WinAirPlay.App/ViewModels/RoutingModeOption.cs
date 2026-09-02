@@ -2,4 +2,7 @@ using WinAirPlay.Core.Audio;
 
 namespace WinAirPlay.App.ViewModels;
 
-public sealed record RoutingModeOption(AudioRoutingMode Value, string Label);
+public sealed record RoutingModeOption(AudioRoutingMode Value, string Label)
+{
+    public override string ToString() => Label;
+}
