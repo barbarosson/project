@@ -41,10 +41,13 @@ public sealed class AirPlayDevice
         Capabilities.IsHomePod ||
         Model?.StartsWith("AudioAccessory", StringComparison.OrdinalIgnoreCase) == true;
 
+    /// <summary>Friendly label for UI lists, e.g. <c>Salon (2) · HomePod</c>.</summary>
+    public string DisplayName => AirPlayProductNames.FormatDisplayName(Name, Model, IsHomePod);
+
     /// <summary>Endpoint the RTSP client connects to in Phase 3.</summary>
     public IPEndPoint? RtspEndPoint =>
         Address is { } address && RaopPort is { } port ? new IPEndPoint(address, port) : null;
 
     public override string ToString() =>
-        $"{Name} @ {Address?.ToString() ?? "?"}:{RaopPort?.ToString() ?? "-"}";
+        $"{DisplayName} @ {Address?.ToString() ?? "?"}:{RaopPort?.ToString() ?? "-"}";
 }

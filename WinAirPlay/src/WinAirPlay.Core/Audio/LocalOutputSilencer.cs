@@ -18,8 +18,8 @@ public interface ILocalOutputSilencer : IDisposable
 public sealed class WasapiLocalOutputSilencer : ILocalOutputSilencer
 {
     private readonly object _sync = new();
-    private MMDevice? _device;
-    private bool _wasMuted;
+    private string? _deviceId;
+    private bool _weMuted;
     private bool _disposed;
 
     public bool IsSilenced { get; private set; }
@@ -35,12 +35,13 @@ public sealed class WasapiLocalOutputSilencer : ILocalOutputSilencer
                 return;
             }
 
-            _device = OpenRenderDevice(deviceId);
-            _wasMuted = _device.AudioEndpointVolume.Mute;
+            using var device = OpenRenderDevice(deviceId);
+            _deviceId = device.ID;
+            _weMuted = !device.AudioEndpointVolume.Mute;
 
-            if (!_wasMuted)
+            if (_weMuted)
             {
-                _device.AudioEndpointVolume.Mute = true;
+                device.AudioEndpointVolume.Mute = true;
             }
 
             IsSilenced = true;
@@ -56,22 +57,27 @@ public sealed class WasapiLocalOutputSilencer : ILocalOutputSilencer
                 return;
             }
 
+            var shouldUnmute = _weMuted;
+            var deviceId = _deviceId;
+            var restored = false;
+
             try
             {
-                if (_device is not null && !_wasMuted)
+                if (shouldUnmute)
                 {
-                    _device.AudioEndpointVolume.Mute = false;
+                    restored = TrySetMute(deviceId, mute: false);
                 }
-            }
-            catch (Exception)
-            {
-                // The device may have been unplugged while we were streaming.
             }
             finally
             {
-                _device?.Dispose();
-                _device = null;
                 IsSilenced = false;
+                _weMuted = false;
+                _deviceId = null;
+            }
+
+            if (!restored && shouldUnmute)
+            {
+                TryUnmuteFallback(deviceId);
             }
         }
     }
@@ -85,6 +91,34 @@ public sealed class WasapiLocalOutputSilencer : ILocalOutputSilencer
 
         Restore();
         _disposed = true;
+    }
+
+    /// <summary>
+    /// Opens a fresh MMDevice for each call so mute/unmute never depends on a COM object that
+    /// belonged to a now-dead STA apartment.
+    /// </summary>
+    private static bool TrySetMute(string? deviceId, bool mute)
+    {
+        try
+        {
+            using var device = OpenRenderDevice(deviceId);
+            device.AudioEndpointVolume.Mute = mute;
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+
+    private static void TryUnmuteFallback(string? deviceId)
+    {
+        if (!string.IsNullOrWhiteSpace(deviceId) && TrySetMute(deviceId, mute: false))
+        {
+            return;
+        }
+
+        TrySetMute(null, mute: false);
     }
 
     internal static MMDevice OpenRenderDevice(string? deviceId)

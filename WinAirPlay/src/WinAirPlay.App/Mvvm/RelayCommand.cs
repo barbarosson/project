@@ -74,6 +74,11 @@ public sealed class AsyncRelayCommand : ICommand
         {
             await _execute().ConfigureAwait(true);
         }
+        catch (Exception)
+        {
+            // Errors should be surfaced through IStreamController.StatusChanged; async void must
+            // never take the process down if something still escapes.
+        }
         finally
         {
             IsRunning = false;

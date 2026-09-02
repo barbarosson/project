@@ -1,5 +1,6 @@
 using System;
 using WinAirPlay.App.Localization;
+using WinAirPlay.Core.Audio;
 using WinAirPlay.Core.Raop;
 
 namespace WinAirPlay.App.Services;
@@ -48,8 +49,22 @@ public sealed class AppSettings
 
     /// <summary>
     /// Silences the PC speakers while AirPlay is running so sound only comes from the receiver.
+    /// Used when no virtual cable is available (compatibility mode).
     /// </summary>
     public bool MuteLocalSpeakers { get; set; } = true;
+
+    /// <summary>
+    /// Auto uses a virtual cable when Windows has one; otherwise mutes the speakers.
+    /// </summary>
+    public AudioRoutingMode RoutingMode { get; set; } = AudioRoutingMode.Auto;
+
+    /// <summary>Hardware id of the preferred VB-Audio / VoiceMeeter playback endpoint.</summary>
+    public string? PreferredVirtualDeviceId { get; set; }
+
+    /// <summary>
+    /// Follow the Windows volume keys / mixer on the capture endpoint so HomePod tracks PC volume.
+    /// </summary>
+    public bool FollowWindowsVolume { get; set; } = true;
 
     public AppLanguage Language { get; set; } = AppLanguage.Tr;
 
@@ -69,6 +84,11 @@ public sealed class AppSettings
             Codec = RaopStreamCodec.AppleLossless;
         }
 
+        if (!Enum.IsDefined(RoutingMode))
+        {
+            RoutingMode = AudioRoutingMode.Auto;
+        }
+
         if (string.IsNullOrWhiteSpace(LastDeviceId))
         {
             LastDeviceId = null;
@@ -77,6 +97,11 @@ public sealed class AppSettings
         if (string.IsNullOrWhiteSpace(CaptureDeviceId))
         {
             CaptureDeviceId = null;
+        }
+
+        if (string.IsNullOrWhiteSpace(PreferredVirtualDeviceId))
+        {
+            PreferredVirtualDeviceId = null;
         }
 
         return this;

@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Buffers.Binary;
 using WinAirPlay.Core.Raop;
 using Xunit;
@@ -116,4 +117,31 @@ public class PcmByteOrderTests
     [Fact]
     public void UndersizedDestination_Throws() =>
         Assert.Throws<ArgumentException>(() => PcmByteOrder.SwapSampleBytes(new byte[4], new byte[2]));
+
+    [Fact]
+    public void ArrayPoolRentMayExceedRequestedLength_SlicedEncodeFitsThePacketBuffer()
+    {
+        const int payloadLength = 1408;
+        var rented = ArrayPool<byte>.Shared.Rent(payloadLength);
+
+        try
+        {
+            Assert.True(rented.Length >= payloadLength);
+
+            var encoder = new PcmPassthroughEncoder();
+            var destination = new byte[encoder.GetMaxEncodedLength(payloadLength)];
+
+            if (rented.Length > payloadLength)
+            {
+                Assert.Throws<ArgumentException>(() => encoder.Encode(rented, destination));
+            }
+
+            var written = encoder.Encode(rented.AsSpan(0, payloadLength), destination);
+            Assert.Equal(payloadLength, written);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(rented);
+        }
+    }
 }

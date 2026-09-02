@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Buffers.Binary;
 using WinAirPlay.Core.Alac;
 using WinAirPlay.Core.Raop;
@@ -161,6 +162,28 @@ public class AlacUncompressedEncoderTests
     [Fact]
     public void UndersizedDestination_Throws() =>
         Assert.Throws<ArgumentException>(() => Encoder.Encode(new byte[1408], new byte[1408]));
+
+    [Fact]
+    public void ArrayPoolRentMayExceedRequestedLength_SlicedEncodeFitsThePacketBuffer()
+    {
+        const int payloadLength = 1408;
+        var rented = ArrayPool<byte>.Shared.Rent(payloadLength);
+        var destination = new byte[Encoder.GetMaxEncodedLength(payloadLength)];
+
+        try
+        {
+            if (rented.Length > payloadLength)
+            {
+                Assert.Throws<ArgumentException>(() => Encoder.Encode(rented, destination));
+            }
+
+            Assert.Equal(1412, Encoder.Encode(rented.AsSpan(0, payloadLength), destination));
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(rented);
+        }
+    }
 
     [Fact]
     public void OnlySixteenBitStereoIsSupported() =>

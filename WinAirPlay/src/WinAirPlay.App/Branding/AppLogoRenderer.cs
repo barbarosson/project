@@ -4,7 +4,7 @@ using System.Drawing.Drawing2D;
 namespace WinAirPlay.App.Branding;
 
 /// <summary>
-/// Speaker with broadcast arcs — wireless audio streaming, without the AirPlay cast triangle.
+/// Rounded profile head (cast-style triangle) with sound waves emanating from the mouth.
 /// </summary>
 public static class AppLogoRenderer
 {
@@ -45,59 +45,104 @@ public static class AppLogoRenderer
             DrawRoundedRectangle(graphics, tile, corner, border);
         }
 
-        DrawSpeaker(graphics, size, waveColor.Value);
-        DrawSoundWaves(graphics, size, waveColor.Value);
+        DrawProfileHead(graphics, size, waveColor.Value);
+        DrawMouthWaves(graphics, size, waveColor.Value);
 
         return bitmap;
     }
 
-    private static void DrawSpeaker(Graphics graphics, int size, Color color)
+    /// <summary>
+    /// Side-profile head: round skull, small nose, lips, chin and neck — still reading left-to-right
+    /// like the AirPlay cast triangle.
+    /// </summary>
+    private static void DrawProfileHead(Graphics graphics, int size, Color color)
     {
         using var brush = new SolidBrush(color);
 
-        var centerY = size * 0.5f;
-        var boxW = size * 0.13f;
-        var boxH = size * 0.2f;
-        var boxX = size * 0.26f;
-        var boxY = centerY - boxH / 2f;
+        graphics.FillEllipse(brush, size * 0.25f, size * 0.25f, size * 0.34f, size * 0.42f);
 
-        graphics.FillRectangle(brush, boxX, boxY, boxW, boxH);
-
-        var coneTip = boxX + boxW + size * 0.14f;
-        var cone = new[]
+        using (var face = CreateFacePath(size))
         {
-            new PointF(boxX + boxW, boxY),
-            new PointF(coneTip, centerY - size * 0.07f),
-            new PointF(coneTip, centerY + size * 0.07f),
-            new PointF(boxX + boxW, boxY + boxH),
-        };
-        graphics.FillPolygon(brush, cone);
+            graphics.FillPath(brush, face);
+        }
+
+        using (var neck = CreateNeckPath(size))
+        {
+            graphics.FillPath(brush, neck);
+        }
+
+        graphics.FillEllipse(brush, size * 0.27f, size * 0.42f, size * 0.09f, size * 0.13f);
+
+        if (size >= 28)
+        {
+            DrawEye(graphics, size);
+        }
     }
 
-    /// <summary>Three arcs to the right of the cone — classic volume / sound-wave icon.</summary>
-    private static void DrawSoundWaves(Graphics graphics, int size, Color waveColor)
+    private static GraphicsPath CreateFacePath(int size)
     {
-        var stroke = Math.Max(2.2f, size / 11f);
-        var anchorX = size * 0.52f;
-        var centerY = size * 0.5f;
+        PointF P(float x, float y) => new(size * x, size * y);
+
+        var path = new GraphicsPath();
+        path.AddBezier(P(0.48f, 0.30f), P(0.54f, 0.30f), P(0.56f, 0.34f), P(0.56f, 0.38f));
+        path.AddBezier(P(0.56f, 0.38f), P(0.56f, 0.41f), P(0.58f, 0.43f), P(0.60f, 0.45f));
+        path.AddBezier(P(0.60f, 0.45f), P(0.63f, 0.46f), P(0.63f, 0.48f), P(0.60f, 0.49f));
+        path.AddBezier(P(0.60f, 0.49f), P(0.58f, 0.50f), P(0.61f, 0.51f), P(0.61f, 0.53f));
+        path.AddBezier(P(0.61f, 0.53f), P(0.58f, 0.55f), P(0.56f, 0.58f), P(0.54f, 0.62f));
+        path.AddBezier(P(0.54f, 0.62f), P(0.48f, 0.66f), P(0.40f, 0.64f), P(0.36f, 0.58f));
+        path.AddBezier(P(0.36f, 0.58f), P(0.38f, 0.40f), P(0.42f, 0.30f), P(0.48f, 0.30f));
+        path.CloseFigure();
+        return path;
+    }
+
+    private static GraphicsPath CreateNeckPath(int size)
+    {
+        PointF P(float x, float y) => new(size * x, size * y);
+
+        var path = new GraphicsPath();
+        path.AddBezier(P(0.36f, 0.60f), P(0.34f, 0.68f), P(0.34f, 0.74f), P(0.36f, 0.76f));
+        path.AddBezier(P(0.36f, 0.76f), P(0.42f, 0.78f), P(0.48f, 0.76f), P(0.50f, 0.72f));
+        path.AddBezier(P(0.50f, 0.72f), P(0.50f, 0.66f), P(0.48f, 0.62f), P(0.44f, 0.60f));
+        path.AddBezier(P(0.44f, 0.60f), P(0.40f, 0.58f), P(0.38f, 0.58f), P(0.36f, 0.60f));
+        path.CloseFigure();
+        return path;
+    }
+
+    private static void DrawEye(Graphics graphics, int size)
+    {
+        var w = Math.Max(2.2f, size * 0.052f);
+        var h = Math.Max(2.0f, size * 0.044f);
+        var x = size * 0.46f;
+        var y = size * 0.40f;
+
+        using var brush = new SolidBrush(Color.FromArgb(0x14, 0x16, 0x1A));
+        graphics.FillEllipse(brush, x, y, w, h);
+    }
+
+    /// <summary>Three arcs opening to the right from the mouth — wireless voice cast.</summary>
+    private static void DrawMouthWaves(Graphics graphics, int size, Color waveColor)
+    {
+        var stroke = Math.Max(2.2f, size / 12f);
+        var anchorX = size * 0.60f;
+        var anchorY = size * 0.52f;
 
         for (var i = 0; i < 3; i++)
         {
-            var diameter = size * (0.14f + i * 0.09f);
+            var diameter = size * (0.11f + i * 0.085f);
             var arcRect = new RectangleF(
                 anchorX,
-                centerY - diameter / 2f,
+                anchorY - diameter / 2f,
                 diameter,
                 diameter);
 
-            var alpha = 255 - (i * 35);
+            var alpha = 255 - (i * 38);
             using var pen = new Pen(Color.FromArgb(alpha, waveColor), stroke)
             {
                 StartCap = LineCap.Round,
                 EndCap = LineCap.Round,
             };
 
-            graphics.DrawArc(pen, arcRect.X, arcRect.Y, arcRect.Width, arcRect.Height, -70, 140);
+            graphics.DrawArc(pen, arcRect.X, arcRect.Y, arcRect.Width, arcRect.Height, -55, 110);
         }
     }
 

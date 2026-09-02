@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 using WinAirPlay.App.Branding;
@@ -24,6 +25,10 @@ public partial class App : Application
         base.OnStartup(e);
 
         DispatcherUnhandledException += OnDispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += OnDomainUnhandledException;
+        AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+        TaskScheduler.UnobservedTaskException += OnUnobservedTaskException;
+        SessionEnding += OnSessionEnding;
 
         var settingsStore = new JsonSettingsStore();
         var settings = settingsStore.Load();
@@ -75,15 +80,32 @@ public partial class App : Application
 
         if (_controller is { } controller)
         {
-            // The receiver deserves a TEARDOWN, but a hung socket must not block shutdown.
-            Task.Run(async () => await controller.DisposeAsync()).Wait(TimeSpan.FromSeconds(3));
+            // Unmute immediately so a slow RTSP teardown cannot leave the PC silent.
+            controller.RestoreLocalSpeakers();
+
+            try
+            {
+                Task.Run(async () => await controller.DisposeAsync().ConfigureAwait(false))
+                    .Wait(TimeSpan.FromSeconds(3));
+            }
+            catch (Exception)
+            {
+                controller.RestoreLocalSpeakers();
+            }
         }
 
         base.OnExit(e);
     }
 
+    private void OnSessionEnding(object sender, SessionEndingCancelEventArgs e) =>
+        RestoreSpeakersSafely();
+
+    private void OnProcessExit(object? sender, EventArgs e) =>
+        RestoreSpeakersSafely();
+
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
+        RestoreSpeakersSafely();
         var log = WriteCrashLog(e.Exception);
         var localization = _localization ?? new LocalizationService();
 
@@ -94,6 +116,35 @@ public partial class App : Application
             MessageBoxImage.Error);
 
         e.Handled = true;
+    }
+
+    private void OnDomainUnhandledException(object sender, UnhandledExceptionEventArgs e)
+    {
+        RestoreSpeakersSafely();
+
+        if (e.ExceptionObject is Exception exception)
+        {
+            WriteCrashLog(exception);
+        }
+    }
+
+    private void OnUnobservedTaskException(object? sender, UnobservedTaskExceptionEventArgs e)
+    {
+        RestoreSpeakersSafely();
+        WriteCrashLog(e.Exception);
+        e.SetObserved();
+    }
+
+    private void RestoreSpeakersSafely()
+    {
+        try
+        {
+            _controller?.RestoreLocalSpeakers();
+        }
+        catch (Exception)
+        {
+            // Never let unmute failures replace the original crash.
+        }
     }
 
     /// <summary>Appends the full exception to a log next to the settings file, and returns its path.</summary>

@@ -31,4 +31,15 @@ public sealed class LoopbackCaptureOptions
     /// speakers will be silenced for the duration of an AirPlay session.
     /// </summary>
     public bool IndependentOfEndpointVolume { get; set; }
+
+    /// <summary>
+    /// Multiply captured 16-bit PCM by the render endpoint's Windows volume scalar. Used with
+    /// process loopback so volume keys still reach HomePod after the speakers are muted.
+    /// </summary>
+    public bool ApplyEndpointVolume { get; set; }
+
+    /// <summary>
+    /// When we muted the endpoint ourselves, ignore the mute flag and only follow the slider.
+    /// </summary>
+    public bool IgnoreEndpointMute { get; set; }
 }

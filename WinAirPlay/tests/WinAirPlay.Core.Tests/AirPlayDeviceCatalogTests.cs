@@ -55,6 +55,21 @@ public class AirPlayDeviceCatalogTests
     }
 
     [Fact]
+    public void SalonHomePod_ShowsProductInDisplayName()
+    {
+        var devices = AirPlayDeviceCatalog.Build(new[]
+        {
+            Raop("4A862C4DE9A6@Salon (2)", "192.168.0.121"),
+            AirPlay("Salon (2)", "192.168.0.121", deviceId: "4A:86:2C:4D:E9:A6"),
+        });
+
+        var device = Assert.Single(devices);
+        Assert.Equal("Salon (2)", device.Name);
+        Assert.Equal("Salon (2) · HomePod", device.DisplayName);
+        Assert.True(device.IsHomePod);
+    }
+
+    [Fact]
     public void CapabilitiesComeFromTheRaopRecord()
     {
         var devices = AirPlayDeviceCatalog.Build(new[] { Raop(), AirPlay() });

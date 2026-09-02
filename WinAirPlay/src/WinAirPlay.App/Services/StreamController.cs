@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using WinAirPlay.App.Localization;
 using WinAirPlay.Core.Audio;
 using WinAirPlay.Core.Discovery;
 using WinAirPlay.Core.Raop;
+using WinAirPlay.Core.Threading;
 
 namespace WinAirPlay.App.Services;
 
@@ -25,7 +27,10 @@ public sealed record StreamSettings(
     int LatencyMs,
     double VolumeDb,
     bool UseEncryption = false,
-    bool MuteLocalSpeakers = true);
+    bool MuteLocalSpeakers = true,
+    AudioRoutingMode RoutingMode = AudioRoutingMode.Auto,
+    bool FollowWindowsVolume = true,
+    string? PreferredVirtualDeviceId = null);
 
 public sealed record StreamStatistics(
     TimeSpan Position,
@@ -62,6 +67,9 @@ public interface IStreamController : IAsyncDisposable
 
     Task DisconnectAsync();
 
+    /// <summary>Unmutes the PC speakers immediately. Safe to call when not streaming.</summary>
+    void RestoreLocalSpeakers();
+
     Task SetVolumeAsync(double decibels);
 
     void SetLatency(int milliseconds);
@@ -76,6 +84,7 @@ public sealed class StreamController : IStreamController
     private readonly IAirPlayDiscovery _discovery;
     private readonly Func<RaopHandshakeOptions, IRaopHandshake> _handshakeFactory;
     private readonly ILocalOutputSilencer _silencer;
+    private readonly IAudioOutputRouter _router;
     private readonly ILocalizationService _localization;
     private readonly SemaphoreSlim _gate = new(1, 1);
 
@@ -92,12 +101,14 @@ public sealed class StreamController : IStreamController
         IAirPlayDiscovery discovery,
         ILocalizationService localization,
         Func<RaopHandshakeOptions, IRaopHandshake>? handshakeFactory = null,
-        ILocalOutputSilencer? silencer = null)
+        ILocalOutputSilencer? silencer = null,
+        IAudioOutputRouter? router = null)
     {
         _discovery = discovery ?? throw new ArgumentNullException(nameof(discovery));
         _localization = localization ?? throw new ArgumentNullException(nameof(localization));
         _handshakeFactory = handshakeFactory ?? (options => new RaopHandshake(options));
         _silencer = silencer ?? new WasapiLocalOutputSilencer();
+        _router = router ?? new AudioOutputRouter();
     }
 
     public StreamState State
@@ -172,7 +183,10 @@ public sealed class StreamController : IStreamController
 
             Report(receivers.Count == 0
                 ? _localization.Get(LocKeys.NoReceiversFound)
-                : _localization.Format(LocKeys.DevicesFound, receivers.Count));
+                : _localization.Format(
+                    LocKeys.DevicesFoundList,
+                    receivers.Count,
+                    string.Join(", ", receivers.Select(device => device.DisplayName))));
 
             return receivers;
         }
@@ -214,8 +228,16 @@ public sealed class StreamController : IStreamController
             }
 
             State = StreamState.Connecting;
-            Report(_localization.Format(LocKeys.ConnectingTo, device.Name));
+        }
+        finally
+        {
+            _gate.Release();
+        }
 
+        Report(_localization.Format(LocKeys.ConnectingTo, device.Name));
+
+        try
+        {
             var handshake = _handshakeFactory(new RaopHandshakeOptions
             {
                 Codec = settings.Codec,
@@ -223,66 +245,134 @@ public sealed class StreamController : IStreamController
                 InitialVolumeDb = settings.VolumeDb,
             });
 
-            _session = await handshake.ConnectAsync(device, cancellationToken).ConfigureAwait(false);
-
-            _streamOptions = new RaopStreamOptions
+            var session = await handshake.ConnectAsync(device, cancellationToken).ConfigureAwait(false);
+            var streamOptions = new RaopStreamOptions
             {
-                LatencySamples = ToSamples(settings.LatencyMs, _session.Audio.SampleRate),
+                LatencySamples = ToSamples(settings.LatencyMs, session.Audio.SampleRate),
             };
 
-            _source = new WasapiLoopbackCaptureSource(new LoopbackCaptureOptions
+            WasapiLoopbackCaptureSource? source = null;
+            RaopRtpSender? sender = null;
+            AudioPipeline? pipeline = null;
+            var mutedLocally = false;
+            AudioOutputPlan? activePlan = null;
+
+            try
             {
-                DeviceId = settings.CaptureDeviceId,
-                TargetFormat = AudioFormat.AirPlay,
-                SampleFramesPerBlock = _session.Audio.FramesPerPacket,
-                // A live stream must not stall while nothing is playing, or the receiver drifts.
-                EmitSilenceWhenIdle = true,
-                IndependentOfEndpointVolume = settings.MuteLocalSpeakers,
-            });
+                await StaTask.RunAsync(() =>
+                {
+                    var plan = ResolvePlan(settings);
+                    activePlan = plan;
 
-            _sender = new RaopRtpSender(_session, _source.Format, _streamOptions);
-            _sender.SendFailed += OnSendFailed;
+                    source = new WasapiLoopbackCaptureSource(new LoopbackCaptureOptions
+                    {
+                        DeviceId = plan.CaptureDeviceId,
+                        TargetFormat = AudioFormat.AirPlay,
+                        SampleFramesPerBlock = session.Audio.FramesPerPacket,
+                        EmitSilenceWhenIdle = true,
+                        IndependentOfEndpointVolume = plan.IndependentOfEndpointVolume,
+                        ApplyEndpointVolume = plan.ApplyEndpointVolume,
+                        IgnoreEndpointMute = plan.MuteLocalSpeakers,
+                    });
 
-            _keepAlive = new RaopSessionKeepAlive(_session);
-            _keepAlive.KeepAliveFailed += OnKeepAliveFailed;
-            _keepAlive.Start();
+                    sender = new RaopRtpSender(session, source.Format, streamOptions);
+                    sender.SendFailed += OnSendFailed;
 
-            _pipeline = new AudioPipeline(_source, ownsSource: false);
-            _pipeline.AddSink(_sender);
-            _pipeline.Stopped += OnCaptureStopped;
+                    pipeline = new AudioPipeline(source, ownsSource: false);
+                    pipeline.AddSink(sender);
+                    pipeline.Stopped += OnCaptureStopped;
 
-            _sender.Start();
-            _pipeline.Start();
+                    sender.Start();
+                    pipeline.Start();
 
-            if (settings.MuteLocalSpeakers)
+                    if (plan.MuteLocalSpeakers)
+                    {
+                        if (source.CapturesBeforeDeviceVolume)
+                        {
+                            _silencer.Silence(plan.CaptureDeviceId);
+                            mutedLocally = true;
+                        }
+                        else
+                        {
+                            Report(_localization.Get(LocKeys.SpeakersNotMuted));
+                        }
+                    }
+                }, cancellationToken).ConfigureAwait(false);
+            }
+            catch
             {
-                if (_source.CapturesBeforeDeviceVolume)
+                RestoreLocalSpeakers();
+
+                if (sender is not null)
                 {
-                    _silencer.Silence(settings.CaptureDeviceId);
+                    sender.SendFailed -= OnSendFailed;
                 }
-                else
+
+                if (pipeline is not null)
                 {
-                    Report(_localization.Get(LocKeys.SpeakersNotMuted));
+                    pipeline.Stopped -= OnCaptureStopped;
                 }
+
+                try
+                {
+                    await StaTask.RunAsync(() =>
+                    {
+                        pipeline?.Dispose();
+                        source?.Dispose();
+                    }).ConfigureAwait(false);
+                }
+                catch (Exception)
+                {
+                    // Best-effort: the outer teardown still runs after this rethrow.
+                }
+
+                await session.DisposeAsync().ConfigureAwait(false);
+                throw;
             }
 
-            ConnectedDevice = device;
-            State = StreamState.Streaming;
-            Report(settings.MuteLocalSpeakers && _source.CapturesBeforeDeviceVolume
-                ? _localization.Format(LocKeys.StreamStartedMuted, device.Name)
-                : _localization.Format(LocKeys.StreamStarted, device.Name));
+            var keepAlive = new RaopSessionKeepAlive(session);
+            keepAlive.KeepAliveFailed += OnKeepAliveFailed;
+
+            await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                _session = session;
+                _streamOptions = streamOptions;
+                _source = source;
+                _sender = sender;
+                _pipeline = pipeline;
+                _keepAlive = keepAlive;
+                ConnectedDevice = device;
+                State = StreamState.Streaming;
+            }
+            finally
+            {
+                _gate.Release();
+            }
+
+            keepAlive.Start();
+
+            Report(DescribeStart(device, activePlan, mutedLocally));
             return true;
         }
         catch (Exception ex)
         {
             await TeardownAsync().ConfigureAwait(false);
-            State = StreamState.Faulted;
+
+            await _gate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+
+            try
+            {
+                State = StreamState.Faulted;
+            }
+            finally
+            {
+                _gate.Release();
+            }
+
             Report(DescribeFailure(device, ex));
             return false;
-        }
-        finally
-        {
-            _gate.Release();
         }
     }
 
@@ -310,6 +400,27 @@ public sealed class StreamController : IStreamController
         finally
         {
             _gate.Release();
+        }
+    }
+
+    public void RestoreLocalSpeakers()
+    {
+        try
+        {
+            _silencer.Restore();
+        }
+        catch (Exception)
+        {
+            // Unmute must not throw on the UI, crash, or process-exit path.
+        }
+
+        try
+        {
+            _router.Restore();
+        }
+        catch (Exception)
+        {
+            // Default endpoint restore must not throw either.
         }
     }
 
@@ -349,40 +460,62 @@ public sealed class StreamController : IStreamController
 
     private async Task TeardownAsync()
     {
-        if (_keepAlive is { } keepAlive)
+        var keepAlive = _keepAlive;
+        var sender = _sender;
+        var pipeline = _pipeline;
+        var source = _source;
+        var session = _session;
+
+        _keepAlive = null;
+        _sender = null;
+        _pipeline = null;
+        _source = null;
+        _session = null;
+        _streamOptions = null;
+        ConnectedDevice = null;
+
+        if (keepAlive is not null)
         {
             keepAlive.KeepAliveFailed -= OnKeepAliveFailed;
             keepAlive.Dispose();
         }
 
-        if (_sender is { } sender)
+        if (sender is not null)
         {
             sender.SendFailed -= OnSendFailed;
         }
 
-        if (_pipeline is { } pipeline)
+        if (pipeline is not null)
         {
             pipeline.Stopped -= OnCaptureStopped;
-            pipeline.Stop();
-            pipeline.Dispose();
         }
 
-        _silencer.Restore();
+        await RestoreLocalSpeakersAsync().ConfigureAwait(false);
 
-        _source?.Dispose();
+        try
+        {
+            await StaTask.RunAsync(() =>
+            {
+                pipeline?.Stop();
+                pipeline?.Dispose();
+                source?.Dispose();
+            }).ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            // Capture teardown must not prevent speaker restore.
+        }
 
-        if (_session is { } session)
+        if (session is not null)
         {
             await session.DisposeAsync().ConfigureAwait(false);
         }
+    }
 
-        _pipeline = null;
-        _sender = null;
-        _keepAlive = null;
-        _source = null;
-        _session = null;
-        _streamOptions = null;
-        ConnectedDevice = null;
+    private Task RestoreLocalSpeakersAsync()
+    {
+        RestoreLocalSpeakers();
+        return Task.CompletedTask;
     }
 
     private string DescribeFailure(AirPlayDevice device, Exception exception) => exception switch
@@ -391,8 +524,17 @@ public sealed class StreamController : IStreamController
         _ => _localization.Format(LocKeys.ConnectFailed, device.Name, exception.Message),
     };
 
-    private void OnSendFailed(object? sender, Exception exception) =>
+    private void OnSendFailed(object? sender, Exception exception)
+    {
         Report(_localization.Format(LocKeys.PacketSendFailed, exception.Message));
+
+        if (exception is System.Net.Sockets.SocketException or ObjectDisposedException)
+        {
+            return;
+        }
+
+        _ = HandleStreamFailureAsync(exception);
+    }
 
     private void OnKeepAliveFailed(object? sender, Exception exception)
     {
@@ -447,6 +589,44 @@ public sealed class StreamController : IStreamController
         _disposed = true;
         await TeardownAsync().ConfigureAwait(false);
         _silencer.Dispose();
+        _router.Dispose();
         _gate.Dispose();
+    }
+
+    private AudioOutputPlan ResolvePlan(StreamSettings settings)
+    {
+        var request = new AudioRoutingRequest(
+            settings.RoutingMode,
+            settings.CaptureDeviceId,
+            settings.PreferredVirtualDeviceId,
+            settings.MuteLocalSpeakers,
+            settings.FollowWindowsVolume);
+
+        var plan = _router.CreatePlan(request);
+
+        if (plan.Kind == AudioRoutingKind.Redirect && !_router.Apply(plan))
+        {
+            Report(_localization.Get(LocKeys.RoutingRedirectFailed));
+            plan = settings.MuteLocalSpeakers
+                ? AudioOutputPlan.Mute(settings.CaptureDeviceId, settings.FollowWindowsVolume)
+                : AudioOutputPlan.Passthrough(settings.CaptureDeviceId, settings.FollowWindowsVolume);
+        }
+
+        return plan;
+    }
+
+    private string DescribeStart(AirPlayDevice device, AudioOutputPlan? plan, bool mutedLocally)
+    {
+        if (plan?.Kind == AudioRoutingKind.Redirect && plan.VirtualDeviceName is { } cable)
+        {
+            return _localization.Format(LocKeys.StreamStartedRedirected, device.Name, cable);
+        }
+
+        if (mutedLocally)
+        {
+            return _localization.Format(LocKeys.StreamStartedMuted, device.Name);
+        }
+
+        return _localization.Format(LocKeys.StreamStarted, device.Name);
     }
 }

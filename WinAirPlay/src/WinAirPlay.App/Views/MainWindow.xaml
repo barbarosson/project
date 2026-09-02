@@ -46,6 +46,11 @@
 
         <!-- Header -->
         <Grid Grid.Row="0" Margin="0,0,0,18">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <Border Width="40"
                         Height="40"
@@ -74,6 +79,25 @@
                     </StackPanel>
                 </Border>
             </StackPanel>
+
+            <Border Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Margin="12,0,0,0"
+                    Background="{StaticResource PanelBrush}"
+                    BorderBrush="{StaticResource BorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8">
+                <StackPanel Orientation="Horizontal">
+                    <RadioButton GroupName="AppLanguage"
+                                 Content="TR"
+                                 Style="{StaticResource LanguageChip}"
+                                 IsChecked="{Binding IsTurkish, Mode=TwoWay}" />
+                    <RadioButton GroupName="AppLanguage"
+                                 Content="EN"
+                                 Style="{StaticResource LanguageChip}"
+                                 IsChecked="{Binding IsEnglish, Mode=TwoWay}" />
+                </StackPanel>
+            </Border>
         </Grid>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
@@ -100,17 +124,16 @@
                               IsEnabled="{Binding IsStreaming, Converter={StaticResource Not}}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Name}" />
-                                    <TextBlock FontSize="11" Foreground="{StaticResource MutedBrush}">
-                                        <TextBlock.Text>
-                                            <MultiBinding StringFormat="{}{0}  ·  {1}">
-                                                <Binding Path="Address" />
-                                                <Binding Path="Model" TargetNullValue="AirPlay" />
-                                            </MultiBinding>
-                                        </TextBlock.Text>
-                                    </TextBlock>
-                                </StackPanel>
+                                <TextBlock Text="{Binding DisplayName}"
+                                           TextTrimming="CharacterEllipsis"
+                                           TextWrapping="NoWrap">
+                                    <TextBlock.ToolTip>
+                                        <MultiBinding StringFormat="{}{0}  ·  {1}">
+                                            <Binding Path="Address" />
+                                            <Binding Path="Model" TargetNullValue="AirPlay" />
+                                        </MultiBinding>
+                                    </TextBlock.ToolTip>
+                                </TextBlock>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                     </ComboBox>
@@ -127,7 +150,29 @@
                           ItemContainerStyle="{StaticResource ModernComboBoxItem}"
                           ItemsSource="{Binding CaptureDevices}"
                           SelectedItem="{Binding SelectedCaptureDevice, Mode=TwoWay}"
+                          IsEnabled="{Binding IsStreaming, Converter={StaticResource Not}}">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}"
+                                       TextTrimming="CharacterEllipsis"
+                                       TextWrapping="NoWrap" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <TextBlock Margin="0,14,0,6" Text="{Binding RoutingCaption}" Style="{StaticResource CaptionText}" />
+                <ComboBox Style="{StaticResource ModernComboBox}"
+                          ItemContainerStyle="{StaticResource ModernComboBoxItem}"
+                          ItemsSource="{Binding RoutingOptions}"
+                          SelectedValue="{Binding RoutingMode, Mode=TwoWay}"
+                          SelectedValuePath="Value"
+                          DisplayMemberPath="Label"
                           IsEnabled="{Binding IsStreaming, Converter={StaticResource Not}}" />
+                <TextBlock Margin="0,4,0,0"
+                           FontSize="11"
+                           TextWrapping="Wrap"
+                           Foreground="{StaticResource MutedBrush}"
+                           Text="{Binding RoutingHint}" />
             </StackPanel>
         </Border>
 
@@ -183,6 +228,10 @@
                         SmallChange="1"
                         LargeChange="10"
                         Value="{Binding VolumePercent, Mode=TwoWay}" />
+                <TextBlock Margin="0,4,0,0"
+                           FontSize="11"
+                           Foreground="{StaticResource MutedBrush}"
+                           Text="{Binding VolumeHint}" />
 
                 <CheckBox Margin="0,18,0,0"
                           Foreground="{StaticResource TextBrush}"
@@ -196,13 +245,25 @@
 
                 <CheckBox Margin="0,14,0,0"
                           Foreground="{StaticResource TextBrush}"
-                          IsEnabled="{Binding IsStreaming, Converter={StaticResource Not}}"
+                          IsEnabled="{Binding IsMuteSpeakersEnabled}"
                           IsChecked="{Binding MuteLocalSpeakers, Mode=TwoWay}"
                           Content="{Binding MuteSpeakersText}" />
                 <TextBlock Margin="24,2,0,0"
                            FontSize="11"
+                           TextWrapping="Wrap"
                            Foreground="{StaticResource MutedBrush}"
                            Text="{Binding MuteSpeakersHint}" />
+
+                <CheckBox Margin="0,14,0,0"
+                          Foreground="{StaticResource TextBrush}"
+                          IsEnabled="{Binding IsFollowWindowsVolumeEnabled}"
+                          IsChecked="{Binding FollowWindowsVolume, Mode=TwoWay}"
+                          Content="{Binding FollowWindowsVolumeText}" />
+                <TextBlock Margin="24,2,0,0"
+                           FontSize="11"
+                           TextWrapping="Wrap"
+                           Foreground="{StaticResource MutedBrush}"
+                           Text="{Binding FollowWindowsVolumeHint}" />
 
                 <CheckBox Margin="0,14,0,0"
                           Foreground="{StaticResource TextBrush}"
@@ -213,15 +274,6 @@
                           Foreground="{StaticResource TextBrush}"
                           IsChecked="{Binding StartMinimized, Mode=TwoWay}"
                           Content="{Binding StartMinimizedText}" />
-
-                <TextBlock Margin="0,18,0,6" Text="{Binding LanguageCaption}" Style="{StaticResource CaptionText}" />
-                <ComboBox Style="{StaticResource ModernComboBox}"
-                          ItemContainerStyle="{StaticResource ModernComboBoxItem}"
-                          ItemsSource="{Binding LanguageOptions}"
-                          SelectedValue="{Binding Language, Mode=TwoWay}"
-                          SelectedValuePath="Value"
-                          DisplayMemberPath="Label"
-                          IsEnabled="{Binding IsStreaming, Converter={StaticResource Not}}" />
             </StackPanel>
         </Border>
 

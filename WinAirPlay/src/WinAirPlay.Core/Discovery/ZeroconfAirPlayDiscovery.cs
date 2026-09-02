@@ -114,7 +114,9 @@ public sealed class ZeroconfAirPlayDiscovery : IAirPlayDiscovery
         {
             var kind = AirPlayServiceTypes.Classify(service.ServiceName)
                        ?? AirPlayServiceTypes.Classify(key)
-                       ?? AirPlayServiceTypes.Classify(service.Name);
+                       ?? AirPlayServiceTypes.Classify(service.Name)
+                       ?? AirPlayServiceTypes.ClassifyFromFqdn(key)
+                       ?? AirPlayServiceTypes.ClassifyFromFqdn(service.Name);
 
             if (kind is null)
             {

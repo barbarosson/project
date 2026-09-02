@@ -75,6 +75,10 @@ internal sealed class FakeStreamController : IStreamController
         return Task.CompletedTask;
     }
 
+    public void RestoreLocalSpeakers()
+    {
+    }
+
     public Task SetVolumeAsync(double decibels)
     {
         VolumeUpdates.Add(decibels);

@@ -1,4 +1,5 @@
 using WinAirPlay.App.Services;
+using WinAirPlay.Core.Audio;
 using WinAirPlay.Core.Raop;
 using Xunit;
 
@@ -115,6 +116,26 @@ public class JsonSettingsStoreTests : IDisposable
         Assert.Equal(RaopStreamCodec.RawPcm, loaded.Codec);
         Assert.True(loaded.StartMinimized);
         Assert.True(loaded.MuteLocalSpeakers);
+        Assert.Equal(AudioRoutingMode.Auto, loaded.RoutingMode);
+        Assert.True(loaded.FollowWindowsVolume);
+    }
+
+    [Fact]
+    public void RoutingSettingsSurviveARoundTrip()
+    {
+        var store = new JsonSettingsStore(_path);
+        store.Save(new AppSettings
+        {
+            RoutingMode = AudioRoutingMode.VirtualCable,
+            FollowWindowsVolume = false,
+            PreferredVirtualDeviceId = "cable-id",
+        });
+
+        var loaded = store.Load();
+
+        Assert.Equal(AudioRoutingMode.VirtualCable, loaded.RoutingMode);
+        Assert.False(loaded.FollowWindowsVolume);
+        Assert.Equal("cable-id", loaded.PreferredVirtualDeviceId);
     }
 
     [Fact]

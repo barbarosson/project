@@ -17,7 +17,7 @@ namespace WinAirPlay.App.ViewModels;
 
 public sealed class MainViewModel : ObservableObject
 {
-    private static readonly TimeSpan ScanDuration = TimeSpan.FromSeconds(8);
+    private static readonly TimeSpan ScanDuration = TimeSpan.FromSeconds(15);
 
     private readonly IStreamController _controller;
     private readonly ISettingsStore _settingsStore;
@@ -90,12 +90,6 @@ public sealed class MainViewModel : ObservableObject
 
     public ICommand DecreaseLatencyCommand { get; }
 
-    public IReadOnlyList<LanguageOption> LanguageOptions { get; } =
-    [
-        new(AppLanguage.Tr, "Türkçe"),
-        new(AppLanguage.En, "English"),
-    ];
-
     public AppLanguage Language
     {
         get => _settings.Language;
@@ -109,7 +103,33 @@ public sealed class MainViewModel : ObservableObject
             _settings.Language = value;
             _localization.Language = value;
             OnPropertyChanged();
+            OnPropertyChanged(nameof(IsTurkish));
+            OnPropertyChanged(nameof(IsEnglish));
             PersistSettings();
+        }
+    }
+
+    public bool IsTurkish
+    {
+        get => Language == AppLanguage.Tr;
+        set
+        {
+            if (value)
+            {
+                Language = AppLanguage.Tr;
+            }
+        }
+    }
+
+    public bool IsEnglish
+    {
+        get => Language == AppLanguage.En;
+        set
+        {
+            if (value)
+            {
+                Language = AppLanguage.En;
+            }
         }
     }
 
@@ -127,9 +147,12 @@ public sealed class MainViewModel : ObservableObject
     public string AlacEncodingText => _localization.Get(LocKeys.AlacEncoding);
     public string MuteSpeakersText => _localization.Get(LocKeys.MuteSpeakers);
     public string MuteSpeakersHint => _localization.Get(LocKeys.MuteSpeakersHint);
+    public string RoutingCaption => _localization.Get(LocKeys.RoutingCaption);
+    public string FollowWindowsVolumeText => _localization.Get(LocKeys.FollowWindowsVolume);
+    public string FollowWindowsVolumeHint => _localization.Get(LocKeys.FollowWindowsVolumeHint);
+    public string VolumeHint => _localization.Get(LocKeys.VolumeHint);
     public string AutoConnectText => _localization.Get(LocKeys.AutoConnect);
     public string StartMinimizedText => _localization.Get(LocKeys.StartMinimized);
-    public string LanguageCaption => _localization.Get(LocKeys.Language);
     public string NoDevicesText => _localization.Get(LocKeys.NoDevices);
 
     public System.Windows.Media.ImageSource AppLogo => Branding.AppBranding.GetLogo(48);
@@ -159,7 +182,13 @@ public sealed class MainViewModel : ObservableObject
 
             // A null id means "whatever Windows is playing through right now".
             _settings.CaptureDeviceId = value is null || value.IsDefault ? null : value.Id;
+            if (value is not null && VirtualAudioDeviceCatalog.IsVirtualRenderDevice(value.Name))
+            {
+                _settings.PreferredVirtualDeviceId = value.Id;
+            }
+
             PersistSettings();
+            NotifyRoutingState();
         }
     }
 
@@ -185,6 +214,8 @@ public sealed class MainViewModel : ObservableObject
             OnPropertyChanged(nameof(CanDisconnect));
             OnPropertyChanged(nameof(ConnectionButtonText));
             OnPropertyChanged(nameof(StateText));
+            OnPropertyChanged(nameof(IsMuteSpeakersEnabled));
+            OnPropertyChanged(nameof(IsFollowWindowsVolumeEnabled));
             RaiseCommandStates();
         }
     }
@@ -340,6 +371,79 @@ public sealed class MainViewModel : ObservableObject
         }
     }
 
+    public AudioRoutingMode RoutingMode
+    {
+        get => _settings.RoutingMode;
+        set
+        {
+            if (_settings.RoutingMode == value)
+            {
+                return;
+            }
+
+            _settings.RoutingMode = value;
+            OnPropertyChanged();
+            NotifyRoutingState();
+            PersistSettings();
+        }
+    }
+
+    public bool FollowWindowsVolume
+    {
+        get => _settings.FollowWindowsVolume;
+        set
+        {
+            if (_settings.FollowWindowsVolume == value)
+            {
+                return;
+            }
+
+            _settings.FollowWindowsVolume = value;
+            OnPropertyChanged();
+            PersistSettings();
+        }
+    }
+
+    public IReadOnlyList<RoutingModeOption> RoutingOptions =>
+    [
+        new(AudioRoutingMode.Auto, _localization.Get(LocKeys.RoutingAuto)),
+        new(AudioRoutingMode.VirtualCable, _localization.Get(LocKeys.RoutingVirtual)),
+        new(AudioRoutingMode.MuteSpeakers, _localization.Get(LocKeys.RoutingMute)),
+    ];
+
+    public AudioDeviceInfo? DetectedVirtualDevice =>
+        VirtualAudioDeviceCatalog.Pick(CaptureDevices, _settings.PreferredVirtualDeviceId);
+
+    public bool HasVirtualAudioDevice => DetectedVirtualDevice is not null;
+
+    public bool IsMuteSpeakersEnabled =>
+        !IsStreaming && (RoutingMode == AudioRoutingMode.MuteSpeakers || !HasVirtualAudioDevice);
+
+    /// <summary>
+    /// Redirected virtual-cable capture already includes endpoint volume; the checkbox is inherent.
+    /// </summary>
+    public bool IsFollowWindowsVolumeEnabled =>
+        !IsStreaming && (RoutingMode == AudioRoutingMode.MuteSpeakers || !HasVirtualAudioDevice);
+
+    public string RoutingHint
+    {
+        get
+        {
+            var virtualDevice = DetectedVirtualDevice;
+            if (virtualDevice is not null && RoutingMode is AudioRoutingMode.Auto or AudioRoutingMode.VirtualCable)
+            {
+                return _localization.Format(LocKeys.RoutingHintRedirect, virtualDevice.Name);
+            }
+
+            if (RoutingMode == AudioRoutingMode.VirtualCable && virtualDevice is null)
+            {
+                return _localization.Get(LocKeys.RoutingHintNoCable);
+            }
+
+            return _localization.Get(LocKeys.RoutingHintMute);
+        }
+    }
+
     public string CodecHint => UseAlac
         ? _localization.Get(LocKeys.CodecAlacHint)
         : _localization.Get(LocKeys.CodecPcmHint);
@@ -489,7 +593,10 @@ public sealed class MainViewModel : ObservableObject
             _settings.Codec,
             _settings.LatencyMs,
             _settings.VolumeDb,
-            MuteLocalSpeakers: _settings.MuteLocalSpeakers);
+            MuteLocalSpeakers: _settings.MuteLocalSpeakers,
+            RoutingMode: _settings.RoutingMode,
+            FollowWindowsVolume: _settings.FollowWindowsVolume,
+            PreferredVirtualDeviceId: _settings.PreferredVirtualDeviceId);
 
         await _controller.ConnectAsync(device, settings).ConfigureAwait(true);
     }
@@ -531,6 +638,7 @@ public sealed class MainViewModel : ObservableObject
             ?? CaptureDevices.FirstOrDefault(d => d.IsDefault)
             ?? CaptureDevices.FirstOrDefault();
         _suppressSettingsWrite = false;
+        NotifyRoutingState();
     }
 
     private void RememberDevice(AirPlayDevice? device)
@@ -603,6 +711,15 @@ public sealed class MainViewModel : ObservableObject
         ToggleConnectionCommand.RaiseCanExecuteChanged();
     }
 
+    private void NotifyRoutingState()
+    {
+        OnPropertyChanged(nameof(DetectedVirtualDevice));
+        OnPropertyChanged(nameof(HasVirtualAudioDevice));
+        OnPropertyChanged(nameof(IsMuteSpeakersEnabled));
+        OnPropertyChanged(nameof(IsFollowWindowsVolumeEnabled));
+        OnPropertyChanged(nameof(RoutingHint));
+    }
+
     private void NotifyLanguageChanged()
     {
         OnPropertyChanged(nameof(ConnectionButtonText));
@@ -624,9 +741,14 @@ public sealed class MainViewModel : ObservableObject
         OnPropertyChanged(nameof(AlacEncodingText));
         OnPropertyChanged(nameof(MuteSpeakersText));
         OnPropertyChanged(nameof(MuteSpeakersHint));
+        OnPropertyChanged(nameof(RoutingCaption));
+        OnPropertyChanged(nameof(RoutingOptions));
+        OnPropertyChanged(nameof(RoutingHint));
+        OnPropertyChanged(nameof(FollowWindowsVolumeText));
+        OnPropertyChanged(nameof(FollowWindowsVolumeHint));
+        OnPropertyChanged(nameof(VolumeHint));
         OnPropertyChanged(nameof(AutoConnectText));
         OnPropertyChanged(nameof(StartMinimizedText));
-        OnPropertyChanged(nameof(LanguageCaption));
         OnPropertyChanged(nameof(NoDevicesText));
 
         if (State == StreamState.Streaming)

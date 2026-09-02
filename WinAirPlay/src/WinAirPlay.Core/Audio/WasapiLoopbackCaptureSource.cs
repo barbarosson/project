@@ -22,10 +22,12 @@ public sealed class WasapiLoopbackCaptureSource : IAudioCaptureSource
     private IWaveProvider? _converted;
     private Thread? _pumpThread;
     private CancellationTokenSource? _cts;
+    private AudioEndpointVolume? _endpointVolume;
 
     private long _emittedBytes;
     private long _sequence;
     private long _lastDataTicks;
+    private float _endpointGain = 1f;
     private bool _disposed;
 
     public WasapiLoopbackCaptureSource() : this(new LoopbackCaptureOptions())
@@ -96,6 +98,7 @@ public sealed class WasapiLoopbackCaptureSource : IAudioCaptureSource
             _sequence = 0;
             Volatile.Write(ref _lastDataTicks, DateTime.UtcNow.Ticks);
             _sessionClock.Restart();
+            AttachEndpointVolume();
 
             _cts = new CancellationTokenSource();
             var token = _cts.Token;
@@ -318,13 +321,62 @@ public sealed class WasapiLoopbackCaptureSource : IAudioCaptureSource
 
     private void Emit(byte[] block)
     {
+        if (_options.ApplyEndpointVolume)
+        {
+            PcmVolume.ApplyScalar(block, Volatile.Read(ref _endpointGain));
+        }
+
         var position = Format.DurationOf(_emittedBytes);
         _emittedBytes += block.Length;
         FrameCaptured?.Invoke(this, new AudioFrameEventArgs(block, Format, _sequence++, position));
     }
 
+    private void AttachEndpointVolume()
+    {
+        _endpointGain = 1f;
+
+        if (!_options.ApplyEndpointVolume || _device is null)
+        {
+            return;
+        }
+
+        try
+        {
+            _endpointVolume = _device.AudioEndpointVolume;
+            RefreshEndpointGain(_endpointVolume.MasterVolumeLevelScalar, _endpointVolume.Mute);
+            _endpointVolume.OnVolumeNotification += OnEndpointVolumeNotification;
+        }
+        catch (Exception)
+        {
+            _endpointVolume = null;
+            _endpointGain = 1f;
+        }
+    }
+
+    private void OnEndpointVolumeNotification(AudioVolumeNotificationData data) =>
+        RefreshEndpointGain(data.MasterVolume, data.Muted);
+
+    private void RefreshEndpointGain(float scalar, bool muted)
+    {
+        if (muted && !_options.IgnoreEndpointMute)
+        {
+            Volatile.Write(ref _endpointGain, 0f);
+            return;
+        }
+
+        Volatile.Write(ref _endpointGain, Math.Clamp(scalar, 0f, 1f));
+    }
+
     private void ReleaseCaptureResources()
     {
+        if (_endpointVolume is not null)
+        {
+            _endpointVolume.OnVolumeNotification -= OnEndpointVolumeNotification;
+            _endpointVolume = null;
+        }
+
+        _endpointGain = 1f;
+
         if (_capture is not null)
         {
             _capture.DataAvailable -= OnDataAvailable;

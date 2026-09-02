@@ -488,14 +488,32 @@ public static class Program
                 streamOptions.LatencySamples = latencyMs * session.Audio.SampleRate / 1000;
             }
 
+            using var router = new AudioOutputRouter();
+            var plan = router.CreatePlan(new AudioRoutingRequest(
+                AudioRoutingMode.Auto,
+                options.DeviceId,
+                PreferredVirtualDeviceId: null,
+                MuteLocalSpeakers: !options.KeepLocalSpeakers,
+                FollowWindowsVolume: true));
+
+            if (plan.Kind == AudioRoutingKind.Redirect && !router.Apply(plan))
+            {
+                Console.WriteLine("Varsayılan çıkış sanal kabloya alınamadı; uyumlu moda geçildi.");
+                plan = options.KeepLocalSpeakers
+                    ? AudioOutputPlan.Passthrough(options.DeviceId, followWindowsVolume: true)
+                    : AudioOutputPlan.Mute(options.DeviceId, followWindowsVolume: true);
+            }
+
             var captureOptions = new LoopbackCaptureOptions
             {
-                DeviceId = options.DeviceId,
+                DeviceId = plan.CaptureDeviceId,
                 TargetFormat = AudioFormat.AirPlay,
                 SampleFramesPerBlock = session.Audio.FramesPerPacket,
                 // A live stream must never stall, so gaps are filled with silence.
                 EmitSilenceWhenIdle = true,
-                IndependentOfEndpointVolume = !options.KeepLocalSpeakers,
+                IndependentOfEndpointVolume = plan.IndependentOfEndpointVolume,
+                ApplyEndpointVolume = plan.ApplyEndpointVolume,
+                IgnoreEndpointMute = plan.MuteLocalSpeakers,
             };
 
             using var source = new WasapiLoopbackCaptureSource(captureOptions);
@@ -514,12 +532,16 @@ public static class Program
             keepAlive.Start();
             pipeline.Start();
 
-            if (!options.KeepLocalSpeakers)
+            if (plan.Kind == AudioRoutingKind.Redirect)
+            {
+                Console.WriteLine($"Varsayılan çıkış {plan.VirtualDeviceName}; hoparlör açık, Windows sesi HomePod'a gider.");
+            }
+            else if (plan.MuteLocalSpeakers)
             {
                 if (source.CapturesBeforeDeviceVolume)
                 {
-                    silencer.Silence(options.DeviceId);
-                    Console.WriteLine("Hoparlör susturuldu; ses yalnızca AirPlay cihazından gelir.");
+                    silencer.Silence(plan.CaptureDeviceId);
+                    Console.WriteLine("Hoparlör susturuldu (uyumlu mod); Windows sesi HomePod'a uygulanır.");
                 }
                 else
                 {
@@ -557,6 +579,7 @@ public static class Program
 
             pipeline.Stop();
             silencer.Restore();
+            router.Restore();
 
             if (failure is not null)
             {

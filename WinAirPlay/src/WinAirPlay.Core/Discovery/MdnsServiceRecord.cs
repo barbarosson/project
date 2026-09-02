@@ -36,6 +36,26 @@ public static class AirPlayServiceTypes
             ? AirPlayServiceKind.AirPlay
             : null;
     }
+
+    /// <summary>Matches fully qualified instance names such as <c>AABB@Room._raop._tcp.local</c>.</summary>
+    public static AirPlayServiceKind? ClassifyFromFqdn(string? fqdn)
+    {
+        if (string.IsNullOrWhiteSpace(fqdn))
+        {
+            return null;
+        }
+
+        var normalized = fqdn.Trim().TrimEnd('.');
+
+        if (normalized.Contains("_raop._tcp.local", StringComparison.OrdinalIgnoreCase))
+        {
+            return AirPlayServiceKind.Raop;
+        }
+
+        return normalized.Contains("_airplay._tcp.local", StringComparison.OrdinalIgnoreCase)
+            ? AirPlayServiceKind.AirPlay
+            : null;
+    }
 }
 
 /// <summary>

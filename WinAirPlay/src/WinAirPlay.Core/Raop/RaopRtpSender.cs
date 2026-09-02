@@ -2,7 +2,6 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Net.Sockets;
 using System.Security.Cryptography;
-using System.Threading.Channels;
 using WinAirPlay.Core.Audio;
 
 namespace WinAirPlay.Core.Raop;
@@ -50,14 +49,12 @@ public sealed class RaopRtpSender : IAudioSink
     private readonly uint _ssrc;
     private readonly int _framesPerPacket;
     private readonly object _sendLock = new();
-    private readonly Channel<byte[]> _sendQueue = Channel.CreateBounded<byte[]>(new BoundedChannelOptions(SendQueueDepth)
-    {
-        FullMode = BoundedChannelFullMode.DropOldest,
-        SingleReader = true,
-        SingleWriter = false,
-    });
+    private readonly object _queueLock = new();
+    private readonly Queue<byte[]> _sendQueue = new();
+    private readonly AutoResetEvent _dataReady = new(false);
 
     private Thread? _sendThread;
+    private volatile bool _sendCompleted;
     private Timer? _syncTimer;
     private ushort _sequence;
     private long _rtpTimestamp;
@@ -155,39 +152,79 @@ public sealed class RaopRtpSender : IAudioSink
                 $"Blok {PayloadLength} bayt olmalı, {pcm.Length} bayt geldi.", nameof(pcm));
         }
 
+        // ArrayPool.Rent may return a buffer larger than requested. Only PayloadLength bytes are
+        // meaningful; SendLoop must slice or the encoder writes past _encoded and kills the process.
         var block = ArrayPool<byte>.Shared.Rent(PayloadLength);
-        pcm.CopyTo(block);
-        _sendQueue.Writer.TryWrite(block);
+        pcm.CopyTo(block.AsSpan(0, PayloadLength));
+
+        lock (_queueLock)
+        {
+            if (_disposed || _sendCompleted)
+            {
+                ArrayPool<byte>.Shared.Return(block);
+                return;
+            }
+
+            _sendQueue.Enqueue(block);
+
+            while (_sendQueue.Count > SendQueueDepth)
+            {
+                ArrayPool<byte>.Shared.Return(_sendQueue.Dequeue());
+            }
+        }
+
+        _dataReady.Set();
     }
 
     private void SendLoop()
     {
         try
         {
-            while (_sendQueue.Reader.WaitToReadAsync().AsTask().GetAwaiter().GetResult())
+            while (true)
             {
-                while (_sendQueue.Reader.TryRead(out var block))
-                {
-                    if (_disposed)
-                    {
-                        ArrayPool<byte>.Shared.Return(block);
-                        continue;
-                    }
+                byte[]? block = null;
 
-                    try
+                lock (_queueLock)
+                {
+                    if (_sendQueue.Count > 0)
                     {
-                        SendBlock(block);
+                        block = _sendQueue.Dequeue();
                     }
-                    finally
+                    else if (_sendCompleted || _disposed)
                     {
-                        ArrayPool<byte>.Shared.Return(block);
+                        return;
                     }
+                }
+
+                if (block is null)
+                {
+                    _dataReady.WaitOne();
+                    continue;
+                }
+
+                try
+                {
+                    if (!_disposed)
+                    {
+                        SendBlock(block.AsSpan(0, PayloadLength));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LastError = ex;
+                    RaiseSendFailed(ex);
+                    return;
+                }
+                finally
+                {
+                    ArrayPool<byte>.Shared.Return(block);
                 }
             }
         }
-        catch (ChannelClosedException)
+        catch (Exception ex)
         {
-            // Normal shutdown.
+            LastError = ex;
+            RaiseSendFailed(ex);
         }
     }
 
@@ -226,7 +263,7 @@ public sealed class RaopRtpSender : IAudioSink
             catch (Exception ex)
             {
                 LastError = ex;
-                SendFailed?.Invoke(this, ex);
+                RaiseSendFailed(ex);
                 return;
             }
 
@@ -260,7 +297,19 @@ public sealed class RaopRtpSender : IAudioSink
         catch (Exception ex)
         {
             LastError = ex;
-            SendFailed?.Invoke(this, ex);
+            RaiseSendFailed(ex);
+        }
+    }
+
+    private void RaiseSendFailed(Exception exception)
+    {
+        try
+        {
+            SendFailed?.Invoke(this, exception);
+        }
+        catch (Exception)
+        {
+            // A subscriber must never take the RTP thread down with it.
         }
     }
 
@@ -274,12 +323,27 @@ public sealed class RaopRtpSender : IAudioSink
         }
 
         _disposed = true;
-        _sendQueue.Writer.TryComplete();
+        _sendCompleted = true;
+        _dataReady.Set();
         _syncTimer?.Dispose();
 
+        var sendThreadFinished = true;
         if (_sendThread is { IsAlive: true } thread)
         {
-            thread.Join(TimeSpan.FromSeconds(2));
+            sendThreadFinished = thread.Join(TimeSpan.FromSeconds(2));
+        }
+
+        if (sendThreadFinished)
+        {
+            lock (_queueLock)
+            {
+                while (_sendQueue.Count > 0)
+                {
+                    ArrayPool<byte>.Shared.Return(_sendQueue.Dequeue());
+                }
+            }
+
+            _dataReady.Dispose();
         }
 
         _cipher?.Dispose();

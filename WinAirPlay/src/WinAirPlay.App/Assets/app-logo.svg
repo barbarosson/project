@@ -9,10 +9,29 @@
 
   <rect x="16" y="16" width="224" height="224" rx="44" fill="url(#bg)" stroke="#4C8DFF" stroke-opacity="0.4" stroke-width="4"/>
 
-  <rect x="64" y="108" width="34" height="52" rx="5" fill="#3DD68C"/>
-  <path d="M98 108 L138 88 L138 180 L98 160 Z" fill="#3DD68C"/>
+  <!-- Round skull -->
+  <ellipse cx="108" cy="118" rx="44" ry="54" fill="#3DD68C"/>
+  <!-- Ear -->
+  <ellipse cx="80" cy="124" rx="12" ry="17" fill="#3DD68C"/>
+  <!-- Face: forehead, nose, lips, chin -->
+  <path fill="#3DD68C"
+        d="M123 77 C138 77 143 87 143 97
+           C143 105 148 110 154 115
+           C161 118 161 123 154 125
+           C148 128 156 131 156 136
+           C148 141 143 148 138 159
+           C123 169 102 164 92 148
+           C97 102 107 77 123 77 Z"/>
+  <!-- Neck -->
+  <path fill="#3DD68C"
+        d="M92 154 C87 174 87 189 92 195
+           C107 200 123 195 128 184
+           C128 169 123 159 113 154
+           C102 148 97 148 92 154 Z"/>
+  <ellipse cx="124" cy="104" rx="7" ry="6" fill="#14161A"/>
 
-  <path d="M138 108 A40 68 0 0 1 138 172" stroke="#3DD68C" stroke-width="14" stroke-linecap="round" fill="none"/>
-  <path d="M152 92 A56 84 0 0 1 152 188" stroke="#3DD68C" stroke-width="14" stroke-linecap="round" fill="none" opacity="0.85"/>
-  <path d="M166 76 A72 100 0 0 1 166 204" stroke="#3DD68C" stroke-width="14" stroke-linecap="round" fill="none" opacity="0.65"/>
+  <!-- Sound waves from mouth -->
+  <path d="M154 116 A30 48 0 0 1 154 156" stroke="#3DD68C" stroke-width="13" stroke-linecap="round" fill="none"/>
+  <path d="M168 102 A44 64 0 0 1 168 170" stroke="#3DD68C" stroke-width="13" stroke-linecap="round" fill="none" opacity="0.82"/>
+  <path d="M182 88 A58 80 0 0 1 182 184" stroke="#3DD68C" stroke-width="13" stroke-linecap="round" fill="none" opacity="0.62"/>
 </svg>

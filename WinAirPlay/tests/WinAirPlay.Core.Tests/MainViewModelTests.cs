@@ -83,6 +83,8 @@ public class MainViewModelTests
         Assert.Equal(-6, controller.LastSettings?.VolumeDb);
         Assert.Equal(RaopStreamCodec.RawPcm, controller.LastSettings?.Codec);
         Assert.True(controller.LastSettings?.MuteLocalSpeakers);
+        Assert.Equal(AudioRoutingMode.Auto, controller.LastSettings?.RoutingMode);
+        Assert.True(controller.LastSettings?.FollowWindowsVolume);
     }
 
     [Fact]
@@ -148,6 +150,27 @@ public class MainViewModelTests
         Assert.Equal("Connect", viewModel.ConnectionButtonText);
         Assert.Equal("Scan", viewModel.ScanButtonText);
         Assert.Equal("Not connected", viewModel.StateText);
+        Assert.True(viewModel.IsEnglish);
+        Assert.False(viewModel.IsTurkish);
+    }
+
+    [Fact]
+    public void LanguageChipTogglesBetweenTurkishAndEnglish()
+    {
+        var (viewModel, _, store) = Build();
+
+        Assert.True(viewModel.IsTurkish);
+
+        viewModel.IsEnglish = true;
+
+        Assert.Equal(AppLanguage.En, viewModel.Language);
+        Assert.Equal(AppLanguage.En, store.Current.Language);
+        Assert.True(viewModel.IsEnglish);
+
+        viewModel.IsTurkish = true;
+
+        Assert.Equal(AppLanguage.Tr, viewModel.Language);
+        Assert.True(viewModel.IsTurkish);
     }
 
     [Fact]
@@ -231,6 +254,37 @@ public class MainViewModelTests
         Assert.True(store.Current.AutoConnect);
         Assert.True(store.Current.StartMinimized);
         Assert.False(store.Current.MuteLocalSpeakers);
+    }
+
+    [Fact]
+    public async Task AutoRoutingDetectsAVirtualCableAndExplainsRedirect()
+    {
+        var controller = new FakeStreamController();
+        var store = new InMemorySettingsStore();
+        var enumerator = new FakeAudioDeviceEnumerator();
+        enumerator.Devices.Add(new AudioDeviceInfo("spk", "Speakers", true));
+        enumerator.Devices.Add(new AudioDeviceInfo("cable", "CABLE Input", false));
+        var viewModel = new MainViewModel(
+            controller, store, enumerator, new ImmediateDispatcher(), new LocalizationService());
+
+        await viewModel.InitializeAsync();
+
+        Assert.True(viewModel.HasVirtualAudioDevice);
+        Assert.Contains("CABLE Input", viewModel.RoutingHint);
+        Assert.False(viewModel.IsMuteSpeakersEnabled);
+    }
+
+    [Fact]
+    public void RoutingModeIsPersisted()
+    {
+        var (viewModel, _, store) = Build();
+
+        viewModel.RoutingMode = AudioRoutingMode.MuteSpeakers;
+        viewModel.FollowWindowsVolume = false;
+
+        Assert.Equal(AudioRoutingMode.MuteSpeakers, store.Current.RoutingMode);
+        Assert.False(store.Current.FollowWindowsVolume);
+        Assert.Contains("sustur", viewModel.RoutingHint, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
