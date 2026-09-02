@@ -21,14 +21,23 @@ The app stores preferences locally at:
 This may include:
 
 - Last selected receiver name and identifier
-- Audio latency, volume, and codec preferences
-- UI language and startup options
+- Capture device, routing mode, latency, volume, and codec preferences
+- Startup options (reconnect on launch, start minimized)
 
 If the app crashes, a diagnostic log may be appended to:
 
 `%APPDATA%\WinAirPlay\error.log`
 
 These files remain on your computer. You can delete the `WinAirPlay` folder under `%APPDATA%` at any time.
+
+## Audio routing on this PC
+
+While streaming, the app may:
+
+- Temporarily switch the Windows default playback device to a virtual cable (if one is installed), or
+- Mute the PC speakers in compatibility mode
+
+The previous default device and mute state are restored when you disconnect, quit, or if the app crashes. The app does not keep a copy of your audio after the stream ends.
 
 ## Network use
 
@@ -53,6 +62,6 @@ We may update this policy. The “Last updated” date will change when we do.
 
 ## Contact
 
-Replace this section with your support email or website before publishing to the Microsoft Store.
+Use the support email you register with the Microsoft Store listing.
 
-**Support:** support@example.com
+Publisher repository: [https://github.com/barbarosson/project](https://github.com/barbarosson/project)

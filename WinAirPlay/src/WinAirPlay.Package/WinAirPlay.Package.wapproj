@@ -33,7 +33,7 @@
     <ProjectGuid>{7F8E9D0C-1B2A-4567-8901-ABCDEF012345}</ProjectGuid>
     <TargetPlatformVersion>10.0.22621.0</TargetPlatformVersion>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-    <DefaultLanguage>tr-TR</DefaultLanguage>
+    <DefaultLanguage>en-US</DefaultLanguage>
     <AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
     <PackageCertificateKeyFile>WinAirPlay.Package_TemporaryKey.pfx</PackageCertificateKeyFile>
     <PackageCertificatePassword>WinAirPlay-Dev</PackageCertificatePassword>
@@ -41,6 +41,10 @@
     <AppxPackageDir>$(SolutionDir)AppPackages\</AppxPackageDir>
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Platform)' == 'x64'">
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
@@ -54,6 +58,11 @@
     <Content Include="Images\Square150x150Logo.png" />
     <Content Include="Images\Square44x44Logo.png" />
     <Content Include="Images\Wide310x150Logo.png" />
+    <Content Include="Images\Square310x310Logo.png" />
+    <Content Include="Images\StoreListingLogo300.png" />
+    <Content Include="..\..\THIRD_PARTY_NOTICES.txt">
+      <Link>THIRD_PARTY_NOTICES.txt</Link>
+    </Content>
   </ItemGroup>
 
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />

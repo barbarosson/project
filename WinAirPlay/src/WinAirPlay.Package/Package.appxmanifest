@@ -6,8 +6,8 @@
   IgnorableNamespaces="uap rescap">
 
   <!--
-    Partner Center'da uygulamayı ilişkilendirdiğinizde Name ve Publisher otomatik güncellenir.
-    Yerel derleme için geçici sertifika kullanılır (WinAirPlay.Package_TemporaryKey.pfx).
+    Name and Publisher are replaced when you Associate the packaging project with
+    Partner Center. Local sideload uses WinAirPlay.Package_TemporaryKey.pfx.
   -->
   <Identity
     Name="WinAirPlay.AudioStreamer"
@@ -28,7 +28,6 @@
   </Dependencies>
 
   <Resources>
-    <Resource Language="tr-TR" />
     <Resource Language="en-US" />
   </Resources>
 
@@ -39,19 +38,21 @@
       EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="WinAirPlay"
-        Description="Windows sistem sesini yerel ağdaki AirPlay uyumlu hoparlörlere aktarır. Apple ile resmi bir bağlantısı yoktur."
+        Description="Streams Windows system audio to AirPlay-compatible speakers on your local network. Not affiliated with Apple Inc."
         BackgroundColor="#14161A"
         Square150x150Logo="Images\Square150x150Logo.png"
         Square44x44Logo="Images\Square44x44Logo.png">
-        <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png" />
+        <uap:DefaultTile
+          Wide310x150Logo="Images\Wide310x150Logo.png"
+          Square310x310Logo="Images\Square310x310Logo.png" />
       </uap:VisualElements>
     </Application>
   </Applications>
 
   <Capabilities>
-    <!-- mDNS keşfi, RTSP el sıkışması ve RTP/UDP ses akışı -->
+    <!-- mDNS discovery, RTSP handshake, and RTP/UDP audio on the LAN -->
     <uap:Capability Name="privateNetworkClientServer" />
-    <!-- WPF masaüstü uygulaması; WASAPI loopback ve sistem tepsisi -->
+    <!-- WPF desktop app: WASAPI loopback, system tray, default-output switch -->
     <rescap:Capability Name="runFullTrust" />
   </Capabilities>
 </Package>

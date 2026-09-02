@@ -13,6 +13,8 @@ Directory.CreateDirectory(outputDirectory);
 SaveSquare(outputDirectory, "StoreLogo.png", 50);
 SaveSquare(outputDirectory, "Square44x44Logo.png", 44);
 SaveSquare(outputDirectory, "Square150x150Logo.png", 150);
+SaveSquare(outputDirectory, "Square310x310Logo.png", 310);
+SaveSquare(outputDirectory, "StoreListingLogo300.png", 300);
 SaveWide(outputDirectory, "Wide310x150Logo.png", 310, 150);
 
 Console.WriteLine($"Store assets written to {outputDirectory}");

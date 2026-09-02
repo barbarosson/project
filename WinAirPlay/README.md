@@ -180,9 +180,11 @@ dotnet test
 
 See `src/WinAirPlay.Package/` and `docs/STORE_PUBLISHING.md`.
 
+The Store package is English-only, `win-x64`, and self-contained (no separate .NET 8 Desktop Runtime on the PC).
+
 ```powershell
-# Generate logo PNGs and build the MSIX (Visual Studio MSIX workload required)
+# Logo PNGs (including 300×300 listing icon) and MSIX
 .\scripts\build-msix.ps1
 ```
 
-Minimum Windows version: **10.0.19041** (2004). Privacy policy: `docs/PRIVACY_POLICY.md`.
+Minimum Windows version: **10.0.19041** (2004). Privacy policy: `docs/PRIVACY_POLICY.md`. Host that file on HTTPS and paste the URL in Partner Center before submission.
