@@ -35,9 +35,6 @@ public partial class App : Application
 
         _localization = new LocalizationService();
 
-        var splash = new SplashWindow(_localization);
-        splash.Show();
-
         _controller = new StreamController(new ZeroconfAirPlayDiscovery(), _localization);
 
         var viewModel = new MainViewModel(
@@ -49,6 +46,12 @@ public partial class App : Application
 
         _window = new MainWindow(viewModel);
         _window.Icon = AppBranding.GetLogo(32);
+        // Splash must not become Application.MainWindow or the taskbar button
+        // belongs to a closed window and clicks no longer minimize.
+        MainWindow = _window;
+
+        var splash = new SplashWindow(_localization);
+        splash.Show();
         _tray = new TrayIconHost(_window, viewModel, _controller, _localization);
 
         Dispatcher.InvokeAsync(async () =>

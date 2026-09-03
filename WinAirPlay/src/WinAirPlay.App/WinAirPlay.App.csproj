@@ -12,6 +12,7 @@
     <!-- WPF resolves a specific culture for every binding; invariant mode makes that throw. -->
     <InvariantGlobalization>false</InvariantGlobalization>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon Condition="Exists('Assets\app.ico')">Assets\app.ico</ApplicationIcon>
     <Version>1.0.0</Version>
     <FileVersion>1.0.0.0</FileVersion>
     <!-- Restore RID assets so the WAP project can publish a self-contained Store package. -->

@@ -9,6 +9,8 @@
         MinHeight="480"
         Background="{StaticResource SurfaceBrush}"
         WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="True"
+        ResizeMode="CanResize"
         TextOptions.TextRenderingMode="ClearType">
 
     <Window.Resources>

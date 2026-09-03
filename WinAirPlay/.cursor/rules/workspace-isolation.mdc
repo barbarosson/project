@@ -1,0 +1,22 @@
+---
+description: This chat is WinAirPlay only — never touch PixReady files or GitHub.
+alwaysApply: true
+---
+
+# WinAirPlay isolation
+
+This workspace is **WinAirPlay** only.
+
+- Root: `C:\Cursor\WinAirPlay`
+- Do not edit `C:\Cursor\PixReady`
+- Do not push to `github.com/barbarosson/pixready`
+- Do not use `...\project\WinAirPlay` (moved here)
+
+Run:
+
+```powershell
+cd C:\Cursor\WinAirPlay
+dotnet run --project src\WinAirPlay.App\WinAirPlay.App.csproj
+```
+
+Privacy/GitHub for Store copy currently lives on `github.com/barbarosson/project` (WinAirPlay tree), not the PixReady Pages site.
