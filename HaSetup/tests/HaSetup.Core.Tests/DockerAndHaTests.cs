@@ -159,6 +159,26 @@ public class HaContainerServiceTests
     }
 
     [Fact]
+    public async Task CreateAndStartAsync_WhenPortBusy_ThrowsTurkishHint()
+    {
+        var runner = new FakeProcessRunner();
+        runner.Enqueue("docker", ["inspect"], new DockerCommandResult(1, string.Empty, "No such object"));
+        runner.Enqueue("docker", ["volume", "inspect"], new DockerCommandResult(0, "ok\n", string.Empty));
+        runner.Enqueue("docker", ["pull"], new DockerCommandResult(0, "Pulled\n", string.Empty));
+        runner.Enqueue(
+            "docker",
+            ["create"],
+            new DockerCommandResult(1, string.Empty, "Bind for 0.0.0.0:8123 failed: port is already allocated"));
+
+        var docker = new DockerClient(runner, () => "docker");
+        var service = new HaContainerService(docker);
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateAndStartAsync());
+        Assert.Contains("Port 8123", ex.Message, StringComparison.Ordinal);
+        Assert.Contains("kullanımda", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void Constants_MatchMvpContract()
     {
         Assert.Equal("homeassistant/home-assistant:stable", HaConstants.Image);

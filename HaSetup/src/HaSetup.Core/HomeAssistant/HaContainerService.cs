@@ -123,7 +123,16 @@ public sealed class HaContainerService : IHaContainerService
 
         if (!create.Succeeded)
         {
-            throw new InvalidOperationException($"Container oluşturulamadı: {create.CombinedOutput}");
+            var detail = create.CombinedOutput;
+            if (detail.Contains("port is already allocated", StringComparison.OrdinalIgnoreCase) ||
+                detail.Contains("address already in use", StringComparison.OrdinalIgnoreCase) ||
+                detail.Contains("Bind for", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException(
+                    $"Port {HaConstants.HostPort} kullanımda. Başka bir Home Assistant veya servisi durdurup yeniden deneyin.\n\n{detail}");
+            }
+
+            throw new InvalidOperationException($"Container oluşturulamadı: {detail}");
         }
 
         progress?.Report("Container başlatılıyor…");

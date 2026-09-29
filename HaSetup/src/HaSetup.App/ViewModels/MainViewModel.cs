@@ -23,10 +23,13 @@ public sealed class MainViewModel : ObservableObject
     private string _logText = string.Empty;
     private string _busyText = string.Empty;
     private bool _isBusy;
+    private bool _isRefreshing;
     private bool _dockerReady;
     private bool _containerExists;
     private bool _containerRunning;
     private bool _haReachable;
+    private DockerInstallState? _lastDockerState;
+    private bool _guidanceLoggedForCurrentState;
 
     public MainViewModel(
         IDockerClient? docker = null,
@@ -39,7 +42,7 @@ public sealed class MainViewModel : ObservableObject
         _ha = ha ?? new HaContainerService(_docker);
         _health = health ?? new HaHealthChecker();
 
-        RefreshCommand = new AsyncRelayCommand(RefreshAsync, () => !IsBusy);
+        RefreshCommand = new AsyncRelayCommand(RefreshAsync, () => !IsBusy && !_isRefreshing);
         InstallDockerCommand = new AsyncRelayCommand(InstallDockerAsync, () => !IsBusy && !DockerReady);
         OpenDockerDownloadCommand = new RelayCommand(OpenDockerDownload);
         CreateStartCommand = new AsyncRelayCommand(CreateStartAsync, () => !IsBusy && DockerReady);
@@ -58,7 +61,7 @@ public sealed class MainViewModel : ObservableObject
         _pollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(8) };
         _pollTimer.Tick += async (_, _) =>
         {
-            if (!IsBusy)
+            if (!IsBusy && !_isRefreshing)
             {
                 await RefreshAsync().ConfigureAwait(true);
             }
@@ -173,14 +176,24 @@ public sealed class MainViewModel : ObservableObject
 
     private async Task RefreshAsync()
     {
+        if (_isRefreshing)
+        {
+            return;
+        }
+
+        _isRefreshing = true;
+        RaiseCommands();
         try
         {
             var availability = await _docker.ProbeAsync().ConfigureAwait(true);
             DockerReady = availability.IsReady;
             DockerStatusText = availability.MessageTr;
-            if (!string.IsNullOrWhiteSpace(availability.Detail) && !availability.IsReady)
+
+            var stateChanged = _lastDockerState != availability.State;
+            _lastDockerState = availability.State;
+            if (stateChanged)
             {
-                AppendLog($"Docker ayrıntı: {availability.Detail}");
+                _guidanceLoggedForCurrentState = false;
             }
 
             if (!availability.IsReady)
@@ -188,11 +201,24 @@ public sealed class MainViewModel : ObservableObject
                 if (availability.State == DockerInstallState.CliMissing)
                 {
                     DockerStatusText = DockerDesktopGuidance.BuildMissingMessageTr().Split('\n')[0].Trim();
-                    AppendLog(DockerDesktopGuidance.BuildMissingMessageTr());
+                    if (!_guidanceLoggedForCurrentState)
+                    {
+                        AppendLog(DockerDesktopGuidance.BuildMissingMessageTr());
+                        _guidanceLoggedForCurrentState = true;
+                    }
                 }
                 else if (availability.State == DockerInstallState.InstalledButNotRunning)
                 {
-                    AppendLog(DockerDesktopGuidance.BuildNotRunningMessageTr());
+                    if (!_guidanceLoggedForCurrentState)
+                    {
+                        AppendLog(DockerDesktopGuidance.BuildNotRunningMessageTr());
+                        if (!string.IsNullOrWhiteSpace(availability.Detail))
+                        {
+                            AppendLog($"Docker ayrıntı: {availability.Detail}");
+                        }
+
+                        _guidanceLoggedForCurrentState = true;
+                    }
                 }
 
                 ContainerStatusText = "Docker hazır değil";
@@ -228,6 +254,7 @@ public sealed class MainViewModel : ObservableObject
         }
         finally
         {
+            _isRefreshing = false;
             RaiseCommands();
         }
     }
@@ -261,7 +288,11 @@ public sealed class MainViewModel : ObservableObject
         {
             var progress = new Progress<string>(AppendLog);
             await _ha.CreateAndStartAsync(progress: progress).ConfigureAwait(true);
-            await WaitForHealthyAsync().ConfigureAwait(true);
+            if (await WaitForHealthyAsync().ConfigureAwait(true))
+            {
+                OpenBrowser();
+            }
+
             await RefreshAsync().ConfigureAwait(true);
         }).ConfigureAwait(true);
     }
@@ -271,7 +302,11 @@ public sealed class MainViewModel : ObservableObject
         await RunBusyAsync("Başlatılıyor…", async () =>
         {
             await _ha.StartAsync().ConfigureAwait(true);
-            await WaitForHealthyAsync().ConfigureAwait(true);
+            if (await WaitForHealthyAsync().ConfigureAwait(true))
+            {
+                OpenBrowser();
+            }
+
             await RefreshAsync().ConfigureAwait(true);
         }).ConfigureAwait(true);
     }
@@ -290,7 +325,11 @@ public sealed class MainViewModel : ObservableObject
         await RunBusyAsync("Yeniden başlatılıyor…", async () =>
         {
             await _ha.RestartAsync().ConfigureAwait(true);
-            await WaitForHealthyAsync().ConfigureAwait(true);
+            if (await WaitForHealthyAsync().ConfigureAwait(true))
+            {
+                OpenBrowser();
+            }
+
             await RefreshAsync().ConfigureAwait(true);
         }).ConfigureAwait(true);
     }
@@ -298,7 +337,7 @@ public sealed class MainViewModel : ObservableObject
     private async Task RemoveAsync()
     {
         var confirm = MessageBox.Show(
-            "Home Assistant container silinsin mi?\n\nYapılandırma volume’u (smart-home-ha-config) KORUNUR.\nVolume’u da silmek için 'Hayır' deyip PowerShell ile volume rm kullanın veya geliştirici seçeneğini kullanın.",
+            "Home Assistant container silinsin mi?\n\nEvet: container silinir; yapılandırma volume’u (smart-home-ha-config) korunur.\nHayır: işlem iptal edilir.\n\nVolume’u da silmek için PowerShell:\ndocker volume rm smart-home-ha-config",
             "Container sil",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
@@ -317,6 +356,12 @@ public sealed class MainViewModel : ObservableObject
 
     private async Task OpenBrowserAsync()
     {
+        OpenBrowser();
+        await Task.CompletedTask.ConfigureAwait(true);
+    }
+
+    private void OpenBrowser()
+    {
         try
         {
             Process.Start(new ProcessStartInfo(HaConstants.LocalUrl) { UseShellExecute = true });
@@ -326,8 +371,6 @@ public sealed class MainViewModel : ObservableObject
         {
             AppendLog($"Tarayıcı açılamadı: {ex.Message}");
         }
-
-        await Task.CompletedTask.ConfigureAwait(true);
     }
 
     private async Task LoadLogsAsync()
@@ -335,13 +378,17 @@ public sealed class MainViewModel : ObservableObject
         await RunBusyAsync("Loglar alınıyor…", async () =>
         {
             var logs = await _ha.GetLogsAsync(150).ConfigureAwait(true);
-            LogText = string.IsNullOrWhiteSpace(logs.CombinedOutput)
+            var body = string.IsNullOrWhiteSpace(logs.CombinedOutput)
                 ? "(log yok)"
-                : logs.CombinedOutput;
+                : logs.CombinedOutput.Trim();
+            AppendLog("--- Docker container logları ---");
+            LogText = string.IsNullOrWhiteSpace(LogText)
+                ? body
+                : LogText + Environment.NewLine + body;
         }).ConfigureAwait(true);
     }
 
-    private async Task WaitForHealthyAsync()
+    private async Task<bool> WaitForHealthyAsync()
     {
         AppendLog("Home Assistant hazır olana kadar bekleniyor (en fazla ~2 dk)…");
         using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
@@ -355,7 +402,7 @@ public sealed class MainViewModel : ObservableObject
                 if (health.IsReachable)
                 {
                     AppendLog("Home Assistant erişilebilir.");
-                    return;
+                    return true;
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(3), cts.Token).ConfigureAwait(true);
@@ -365,6 +412,8 @@ public sealed class MainViewModel : ObservableObject
         {
             AppendLog("Zaman aşımı: HA henüz yanıt vermedi. Biraz bekleyip «Tarayıcıda aç» veya «Yenile» deneyin.");
         }
+
+        return false;
     }
 
     private async Task RunBusyAsync(string message, Func<Task> action)
