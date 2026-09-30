@@ -103,7 +103,11 @@ export async function createLemonCheckout(opts: {
         attributes: {
           checkout_data: {
             email: opts.email,
-            custom: { org_id: opts.orgId, plan: opts.plan },
+            // LS requires string custom values; webhook reads meta.custom_data
+            custom: {
+              org_id: String(opts.orgId),
+              plan: String(opts.plan),
+            },
           },
           product_options: {
             redirect_url: `${appUrl}/billing?checkout=success`,

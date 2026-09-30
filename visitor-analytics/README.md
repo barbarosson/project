@@ -41,28 +41,32 @@ Isolated greenfield app under `visitor-analytics/` (does not mix with the root E
 
 ## Deferred / launch gaps
 
-- Live Lemon Squeezy store + keys, production domain, counsel-reviewed legal
+- Live Lemon Squeezy keys (store guide ready), counsel-reviewed legal
 - Invite email delivery, geo IP, automated retention cron, ClickHouse
 - Replay/heatmap, org enrichment, AppSumo LTD (banned)
+- Final product name + `.com` (SitePulse placeholder OK)
 
 ## Stack
 
 - Next.js 15 (App Router) + TypeScript + Tailwind
-- Prisma + **SQLite** for zero-cost local demo
-- Production: Postgres (Neon/Supabase) + Vercel/Railway free tier
-- Billing MoR: **Lemon Squeezy** (chosen for simpler TR şahıs / global MoR path vs self Stripe Tax)
+- Prisma + **Postgres** (Neon free) for local + production — see [`DEPLOY.md`](./DEPLOY.md)
+- Host: **Vercel** project rooted at `visitor-analytics/` (not moduluscursor Netlify)
+- Billing MoR: **Lemon Squeezy**
 
 ## Local setup
 
 ```bash
 cd visitor-analytics
 cp .env.example .env
+# Set DATABASE_URL to a Neon free Postgres URL (see DEPLOY.md)
 npm install
 npm run db:setup
 npm run dev
 ```
 
 Open http://localhost:3000
+
+**Production deploy:** [`DEPLOY.md`](./DEPLOY.md) · Lemon Squeezy: Project store `docs/lemon-squeezy-setup.md`
 
 ### Demo credentials
 
@@ -93,12 +97,9 @@ Open http://localhost:3000
 
 App **builds and runs without** Lemon Squeezy keys. Checkout returns a stub message; webhook accepts local stub posts with `X-SitePulse-Stub: 1` when secret is unset.
 
-### Postgres (Neon / Supabase)
+### Postgres (Neon)
 
-1. Create a free Postgres database.
-2. Set `DATABASE_URL` to the Postgres URL.
-3. In `prisma/schema.prisma`, change `provider = "sqlite"` to `provider = "postgresql"`.
-4. Run `npx prisma db push` then `npm run db:seed`.
+Schema provider is already `postgresql`. Create a Neon free DB, set `DATABASE_URL`, then `npx prisma db push` / `npm run db:setup`. Full Vercel steps: [`DEPLOY.md`](./DEPLOY.md).
 
 ## Install the tracking snippet
 

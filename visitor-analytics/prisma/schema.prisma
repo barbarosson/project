@@ -1,9 +1,13 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // native = local; rhel = Vercel / AWS Lambda Node runtimes
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "sqlite"
+  // Production + local: Neon free Postgres (SQLite is not viable on Vercel).
+  // Offline local-only: temporarily set provider = "sqlite" and DATABASE_URL="file:./dev.db"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

@@ -5,10 +5,14 @@ import { applyPlanEntitlement } from "@/lib/quota";
 import { prisma } from "@/lib/prisma";
 
 /**
- * Lemon Squeezy webhook stub.
+ * Lemon Squeezy webhook.
  * - With LEMONSQUEEZY_WEBHOOK_SECRET: verifies X-Signature (HMAC-SHA256 hex).
  * - Without secret: accepts only when header X-SitePulse-Stub: 1 (local/dev).
- * Entitlement mapping: custom.org_id + variant → plan + pageviewLimit.
+ * Entitlement mapping: meta.custom_data.org_id + variant_id → plan + pageviewLimit.
+ *
+ * Subscribe in LS to at least: subscription_created, subscription_updated,
+ * subscription_cancelled, subscription_expired, subscription_payment_failed,
+ * order_created.
  */
 function verifySignature(rawBody: string, signature: string | null): boolean {
   const secret = process.env.LEMONSQUEEZY_WEBHOOK_SECRET;
