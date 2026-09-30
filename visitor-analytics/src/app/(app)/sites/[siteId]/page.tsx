@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { assertSiteAccess, getSession } from "@/lib/auth";
+import {
+  assertSiteAccess,
+  canWrite,
+  getSession,
+  getUserOrg,
+} from "@/lib/auth";
 import { dateKey, daysAgo } from "@/lib/conversions";
 import { prisma } from "@/lib/prisma";
 import { ConversionStats } from "@/components/conversion-stats";
@@ -8,6 +13,7 @@ import { FunnelsPanel } from "@/components/funnels-panel";
 import { GoalsPanel } from "@/components/goals-panel";
 import { SiteSettingsForm } from "@/components/site-settings-form";
 import { SnippetInstall } from "@/components/snippet-install";
+import { VisitorStream } from "@/components/visitor-stream";
 
 function buildTrend(
   conversions: { createdAt: Date }[],
@@ -35,6 +41,8 @@ export default async function SiteDetailPage({
 
   const site = await assertSiteAccess(session.id, siteId);
   if (!site) notFound();
+  const membership = await getUserOrg(session.id);
+  const write = membership ? canWrite(membership.role) : false;
 
   const since30 = daysAgo(30);
   const since7 = daysAgo(7);
@@ -202,9 +210,18 @@ export default async function SiteDetailPage({
         />
       </div>
 
-      <GoalsPanel siteId={site.id} initialGoals={goals} />
+      <VisitorStream siteId={site.id} pollMs={8000} />
 
-      <FunnelsPanel siteId={site.id} initialFunnels={funnels} />
+      {write ? (
+        <>
+          <GoalsPanel siteId={site.id} initialGoals={goals} />
+          <FunnelsPanel siteId={site.id} initialFunnels={funnels} />
+        </>
+      ) : (
+        <p className="text-sm text-[var(--muted)]">
+          Client read-only view — goal and funnel edits are hidden.
+        </p>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="sp-card p-5">
@@ -258,19 +275,22 @@ export default async function SiteDetailPage({
         </section>
       </div>
 
-      <SnippetInstall appUrl={appUrl} siteKey={site.publicKey} />
-
-      <SiteSettingsForm
-        siteId={site.id}
-        initial={{
-          name: site.name,
-          domain: site.domain,
-          identityMode: site.identityMode,
-          ipTruncate: site.ipTruncate,
-          retentionDays: site.retentionDays,
-          publicKey: site.publicKey,
-        }}
-      />
+      {write && (
+        <>
+          <SnippetInstall appUrl={appUrl} siteKey={site.publicKey} />
+          <SiteSettingsForm
+            siteId={site.id}
+            initial={{
+              name: site.name,
+              domain: site.domain,
+              identityMode: site.identityMode,
+              ipTruncate: site.ipTruncate,
+              retentionDays: site.retentionDays,
+              publicKey: site.publicKey,
+            }}
+          />
+        </>
+      )}
     </div>
   );
 }

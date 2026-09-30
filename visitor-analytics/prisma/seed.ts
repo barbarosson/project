@@ -16,6 +16,8 @@ async function main() {
   await prisma.funnel.deleteMany();
   await prisma.event.deleteMany();
   await prisma.dailyRollup.deleteMany();
+  await prisma.siteAccess.deleteMany();
+  await prisma.invite.deleteMany();
   await prisma.site.deleteMany();
   await prisma.membership.deleteMany();
   await prisma.organization.deleteMany();
@@ -29,9 +31,16 @@ async function main() {
     },
   });
 
+  const month = new Date().toISOString().slice(0, 7);
   const org = await prisma.organization.create({
     data: {
       name: "Demo Agency",
+      plan: "dev",
+      pageviewLimit: 1_000_000,
+      pageviewsUsed: 120,
+      quotaMonth: month,
+      softWarningPct: 80,
+      billingStatus: "none",
       members: {
         create: { userId: user.id, role: "owner" },
       },
@@ -266,12 +275,44 @@ async function main() {
     });
   }
 
-  console.log("Seeded SitePulse demo (M2):");
-  console.log(`  Login: ${email} / ${password}`);
+  // Client user with read-only access to Demo Site only
+  const client = await prisma.user.create({
+    data: {
+      email: "client@sitepulse.dev",
+      passwordHash: await bcrypt.hash("client1234", 10),
+      name: "Demo Client",
+      memberships: {
+        create: {
+          role: "client",
+          orgId: org.id,
+          siteAccess: { create: [{ siteId: site.id }] },
+        },
+      },
+    },
+  });
+
+  const inviteToken = "sp_demo_invite_token_0001";
+  await prisma.invite.create({
+    data: {
+      email: "pending-client@example.com",
+      token: inviteToken,
+      role: "client",
+      siteIds: JSON.stringify([site.id]),
+      invitedBy: user.id,
+      expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+      orgId: org.id,
+    },
+  });
+
+  console.log("Seeded SitePulse demo (M3):");
+  console.log(`  Owner: ${email} / ${password}`);
+  console.log(`  Client: client@sitepulse.dev / client1234 (Demo Site only)`);
+  console.log(`  Pending invite: /invite/${inviteToken}`);
   console.log(`  Demo site key: ${demoKey}`);
   console.log(`  Cookieless site key: ${cookielessSite.publicKey}`);
   console.log(`  Goals: ${urlGoal.name}, ${eventGoal.name}`);
-  console.log(`  Org: ${org.name} (${org.id})`);
+  console.log(`  Org: ${org.name} (${org.id}) plan=${org.plan}`);
+  void client;
 }
 
 main()

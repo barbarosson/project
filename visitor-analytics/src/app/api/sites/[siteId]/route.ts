@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { assertSiteAccess, getSessionFromRequest } from "@/lib/auth";
+import {
+  assertSiteAccess,
+  assertSiteWriteAccess,
+  getSessionFromRequest,
+} from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const patchSchema = z.object({
@@ -97,9 +101,9 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { siteId } = await params;
-  const existing = await assertSiteAccess(session.id, siteId);
+  const existing = await assertSiteWriteAccess(session.id, siteId);
   if (!existing) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Forbidden or not found" }, { status: 403 });
   }
 
   try {

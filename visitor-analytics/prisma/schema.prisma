@@ -17,22 +17,63 @@ model User {
 }
 
 model Organization {
-  id        String       @id @default(cuid())
-  name      String
-  createdAt DateTime     @default(now())
-  members   Membership[]
-  sites     Site[]
+  id               String       @id @default(cuid())
+  name             String
+  createdAt        DateTime     @default(now())
+  /// dev | starter | agency | scale
+  plan             String       @default("dev")
+  pageviewLimit    Int          @default(1000000)
+  pageviewsUsed    Int          @default(0)
+  /// YYYY-MM for current quota window
+  quotaMonth       String       @default("")
+  softWarningPct   Int          @default(80)
+  lsCustomerId     String?
+  lsSubscriptionId String?
+  /// none | active | past_due | cancelled | stub
+  billingStatus    String       @default("none")
+  members          Membership[]
+  sites            Site[]
+  invites          Invite[]
 }
 
 model Membership {
-  id     String       @id @default(cuid())
-  role   String       @default("owner") // owner | admin | analyst | client
-  userId String
-  orgId  String
-  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  org    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  id         String       @id @default(cuid())
+  /// owner | admin | analyst | client
+  role       String       @default("owner")
+  userId     String
+  orgId      String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  siteAccess SiteAccess[]
 
   @@unique([userId, orgId])
+}
+
+model SiteAccess {
+  id           String     @id @default(cuid())
+  membershipId String
+  siteId       String
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  site         Site       @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([membershipId, siteId])
+}
+
+model Invite {
+  id         String       @id @default(cuid())
+  email      String
+  token      String       @unique
+  role       String       @default("client")
+  /// JSON array of site IDs the client may view
+  siteIds    String       @default("[]")
+  invitedBy  String
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime     @default(now())
+  orgId      String
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, email])
 }
 
 model Site {
@@ -52,6 +93,7 @@ model Site {
   conversionGoals ConversionGoal[]
   conversions     Conversion[]
   funnels         Funnel[]
+  siteAccess      SiteAccess[]
 }
 
 model Event {
@@ -95,17 +137,15 @@ model DailyRollup {
 }
 
 model ConversionGoal {
-  id         String       @id @default(cuid())
-  name       String
+  id          String       @id @default(cuid())
+  name        String
   /// url | event
-  type       String
-  /// URL path or event name
-  matchValue String
-  /// exact | prefix (URL goals)
-  matchMode  String       @default("exact")
-  createdAt  DateTime     @default(now())
-  siteId     String
-  site       Site         @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  type        String
+  matchValue  String
+  matchMode   String       @default("exact")
+  createdAt   DateTime     @default(now())
+  siteId      String
+  site        Site         @relation(fields: [siteId], references: [id], onDelete: Cascade)
   conversions Conversion[]
 
   @@index([siteId])
@@ -146,10 +186,8 @@ model FunnelStep {
   id         String @id @default(cuid())
   name       String
   order      Int
-  /// url | event
   type       String
   matchValue String
-  /// exact | prefix
   matchMode  String @default("exact")
   funnelId   String
   funnel     Funnel @relation(fields: [funnelId], references: [id], onDelete: Cascade)

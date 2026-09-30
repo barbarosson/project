@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { customAlphabet } from "nanoid";
 import { z } from "zod";
-import { getSessionFromRequest, getUserOrg } from "@/lib/auth";
+import {
+  canWrite,
+  getSessionFromRequest,
+  getUserOrg,
+  listAccessibleSites,
+} from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getOrgQuota } from "@/lib/quota";
 
 const nanoid = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 20);
 
@@ -20,29 +26,32 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const membership = await getUserOrg(session.id);
+  const { membership, sites } = await listAccessibleSites(session.id);
   if (!membership) {
     return NextResponse.json({ sites: [] });
   }
 
-  const sites = await prisma.site.findMany({
-    where: { orgId: membership.orgId },
-    orderBy: { createdAt: "asc" },
-    select: {
-      id: true,
-      name: true,
-      domain: true,
-      publicKey: true,
-      identityMode: true,
-      ipTruncate: true,
-      retentionDays: true,
-      createdAt: true,
-    },
-  });
+  const quota = await getOrgQuota(membership.orgId);
 
   return NextResponse.json({
-    org: { id: membership.org.id, name: membership.org.name },
-    sites,
+    org: {
+      id: membership.org.id,
+      name: membership.org.name,
+      plan: membership.org.plan,
+    },
+    role: membership.role,
+    canWrite: canWrite(membership.role),
+    quota,
+    sites: sites.map((s) => ({
+      id: s.id,
+      name: s.name,
+      domain: s.domain,
+      publicKey: s.publicKey,
+      identityMode: s.identityMode,
+      ipTruncate: s.ipTruncate,
+      retentionDays: s.retentionDays,
+      createdAt: s.createdAt,
+    })),
   });
 }
 
@@ -55,6 +64,12 @@ export async function POST(req: NextRequest) {
   const membership = await getUserOrg(session.id);
   if (!membership) {
     return NextResponse.json({ error: "No organization" }, { status: 400 });
+  }
+  if (!canWrite(membership.role)) {
+    return NextResponse.json(
+      { error: "Read-only client access" },
+      { status: 403 }
+    );
   }
 
   try {

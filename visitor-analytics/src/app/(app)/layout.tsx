@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
+import {
+  canManageTeam,
+  canWrite,
+  getSession,
+  getUserOrg,
+} from "@/lib/auth";
 import { LogoutButton } from "@/components/logout-button";
 
 export default async function AppLayout({
@@ -10,6 +15,10 @@ export default async function AppLayout({
 }) {
   const session = await getSession();
   if (!session) redirect("/login");
+
+  const membership = await getUserOrg(session.id);
+  const write = membership ? canWrite(membership.role) : false;
+  const manage = membership ? canManageTeam(membership.role) : false;
 
   return (
     <div className="min-h-screen">
@@ -23,17 +32,33 @@ export default async function AppLayout({
             >
               SitePulse
             </Link>
-            <nav className="flex gap-4 text-sm font-medium text-[var(--muted)]">
+            <nav className="flex flex-wrap gap-4 text-sm font-medium text-[var(--muted)]">
               <Link href="/dashboard" className="hover:text-[var(--ink)]">
-                Dashboard
+                Portfolio
               </Link>
-              <Link href="/sites/new" className="hover:text-[var(--ink)]">
-                Add site
+              <Link href="/stream" className="hover:text-[var(--ink)]">
+                Stream
+              </Link>
+              {write && (
+                <Link href="/sites/new" className="hover:text-[var(--ink)]">
+                  Add site
+                </Link>
+              )}
+              {manage && (
+                <Link href="/team" className="hover:text-[var(--ink)]">
+                  Team
+                </Link>
+              )}
+              <Link href="/billing" className="hover:text-[var(--ink)]">
+                Billing
               </Link>
             </nav>
           </div>
           <div className="flex items-center gap-4 text-sm">
-            <span className="text-[var(--muted)]">{session.email}</span>
+            <span className="text-[var(--muted)]">
+              {session.email}
+              {membership?.role === "client" ? " · client" : ""}
+            </span>
             <LogoutButton />
           </div>
         </div>

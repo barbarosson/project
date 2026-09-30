@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { assertSiteAccess, getSessionFromRequest } from "@/lib/auth";
+import {
+  assertSiteAccess,
+  assertSiteWriteAccess,
+  getSessionFromRequest,
+} from "@/lib/auth";
 import { computeFunnelDropoff, daysAgo } from "@/lib/conversions";
 import { prisma } from "@/lib/prisma";
 
@@ -73,9 +77,9 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { siteId, funnelId } = await params;
-  const site = await assertSiteAccess(session.id, siteId);
+  const site = await assertSiteWriteAccess(session.id, siteId);
   if (!site) {
-    return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ error: "Forbidden or not found" }, { status: 403 });
   }
 
   const existing = await prisma.funnel.findFirst({

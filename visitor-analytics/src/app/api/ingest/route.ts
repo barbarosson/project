@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { matchesEvent, matchesUrl } from "@/lib/conversions";
+import { consumePageviewQuota } from "@/lib/quota";
 import {
   clientIp,
   cookielessVisitorId,
@@ -56,6 +57,23 @@ export async function POST(req: NextRequest) {
       return cors(
         NextResponse.json({ error: "Invalid site key" }, { status: 401 })
       );
+    }
+
+    // Hard quota on pageviews (events still allowed for conversion debugging)
+    if (body.type === "pageview") {
+      const quota = await consumePageviewQuota(site.orgId);
+      if (!quota.allowed) {
+        return cors(
+          NextResponse.json(
+            {
+              error: "Pageview quota exceeded",
+              code: "quota_exceeded",
+              snapshot: "snapshot" in quota ? quota.snapshot : undefined,
+            },
+            { status: 429 }
+          )
+        );
+      }
     }
 
     const ua = req.headers.get("user-agent");
