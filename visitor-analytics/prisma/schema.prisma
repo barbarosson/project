@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime     @default(now())
+  memberships  Membership[]
+}
+
+model Organization {
+  id        String       @id @default(cuid())
+  name      String
+  createdAt DateTime     @default(now())
+  members   Membership[]
+  sites     Site[]
+}
+
+model Membership {
+  id     String       @id @default(cuid())
+  role   String       @default("owner") // owner | admin | analyst | client
+  userId String
+  orgId  String
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org    Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, orgId])
+}
+
+model Site {
+  id            String   @id @default(cuid())
+  name          String
+  domain        String
+  publicKey     String   @unique
+  /// first_party_cookie | cookieless
+  identityMode  String   @default("first_party_cookie")
+  ipTruncate    Boolean  @default(true)
+  retentionDays Int      @default(90)
+  createdAt     DateTime @default(now())
+  orgId         String
+  org           Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  events        Event[]
+  dailyRollups  DailyRollup[]
+}
+
+model Event {
+  id           String   @id @default(cuid())
+  type         String   @default("pageview")
+  path         String
+  title        String?
+  referrer     String?
+  utmSource    String?
+  utmMedium    String?
+  utmCampaign  String?
+  visitorId    String
+  sessionId    String
+  deviceClass  String?  // desktop | mobile | tablet
+  country      String?
+  ipTruncated  String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+  siteId       String
+  site         Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId, createdAt])
+  @@index([siteId, path])
+  @@index([siteId, sessionId])
+}
+
+model DailyRollup {
+  id         String   @id @default(cuid())
+  date       String   // YYYY-MM-DD
+  pageviews  Int      @default(0)
+  sessions   Int      @default(0)
+  uniques    Int      @default(0)
+  siteId     String
+  site       Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([siteId, date])
+}
