@@ -36,8 +36,12 @@ export default function NewSitePage() {
 
   return (
     <div className="mx-auto max-w-lg">
-      <Link href="/dashboard" className="text-sm text-[var(--muted)]">
-        ← Dashboard
+      <Link
+        href="/dashboard"
+        className="inline-flex items-center gap-1 text-sm text-[var(--muted)] hover:text-[var(--ink)]"
+      >
+        <span aria-hidden="true">←</span>
+        Portfolio
       </Link>
       <h1
         className="mt-3 text-3xl font-semibold"

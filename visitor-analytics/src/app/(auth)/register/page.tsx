@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, Suspense, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { AuthChrome } from "@/components/page-nav";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const plan = useMemo(() => searchParams.get("plan"), [searchParams]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -30,23 +33,22 @@ export default function RegisterPage() {
       setError(data.error || "Registration failed");
       return;
     }
-    router.push("/dashboard");
+    router.push(plan ? `/billing?plan=${encodeURIComponent(plan)}` : "/dashboard");
     router.refresh();
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
-      <Link
-        href="/"
-        className="mb-8 text-2xl font-semibold"
-        style={{ fontFamily: "var(--font-display), Georgia, serif" }}
-      >
-        SitePulse
-      </Link>
+    <>
       <h1 className="text-2xl font-semibold">Create account</h1>
       <p className="mt-1 text-sm text-[var(--muted)]">
         Email + password auth (free-tier friendly, no third-party auth vendor).
       </p>
+      {plan && (
+        <p className="mt-2 rounded-lg border border-[var(--line)] bg-white/70 px-3 py-2 text-sm text-[var(--muted)]">
+          Selected plan: <strong className="text-[var(--ink)]">{plan}</strong>.
+          After signup you can upgrade from Billing.
+        </p>
+      )}
       <form onSubmit={onSubmit} className="sp-card mt-6 space-y-4 p-6">
         <div>
           <label className="sp-label" htmlFor="name">
@@ -94,6 +96,20 @@ export default function RegisterPage() {
           Log in
         </Link>
       </p>
-    </main>
+    </>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <AuthChrome>
+      <Suspense
+        fallback={
+          <p className="text-sm text-[var(--muted)]">Loading…</p>
+        }
+      >
+        <RegisterForm />
+      </Suspense>
+    </AuthChrome>
   );
 }

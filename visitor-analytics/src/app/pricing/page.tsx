@@ -6,6 +6,7 @@ import {
   MarketingFooter,
   MarketingHeader,
 } from "@/components/marketing-chrome";
+import { Breadcrumbs } from "@/components/page-nav";
 import { PLAN_LIMITS } from "@/lib/plans";
 
 const PLANS = (
@@ -59,7 +60,15 @@ export default function PricingPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col px-6 py-10">
       <MarketingHeader />
-      <section className="mt-14">
+      <div className="mt-8">
+        <Breadcrumbs
+          items={[
+            { href: "/", label: "Home" },
+            { label: "Pricing" },
+          ]}
+        />
+      </div>
+      <section className="mt-6">
         <h1
           className="text-4xl font-semibold tracking-tight text-[var(--brand-ink)]"
           style={{ fontFamily: "var(--font-display), Georgia, serif" }}

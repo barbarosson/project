@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AuthChrome } from "@/components/page-nav";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -33,14 +34,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
-      <Link
-        href="/"
-        className="mb-8 text-2xl font-semibold"
-        style={{ fontFamily: "var(--font-display), Georgia, serif" }}
-      >
-        SitePulse
-      </Link>
+    <AuthChrome>
       <h1 className="text-2xl font-semibold">Log in</h1>
       <p className="mt-1 text-sm text-[var(--muted)]">
         Demo: demo@sitepulse.dev / demo1234
@@ -87,6 +81,6 @@ export default function LoginPage() {
           Register
         </Link>
       </p>
-    </main>
+    </AuthChrome>
   );
 }

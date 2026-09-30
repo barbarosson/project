@@ -52,6 +52,9 @@ export default async function AppLayout({
               <Link href="/billing" className="hover:text-[var(--ink)]">
                 Billing
               </Link>
+              <Link href="/docs" className="hover:text-[var(--ink)]">
+                Docs
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-4 text-sm">
