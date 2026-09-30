@@ -1,14 +1,16 @@
 generator client {
   provider      = "prisma-client-js"
-  // native = local; rhel = Vercel / AWS Lambda Node runtimes
+  // native = local; rhel = Netlify Functions / Vercel / AWS Lambda (OpenSSL 3)
   binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
-  // Production + local: Neon free Postgres (SQLite is not viable on Vercel).
-  // Offline local-only: temporarily set provider = "sqlite" and DATABASE_URL="file:./dev.db"
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // Production + local: Supabase Postgres (SQLite is not viable on Netlify).
+  // DATABASE_URL = pooled (:6543 + ?pgbouncer=true); DIRECT_URL = direct (:5432) for migrate/db push
+  // Offline local-only: temporarily set provider = "sqlite", remove directUrl, DATABASE_URL="file:./dev.db"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {

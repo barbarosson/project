@@ -49,8 +49,8 @@ Isolated greenfield app under `visitor-analytics/` (does not mix with the root E
 ## Stack
 
 - Next.js 15 (App Router) + TypeScript + Tailwind
-- Prisma + **Postgres** (Neon free) for local + production — see [`DEPLOY.md`](./DEPLOY.md)
-- Host: **Vercel** project rooted at `visitor-analytics/` (not moduluscursor Netlify)
+- Prisma + **Supabase Postgres** for local + production — see [`DEPLOY.md`](./DEPLOY.md)
+- Host: **Netlify** (**new** site, base `visitor-analytics/`) — not moduluscursor / isendai
 - Billing MoR: **Lemon Squeezy**
 
 ## Local setup
@@ -58,7 +58,7 @@ Isolated greenfield app under `visitor-analytics/` (does not mix with the root E
 ```bash
 cd visitor-analytics
 cp .env.example .env
-# Set DATABASE_URL to a Neon free Postgres URL (see DEPLOY.md)
+# Set DATABASE_URL (Supabase pooler) + DIRECT_URL (direct) — see DEPLOY.md
 npm install
 npm run db:setup
 npm run dev
