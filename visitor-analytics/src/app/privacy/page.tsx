@@ -55,8 +55,9 @@ export default function PrivacyPage() {
         5. Sub-processors
       </h2>
       <p>
-        Hosting and database providers, CDN, and Lemon Squeezy (Merchant of
-        Record for payments). List will be maintained in the DPA.
+        Primary: Netlify (app host) and Supabase (Postgres). CDN via Netlify.
+        Lemon Squeezy (Merchant of Record for payments). Full list maintained
+        in the DPA.
       </p>
       <h2 className="text-lg font-semibold text-[var(--ink)]">6. Contact</h2>
       <p>

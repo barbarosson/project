@@ -85,9 +85,10 @@ Open http://localhost:3000
 
 | Variable | Purpose |
 | --- | --- |
-| `DATABASE_URL` | SQLite `file:./dev.db` or Postgres URL |
-| `AUTH_SECRET` | JWT signing secret (16+ chars) |
-| `NEXT_PUBLIC_APP_URL` | Public origin (snippet + invite links) |
+| `DATABASE_URL` | Supabase **Transaction** pooler URI (`:6543` + `pgbouncer=true`) |
+| `DIRECT_URL` | Supabase **direct** URI (`:5432`, no pgbouncer) — Prisma migrate / `db push` |
+| `AUTH_SECRET` | JWT signing secret (32+ chars in production) |
+| `NEXT_PUBLIC_APP_URL` | Public origin (snippet + invite links); Netlify URL after deploy |
 | `LEMONSQUEEZY_API_KEY` | Optional — MoR API |
 | `LEMONSQUEEZY_STORE_ID` | Optional — store id |
 | `LEMONSQUEEZY_WEBHOOK_SECRET` | Optional — webhook HMAC |
@@ -97,9 +98,9 @@ Open http://localhost:3000
 
 App **builds and runs without** Lemon Squeezy keys. Checkout returns a stub message; webhook accepts local stub posts with `X-SitePulse-Stub: 1` when secret is unset.
 
-### Postgres (Neon)
+### Postgres (Supabase)
 
-Schema provider is already `postgresql`. Create a Neon free DB, set `DATABASE_URL`, then `npx prisma db push` / `npm run db:setup`. Full Vercel steps: [`DEPLOY.md`](./DEPLOY.md).
+Schema provider is `postgresql` with `directUrl`. Create a Supabase free project, set `DATABASE_URL` + `DIRECT_URL`, then `npm run db:validate-push` (or `npm run db:setup`). Full Netlify steps: [`DEPLOY.md`](./DEPLOY.md). Offline SQLite is local-only (see DEPLOY.md).
 
 ## Install the tracking snippet
 
@@ -150,11 +151,16 @@ sitepulse.track('signup_complete');
 | Script | |
 | --- | --- |
 | `npm run dev` | Dev server |
-| `npm run build` | Production build |
+| `npm run build` | Production build (`prisma generate` + Next) |
 | `npm run start` | Start production server |
+| `npm run db:validate-push` | Env shape check + `prisma db push` (exits 1 if URLs missing) |
 | `npm run db:setup` | `prisma db push` + seed |
 | `npm run db:seed` | Re-seed demo data |
 | `npm run retention:purge` | Delete events past site retention (`-- --dry-run` OK) |
+
+## Only you (Barbaros)
+
+Agents cannot create your Supabase/Netlify/Lemon Squeezy accounts or paste secrets. **Source of truth** for remaining human steps: [`DEPLOY.md` § Only you (Barbaros)](./DEPLOY.md#only-you-barbaros).
 
 ## API (M3 additions)
 

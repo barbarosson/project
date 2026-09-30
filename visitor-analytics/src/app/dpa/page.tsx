@@ -40,9 +40,9 @@ export default function DpaPage() {
         5. Sub-processors
       </h2>
       <p>
-        Hosting/DB, CDN, transactional email (if used), Lemon Squeezy (MoR),
-        optional geo providers. Customer will be notified of material changes
-        per counsel-approved process.
+        Netlify (hosting), Supabase (Postgres), CDN, transactional email (if
+        used), Lemon Squeezy (MoR), optional geo providers. Customer will be
+        notified of material changes per counsel-approved process.
       </p>
       <h2 className="text-lg font-semibold text-[var(--ink)]">
         6. International transfers
