@@ -37,9 +37,9 @@ export default function DocsDpaOutlinePage() {
           longer.
         </li>
         <li>
-          <strong>Sub-processors (typical):</strong> hosting/DB (e.g. Vercel,
-          Neon/Supabase), CDN, email (if enabled), Lemon Squeezy MoR, geo DB
-          (when enabled).
+          <strong>Sub-processors (typical):</strong> hosting/DB (Netlify +
+          Supabase Postgres; Vercel optional), CDN, email (if enabled), Lemon
+          Squeezy MoR, geo DB (when enabled).
         </li>
         <li>
           <strong>We do not claim</strong> “no personal data,” “cookie banner

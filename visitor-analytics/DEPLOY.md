@@ -17,7 +17,24 @@ Optional alternative: **Vercel** Hobby — see [§ Alternative: Vercel](#alterna
 
 ---
 
-## Exact clicks — Barbaros checklist
+## Only you (Barbaros)
+
+**Source of truth** for human-only launch steps. Agents cannot complete these — no invented secrets.
+
+1. **Supabase** — New project `sitepulse` → copy pooled `DATABASE_URL` (`:6543` + `pgbouncer=true`) + direct `DIRECT_URL` (`:5432`) → put in `visitor-analytics/.env` and Netlify env. Details: [§ A](#a-supabase-postgres).
+2. **Schema** — On your machine: `cd visitor-analytics && npm install && npm run db:validate-push` (optional `npm run db:seed` for demo users only).
+3. **Netlify** — **New** site from `barbarosson/project`, **Base directory = `visitor-analytics`** (never reuse moduluscursor / isendai). Paste env from [§ C](#c-netlify-new-site--not-moduluscursor--isendai). Deploy.
+4. **`AUTH_SECRET`** — `openssl rand -base64 32` → Netlify + local `.env`.
+5. **`NEXT_PUBLIC_APP_URL`** — Set to `https://….netlify.app` (no trailing slash) → **redeploy**.
+6. **Lemon Squeezy** — Store + 3 variants + webhook `{NEXT_PUBLIC_APP_URL}/api/webhooks/lemonsqueezy` → paste `LEMONSQUEEZY_*` into Netlify (see store `docs/lemon-squeezy-setup.md`).
+7. **Optional agent tokens** — `NETLIFY_AUTH_TOKEN` + `SUPABASE_ACCESS_TOKEN` (+ Postgres URLs) in Cloud Agent env if you want agents to deploy later.
+8. **Deferred** — Final product name + custom domain DNS; hire counsel for Privacy / Terms / DPA.
+
+Copy-paste short list (Project store): `docs/barbaros-only-checklist.md`.
+
+---
+
+## Exact clicks
 
 ### A. Supabase (Postgres)
 
@@ -117,16 +134,6 @@ You can skip all `LEMONSQUEEZY_*` on first boot — checkout stays stubbed until
 2. Register a user (or use seed creds if seeded).
 3. Create a site → copy snippet → hit `/api/ingest` or load a test page.
 4. Billing page shows stub until LS env vars are set; after LS setup, Checkout should redirect to Lemon Squeezy.
-
-## What Barbaros must do manually
-
-- Supabase project + copy pooled + direct connection strings
-- Netlify **new** site with base `visitor-analytics` + env vars in UI
-- Generate/set `AUTH_SECRET`
-- Set `NEXT_PUBLIC_APP_URL` after first URL is known, then redeploy
-- Lemon Squeezy store + products + webhook (see lemon-squeezy-setup doc)
-- Custom domain / DNS when name is chosen (deferred)
-- Optional: Netlify scheduled function or external cron for `npm run retention:purge`
 
 ## Prisma / Netlify gotchas
 
