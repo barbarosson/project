@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   title: "SitePulse — Privacy-honest website analytics",
   description:
     "Track pageviews and sessions across client sites. Cookie or cookieless — your choice per site.",
+  // Serve from /public to avoid Next app-route favicon page-data ENOENT flakes
+  icons: {
+    icon: [{ url: "/favicon.ico", sizes: "any" }],
+  },
 };
 
 export default function RootLayout({
