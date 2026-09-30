@@ -106,7 +106,13 @@ export function VisitorStream({
             Active sessions
           </h3>
           {sessions.length === 0 ? (
-            <p className="text-sm text-[var(--muted)]">No recent sessions.</p>
+            <div className="rounded-lg border border-dashed border-[var(--line)] bg-[var(--bg)] px-3 py-4 text-sm text-[var(--muted)]">
+              <p>No recent sessions.</p>
+              <p className="mt-1">
+                Install the tracking snippet on a site to see live activity
+                here.
+              </p>
+            </div>
           ) : (
             <ul className="max-h-80 space-y-2 overflow-y-auto text-sm">
               {sessions.map((s) => (
@@ -142,7 +148,13 @@ export function VisitorStream({
             Event feed
           </h3>
           {items.length === 0 ? (
-            <p className="text-sm text-[var(--muted)]">No recent events.</p>
+            <div className="rounded-lg border border-dashed border-[var(--line)] bg-[var(--bg)] px-3 py-4 text-sm text-[var(--muted)]">
+              <p>No recent events.</p>
+              <p className="mt-1">
+                Pageviews and custom events from the last hour will appear in
+                this feed.
+              </p>
+            </div>
           ) : (
             <ul className="max-h-80 space-y-2 overflow-y-auto text-sm">
               {items.map((ev) => (

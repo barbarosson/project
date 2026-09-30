@@ -2,6 +2,7 @@ import {
   MarketingFooter,
   MarketingHeader,
 } from "@/components/marketing-chrome";
+import { Breadcrumbs } from "@/components/page-nav";
 
 export function LegalShell({
   title,
@@ -13,7 +14,15 @@ export function LegalShell({
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col px-6 py-10">
       <MarketingHeader />
-      <article className="mt-12">
+      <div className="mt-8">
+        <Breadcrumbs
+          items={[
+            { href: "/", label: "Home" },
+            { label: title },
+          ]}
+        />
+      </div>
+      <article className="mt-6">
         <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
           Stub for counsel review · English
         </p>

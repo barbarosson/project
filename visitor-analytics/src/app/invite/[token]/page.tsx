@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { AuthChrome, BackLink } from "@/components/page-nav";
 
 type InviteInfo = {
   email: string;
@@ -57,20 +58,26 @@ export default function AcceptInvitePage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-12">
-      <Link
-        href="/"
-        className="mb-8 text-2xl font-semibold"
-        style={{ fontFamily: "var(--font-display), Georgia, serif" }}
-      >
-        SitePulse
-      </Link>
+    <AuthChrome links={[{ href: "/login", label: "Log in" }]}>
       <h1 className="text-2xl font-semibold">Accept client invite</h1>
       {!info && !error && (
         <p className="mt-2 text-sm text-[var(--muted)]">Loading invite…</p>
       )}
       {error && !info && (
-        <p className="mt-4 text-sm text-[var(--danger)]">{error}</p>
+        <div className="sp-card mt-6 space-y-4 p-6">
+          <p className="text-sm text-[var(--danger)]">{error}</p>
+          <p className="text-sm text-[var(--muted)]">
+            Ask your agency for a new invite link, or go back home.
+          </p>
+          <div className="sp-row">
+            <Link href="/" className="sp-btn sp-btn-primary">
+              Home
+            </Link>
+            <Link href="/login" className="sp-btn sp-btn-ghost">
+              Log in
+            </Link>
+          </div>
+        </div>
       )}
       {info && (
         <>
@@ -108,8 +115,11 @@ export default function AcceptInvitePage() {
               {loading ? "Joining…" : "Accept & continue"}
             </button>
           </form>
+          <div className="mt-4">
+            <BackLink href="/" label="Home" />
+          </div>
         </>
       )}
-    </main>
+    </AuthChrome>
   );
 }

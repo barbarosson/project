@@ -26,11 +26,13 @@ export function BillingPanel({
   canManage,
   quota,
   plans,
+  highlightPlan,
 }: {
   billingConfigured: boolean;
   canManage: boolean;
   quota: Quota;
   plans: Plan[];
+  highlightPlan?: string;
 }) {
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
@@ -118,6 +120,14 @@ export function BillingPanel({
               <div
                 key={p.id}
                 className="rounded-lg border border-[var(--line)] p-4"
+                style={
+                  highlightPlan === p.id
+                    ? {
+                        borderColor: "var(--brand)",
+                        boxShadow: "0 0 0 1px var(--brand)",
+                      }
+                    : undefined
+                }
               >
                 <p
                   className="text-xl font-semibold"

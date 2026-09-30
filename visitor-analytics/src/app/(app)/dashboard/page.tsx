@@ -18,11 +18,20 @@ export default async function DashboardPage() {
   const { membership, sites } = await listAccessibleSites(session.id);
   if (!membership) {
     return (
-      <div>
+      <div className="sp-card max-w-lg space-y-4 p-6">
         <h1 className="text-2xl font-semibold">No organization</h1>
-        <p className="mt-2 text-[var(--muted)]">
-          Something went wrong with your account setup.
+        <p className="text-[var(--muted)]">
+          Something went wrong with your account setup. Try signing out and
+          registering again, or contact support once live.
         </p>
+        <div className="sp-row">
+          <Link href="/" className="sp-btn sp-btn-ghost">
+            Home
+          </Link>
+          <Link href="/register" className="sp-btn sp-btn-primary">
+            Create account
+          </Link>
+        </div>
       </div>
     );
   }
@@ -128,18 +137,27 @@ export default async function DashboardPage() {
           </Link>
         </div>
         {sites.length === 0 ? (
-          <p className="text-[var(--muted)]">
-            No sites yet.
-            {write ? (
-              <>
-                {" "}
-                <Link href="/sites/new" className="text-[var(--brand)] underline">
+          <div className="sp-card space-y-3 p-6">
+            <p className="font-semibold">No sites yet</p>
+            <p className="text-sm text-[var(--muted)]">
+              Add a client site to get a public key, install the snippet, and
+              start seeing conversions.
+            </p>
+            <div className="sp-row">
+              {write ? (
+                <Link href="/sites/new" className="sp-btn sp-btn-primary">
                   Create your first site
                 </Link>
-                .
-              </>
-            ) : null}
-          </p>
+              ) : (
+                <p className="text-sm text-[var(--muted)]">
+                  Ask an org admin to grant you site access.
+                </p>
+              )}
+              <Link href="/docs/install" className="sp-btn sp-btn-ghost">
+                Install docs
+              </Link>
+            </div>
+          </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {siteStats.map(({ site, pv, conv }) => (

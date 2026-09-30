@@ -11,6 +11,9 @@ export function MarketingHeader() {
         SitePulse
       </Link>
       <nav className="sp-nav text-sm font-medium">
+        <Link href="/" className="text-[var(--muted)] hover:text-[var(--ink)]">
+          Home
+        </Link>
         <Link href="/pricing" className="text-[var(--muted)] hover:text-[var(--ink)]">
           Pricing
         </Link>
@@ -38,6 +41,9 @@ export function MarketingFooter() {
   return (
     <footer className="mt-20 border-t border-[var(--line)] pt-8 text-sm text-[var(--muted)]">
       <div className="sp-nav">
+        <Link href="/" className="hover:text-[var(--ink)]">
+          Home
+        </Link>
         <Link href="/privacy" className="hover:text-[var(--ink)]">
           Privacy
         </Link>

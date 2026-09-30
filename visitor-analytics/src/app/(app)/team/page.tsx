@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { canManageTeam, getSession, listAccessibleSites } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { TeamPanel } from "@/components/team-panel";
+import { BackLink } from "@/components/page-nav";
 
 export default async function TeamPage() {
   const session = await getSession();
@@ -11,9 +12,10 @@ export default async function TeamPage() {
   if (!membership) redirect("/dashboard");
   if (!canManageTeam(membership.role)) {
     return (
-      <div>
+      <div className="space-y-4">
+        <BackLink href="/dashboard" label="Portfolio" />
         <h1 className="text-2xl font-semibold">Team</h1>
-        <p className="mt-2 text-[var(--muted)]">
+        <p className="text-[var(--muted)]">
           Only owners and admins can manage client invites.
         </p>
       </div>
@@ -39,8 +41,9 @@ export default async function TeamPage() {
   return (
     <div className="space-y-6">
       <div>
+        <BackLink href="/dashboard" label="Portfolio" />
         <h1
-          className="text-3xl font-semibold tracking-tight"
+          className="mt-2 text-3xl font-semibold tracking-tight"
           style={{ fontFamily: "var(--font-display), Georgia, serif" }}
         >
           Team & clients

@@ -1,11 +1,13 @@
 import { VisitorStream } from "@/components/visitor-stream";
+import { BackLink } from "@/components/page-nav";
 
 export default function StreamPage() {
   return (
     <div className="space-y-6">
       <div>
+        <BackLink href="/dashboard" label="Portfolio" />
         <h1
-          className="text-3xl font-semibold tracking-tight"
+          className="mt-2 text-3xl font-semibold tracking-tight"
           style={{ fontFamily: "var(--font-display), Georgia, serif" }}
         >
           Live stream

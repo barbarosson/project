@@ -134,8 +134,12 @@ export default async function SiteDetailPage({
   return (
     <div className="space-y-8">
       <div>
-        <Link href="/dashboard" className="text-sm text-[var(--muted)]">
-          ← Dashboard
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-1 text-sm text-[var(--muted)] hover:text-[var(--ink)]"
+        >
+          <span aria-hidden="true">←</span>
+          Portfolio
         </Link>
         <h1
           className="mt-2 text-3xl font-semibold tracking-tight"
