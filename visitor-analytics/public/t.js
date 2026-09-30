@@ -1,11 +1,15 @@
 /**
- * SitePulse tracking snippet (M1)
+ * SitePulse tracking snippet (M1 + M2)
  * Install:
  *   <script defer src="https://YOUR_HOST/t.js" data-site="YOUR_SITE_KEY"></script>
  *
- * Identity mode is loaded from /api/config?k=KEY
- * - first_party_cookie: sets _sp_vid / _sp_sid cookies
- * - cookieless: memory-only session; visitor derived server-side
+ * Custom events:
+ *   sitepulse.track('signup_complete');
+ *   sitepulse.pageview(); // force pageview
+ *
+ * Identity mode from /api/config?k=KEY
+ * - first_party_cookie: _sp_vid / _sp_sid cookies
+ * - cookieless: memory session; visitor derived server-side
  */
 (function () {
   "use strict";
@@ -29,6 +33,9 @@
   var COOKIE_VID = "_sp_vid";
   var COOKIE_SID = "_sp_sid";
   var SESSION_MS = 30 * 60 * 1000;
+  var identityMode = "first_party_cookie";
+  var ready = false;
+  var queue = [];
 
   function uuid() {
     if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
@@ -41,7 +48,9 @@
 
   function readCookie(name) {
     var m = document.cookie.match(
-      new RegExp("(?:^|; )" + name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "=([^;]*)")
+      new RegExp(
+        "(?:^|; )" + name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "=([^;]*)"
+      )
     );
     return m ? decodeURIComponent(m[1]) : null;
   }
@@ -77,6 +86,10 @@
     return { visitorId: null, sessionId: memSession };
   }
 
+  function ids() {
+    return identityMode === "cookieless" ? getCookielessIds() : getCookieIds();
+  }
+
   function send(payload) {
     var body = JSON.stringify(payload);
     var url = base + "/api/ingest";
@@ -96,9 +109,8 @@
     }).catch(function () {});
   }
 
-  function trackPageview(identityMode) {
-    var ids =
-      identityMode === "cookieless" ? getCookielessIds() : getCookieIds();
+  function trackPageview() {
+    var id = ids();
     send({
       k: siteKey,
       type: "pageview",
@@ -106,24 +118,47 @@
       title: document.title || null,
       referrer: document.referrer || null,
       url: location.href,
-      visitorId: ids.visitorId,
-      sessionId: ids.sessionId,
+      visitorId: id.visitorId,
+      sessionId: id.sessionId,
     });
   }
 
-  function boot(identityMode) {
-    trackPageview(identityMode);
-    // SPA soft navigations (History API)
+  function trackEvent(name) {
+    if (!name || typeof name !== "string") return;
+    var id = ids();
+    send({
+      k: siteKey,
+      type: "event",
+      eventName: name.slice(0, 120),
+      path: location.pathname + location.search,
+      title: document.title || null,
+      referrer: document.referrer || null,
+      url: location.href,
+      visitorId: id.visitorId,
+      sessionId: id.sessionId,
+    });
+  }
+
+  function runQueued() {
+    while (queue.length) {
+      var item = queue.shift();
+      if (item.kind === "pageview") trackPageview();
+      else if (item.kind === "event") trackEvent(item.name);
+    }
+  }
+
+  function boot(mode) {
+    identityMode = mode || "first_party_cookie";
+    ready = true;
+    trackPageview();
+    runQueued();
+
     var push = history.pushState;
     history.pushState = function () {
       push.apply(history, arguments);
-      setTimeout(function () {
-        trackPageview(identityMode);
-      }, 0);
+      setTimeout(trackPageview, 0);
     };
-    window.addEventListener("popstate", function () {
-      trackPageview(identityMode);
-    });
+    window.addEventListener("popstate", trackPageview);
   }
 
   fetch(base + "/api/config?k=" + encodeURIComponent(siteKey), {
@@ -141,14 +176,23 @@
     });
 
   window.sitepulse = {
-    track: function () {
-      fetch(base + "/api/config?k=" + encodeURIComponent(siteKey))
-        .then(function (r) {
-          return r.json();
-        })
-        .then(function (cfg) {
-          trackPageview(cfg.identityMode || "first_party_cookie");
-        });
+    /** Force a pageview, or track a named custom event. */
+    track: function (name) {
+      if (typeof name === "string" && name.length) {
+        if (!ready) queue.push({ kind: "event", name: name });
+        else trackEvent(name);
+        return;
+      }
+      if (!ready) queue.push({ kind: "pageview" });
+      else trackPageview();
+    },
+    pageview: function () {
+      if (!ready) queue.push({ kind: "pageview" });
+      else trackPageview();
+    },
+    event: function (name) {
+      if (!ready) queue.push({ kind: "event", name: name });
+      else trackEvent(name);
     },
   };
 })();

@@ -1,9 +1,28 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { assertSiteAccess, getSession } from "@/lib/auth";
+import { dateKey, daysAgo } from "@/lib/conversions";
 import { prisma } from "@/lib/prisma";
+import { ConversionStats } from "@/components/conversion-stats";
+import { FunnelsPanel } from "@/components/funnels-panel";
+import { GoalsPanel } from "@/components/goals-panel";
 import { SiteSettingsForm } from "@/components/site-settings-form";
 import { SnippetInstall } from "@/components/snippet-install";
+
+function buildTrend(
+  conversions: { createdAt: Date }[],
+  days: number
+): { date: string; count: number }[] {
+  const map = new Map<string, number>();
+  for (let i = days - 1; i >= 0; i--) {
+    map.set(dateKey(daysAgo(i)), 0);
+  }
+  for (const c of conversions) {
+    const k = dateKey(c.createdAt);
+    if (map.has(k)) map.set(k, (map.get(k) || 0) + 1);
+  }
+  return [...map.entries()].map(([date, count]) => ({ date, count }));
+}
 
 export default async function SiteDetailPage({
   params,
@@ -17,42 +36,91 @@ export default async function SiteDetailPage({
   const site = await assertSiteAccess(session.id, siteId);
   if (!site) notFound();
 
-  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-  const [rollups, recentEvents, topPages, pageviews30d, sessions, uniques] =
-    await Promise.all([
-      prisma.dailyRollup.findMany({
-        where: { siteId, date: { gte: since.toISOString().slice(0, 10) } },
-        orderBy: { date: "asc" },
-      }),
-      prisma.event.findMany({
-        where: { siteId },
-        orderBy: { createdAt: "desc" },
-        take: 20,
-      }),
-      prisma.event.groupBy({
-        by: ["path"],
-        where: { siteId, createdAt: { gte: since } },
-        _count: { path: true },
-        orderBy: { _count: { path: "desc" } },
-        take: 8,
-      }),
-      prisma.event.count({
-        where: { siteId, createdAt: { gte: since } },
-      }),
-      prisma.event.findMany({
-        where: { siteId, createdAt: { gte: since } },
-        distinct: ["sessionId"],
-        select: { sessionId: true },
-      }),
-      prisma.event.findMany({
-        where: { siteId, createdAt: { gte: since } },
-        distinct: ["visitorId"],
-        select: { visitorId: true },
-      }),
-    ]);
+  const since30 = daysAgo(30);
+  const since7 = daysAgo(7);
+
+  const [
+    rollups,
+    recentEvents,
+    topPages,
+    pageviews30d,
+    sessions,
+    uniques,
+    goals,
+    funnels,
+    conversions30,
+    conversions7,
+  ] = await Promise.all([
+    prisma.dailyRollup.findMany({
+      where: { siteId, date: { gte: since30.toISOString().slice(0, 10) } },
+      orderBy: { date: "asc" },
+    }),
+    prisma.event.findMany({
+      where: { siteId },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+    }),
+    prisma.event.groupBy({
+      by: ["path"],
+      where: { siteId, type: "pageview", createdAt: { gte: since30 } },
+      _count: { path: true },
+      orderBy: { _count: { path: "desc" } },
+      take: 8,
+    }),
+    prisma.event.count({
+      where: { siteId, type: "pageview", createdAt: { gte: since30 } },
+    }),
+    prisma.event.findMany({
+      where: { siteId, createdAt: { gte: since30 } },
+      distinct: ["sessionId"],
+      select: { sessionId: true },
+    }),
+    prisma.event.findMany({
+      where: { siteId, createdAt: { gte: since30 } },
+      distinct: ["visitorId"],
+      select: { visitorId: true },
+    }),
+    prisma.conversionGoal.findMany({
+      where: { siteId },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.funnel.findMany({
+      where: { siteId },
+      include: { steps: { orderBy: { order: "asc" } } },
+      orderBy: { createdAt: "asc" },
+    }),
+    prisma.conversion.findMany({
+      where: { siteId, createdAt: { gte: since30 } },
+      include: { goal: { select: { id: true, name: true, type: true } } },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.conversion.findMany({
+      where: { siteId, createdAt: { gte: since7 } },
+      select: { createdAt: true },
+    }),
+  ]);
 
   const maxPv = Math.max(1, ...rollups.map((r) => r.pageviews));
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+  const byGoal30 = goals.map((g) => ({
+    goalId: g.id,
+    name: g.name,
+    type: g.type,
+    count: conversions30.filter((c) => c.goalId === g.id).length,
+  }));
+
+  const utmMap = new Map<string, number>();
+  for (const c of conversions30) {
+    const key = c.utmSource
+      ? `${c.utmSource}${c.utmMedium ? ` / ${c.utmMedium}` : ""}${c.utmCampaign ? ` / ${c.utmCampaign}` : ""}`
+      : "(none)";
+    utmMap.set(key, (utmMap.get(key) || 0) + 1);
+  }
+  const utmBreakdown = [...utmMap.entries()]
+    .map(([source, count]) => ({ source, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 15);
 
   return (
     <div className="space-y-8">
@@ -69,10 +137,11 @@ export default async function SiteDetailPage({
         <p className="text-[var(--muted)]">{site.domain}</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
         <Stat label="Pageviews (30d)" value={String(pageviews30d)} />
         <Stat label="Sessions (30d)" value={String(sessions.length)} />
         <Stat label="Uniques (30d)" value={String(uniques.length)} />
+        <Stat label="Conversions (30d)" value={String(conversions30.length)} />
       </div>
 
       <section className="sp-card p-5">
@@ -105,6 +174,38 @@ export default async function SiteDetailPage({
         )}
       </section>
 
+      <div>
+        <h2
+          className="mb-4 text-2xl font-semibold tracking-tight"
+          style={{ fontFamily: "var(--font-display), Georgia, serif" }}
+        >
+          Conversions
+        </h2>
+        <ConversionStats
+          total7={conversions7.length}
+          total30={conversions30.length}
+          trend7={buildTrend(conversions7, 7)}
+          trend30={buildTrend(conversions30, 30)}
+          byGoal30={byGoal30}
+          utmBreakdown={utmBreakdown}
+          recent={conversions30.slice(0, 15).map((c) => ({
+            id: c.id,
+            goalName: c.goal.name,
+            goalType: c.goal.type,
+            path: c.path,
+            eventName: c.eventName,
+            utmSource: c.utmSource,
+            utmMedium: c.utmMedium,
+            utmCampaign: c.utmCampaign,
+            createdAt: c.createdAt,
+          }))}
+        />
+      </div>
+
+      <GoalsPanel siteId={site.id} initialGoals={goals} />
+
+      <FunnelsPanel siteId={site.id} initialFunnels={funnels} />
+
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="sp-card p-5">
           <h2 className="mb-3 text-lg font-semibold">Top pages</h2>
@@ -126,7 +227,7 @@ export default async function SiteDetailPage({
         </section>
 
         <section className="sp-card p-5">
-          <h2 className="mb-3 text-lg font-semibold">Recent visitors</h2>
+          <h2 className="mb-3 text-lg font-semibold">Recent activity</h2>
           {recentEvents.length === 0 ? (
             <p className="text-sm text-[var(--muted)]">No recent events.</p>
           ) : (
@@ -137,7 +238,11 @@ export default async function SiteDetailPage({
                   className="border-b border-[var(--line)] pb-2 last:border-0"
                 >
                   <div className="flex justify-between gap-2">
-                    <span className="font-mono text-xs">{ev.path}</span>
+                    <span className="font-mono text-xs">
+                      {ev.type === "event"
+                        ? `event:${ev.eventName}`
+                        : ev.path}
+                    </span>
                     <span className="text-xs text-[var(--muted)]">
                       {ev.createdAt.toISOString().slice(11, 19)}
                     </span>

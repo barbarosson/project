@@ -22,6 +22,10 @@ export function SnippetInstall({
       <pre className="overflow-x-auto rounded-lg bg-[var(--ink)] p-4 text-xs text-[#e8f5ef]">
         {snippet}
       </pre>
+      <p className="mt-4 text-sm text-[var(--muted)]">Custom event (conversion):</p>
+      <pre className="mt-1 overflow-x-auto rounded-lg bg-[var(--ink)] p-4 text-xs text-[#e8f5ef]">
+        {`sitepulse.track('signup_complete');`}
+      </pre>
       <button
         type="button"
         className="sp-btn sp-btn-ghost mt-3"
@@ -31,7 +35,7 @@ export function SnippetInstall({
           setTimeout(() => setCopied(false), 1500);
         }}
       >
-        {copied ? "Copied" : "Copy"}
+        {copied ? "Copied" : "Copy snippet"}
       </button>
     </section>
   );

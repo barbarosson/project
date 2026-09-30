@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { matchesEvent, matchesUrl } from "@/lib/conversions";
 import {
   clientIp,
   cookielessVisitorId,
@@ -12,8 +13,9 @@ import {
 
 const schema = z.object({
   k: z.string().min(8).max(64),
-  type: z.enum(["pageview"]).default("pageview"),
+  type: z.enum(["pageview", "event"]).default("pageview"),
   path: z.string().min(1).max(2048),
+  eventName: z.string().min(1).max(120).optional().nullable(),
   title: z.string().max(512).optional().nullable(),
   referrer: z.string().max(2048).optional().nullable(),
   url: z.string().max(4096).optional().nullable(),
@@ -37,8 +39,18 @@ export async function POST(req: NextRequest) {
     const json = await req.json();
     const body = schema.parse(json);
 
+    if (body.type === "event" && !body.eventName?.trim()) {
+      return cors(
+        NextResponse.json(
+          { error: "eventName required for type=event" },
+          { status: 400 }
+        )
+      );
+    }
+
     const site = await prisma.site.findUnique({
       where: { publicKey: body.k },
+      include: { conversionGoals: true },
     });
     if (!site) {
       return cors(
@@ -62,7 +74,6 @@ export async function POST(req: NextRequest) {
         day,
         siteId: site.id,
       });
-      // Ephemeral tab session from client is OK; else derive short session
       sessionId =
         sessionId ||
         cookielessVisitorId({
@@ -82,12 +93,17 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const path = body.path.startsWith("/") ? body.path : `/${body.path}`;
+    // Preserve query in path for display if provided as full path+search
+    const rawPath = body.path.startsWith("/") ? body.path : `/${body.path}`;
+    const storedPath = rawPath.slice(0, 2048);
+    const eventName =
+      body.type === "event" ? body.eventName!.trim().slice(0, 120) : null;
 
-    await prisma.event.create({
+    const event = await prisma.event.create({
       data: {
         type: body.type,
-        path: path.slice(0, 2048),
+        path: storedPath,
+        eventName,
         title: body.title?.slice(0, 512) ?? null,
         referrer: body.referrer?.slice(0, 2048) ?? null,
         utmSource: utm.utmSource,
@@ -96,31 +112,69 @@ export async function POST(req: NextRequest) {
         visitorId: visitorId!,
         sessionId: sessionId!,
         deviceClass: deviceClass(ua),
-        country: null, // geo deferred; privacy-honest placeholder
+        country: null,
         ipTruncated,
         userAgent: ua?.slice(0, 512) ?? null,
         siteId: site.id,
       },
     });
 
-    // Upsert daily rollup (best-effort; unique count approximate via +1)
-    await prisma.dailyRollup.upsert({
-      where: {
-        siteId_date: { siteId: site.id, date: day },
-      },
-      create: {
-        siteId: site.id,
-        date: day,
-        pageviews: 1,
-        sessions: 1,
-        uniques: 1,
-      },
-      update: {
-        pageviews: { increment: 1 },
-      },
-    });
+    if (body.type === "pageview") {
+      await prisma.dailyRollup.upsert({
+        where: {
+          siteId_date: { siteId: site.id, date: day },
+        },
+        create: {
+          siteId: site.id,
+          date: day,
+          pageviews: 1,
+          sessions: 1,
+          uniques: 1,
+        },
+        update: {
+          pageviews: { increment: 1 },
+        },
+      });
+    }
 
-    return cors(NextResponse.json({ ok: true }));
+    // Match conversion goals (once per session per goal)
+    const convertedGoalIds: string[] = [];
+    for (const goal of site.conversionGoals) {
+      let hit = false;
+      if (goal.type === "url" && body.type === "pageview") {
+        hit = matchesUrl(storedPath, goal.matchValue, goal.matchMode);
+      } else if (goal.type === "event" && body.type === "event") {
+        hit = matchesEvent(eventName, goal.matchValue);
+      }
+      if (!hit) continue;
+
+      try {
+        await prisma.conversion.create({
+          data: {
+            goalId: goal.id,
+            siteId: site.id,
+            visitorId: visitorId!,
+            sessionId: sessionId!,
+            path: storedPath,
+            eventName,
+            utmSource: utm.utmSource,
+            utmMedium: utm.utmMedium,
+            utmCampaign: utm.utmCampaign,
+          },
+        });
+        convertedGoalIds.push(goal.id);
+      } catch {
+        // Unique (goalId, sessionId) — already converted this session
+      }
+    }
+
+    return cors(
+      NextResponse.json({
+        ok: true,
+        eventId: event.id,
+        conversions: convertedGoalIds.length,
+      })
+    );
   } catch (err) {
     if (err instanceof z.ZodError) {
       return cors(
