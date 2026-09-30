@@ -153,6 +153,7 @@ sitepulse.track('signup_complete');
 | `npm run start` | Start production server |
 | `npm run db:setup` | `prisma db push` + seed |
 | `npm run db:seed` | Re-seed demo data |
+| `npm run retention:purge` | Delete events past site retention (`-- --dry-run` OK) |
 
 ## API (M3 additions)
 
