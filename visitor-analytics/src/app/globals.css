@@ -63,6 +63,21 @@ a {
   border-color: var(--brand);
 }
 
+/* Layout helpers in plain CSS so nav/buttons still space if utilities fail */
+.sp-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sp-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .sp-btn {
   display: inline-flex;
   align-items: center;
@@ -75,6 +90,8 @@ a {
   border: 1px solid transparent;
   cursor: pointer;
   transition: transform 0.15s ease, background 0.15s ease;
+  margin: 0;
+  white-space: nowrap;
 }
 
 .sp-btn:hover {

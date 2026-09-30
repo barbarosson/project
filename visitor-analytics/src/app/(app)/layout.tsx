@@ -32,7 +32,7 @@ export default async function AppLayout({
             >
               SitePulse
             </Link>
-            <nav className="flex flex-wrap gap-4 text-sm font-medium text-[var(--muted)]">
+            <nav className="sp-nav text-sm font-medium text-[var(--muted)]">
               <Link href="/dashboard" className="hover:text-[var(--ink)]">
                 Portfolio
               </Link>

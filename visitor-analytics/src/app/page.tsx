@@ -36,7 +36,7 @@ export default async function HomePage() {
             Track conversions across every client site — without GA4 complexity
             or privacy theater. Cookie or cookieless, per site.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="sp-row mt-8">
             <Link href="/register" className="sp-btn sp-btn-primary">
               Start free
             </Link>
@@ -87,7 +87,7 @@ export default async function HomePage() {
           <li>Define URL or event goals and a 2–5 step funnel.</li>
           <li>Invite clients read-only. Watch the stream. Upgrade via Lemon Squeezy when ready.</li>
         </ol>
-        <div className="mt-6 flex flex-wrap gap-3">
+        <div className="sp-row mt-6">
           <Link href="/docs" className="sp-btn sp-btn-ghost">
             Read docs
           </Link>
