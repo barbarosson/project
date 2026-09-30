@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "db:push": "prisma db push",
+    "db:validate-push": "bash scripts/validate-env-and-db-push.sh",
     "db:seed": "tsx prisma/seed.ts",
     "db:setup": "prisma db push && tsx prisma/seed.ts",
     "retention:purge": "tsx scripts/retention-purge.ts",
