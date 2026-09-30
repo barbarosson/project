@@ -55,9 +55,12 @@ cd visitor-analytics
 cp .env.example .env
 # Edit .env: DATABASE_URL (pooler), DIRECT_URL (direct), AUTH_SECRET, NEXT_PUBLIC_APP_URL
 npm install
-npx prisma db push
+npm run db:validate-push   # checks env shape, then prisma db push (needs both URLs)
+# Or: npx prisma db push
 npm run db:seed   # optional demo users; skip for a clean prod DB
 ```
+
+Copy-paste UI checklist + env template (Project store): `docs/launch-checklist.md`.
 
 Generate `AUTH_SECRET`:
 
