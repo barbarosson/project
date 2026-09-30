@@ -26,7 +26,7 @@ model Organization {
   pageviewsUsed    Int          @default(0)
   /// YYYY-MM for current quota window
   quotaMonth       String       @default("")
-  softWarningPct   Int          @default(80)
+  softWarningPct   Int          @default(90)
   lsCustomerId     String?
   lsSubscriptionId String?
   /// none | active | past_due | cancelled | stub
@@ -83,6 +83,8 @@ model Site {
   publicKey       String           @unique
   /// first_party_cookie | cookieless
   identityMode    String           @default("first_party_cookie")
+  /// When true, snippet waits for sitepulse.consent(true) before tracking
+  requireConsent  Boolean          @default(false)
   ipTruncate      Boolean          @default(true)
   retentionDays   Int              @default(90)
   createdAt       DateTime         @default(now())

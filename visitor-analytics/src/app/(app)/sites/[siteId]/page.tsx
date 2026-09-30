@@ -12,6 +12,7 @@ import { ConversionStats } from "@/components/conversion-stats";
 import { FunnelsPanel } from "@/components/funnels-panel";
 import { GoalsPanel } from "@/components/goals-panel";
 import { SiteSettingsForm } from "@/components/site-settings-form";
+import { ExportPanel } from "@/components/export-panel";
 import { SnippetInstall } from "@/components/snippet-install";
 import { VisitorStream } from "@/components/visitor-stream";
 
@@ -284,11 +285,13 @@ export default async function SiteDetailPage({
               name: site.name,
               domain: site.domain,
               identityMode: site.identityMode,
+              requireConsent: site.requireConsent,
               ipTruncate: site.ipTruncate,
               retentionDays: site.retentionDays,
               publicKey: site.publicKey,
             }}
           />
+          <ExportPanel siteId={site.id} />
         </>
       )}
     </div>

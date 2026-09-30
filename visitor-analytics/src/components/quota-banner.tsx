@@ -13,6 +13,7 @@ export function QuotaBanner({
   hardExceeded: boolean;
   planLabel: string;
 }) {
+  // Soft warning defaults to 90% of monthly pageview limit (in-app only; no email in M4)
   if (!softWarning && !hardExceeded) return null;
   return (
     <div
@@ -24,10 +25,16 @@ export function QuotaBanner({
           : "color-mix(in srgb, var(--accent) 10%, white)",
       }}
     >
-      <strong>{hardExceeded ? "Quota exceeded" : "Approaching quota"}</strong>
+      <strong>
+        {hardExceeded
+          ? "Quota exceeded"
+          : usagePct >= 90
+            ? "Quota warning (90%+)"
+            : "Approaching quota"}
+      </strong>
       {" — "}
       {planLabel}: {used.toLocaleString()} / {limit.toLocaleString()} PV (
-      {usagePct}%).{" "}
+      {usagePct}%). In-app notice only (no email provider in M4).{" "}
       <a href="/billing" className="font-semibold underline">
         View billing
       </a>

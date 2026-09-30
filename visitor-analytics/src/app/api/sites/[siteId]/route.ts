@@ -11,6 +11,7 @@ const patchSchema = z.object({
   name: z.string().min(1).max(120).optional(),
   domain: z.string().min(1).max(255).optional(),
   identityMode: z.enum(["first_party_cookie", "cookieless"]).optional(),
+  requireConsent: z.boolean().optional(),
   ipTruncate: z.boolean().optional(),
   retentionDays: z.number().int().min(1).max(730).optional(),
 });

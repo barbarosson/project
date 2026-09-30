@@ -9,6 +9,7 @@ type Props = {
     name: string;
     domain: string;
     identityMode: string;
+    requireConsent: boolean;
     ipTruncate: boolean;
     retentionDays: number;
     publicKey: string;
@@ -34,6 +35,7 @@ export function SiteSettingsForm({ siteId, initial }: Props) {
         name: fd.get("name"),
         domain: fd.get("domain"),
         identityMode: fd.get("identityMode"),
+        requireConsent: fd.get("requireConsent") === "on",
         ipTruncate: fd.get("ipTruncate") === "on",
         retentionDays: Number(fd.get("retentionDays")),
       }),
@@ -53,7 +55,7 @@ export function SiteSettingsForm({ siteId, initial }: Props) {
       <h2 className="text-lg font-semibold">Site settings</h2>
       <p className="mb-4 text-sm text-[var(--muted)]">
         Privacy defaults: IP truncation on, retention {initial.retentionDays}{" "}
-        days (purge cron deferred).
+        days. Run <code>npm run retention:purge</code> to delete expired events.
       </p>
       <form onSubmit={onSubmit} className="grid max-w-xl gap-4">
         <div>
@@ -108,6 +110,15 @@ export function SiteSettingsForm({ siteId, initial }: Props) {
             className="sp-input"
           />
         </div>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            name="requireConsent"
+            defaultChecked={initial.requireConsent}
+          />
+          Require consent before tracking (
+          <code>sitepulse.consent(true)</code>)
+        </label>
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"

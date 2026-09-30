@@ -1,4 +1,4 @@
-# SitePulse (M1–M3)
+# SitePulse (M1–M4)
 
 Privacy-honest website analytics — **placeholder brand** (rename later).  
 Isolated greenfield app under `visitor-analytics/` (does not mix with the root ERP/CMS in this monorepo).
@@ -29,10 +29,21 @@ Isolated greenfield app under `visitor-analytics/` (does not mix with the root E
 - **Lemon Squeezy MoR skeleton** — checkout + webhook entitlement; stubs when keys absent
 - Portfolio UX — site cards with 7d PV/conversions
 
-## Deferred
+### M4
+- **`requireConsent`** site setting — snippet waits for `sitepulse.consent(true)`
+- Public **Pricing** (`/pricing`) — Starter $29 / Agency $79 / Scale $199 → MoR checkout stub
+- **Docs** — install, events, conversions/funnels, DPA outline
+- **Privacy / Terms / DPA** stub pages (privacy-honest; no “no personal data”)
+- **Retention purge** script: `npm run retention:purge` ([`--dry-run`](scripts/retention-purge.ts))
+- Quota **in-app banner at 90%** (email skipped — no provider)
+- **CSV export** for pageviews / conversions (30d)
+- Polished marketing landing `/`
 
-- Live MoR account (keys optional), geo IP, retention cron job
-- ClickHouse, replay/heatmap, org enrichment, AppSumo LTD (banned)
+## Deferred / launch gaps
+
+- Live Lemon Squeezy store + keys, production domain, counsel-reviewed legal
+- Invite email delivery, geo IP, automated retention cron, ClickHouse
+- Replay/heatmap, org enrichment, AppSumo LTD (banned)
 
 ## Stack
 
@@ -122,7 +133,7 @@ sitepulse.track('signup_complete');
 ## Quota & MoR stub
 
 - Plans: Dev (1M PV, default), Starter 50k / Agency 300k / Scale 2M
-- Soft warning at 80% usage; hard limit returns `429` on pageview ingest
+- Soft warning at **90%** usage (in-app banner; no email); hard limit returns `429` on pageview ingest
 - Billing page: stub checkout without LS keys
 - Webhook stub test (no secret configured):
   ```bash
@@ -153,3 +164,22 @@ sitepulse.track('signup_complete');
 | GET/POST | `/api/invites/accept` | public (token) |
 | GET/POST | `/api/org/billing` | session / manage |
 | POST | `/api/webhooks/lemonsqueezy` | signature or stub header |
+| GET | `/api/sites/:id/export?type=pageviews\|conversions` | session |
+
+## Public pages (M4)
+
+| Path | |
+| --- | --- |
+| `/` | Marketing landing |
+| `/pricing` | Plans + MoR CTA |
+| `/docs` … | Install, events, conversions, DPA outline |
+| `/privacy` `/terms` `/dpa` | Legal stubs |
+
+## Retention
+
+```bash
+npm run retention:purge -- --dry-run
+npm run retention:purge
+```
+
+Deletes events/conversions older than each site’s `retentionDays` (default 90).

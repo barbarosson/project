@@ -26,6 +26,12 @@ export function SnippetInstall({
       <pre className="mt-1 overflow-x-auto rounded-lg bg-[var(--ink)] p-4 text-xs text-[#e8f5ef]">
         {`sitepulse.track('signup_complete');`}
       </pre>
+      <p className="mt-4 text-sm text-[var(--muted)]">
+        If &quot;Require consent&quot; is enabled in site settings:
+      </p>
+      <pre className="mt-1 overflow-x-auto rounded-lg bg-[var(--ink)] p-4 text-xs text-[#e8f5ef]">
+        {`sitepulse.consent(true); // after analytics consent`}
+      </pre>
       <button
         type="button"
         className="sp-btn sp-btn-ghost mt-3"

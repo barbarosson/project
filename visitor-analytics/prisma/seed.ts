@@ -39,7 +39,7 @@ async function main() {
       pageviewLimit: 1_000_000,
       pageviewsUsed: 120,
       quotaMonth: month,
-      softWarningPct: 80,
+      softWarningPct: 90,
       billingStatus: "none",
       members: {
         create: { userId: user.id, role: "owner" },
@@ -66,6 +66,7 @@ async function main() {
       domain: "privacy.example.com",
       publicKey: "sp_demo_cookieless_0002",
       identityMode: "cookieless",
+      requireConsent: true,
       ipTruncate: true,
       retentionDays: 90,
       orgId: org.id,

@@ -29,7 +29,7 @@ export function quotaUsagePct(used: number, limit: number): number {
 export function isSoftWarning(
   used: number,
   limit: number,
-  softWarningPct = 80
+  softWarningPct = 90
 ): boolean {
   return used >= Math.floor((limit * softWarningPct) / 100);
 }

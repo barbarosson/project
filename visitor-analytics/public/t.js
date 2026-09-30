@@ -1,15 +1,17 @@
 /**
- * SitePulse tracking snippet (M1 + M2)
+ * SitePulse tracking snippet (M1–M4)
  * Install:
  *   <script defer src="https://YOUR_HOST/t.js" data-site="YOUR_SITE_KEY"></script>
  *
  * Custom events:
  *   sitepulse.track('signup_complete');
- *   sitepulse.pageview(); // force pageview
+ *   sitepulse.pageview();
+ *
+ * Consent (when site.requireConsent = true):
+ *   sitepulse.consent(true);  // start tracking
+ *   sitepulse.consent(false); // stop (does not delete prior events)
  *
  * Identity mode from /api/config?k=KEY
- * - first_party_cookie: _sp_vid / _sp_sid cookies
- * - cookieless: memory session; visitor derived server-side
  */
 (function () {
   "use strict";
@@ -34,8 +36,12 @@
   var COOKIE_SID = "_sp_sid";
   var SESSION_MS = 30 * 60 * 1000;
   var identityMode = "first_party_cookie";
+  var requireConsent = false;
+  var consentGranted = false;
+  var booted = false;
   var ready = false;
   var queue = [];
+  var historyHooked = false;
 
   function uuid() {
     if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
@@ -90,7 +96,12 @@
     return identityMode === "cookieless" ? getCookielessIds() : getCookieIds();
   }
 
+  function canTrack() {
+    return ready && (!requireConsent || consentGranted);
+  }
+
   function send(payload) {
+    if (!canTrack()) return;
     var body = JSON.stringify(payload);
     var url = base + "/api/ingest";
     if (navigator.sendBeacon) {
@@ -110,6 +121,10 @@
   }
 
   function trackPageview() {
+    if (!canTrack()) {
+      queue.push({ kind: "pageview" });
+      return;
+    }
     var id = ids();
     send({
       k: siteKey,
@@ -125,6 +140,10 @@
 
   function trackEvent(name) {
     if (!name || typeof name !== "string") return;
+    if (!canTrack()) {
+      queue.push({ kind: "event", name: name });
+      return;
+    }
     var id = ids();
     send({
       k: siteKey,
@@ -140,6 +159,7 @@
   }
 
   function runQueued() {
+    if (!canTrack()) return;
     while (queue.length) {
       var item = queue.shift();
       if (item.kind === "pageview") trackPageview();
@@ -147,12 +167,9 @@
     }
   }
 
-  function boot(mode) {
-    identityMode = mode || "first_party_cookie";
-    ready = true;
-    trackPageview();
-    runQueued();
-
+  function hookHistory() {
+    if (historyHooked) return;
+    historyHooked = true;
     var push = history.pushState;
     history.pushState = function () {
       push.apply(history, arguments);
@@ -161,38 +178,70 @@
     window.addEventListener("popstate", trackPageview);
   }
 
+  function startTracking() {
+    if (booted) {
+      runQueued();
+      return;
+    }
+    booted = true;
+    ready = true;
+    trackPageview();
+    runQueued();
+    hookHistory();
+  }
+
+  function boot(cfg) {
+    identityMode = (cfg && cfg.identityMode) || "first_party_cookie";
+    requireConsent = !!(cfg && cfg.requireConsent);
+    ready = true;
+
+    // data-require-consent attribute can force wait even if config lags
+    if (script.getAttribute("data-require-consent") === "true") {
+      requireConsent = true;
+    }
+
+    if (requireConsent && !consentGranted) {
+      // Wait for sitepulse.consent(true)
+      return;
+    }
+    startTracking();
+  }
+
   fetch(base + "/api/config?k=" + encodeURIComponent(siteKey), {
     mode: "cors",
     credentials: "omit",
   })
     .then(function (r) {
-      return r.ok ? r.json() : { identityMode: "first_party_cookie" };
+      return r.ok
+        ? r.json()
+        : { identityMode: "first_party_cookie", requireConsent: false };
     })
-    .then(function (cfg) {
-      boot(cfg.identityMode || "first_party_cookie");
-    })
+    .then(boot)
     .catch(function () {
-      boot("first_party_cookie");
+      boot({ identityMode: "first_party_cookie", requireConsent: false });
     });
 
   window.sitepulse = {
-    /** Force a pageview, or track a named custom event. */
     track: function (name) {
       if (typeof name === "string" && name.length) {
-        if (!ready) queue.push({ kind: "event", name: name });
-        else trackEvent(name);
+        trackEvent(name);
         return;
       }
-      if (!ready) queue.push({ kind: "pageview" });
-      else trackPageview();
+      trackPageview();
     },
     pageview: function () {
-      if (!ready) queue.push({ kind: "pageview" });
-      else trackPageview();
+      trackPageview();
     },
     event: function (name) {
-      if (!ready) queue.push({ kind: "event", name: name });
-      else trackEvent(name);
+      trackEvent(name);
+    },
+    /** Grant or revoke analytics consent when requireConsent is enabled. */
+    consent: function (granted) {
+      consentGranted = !!granted;
+      if (consentGranted) startTracking();
+    },
+    hasConsent: function () {
+      return !requireConsent || consentGranted;
     },
   };
 })();

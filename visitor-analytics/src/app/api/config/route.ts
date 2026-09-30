@@ -15,6 +15,7 @@ export async function GET(req: NextRequest) {
     where: { publicKey: key },
     select: {
       identityMode: true,
+      requireConsent: true,
       domain: true,
       publicKey: true,
     },
@@ -26,6 +27,7 @@ export async function GET(req: NextRequest) {
 
   const res = NextResponse.json({
     identityMode: site.identityMode,
+    requireConsent: site.requireConsent,
     domain: site.domain,
   });
   res.headers.set("Access-Control-Allow-Origin", "*");
