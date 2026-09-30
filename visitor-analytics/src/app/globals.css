@@ -1,0 +1,123 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f4f7f5;
+  --bg-elevated: #ffffff;
+  --ink: #14201a;
+  --muted: #5a6b62;
+  --line: #d5e0da;
+  --brand: #0f6b4c;
+  --brand-ink: #083d2c;
+  --accent: #c45c26;
+  --danger: #b42318;
+  --ok: #0f6b4c;
+  --chart: #0f6b4c;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-ink: var(--brand-ink);
+  --color-accent: var(--accent);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+}
+
+body {
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #d9efe4 0%, transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, #f3e6d8 0%, transparent 50%),
+    var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sp-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.sp-input {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  background: #fff;
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+.sp-input:focus {
+  outline: 2px solid color-mix(in srgb, var(--brand) 35%, white);
+  border-color: var(--brand);
+}
+
+/* Layout helpers in plain CSS so nav/buttons still space if utilities fail */
+.sp-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sp-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.sp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.sp-btn:hover {
+  transform: translateY(-1px);
+}
+
+.sp-btn-primary {
+  background: var(--brand);
+  color: #fff;
+}
+
+.sp-btn-primary:hover {
+  background: var(--brand-ink);
+}
+
+.sp-btn-ghost {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.sp-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 0.35rem;
+  letter-spacing: 0.02em;
+}

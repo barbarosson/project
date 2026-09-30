@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String       @id @default(cuid())
+  email        String       @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime     @default(now())
+  memberships  Membership[]
+}
+
+model Organization {
+  id               String       @id @default(cuid())
+  name             String
+  createdAt        DateTime     @default(now())
+  /// dev | starter | agency | scale
+  plan             String       @default("dev")
+  pageviewLimit    Int          @default(1000000)
+  pageviewsUsed    Int          @default(0)
+  /// YYYY-MM for current quota window
+  quotaMonth       String       @default("")
+  softWarningPct   Int          @default(90)
+  lsCustomerId     String?
+  lsSubscriptionId String?
+  /// none | active | past_due | cancelled | stub
+  billingStatus    String       @default("none")
+  members          Membership[]
+  sites            Site[]
+  invites          Invite[]
+}
+
+model Membership {
+  id         String       @id @default(cuid())
+  /// owner | admin | analyst | client
+  role       String       @default("owner")
+  userId     String
+  orgId      String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  siteAccess SiteAccess[]
+
+  @@unique([userId, orgId])
+}
+
+model SiteAccess {
+  id           String     @id @default(cuid())
+  membershipId String
+  siteId       String
+  membership   Membership @relation(fields: [membershipId], references: [id], onDelete: Cascade)
+  site         Site       @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([membershipId, siteId])
+}
+
+model Invite {
+  id         String       @id @default(cuid())
+  email      String
+  token      String       @unique
+  role       String       @default("client")
+  /// JSON array of site IDs the client may view
+  siteIds    String       @default("[]")
+  invitedBy  String
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime     @default(now())
+  orgId      String
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, email])
+}
+
+model Site {
+  id              String           @id @default(cuid())
+  name            String
+  domain          String
+  publicKey       String           @unique
+  /// first_party_cookie | cookieless
+  identityMode    String           @default("first_party_cookie")
+  /// When true, snippet waits for sitepulse.consent(true) before tracking
+  requireConsent  Boolean          @default(false)
+  ipTruncate      Boolean          @default(true)
+  retentionDays   Int              @default(90)
+  createdAt       DateTime         @default(now())
+  orgId           String
+  org             Organization     @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  events          Event[]
+  dailyRollups    DailyRollup[]
+  conversionGoals ConversionGoal[]
+  conversions     Conversion[]
+  funnels         Funnel[]
+  siteAccess      SiteAccess[]
+}
+
+model Event {
+  id           String   @id @default(cuid())
+  /// pageview | event
+  type         String   @default("pageview")
+  path         String
+  /// custom event name when type=event
+  eventName    String?
+  title        String?
+  referrer     String?
+  utmSource    String?
+  utmMedium    String?
+  utmCampaign  String?
+  visitorId    String
+  sessionId    String
+  deviceClass  String?
+  country      String?
+  ipTruncated  String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+  siteId       String
+  site         Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId, createdAt])
+  @@index([siteId, path])
+  @@index([siteId, sessionId])
+  @@index([siteId, eventName])
+}
+
+model DailyRollup {
+  id         String   @id @default(cuid())
+  date       String
+  pageviews  Int      @default(0)
+  sessions   Int      @default(0)
+  uniques    Int      @default(0)
+  siteId     String
+  site       Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([siteId, date])
+}
+
+model ConversionGoal {
+  id          String       @id @default(cuid())
+  name        String
+  /// url | event
+  type        String
+  matchValue  String
+  matchMode   String       @default("exact")
+  createdAt   DateTime     @default(now())
+  siteId      String
+  site        Site         @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  conversions Conversion[]
+
+  @@index([siteId])
+}
+
+model Conversion {
+  id          String         @id @default(cuid())
+  visitorId   String
+  sessionId   String
+  path        String?
+  eventName   String?
+  utmSource   String?
+  utmMedium   String?
+  utmCampaign String?
+  createdAt   DateTime       @default(now())
+  goalId      String
+  siteId      String
+  goal        ConversionGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  site        Site           @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([goalId, sessionId])
+  @@index([siteId, createdAt])
+  @@index([goalId, createdAt])
+}
+
+model Funnel {
+  id        String       @id @default(cuid())
+  name      String
+  createdAt DateTime     @default(now())
+  siteId    String
+  site      Site         @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  steps     FunnelStep[]
+
+  @@index([siteId])
+}
+
+model FunnelStep {
+  id         String @id @default(cuid())
+  name       String
+  order      Int
+  type       String
+  matchValue String
+  matchMode  String @default("exact")
+  funnelId   String
+  funnel     Funnel @relation(fields: [funnelId], references: [id], onDelete: Cascade)
+
+  @@unique([funnelId, order])
+}
