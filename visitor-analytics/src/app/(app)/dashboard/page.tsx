@@ -6,9 +6,12 @@ import {
   getSession,
   listAccessibleSites,
 } from "@/lib/auth";
+import { brandDisplayName, brandLogoUrl } from "@/lib/branding";
 import { prisma } from "@/lib/prisma";
 import { getOrgQuota } from "@/lib/quota";
+import { BrandMark } from "@/components/brand-mark";
 import { QuotaBanner } from "@/components/quota-banner";
+import { SharedLinksPanel } from "@/components/shared-links-panel";
 import { VisitorStream } from "@/components/visitor-stream";
 
 export default async function DashboardPage() {
@@ -41,8 +44,11 @@ export default async function DashboardPage() {
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
   const siteIds = sites.map((s) => s.id);
   const quota = await getOrgQuota(membership.orgId);
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const displayName = brandDisplayName(membership.org);
+  const logoUrl = brandLogoUrl(membership.org);
 
-  const [pv7d, conversions7d, siteStats] = await Promise.all([
+  const [pv7d, conversions7d, siteStats, orgShares] = await Promise.all([
     siteIds.length
       ? prisma.event.count({
           where: {
@@ -74,16 +80,39 @@ export default async function DashboardPage() {
         return { site, pv, conv };
       })
     ),
+    manage
+      ? prisma.sharedLink.findMany({
+          where: {
+            orgId: membership.orgId,
+            scope: "org",
+            revokedAt: null,
+          },
+          orderBy: { createdAt: "desc" },
+          include: {
+            site: { select: { id: true, name: true, domain: true } },
+          },
+        })
+      : Promise.resolve([]),
   ]);
 
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">
-            {membership.org.name}
-            {membership.role === "client" ? " · Client view" : ""}
-          </p>
+          {membership.role === "client" ? (
+            <div className="mb-2">
+              <BrandMark
+                displayName={displayName}
+                logoUrl={logoUrl}
+                size="sm"
+              />
+              <p className="mt-1 text-sm text-[var(--muted)]">Client view</p>
+            </div>
+          ) : (
+            <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[var(--muted)]">
+              {displayName}
+            </p>
+          )}
           <h1
             className="mt-1 text-3xl font-semibold tracking-tight"
             style={{ fontFamily: "var(--font-display), Georgia, serif" }}
@@ -204,6 +233,23 @@ export default async function DashboardPage() {
           </div>
         )}
       </section>
+
+      {manage && (
+        <SharedLinksPanel
+          scope="org"
+          initialLinks={orgShares.map((l) => ({
+            id: l.id,
+            scope: l.scope,
+            label: l.label,
+            siteId: l.siteId,
+            site: l.site,
+            hasPassword: Boolean(l.passwordHash),
+            expiresAt: l.expiresAt?.toISOString() ?? null,
+            createdAt: l.createdAt.toISOString(),
+            url: `${appUrl}/share/${l.token}`,
+          }))}
+        />
+      )}
 
       <VisitorStream pollMs={10000} />
     </div>

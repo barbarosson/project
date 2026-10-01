@@ -16,6 +16,11 @@ export default function DocsHomePage() {
           </Link>
         </li>
         <li>
+          <Link href="/docs/proxy" className="text-[var(--brand)] underline">
+            First-party script proxy (adblock-friendly pattern)
+          </Link>
+        </li>
+        <li>
           <Link href="/docs/events" className="text-[var(--brand)] underline">
             Events / ingest API
           </Link>

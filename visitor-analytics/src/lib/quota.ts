@@ -99,10 +99,18 @@ export async function consumePageviewQuota(orgId: string) {
     data: { pageviewsUsed: { increment: 1 } },
   });
 
+  const snapshot = snapshotFromOrg(updated);
+  // Fire-and-forget in-app (+ optional email) when crossing soft/hard thresholds
+  if (snapshot.softWarning || snapshot.hardExceeded) {
+    void import("./digest")
+      .then((m) => m.maybeNotifyQuota(orgId))
+      .catch(() => undefined);
+  }
+
   return {
     allowed: true as const,
     org: updated,
-    snapshot: snapshotFromOrg(updated),
+    snapshot,
   };
 }
 

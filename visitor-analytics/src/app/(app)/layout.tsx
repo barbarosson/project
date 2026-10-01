@@ -6,7 +6,10 @@ import {
   getSession,
   getUserOrg,
 } from "@/lib/auth";
+import { brandDisplayName, brandLogoUrl } from "@/lib/branding";
+import { BrandMark } from "@/components/brand-mark";
 import { LogoutButton } from "@/components/logout-button";
+import { prisma } from "@/lib/prisma";
 
 export default async function AppLayout({
   children,
@@ -19,18 +22,39 @@ export default async function AppLayout({
   const membership = await getUserOrg(session.id);
   const write = membership ? canWrite(membership.role) : false;
   const manage = membership ? canManageTeam(membership.role) : false;
+  const isClient = membership?.role === "client";
+  const displayName = membership
+    ? brandDisplayName(membership.org)
+    : "SitePulse";
+  const logoUrl = membership ? brandLogoUrl(membership.org) : null;
+
+  const unread =
+    membership && !isClient
+      ? await prisma.notification.count({
+          where: { orgId: membership.orgId, readAt: null },
+        })
+      : 0;
 
   return (
     <div className="min-h-screen">
       <header className="border-b border-[var(--line)] bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-8">
-            <Link
-              href="/dashboard"
-              className="text-xl font-semibold tracking-tight"
-              style={{ fontFamily: "var(--font-display), Georgia, serif" }}
-            >
-              SitePulse
+            <Link href="/dashboard" className="block">
+              {isClient ? (
+                <BrandMark
+                  displayName={displayName}
+                  logoUrl={logoUrl}
+                  size="sm"
+                />
+              ) : (
+                <span
+                  className="text-xl font-semibold tracking-tight"
+                  style={{ fontFamily: "var(--font-display), Georgia, serif" }}
+                >
+                  SitePulse
+                </span>
+              )}
             </Link>
             <nav className="sp-nav text-sm font-medium text-[var(--muted)]">
               <Link href="/dashboard" className="hover:text-[var(--ink)]">
@@ -49,6 +73,15 @@ export default async function AppLayout({
                   Team
                 </Link>
               )}
+              {!isClient && (
+                <Link
+                  href="/notifications"
+                  className="hover:text-[var(--ink)]"
+                >
+                  Alerts
+                  {unread > 0 ? ` (${unread})` : ""}
+                </Link>
+              )}
               <Link href="/billing" className="hover:text-[var(--ink)]">
                 Billing
               </Link>
@@ -60,7 +93,7 @@ export default async function AppLayout({
           <div className="flex items-center gap-4 text-sm">
             <span className="text-[var(--muted)]">
               {session.email}
-              {membership?.role === "client" ? " · client" : ""}
+              {isClient ? " · client" : ""}
             </span>
             <LogoutButton />
           </div>

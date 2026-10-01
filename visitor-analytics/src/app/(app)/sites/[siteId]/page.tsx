@@ -2,15 +2,19 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
   assertSiteAccess,
+  canManageTeam,
   canWrite,
   getSession,
   getUserOrg,
 } from "@/lib/auth";
 import { dateKey, daysAgo } from "@/lib/conversions";
+import { buildJourneys } from "@/lib/journey";
 import { prisma } from "@/lib/prisma";
 import { ConversionStats } from "@/components/conversion-stats";
 import { FunnelsPanel } from "@/components/funnels-panel";
 import { GoalsPanel } from "@/components/goals-panel";
+import { JourneyPanel } from "@/components/journey-panel";
+import { SharedLinksPanel } from "@/components/shared-links-panel";
 import { SiteSettingsForm } from "@/components/site-settings-form";
 import { ExportPanel } from "@/components/export-panel";
 import { SnippetInstall } from "@/components/snippet-install";
@@ -44,6 +48,7 @@ export default async function SiteDetailPage({
   if (!site) notFound();
   const membership = await getUserOrg(session.id);
   const write = membership ? canWrite(membership.role) : false;
+  const manage = membership ? canManageTeam(membership.role) : false;
 
   const since30 = daysAgo(30);
   const since7 = daysAgo(7);
@@ -59,6 +64,9 @@ export default async function SiteDetailPage({
     funnels,
     conversions30,
     conversions7,
+    journeyEvents,
+    journeyConversions,
+    sharedLinks,
   ] = await Promise.all([
     prisma.dailyRollup.findMany({
       where: { siteId, date: { gte: since30.toISOString().slice(0, 10) } },
@@ -107,6 +115,26 @@ export default async function SiteDetailPage({
       where: { siteId, createdAt: { gte: since7 } },
       select: { createdAt: true },
     }),
+    prisma.event.findMany({
+      where: { siteId, createdAt: { gte: since7 } },
+      orderBy: { createdAt: "asc" },
+      take: 800,
+    }),
+    prisma.conversion.findMany({
+      where: { siteId, createdAt: { gte: since7 } },
+      include: { goal: { select: { name: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    }),
+    manage
+      ? prisma.sharedLink.findMany({
+          where: { orgId: site.orgId, siteId, revokedAt: null },
+          orderBy: { createdAt: "desc" },
+          include: {
+            site: { select: { id: true, name: true, domain: true } },
+          },
+        })
+      : Promise.resolve([]),
   ]);
 
   const maxPv = Math.max(1, ...rollups.map((r) => r.pageviews));
@@ -130,6 +158,23 @@ export default async function SiteDetailPage({
     .map(([source, count]) => ({ source, count }))
     .sort((a, b) => b.count - a.count)
     .slice(0, 15);
+
+  const journeys = buildJourneys({
+    events: journeyEvents,
+    conversions: journeyConversions.map((c) => ({
+      goalName: c.goal.name,
+      path: c.path,
+      eventName: c.eventName,
+      createdAt: c.createdAt,
+      sessionId: c.sessionId,
+      visitorId: c.visitorId,
+      utmSource: c.utmSource,
+      utmMedium: c.utmMedium,
+      utmCampaign: c.utmCampaign,
+    })),
+    identityMode: site.identityMode,
+    limit: 12,
+  });
 
   return (
     <div className="space-y-8">
@@ -215,6 +260,33 @@ export default async function SiteDetailPage({
         />
       </div>
 
+      <JourneyPanel
+        identityMode={site.identityMode}
+        rows={journeys.map((j) => ({
+          key: j.key,
+          visitorId: j.visitorId,
+          sessionId: j.sessionId,
+          firstTouch: {
+            ...j.firstTouch,
+            at: j.firstTouch.at.toISOString(),
+          },
+          pages: j.pages.map((p) => ({
+            path: p.path,
+            at: p.at.toISOString(),
+            type: p.type,
+          })),
+          conversion: j.conversion
+            ? {
+                goalName: j.conversion.goalName,
+                at: j.conversion.at.toISOString(),
+                path: j.conversion.path,
+                eventName: j.conversion.eventName,
+              }
+            : null,
+          identityNote: j.identityNote,
+        }))}
+      />
+
       <VisitorStream siteId={site.id} pollMs={8000} />
 
       {write ? (
@@ -279,6 +351,24 @@ export default async function SiteDetailPage({
           )}
         </section>
       </div>
+
+      {manage && (
+        <SharedLinksPanel
+          scope="site"
+          siteId={site.id}
+          initialLinks={sharedLinks.map((l) => ({
+            id: l.id,
+            scope: l.scope,
+            label: l.label,
+            siteId: l.siteId,
+            site: l.site,
+            hasPassword: Boolean(l.passwordHash),
+            expiresAt: l.expiresAt?.toISOString() ?? null,
+            createdAt: l.createdAt.toISOString(),
+            url: `${appUrl}/share/${l.token}`,
+          }))}
+        />
+      )}
 
       {write && (
         <>

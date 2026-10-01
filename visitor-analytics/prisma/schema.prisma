@@ -37,9 +37,22 @@ model Organization {
   lsSubscriptionId String?
   /// none | active | past_due | cancelled | stub
   billingStatus    String       @default("none")
+  /// White-label: public logo URL for client/share views
+  brandLogoUrl     String?
+  /// White-label: display name shown to clients (falls back to org name)
+  brandDisplayName String?
+  /// Weekly digest generation enabled
+  digestEnabled    Boolean      @default(true)
+  /// Spike = today PV >= avg daily PV (last 7d) * multiplier
+  spikeMultiplier  Float        @default(3)
+  lastDigestAt     DateTime?
+  lastQuotaNotifiedAt DateTime?
+  lastSpikeNotifiedAt DateTime?
   members          Membership[]
   sites            Site[]
   invites          Invite[]
+  sharedLinks      SharedLink[]
+  notifications    Notification[]
 }
 
 model Membership {
@@ -102,6 +115,45 @@ model Site {
   conversions     Conversion[]
   funnels         Funnel[]
   siteAccess      SiteAccess[]
+  sharedLinks     SharedLink[]
+}
+
+/// Salt-okunur shared dashboard link (site or org portfolio). Optional password.
+model SharedLink {
+  id           String        @id @default(cuid())
+  token        String        @unique
+  /// site | org
+  scope        String
+  label        String?
+  passwordHash String?
+  expiresAt    DateTime?
+  revokedAt    DateTime?
+  createdAt    DateTime      @default(now())
+  createdBy    String
+  orgId        String
+  siteId       String?
+  org          Organization  @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  site         Site?         @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, createdAt])
+  @@index([siteId])
+}
+
+/// In-app notifications (digest / quota / spike). Email is optional via env.
+model Notification {
+  id        String       @id @default(cuid())
+  orgId     String
+  /// digest_weekly | quota_warning | traffic_spike
+  type      String
+  title     String
+  body      String
+  /// JSON metadata
+  meta      String       @default("{}")
+  readAt    DateTime?
+  createdAt DateTime     @default(now())
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId, createdAt])
 }
 
 model Event {

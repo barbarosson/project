@@ -12,6 +12,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:setup": "prisma db push && tsx prisma/seed.ts",
     "retention:purge": "tsx scripts/retention-purge.ts",
+    "digest:weekly": "tsx scripts/weekly-digest.ts",
     "postinstall": "prisma generate"
   },
   "prisma": {

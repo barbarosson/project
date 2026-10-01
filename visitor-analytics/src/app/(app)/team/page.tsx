@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { canManageTeam, getSession, listAccessibleSites } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { BrandingPanel } from "@/components/branding-panel";
 import { TeamPanel } from "@/components/team-panel";
 import { BackLink } from "@/components/page-nav";
 
@@ -49,9 +50,18 @@ export default async function TeamPage() {
           Team & clients
         </h1>
         <p className="text-[var(--muted)]">
-          Invite clients with read-only access to selected sites.
+          Invite clients with read-only access to selected sites. Set white-label
+          branding for client and shared views.
         </p>
       </div>
+      <BrandingPanel
+        initial={{
+          brandLogoUrl: membership.org.brandLogoUrl,
+          brandDisplayName: membership.org.brandDisplayName,
+          digestEnabled: membership.org.digestEnabled,
+          spikeMultiplier: membership.org.spikeMultiplier,
+        }}
+      />
       <TeamPanel
         sites={sites.map((s) => ({
           id: s.id,

@@ -1,0 +1,7 @@
+# SitePulse example: Netlify first-party proxy (_redirects)
+# Copy to your customer site's public/_redirects (or Netlify UI redirects).
+# Replace YOUR_SITEPULSE_HOST with https://sitespulse.netlify.app (or your deploy).
+
+/sp.js  https://YOUR_SITEPULSE_HOST/api/script  200
+/api/sp/ingest  https://YOUR_SITEPULSE_HOST/api/ingest  200
+/api/sp/config  https://YOUR_SITEPULSE_HOST/api/config  200

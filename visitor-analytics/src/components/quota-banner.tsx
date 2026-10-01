@@ -34,7 +34,12 @@ export function QuotaBanner({
       </strong>
       {" — "}
       {planLabel}: {used.toLocaleString()} / {limit.toLocaleString()} PV (
-      {usagePct}%). In-app notice only (no email provider in M4).{" "}
+      {usagePct}%). Check{" "}
+      <a href="/notifications" className="font-semibold underline">
+        Alerts
+      </a>{" "}
+      for digest/quota notices; outbound email only if{" "}
+      <code>RESEND_API_KEY</code> is set.{" "}
       <a href="/billing" className="font-semibold underline">
         View billing
       </a>

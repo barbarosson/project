@@ -8,6 +8,7 @@ import { Breadcrumbs } from "@/components/page-nav";
 const NAV = [
   { href: "/docs", label: "Overview" },
   { href: "/docs/install", label: "Install snippet" },
+  { href: "/docs/proxy", label: "First-party proxy" },
   { href: "/docs/events", label: "Events API" },
   { href: "/docs/conversions", label: "Conversions & funnels" },
   { href: "/docs/dpa", label: "DPA outline" },
