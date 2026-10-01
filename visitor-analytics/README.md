@@ -120,7 +120,7 @@ Seed uses `Demo Agency Analytics` + favicon URL.
 
 ## Schema notes
 
-New Prisma models/fields (compatible `db push`): `SharedLink`, `Notification`, org `brandLogoUrl` / `brandDisplayName` / digest & spike settings. After pull: `npm run db:push` (or `db:setup`).
+New Prisma models/fields (compatible `db push`): `SharedLink`, `Notification`, org `brandLogoUrl` / `brandDisplayName` / digest & spike settings. After pull: `npm run db:validate-push` locally; **production Supabase must get the same push before Netlify deploy** or register/API writes can 500 — see [`DEPLOY.md` § After top 5 merge](./DEPLOY.md#after-top-5-merge-pr-10--run-db-push-on-supabase).
 
 ## API additions
 

@@ -6,6 +6,10 @@ import {
   setSessionCookie,
 } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  isPrismaSchemaDriftError,
+  schemaDriftHint,
+} from "@/lib/prisma-errors";
 
 const schema = z.object({
   email: z.string().email(),
@@ -64,7 +68,17 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    console.error(err);
+    const drift = isPrismaSchemaDriftError(err);
+    console.error(
+      drift ? `[register] ${schemaDriftHint()}` : "[register]",
+      err
+    );
+    if (drift && process.env.NODE_ENV !== "production") {
+      return NextResponse.json(
+        { error: "Registration failed", hint: schemaDriftHint() },
+        { status: 503 }
+      );
+    }
     return NextResponse.json({ error: "Registration failed" }, { status: 500 });
   }
 }
