@@ -21,7 +21,15 @@ export async function GET(req: NextRequest) {
 
   const invite = await prisma.invite.findUnique({
     where: { token },
-    include: { org: { select: { name: true } } },
+    include: {
+      org: {
+        select: {
+          name: true,
+          brandLogoUrl: true,
+          brandDisplayName: true,
+        },
+      },
+    },
   });
   if (!invite || invite.acceptedAt || invite.expiresAt < new Date()) {
     return NextResponse.json(
@@ -36,9 +44,15 @@ export async function GET(req: NextRequest) {
     select: { id: true, name: true, domain: true },
   });
 
+  const { brandDisplayName, brandLogoUrl } = await import("@/lib/branding");
+
   return NextResponse.json({
     email: invite.email,
     orgName: invite.org.name,
+    brand: {
+      displayName: brandDisplayName(invite.org),
+      logoUrl: brandLogoUrl(invite.org),
+    },
     sites,
     expiresAt: invite.expiresAt,
   });

@@ -16,6 +16,8 @@ async function main() {
   await prisma.funnel.deleteMany();
   await prisma.event.deleteMany();
   await prisma.dailyRollup.deleteMany();
+  await prisma.notification.deleteMany();
+  await prisma.sharedLink.deleteMany();
   await prisma.siteAccess.deleteMany();
   await prisma.invite.deleteMany();
   await prisma.site.deleteMany();
@@ -35,6 +37,10 @@ async function main() {
   const org = await prisma.organization.create({
     data: {
       name: "Demo Agency",
+      brandDisplayName: "Demo Agency Analytics",
+      brandLogoUrl: "https://sitespulse.netlify.app/favicon.ico",
+      digestEnabled: true,
+      spikeMultiplier: 3,
       plan: "dev",
       pageviewLimit: 1_000_000,
       pageviewsUsed: 120,
@@ -305,10 +311,44 @@ async function main() {
     },
   });
 
-  console.log("Seeded SitePulse demo (M3):");
+  const shareToken = "sp_demo_share_token_0001";
+  await prisma.sharedLink.create({
+    data: {
+      token: shareToken,
+      scope: "site",
+      label: "Demo site share",
+      createdBy: user.id,
+      orgId: org.id,
+      siteId: site.id,
+    },
+  });
+
+  await prisma.sharedLink.create({
+    data: {
+      token: "sp_demo_share_org_0001",
+      scope: "org",
+      label: "Demo portfolio share",
+      createdBy: user.id,
+      orgId: org.id,
+    },
+  });
+
+  await prisma.notification.create({
+    data: {
+      orgId: org.id,
+      type: "digest_weekly",
+      title: "Weekly digest · seed",
+      body: "Seeded sample digest notification. Run npm run digest:weekly -- --force to refresh.",
+      meta: JSON.stringify({ seeded: true }),
+    },
+  });
+
+  console.log("Seeded SitePulse demo (top5 features):");
   console.log(`  Owner: ${email} / ${password}`);
   console.log(`  Client: client@sitepulse.dev / client1234 (Demo Site only)`);
   console.log(`  Pending invite: /invite/${inviteToken}`);
+  console.log(`  Site share: /share/${shareToken}`);
+  console.log(`  Org share: /share/sp_demo_share_org_0001`);
   console.log(`  Demo site key: ${demoKey}`);
   console.log(`  Cookieless site key: ${cookielessSite.publicKey}`);
   console.log(`  Goals: ${urlGoal.name}, ${eventGoal.name}`);

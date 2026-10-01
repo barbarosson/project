@@ -46,6 +46,21 @@ export default function DocsInstallPage() {
         analytics. <code>sitepulse.consent(false)</code> stops further tracking
         (does not erase historical data).
       </p>
+      <h2
+        className="pt-4 text-xl font-semibold text-[var(--ink)]"
+        style={{ fontFamily: "var(--font-display), Georgia, serif" }}
+      >
+        First-party proxy
+      </h2>
+      <p>
+        To reduce adblock false negatives, serve the script from your own
+        domain. See{" "}
+        <a href="/docs/proxy" className="text-[var(--brand)] underline">
+          First-party script proxy
+        </a>{" "}
+        for Next.js / Netlify rewrite examples and the{" "}
+        <code>/api/script</code> proxy endpoint.
+      </p>
     </DocsShell>
   );
 }

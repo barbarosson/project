@@ -3,11 +3,13 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
 import { AuthChrome, BackLink } from "@/components/page-nav";
 
 type InviteInfo = {
   email: string;
   orgName: string;
+  brand?: { displayName: string; logoUrl: string | null };
   sites: { id: string; name: string; domain: string }[];
   expiresAt: string;
 };
@@ -57,8 +59,19 @@ export default function AcceptInvitePage() {
     router.refresh();
   }
 
+  const brandName = info?.brand?.displayName || info?.orgName || "Agency";
+
   return (
     <AuthChrome links={[{ href: "/login", label: "Log in" }]}>
+      {info?.brand && (
+        <div className="mb-4">
+          <BrandMark
+            displayName={info.brand.displayName}
+            logoUrl={info.brand.logoUrl}
+            size="sm"
+          />
+        </div>
+      )}
       <h1 className="text-2xl font-semibold">Accept client invite</h1>
       {!info && !error && (
         <p className="mt-2 text-sm text-[var(--muted)]">Loading invite…</p>
@@ -82,7 +95,7 @@ export default function AcceptInvitePage() {
       {info && (
         <>
           <p className="mt-2 text-sm text-[var(--muted)]">
-            Join <strong>{info.orgName}</strong> as a read-only client (
+            Join <strong>{brandName}</strong> as a read-only client (
             {info.email}). Sites:{" "}
             {info.sites.map((s) => s.name).join(", ") || "none"}.
           </p>

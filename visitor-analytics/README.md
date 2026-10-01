@@ -1,56 +1,36 @@
-# SitePulse (M1–M4)
+# SitePulse (M1–M4 + top 5 features)
 
 Privacy-honest website analytics — **placeholder brand** (rename later).  
 Isolated greenfield app under `visitor-analytics/` (does not mix with the root ERP/CMS in this monorepo).
 
 ## What is included
 
-### M1
+### M1–M4 (shipped)
 - First-party tracking snippet (`/t.js`) — pageviews + session
 - Per-site identity: **first-party cookie** or **cookieless**
-- Ingest API with site-key validation
-- Email/password auth (JWT cookie; no paid auth vendor)
-- Multi-tenant orgs → sites → public API keys
-- Dashboard: sites list, 30d trends, top pages, recent visitors
-- Privacy fields: IP truncate default on, retentionDays default 90
-- English-only UI
+- Ingest API, auth, multi-tenant orgs, dashboard, conversions/funnels
+- Visitor stream, client invite RBAC, quotas, Lemon Squeezy MoR skeleton
+- Consent gate, pricing/docs/privacy/DPA, CSV export, retention purge
 
-### M2
-- URL conversion goals (exact / prefix path)
-- Custom event conversions via `sitepulse.track('event_name')`
-- Conversion counts + 7d / 30d trends, by-goal + UTM breakdown
-- Funnel v1 (2–5 ordered URL/event steps) with session drop-off rates
-- UTM captured on ingest and copied onto conversion records
-
-### M3
-- **Visitor stream** — near-realtime sessions/events (client poll ~8–10s)
-- **Client invite / RBAC** — owner invites client email; read-only access to selected sites
-- **Quota** — plan PV/month counter; soft warning UI; hard reject at ingest (HTTP 429)
-- **Lemon Squeezy MoR skeleton** — checkout + webhook entitlement; stubs when keys absent
-- Portfolio UX — site cards with 7d PV/conversions
-
-### M4
-- **`requireConsent`** site setting — snippet waits for `sitepulse.consent(true)`
-- Public **Pricing** (`/pricing`) — Starter $29 / Agency $79 / Scale $199 → MoR checkout stub
-- **Docs** — install, events, conversions/funnels, DPA outline
-- **Privacy / Terms / DPA** stub pages (privacy-honest; no “no personal data”)
-- **Retention purge** script: `npm run retention:purge` ([`--dry-run`](scripts/retention-purge.ts))
-- Quota **in-app banner at 90%** (email skipped — no provider)
-- **CSV export** for pageviews / conversions (30d)
-- Polished marketing landing `/`
+### Top 5 features (this branch — draft PR; not merged / not deployed)
+1. **Shared dashboard link** — read-only `/share/[token]` for a site or org portfolio; optional password; create/revoke in UI; token in DB
+2. **Weekly email digest + quota/spike alerts** — digest generation, in-app **Alerts**, optional outbound via `RESEND_API_KEY` (or SMTP stub); cron script `npm run digest:weekly`
+3. **First-touch / journey panel** — session path first touch → pages → conversion; privacy-honest (no company/person reveal)
+4. **First-party script proxy** — `/docs/proxy`, `/api/script`, Next/Netlify rewrite examples under `public/examples/`
+5. **White-label client portal** — org logo URL + display name on client invite, client nav, and shared links
 
 ## Deferred / launch gaps
 
-- Live Lemon Squeezy keys (store guide ready), counsel-reviewed legal
-- Invite email delivery, geo IP, automated retention cron, ClickHouse
+- Live Lemon Squeezy keys, counsel-reviewed legal
+- Custom white-label domain (CNAME), paid email day-1, geo IP, ClickHouse
 - Replay/heatmap, org enrichment, AppSumo LTD (banned)
-- Final product name + `.com` (SitePulse placeholder OK)
+- Final product name + `.com`
 
 ## Stack
 
 - Next.js 15 (App Router) + TypeScript + Tailwind
-- Prisma + **Supabase Postgres** for local + production — see [`DEPLOY.md`](./DEPLOY.md)
-- Host: **Netlify** (**new** site, base `visitor-analytics/`) — not moduluscursor / isendai
+- Prisma + **Supabase Postgres** — see [`DEPLOY.md`](./DEPLOY.md)
+- Host: **Netlify** (base `visitor-analytics/`) — do not auto-deploy this feature branch to production
 - Billing MoR: **Lemon Squeezy**
 
 ## Local setup
@@ -66,7 +46,7 @@ npm run dev
 
 Open http://localhost:3000
 
-**Production deploy:** [`DEPLOY.md`](./DEPLOY.md) · Lemon Squeezy: Project store `docs/lemon-squeezy-setup.md`
+**Do not merge/deploy this feature branch to production Netlify** unless Barbaros explicitly asks. Draft PR only.
 
 ### Demo credentials
 
@@ -80,71 +60,53 @@ Open http://localhost:3000
 | Demo site key | `sp_demo_site_key_0001` |
 | Cookieless key | `sp_demo_cookieless_0002` |
 | Pending invite | `/invite/sp_demo_invite_token_0001` |
+| Site share (no password) | `/share/sp_demo_share_token_0001` |
+| Org share | `/share/sp_demo_share_org_0001` |
+
+## Try each top-5 feature locally (no deploy)
+
+### 1. Shared dashboard link
+1. Login as owner → open **Demo Site** → **Shared dashboard link** (or Portfolio for org share).
+2. Create a link (optional password + expiry) → copy URL → open in a private window.
+3. Revoke from the same panel. Seeded: http://localhost:3000/share/sp_demo_share_token_0001
+
+### 2. Weekly digest + quota/spike alerts
+```bash
+# Dry-run (print digest text only)
+npm run digest:weekly -- --dry-run
+
+# Write in-app notification (+ email stub unless RESEND_API_KEY set)
+npm run digest:weekly -- --force
+
+# Single org
+npm run digest:weekly -- --org ORG_ID --force
+```
+Then open **Alerts** in the app nav. Quota warnings also fire when usage crosses soft/hard thresholds on ingest. Spike rule: today PV ≥ 7d daily avg × org `spikeMultiplier` (default 3; editable under Team branding).
+
+### 3. Journey panel
+Open **Demo Site** → **First-touch / journey**. Seeded funnel sessions show first-touch source → pages → conversion. Cookieless sites show best-effort copy (no fake org reveal).
+
+### 4. First-party script proxy
+- Docs: http://localhost:3000/docs/proxy  
+- Endpoint: http://localhost:3000/api/script (same JS as `/t.js`)  
+- Examples: `public/examples/nextjs-sp-proxy.config.js`, `public/examples/netlify-sp-proxy-_redirects`
+
+### 5. White-label
+1. **Team** → set display name + logo URL → Save.  
+2. Open client login (`client@sitepulse.dev`) or invite / share pages — branding appears.  
+Seed uses `Demo Agency Analytics` + favicon URL.
 
 ## Environment variables
 
 | Variable | Purpose |
 | --- | --- |
-| `DATABASE_URL` | Supabase **Transaction** pooler URI (`:6543` + `pgbouncer=true`) |
-| `DIRECT_URL` | Supabase **direct** URI (`:5432`, no pgbouncer) — Prisma migrate / `db push` |
-| `AUTH_SECRET` | JWT signing secret (32+ chars in production) |
-| `NEXT_PUBLIC_APP_URL` | Public origin (snippet + invite links); Netlify URL after deploy |
-| `LEMONSQUEEZY_API_KEY` | Optional — MoR API |
-| `LEMONSQUEEZY_STORE_ID` | Optional — store id |
-| `LEMONSQUEEZY_WEBHOOK_SECRET` | Optional — webhook HMAC |
-| `LEMONSQUEEZY_VARIANT_STARTER` | Optional — variant id |
-| `LEMONSQUEEZY_VARIANT_AGENCY` | Optional — variant id |
-| `LEMONSQUEEZY_VARIANT_SCALE` | Optional — variant id |
-
-App **builds and runs without** Lemon Squeezy keys. Checkout returns a stub message; webhook accepts local stub posts with `X-SitePulse-Stub: 1` when secret is unset.
-
-### Postgres (Supabase)
-
-Schema provider is `postgresql` with `directUrl`. Create a Supabase free project, set `DATABASE_URL` + `DIRECT_URL`, then `npm run db:validate-push` (or `npm run db:setup`). Full Netlify steps: [`DEPLOY.md`](./DEPLOY.md). Offline SQLite is local-only (see DEPLOY.md).
-
-## Install the tracking snippet
-
-```html
-<script defer src="http://localhost:3000/t.js" data-site="YOUR_SITE_KEY"></script>
-```
-
-```js
-sitepulse.track('signup_complete');
-```
-
-## How to test visitor stream
-
-1. `npm run db:setup && npm run dev`
-2. Log in as owner → **Stream** (or Portfolio embeds a stream)
-3. In another terminal, send events:
-   ```bash
-   curl -X POST http://localhost:3000/api/ingest \
-     -H 'Content-Type: application/json' \
-     -d '{"k":"sp_demo_site_key_0001","type":"pageview","path":"/live","url":"https://demo.example.com/live","visitorId":"v-live","sessionId":"s-live-1"}'
-   ```
-4. Within ~10s the stream panel updates (no websocket)
-
-## How to test client invite
-
-1. As owner → **Team** → invite email + select sites → copy accept link  
-   Or open seeded pending invite: http://localhost:3000/invite/sp_demo_invite_token_0001
-2. Accept with name + password → lands on Portfolio (client role)
-3. Client sees only allowed sites; cannot add sites / edit goals / settings
-4. Or log in as seeded client: `client@sitepulse.dev` / `client1234`
-
-## Quota & MoR stub
-
-- Plans: Dev (1M PV, default), Starter 50k / Agency 300k / Scale 2M
-- Soft warning at **90%** usage (in-app banner; no email); hard limit returns `429` on pageview ingest
-- Billing page: stub checkout without LS keys
-- Webhook stub test (no secret configured):
-  ```bash
-  # Replace ORG_ID from seed log / Team page context
-  curl -X POST http://localhost:3000/api/webhooks/lemonsqueezy \
-    -H 'Content-Type: application/json' \
-    -H 'X-SitePulse-Stub: 1' \
-    -d '{"meta":{"event_name":"stub_subscription_created","custom_data":{"org_id":"ORG_ID","plan":"agency"}},"data":{"id":"sub_stub","attributes":{"customer_id":"1","status":"active"}}}'
-  ```
+| `DATABASE_URL` | Supabase Transaction pooler |
+| `DIRECT_URL` | Supabase direct (migrate / db push) |
+| `AUTH_SECRET` | JWT signing secret |
+| `NEXT_PUBLIC_APP_URL` | Public origin (snippet + share/invite links) |
+| `LEMONSQUEEZY_*` | Optional MoR |
+| `RESEND_API_KEY` / `RESEND_FROM` | Optional real digest/alert email |
+| `SMTP_HOST` (+ related) | Optional; currently logged stub (prefer Resend) |
 
 ## Scripts
 
@@ -152,42 +114,27 @@ sitepulse.track('signup_complete');
 | --- | --- |
 | `npm run dev` | Dev server |
 | `npm run build` | Production build (`prisma generate` + Next) |
-| `npm run start` | Start production server |
-| `npm run db:validate-push` | Env shape check + `prisma db push` (exits 1 if URLs missing) |
 | `npm run db:setup` | `prisma db push` + seed |
-| `npm run db:seed` | Re-seed demo data |
-| `npm run retention:purge` | Delete events past site retention (`-- --dry-run` OK) |
+| `npm run digest:weekly` | Weekly digest + spike/quota checks |
+| `npm run retention:purge` | Delete events past retention |
 
-## Only you (Barbaros)
+## Schema notes
 
-Agents cannot create your Supabase/Netlify/Lemon Squeezy accounts or paste secrets. **Source of truth** for remaining human steps: [`DEPLOY.md` § Only you (Barbaros)](./DEPLOY.md#only-you-barbaros).
+New Prisma models/fields (compatible `db push`): `SharedLink`, `Notification`, org `brandLogoUrl` / `brandDisplayName` / digest & spike settings. After pull: `npm run db:push` (or `db:setup`).
 
-## API (M3 additions)
+## API additions
 
 | Method | Path | Auth |
 | --- | --- | --- |
-| GET | `/api/stream?siteId=&since=&limit=` | session |
-| GET/POST | `/api/org/invites` | owner/admin |
-| DELETE | `/api/org/invites/:id` | owner/admin |
-| GET/POST | `/api/invites/accept` | public (token) |
-| GET/POST | `/api/org/billing` | session / manage |
-| POST | `/api/webhooks/lemonsqueezy` | signature or stub header |
-| GET | `/api/sites/:id/export?type=pageviews\|conversions` | session |
+| GET/POST | `/api/org/shared-links` | owner/admin |
+| DELETE | `/api/org/shared-links/:id` | owner/admin |
+| GET/POST | `/api/share/:token` | public (password if set) |
+| GET/PATCH | `/api/org/branding` | session / manage |
+| GET/POST | `/api/org/notifications` | staff |
+| GET | `/api/script` | public (tracker proxy) |
 
-## Public pages (M4)
+## Only you (Barbaros)
 
-| Path | |
-| --- | --- |
-| `/` | Marketing landing |
-| `/pricing` | Plans + MoR CTA |
-| `/docs` … | Install, events, conversions, DPA outline |
-| `/privacy` `/terms` `/dpa` | Legal stubs |
+Agents cannot create your Supabase/Netlify/Lemon Squeezy accounts or paste secrets. **Source of truth:** [`DEPLOY.md` § Only you (Barbaros)](./DEPLOY.md#only-you-barbaros).
 
-## Retention
-
-```bash
-npm run retention:purge -- --dry-run
-npm run retention:purge
-```
-
-Deletes events/conversions older than each site’s `retentionDays` (default 90).
+**This feature work ships as a draft PR only — do not merge to `main` and do not trigger Netlify production until you decide.**
