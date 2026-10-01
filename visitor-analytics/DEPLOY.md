@@ -128,6 +128,35 @@ You can skip all `LEMONSQUEEZY_*` on first boot — checkout stays stubbed until
 
 ---
 
+## After top 5 merge (PR #10+) — run `db push` on Supabase
+
+Deploying **`main`** after the agency top-5 feature merge adds Prisma models/columns (`SharedLink`, `Notification`, org branding + digest fields on `Organization`). **Netlify redeploy alone does not update Postgres.** If prod was last pushed before that merge, **`POST /api/auth/register` returns 500** (org `create` hits missing columns) while **`POST /api/auth/login` may still 401** on unknown users because `User` reads still work.
+
+**Barbaros — once per schema change, from your machine** (same project ref `mzqtwchylahzjfoamwfr`, ap-south-1):
+
+```bash
+cd visitor-analytics
+# .env: DATABASE_URL = pooled :6543 + ?pgbouncer=true&sslmode=require
+#       DIRECT_URL   = session/direct :5432 + ?sslmode=require (no pgbouncer)
+npm install
+npm run db:validate-push
+# or: npx prisma db push
+```
+
+Expect **15 tables** in `public` after push (was 12): adds `SharedLink`, `Notification`, plus new nullable/default columns on `Organization`. No seed on production.
+
+Optional sanity check in Supabase **SQL Editor**:
+
+```sql
+SELECT column_name FROM information_schema.columns
+WHERE table_schema = 'public' AND table_name = 'Organization'
+  AND column_name IN ('digestEnabled', 'brandLogoUrl', 'spikeMultiplier');
+```
+
+All three rows should exist. Then retry register on https://sitespulse.netlify.app/register .
+
+---
+
 ## Post-deploy smoke
 
 1. Open `/` and `/pricing`.
