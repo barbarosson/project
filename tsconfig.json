@@ -25,5 +25,16 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "supabase/functions", "ai-suite", "travel-ai-planner"]
+  "exclude": [
+    "node_modules",
+    "supabase/functions",
+    "ai-suite",
+    "travel-ai-planner",
+    "kamp-rehberi",
+    "chrome-extension",
+    "obd2-ev-navigator",
+    "PixReady",
+    "dijital-miras"
+  ]
 }
+
