@@ -5,7 +5,7 @@ export const corporateCopy = {
     meta: {
       homeTitle: 'MODULUS — Technology products by Songurtech',
       homeDescription:
-        'Songurtech builds MODULUS: Modulus ERP, AppointFlow, and isendAI — AI-powered software for modern businesses.',
+        'Songurtech builds MODULUS: Modulus ERP, AppointFlow, isendAI, and Digital Legacy — software for modern businesses and personal planning.',
     },
     nav: {
       products: 'Products',
@@ -17,6 +17,7 @@ export const corporateCopy = {
       modulusErp: 'Modulus ERP',
       appointflow: 'AppointFlow',
       isendai: 'isendAI',
+      digitalLegacy: 'Digital Legacy',
     },
     hero: {
       company: 'Songurtech',
@@ -52,6 +53,12 @@ export const corporateCopy = {
         tagline: 'Communication intelligence',
         description:
           'Polish messages before you send them — work, dating, money, and more. Concierge routing to the right AI tool in seconds.',
+      },
+      digitalLegacy: {
+        name: 'Digital Legacy',
+        tagline: 'Digital estate planning',
+        description:
+          'Windows desktop app for digital estate planning — assets, heirs, messages, and a private video diary. Download from the Microsoft Store.',
       },
     },
     details: {
@@ -91,6 +98,17 @@ export const corporateCopy = {
           'Concierge chat to pick the best tool for your situation',
           'Fast AI and Pro AI tiers for quick vs high-stakes messages',
           'Turkish and English; pay-as-you-go via isendai.com',
+        ],
+      },
+      digitalLegacy: {
+        summary:
+          'Digital Legacy is a Windows desktop app for organizing what matters after you are gone — assets, heirs, personal messages, and a video diary — with local-first privacy.',
+        highlights: [
+          'Catalog digital and physical assets with heir assignments',
+          'Write time-capsule messages and instructions for loved ones',
+          'Record a private video diary on your own timeline',
+          'Runs on Windows; install via Microsoft Store',
+          'Published by MODULUSTECH — marketing and download only on this site',
         ],
       },
     },
@@ -193,6 +211,36 @@ export const corporateCopy = {
       primaryCta: 'Open isendai.com',
       secondaryCta: 'MODULUS corporate site',
     },
+    digitalLegacyPage: {
+      metaTitle: 'Digital Legacy — Digital estate planning for Windows | MODULUS',
+      metaDescription:
+        'Windows desktop app for digital estate planning: assets, heirs, messages, and video diary. Download from the Microsoft Store. Published by MODULUSTECH.',
+      backToModulus: '← All MODULUS products',
+      hero: {
+        kicker: 'Windows desktop · MODULUSTECH',
+        title: 'Plan your digital estate with clarity.',
+        subtitle:
+          'Organize assets, name heirs, leave messages, and keep a private video diary — on your PC, with a workflow built for sensitive planning.',
+        cta: 'Get it on Microsoft Store',
+        taglines: [
+          'Assets, heirs, messages, and video diary in one app',
+          'Local-first planning on Windows — no web vault login here',
+          'Install from the Microsoft Store',
+          'Privacy policy and open source on GitHub',
+        ],
+      },
+      features: {
+        title: 'Built for real-life legacy planning',
+        subtitle: 'Everything stays on your device; this site is product info and download only.',
+      },
+      links: {
+        privacy: 'Privacy policy',
+        github: 'Source on GitHub',
+        publisher: 'Publisher',
+      },
+      trust: 'Download via Microsoft Store · Privacy policy linked below · No account required on modulusaas.com',
+      primaryCta: 'Download from Microsoft Store',
+    },
     footer: {
       products: 'Products',
       legalHome: 'Corporate home',
@@ -202,7 +250,7 @@ export const corporateCopy = {
     meta: {
       homeTitle: 'MODULUS — Songurtech teknoloji ürünleri',
       homeDescription:
-        'Songurtech, MODULUS markasıyla Modulus ERP, AppointFlow ve isendAI ürünlerini geliştirir — modern işletmeler için yapay zeka destekli yazılım.',
+        'Songurtech, MODULUS markasıyla Modulus ERP, AppointFlow, isendAI ve Digital Legacy ürünlerini geliştirir — işletmeler ve kişisel planlama için yazılım.',
     },
     nav: {
       products: 'Ürünler',
@@ -214,6 +262,7 @@ export const corporateCopy = {
       modulusErp: 'Modulus ERP',
       appointflow: 'AppointFlow',
       isendai: 'isendAI',
+      digitalLegacy: 'Digital Legacy',
     },
     hero: {
       company: 'Songurtech',
@@ -249,6 +298,12 @@ export const corporateCopy = {
         tagline: 'İletişim zekası',
         description:
           'Göndermeden önce mesajlarınızı mükemmelleştirin — iş, ilişkiler, para ve daha fazlası. Saniyeler içinde doğru araca yönlendirme.',
+      },
+      digitalLegacy: {
+        name: 'Digital Legacy',
+        tagline: 'Dijital miras planlama',
+        description:
+          'Dijital miras planlaması için Windows masaüstü uygulaması — varlıklar, varisler, mesajlar ve özel video günlüğü. Microsoft Store’dan indirin.',
       },
     },
     details: {
@@ -288,6 +343,17 @@ export const corporateCopy = {
           'İhtiyacınıza göre en uygun aracı öneren akıllı sohbet',
           'Hızlı ve kritik mesajlar için Fast / Pro AI katmanları',
           'Türkçe ve İngilizce; isendai.com üzerinden kullandıkça öde',
+        ],
+      },
+      digitalLegacy: {
+        summary:
+          'Digital Legacy, arkanızda bırakılacakları düzenlemeniz için bir Windows uygulamasıdır — varlıklar, varisler, kişisel mesajlar ve video günlüğü; yerel odaklı gizlilikle.',
+        highlights: [
+          'Dijital ve fiziksel varlıkları varis atamalarıyla kaydedin',
+          'Sevdikleriniz için zaman kapsülü mesajlar ve talimatlar yazın',
+          'Kendi zaman çizelgenizde özel video günlüğü tutun',
+          'Windows’ta çalışır; Microsoft Store üzerinden kurulum',
+          'MODULUSTECH yayıncılığı — bu sitede yalnızca tanıtım ve indirme',
         ],
       },
     },
@@ -389,6 +455,36 @@ export const corporateCopy = {
       trust: '🔒 Lemon Squeezy ile güvenli ödeme · ⚡ AI destekli · 🚫 Verini saklamayız',
       primaryCta: 'isendai.com\'u aç',
       secondaryCta: 'MODULUS kurumsal site',
+    },
+    digitalLegacyPage: {
+      metaTitle: 'Digital Legacy — Windows dijital miras planlama | MODULUS',
+      metaDescription:
+        'Dijital miras planlaması için Windows uygulaması: varlıklar, varisler, mesajlar ve video günlüğü. Microsoft Store’dan indirin. Yayıncı: MODULUSTECH.',
+      backToModulus: '← Tüm MODULUS ürünleri',
+      hero: {
+        kicker: 'Windows masaüstü · MODULUSTECH',
+        title: 'Dijital mirasınızı net bir planla toparlayın.',
+        subtitle:
+          'Varlıkları düzenleyin, varisleri belirleyin, mesaj bırakın ve özel bir video günlüğü tutun — hassas planlama için tasarlanmış, bilgisayarınızda.',
+        cta: 'Microsoft Store’dan edinin',
+        taglines: [
+          'Varlıklar, varisler, mesajlar ve video günlüğü tek uygulamada',
+          'Windows’ta yerel odaklı planlama — bu sitede web kasa girişi yok',
+          'Microsoft Store üzerinden kurulum',
+          'Gizlilik politikası ve GitHub kaynak kodu',
+        ],
+      },
+      features: {
+        title: 'Gerçek hayat miras planlaması için',
+        subtitle: 'Veriler cihazınızda kalır; bu site yalnızca ürün bilgisi ve indirme bağlantısı sunar.',
+      },
+      links: {
+        privacy: 'Gizlilik politikası',
+        github: 'GitHub kaynak kodu',
+        publisher: 'Yayıncı',
+      },
+      trust: 'Microsoft Store üzerinden indirme · Gizlilik politikası aşağıda · modulusaas.com’da hesap gerekmez',
+      primaryCta: 'Microsoft Store’dan indir',
     },
     footer: {
       products: 'Ürünler',

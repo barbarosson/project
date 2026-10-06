@@ -20,6 +20,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       { path: '/products/modulus-erp', changeFrequency: 'weekly', priority: 0.95 },
       { path: '/products/appointflow', changeFrequency: 'weekly', priority: 0.95 },
       { path: '/products/isendai', changeFrequency: 'weekly', priority: 0.9 },
+      { path: '/products/digital-legacy', changeFrequency: 'weekly', priority: 0.9 },
       { path: '/pricing', changeFrequency: 'weekly', priority: 0.8 },
       { path: '/contact', changeFrequency: 'monthly', priority: 0.7 },
       { path: '/login', changeFrequency: 'monthly', priority: 0.6 },

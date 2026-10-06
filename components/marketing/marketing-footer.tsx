@@ -23,6 +23,7 @@ export function MarketingFooter() {
         { name: 'Modulus ERP', href: '/products/modulus-erp' },
         { name: 'AppointFlow', href: '/products/appointflow' },
         { name: 'isendAI', href: '/products/isendai' },
+        { name: 'Digital Legacy', href: '/products/digital-legacy' },
         { name: language === 'tr' ? 'Kurumsal ana sayfa' : 'Corporate home', href: '/' },
       ],
     },

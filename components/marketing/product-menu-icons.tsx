@@ -2,7 +2,7 @@
 
 import { ModulusLogoSvgOnly } from '@/components/modulus-logo'
 
-type ProductKey = 'erp' | 'appointflow' | 'isendai'
+type ProductKey = 'erp' | 'appointflow' | 'isendai' | 'digitalLegacy'
 
 export function ProductMenuIcon({
   product,
@@ -13,6 +13,45 @@ export function ProductMenuIcon({
 }) {
   if (product === 'erp') {
     return <ModulusLogoSvgOnly size={size} />
+  }
+
+  if (product === 'digitalLegacy') {
+    const uid = `dl-${size}`
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 64 64"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="shrink-0"
+        aria-hidden
+      >
+        <rect width="64" height="64" rx="12" fill="#78350F" />
+        <rect x="16" y="14" width="32" height="36" rx="6" fill={`url(#${uid}-p)`} />
+        <path
+          d="M22 24h20M22 30h16M22 36h18M22 42h12"
+          stroke="#FFFBEB"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          opacity="0.9"
+        />
+        <circle cx="44" cy="44" r="10" fill="#F59E0B" stroke="#FFFBEB" strokeWidth="2" />
+        <path
+          d="M40 44l3 3 6-6"
+          stroke="#78350F"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <defs>
+          <linearGradient id={`${uid}-p`} x1="16" y1="14" x2="48" y2="50">
+            <stop stopColor="#FBBF24" />
+            <stop offset="1" stopColor="#D97706" />
+          </linearGradient>
+        </defs>
+      </svg>
+    )
   }
 
   if (product === 'appointflow') {

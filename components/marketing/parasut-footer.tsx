@@ -24,6 +24,7 @@ export function ModulusFooter() {
         { name: 'Modulus ERP', href: '/products/modulus-erp' },
         { name: 'AppointFlow', href: '/products/appointflow' },
         { name: 'isendAI', href: '/products/isendai' },
+        { name: 'Digital Legacy', href: '/products/digital-legacy' },
         { name: language === 'en' ? 'Corporate home' : 'Kurumsal ana sayfa', href: '/' },
       ],
     },
