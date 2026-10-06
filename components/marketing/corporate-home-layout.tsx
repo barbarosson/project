@@ -1,7 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Building2, CalendarClock, Check, MessageSquareHeart, type LucideIcon } from 'lucide-react'
+import {
+  ArrowRight,
+  Building2,
+  CalendarClock,
+  Check,
+  MessageSquareHeart,
+  ScrollText,
+  type LucideIcon,
+} from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
 import { getCorporateCopy } from '@/lib/corporate-marketing-copy'
 import {
@@ -25,6 +33,11 @@ const PRODUCT_STYLES: Record<
     icon: MessageSquareHeart,
     accent: '#8B5CF6',
     bg: 'linear-gradient(135deg, #FAF5FF 0%, #F3E8FF 100%)',
+  },
+  digitalLegacy: {
+    icon: ScrollText,
+    accent: '#B45309',
+    bg: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
   },
   erp: {
     icon: Building2,
@@ -138,7 +151,7 @@ export function CorporateHomeLayout() {
             </h2>
             <p className="text-lg text-[#425466] mb-12 max-w-3xl">{c.products.subtitle}</p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 sm:gap-8">
               {productCards.map((card) => {
                 const Icon = card.icon
                 const cardInner = (

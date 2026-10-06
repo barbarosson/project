@@ -3,7 +3,7 @@ import { Metadata } from 'next'
 const defaultMetadata = {
   title: 'MODULUS — Technology products by Songurtech',
   description:
-    'Songurtech builds MODULUS: Modulus ERP, AppointFlow, and isendAI — AI-powered software for modern businesses.',
+    'Songurtech builds MODULUS: Modulus ERP, AppointFlow, isendAI, and Digital Legacy — software for modern businesses and personal planning.',
   ogImage: '/icon-512.png',
 }
 
@@ -18,6 +18,11 @@ const slugMetadata: Record<string, { title: string; description: string }> = {
     title: 'isendAI — Communication intelligence | MODULUS',
     description:
       'Polish messages before you send. AI tools and concierge routing for work, relationships, and everyday life.',
+  },
+  'digital-legacy': {
+    title: 'Digital Legacy — Digital estate planning for Windows | MODULUS',
+    description:
+      'Windows desktop app for digital estate planning: assets, heirs, messages, and video diary. Download from the Microsoft Store.',
   },
 }
 

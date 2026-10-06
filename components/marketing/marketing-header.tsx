@@ -44,6 +44,7 @@ export function MarketingHeader() {
 
   const navNames: Record<CorporateProductKey, string> = {
     isendai: c.nav.isendai,
+    digitalLegacy: c.nav.digitalLegacy,
     erp: c.nav.modulusErp,
     appointflow: c.nav.appointflow,
   }
