@@ -34,7 +34,8 @@
     "chrome-extension",
     "obd2-ev-navigator",
     "PixReady",
-    "dijital-miras"
+    "dijital-miras",
+    "visitor-analytics"
   ]
 }
 
