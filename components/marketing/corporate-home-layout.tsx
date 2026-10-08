@@ -8,6 +8,7 @@ import {
   Check,
   MessageSquareHeart,
   ScrollText,
+  TrendingUp,
   type LucideIcon,
 } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
@@ -38,6 +39,11 @@ const PRODUCT_STYLES: Record<
     icon: ScrollText,
     accent: '#B45309',
     bg: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
+  },
+  omniseek: {
+    icon: TrendingUp,
+    accent: '#4F46E5',
+    bg: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)',
   },
   erp: {
     icon: Building2,

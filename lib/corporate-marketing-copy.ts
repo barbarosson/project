@@ -5,7 +5,7 @@ export const corporateCopy = {
     meta: {
       homeTitle: 'MODULUS — Technology products by Songurtech',
       homeDescription:
-        'Songurtech builds MODULUS: Modulus ERP, AppointFlow, isendAI, and Digital Legacy — software for modern businesses and personal planning.',
+        'Songurtech builds MODULUS: Modulus ERP, AppointFlow, isendAI, Digital Legacy, and OmniSeek — software for modern businesses and personal planning.',
     },
     nav: {
       products: 'Products',
@@ -18,6 +18,7 @@ export const corporateCopy = {
       appointflow: 'AppointFlow',
       isendai: 'isendAI',
       digitalLegacy: 'Digital Legacy',
+      omniseek: 'OmniSeek',
     },
     hero: {
       company: 'Songurtech',
@@ -59,6 +60,12 @@ export const corporateCopy = {
         tagline: 'Digital estate planning',
         description:
           'Windows desktop app for digital estate planning — assets, heirs, messages, and a private video diary. Download from the Microsoft Store.',
+      },
+      omniseek: {
+        name: 'OmniSeek',
+        tagline: 'SEO & competitor analytics',
+        description:
+          'Desktop SEO desk for agencies — Rank Tracker, Competitor Radar, and SERP Volatility powered by Brave Search. Freemium for Microsoft Store.',
       },
     },
     details: {
@@ -109,6 +116,17 @@ export const corporateCopy = {
           'Record a private video diary on your own timeline',
           'Runs on Windows; install via Microsoft Store',
           'Published by MODULUSTECH — marketing and download only on this site',
+        ],
+      },
+      omniseek: {
+        summary:
+          'OmniSeek is a Windows desktop SEO analytics desk: track keyword ranks, watch competitor mentions, and measure SERP volatility — with Brave Search only on the server.',
+        highlights: [
+          'Rank Tracker for keyword positions and visibility',
+          'Competitor Radar from Brave News and web mentions',
+          'SERP Volatility scores for sector keyword sets',
+          'Brave API key never ships in the client — JWT to our Node API',
+          'Freemium desktop app; Microsoft Store packaging on the roadmap',
         ],
       },
     },
@@ -241,6 +259,34 @@ export const corporateCopy = {
       trust: 'Download via Microsoft Store · Privacy policy linked below · No account required on modulusaas.com',
       primaryCta: 'Download from Microsoft Store',
     },
+    omniseekPage: {
+      metaTitle: 'OmniSeek — SEO & competitor analytics desk | MODULUS',
+      metaDescription:
+        'Agency SEO desktop app: Rank Tracker, Competitor Radar, SERP Volatility. Brave Search on the server only. Freemium for Microsoft Store. Published by MODULUSTECH.',
+      backToModulus: '← All MODULUS products',
+      hero: {
+        kicker: 'Windows desktop · MODULUSTECH',
+        title: 'SEO desk for agencies — ranks, rivals, volatility.',
+        subtitle:
+          'Track keyword positions, brand mentions, and noisy SERPs in one dark-mode analytics desk. Brave Search stays on the API; the desktop client never holds the key.',
+        cta: 'Request a demo',
+        taglines: [
+          'Rank Tracker, Competitor Radar, and SERP Volatility',
+          'Brave API key only on the server — JWT auth from the app',
+          'Zinc + Indigo B2B UI with dark mode by default',
+          'Freemium model; Microsoft Store packaging in progress',
+        ],
+      },
+      features: {
+        title: 'Built for data-heavy SEO work',
+        subtitle: 'Live Brave lookups with 24h cache — marketing page on modulusaas.com, product runs on your desktop.',
+      },
+      links: {
+        publisher: 'Publisher',
+      },
+      trust: 'Contact for demo · Store listing coming · No Brave key in the client',
+      primaryCta: 'Talk to us about OmniSeek',
+    },
     footer: {
       products: 'Products',
       legalHome: 'Corporate home',
@@ -250,7 +296,7 @@ export const corporateCopy = {
     meta: {
       homeTitle: 'MODULUS — Songurtech teknoloji ürünleri',
       homeDescription:
-        'Songurtech, MODULUS markasıyla Modulus ERP, AppointFlow, isendAI ve Digital Legacy ürünlerini geliştirir — işletmeler ve kişisel planlama için yazılım.',
+        'Songurtech, MODULUS markasıyla Modulus ERP, AppointFlow, isendAI, Digital Legacy ve OmniSeek ürünlerini geliştirir — işletmeler ve kişisel planlama için yazılım.',
     },
     nav: {
       products: 'Ürünler',
@@ -263,6 +309,7 @@ export const corporateCopy = {
       appointflow: 'AppointFlow',
       isendai: 'isendAI',
       digitalLegacy: 'Digital Legacy',
+      omniseek: 'OmniSeek',
     },
     hero: {
       company: 'Songurtech',
@@ -304,6 +351,12 @@ export const corporateCopy = {
         tagline: 'Dijital miras planlama',
         description:
           'Dijital miras planlaması için Windows masaüstü uygulaması — varlıklar, varisler, mesajlar ve özel video günlüğü. Microsoft Store’dan indirin.',
+      },
+      omniseek: {
+        name: 'OmniSeek',
+        tagline: 'SEO ve rakip analitiği',
+        description:
+          'Ajanslar için SEO masaüstü paneli — Rank Tracker, Competitor Radar ve SERP Volatility; Brave Search destekli. Freemium Microsoft Store modeli.',
       },
     },
     details: {
@@ -354,6 +407,17 @@ export const corporateCopy = {
           'Kendi zaman çizelgenizde özel video günlüğü tutun',
           'Windows’ta çalışır; Microsoft Store üzerinden kurulum',
           'MODULUSTECH yayıncılığı — bu sitede yalnızca tanıtım ve indirme',
+        ],
+      },
+      omniseek: {
+        summary:
+          'OmniSeek, ajanslar için Windows SEO analitikleri masasidir: anahtar kelime sıraları, rakip bahisleri ve SERP oynaklığı — Brave Search yalnızca sunucuda çalışır.',
+        highlights: [
+          'Rank Tracker ile pozisyon ve görünürlük takibi',
+          'Competitor Radar — Brave News ve web bahisleri',
+          'SERP Volatility ile sektör top-10 oynaklık skoru',
+          'Brave API anahtarı istemcide değil — uygulama JWT ile API’ye bağlanır',
+          'Freemium masaüstü; Microsoft Store paketleme yol haritasında',
         ],
       },
     },
@@ -485,6 +549,34 @@ export const corporateCopy = {
       },
       trust: 'Microsoft Store üzerinden indirme · Gizlilik politikası aşağıda · modulusaas.com’da hesap gerekmez',
       primaryCta: 'Microsoft Store’dan indir',
+    },
+    omniseekPage: {
+      metaTitle: 'OmniSeek — SEO ve rakip analitiği masası | MODULUS',
+      metaDescription:
+        'Ajans SEO masaüstü uygulaması: Rank Tracker, Competitor Radar, SERP Volatility. Brave Search yalnızca sunucuda. Freemium Microsoft Store. Yayıncı: MODULUSTECH.',
+      backToModulus: '← Tüm MODULUS ürünleri',
+      hero: {
+        kicker: 'Windows masaüstü · MODULUSTECH',
+        title: 'Ajanslar için SEO masası — sıra, rakip, oynaklık.',
+        subtitle:
+          'Anahtar kelime pozisyonlarını, marka bahislerini ve gürültülü SERP’leri tek karanlık tema analitikleri masasinda izleyin. Brave Search API’de kalır; masaüstü istemci anahtarı tutmaz.',
+        cta: 'Demo talep et',
+        taglines: [
+          'Rank Tracker, Competitor Radar ve SERP Volatility',
+          'Brave API anahtarı yalnızca sunucuda — uygulamadan JWT',
+          'Zinc + Indigo B2B arayüz, varsayılan karanlık tema',
+          'Freemium model; Microsoft Store paketleme devam ediyor',
+        ],
+      },
+      features: {
+        title: 'Veri yoğun SEO işi için',
+        subtitle: 'Canlı Brave sorguları ve 24 saat önbellek — tanıtım modulusaas.com’da, ürün masaüstünüzde.',
+      },
+      links: {
+        publisher: 'Yayıncı',
+      },
+      trust: 'Demo için iletişim · Store yayını yakında · İstemcide Brave anahtarı yok',
+      primaryCta: 'OmniSeek için bizimle konuşun',
     },
     footer: {
       products: 'Ürünler',

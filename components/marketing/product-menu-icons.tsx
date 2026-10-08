@@ -2,7 +2,7 @@
 
 import { ModulusLogoSvgOnly } from '@/components/modulus-logo'
 
-type ProductKey = 'erp' | 'appointflow' | 'isendai' | 'digitalLegacy'
+type ProductKey = 'erp' | 'appointflow' | 'isendai' | 'digitalLegacy' | 'omniseek'
 
 export function ProductMenuIcon({
   product,
@@ -48,6 +48,45 @@ export function ProductMenuIcon({
           <linearGradient id={`${uid}-p`} x1="16" y1="14" x2="48" y2="50">
             <stop stopColor="#FBBF24" />
             <stop offset="1" stopColor="#D97706" />
+          </linearGradient>
+        </defs>
+      </svg>
+    )
+  }
+
+  if (product === 'omniseek') {
+    const uid = `os-${size}`
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 64 64"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="shrink-0"
+        aria-hidden
+      >
+        <rect width="64" height="64" rx="12" fill="#312E81" />
+        <path
+          d="M16 42 L26 30 L34 36 L48 20"
+          stroke={`url(#${uid}-g)`}
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+        <circle cx="48" cy="20" r="4" fill="#A5B4FC" />
+        <path
+          d="M18 48h28"
+          stroke="#6366F1"
+          strokeWidth="2"
+          strokeLinecap="round"
+          opacity="0.5"
+        />
+        <defs>
+          <linearGradient id={`${uid}-g`} x1="16" y1="42" x2="48" y2="20">
+            <stop stopColor="#818CF8" />
+            <stop offset="1" stopColor="#C7D2FE" />
           </linearGradient>
         </defs>
       </svg>

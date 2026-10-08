@@ -25,6 +25,7 @@ export function ModulusFooter() {
         { name: 'AppointFlow', href: '/products/appointflow' },
         { name: 'isendAI', href: '/products/isendai' },
         { name: 'Digital Legacy', href: '/products/digital-legacy' },
+        { name: 'OmniSeek', href: '/products/omniseek' },
         { name: language === 'en' ? 'Corporate home' : 'Kurumsal ana sayfa', href: '/' },
       ],
     },
