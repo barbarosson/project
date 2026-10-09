@@ -24,7 +24,7 @@ export function MarketingFooter() {
         { name: 'AppointFlow', href: '/products/appointflow' },
         { name: 'isendAI', href: '/products/isendai' },
         { name: 'Digital Legacy', href: '/products/digital-legacy' },
-        { name: 'OmniSeek', href: '/products/omniseek' },
+        { name: 'SeekDesk', href: '/products/seekdesk' },
         { name: language === 'tr' ? 'Kurumsal ana sayfa' : 'Corporate home', href: '/' },
       ],
     },
