@@ -5,7 +5,7 @@ export const corporateCopy = {
     meta: {
       homeTitle: 'MODULUS — Technology products by Songurtech',
       homeDescription:
-        'Songurtech builds MODULUS: Modulus ERP, AppointFlow, isendAI, Digital Legacy, and OmniSeek — software for modern businesses and personal planning.',
+        'Songurtech builds MODULUS: Modulus ERP, AppointFlow, isendAI, Digital Legacy, and SeekDesk — software for modern businesses and personal planning.',
     },
     nav: {
       products: 'Products',
@@ -18,7 +18,7 @@ export const corporateCopy = {
       appointflow: 'AppointFlow',
       isendai: 'isendAI',
       digitalLegacy: 'Digital Legacy',
-      omniseek: 'OmniSeek',
+      seekdesk: 'SeekDesk',
     },
     hero: {
       company: 'Songurtech',
@@ -61,8 +61,8 @@ export const corporateCopy = {
         description:
           'Windows desktop app for digital estate planning — assets, heirs, messages, and a private video diary. Download from the Microsoft Store.',
       },
-      omniseek: {
-        name: 'OmniSeek',
+      seekdesk: {
+        name: 'SeekDesk',
         tagline: 'SEO & competitor analytics',
         description:
           'Desktop SEO desk for agencies — Rank Tracker, Competitor Radar, and SERP Volatility. Free · Pro from $29.99/mo · Agency $79.99/mo. Brave Search on the server only.',
@@ -118,9 +118,9 @@ export const corporateCopy = {
           'Published by MODULUSTECH — marketing and download only on this site',
         ],
       },
-      omniseek: {
+      seekdesk: {
         summary:
-          'OmniSeek is a Windows desktop SEO analytics desk: track keyword ranks, watch competitor mentions, and measure SERP volatility — with Brave Search only on the server. Freemium: Free (48h refresh) · Pro from $29.99/mo · Agency $79.99/mo.',
+          'SeekDesk is a Windows desktop SEO analytics desk: track keyword ranks, watch competitor mentions, and measure SERP volatility — with Brave Search only on the server. Freemium: Free (48h refresh) · Pro from $29.99/mo · Agency $79.99/mo.',
         highlights: [
           'Rank Tracker for keyword positions and visibility',
           'Competitor Radar from Brave News and web mentions',
@@ -259,8 +259,8 @@ export const corporateCopy = {
       trust: 'Download via Microsoft Store · Privacy policy linked below · No account required on modulusaas.com',
       primaryCta: 'Download from Microsoft Store',
     },
-    omniseekPage: {
-      metaTitle: 'OmniSeek — SEO & competitor analytics desk | MODULUS',
+    seekdeskPage: {
+      metaTitle: 'SeekDesk — SEO & competitor analytics desk | MODULUS',
       metaDescription:
         'Agency SEO desktop app: Rank Tracker, Competitor Radar, SERP Volatility. Brave Search on the server only. Freemium for Microsoft Store. Published by MODULUSTECH.',
       backToModulus: '← All MODULUS products',
@@ -306,7 +306,7 @@ export const corporateCopy = {
         publisher: 'Publisher',
       },
       trust: 'Contact for demo · Store listing coming · No Brave key in the client',
-      primaryCta: 'Talk to us about OmniSeek',
+      primaryCta: 'Talk to us about SeekDesk',
     },
     footer: {
       products: 'Products',
@@ -317,7 +317,7 @@ export const corporateCopy = {
     meta: {
       homeTitle: 'MODULUS — Songurtech teknoloji ürünleri',
       homeDescription:
-        'Songurtech, MODULUS markasıyla Modulus ERP, AppointFlow, isendAI, Digital Legacy ve OmniSeek ürünlerini geliştirir — işletmeler ve kişisel planlama için yazılım.',
+        'Songurtech, MODULUS markasıyla Modulus ERP, AppointFlow, isendAI, Digital Legacy ve SeekDesk ürünlerini geliştirir — işletmeler ve kişisel planlama için yazılım.',
     },
     nav: {
       products: 'Ürünler',
@@ -330,7 +330,7 @@ export const corporateCopy = {
       appointflow: 'AppointFlow',
       isendai: 'isendAI',
       digitalLegacy: 'Digital Legacy',
-      omniseek: 'OmniSeek',
+      seekdesk: 'SeekDesk',
     },
     hero: {
       company: 'Songurtech',
@@ -373,8 +373,8 @@ export const corporateCopy = {
         description:
           'Dijital miras planlaması için Windows masaüstü uygulaması — varlıklar, varisler, mesajlar ve özel video günlüğü. Microsoft Store’dan indirin.',
       },
-      omniseek: {
-        name: 'OmniSeek',
+      seekdesk: {
+        name: 'SeekDesk',
         tagline: 'SEO ve rakip analitiği',
         description:
           'Ajanslar için SEO masaüstü paneli — Rank Tracker, Competitor Radar ve SERP Volatility. Free · Pro $29.99/ay · Agency $79.99/ay. Brave Search yalnızca sunucuda.',
@@ -430,9 +430,9 @@ export const corporateCopy = {
           'MODULUSTECH yayıncılığı — bu sitede yalnızca tanıtım ve indirme',
         ],
       },
-      omniseek: {
+      seekdesk: {
         summary:
-          'OmniSeek, ajanslar için Windows SEO analitikleri masasidir: anahtar kelime sıraları, rakip bahisleri ve SERP oynaklığı — Brave Search yalnızca sunucuda. Freemium: Free (48s refresh) · Pro $29.99/ay · Agency $79.99/ay.',
+          'SeekDesk, ajanslar için Windows SEO analitikleri masasidir: anahtar kelime sıraları, rakip bahisleri ve SERP oynaklığı — Brave Search yalnızca sunucuda. Freemium: Free (48s refresh) · Pro $29.99/ay · Agency $79.99/ay.',
         highlights: [
           'Rank Tracker ile pozisyon ve görünürlük takibi',
           'Competitor Radar — Brave News ve web bahisleri',
@@ -571,8 +571,8 @@ export const corporateCopy = {
       trust: 'Microsoft Store üzerinden indirme · Gizlilik politikası aşağıda · modulusaas.com’da hesap gerekmez',
       primaryCta: 'Microsoft Store’dan indir',
     },
-    omniseekPage: {
-      metaTitle: 'OmniSeek — SEO ve rakip analitiği masası | MODULUS',
+    seekdeskPage: {
+      metaTitle: 'SeekDesk — SEO ve rakip analitiği masası | MODULUS',
       metaDescription:
         'Ajans SEO masaüstü uygulaması: Rank Tracker, Competitor Radar, SERP Volatility. Brave Search yalnızca sunucuda. Freemium Microsoft Store. Yayıncı: MODULUSTECH.',
       backToModulus: '← Tüm MODULUS ürünleri',
@@ -618,7 +618,7 @@ export const corporateCopy = {
         publisher: 'Yayıncı',
       },
       trust: 'Demo için iletişim · Store yayını yakında · İstemcide Brave anahtarı yok',
-      primaryCta: 'OmniSeek için bizimle konuşun',
+      primaryCta: 'SeekDesk için bizimle konuşun',
     },
     footer: {
       products: 'Ürünler',

@@ -1,20 +1,6 @@
-import { Metadata } from 'next'
-import { OmniSeekProductContent } from '@/components/marketing/omniseek-product-content'
-import { corporateCopy } from '@/lib/corporate-marketing-copy'
+import { redirect } from 'next/navigation'
 
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-
-export const metadata: Metadata = {
-  title: corporateCopy.en.omniseekPage.metaTitle,
-  description: corporateCopy.en.omniseekPage.metaDescription,
-  openGraph: {
-    title: corporateCopy.en.omniseekPage.metaTitle,
-    description: corporateCopy.en.omniseekPage.metaDescription,
-    type: 'website',
-  },
-}
-
-export default function OmniSeekProductPage() {
-  return <OmniSeekProductContent />
+/** Legacy URL — product renamed to SeekDesk */
+export default function OmniSeekRedirectPage() {
+  redirect('/products/seekdesk')
 }

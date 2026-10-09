@@ -1,7 +1,7 @@
 export const CORPORATE_PRODUCT_ORDER = [
   'isendai',
   'digitalLegacy',
-  'omniseek',
+  'seekdesk',
   'erp',
   'appointflow',
 ] as const
@@ -12,7 +12,7 @@ export type CorporateProductKey = (typeof CORPORATE_PRODUCT_ORDER)[number]
 export const CORPORATE_PRODUCT_AVAILABLE: Record<CorporateProductKey, boolean> = {
   isendai: true,
   digitalLegacy: true,
-  omniseek: true,
+  seekdesk: true,
   erp: false,
   appointflow: false,
 }
@@ -20,7 +20,7 @@ export const CORPORATE_PRODUCT_AVAILABLE: Record<CorporateProductKey, boolean> =
 export const CORPORATE_PRODUCT_HREFS: Record<CorporateProductKey, string> = {
   isendai: '/products/isendai',
   digitalLegacy: '/products/digital-legacy',
-  omniseek: '/products/omniseek',
+  seekdesk: '/products/seekdesk',
   erp: '/products/modulus-erp',
   appointflow: '/products/appointflow',
 }

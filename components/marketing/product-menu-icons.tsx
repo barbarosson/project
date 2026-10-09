@@ -2,7 +2,7 @@
 
 import { ModulusLogoSvgOnly } from '@/components/modulus-logo'
 
-type ProductKey = 'erp' | 'appointflow' | 'isendai' | 'digitalLegacy' | 'omniseek'
+type ProductKey = 'erp' | 'appointflow' | 'isendai' | 'digitalLegacy' | 'seekdesk'
 
 export function ProductMenuIcon({
   product,
@@ -54,8 +54,8 @@ export function ProductMenuIcon({
     )
   }
 
-  if (product === 'omniseek') {
-    const uid = `os-${size}`
+  if (product === 'seekdesk') {
+    const uid = `sd-${size}`
     return (
       <svg
         width={size}

@@ -40,7 +40,7 @@ const PRODUCT_STYLES: Record<
     accent: '#B45309',
     bg: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
   },
-  omniseek: {
+  seekdesk: {
     icon: TrendingUp,
     accent: '#4F46E5',
     bg: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)',

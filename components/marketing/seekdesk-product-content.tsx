@@ -4,18 +4,18 @@ import Link from 'next/link'
 import { ArrowRight, Check } from 'lucide-react'
 import { useLanguage } from '@/contexts/language-context'
 import { getCorporateCopy } from '@/lib/corporate-marketing-copy'
-import { OMNISEEK_LINKS } from '@/lib/omniseek-links'
+import { SEEKDESK_LINKS } from '@/lib/seekdesk-links'
 import { MarketingLayout } from './marketing-layout'
 import { ProductMenuIcon } from './product-menu-icons'
 import { Button } from '@/components/ui/button'
 
 const ACCENT = '#4F46E5'
 
-export function OmniSeekProductContent() {
+export function SeekDeskProductContent() {
   const { language } = useLanguage()
-  const p = getCorporateCopy(language).omniseekPage
-  const product = getCorporateCopy(language).products.omniseek
-  const details = getCorporateCopy(language).details.omniseek
+  const p = getCorporateCopy(language).seekdeskPage
+  const product = getCorporateCopy(language).products.seekdesk
+  const details = getCorporateCopy(language).details.seekdesk
 
   return (
     <MarketingLayout>
@@ -39,14 +39,14 @@ export function OmniSeekProductContent() {
           </Link>
 
           <div className="flex flex-col sm:flex-row sm:items-start gap-6 mb-6">
-            <ProductMenuIcon product="omniseek" size={72} />
+            <ProductMenuIcon product="seekdesk" size={72} />
             <div className="min-w-0">
               <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: ACCENT }}>
                 {product.tagline}
               </p>
               <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0A2540]">{product.name}</h1>
               <p className="mt-2 text-sm font-semibold text-[#425466]">
-                {p.links.publisher}: {OMNISEEK_LINKS.publisher}
+                {p.links.publisher}: {SEEKDESK_LINKS.publisher}
               </p>
             </div>
           </div>
@@ -73,7 +73,7 @@ export function OmniSeekProductContent() {
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <Link
-              href={OMNISEEK_LINKS.contact}
+              href={SEEKDESK_LINKS.contact}
               className="inline-flex items-center justify-center gap-2 rounded-full px-8 py-3 text-base font-semibold text-white shadow-md hover:opacity-95"
               style={{ backgroundColor: '#0A2540' }}
             >
@@ -135,11 +135,11 @@ export function OmniSeekProductContent() {
             }}
           >
             <div className="flex justify-center">
-              <ProductMenuIcon product="omniseek" size={56} />
+              <ProductMenuIcon product="seekdesk" size={56} />
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mt-6 mb-4">{p.primaryCta}</h2>
             <p className="text-base sm:text-lg text-white/75 mb-10 max-w-xl mx-auto px-2">{product.description}</p>
-            <Link href={OMNISEEK_LINKS.contact} className="inline-flex">
+            <Link href={SEEKDESK_LINKS.contact} className="inline-flex">
               <Button
                 size="lg"
                 className="rounded-full px-8 bg-white text-[#0A2540] hover:bg-[#F6F9FC] font-semibold shadow-md"
