@@ -65,7 +65,7 @@ export const corporateCopy = {
         name: 'OmniSeek',
         tagline: 'SEO & competitor analytics',
         description:
-          'Desktop SEO desk for agencies — Rank Tracker, Competitor Radar, and SERP Volatility powered by Brave Search. Freemium for Microsoft Store.',
+          'Desktop SEO desk for agencies — Rank Tracker, Competitor Radar, and SERP Volatility. Free · Pro from $29.99/mo · Agency $79.99/mo. Brave Search on the server only.',
       },
     },
     details: {
@@ -120,13 +120,13 @@ export const corporateCopy = {
       },
       omniseek: {
         summary:
-          'OmniSeek is a Windows desktop SEO analytics desk: track keyword ranks, watch competitor mentions, and measure SERP volatility — with Brave Search only on the server.',
+          'OmniSeek is a Windows desktop SEO analytics desk: track keyword ranks, watch competitor mentions, and measure SERP volatility — with Brave Search only on the server. Freemium: Free (48h refresh) · Pro from $29.99/mo · Agency $79.99/mo.',
         highlights: [
           'Rank Tracker for keyword positions and visibility',
           'Competitor Radar from Brave News and web mentions',
           'SERP Volatility scores for sector keyword sets',
           'Brave API key never ships in the client — JWT to our Node API',
-          'Freemium desktop app; Microsoft Store packaging on the roadmap',
+          'Free · Pro $29.99/mo ($199/yr) · Agency $79.99/mo — Microsoft Store IAP',
         ],
       },
     },
@@ -273,13 +273,34 @@ export const corporateCopy = {
         taglines: [
           'Rank Tracker, Competitor Radar, and SERP Volatility',
           'Brave API key only on the server — JWT auth from the app',
-          'Zinc + Indigo B2B UI with dark mode by default',
-          'Freemium model; Microsoft Store packaging in progress',
+          'Free (48h refresh) · Pro from $29.99/mo · Agency $79.99/mo',
+          'Microsoft Store Freemium — subscription add-ons for Pro & Agency',
         ],
       },
       features: {
         title: 'Built for data-heavy SEO work',
         subtitle: 'Live Brave lookups with 24h cache — marketing page on modulusaas.com, product runs on your desktop.',
+      },
+      pricing: {
+        title: 'Simple Freemium pricing',
+        subtitle: 'Free app on Microsoft Store. Upgrade with subscription add-ons when you need more capacity.',
+        plans: [
+          {
+            name: 'Free',
+            price: '$0',
+            detail: '5 keywords · 3 brands · 3 sectors · full refresh every 48h',
+          },
+          {
+            name: 'Pro',
+            price: '$29.99/mo · $199/yr',
+            detail: '50 keywords · 15 brands · 10 sectors · daily desk with 24h cache',
+          },
+          {
+            name: 'Agency',
+            price: '$79.99/mo · $699/yr',
+            detail: '200 keywords · 40 brands · 25 sectors · multi-client capacity',
+          },
+        ],
       },
       links: {
         publisher: 'Publisher',
@@ -356,7 +377,7 @@ export const corporateCopy = {
         name: 'OmniSeek',
         tagline: 'SEO ve rakip analitiği',
         description:
-          'Ajanslar için SEO masaüstü paneli — Rank Tracker, Competitor Radar ve SERP Volatility; Brave Search destekli. Freemium Microsoft Store modeli.',
+          'Ajanslar için SEO masaüstü paneli — Rank Tracker, Competitor Radar ve SERP Volatility. Free · Pro $29.99/ay · Agency $79.99/ay. Brave Search yalnızca sunucuda.',
       },
     },
     details: {
@@ -411,13 +432,13 @@ export const corporateCopy = {
       },
       omniseek: {
         summary:
-          'OmniSeek, ajanslar için Windows SEO analitikleri masasidir: anahtar kelime sıraları, rakip bahisleri ve SERP oynaklığı — Brave Search yalnızca sunucuda çalışır.',
+          'OmniSeek, ajanslar için Windows SEO analitikleri masasidir: anahtar kelime sıraları, rakip bahisleri ve SERP oynaklığı — Brave Search yalnızca sunucuda. Freemium: Free (48s refresh) · Pro $29.99/ay · Agency $79.99/ay.',
         highlights: [
           'Rank Tracker ile pozisyon ve görünürlük takibi',
           'Competitor Radar — Brave News ve web bahisleri',
           'SERP Volatility ile sektör top-10 oynaklık skoru',
           'Brave API anahtarı istemcide değil — uygulama JWT ile API’ye bağlanır',
-          'Freemium masaüstü; Microsoft Store paketleme yol haritasında',
+          'Free · Pro $29.99/ay ($199/yıl) · Agency $79.99/ay — Microsoft Store IAP',
         ],
       },
     },
@@ -564,13 +585,34 @@ export const corporateCopy = {
         taglines: [
           'Rank Tracker, Competitor Radar ve SERP Volatility',
           'Brave API anahtarı yalnızca sunucuda — uygulamadan JWT',
-          'Zinc + Indigo B2B arayüz, varsayılan karanlık tema',
-          'Freemium model; Microsoft Store paketleme devam ediyor',
+          'Free (48s refresh) · Pro $29.99/ay · Agency $79.99/ay',
+          'Microsoft Store Freemium — Pro ve Agency abonelik add-on’ları',
         ],
       },
       features: {
         title: 'Veri yoğun SEO işi için',
         subtitle: 'Canlı Brave sorguları ve 24 saat önbellek — tanıtım modulusaas.com’da, ürün masaüstünüzde.',
+      },
+      pricing: {
+        title: 'Sade Freemium fiyatlandırma',
+        subtitle: 'Microsoft Store’da ücretsiz uygulama. Daha fazla kapasite için abonelik add-on’larına geçin.',
+        plans: [
+          {
+            name: 'Free',
+            price: '$0',
+            detail: '5 kelime · 3 marka · 3 sektör · tam refresh 48 saatte bir',
+          },
+          {
+            name: 'Pro',
+            price: '$29.99/ay · $199/yıl',
+            detail: '50 kelime · 15 marka · 10 sektör · günlük masa, 24s önbellek',
+          },
+          {
+            name: 'Agency',
+            price: '$79.99/ay · $699/yıl',
+            detail: '200 kelime · 40 marka · 25 sektör · çok müşterili kapasite',
+          },
+        ],
       },
       links: {
         publisher: 'Yayıncı',

@@ -105,7 +105,28 @@ export function OmniSeekProductContent() {
         </div>
       </section>
 
-      <section className="py-20 lg:py-24 bg-[#F6F9FC]">
+      <section className="py-16 lg:py-20 bg-[#F6F9FC]">
+        <div className="container-marketing">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0A2540]">{p.pricing.title}</h2>
+          <p className="mt-4 max-w-3xl text-lg text-[#425466]">{p.pricing.subtitle}</p>
+          <div className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3">
+            {p.pricing.plans.map((plan) => (
+              <div
+                key={plan.name}
+                className="rounded-2xl border border-[#E3E8EE] bg-white p-6 shadow-sm"
+              >
+                <p className="text-xs font-bold uppercase tracking-wider" style={{ color: ACCENT }}>
+                  {plan.name}
+                </p>
+                <p className="mt-3 text-2xl font-bold text-[#0A2540]">{plan.price}</p>
+                <p className="mt-3 text-sm leading-relaxed text-[#425466]">{plan.detail}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-20 lg:py-24 bg-white">
         <div className="container-marketing">
           <div
             className="rounded-3xl px-6 py-12 sm:px-12 sm:py-14 text-center"
