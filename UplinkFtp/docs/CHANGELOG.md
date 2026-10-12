@@ -1,0 +1,25 @@
+# Changelog
+
+All notable changes to Uplink FTP are documented here.
+
+Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning starts at **0.1.0-beta**.
+
+## [Unreleased]
+
+### Added
+
+- ADIM 1–6 client skeleton: WinUI shell, FluentFTP/SSH.NET, SQLite sites, PasswordVault credentials, transfer queue, Free/Pro licensing gates  
+- `UplinkFtp.Core` library + xUnit tests (limits, path safety, queue, license, pool, load concurrency)  
+- CI workflow for Linux Core tests + Windows WinUI build (`.github/workflows/uplink-ftp-ci.yml`)  
+- Sample license validate API (`samples/LicenseApi`) — not production-hosted  
+- Packaging scaffolds under `packaging/` (MSIX/web docs, scripts that refuse missing certs)  
+- Docs: licensing contract, privacy draft, security review, performance notes, release checklist, support placeholder  
+
+### Changed
+
+- Stub Pro keys disabled by default in Release (`AllowStubKeys` / `UPLINK_ALLOW_STUB_KEYS`)  
+- `AcceptAnyCertificate` defaults to false  
+
+## [0.1.0-beta] — TBD
+
+First public beta tag — fill date when cut. Prerequisites: P0 Windows smoke, signed or Store flight path, license strategy without shipping stub keys.
