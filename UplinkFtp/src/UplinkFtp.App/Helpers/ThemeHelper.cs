@@ -9,9 +9,9 @@ namespace UplinkFtp.Helpers;
 
 /// <summary>
 /// Applies a named ThemeCatalog profile app-wide.
-/// Named palettes are written into <see cref="Application.Current"/>.Resources so
-/// shell, ContentDialogs, ThemeResource styles, and Application.Current.Resources
-/// lookups all see the same brushes (RootGrid-only overlays were bleeding Orbit teal).
+/// Named palettes mutate the live brushes already resolved by ThemeResource
+/// (Application.Current.Resources). Replacing brush identity left MainWindow on Orbit
+/// while Settings (explicit Background) appeared to update alone.
 /// </summary>
 public static class ThemeHelper
 {
@@ -47,9 +47,10 @@ public static class ThemeHelper
     ];
 
     private static ResourceDictionary? _paletteCatalog;
-    private static ResourceDictionary? _rootMerge;
     /// <summary>Original Application.Resources entries for Orbit restore (null = key was absent).</summary>
     private static readonly Dictionary<string, object?> OrbitOriginals = new(StringComparer.Ordinal);
+    /// <summary>App-level scrollbar brushes we own (ThemeDictionary entries must not be polluted).</summary>
+    private static readonly Dictionary<string, Brush> AppScrollbarBrushes = new(StringComparer.Ordinal);
     private static bool _orbitSnapshotTaken;
     private static string? _activePaletteKey;
 
@@ -65,13 +66,8 @@ public static class ThemeHelper
         var profile = ThemeCatalog.Resolve(themeName);
         CurrentProfile = profile;
 
-        if (root is not null)
-        {
-            root.RequestedTheme = profile.ElementTheme;
-        }
-
         ApplyPaletteToApplication(profile.PaletteKey);
-        ApplyPaletteToRoot(root, profile.PaletteKey);
+        ApplyToShell(root, profile.ElementTheme);
     }
 
     /// <summary>
@@ -102,6 +98,29 @@ public static class ThemeHelper
         }
 
         return null;
+    }
+
+    private static void ApplyToShell(FrameworkElement? root, ElementTheme theme)
+    {
+        if (root is null)
+        {
+            return;
+        }
+
+        // Bounce when ElementTheme is unchanged so ThemeDictionary-backed controls refresh
+        // after app-level ScrollBar overrides are installed/removed.
+        if (root.RequestedTheme == theme)
+        {
+            root.RequestedTheme = theme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
+        }
+
+        root.RequestedTheme = theme;
+
+        // ThemeResource can keep a stale Background local value after identity swaps; pin shell.
+        if (root is Panel panel && GetBrush("UplinkShellBackgroundBrush") is Brush shell)
+        {
+            panel.Background = shell;
+        }
     }
 
     private static void ApplyPaletteToApplication(string? paletteKey)
@@ -143,24 +162,54 @@ public static class ThemeHelper
     }
 
     /// <summary>
-    /// Prefer mutating the live Application brush in place so already-resolved
-    /// ThemeResource references (same ElementTheme, e.g. Orange → Red Night) update.
-    /// Never mutate Orbit's ThemeResource-backed originals — replace those with clones.
+    /// Mutate the live brush ThemeResource already holds. Never replace Uplink* brush
+    /// identity — that left MainWindow on Orbit while Settings (explicit set) updated.
+    /// ScrollBar keys live in ThemeDictionaries; install stable app-level brushes instead
+    /// of mutating the themed instances (which would pollute Orbit Light/Dark).
     /// </summary>
     private static void AssignOverlay(ResourceDictionary resources, string key, object entry)
     {
-        var clone = CloneResource(entry);
-        OrbitOriginals.TryGetValue(key, out var orbitOriginal);
+        if (entry is string s)
+        {
+            resources[key] = s;
+            return;
+        }
+
+        if (IsScrollbarKey(key))
+        {
+            AssignScrollbarOverlay(resources, key, entry);
+            return;
+        }
 
         if (resources.TryGetValue(key, out var current)
             && current is not null
-            && !ReferenceEquals(current, orbitOriginal)
-            && TryCopyBrush(current, clone))
+            && TryCopyBrush(current, entry))
         {
             return;
         }
 
-        resources[key] = clone;
+        resources[key] = CloneResource(entry);
+    }
+
+    private static void AssignScrollbarOverlay(ResourceDictionary resources, string key, object entry)
+    {
+        if (AppScrollbarBrushes.TryGetValue(key, out var live))
+        {
+            TryCopyBrush(live, entry);
+            resources[key] = live;
+            return;
+        }
+
+        var clone = CloneResource(entry);
+        if (clone is Brush brush)
+        {
+            AppScrollbarBrushes[key] = brush;
+            resources[key] = brush;
+        }
+        else
+        {
+            resources[key] = clone;
+        }
     }
 
     private static bool TryCopyBrush(object target, object source)
@@ -189,43 +238,6 @@ public static class ThemeHelper
         return false;
     }
 
-    private static void ApplyPaletteToRoot(FrameworkElement? root, string? paletteKey)
-    {
-        if (root is null)
-        {
-            return;
-        }
-
-        if (_rootMerge is not null)
-        {
-            root.Resources.MergedDictionaries.Remove(_rootMerge);
-            _rootMerge = null;
-        }
-
-        if (string.IsNullOrWhiteSpace(paletteKey))
-        {
-            return;
-        }
-
-        var palette = GetPalette(paletteKey);
-        if (palette is null)
-        {
-            return;
-        }
-
-        var merge = new ResourceDictionary();
-        foreach (var key in OverlayKeys)
-        {
-            if (palette.TryGetValue(key, out var entry) && entry is not null)
-            {
-                merge[key] = CloneResource(entry);
-            }
-        }
-
-        root.Resources.MergedDictionaries.Add(merge);
-        _rootMerge = merge;
-    }
-
     private static void EnsureOrbitSnapshot(ResourceDictionary resources)
     {
         if (_orbitSnapshotTaken)
@@ -246,16 +258,46 @@ public static class ThemeHelper
     {
         foreach (var key in OverlayKeys)
         {
+            if (key == "UplinkThemePaletteId" || IsScrollbarKey(key))
+            {
+                // Drop app-level overrides so ThemeDictionaries / absence win again.
+                resources.Remove(key);
+                continue;
+            }
+
             if (!OrbitOriginals.TryGetValue(key, out var original) || original is null)
             {
                 resources.Remove(key);
+                continue;
             }
-            else
+
+            resources[key] = original;
+            // Undo SolidColorBrush.Color / GradientStop.Color locals so ThemeResource expressions return.
+            ClearBrushLocalColors(original);
+        }
+
+        AppScrollbarBrushes.Clear();
+    }
+
+    private static void ClearBrushLocalColors(object brush)
+    {
+        if (brush is SolidColorBrush solid)
+        {
+            solid.ClearValue(SolidColorBrush.ColorProperty);
+            return;
+        }
+
+        if (brush is LinearGradientBrush gradient)
+        {
+            foreach (var stop in gradient.GradientStops)
             {
-                resources[key] = original;
+                stop.ClearValue(GradientStop.ColorProperty);
             }
         }
     }
+
+    private static bool IsScrollbarKey(string key)
+        => key.StartsWith("ScrollBar", StringComparison.Ordinal);
 
     private static ResourceDictionary? GetPalette(string paletteKey)
     {
