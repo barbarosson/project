@@ -282,12 +282,52 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public Task HandleDropOnLocalAsync(string? dragText)
         => HandleDropAsync(dragText, targetIsRemote: false);
 
+    /// <summary>Button fallback: upload the selected local item to the current remote folder.</summary>
+    public void EnqueueSelectedUpload(BrowserItemViewModel? item)
+    {
+        if (item is null || item.IsParentLink)
+        {
+            Log.Warn("Select a local file or folder to upload.");
+            return;
+        }
+
+        if (!IsConnected)
+        {
+            Log.Warn("Connect before uploading.");
+            return;
+        }
+
+        var remotePath = RemotePath.Combine(RemoteBrowser.CurrentPath, item.Name);
+        TransferQueue.EnqueueUpload(item.FullPath, remotePath, item.IsDirectory);
+        Log.Info($"Queued upload {item.Name} → {remotePath}");
+    }
+
+    /// <summary>Button fallback: download the selected remote item to the current local folder.</summary>
+    public void EnqueueSelectedDownload(BrowserItemViewModel? item)
+    {
+        if (item is null || item.IsParentLink)
+        {
+            Log.Warn("Select a remote file or folder to download.");
+            return;
+        }
+
+        if (!IsConnected)
+        {
+            Log.Warn("Connect before downloading.");
+            return;
+        }
+
+        var localPath = Path.Combine(LocalBrowser.CurrentPath, item.Name);
+        TransferQueue.EnqueueDownload(item.FullPath, localPath, item.IsDirectory);
+        Log.Info($"Queued download {item.Name} → {localPath}");
+    }
+
     private Task HandleDropAsync(string? dragText, bool targetIsRemote)
     {
         var payload = TryParsePayload(dragText);
         if (payload is null)
         {
-            Log.Warn("Drop ignored — unrecognized drag payload.");
+            Log.Warn("Drop ignored — unrecognized drag payload. Drag from the other pane, or use Upload → / ← Download.");
             return Task.CompletedTask;
         }
 

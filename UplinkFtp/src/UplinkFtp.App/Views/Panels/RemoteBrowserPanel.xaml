@@ -8,16 +8,33 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid x:Name="DropTarget"
+          AllowDrop="True"
+          DragOver="DropTarget_DragOver"
+          Drop="DropTarget_Drop">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Remote site" Style="{StaticResource UplinkSectionTitleStyle}"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Remote site" Style="{StaticResource UplinkSectionTitleStyle}" Margin="0"/>
+            <Button Grid.Column="1"
+                    Content="← Download"
+                    Style="{StaticResource UplinkNavButtonStyle}"
+                    Click="DownloadSelected_Click"
+                    IsEnabled="{Binding IsConnected}"
+                    ToolTipService.ToolTip="Download the selected remote file/folder to the local path"
+                    MinWidth="0"
+                    Padding="12,6"/>
+        </Grid>
 
-        <Grid Grid.Row="1" Margin="0,0,0,8">
+        <Grid Grid.Row="1" Margin="0,8,0,8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -72,8 +89,8 @@
                       CanReorderItems="False"
                       IsEnabled="{Binding IsConnected}"
                       DragItemsStarting="FileList_DragItemsStarting"
-                      DragOver="FileList_DragOver"
-                      Drop="FileList_Drop"
+                      DragOver="DropTarget_DragOver"
+                      Drop="DropTarget_Drop"
                       DoubleTapped="FileList_DoubleTapped">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:BrowserItemViewModel">

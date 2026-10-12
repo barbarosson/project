@@ -33,6 +33,7 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 ### Fixed
 
 - Sites / Settings / License / Transfer queue action buttons no longer clip horizontally (equal-column grids)  
+- Drag-and-drop enqueue: WinUI Drop handlers now take a deferral (async drop was silently cancelled); panel-wide drop targets + **Upload →** / **← Download** buttons as fallback  
 
 ## [0.1.0-beta] — TBD
 

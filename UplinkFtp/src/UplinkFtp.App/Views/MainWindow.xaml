@@ -169,7 +169,7 @@
                 BorderBrush="{ThemeResource UplinkSectionStrokeBrush}"
                 BorderThickness="1">
             <TextBlock Style="{StaticResource UplinkMutedTextStyle}" FontSize="12">
-                <Run Text="Tip: drag local → remote to upload, remote → local to download. Assist parses URIs and diagnoses log errors. Theme: Settings → Light / Dark / System."/>
+                <Run Text="Tip: drag local → remote to upload (or Local Upload →). Drag remote → local to download (or Remote ← Download). Assist: URI parse + log diagnosis."/>
             </TextBlock>
         </Border>
     </Grid>

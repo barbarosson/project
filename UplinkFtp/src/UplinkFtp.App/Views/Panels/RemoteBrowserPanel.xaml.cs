@@ -1,3 +1,4 @@
+using System;
 using UplinkFtp.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -39,6 +40,16 @@ public sealed partial class RemoteBrowserPanel : UserControl
         }
     }
 
+    private void DownloadSelected_Click(object sender, RoutedEventArgs e)
+    {
+        if (_shell is null || _browser?.SelectedItem is null)
+        {
+            return;
+        }
+
+        _shell.EnqueueSelectedDownload(_browser.SelectedItem);
+    }
+
     private void FileList_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
     {
         if (e.Items.Count == 0 || e.Items[0] is not BrowserItemViewModel item || item.IsParentLink)
@@ -51,21 +62,50 @@ public sealed partial class RemoteBrowserPanel : UserControl
         e.Data.RequestedOperation = DataPackageOperation.Copy;
     }
 
-    private void FileList_DragOver(object sender, DragEventArgs e)
+    private void DropTarget_DragOver(object sender, DragEventArgs e)
     {
-        e.AcceptedOperation = DataPackageOperation.Copy;
-        e.DragUIOverride.Caption = "Upload here";
-        e.DragUIOverride.IsCaptionVisible = true;
+        if (e.DataView.Contains(StandardDataFormats.Text))
+        {
+            e.AcceptedOperation = DataPackageOperation.Copy;
+            e.DragUIOverride.Caption = "Upload here";
+            e.DragUIOverride.IsCaptionVisible = true;
+            e.DragUIOverride.IsGlyphVisible = true;
+        }
+        else
+        {
+            e.AcceptedOperation = DataPackageOperation.None;
+        }
+
+        e.Handled = true;
     }
 
-    private async void FileList_Drop(object sender, DragEventArgs e)
+    private async void DropTarget_Drop(object sender, DragEventArgs e)
     {
-        if (_shell is null || !e.DataView.Contains(StandardDataFormats.Text))
+        if (_shell is null)
         {
             return;
         }
 
-        var text = await e.DataView.GetTextAsync();
-        await _shell.HandleDropOnRemoteAsync(text);
+        var deferral = e.GetDeferral();
+        try
+        {
+            if (!e.DataView.Contains(StandardDataFormats.Text))
+            {
+                return;
+            }
+
+            var text = await e.DataView.GetTextAsync();
+            await _shell.HandleDropOnRemoteAsync(text);
+            e.AcceptedOperation = DataPackageOperation.Copy;
+            e.Handled = true;
+        }
+        catch (Exception ex)
+        {
+            _shell.Log.Error($"Drop failed: {ex.Message}");
+        }
+        finally
+        {
+            deferral.Complete();
+        }
     }
 }
