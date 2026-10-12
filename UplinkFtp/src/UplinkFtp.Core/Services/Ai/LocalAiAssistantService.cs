@@ -59,7 +59,10 @@ public sealed class LocalAiAssistantService : IAiAssistantService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        if (await HasApiKeyAsync(cancellationToken).ConfigureAwait(false) && _cloud is not null)
+        string? cloudError = null;
+        if (_settings.AiProvider != AiProviderKind.None
+            && await HasApiKeyAsync(cancellationToken).ConfigureAwait(false)
+            && _cloud is not null)
         {
             try
             {
@@ -69,20 +72,24 @@ public sealed class LocalAiAssistantService : IAiAssistantService
                     return cloud;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Fall through to local heuristics.
+                // Keep local heuristics, but surface the cloud failure clearly in the UI.
+                cloudError = ex.Message;
             }
         }
 
         var redacted = AiPromptRedaction.RedactLogLines(request.LogLines);
         var diagnosis = ConnectionAssistService.Diagnose(redacted);
         var steps = BuildTroubleshootSteps(redacted, diagnosis, request.Protocol);
+        var advice = string.IsNullOrWhiteSpace(cloudError)
+            ? diagnosis.Advice
+            : $"Cloud AI ({_settings.AiProvider}) failed: {cloudError}\n\nLocal fallback:\n{diagnosis.Advice}";
 
         return new AiTroubleshootResult
         {
-            Title = diagnosis.Title,
-            Advice = diagnosis.Advice,
+            Title = string.IsNullOrWhiteSpace(cloudError) ? diagnosis.Title : "Cloud AI failed — local fallback",
+            Advice = advice,
             Steps = steps,
             SuggestedUiAction = MapSuggestedAction(diagnosis),
             UsedCloudModel = false

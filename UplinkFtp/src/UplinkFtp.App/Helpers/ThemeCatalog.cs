@@ -57,3 +57,21 @@ public static class ThemeCatalog
 
 /// <param name="PaletteKey">Optional key in Themes/ThemePalettes.xaml; null = default Colors.xaml.</param>
 public sealed record ThemeProfile(string Name, ElementTheme ElementTheme, string? PaletteKey);
+
+/// <summary>Swatch + feel copy for Settings theme preview cards (not color-named themes).</summary>
+public sealed record ThemePreviewCard(
+    string Name,
+    string Feel,
+    string ShellHex,
+    string AccentHex,
+    bool IsDark)
+{
+    public static ThemePreviewCard For(string name) => ThemeCatalog.MigrateLegacyName(name) switch
+    {
+        "Daybreak" => new("Daybreak", "Clear morning · light", "#EEF4F6", "#0F766E", false),
+        "Nightwatch" => new("Nightwatch", "Late ops · dark", "#0B1418", "#2DD4BF", true),
+        "Harbor" => new("Harbor", "Dockside calm · light", "#E8F0F4", "#0B6E7A", false),
+        "Forge" => new("Forge", "Workshop heat · dark", "#120F0C", "#E8A06A", true),
+        _ => new("Orbit", "Follows your system", "#EEF4F6", "#0F766E", false)
+    };
+}

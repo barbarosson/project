@@ -176,7 +176,11 @@ public sealed partial class MainWindow : Window
             ApplyThemeFromSettings();
         }
 
+        void OnThemePreview(object? sender, string themeName)
+            => ThemeHelper.Apply(themeName, RootGrid);
+
         vm.SettingsSaved += OnSettingsSaved;
+        vm.ThemePreviewRequested += OnThemePreview;
         try
         {
             var dialog = new SettingsDialog(vm)
@@ -189,11 +193,21 @@ public sealed partial class MainWindow : Window
         finally
         {
             vm.SettingsSaved -= OnSettingsSaved;
+            vm.ThemePreviewRequested -= OnThemePreview;
         }
 
         // Keep quick-connect trust checkbox in sync with saved setting.
         ViewModel.AcceptAnyCertificate = ViewModel.Settings.AcceptAnyCertificate;
-        ApplyThemeFromSettings();
+
+        // Close without Save restores the theme that was active when Settings opened.
+        if (vm.ThemePersisted)
+        {
+            ApplyThemeFromSettings();
+        }
+        else
+        {
+            ThemeHelper.Apply(vm.ThemeAtOpen, RootGrid);
+        }
     }
 
     private async System.Threading.Tasks.Task ShowLicenseAsync()
