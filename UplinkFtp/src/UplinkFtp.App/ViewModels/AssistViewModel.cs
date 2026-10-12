@@ -286,10 +286,11 @@ public sealed partial class AssistViewModel : ObservableObject
         try
         {
             var filter = await _ai.ParseSearchQueryAsync(SearchQuery).ConfigureAwait(true);
+            var after = filter.ModifiedAfterUtc?.UtcDateTime.ToString("u") ?? "-";
             SearchResultText =
                 $"{filter.Explanation}\n" +
-                $"ext={filter.Extension ?? "—"} · contains={filter.NameContains ?? "—"} · " +
-                $"min={filter.MinSizeBytes?.ToString() ?? "—"} · after={filter.ModifiedAfterUtc?.UtcDateTime:u ?? "—"}";
+                $"ext={filter.Extension ?? "-"} · contains={filter.NameContains ?? "-"} · " +
+                $"min={filter.MinSizeBytes?.ToString() ?? "-"} · after={after}";
             StatusMessage = "Search filter parsed. Apply to Local or Remote listing.";
         }
         catch (Exception ex)
