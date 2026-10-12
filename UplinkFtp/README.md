@@ -1,6 +1,6 @@
 # Uplink FTP
 
-Modern FileZilla alternative for Windows — WinUI 3 / Windows App SDK, MVVM, FluentFTP, SSH.NET, EF Core + SQLite.
+Modern FileZilla alternative for Windows — WinUI 3 / Windows App SDK **2.5.1**, MVVM, FluentFTP, SSH.NET, EF Core + SQLite.
 
 ## Status
 
@@ -35,15 +35,30 @@ CI: `.github/workflows/uplink-ftp-ci.yml` (Linux Core tests + Windows WinUI buil
 
 - Windows 10 version 1809+ / Windows 11  
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)  
-- Visual Studio 2022 17.8+ with **Windows App SDK / WinUI** workload  
+- Visual Studio 2022 with **Windows App SDK / WinUI** workload (for IDE builds)  
 
-## Build (on Windows)
+**Runtime:** Unpackaged Debug/Release builds set `WindowsAppSDKSelfContained=true`, so the Windows App SDK framework files are copied next to the app. **Do not install Windows App Runtime 1.6** (EOL). A separate framework-dependent Runtime install is not required for the default local build.
 
-```bash
+NuGet (verified stable, non-preview): `Microsoft.WindowsAppSDK` **2.5.1**.
+
+## Build & run (on Windows)
+
+Always use **x64** (matches default `Platform` and output under `bin\x64\…`):
+
+```powershell
 cd UplinkFtp
+git checkout cursor/ftp-ai-adim1-skeleton-e45f   # if cloning the monorepo
 dotnet restore UplinkFtp.sln
-dotnet build UplinkFtp.sln -c Debug
-dotnet run --project src/UplinkFtp.App/UplinkFtp.App.csproj
+dotnet build src\UplinkFtp.App\UplinkFtp.App.csproj -c Debug -p:Platform=x64
+.\src\UplinkFtp.App\bin\x64\Debug\net8.0-windows10.0.19041.0\UplinkFtp.exe
+```
+
+> Prefer launching the **x64 output exe** above. Plain `dotnet run` without matching Platform can look under `bin\Debug\…` (missing exe).
+
+Optional unpackaged self-contained publish (bundles .NET + WASDK):
+
+```powershell
+dotnet publish src\UplinkFtp.App\UplinkFtp.App.csproj -c Release -p:Platform=x64 -p:PublishProfile=win-x64
 ```
 
 ## Tests (Linux or Windows)

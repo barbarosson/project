@@ -5,9 +5,12 @@ Scaffold for non-Store installs of the same WinUI binary.
 ## Sideload / bootstrapper notes
 
 1. Build an unpackaged or MSIX sideload package on Windows (`UplinkDistributionChannel=Web`).  
+   - Default unpackaged app uses **Windows App SDK 2.5.1** with `WindowsAppSDKSelfContained=true` (framework payload beside the exe; **do not** ship/require EOL Runtime 1.6).  
+   - Optional full publish: `dotnet publish … -p:PublishProfile=win-x64` (also sets .NET `SelfContained`).  
 2. Sign with your organization’s code-signing certificate (see `../signing.env.example`).  
 3. Host the package + optional bootstrapper EXE on HTTPS (CDN / static site — **external**).  
 4. Users enable sideloading (or use a signed MSIX with trusted publisher).  
+
 
 `packaging/scripts/build-web-installer.ps1` is a scaffold that documents the publish steps and fails if signing env is missing. It does not invent certs or publish externally.
 

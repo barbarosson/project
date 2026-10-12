@@ -14,6 +14,12 @@
     <UseWinUI>true</UseWinUI>
     <EnableMsixTooling>true</EnableMsixTooling>
     <WindowsPackageType>None</WindowsPackageType>
+    <!--
+      Unpackaged local/CI builds embed the Windows App SDK framework payload so users
+      do not need a separate (EOL 1.6) Windows App Runtime installer.
+      See: https://learn.microsoft.com/windows/apps/package-and-deploy/self-contained-deploy/deploy-self-contained-apps
+    -->
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
@@ -39,10 +45,10 @@
     </Content>
   </ItemGroup>
 
-  <!-- WinUI / Windows App SDK -->
+  <!-- WinUI / Windows App SDK (NuGet stable 2.5.1 as of 2026-09-16; not preview) -->
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.6.250205002" />
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.1742" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.9169" />
   </ItemGroup>
 
   <!-- MVVM -->

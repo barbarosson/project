@@ -45,15 +45,31 @@ jobs:
           dotnet-version: '8.0.x'
       - name: Restore solution
         run: dotnet restore UplinkFtp.sln
-      - name: Build App (x64 Debug, Web channel)
+      - name: Build App (x64 Debug, Web channel, WASDK self-contained)
         run: >
           dotnet build src/UplinkFtp.App/UplinkFtp.App.csproj
           -c Debug -p:Platform=x64
           -p:UplinkDistributionChannel=Web
           -p:EnableWindowsTargeting=true
+          -p:WindowsAppSDKSelfContained=true
+      - name: Verify unpackaged exe + WASDK payload present
+        shell: pwsh
+        run: |
+          $out = "src/UplinkFtp.App/bin/x64/Debug/net8.0-windows10.0.19041.0"
+          $exe = Join-Path $out "UplinkFtp.exe"
+          if (-not (Test-Path $exe)) { throw "Missing $exe" }
+          # Self-contained WASDK copies Microsoft.WindowsAppRuntime / WinUI natives beside the app.
+          $wasdk = Get-ChildItem $out -Recurse -Filter "Microsoft.WindowsAppRuntime*.dll" -ErrorAction SilentlyContinue
+          $winui = Get-ChildItem $out -Recurse -Filter "Microsoft.UI.Xaml*.dll" -ErrorAction SilentlyContinue
+          if (-not $wasdk -and -not $winui) {
+            throw "Windows App SDK self-contained payload not found under $out (expected Runtime/WinUI DLLs)."
+          }
+          Write-Host "OK exe=$exe"
+          Write-Host "WASDK/WinUI hits: $(($wasdk + $winui | Select-Object -First 5).FullName -join '; ')"
       - name: Build App (x64 Release, Store channel define)
         run: >
           dotnet build src/UplinkFtp.App/UplinkFtp.App.csproj
           -c Release -p:Platform=x64
           -p:UplinkDistributionChannel=Store
           -p:EnableWindowsTargeting=true
+          -p:WindowsAppSDKSelfContained=true

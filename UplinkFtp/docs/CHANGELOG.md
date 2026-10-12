@@ -19,6 +19,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 
 - Stub Pro keys disabled by default in Release (`AllowStubKeys` / `UPLINK_ALLOW_STUB_KEYS`)  
 - `AcceptAnyCertificate` defaults to false  
+- **Windows App SDK 1.6 → 2.5.1** (NuGet stable); BuildTools → `10.0.26100.9169`  
+- Unpackaged builds use `WindowsAppSDKSelfContained=true` (no EOL 1.6 Runtime install)  
 
 ## [0.1.0-beta] — TBD
 
