@@ -70,6 +70,7 @@ public partial class App : Application
         services.AddTransient<SiteManagerViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<LicenseViewModel>();
+        services.AddTransient<AssistViewModel>();
         services.AddTransient<MainViewModel>();
         services.AddTransient<MainWindow>();
 

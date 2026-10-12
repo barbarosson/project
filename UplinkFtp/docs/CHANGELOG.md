@@ -27,6 +27,12 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 
 - `Themes/Colors.xaml`, `Themes/Styles.xaml`, `Helpers/ThemeHelper.cs`  
 - Embedded fonts under `Assets/Fonts/` (Sora, JetBrains Mono)  
+- **AI Assist** dialog (toolbar **Assist**): on-device URI parse + log diagnosis (`ConnectionAssistService`)  
+- App logo: `Assets/UplinkLogo.png`, `Assets/UplinkFtp.ico` (exe / taskbar / Store tile assets)  
+
+### Fixed
+
+- Sites / Settings / License / Transfer queue action buttons no longer clip horizontally (equal-column grids)  
 
 ## [0.1.0-beta] — TBD
 

@@ -1,10 +1,14 @@
 using System;
+using System.IO;
 using UplinkFtp.Helpers;
 using UplinkFtp.ViewModels;
 using UplinkFtp.Views.Dialogs;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WinRT.Interop;
 
 namespace UplinkFtp.Views;
 
@@ -26,12 +30,36 @@ public sealed partial class MainWindow : Window
         ViewModel.OpenSiteManagerRequested += OnOpenSiteManagerRequested;
         ViewModel.OpenSettingsRequested += OnOpenSettingsRequested;
         ViewModel.OpenLicenseRequested += OnOpenLicenseRequested;
+        ViewModel.OpenAssistRequested += OnOpenAssistRequested;
         ViewModel.CredentialsApplied += OnCredentialsApplied;
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
 
         ApplyThemeFromSettings();
+        ApplyWindowIcon();
         UpdateStatusAppearance();
         Activated += OnActivatedOnce;
+    }
+
+    /// <summary>Taskbar / title-bar icon for unpackaged runs (exe icon comes from ApplicationIcon).</summary>
+    private void ApplyWindowIcon()
+    {
+        try
+        {
+            var ico = Path.Combine(AppContext.BaseDirectory, "Assets", "UplinkFtp.ico");
+            if (!File.Exists(ico))
+            {
+                return;
+            }
+
+            var hwnd = WindowNative.GetWindowHandle(this);
+            var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
+            var appWindow = AppWindow.GetFromWindowId(windowId);
+            appWindow.SetIcon(ico);
+        }
+        catch (Exception)
+        {
+            // Best-effort: missing native icon must not block launch.
+        }
     }
 
     private async void OnActivatedOnce(object sender, WindowActivatedEventArgs args)
@@ -101,6 +129,11 @@ public sealed partial class MainWindow : Window
     private async void OnOpenLicenseRequested(object? sender, EventArgs e)
     {
         await ShowLicenseAsync().ConfigureAwait(true);
+    }
+
+    private async void OnOpenAssistRequested(object? sender, EventArgs e)
+    {
+        await ShowAssistAsync().ConfigureAwait(true);
     }
 
     private async System.Threading.Tasks.Task ShowSiteManagerAsync()
@@ -175,5 +208,30 @@ public sealed partial class MainWindow : Window
 
         await dialog.ShowAsync();
         ViewModel.RefreshLicenseStatusText();
+    }
+
+    private async System.Threading.Tasks.Task ShowAssistAsync()
+    {
+        var vm = App.Services.GetRequiredService<AssistViewModel>();
+        vm.Attach(ViewModel, ViewModel.Log);
+
+        void OnApplied(object? sender, EventArgs e)
+        {
+            PasswordBox.Password = ViewModel.Password ?? string.Empty;
+        }
+
+        vm.AppliedToConnectBar += OnApplied;
+        try
+        {
+            var dialog = new AssistDialog(vm)
+            {
+                XamlRoot = RootGrid.XamlRoot
+            };
+            await dialog.ShowAsync();
+        }
+        finally
+        {
+            vm.AppliedToConnectBar -= OnApplied;
+        }
     }
 }

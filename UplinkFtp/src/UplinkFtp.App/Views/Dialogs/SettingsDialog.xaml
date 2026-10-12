@@ -81,18 +81,27 @@
             <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
                        Style="{StaticResource UplinkMutedTextStyle}"
                        TextWrapping="Wrap"/>
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Content="Save"
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0"
+                        Content="Save"
                         Style="{StaticResource AccentButtonStyle}"
                         FontFamily="{StaticResource UplinkUiFont}"
                         Command="{x:Bind ViewModel.SaveCommand}"
-                        MinWidth="96"
+                        HorizontalAlignment="Stretch"
+                        MinWidth="0"
                         CornerRadius="10"/>
-                <Button Content="Export logs"
+                <Button Grid.Column="2"
+                        Content="Export logs"
                         Style="{StaticResource UplinkNavButtonStyle}"
                         Command="{x:Bind ViewModel.ExportLogsCommand}"
-                        MinWidth="96"/>
-            </StackPanel>
+                        HorizontalAlignment="Stretch"
+                        MinWidth="0"/>
+            </Grid>
         </StackPanel>
     </ScrollViewer>
 </ContentDialog>

@@ -14,11 +14,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Margin="0,0,0,8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+        <StackPanel Spacing="8" Margin="0,0,0,8">
             <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                 <TextBlock Text="Transfer queue"
                            Style="{StaticResource UplinkSectionTitleStyle}"
@@ -28,27 +24,35 @@
                            Style="{StaticResource UplinkMutedTextStyle}"
                            VerticalAlignment="Center"/>
             </StackPanel>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-                <Button Content="Pause"
-                        Style="{StaticResource UplinkNavButtonStyle}"
-                        Command="{Binding PauseSelectedCommand}"/>
-                <Button Content="Resume"
-                        Style="{StaticResource UplinkNavButtonStyle}"
-                        Command="{Binding ResumeSelectedCommand}"/>
-                <Button Content="Cancel"
-                        Style="{StaticResource UplinkNavButtonStyle}"
-                        Command="{Binding CancelSelectedCommand}"/>
-                <Button Content="Retry"
-                        Style="{StaticResource UplinkNavButtonStyle}"
-                        Command="{Binding RetrySelectedCommand}"/>
-                <Button Content="Clear done"
-                        Style="{StaticResource UplinkNavButtonStyle}"
-                        Command="{Binding ClearSuccessfulCommand}"/>
-                <Button Content="Clear failed"
-                        Style="{StaticResource UplinkNavButtonStyle}"
-                        Command="{Binding ClearFailedCommand}"/>
-            </StackPanel>
-        </Grid>
+            <!-- Two equal rows so Pause…Clear never clip on narrower windows -->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="6"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="6"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="6"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="6"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="6"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Content="Pause" Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{Binding PauseSelectedCommand}" HorizontalAlignment="Stretch" MinWidth="0" Padding="8,6"/>
+                <Button Grid.Column="2" Content="Resume" Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{Binding ResumeSelectedCommand}" HorizontalAlignment="Stretch" MinWidth="0" Padding="8,6"/>
+                <Button Grid.Column="4" Content="Cancel" Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{Binding CancelSelectedCommand}" HorizontalAlignment="Stretch" MinWidth="0" Padding="8,6"/>
+                <Button Grid.Column="6" Content="Retry" Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{Binding RetrySelectedCommand}" HorizontalAlignment="Stretch" MinWidth="0" Padding="8,6"/>
+                <Button Grid.Column="8" Content="Clear done" Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{Binding ClearSuccessfulCommand}" HorizontalAlignment="Stretch" MinWidth="0" Padding="8,6"/>
+                <Button Grid.Column="10" Content="Clear failed" Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{Binding ClearFailedCommand}" HorizontalAlignment="Stretch" MinWidth="0" Padding="8,6"/>
+            </Grid>
+        </StackPanel>
 
         <TabView Grid.Row="1"
                   IsAddTabButtonVisible="False"

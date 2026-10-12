@@ -9,11 +9,11 @@
     Title="Sites"
     PrimaryButtonText="Close"
     DefaultButton="Primary"
-    MinWidth="720"
-    MinHeight="480"
+    MinWidth="760"
+    MinHeight="520"
     FontFamily="{StaticResource UplinkUiFont}">
 
-    <Grid MinWidth="680" MinHeight="420">
+    <Grid MinWidth="720" MinHeight="440">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="220"/>
             <ColumnDefinition Width="16"/>
@@ -28,28 +28,40 @@
                 Margin="0"
                 Padding="8,6"
                 Grid.RowSpan="2">
-            <ListView x:Name="SitesList"
-                      ItemsSource="{x:Bind ViewModel.Sites, Mode=OneWay}"
-                      SelectedItem="{x:Bind ViewModel.SelectedSite, Mode=TwoWay}"
-                      SelectionChanged="SitesList_SelectionChanged">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Spacing="2" Padding="4,6">
-                            <TextBlock Text="{Binding Name}"
-                                       Style="{StaticResource UplinkBodyTextStyle}"
-                                       FontWeight="SemiBold"/>
-                            <TextBlock Style="{StaticResource UplinkMutedTextStyle}">
-                                <Run Text="{Binding Host}"/>
-                                <Run Text=" · "/>
-                                <Run Text="{Binding Protocol}"/>
-                            </TextBlock>
-                        </StackPanel>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <TextBlock Text="Saved sites"
+                           Style="{StaticResource UplinkMutedTextStyle}"
+                           Margin="4,2,4,6"/>
+                <ListView x:Name="SitesList"
+                          Grid.Row="1"
+                          ItemsSource="{x:Bind ViewModel.Sites, Mode=OneWay}"
+                          SelectedItem="{x:Bind ViewModel.SelectedSite, Mode=TwoWay}"
+                          SelectionChanged="SitesList_SelectionChanged">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Spacing="2" Padding="4,6">
+                                <TextBlock Text="{Binding Name}"
+                                           Style="{StaticResource UplinkBodyTextStyle}"
+                                           FontWeight="SemiBold"/>
+                                <TextBlock Style="{StaticResource UplinkMutedTextStyle}">
+                                    <Run Text="{Binding Host}"/>
+                                    <Run Text=" · "/>
+                                    <Run Text="{Binding Protocol}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
         </Border>
 
-        <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+        <ScrollViewer Grid.Column="2"
+                      VerticalScrollBarVisibility="Auto"
+                      Margin="0,0,0,8">
             <StackPanel Spacing="10">
                 <TextBlock Text="Site details" Style="{StaticResource UplinkDialogTitleStyle}"/>
                 <TextBox Header="Name"
@@ -102,26 +114,60 @@
             </StackPanel>
         </ScrollViewer>
 
+        <!-- Actions outside ScrollViewer so they never clip; two rows = no horizontal overflow -->
         <StackPanel Grid.Row="1"
                     Grid.Column="2"
-                    Orientation="Vertical"
                     Spacing="8"
-                    Margin="0,12,0,0">
+                    Margin="0,4,0,0">
             <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
                        Style="{StaticResource UplinkMutedTextStyle}"
                        TextWrapping="Wrap"/>
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Content="New" Style="{StaticResource UplinkNavButtonStyle}" Command="{x:Bind ViewModel.NewSiteCommand}" MinWidth="72"/>
-                <Button Content="Add" Style="{StaticResource UplinkNavButtonStyle}" Command="{x:Bind ViewModel.AddCommand}" MinWidth="72"/>
-                <Button Content="Save" Style="{StaticResource UplinkNavButtonStyle}" Command="{x:Bind ViewModel.SaveCommand}" MinWidth="72"/>
-                <Button Content="Delete" Style="{StaticResource UplinkNavButtonStyle}" Command="{x:Bind ViewModel.DeleteCommand}" MinWidth="72"/>
-                <Button Content="Connect"
-                        Style="{StaticResource AccentButtonStyle}"
-                        FontFamily="{StaticResource UplinkUiFont}"
-                        Command="{x:Bind ViewModel.ConnectCommand}"
-                        MinWidth="96"
-                        CornerRadius="10"/>
-            </StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0"
+                        Content="New"
+                        Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{x:Bind ViewModel.NewSiteCommand}"
+                        HorizontalAlignment="Stretch"
+                        MinWidth="0"
+                        Padding="8,6"/>
+                <Button Grid.Column="2"
+                        Content="Add"
+                        Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{x:Bind ViewModel.AddCommand}"
+                        HorizontalAlignment="Stretch"
+                        MinWidth="0"
+                        Padding="8,6"/>
+                <Button Grid.Column="4"
+                        Content="Save"
+                        Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{x:Bind ViewModel.SaveCommand}"
+                        HorizontalAlignment="Stretch"
+                        MinWidth="0"
+                        Padding="8,6"/>
+                <Button Grid.Column="6"
+                        Content="Delete"
+                        Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{x:Bind ViewModel.DeleteCommand}"
+                        HorizontalAlignment="Stretch"
+                        MinWidth="0"
+                        Padding="8,6"/>
+            </Grid>
+            <Button Content="Connect"
+                    Style="{StaticResource AccentButtonStyle}"
+                    FontFamily="{StaticResource UplinkUiFont}"
+                    Command="{x:Bind ViewModel.ConnectCommand}"
+                    HorizontalAlignment="Stretch"
+                    Height="36"
+                    CornerRadius="10"/>
         </StackPanel>
     </Grid>
 </ContentDialog>

@@ -49,6 +49,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     /// <summary>Raised when License dialog should open.</summary>
     public event EventHandler? OpenLicenseRequested;
 
+    /// <summary>Raised when AI Assist dialog should open.</summary>
+    public event EventHandler? OpenAssistRequested;
+
     /// <summary>Raised after <see cref="ApplySite"/> so the PasswordBox can sync.</summary>
     public event EventHandler? CredentialsApplied;
 
@@ -184,6 +187,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
 
     [RelayCommand]
     private void OpenLicense() => OpenLicenseRequested?.Invoke(this, EventArgs.Empty);
+
+    [RelayCommand]
+    private void OpenAssist() => OpenAssistRequested?.Invoke(this, EventArgs.Empty);
 
     [RelayCommand]
     private async Task ConnectAsync()

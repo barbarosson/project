@@ -32,15 +32,21 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal" Spacing="10">
-                        <Border Width="10" Height="10" CornerRadius="5"
-                                Background="{ThemeResource UplinkAccentBrush}"
-                                VerticalAlignment="Center"/>
+                        <Image Source="ms-appx:///Assets/UplinkLogo.png"
+                               Width="28" Height="28"
+                               Stretch="Uniform"
+                               VerticalAlignment="Center"
+                               ToolTipService.ToolTip="Uplink FTP"/>
                         <TextBlock Text="Uplink FTP"
                                    Style="{StaticResource UplinkBrandTextStyle}"
                                    VerticalAlignment="Center"/>
                         <Button Content="Sites"
                                 Style="{StaticResource UplinkNavButtonStyle}"
                                 Command="{x:Bind ViewModel.OpenSiteManagerCommand}"/>
+                        <Button Content="Assist"
+                                Style="{StaticResource UplinkNavButtonStyle}"
+                                Command="{x:Bind ViewModel.OpenAssistCommand}"
+                                ToolTipService.ToolTip="AI Assist — parse URIs and diagnose connection errors"/>
                         <Button Content="Settings"
                                 Style="{StaticResource UplinkNavButtonStyle}"
                                 Command="{x:Bind ViewModel.OpenSettingsCommand}"/>
@@ -163,7 +169,7 @@
                 BorderBrush="{ThemeResource UplinkSectionStrokeBrush}"
                 BorderThickness="1">
             <TextBlock Style="{StaticResource UplinkMutedTextStyle}" FontSize="12">
-                <Run Text="Tip: drag local → remote to upload, remote → local to download. Pause/resume continues from byte offset for files; directories restart. Theme: Settings → Light / Dark / System."/>
+                <Run Text="Tip: drag local → remote to upload, remote → local to download. Assist parses URIs and diagnoses log errors. Theme: Settings → Light / Dark / System."/>
             </TextBlock>
         </Border>
     </Grid>
