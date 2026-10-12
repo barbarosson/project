@@ -22,6 +22,10 @@ Package.StoreAssociation.xml
 *.msix
 *.msixbundle
 
+## Local signing (never commit secrets)
+packaging/signing.env
+*.pfx
+
 ## IDE
 .idea/
 *.swp
