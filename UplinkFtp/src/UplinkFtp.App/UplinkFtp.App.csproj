@@ -68,10 +68,8 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
   </ItemGroup>
 
-  <!-- Localization .resw -->
-  <ItemGroup>
-    <PRIResource Include="Strings\**\*.resw" />
-  </ItemGroup>
+  <!-- Localization: Strings/**/*.resw is picked up as PRIResource by the WinUI SDK
+       (EnableDefaultPriItems). Do not re-Include or NETSDK1022 duplicates fire. -->
 
   <!-- Unpackaged WinUI needs this for Publish -->
   <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
