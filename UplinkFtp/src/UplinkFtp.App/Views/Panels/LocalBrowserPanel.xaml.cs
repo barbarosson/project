@@ -46,6 +46,26 @@ public sealed partial class LocalBrowserPanel : UserControl
         }
     }
 
+    private void FolderTree_ItemInvoked(TreeView sender, TreeViewItemInvokedEventArgs args)
+    {
+        if (_browser is null || args.InvokedItem is not LocalFolderNodeViewModel node)
+        {
+            return;
+        }
+
+        _ = _browser.NavigateTreeNodeAsync(node);
+    }
+
+    private void FolderTree_Expanding(TreeView sender, TreeViewExpandingEventArgs args)
+    {
+        if (_browser is null || args.Item is not LocalFolderNodeViewModel node)
+        {
+            return;
+        }
+
+        _ = _browser.EnsureTreeNodeChildrenAsync(node);
+    }
+
     private void FileList_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
         if (_browser is not null && FileList.SelectedItem is BrowserItemViewModel item)

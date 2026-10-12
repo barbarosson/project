@@ -384,6 +384,12 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             return;
         }
 
+        if (LocalBrowser.IsComputerRoot)
+        {
+            Log.Warn("Open a drive or folder before uploading.");
+            return;
+        }
+
         if (!IsConnected)
         {
             Log.Warn("Connect before uploading.");
@@ -407,6 +413,12 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         if (!IsConnected)
         {
             Log.Warn("Connect before downloading.");
+            return;
+        }
+
+        if (LocalBrowser.IsComputerRoot)
+        {
+            Log.Warn("Open a drive or folder in Local site before downloading.");
             return;
         }
 
@@ -453,6 +465,12 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             if (!IsConnected)
             {
                 Log.Warn("Connect before downloading.");
+                return Task.CompletedTask;
+            }
+
+            if (LocalBrowser.IsComputerRoot)
+            {
+                Log.Warn("Open a drive or folder in Local site before downloading.");
                 return Task.CompletedTask;
             }
 
