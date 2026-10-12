@@ -1,14 +1,17 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using UplinkFtp.Services.Ai;
 using UplinkFtp.Services.Assist;
 
 namespace UplinkFtp.ViewModels;
 
-/// <summary>AI Assist panel: local smart parse + diagnose (no cloud LLM in skeleton).</summary>
+/// <summary>AI Assist panel: URI parse + IAiAssistantService troubleshoot (BYOK or local).</summary>
 public sealed partial class AssistViewModel : ObservableObject
 {
+    private readonly IAiAssistantService _ai;
     private LogViewModel? _log;
     private MainViewModel? _main;
 
@@ -23,7 +26,13 @@ public sealed partial class AssistViewModel : ObservableObject
 
     [ObservableProperty]
     private string _diagnosisAdvice =
-        "Assist uses on-device heuristics (URI parse + log diagnosis). Cloud LLM hooks are not wired yet.";
+        "Assist uses IAiAssistantService — local heuristics without a key; cloud when BYOK is set.";
+
+    [ObservableProperty]
+    private string _diagnosisSteps = string.Empty;
+
+    [ObservableProperty]
+    private string _aiModeText = string.Empty;
 
     [ObservableProperty]
     private string _statusMessage = string.Empty;
@@ -31,11 +40,16 @@ public sealed partial class AssistViewModel : ObservableObject
     /// <summary>Raised after Apply fills the quick-connect bar.</summary>
     public event EventHandler? AppliedToConnectBar;
 
+    public AssistViewModel(IAiAssistantService ai)
+    {
+        _ai = ai;
+    }
+
     public void Attach(MainViewModel main, LogViewModel log)
     {
         _main = main;
         _log = log;
-        RefreshDiagnosis();
+        _ = RefreshDiagnosisAsync();
     }
 
     [RelayCommand]
@@ -93,17 +107,43 @@ public sealed partial class AssistViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void RefreshDiagnosis()
+    private async Task RefreshDiagnosisAsync()
     {
-        var diagnosis = ConnectionAssistService.Diagnose(_log?.Lines.ToArray());
-        DiagnosisTitle = diagnosis.Title;
-        DiagnosisAdvice = diagnosis.Advice;
+        var hasKey = await _ai.HasApiKeyAsync().ConfigureAwait(true);
+        AiModeText = hasKey
+            ? $"BYOK cloud ready ({_ai.ConfiguredProvider}). Troubleshoot may call your provider."
+            : "Local mode — Settings → AI (BYOK) to add your API key. Checklist: docs/ai-module-checklist.md";
 
-        if (diagnosis.SuggestedProtocol is not null && string.IsNullOrWhiteSpace(ConnectionText) && _main is not null)
+        if (_main is null && _log is null)
         {
-            StatusMessage =
-                $"Tip: try {diagnosis.SuggestedProtocol}" +
-                (diagnosis.SuggestedPort is int p ? $":{p}" : string.Empty) + ".";
+            return;
+        }
+
+        try
+        {
+            var result = await _ai.TroubleshootAsync(new AiTroubleshootRequest
+            {
+                LogLines = _log?.Lines.ToArray() ?? [],
+                Protocol = _main?.SelectedProtocol,
+                Host = _main?.Host,
+                LastCommandHint = "connect/transfer"
+            }).ConfigureAwait(true);
+
+            DiagnosisTitle = result.Title;
+            DiagnosisAdvice = result.Advice;
+            DiagnosisSteps = result.Steps.Count == 0
+                ? string.Empty
+                : string.Join(Environment.NewLine, result.Steps.Select((s, i) => $"{i + 1}. {s}"));
+            StatusMessage = result.UsedCloudModel
+                ? "Solved with cloud AI (BYOK)."
+                : "Solved with local AI heuristics.";
+        }
+        catch (Exception ex)
+        {
+            DiagnosisTitle = "Troubleshoot failed";
+            DiagnosisAdvice = ex.Message;
+            DiagnosisSteps = string.Empty;
+            StatusMessage = "AI troubleshoot error — check Settings → AI.";
         }
     }
 

@@ -78,6 +78,37 @@
                       IsChecked="{x:Bind ViewModel.TelemetryOptIn, Mode=TwoWay}"
                       ToolTipService.ToolTip="Off by default. Never sends passwords or license keys."/>
 
+            <TextBlock Text="AI (BYOK)"
+                       Style="{StaticResource UplinkDialogTitleStyle}"
+                       Margin="0,8,0,0"/>
+            <TextBlock Style="{StaticResource UplinkMutedTextStyle}"
+                       TextWrapping="Wrap"
+                       Text="No API key is embedded. Paste your OpenAI or Anthropic key — stored in Windows Credential Locker only. Without a key, Assist uses on-device heuristics."/>
+            <ComboBox Header="Provider"
+                      FontFamily="{StaticResource UplinkUiFont}"
+                      ItemsSource="{x:Bind ViewModel.AiProviderOptions}"
+                      SelectedItem="{x:Bind ViewModel.AiProvider, Mode=TwoWay}"
+                      HorizontalAlignment="Stretch"/>
+            <PasswordBox x:Name="AiKeyBox"
+                         Header="API key"
+                         FontFamily="{StaticResource UplinkUiFont}"
+                         PlaceholderText="sk-… (never committed)"
+                         PasswordChanged="AiKeyBox_PasswordChanged"/>
+            <TextBox Header="Model (optional)"
+                     FontFamily="{StaticResource UplinkUiFont}"
+                     Text="{x:Bind ViewModel.AiModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     PlaceholderText="gpt-4o-mini"/>
+            <TextBox Header="Endpoint override (optional)"
+                     FontFamily="{StaticResource UplinkUiFont}"
+                     Text="{x:Bind ViewModel.AiEndpoint, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     PlaceholderText="https://api.openai.com/v1/chat/completions"/>
+            <CheckBox Content="Clear stored AI API key on Save"
+                      FontFamily="{StaticResource UplinkUiFont}"
+                      IsChecked="{x:Bind ViewModel.ClearAiApiKey, Mode=TwoWay}"/>
+            <TextBlock Style="{StaticResource UplinkMutedTextStyle}"
+                       Text="{x:Bind ViewModel.AiKeyStatusText, Mode=OneWay}"
+                       TextWrapping="Wrap"/>
+
             <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
                        Style="{StaticResource UplinkMutedTextStyle}"
                        TextWrapping="Wrap"/>

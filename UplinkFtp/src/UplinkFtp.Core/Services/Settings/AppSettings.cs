@@ -1,9 +1,10 @@
 using System;
 using UplinkFtp.Models.Enums;
+using UplinkFtp.Services.Ai;
 
 namespace UplinkFtp.Services.Settings;
 
-/// <summary>User-facing application settings (timeouts, theme, privacy defaults).</summary>
+/// <summary>User-facing application settings (timeouts, theme, privacy, AI BYOK metadata).</summary>
 public sealed class AppSettings
 {
     public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(30);
@@ -26,4 +27,13 @@ public sealed class AppSettings
     public bool AcceptAnyCertificate { get; set; }
 
     public bool UsePassive { get; set; } = true;
+
+    /// <summary>BYOK LLM provider. API key itself lives in Credential Locker, not here.</summary>
+    public AiProviderKind AiProvider { get; set; } = AiProviderKind.None;
+
+    /// <summary>Optional model id (e.g. gpt-4o-mini). Empty → provider default.</summary>
+    public string AiModel { get; set; } = string.Empty;
+
+    /// <summary>Optional OpenAI-compatible endpoint override.</summary>
+    public string AiEndpoint { get; set; } = string.Empty;
 }

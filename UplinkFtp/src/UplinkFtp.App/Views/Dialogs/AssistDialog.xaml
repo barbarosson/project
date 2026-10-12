@@ -18,7 +18,10 @@
                        Style="{StaticResource UplinkDialogTitleStyle}"/>
             <TextBlock Style="{StaticResource UplinkMutedTextStyle}"
                        TextWrapping="Wrap"
-                       Text="On-device assist: parse connection URIs and diagnose Message log errors. No cloud LLM is called yet — results stay on this PC."/>
+                       Text="IAiAssistantService: URI parse + Solve with AI (log troubleshoot). BYOK keys live in Credential Locker — Settings → AI."/>
+            <TextBlock Style="{StaticResource UplinkMutedTextStyle}"
+                       Text="{x:Bind ViewModel.AiModeText, Mode=OneWay}"
+                       TextWrapping="Wrap"/>
 
             <TextBox Header="Paste URI or host:port"
                      FontFamily="{StaticResource UplinkUiFont}"
@@ -78,6 +81,9 @@
                     </Grid>
                     <TextBlock Text="{x:Bind ViewModel.DiagnosisAdvice, Mode=OneWay}"
                                Style="{StaticResource UplinkBodyTextStyle}"
+                               TextWrapping="Wrap"/>
+                    <TextBlock Text="{x:Bind ViewModel.DiagnosisSteps, Mode=OneWay}"
+                               Style="{StaticResource UplinkMutedTextStyle}"
                                TextWrapping="Wrap"/>
                 </StackPanel>
             </Border>

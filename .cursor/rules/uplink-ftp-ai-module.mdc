@@ -1,0 +1,61 @@
+---
+description: Uplink FTP AI module architecture, BYOK security, and capability checklist
+globs: UplinkFtp/**/*Ai*/**/*.{cs,xaml},UplinkFtp/**/*Assist*/**/*.{cs,xaml},UplinkFtp/docs/ai-module*.md
+alwaysApply: false
+---
+
+# Uplink FTP — AI module rules
+
+Product name stays **Uplink FTP**. Never ship embedded OpenAI/Anthropic API keys.
+
+## Architecture (required)
+
+- All AI operations go through **`IAiAssistantService`** in Core (`UplinkFtp.Core/Services/Ai/`).
+- App layer may host WinUI dialogs/ViewModels; **no LLM HTTP or prompt logic inside Views**.
+- **BYOK only:** user pastes their own OpenAI or Anthropic key in Settings. Never hardcode keys, never commit secrets.
+- Persist keys via **`ICredentialStore`** / Windows Credential Locker (`PasswordVault`) + existing DPAPI fallback. Resource key: `ai.apiKey` (see `AiCredentialKeys`). Plaintext SQLite/settings files are forbidden for keys.
+- When no key is configured, fall back to **local heuristics** (`LocalAiAssistantService`) or show a clear “configure API key” status — never call a cloud API.
+
+## Capability checklist (implement / extend against these)
+
+Track status in `UplinkFtp/docs/ai-module-checklist.md`. Mark items done only when code + tests (or honest scaffold notes) exist.
+
+### 1. AI Troubleshooter
+- Watch Message log lines for FTP/SFTP/transfer errors (`550`, `530`, timeout, SSL/TLS, permission denied).
+- Offer **Solve with AI** next to error log rows (or Assist entry that targets the last error).
+- Return actionable advice with context (protocol, host, last command). Prefer structured `AiTroubleshootResult` (title, steps, suggested UI action).
+
+### 2. Natural language search / filter
+- NL query → structured filter (`AiFileFilter` / LINQ-ready predicates): name contains, size, modified window, extension.
+- Apply to current local or remote listing — do not invent remote recursive search beyond what `IFtpService` supports unless that API is extended.
+
+### 3. AI batch processing
+- **Batch rename:** NL rule → preview of old→new names → user confirm → enqueue renames.
+- **Smart move:** NL rule → preview moves (e.g. images→Images) → user confirm → enqueue move/rename jobs.
+
+### 4. SSH command assistant (SFTP only)
+- NL → proposed shell command string; **never auto-execute**. User must approve.
+- Only when connected via SFTP/SSH. FTP/FTPS must disable or no-op with explanation.
+
+### 5. AI Quick Edit (remote config files)
+- Context menu on remote text configs (`.htaccess`, `wp-config.php`, `nginx.conf`, etc.).
+- Load file to memory → NL edit → diff/preview → on approve, upload back.
+- Never upload without explicit user confirmation.
+
+## Safety invariants
+
+- Do not log API keys or Authorization headers.
+- Do not send passwords, private keys, or license keys to any LLM.
+- Redact secrets from log snippets before cloud troubleshoot prompts.
+- Cloud calls are opt-in via BYOK; telemetry remains separate and off by default.
+
+## Implementation order (prefer)
+
+1. Interface + DTOs + BYOK Settings + Credential Locker wiring  
+2. Troubleshooter (local + cloud when keyed)  
+3. NL search filter  
+4. Batch rename/move with preview  
+5. SSH command propose-only  
+6. Quick Edit with preview/upload confirm  
+
+Update `docs/ai-module-checklist.md` when a capability moves from Scaffold → Implemented.

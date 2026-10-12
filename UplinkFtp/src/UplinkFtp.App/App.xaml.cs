@@ -50,6 +50,14 @@ public partial class App : Application
             return new UplinkFtp.Services.Privacy.TelemetryService(optedIn: settings.TelemetryOptIn);
         });
 
+        // AI module: BYOK cloud adapter + local heuristics facade (IAiAssistantService).
+        services.AddSingleton<UplinkFtp.Services.Ai.CloudAiAssistantService>();
+        services.AddSingleton<UplinkFtp.Services.Ai.IAiAssistantService>(sp =>
+            new UplinkFtp.Services.Ai.LocalAiAssistantService(
+                sp.GetRequiredService<ICredentialStore>(),
+                sp.GetRequiredService<UplinkFtp.Services.Settings.AppSettings>(),
+                sp.GetRequiredService<UplinkFtp.Services.Ai.CloudAiAssistantService>()));
+
         RegisterLicensing(services);
 
         services.AddSingleton<UplinkFtp.Services.Ftp.IConnectionPool, UplinkFtp.Services.Ftp.ConnectionPool>();

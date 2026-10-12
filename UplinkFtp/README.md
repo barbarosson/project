@@ -17,7 +17,9 @@ ADIM 1–6 client skeleton is in place. Post–ADIM work (P1–P11) adds **Core*
 
 CI: `.github/workflows/uplink-ftp-ci.yml` (Linux Core tests + Windows WinUI build).
 
-**UI:** Sectioned shell (connect, message log, local/remote browsers, transfer queue) with Light / Dark / System theme (**Settings → Theme**). Warm-tech teal accent, Sora UI font, JetBrains Mono for the log. Toolbar **Assist** = on-device AI helper (URI parse + log diagnosis). App icon: `Assets/UplinkFtp.ico` / `UplinkLogo.png`.
+**UI:** Sectioned shell (connect, message log, local/remote browsers, transfer queue) with Light / Dark / System theme (**Settings → Theme**). Warm-tech teal accent, Sora UI font, JetBrains Mono for the log. Toolbar **Assist** = `IAiAssistantService` (local heuristics; optional BYOK cloud via **Settings → AI**). App icon: `Assets/UplinkFtp.ico` / `UplinkLogo.png`.
+
+**AI module:** Spec + checklist in [`docs/ai-module-checklist.md`](docs/ai-module-checklist.md); Cursor rule `.cursor/rules/uplink-ftp-ai-module.mdc`. No embedded API keys.
 
 ### Free vs Pro (enforced in Core)
 
