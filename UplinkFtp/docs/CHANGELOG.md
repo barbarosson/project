@@ -37,6 +37,7 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 - Drag-and-drop enqueue: WinUI Drop handlers now take a deferral (async drop was silently cancelled); panel-wide drop targets + **Upload →** / **← Download** buttons as fallback  
 - Sites dialog: fit ContentDialog max width (~520px) so **Connect** / New·Add·Save·Delete no longer clip  
 - Transfer queue: Free tier uploads reuse the primary SFTP session (no second pool connect); clearer remote permission / empty-exception messages  
+- Scrollbars: rectangular (0 radius), thicker track/thumb, teal-muted colors app-wide (Settings / Sites / Assist / lists)  
 
 ## [0.1.0-beta] — TBD
 

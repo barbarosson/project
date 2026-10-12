@@ -17,6 +17,30 @@
             <Color x:Key="UplinkMutedTextColor">#5B6B73</Color>
             <Color x:Key="UplinkBodyTextColor">#1C2B33</Color>
             <Color x:Key="UplinkDividerColor">#B7C7CF</Color>
+            <Color x:Key="UplinkScrollThumbColor">#5B6B73</Color>
+            <Color x:Key="UplinkScrollThumbHoverColor">#134E4A</Color>
+            <Color x:Key="UplinkScrollTrackColor">#D5E0E6</Color>
+
+            <!-- Rectangular, prominent WinUI ScrollBar (overrides Fluent overlay look). -->
+            <x:Double x:Key="ScrollBarSize">18</x:Double>
+            <x:Double x:Key="ScrollBarVerticalThumbMinWidth">14</x:Double>
+            <x:Double x:Key="ScrollBarHorizontalThumbMinHeight">14</x:Double>
+            <CornerRadius x:Key="ScrollBarCornerRadius">0</CornerRadius>
+            <SolidColorBrush x:Key="ScrollBarThumbFill" Color="{StaticResource UplinkScrollThumbColor}"/>
+            <SolidColorBrush x:Key="ScrollBarThumbFillPointerOver" Color="{StaticResource UplinkScrollThumbHoverColor}"/>
+            <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="{StaticResource UplinkBrandColor}"/>
+            <SolidColorBrush x:Key="ScrollBarThumbFillDisabled" Color="#A0B0B8"/>
+            <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="{StaticResource UplinkScrollThumbColor}"/>
+            <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="{StaticResource UplinkScrollThumbColor}"/>
+            <SolidColorBrush x:Key="ScrollBarTrackFill" Color="{StaticResource UplinkScrollTrackColor}"/>
+            <SolidColorBrush x:Key="ScrollBarTrackFillPointerOver" Color="{StaticResource UplinkScrollTrackColor}"/>
+            <SolidColorBrush x:Key="ScrollBarTrackFillDisabled" Color="{StaticResource UplinkScrollTrackColor}"/>
+            <SolidColorBrush x:Key="ScrollBarTrackStroke" Color="{StaticResource UplinkSectionStrokeColor}"/>
+            <SolidColorBrush x:Key="ScrollBarTrackStrokePointerOver" Color="{StaticResource UplinkSectionStrokeColor}"/>
+            <SolidColorBrush x:Key="ScrollBarBackground" Color="{StaticResource UplinkScrollTrackColor}"/>
+            <SolidColorBrush x:Key="ScrollBarBackgroundPointerOver" Color="{StaticResource UplinkScrollTrackColor}"/>
+            <SolidColorBrush x:Key="ScrollBarBorderBrush" Color="{StaticResource UplinkSectionStrokeColor}"/>
+            <SolidColorBrush x:Key="ScrollBarBorderBrushPointerOver" Color="{StaticResource UplinkSectionStrokeColor}"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
             <Color x:Key="UplinkShellTopColor">#0B1418</Color>
@@ -30,6 +54,29 @@
             <Color x:Key="UplinkMutedTextColor">#9BB0BA</Color>
             <Color x:Key="UplinkBodyTextColor">#E8F1F4</Color>
             <Color x:Key="UplinkDividerColor">#334955</Color>
+            <Color x:Key="UplinkScrollThumbColor">#9BB0BA</Color>
+            <Color x:Key="UplinkScrollThumbHoverColor">#2DD4BF</Color>
+            <Color x:Key="UplinkScrollTrackColor">#1E3038</Color>
+
+            <x:Double x:Key="ScrollBarSize">18</x:Double>
+            <x:Double x:Key="ScrollBarVerticalThumbMinWidth">14</x:Double>
+            <x:Double x:Key="ScrollBarHorizontalThumbMinHeight">14</x:Double>
+            <CornerRadius x:Key="ScrollBarCornerRadius">0</CornerRadius>
+            <SolidColorBrush x:Key="ScrollBarThumbFill" Color="{StaticResource UplinkScrollThumbColor}"/>
+            <SolidColorBrush x:Key="ScrollBarThumbFillPointerOver" Color="{StaticResource UplinkScrollThumbHoverColor}"/>
+            <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="{StaticResource UplinkAccentColor}"/>
+            <SolidColorBrush x:Key="ScrollBarThumbFillDisabled" Color="#4A5C66"/>
+            <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="{StaticResource UplinkScrollThumbColor}"/>
+            <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="{StaticResource UplinkScrollThumbColor}"/>
+            <SolidColorBrush x:Key="ScrollBarTrackFill" Color="{StaticResource UplinkScrollTrackColor}"/>
+            <SolidColorBrush x:Key="ScrollBarTrackFillPointerOver" Color="{StaticResource UplinkScrollTrackColor}"/>
+            <SolidColorBrush x:Key="ScrollBarTrackFillDisabled" Color="{StaticResource UplinkScrollTrackColor}"/>
+            <SolidColorBrush x:Key="ScrollBarTrackStroke" Color="{StaticResource UplinkSectionStrokeColor}"/>
+            <SolidColorBrush x:Key="ScrollBarTrackStrokePointerOver" Color="{StaticResource UplinkSectionStrokeColor}"/>
+            <SolidColorBrush x:Key="ScrollBarBackground" Color="{StaticResource UplinkScrollTrackColor}"/>
+            <SolidColorBrush x:Key="ScrollBarBackgroundPointerOver" Color="{StaticResource UplinkScrollTrackColor}"/>
+            <SolidColorBrush x:Key="ScrollBarBorderBrush" Color="{StaticResource UplinkSectionStrokeColor}"/>
+            <SolidColorBrush x:Key="ScrollBarBorderBrushPointerOver" Color="{StaticResource UplinkSectionStrokeColor}"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Default">
             <Color x:Key="UplinkShellTopColor">#EEF4F6</Color>
@@ -43,6 +90,29 @@
             <Color x:Key="UplinkMutedTextColor">#5B6B73</Color>
             <Color x:Key="UplinkBodyTextColor">#1C2B33</Color>
             <Color x:Key="UplinkDividerColor">#B7C7CF</Color>
+            <Color x:Key="UplinkScrollThumbColor">#5B6B73</Color>
+            <Color x:Key="UplinkScrollThumbHoverColor">#134E4A</Color>
+            <Color x:Key="UplinkScrollTrackColor">#D5E0E6</Color>
+
+            <x:Double x:Key="ScrollBarSize">18</x:Double>
+            <x:Double x:Key="ScrollBarVerticalThumbMinWidth">14</x:Double>
+            <x:Double x:Key="ScrollBarHorizontalThumbMinHeight">14</x:Double>
+            <CornerRadius x:Key="ScrollBarCornerRadius">0</CornerRadius>
+            <SolidColorBrush x:Key="ScrollBarThumbFill" Color="{StaticResource UplinkScrollThumbColor}"/>
+            <SolidColorBrush x:Key="ScrollBarThumbFillPointerOver" Color="{StaticResource UplinkScrollThumbHoverColor}"/>
+            <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="{StaticResource UplinkBrandColor}"/>
+            <SolidColorBrush x:Key="ScrollBarThumbFillDisabled" Color="#A0B0B8"/>
+            <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="{StaticResource UplinkScrollThumbColor}"/>
+            <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="{StaticResource UplinkScrollThumbColor}"/>
+            <SolidColorBrush x:Key="ScrollBarTrackFill" Color="{StaticResource UplinkScrollTrackColor}"/>
+            <SolidColorBrush x:Key="ScrollBarTrackFillPointerOver" Color="{StaticResource UplinkScrollTrackColor}"/>
+            <SolidColorBrush x:Key="ScrollBarTrackFillDisabled" Color="{StaticResource UplinkScrollTrackColor}"/>
+            <SolidColorBrush x:Key="ScrollBarTrackStroke" Color="{StaticResource UplinkSectionStrokeColor}"/>
+            <SolidColorBrush x:Key="ScrollBarTrackStrokePointerOver" Color="{StaticResource UplinkSectionStrokeColor}"/>
+            <SolidColorBrush x:Key="ScrollBarBackground" Color="{StaticResource UplinkScrollTrackColor}"/>
+            <SolidColorBrush x:Key="ScrollBarBackgroundPointerOver" Color="{StaticResource UplinkScrollTrackColor}"/>
+            <SolidColorBrush x:Key="ScrollBarBorderBrush" Color="{StaticResource UplinkSectionStrokeColor}"/>
+            <SolidColorBrush x:Key="ScrollBarBorderBrushPointerOver" Color="{StaticResource UplinkSectionStrokeColor}"/>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 

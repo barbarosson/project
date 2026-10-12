@@ -14,7 +14,9 @@
 
     <!-- Keyboard: Tab cycles fields; Enter activates Save when focused on that button.
          Narrator: Headers on inputs provide accessible names; status line announces results. -->
-    <ScrollViewer MaxHeight="520" VerticalScrollBarVisibility="Auto">
+    <ScrollViewer MaxHeight="520"
+                  VerticalScrollBarVisibility="Visible"
+                  HorizontalScrollBarVisibility="Disabled">
         <StackPanel Spacing="12" MinWidth="420" Padding="0,4,0,0">
             <TextBlock Text="Connection" Style="{StaticResource UplinkDialogTitleStyle}"/>
             <NumberBox Header="Connect timeout (seconds)"

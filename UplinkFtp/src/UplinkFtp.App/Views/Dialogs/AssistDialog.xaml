@@ -12,7 +12,9 @@
     MinWidth="520"
     FontFamily="{StaticResource UplinkUiFont}">
 
-    <ScrollViewer MaxHeight="560" VerticalScrollBarVisibility="Auto">
+    <ScrollViewer MaxHeight="560"
+                  VerticalScrollBarVisibility="Visible"
+                  HorizontalScrollBarVisibility="Disabled">
         <StackPanel Spacing="14" MinWidth="460" Padding="0,4,0,0">
             <TextBlock Text="Smart connection helper"
                        Style="{StaticResource UplinkDialogTitleStyle}"/>
