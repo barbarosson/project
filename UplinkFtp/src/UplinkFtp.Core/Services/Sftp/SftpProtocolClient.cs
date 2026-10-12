@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using UplinkFtp.Helpers;
@@ -206,9 +207,11 @@ public sealed class SftpProtocolClient : IRemoteProtocolClient
             useAsync: true);
 
         var total = input.Length;
+        // Use SynchronousProgress (not Progress<T>) so callbacks stay on the transfer
+        // worker and never post to a captured UI SynchronizationContext mid-upload.
         IProgress<UploadFileProgressReport>? reported = progress is null
             ? null
-            : new Progress<UploadFileProgressReport>(report => progress.Report(new TransferProgress
+            : new SynchronousProgress<UploadFileProgressReport>(report => progress.Report(new TransferProgress
             {
                 BytesTransferred = (long)report.TotalBytesUploaded,
                 TotalBytes = total,
@@ -247,6 +250,77 @@ public sealed class SftpProtocolClient : IRemoteProtocolClient
         var remote = RemotePath.Normalize(remotePath);
         await UploadDirectoryRecursiveAsync(client, localPath, remote, progress, cancellationToken)
             .ConfigureAwait(false);
+    }
+
+    public async Task RenameAsync(string fromPath, string toPath, CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        var from = RemotePath.Normalize(fromPath);
+        var to = RemotePath.Normalize(toPath);
+        await EnsureRemoteDirectoryAsync(client, RemotePath.GetDirectoryName(to), cancellationToken)
+            .ConfigureAwait(false);
+        await client.RenameFileAsync(from, to, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<string> ReadTextFileAsync(string remotePath, CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        var remote = RemotePath.Normalize(remotePath);
+        await using var stream = await client.OpenAsync(remote, FileMode.Open, FileAccess.Read, cancellationToken)
+            .ConfigureAwait(false);
+        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+        return await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task WriteTextFileAsync(string remotePath, string content, CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        var remote = RemotePath.Normalize(remotePath);
+        await EnsureRemoteDirectoryAsync(client, RemotePath.GetDirectoryName(remote), cancellationToken)
+            .ConfigureAwait(false);
+        var bytes = Encoding.UTF8.GetBytes(content ?? string.Empty);
+        await using var stream = await client.OpenAsync(remote, FileMode.Create, FileAccess.Write, cancellationToken)
+            .ConfigureAwait(false);
+        await stream.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task<string> ExecuteShellCommandAsync(string command, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(command);
+        var sftp = RequireClient();
+        var connectionInfo = sftp.ConnectionInfo
+            ?? throw new InvalidOperationException("SFTP connection info unavailable for shell exec.");
+
+        using var ssh = new SshClient(connectionInfo);
+        await ssh.ConnectAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var result = ssh.RunCommand(command);
+            var stdout = result.Result ?? string.Empty;
+            var stderr = result.Error ?? string.Empty;
+            if (result.ExitStatus != 0 && string.IsNullOrWhiteSpace(stdout) && !string.IsNullOrWhiteSpace(stderr))
+            {
+                throw new InvalidOperationException(
+                    $"SSH command exited {result.ExitStatus}: {stderr.Trim()}");
+            }
+
+            if (string.IsNullOrWhiteSpace(stderr))
+            {
+                return stdout;
+            }
+
+            return string.IsNullOrWhiteSpace(stdout)
+                ? stderr
+                : stdout + Environment.NewLine + stderr;
+        }
+        finally
+        {
+            if (ssh.IsConnected)
+            {
+                ssh.Disconnect();
+            }
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -477,8 +551,17 @@ public sealed class SftpProtocolClient : IRemoteProtocolClient
         {
             cancellationToken.ThrowIfCancellationRequested();
             var name = Path.GetFileName(file);
-            await UploadFileAsync(file, RemotePath.Combine(remoteDir, name), progress, cancellationToken)
-                .ConfigureAwait(false);
+            try
+            {
+                await UploadFileAsync(file, RemotePath.Combine(remoteDir, name), progress, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                throw new IOException(
+                    $"Failed uploading '{name}' in '{localDir}': {ex.Message}",
+                    ex);
+            }
         }
     }
 

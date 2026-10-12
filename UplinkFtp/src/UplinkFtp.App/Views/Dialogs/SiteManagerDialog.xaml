@@ -11,18 +11,20 @@
     DefaultButton="Primary"
     FontFamily="{StaticResource UplinkUiFont}">
 
-    <!--
-      WinUI ContentDialog content max-width is ~548px by default.
-      Do NOT set MinWidth above that or Connect / action buttons clip ("Conne").
-    -->
-    <Grid Width="520" MaxWidth="520">
+    <!-- Wider than default ~548px so Protocol / New·Add·Save·Delete / Connect never clip. -->
+    <ContentDialog.Resources>
+        <x:Double x:Key="ContentDialogMinWidth">680</x:Double>
+        <x:Double x:Key="ContentDialogMaxWidth">780</x:Double>
+    </ContentDialog.Resources>
+
+    <Grid Width="720" MaxWidth="720">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="168"/>
-            <ColumnDefinition Width="12"/>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="16"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" MaxHeight="360"/>
+            <RowDefinition Height="*" MaxHeight="420"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -68,74 +70,83 @@
         <ScrollViewer Grid.Column="2"
                       VerticalScrollBarVisibility="Visible"
                       HorizontalScrollBarVisibility="Disabled"
-                      Margin="0,0,0,8">
+                      Margin="0,0,0,8"
+                      Padding="0,0,8,0">
             <StackPanel Spacing="8">
                 <TextBlock Text="Site details" Style="{StaticResource UplinkDialogTitleStyle}"/>
                 <TextBox Header="Name"
                          FontFamily="{StaticResource UplinkUiFont}"
                          Text="{x:Bind ViewModel.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         PlaceholderText="My server"/>
+                         PlaceholderText="My server"
+                         HorizontalAlignment="Stretch"/>
                 <TextBox Header="Host"
                          FontFamily="{StaticResource UplinkUiFont}"
                          Text="{x:Bind ViewModel.Host, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         PlaceholderText="ftp.example.com"/>
+                         PlaceholderText="ftp.example.com"
+                         HorizontalAlignment="Stretch"/>
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="88"/>
-                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="12"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <TextBox Header="Port"
                              FontFamily="{StaticResource UplinkUiFont}"
-                             Text="{x:Bind ViewModel.PortText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                             Text="{x:Bind ViewModel.PortText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             HorizontalAlignment="Stretch"/>
                     <ComboBox Grid.Column="2"
                               Header="Protocol"
                               FontFamily="{StaticResource UplinkUiFont}"
                               ItemsSource="{x:Bind ViewModel.ProtocolOptions}"
                               SelectedItem="{x:Bind ViewModel.Protocol, Mode=TwoWay}"
-                              HorizontalAlignment="Stretch"/>
+                              HorizontalAlignment="Stretch"
+                              MinWidth="0"/>
                 </Grid>
                 <TextBox Header="User"
                          FontFamily="{StaticResource UplinkUiFont}"
                          Text="{x:Bind ViewModel.Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         PlaceholderText="anonymous"/>
+                         PlaceholderText="anonymous"
+                         HorizontalAlignment="Stretch"/>
                 <PasswordBox x:Name="SitePasswordBox"
                              Header="Password"
                              FontFamily="{StaticResource UplinkUiFont}"
-                             PasswordChanged="SitePasswordBox_PasswordChanged"/>
+                             PasswordChanged="SitePasswordBox_PasswordChanged"
+                             HorizontalAlignment="Stretch"/>
                 <TextBox Header="Private key path (SFTP)"
                          FontFamily="{StaticResource UplinkUiFont}"
                          Text="{x:Bind ViewModel.PrivateKeyPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         PlaceholderText="Optional OpenSSH key path"/>
+                         PlaceholderText="Optional OpenSSH key path"
+                         HorizontalAlignment="Stretch"/>
                 <TextBox Header="Initial remote folder"
                          FontFamily="{StaticResource UplinkUiFont}"
                          Text="{x:Bind ViewModel.InitialRemotePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                         PlaceholderText="/"/>
+                         PlaceholderText="/"
+                         HorizontalAlignment="Stretch"/>
                 <ComboBox Header="Folder"
                           FontFamily="{StaticResource UplinkUiFont}"
                           ItemsSource="{x:Bind ViewModel.Folders, Mode=OneWay}"
                           SelectedItem="{x:Bind ViewModel.SelectedFolder, Mode=TwoWay}"
                           DisplayMemberPath="Name"
                           PlaceholderText="(none)"
-                          HorizontalAlignment="Stretch"/>
+                          HorizontalAlignment="Stretch"
+                          MinWidth="0"/>
             </StackPanel>
         </ScrollViewer>
 
-        <!-- 2×2 actions + full-width Connect — fits ~340px right column -->
         <StackPanel Grid.Row="1"
                     Grid.Column="2"
                     Spacing="8"
-                    HorizontalAlignment="Stretch">
+                    HorizontalAlignment="Stretch"
+                    Margin="0,0,8,0">
             <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
                        Style="{StaticResource UplinkMutedTextStyle}"
                        TextWrapping="Wrap"/>
             <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="8"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="8"/>
                     <ColumnDefinition Width="*"/>
@@ -145,29 +156,28 @@
                         Command="{x:Bind ViewModel.NewSiteCommand}"
                         HorizontalAlignment="Stretch"
                         MinWidth="0"
-                        Padding="6,6"/>
+                        Padding="8,6"/>
                 <Button Grid.Column="2"
                         Content="Add"
                         Style="{StaticResource UplinkNavButtonStyle}"
                         Command="{x:Bind ViewModel.AddCommand}"
                         HorizontalAlignment="Stretch"
                         MinWidth="0"
-                        Padding="6,6"/>
-                <Button Grid.Row="2"
+                        Padding="8,6"/>
+                <Button Grid.Column="4"
                         Content="Save"
                         Style="{StaticResource UplinkNavButtonStyle}"
                         Command="{x:Bind ViewModel.SaveCommand}"
                         HorizontalAlignment="Stretch"
                         MinWidth="0"
-                        Padding="6,6"/>
-                <Button Grid.Row="2"
-                        Grid.Column="2"
+                        Padding="8,6"/>
+                <Button Grid.Column="6"
                         Content="Delete"
                         Style="{StaticResource UplinkNavButtonStyle}"
                         Command="{x:Bind ViewModel.DeleteCommand}"
                         HorizontalAlignment="Stretch"
                         MinWidth="0"
-                        Padding="6,6"/>
+                        Padding="8,6"/>
             </Grid>
             <Button Content="Connect"
                     Style="{StaticResource AccentButtonStyle}"
@@ -175,7 +185,6 @@
                     Command="{x:Bind ViewModel.ConnectCommand}"
                     HorizontalAlignment="Stretch"
                     MinWidth="0"
-                    MaxWidth="340"
                     Padding="12,8"
                     CornerRadius="10"/>
         </StackPanel>

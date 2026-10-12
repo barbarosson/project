@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentFTP;
@@ -205,7 +206,7 @@ public sealed class FluentFtpProtocolClient : IRemoteProtocolClient
             FtpLocalExists.Overwrite,
             FtpVerify.None,
             rules: null,
-            progress is null ? null : new Progress<FtpProgress>(p =>
+            progress is null ? null : new SynchronousProgress<FtpProgress>(p =>
             {
                 progress.Report(new TransferProgress
                 {
@@ -236,7 +237,7 @@ public sealed class FluentFtpProtocolClient : IRemoteProtocolClient
             FtpRemoteExists.Overwrite,
             FtpVerify.None,
             rules: null,
-            progress is null ? null : new Progress<FtpProgress>(p =>
+            progress is null ? null : new SynchronousProgress<FtpProgress>(p =>
             {
                 progress.Report(new TransferProgress
                 {
@@ -245,6 +246,60 @@ public sealed class FluentFtpProtocolClient : IRemoteProtocolClient
                 });
             }),
             cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task RenameAsync(string fromPath, string toPath, CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        var from = RemotePath.Normalize(fromPath);
+        var to = RemotePath.Normalize(toPath);
+        var ok = await client.MoveFile(from, to, FtpRemoteExists.Overwrite, cancellationToken).ConfigureAwait(false);
+        if (!ok)
+        {
+            // Directories (or some servers) need MoveDirectory / Rename.
+            ok = await client.MoveDirectory(from, to, FtpRemoteExists.Overwrite, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        if (!ok)
+        {
+            throw new IOException($"FluentFTP rename/move failed: '{from}' → '{to}'.");
+        }
+    }
+
+    public async Task<string> ReadTextFileAsync(string remotePath, CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        var remote = RemotePath.Normalize(remotePath);
+        var bytes = await client.DownloadBytes(remote, cancellationToken).ConfigureAwait(false);
+        return Encoding.UTF8.GetString(bytes ?? []);
+    }
+
+    public async Task WriteTextFileAsync(string remotePath, string content, CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        var remote = RemotePath.Normalize(remotePath);
+        var bytes = Encoding.UTF8.GetBytes(content ?? string.Empty);
+        var status = await client.UploadBytes(
+                bytes,
+                remote,
+                FtpRemoteExists.Overwrite,
+                createRemoteDir: true,
+                progress: null,
+                token: cancellationToken)
+            .ConfigureAwait(false);
+        if (status == FtpStatus.Failed)
+        {
+            throw new IOException($"FluentFTP text upload failed for '{remote}'.");
+        }
+    }
+
+    public Task<string> ExecuteShellCommandAsync(string command, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        _ = command;
+        return Task.FromException<string>(new NotSupportedException(
+            "SSH shell commands require an SFTP connection. Switch protocol to SFTP."));
     }
 
     public async ValueTask DisposeAsync()
@@ -269,7 +324,7 @@ public sealed class FluentFtpProtocolClient : IRemoteProtocolClient
             remote,
             existsMode,
             FtpVerify.None,
-            progress is null ? null : new Progress<FtpProgress>(p =>
+            progress is null ? null : new SynchronousProgress<FtpProgress>(p =>
             {
                 progress.Report(new TransferProgress
                 {
@@ -309,7 +364,7 @@ public sealed class FluentFtpProtocolClient : IRemoteProtocolClient
             existsMode,
             createRemoteDir: true,
             FtpVerify.None,
-            progress is null ? null : new Progress<FtpProgress>(p =>
+            progress is null ? null : new SynchronousProgress<FtpProgress>(p =>
             {
                 progress.Report(new TransferProgress
                 {

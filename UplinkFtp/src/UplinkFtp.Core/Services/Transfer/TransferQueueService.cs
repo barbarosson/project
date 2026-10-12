@@ -111,7 +111,7 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
                 job.State = TransferJobState.Paused;
                 job.ResumeOffsetBytes = job.SupportsResume ? job.BytesTransferred : 0;
                 job.Detail = FormatPausedDetail(job);
-                RaiseJobUpdated(job);
+                RaiseJobUpdatedSafe(job);
                 RaiseQueueChanged();
                 return true;
             }
@@ -134,7 +134,7 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
                 // cancel outside lock below
             }
 
-            RaiseJobUpdated(job);
+            RaiseJobUpdatedSafe(job);
         }
 
         cts?.Cancel();
@@ -157,7 +157,7 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
             }
 
             PrepareForResume(job);
-            RaiseJobUpdated(job);
+            RaiseJobUpdatedSafe(job);
             RaiseQueueChanged();
         }
 
@@ -188,7 +188,7 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
                 job.State = TransferJobState.Cancelled;
                 job.Detail = "Cancelled";
                 job.CompletedAt = DateTimeOffset.Now;
-                RaiseJobUpdated(job);
+                RaiseJobUpdatedSafe(job);
                 RaiseQueueChanged();
                 return true;
             }
@@ -196,7 +196,7 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
             if (job.State == TransferJobState.Running && _tokens.TryGetValue(jobId, out cts))
             {
                 job.Detail = "Cancelling…";
-                RaiseJobUpdated(job);
+                RaiseJobUpdatedSafe(job);
             }
             else
             {
@@ -259,7 +259,7 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
         lock (_gate)
         {
             _jobs.Insert(0, job);
-            RaiseJobUpdated(job);
+            RaiseJobUpdatedSafe(job);
             RaiseQueueChanged();
         }
 
@@ -312,7 +312,7 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
                     _tokens[next.Id] = cts;
                 }
 
-                RaiseJobUpdated(next);
+                RaiseJobUpdatedSafe(next);
                 RaiseQueueChanged();
                 _ = ProcessJobAsync(next, cts);
             }
@@ -335,10 +335,10 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
             }
 
             // Synchronous progress so pause can snapshot ResumeOffsetBytes without racing
-            // Progress<T>'s SynchronizationContext marshal.
+            // Progress<T>'s SynchronizationContext marshal. UI listeners must not throw
+            // into this callback (that previously surfaced as COMException on the job).
             var progress = new SynchronousProgress<TransferProgress>(p =>
             {
-                // Report absolute progress when resuming (offset + newly transferred).
                 var absolute = job.SupportsResume && job.ResumeOffsetBytes > 0
                     ? Math.Max(p.BytesTransferred, job.ResumeOffsetBytes)
                     : p.BytesTransferred;
@@ -358,12 +358,10 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
                     job.Detail = p.CurrentPath;
                 }
 
-                RaiseJobUpdated(job);
+                RaiseJobUpdatedSafe(job);
             });
 
-            // Session-aware lease: Free reuses primary; Pro opens pool clients.
-            // Do NOT call IConnectionPool.LeaseAsync here — that bypasses Free's
-            // single-connection rule and breaks uploads after a successful browse connect.
+            // Pro: pool lease. Free / fakes: NotSupportedException → gated IFtpService APIs.
             IRemoteProtocolClient? leasedClient = null;
             try
             {
@@ -372,7 +370,7 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
             }
             catch (NotSupportedException)
             {
-                // Unit-test fakes may not implement OpenTransferClientAsync.
+                // Free tier and unit-test fakes — use session-gated upload/download below.
             }
 
             await ExecuteTransferAsync(job, progress, leasedClient, token).ConfigureAwait(false);
@@ -384,7 +382,7 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
             job.ResumeOffsetBytes = 0;
             job.Detail = "Completed";
             job.CompletedAt = DateTimeOffset.Now;
-            RaiseJobUpdated(job);
+            RaiseJobUpdatedSafe(job);
         }
         catch (OperationCanceledException)
         {
@@ -411,7 +409,7 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
                 job.CompletedAt = DateTimeOffset.Now;
             }
 
-            RaiseJobUpdated(job);
+            RaiseJobUpdatedSafe(job);
         }
         catch (Exception ex)
         {
@@ -419,7 +417,7 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
             job.Error = ProtocolError.ToUserMessage(ex);
             job.Detail = job.Error;
             job.CompletedAt = DateTimeOffset.Now;
-            RaiseJobUpdated(job);
+            RaiseJobUpdatedSafe(job);
         }
         finally
         {
@@ -543,7 +541,28 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
             : "Paused — resume restarts from the beginning";
     }
 
-    private void RaiseQueueChanged() => QueueChanged?.Invoke(this, EventArgs.Empty);
+    private void RaiseQueueChanged()
+    {
+        try
+        {
+            QueueChanged?.Invoke(this, EventArgs.Empty);
+        }
+        catch
+        {
+            // UI listeners must not break the queue scheduler.
+        }
+    }
 
-    private void RaiseJobUpdated(TransferJob job) => JobUpdated?.Invoke(this, job);
+    private void RaiseJobUpdatedSafe(TransferJob job)
+    {
+        try
+        {
+            JobUpdated?.Invoke(this, job);
+        }
+        catch
+        {
+            // Progress runs on worker threads; a COMException from a UI listener
+            // must not mark the transfer itself as failed.
+        }
+    }
 }

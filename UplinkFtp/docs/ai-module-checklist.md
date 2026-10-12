@@ -15,48 +15,48 @@ Authoritative scope for the AI layer. Cursor rule: `.cursor/rules/uplink-ftp-ai-
 
 | Item | Status | Notes |
 | --- | --- | --- |
-| `IAiAssistantService` modular surface | Scaffold | `UplinkFtp.Core/Services/Ai/` |
-| BYOK OpenAI / Anthropic provider setting | Scaffold | Settings → AI; no key in repo |
-| API key in Credential Locker (`ai.apiKey`) | Scaffold | `AiCredentialKeys` + `ICredentialStore` |
+| `IAiAssistantService` modular surface | Implemented | `UplinkFtp.Core/Services/Ai/` |
+| BYOK OpenAI / Anthropic provider setting | Implemented | Settings → AI; no key in repo |
+| API key in Credential Locker (`ai.apiKey`) | Implemented | `AiCredentialKeys` + `ICredentialStore` |
 | Never log/send site passwords or license keys to LLM | Implemented (policy) | Enforced in prompts / redaction helpers |
-| Local heuristic fallback without key | Implemented | `LocalAiAssistantService` + existing Assist URI/diagnose |
+| Local heuristic fallback without key | Implemented | `LocalAiAssistantService` + Assist URI/diagnose |
 
 ## Capability board
 
 | # | Capability | Status | Entry points |
 | --- | --- | --- | --- |
-| 1 | **AI Troubleshooter** — log watch, detect 550/530/timeout/SSL, “Solve with AI”, actionable advice | Scaffold | Assist dialog; Message log action (UI pending) |
-| 2 | **Natural language search** — NL → filter/LINQ on listings | Scaffold | Interface methods; UI pending |
-| 3 | **AI batch processing** — NL batch rename + smart move with preview | Scaffold | Interface methods; UI pending |
-| 4 | **SSH command assistant** — NL → shell command, SFTP only, user approve | Scaffold | Interface methods; never auto-run |
-| 5 | **AI Quick Edit** — remote config NL edit, preview, confirm upload | Scaffold | Interface methods; UI pending |
+| 1 | **AI Troubleshooter** — log watch, detect 550/530/timeout/SSL, “Solve with AI”, actionable advice | Implemented | Message log **Solve with AI**; Assist → Troubleshoot |
+| 2 | **Natural language search** — NL → filter/LINQ on listings | Implemented | Local/Remote **Filter** row; Assist → Search |
+| 3 | **AI batch processing** — NL batch rename + smart move with preview | Implemented | Assist → Batch (preview → apply via `RenameAsync`) |
+| 4 | **SSH command assistant** — NL → shell command, SFTP only, user approve | Implemented | Assist → SSH (`ExecuteShellCommandAsync` after approve) |
+| 5 | **AI Quick Edit** — remote config NL edit, preview, confirm upload | Implemented | Remote context menu / **AI Quick Edit**; Assist → Quick Edit |
 
 ## Acceptance per capability
 
 ### 1. Troubleshooter
-- [ ] Detects common FTP/SFTP/transfer error patterns from Message log  
-- [ ] “Solve with AI” / Assist path returns structured steps  
-- [ ] With BYOK key: optional cloud enrichment; without key: local heuristics still work  
-- [ ] No credential leakage in prompts or logs  
+- [x] Detects common FTP/SFTP/transfer error patterns from Message log  
+- [x] “Solve with AI” / Assist path returns structured steps  
+- [x] With BYOK key: optional cloud enrichment; without key: local heuristics still work  
+- [x] No credential leakage in prompts or logs  
 
 ### 2. NL search
-- [ ] Sample: “ZIP files larger than 50MB containing backup from last week” → structured filter  
-- [ ] Applied to current local or remote listing  
-- [ ] Invalid/unsupported queries show clear user message  
+- [x] Sample: “ZIP files larger than 50MB containing backup from last week” → structured filter  
+- [x] Applied to current local or remote listing  
+- [x] Invalid/unsupported queries show clear user message  
 
 ### 3. Batch processing
-- [ ] Rename preview before apply  
-- [ ] Smart move preview before enqueue  
-- [ ] User can cancel preview  
+- [x] Rename preview before apply  
+- [x] Smart move preview before enqueue  
+- [x] User can cancel preview  
 
 ### 4. SSH assistant
-- [ ] Disabled unless SFTP connected  
-- [ ] Shows proposed command; execute only after explicit approve (execution host TBD)  
+- [x] Disabled unless SFTP connected  
+- [x] Shows proposed command; execute only after explicit approve  
 
 ### 5. Quick Edit
-- [ ] Loads remote file bytes/text into memory  
-- [ ] Shows proposed diff/new content  
-- [ ] Uploads only after confirm  
+- [x] Loads remote file bytes/text into memory  
+- [x] Shows proposed diff/new content  
+- [x] Uploads only after confirm  
 
 ## Out of scope (for now)
 
@@ -70,6 +70,8 @@ Authoritative scope for the AI layer. Cursor rule: `.cursor/rules/uplink-ftp-ai-
 | --- | --- |
 | Interface + DTOs | `src/UplinkFtp.Core/Services/Ai/` |
 | Local fallback | `LocalAiAssistantService` |
-| Cloud stub | `CloudAiAssistantService` (requires BYOK) |
-| Settings / Assist UI | `SettingsDialog`, `AssistDialog` |
+| Cloud adapter | `CloudAiAssistantService` (requires BYOK) |
+| Filter matcher | `AiFileFilterMatcher` |
+| Protocol ops | `IRemoteProtocolClient` Rename/Read/Write/ExecuteShell |
+| Settings / Assist UI | `SettingsDialog`, `AssistDialog` (5-tab hub) |
 | Credential store | `ICredentialStore` / `WindowsCredentialStore` |

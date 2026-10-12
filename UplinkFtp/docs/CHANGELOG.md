@@ -21,22 +21,25 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 - `AcceptAnyCertificate` defaults to false  
 - **Windows App SDK 1.6 → 2.5.1** (NuGet stable); BuildTools → `10.0.26100.9169`  
 - Unpackaged builds use `WindowsAppSDKSelfContained=true` (no EOL 1.6 Runtime install)  
-- **UI shell redesign:** sectioned blocks (connect / log / local·remote / queue), Light·Dark·System theme via Settings, Sora + JetBrains Mono, warm-tech teal/amber palette  
+- **UI shell redesign:** sectioned blocks (connect / log / local·remote / queue), five named themes (Orbit / Daybreak / Nightwatch / Harbor / Forge), Sora + JetBrains Mono, warm-tech teal/amber palette  
 
 ### Added (UI)
 
 - `Themes/Colors.xaml`, `Themes/Styles.xaml`, `Helpers/ThemeHelper.cs`  
 - Embedded fonts under `Assets/Fonts/` (Sora, JetBrains Mono)  
-- **AI Assist** dialog (toolbar **Assist**): URI parse + `IAiAssistantService` troubleshoot  
-- **AI module scaffold:** BYOK Settings (Credential Locker `ai.apiKey`), `LocalAiAssistantService` + `CloudAiAssistantService`, checklist `docs/ai-module-checklist.md`, Cursor rule `.cursor/rules/uplink-ftp-ai-module.mdc`  
+- **Named themes (5):** Orbit, Daybreak, Nightwatch, Harbor, Forge (**Settings → Theme**; legacy System/Light/Dark migrate automatically)  
+- **AI Assist** hub (toolbar **Assist**): five tabs — Troubleshoot, Search, Batch, SSH, Quick Edit  
+- Message log **Solve with AI**; Local/Remote NL **Filter**; Remote **AI Quick Edit** context menu  
+- Protocol ops for AI apply paths: `RenameAsync`, `ReadTextFileAsync`, `WriteTextFileAsync`, `ExecuteShellCommandAsync` (SFTP)  
+- **AI module:** BYOK Settings (Credential Locker `ai.apiKey`), `LocalAiAssistantService` + `CloudAiAssistantService`, `AiFileFilterMatcher`, checklist `docs/ai-module-checklist.md`, Cursor rule `.cursor/rules/uplink-ftp-ai-module.mdc`  
 - App logo: `Assets/UplinkLogo.png`, `Assets/UplinkFtp.ico` (exe / taskbar / Store tile assets)  
 
 ### Fixed
 
 - Sites / Settings / License / Transfer queue action buttons no longer clip horizontally (equal-column grids)  
 - Drag-and-drop enqueue: WinUI Drop handlers now take a deferral (async drop was silently cancelled); panel-wide drop targets + **Upload →** / **← Download** buttons as fallback  
-- Sites dialog: fit ContentDialog max width (~520px) so **Connect** / New·Add·Save·Delete no longer clip  
-- Transfer queue: Free tier uploads reuse the primary SFTP session (no second pool connect); clearer remote permission / empty-exception messages  
+- Sites dialog: raise ContentDialog max width (~720–780px) so Protocol / actions / **Connect** / Close stay fully visible  
+- Transfer queue: action buttons in a 2×3 grid; Free tier transfers use session-gated APIs; progress/UI updates use DispatcherQueue + isolated JobUpdated (stops COMException from failing uploads); clearer COM / permission messages  
 - Scrollbars: rectangular (0 radius), thicker track/thumb, teal-muted colors app-wide (Settings / Sites / Assist / lists)  
 
 ## [0.1.0-beta] — TBD

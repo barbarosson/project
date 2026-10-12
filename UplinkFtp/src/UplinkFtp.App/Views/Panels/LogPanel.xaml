@@ -16,11 +16,18 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="Message log"
                        Style="{StaticResource UplinkSectionTitleStyle}"
                        Margin="0"/>
             <Button Grid.Column="1"
+                    Content="Solve with AI"
+                    Style="{StaticResource UplinkNavButtonStyle}"
+                    Click="SolveWithAi_Click"
+                    Margin="0,0,6,0"
+                    ToolTipService.ToolTip="Open AI Assist troubleshoot for the current log"/>
+            <Button Grid.Column="2"
                     Content="Clear"
                     Style="{StaticResource UplinkNavButtonStyle}"
                     Command="{Binding ClearCommand}"/>

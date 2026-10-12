@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using Renci.SshNet.Common;
 
@@ -54,11 +55,20 @@ public static class ProtocolError
                     return Sanitize(io.Message);
                 case SshException ssh when !string.IsNullOrWhiteSpace(ssh.Message):
                     return Sanitize(ssh.Message);
+                case COMException com:
+                    return MapComException(com);
+                case ExternalException ext when unchecked((uint)ext.HResult) == 0x8001010E:
+                    return "Transfer hit a threading conflict. Retry the transfer; if it persists, disconnect and reconnect.";
             }
         }
 
         foreach (var current in Flatten(exception))
         {
+            if (current is COMException comFallback)
+            {
+                return MapComException(comFallback);
+            }
+
             var msg = Sanitize(current.Message);
             if (msg.Length > 0 &&
                 !msg.Equals("One or more errors occurred.", StringComparison.OrdinalIgnoreCase) &&
@@ -69,6 +79,11 @@ public static class ProtocolError
         }
 
         var typeName = exception.GetType().Name;
+        if (typeName.Contains("COM", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Transfer hit a COM/UI threading error. Rebuild to the latest build, then retry; if it persists, disconnect and reconnect.";
+        }
+
         return $"Transfer failed ({typeName}). Check remote path permissions and that you are still connected.";
     }
 
@@ -91,6 +106,30 @@ public static class ProtocolError
         {
             yield return current;
         }
+    }
+
+    private static string MapComException(COMException com)
+    {
+        // 0x8001010E RPC_E_WRONG_THREAD — usually UI/collection touch off the UI thread,
+        // or Free-tier concurrent use of the same protocol client.
+        if (unchecked((uint)com.HResult) == 0x8001010E)
+        {
+            return "Transfer hit a threading conflict. Retry the transfer; if it persists, disconnect and reconnect.";
+        }
+
+        var inner = Sanitize(com.InnerException?.Message);
+        if (inner.Length > 0)
+        {
+            return inner;
+        }
+
+        var own = Sanitize(com.Message);
+        if (own.Length > 0)
+        {
+            return own;
+        }
+
+        return "Transfer failed (COM). Check remote path permissions and that you are still connected.";
     }
 
     private static string Sanitize(string? message)

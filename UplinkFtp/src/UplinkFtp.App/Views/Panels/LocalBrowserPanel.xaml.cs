@@ -50,6 +50,14 @@ public sealed partial class LocalBrowserPanel : UserControl
         _shell.EnqueueSelectedUpload(_browser.SelectedItem);
     }
 
+    private void AiSearchBox_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == Windows.System.VirtualKey.Enter && _browser is not null)
+        {
+            _ = _browser.ApplyAiSearchCommand.ExecuteAsync(null);
+        }
+    }
+
     private void FileList_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
     {
         if (e.Items.Count == 0 || e.Items[0] is not BrowserItemViewModel item || item.IsParentLink)

@@ -22,7 +22,7 @@ public sealed partial class MainWindow : Window
         ViewModel = viewModel;
         InitializeComponent();
 
-        LogPanel.Bind(ViewModel.Log);
+        LogPanel.Bind(ViewModel.Log, ViewModel);
         LocalPanel.Bind(ViewModel.LocalBrowser, ViewModel);
         RemotePanel.Bind(ViewModel.RemoteBrowser, ViewModel);
         QueuePanel.Bind(ViewModel.TransferQueue);
@@ -213,7 +213,15 @@ public sealed partial class MainWindow : Window
     private async System.Threading.Tasks.Task ShowAssistAsync()
     {
         var vm = App.Services.GetRequiredService<AssistViewModel>();
-        vm.Attach(ViewModel, ViewModel.Log);
+        vm.Attach(ViewModel, ViewModel.Log, ViewModel.AssistInitialTabIndex);
+        if (!string.IsNullOrWhiteSpace(ViewModel.AssistQuickEditPath))
+        {
+            vm.FocusQuickEdit(ViewModel.AssistQuickEditPath);
+        }
+        else if (ViewModel.AssistInitialTabIndex == 0)
+        {
+            vm.FocusTroubleshoot();
+        }
 
         void OnApplied(object? sender, EventArgs e)
         {

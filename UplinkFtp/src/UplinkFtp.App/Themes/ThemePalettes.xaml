@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!--
+      Optional palette overlays for named themes that share Light/Dark ElementTheme
+      but need a distinct atmosphere. Brush keys match Colors.xaml so they override
+      when merged onto the shell root.
+    -->
+
+    <!-- Harbor: cooler dockside light (slate + deep sea-teal). -->
+    <ResourceDictionary x:Key="Harbor">
+        <x:String x:Key="UplinkThemePaletteId">Harbor</x:String>
+        <SolidColorBrush x:Key="UplinkSectionFillBrush" Color="#F5F8FAF2"/>
+        <SolidColorBrush x:Key="UplinkSectionStrokeBrush" Color="#B0C2CC"/>
+        <SolidColorBrush x:Key="UplinkAccentBrush" Color="#0B6E7A"/>
+        <SolidColorBrush x:Key="UplinkAccentSoftBrush" Color="#D4EEF2"/>
+        <SolidColorBrush x:Key="UplinkBrandBrush" Color="#0C4A56"/>
+        <SolidColorBrush x:Key="UplinkSignalBrush" Color="#B45309"/>
+        <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="#4F646E"/>
+        <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="#152530"/>
+        <SolidColorBrush x:Key="UplinkDividerBrush" Color="#A8BCC6"/>
+        <LinearGradientBrush x:Key="UplinkShellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#E8F0F4" Offset="0"/>
+            <GradientStop Color="#D4E4EA" Offset="1"/>
+        </LinearGradientBrush>
+    </ResourceDictionary>
+
+    <!-- Forge: charcoal workshop dark with copper signal. -->
+    <ResourceDictionary x:Key="Forge">
+        <x:String x:Key="UplinkThemePaletteId">Forge</x:String>
+        <SolidColorBrush x:Key="UplinkSectionFillBrush" Color="#1C1814"/>
+        <SolidColorBrush x:Key="UplinkSectionStrokeBrush" Color="#3D342C"/>
+        <SolidColorBrush x:Key="UplinkAccentBrush" Color="#E8A06A"/>
+        <SolidColorBrush x:Key="UplinkAccentSoftBrush" Color="#3A2A1C"/>
+        <SolidColorBrush x:Key="UplinkBrandBrush" Color="#F0D2B0"/>
+        <SolidColorBrush x:Key="UplinkSignalBrush" Color="#F59E0B"/>
+        <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="#B8A898"/>
+        <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="#F5EDE4"/>
+        <SolidColorBrush x:Key="UplinkDividerBrush" Color="#4A3F34"/>
+        <LinearGradientBrush x:Key="UplinkShellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#120F0C" Offset="0"/>
+            <GradientStop Color="#1A1612" Offset="1"/>
+        </LinearGradientBrush>
+    </ResourceDictionary>
+</ResourceDictionary>

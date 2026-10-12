@@ -70,6 +70,58 @@ public sealed class AiAssistantServiceTests
         Assert.Contains(preview.Items, i => i.OldName == "report-2024-01-15.txt" && i.NewName == "report-v2.txt");
     }
 
+    [Fact]
+    public void FileFilterMatcher_AppliesZipBackupConstraints()
+    {
+        var filter = new AiFileFilter
+        {
+            Extension = ".zip",
+            NameContains = "backup",
+            MinSizeBytes = 50L * 1024 * 1024,
+            ModifiedAfterUtc = DateTimeOffset.UtcNow.AddDays(-7),
+            RawQuery = "test"
+        };
+
+        Assert.True(AiFileFilterMatcher.Matches(
+            "site-backup.zip",
+            isDirectory: false,
+            size: 60L * 1024 * 1024,
+            modifiedUtc: DateTime.UtcNow.AddDays(-2),
+            filter));
+        Assert.False(AiFileFilterMatcher.Matches(
+            "site-backup.zip",
+            isDirectory: false,
+            size: 10L * 1024 * 1024,
+            modifiedUtc: DateTime.UtcNow.AddDays(-2),
+            filter));
+        Assert.False(AiFileFilterMatcher.Matches(
+            "Images",
+            isDirectory: true,
+            size: 0,
+            modifiedUtc: null,
+            filter));
+    }
+
+    [Fact]
+    public async Task ProposeSsh_LogArchiveHeuristic()
+    {
+        var ai = CreateLocal();
+        var proposal = await ai.ProposeSshCommandAsync(
+            "Compress all .log files into tar.gz",
+            "/var/log/app");
+
+        Assert.Contains("tar -czvf", proposal.Command, StringComparison.Ordinal);
+        Assert.False(proposal.AutoExecuteAllowed);
+    }
+
+    [Fact]
+    public void QuickEdit_LikelyTextConfig()
+    {
+        Assert.True(AiFileFilterMatcher.IsLikelyTextConfig(".htaccess"));
+        Assert.True(AiFileFilterMatcher.IsLikelyTextConfig("wp-config.php"));
+        Assert.False(AiFileFilterMatcher.IsLikelyTextConfig("photo.png"));
+    }
+
     private static LocalAiAssistantService CreateLocal()
         => new(new MemoryCredentialStore(), new AppSettings());
 }

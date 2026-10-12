@@ -76,4 +76,13 @@ public interface IFtpService : IAsyncDisposable
     /// Caller must dispose the lease to return the client.
     /// </summary>
     Task<IConnectionLease> OpenTransferClientAsync(CancellationToken cancellationToken = default);
+
+    Task RenameAsync(string fromPath, string toPath, CancellationToken cancellationToken = default);
+
+    Task<string> ReadTextFileAsync(string remotePath, CancellationToken cancellationToken = default);
+
+    Task WriteTextFileAsync(string remotePath, string content, CancellationToken cancellationToken = default);
+
+    /// <summary>SSH shell exec — SFTP connections only.</summary>
+    Task<string> ExecuteShellCommandAsync(string command, CancellationToken cancellationToken = default);
 }

@@ -46,7 +46,7 @@
                         <Button Content="Assist"
                                 Style="{StaticResource UplinkNavButtonStyle}"
                                 Command="{x:Bind ViewModel.OpenAssistCommand}"
-                                ToolTipService.ToolTip="AI Assist — parse URIs and diagnose connection errors"/>
+                                ToolTipService.ToolTip="AI Assist — troubleshoot, search, batch, SSH, Quick Edit"/>
                         <Button Content="Settings"
                                 Style="{StaticResource UplinkNavButtonStyle}"
                                 Command="{x:Bind ViewModel.OpenSettingsCommand}"/>

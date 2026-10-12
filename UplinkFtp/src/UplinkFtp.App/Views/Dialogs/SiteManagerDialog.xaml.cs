@@ -13,6 +13,9 @@ public sealed partial class SiteManagerDialog : ContentDialog
         ViewModel = viewModel;
         DataContext = viewModel;
         InitializeComponent();
+        // Reinforce after XAML load so unpackaged runs never fall back to ~548px clip.
+        Resources["ContentDialogMinWidth"] = 680.0;
+        Resources["ContentDialogMaxWidth"] = 780.0;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
     }
 
