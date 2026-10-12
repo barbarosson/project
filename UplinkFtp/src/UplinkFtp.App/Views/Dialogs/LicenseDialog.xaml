@@ -12,14 +12,11 @@
     MinWidth="440">
 
     <StackPanel Spacing="12" MinWidth="400" Padding="0,4,0,0">
-        <TextBlock>
-            <Run Text="Channel: "/>
-            <Run Text="{x:Bind ViewModel.ChannelText, Mode=OneWay}" FontWeight="SemiBold"/>
-        </TextBlock>
-        <TextBlock>
-            <Run Text="Tier: "/>
-            <Run Text="{x:Bind ViewModel.TierText, Mode=OneWay}" FontWeight="SemiBold"/>
-        </TextBlock>
+        <!-- Prefer TextBlock.Text over Run+x:Bind (Run bindings are unreliable in WinUI). -->
+        <TextBlock FontWeight="SemiBold"
+                   Text="{x:Bind ViewModel.ChannelLine, Mode=OneWay}"/>
+        <TextBlock FontWeight="SemiBold"
+                   Text="{x:Bind ViewModel.TierLine, Mode=OneWay}"/>
         <TextBlock Text="{x:Bind ViewModel.StatusDetail, Mode=OneWay}"
                    TextWrapping="Wrap"
                    Opacity="0.85"/>

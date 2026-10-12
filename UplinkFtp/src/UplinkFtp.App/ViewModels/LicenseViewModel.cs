@@ -36,6 +36,12 @@ public sealed partial class LicenseViewModel : ObservableObject
     [ObservableProperty]
     private bool _isBusy;
 
+    [ObservableProperty]
+    private string _channelLine = string.Empty;
+
+    [ObservableProperty]
+    private string _tierLine = string.Empty;
+
     public LicenseViewModel(ILicenseService license)
     {
         _license = license;
@@ -47,6 +53,8 @@ public sealed partial class LicenseViewModel : ObservableObject
     {
         ChannelText = _license.Channel.ToString();
         TierText = _license.GetCurrentTier().ToString();
+        ChannelLine = $"Channel: {ChannelText}";
+        TierLine = $"Tier: {TierText}";
         StatusDetail = _license.StatusDetail;
         IsWebChannel = _license.Channel == DistributionChannel.Web && _webLicense is not null;
 

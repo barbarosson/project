@@ -19,6 +19,9 @@
     <LangVersion>latest</LangVersion>
     <!-- Allows restore of windows TFM packages on non-Windows CI; full WinUI build still requires Windows. -->
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <!-- Custom Program.cs entry for unpackaged WinUI — suppress XAML-generated Program/Main. -->
+    <DisableXamlGeneratedMain>true</DisableXamlGeneratedMain>
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
 
     <!--
       Distribution channel for ILicenseService:
