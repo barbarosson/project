@@ -55,17 +55,36 @@ jobs:
       - name: Verify unpackaged exe + WASDK payload present
         shell: pwsh
         run: |
-          $out = "src/UplinkFtp.App/bin/x64/Debug/net8.0-windows10.0.19041.0"
+          # WindowsAppSDKSelfContained emits under …\net8.0-windows…\win-x64\
+          $candidates = @(
+            "src/UplinkFtp.App/bin/x64/Debug/net8.0-windows10.0.19041.0/win-x64",
+            "src/UplinkFtp.App/bin/x64/Debug/net8.0-windows10.0.19041.0"
+          )
+          $out = $candidates | Where-Object { Test-Path (Join-Path $_ "UplinkFtp.exe") } | Select-Object -First 1
+          if (-not $out) {
+            Get-ChildItem "src/UplinkFtp.App/bin" -Recurse -Filter "UplinkFtp.exe" -ErrorAction SilentlyContinue |
+              ForEach-Object { Write-Host "found: $($_.FullName)" }
+            throw "Missing UplinkFtp.exe under expected Debug output folders."
+          }
           $exe = Join-Path $out "UplinkFtp.exe"
-          if (-not (Test-Path $exe)) { throw "Missing $exe" }
-          # Self-contained WASDK copies Microsoft.WindowsAppRuntime / WinUI natives beside the app.
-          $wasdk = Get-ChildItem $out -Recurse -Filter "Microsoft.WindowsAppRuntime*.dll" -ErrorAction SilentlyContinue
-          $winui = Get-ChildItem $out -Recurse -Filter "Microsoft.UI.Xaml*.dll" -ErrorAction SilentlyContinue
-          if (-not $wasdk -and -not $winui) {
-            throw "Windows App SDK self-contained payload not found under $out (expected Runtime/WinUI DLLs)."
+          $markers = @(
+            "Microsoft.WindowsAppRuntime*.dll",
+            "Microsoft.UI.Xaml*.dll",
+            "Microsoft.WinUI.dll",
+            "CoreMessagingXP.dll",
+            "Microsoft.InteractiveExperiences.Projection.dll"
+          )
+          $hits = @()
+          foreach ($pat in $markers) {
+            $hits += Get-ChildItem $out -Recurse -Filter $pat -ErrorAction SilentlyContinue
+          }
+          if ($hits.Count -eq 0) {
+            Write-Host "Top-level output files:"
+            Get-ChildItem $out -File | Select-Object -First 40 | ForEach-Object { Write-Host $_.Name }
+            throw "Windows App SDK self-contained payload not found under $out"
           }
           Write-Host "OK exe=$exe"
-          Write-Host "WASDK/WinUI hits: $(($wasdk + $winui | Select-Object -First 5).FullName -join '; ')"
+          Write-Host "WASDK hits: $(($hits | Select-Object -First 8).Name -join '; ')"
       - name: Build App (x64 Release, Store channel define)
         run: >
           dotnet build src/UplinkFtp.App/UplinkFtp.App.csproj

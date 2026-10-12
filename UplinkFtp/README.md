@@ -50,10 +50,11 @@ cd UplinkFtp
 git checkout cursor/ftp-ai-adim1-skeleton-e45f   # if cloning the monorepo
 dotnet restore UplinkFtp.sln
 dotnet build src\UplinkFtp.App\UplinkFtp.App.csproj -c Debug -p:Platform=x64
-.\src\UplinkFtp.App\bin\x64\Debug\net8.0-windows10.0.19041.0\UplinkFtp.exe
+# Self-contained WASDK output includes a win-x64 RID folder:
+.\src\UplinkFtp.App\bin\x64\Debug\net8.0-windows10.0.19041.0\win-x64\UplinkFtp.exe
 ```
 
-> Prefer launching the **x64 output exe** above. Plain `dotnet run` without matching Platform can look under `bin\Debug\…` (missing exe).
+> Prefer launching that **x64 / win-x64** exe. Plain `dotnet run` may look under `bin\Debug\…` and fail.
 
 Optional unpackaged self-contained publish (bundles .NET + WASDK):
 

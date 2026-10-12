@@ -5,7 +5,7 @@ Living list for dogfood and public beta. Update as defects are fixed.
 ## Platform / build
 
 - Full WinUI build and run require Windows 10/11. App targets **Windows App SDK 2.5.1** with `WindowsAppSDKSelfContained=true` for unpackaged output (no separate Runtime 1.6 install).  
-- Launch the **x64** output exe (`bin\x64\Debug\…\UplinkFtp.exe`). Plain `dotnet run` may look under `bin\Debug\` and fail.  
+- Launch the self-contained output exe: `bin\x64\Debug\net8.0-windows10.0.19041.0\win-x64\UplinkFtp.exe`. Plain `dotnet run` may look under `bin\Debug\` and fail.  
 - Linux agents run **Core tests only**.  
 - **P0 Windows smoke is still user-owned** — not validated in cloud Linux agents.  
 
