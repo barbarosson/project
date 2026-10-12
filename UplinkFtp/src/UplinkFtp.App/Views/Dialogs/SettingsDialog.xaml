@@ -9,15 +9,29 @@
     Title="Settings"
     PrimaryButtonText="Close"
     DefaultButton="Primary"
-    MinWidth="520"
     FontFamily="{StaticResource UplinkUiFont}">
+
+    <!-- Match Sites dialog width tokens so captions are not clipped at ~548px. -->
+    <ContentDialog.Resources>
+        <x:Double x:Key="ContentDialogMinWidth">560</x:Double>
+        <x:Double x:Key="ContentDialogMaxWidth">640</x:Double>
+    </ContentDialog.Resources>
 
     <!-- Keyboard: Tab cycles fields; Enter activates Save when focused on that button.
          Narrator: Headers on inputs provide accessible names; status line announces results. -->
-    <ScrollViewer MaxHeight="560"
-                  VerticalScrollBarVisibility="Visible"
-                  HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Spacing="12" MinWidth="460" Padding="0,4,0,0">
+    <!-- HorizontalScrollMode Disabled forces a finite width so TextWrapping works inside StackPanel. -->
+    <ScrollViewer x:Name="SettingsScroll"
+                  MaxHeight="560"
+                  HorizontalAlignment="Stretch"
+                  VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  HorizontalScrollMode="Disabled"
+                  VerticalScrollMode="Enabled"
+                  SizeChanged="SettingsScroll_SizeChanged">
+        <StackPanel x:Name="SettingsPanel"
+                    Spacing="12"
+                    Padding="0,4,12,0"
+                    HorizontalAlignment="Stretch">
             <TextBlock Text="Connection" Style="{StaticResource UplinkDialogTitleStyle}"/>
             <NumberBox Header="Connect timeout (seconds)"
                        FontFamily="{StaticResource UplinkUiFont}"
@@ -54,10 +68,12 @@
             <TextBlock Text="Appearance"
                        Style="{StaticResource UplinkDialogTitleStyle}"
                        Margin="0,8,0,0"/>
-            <TextBlock Text="Tap a theme to preview on the shell. Save keeps it; Close reverts."
+            <TextBlock x:Name="ThemeIntroText"
+                       Text="Tap a theme card to preview on the shell. Save keeps it; Close reverts."
                        Style="{StaticResource UplinkMutedTextStyle}"
-                       TextWrapping="Wrap"/>
-            <Grid ColumnSpacing="8">
+                       TextWrapping="WrapWholeWords"
+                       HorizontalAlignment="Stretch"/>
+            <Grid ColumnSpacing="6" HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
@@ -66,62 +82,67 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Button Grid.Column="0"
-                        Padding="6,8"
+                        Padding="4,8"
+                        MinWidth="0"
                         HorizontalAlignment="Stretch"
                         Command="{x:Bind ViewModel.PreviewThemeCommand}"
                         CommandParameter="Orbit"
                         ToolTipService.ToolTip="Orbit — follows your system light/dark">
                     <StackPanel Spacing="4">
                         <Border Height="28" CornerRadius="4" Background="#EEF4F6" BorderBrush="#0F766E" BorderThickness="0,0,0,4"/>
-                        <TextBlock Text="Orbit" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Orbit" FontWeight="SemiBold" FontSize="11" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                         <TextBlock Text="System" FontSize="10" Opacity="0.75" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Button>
                 <Button Grid.Column="1"
-                        Padding="6,8"
+                        Padding="4,8"
+                        MinWidth="0"
                         HorizontalAlignment="Stretch"
                         Command="{x:Bind ViewModel.PreviewThemeCommand}"
                         CommandParameter="Daybreak"
                         ToolTipService.ToolTip="Daybreak — clear morning light">
                     <StackPanel Spacing="4">
                         <Border Height="28" CornerRadius="4" Background="#EEF4F6" BorderBrush="#0F766E" BorderThickness="0,0,0,4"/>
-                        <TextBlock Text="Daybreak" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Daybreak" FontWeight="SemiBold" FontSize="11" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                         <TextBlock Text="Light" FontSize="10" Opacity="0.75" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Button>
                 <Button Grid.Column="2"
-                        Padding="6,8"
+                        Padding="4,8"
+                        MinWidth="0"
                         HorizontalAlignment="Stretch"
                         Command="{x:Bind ViewModel.PreviewThemeCommand}"
                         CommandParameter="Nightwatch"
                         ToolTipService.ToolTip="Nightwatch — late ops dark">
                     <StackPanel Spacing="4">
                         <Border Height="28" CornerRadius="4" Background="#0B1418" BorderBrush="#2DD4BF" BorderThickness="0,0,0,4"/>
-                        <TextBlock Text="Nightwatch" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Nightwatch" FontWeight="SemiBold" FontSize="11" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                         <TextBlock Text="Dark" FontSize="10" Opacity="0.75" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Button>
                 <Button Grid.Column="3"
-                        Padding="6,8"
+                        Padding="4,8"
+                        MinWidth="0"
                         HorizontalAlignment="Stretch"
                         Command="{x:Bind ViewModel.PreviewThemeCommand}"
                         CommandParameter="Harbor"
                         ToolTipService.ToolTip="Harbor — cooler dockside light">
                     <StackPanel Spacing="4">
                         <Border Height="28" CornerRadius="4" Background="#E8F0F4" BorderBrush="#0B6E7A" BorderThickness="0,0,0,4"/>
-                        <TextBlock Text="Harbor" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Harbor" FontWeight="SemiBold" FontSize="11" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                         <TextBlock Text="Light" FontSize="10" Opacity="0.75" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Button>
                 <Button Grid.Column="4"
-                        Padding="6,8"
+                        Padding="4,8"
+                        MinWidth="0"
                         HorizontalAlignment="Stretch"
                         Command="{x:Bind ViewModel.PreviewThemeCommand}"
                         CommandParameter="Forge"
                         ToolTipService.ToolTip="Forge — charcoal workshop dark">
                     <StackPanel Spacing="4">
                         <Border Height="28" CornerRadius="4" Background="#120F0C" BorderBrush="#E8A06A" BorderThickness="0,0,0,4"/>
-                        <TextBlock Text="Forge" FontWeight="SemiBold" FontSize="12" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Forge" FontWeight="SemiBold" FontSize="11" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                         <TextBlock Text="Dark" FontSize="10" Opacity="0.75" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Button>
@@ -131,9 +152,16 @@
                       ItemsSource="{x:Bind ViewModel.ThemeOptions}"
                       SelectedItem="{x:Bind ViewModel.Theme, Mode=TwoWay}"
                       HorizontalAlignment="Stretch"/>
-            <TextBlock Text="{x:Bind ViewModel.ThemePreviewHint, Mode=OneWay}"
+            <TextBlock x:Name="ThemeHintText"
+                       Text="{x:Bind ViewModel.ThemePreviewHint, Mode=OneWay}"
                        Style="{StaticResource UplinkMutedTextStyle}"
-                       TextWrapping="Wrap"/>
+                       TextWrapping="WrapWholeWords"
+                       HorizontalAlignment="Stretch"/>
+            <TextBlock x:Name="ThemeHelpText"
+                       Text="Orbit follows the system. Daybreak and Nightwatch are the warm-tech light and dark shells. Harbor is a cooler dockside light; Forge is a charcoal workshop dark."
+                       Style="{StaticResource UplinkMutedTextStyle}"
+                       TextWrapping="WrapWholeWords"
+                       HorizontalAlignment="Stretch"/>
 
             <TextBlock Text="Defaults"
                        Style="{StaticResource UplinkDialogTitleStyle}"
@@ -155,8 +183,10 @@
             <TextBlock Text="AI (BYOK)"
                        Style="{StaticResource UplinkDialogTitleStyle}"
                        Margin="0,8,0,0"/>
-            <TextBlock Style="{StaticResource UplinkMutedTextStyle}"
-                       TextWrapping="Wrap"
+            <TextBlock x:Name="AiBlurbText"
+                       Style="{StaticResource UplinkMutedTextStyle}"
+                       TextWrapping="WrapWholeWords"
+                       HorizontalAlignment="Stretch"
                        Text="No API key is embedded. Paste a Gemini, OpenAI, or Anthropic key — stored in Windows Credential Locker only. Without a key, Assist uses on-device heuristics. Gemini default model: gemini-2.0-flash."/>
             <ComboBox Header="Provider"
                       FontFamily="{StaticResource UplinkUiFont}"
@@ -179,13 +209,17 @@
             <CheckBox Content="Clear stored AI API key on Save"
                       FontFamily="{StaticResource UplinkUiFont}"
                       IsChecked="{x:Bind ViewModel.ClearAiApiKey, Mode=TwoWay}"/>
-            <TextBlock Style="{StaticResource UplinkMutedTextStyle}"
-                       Text="{x:Bind ViewModel.AiKeyStatusText, Mode=OneWay}"
-                       TextWrapping="Wrap"/>
-
-            <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+            <TextBlock x:Name="AiKeyStatusText"
                        Style="{StaticResource UplinkMutedTextStyle}"
-                       TextWrapping="Wrap"/>
+                       Text="{x:Bind ViewModel.AiKeyStatusText, Mode=OneWay}"
+                       TextWrapping="WrapWholeWords"
+                       HorizontalAlignment="Stretch"/>
+
+            <TextBlock x:Name="StatusText"
+                       Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                       Style="{StaticResource UplinkMutedTextStyle}"
+                       TextWrapping="WrapWholeWords"
+                       HorizontalAlignment="Stretch"/>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
