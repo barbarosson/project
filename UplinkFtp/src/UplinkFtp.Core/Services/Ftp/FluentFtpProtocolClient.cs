@@ -112,14 +112,20 @@ public sealed class FluentFtpProtocolClient : IRemoteProtocolClient
 
     public async Task<IReadOnlyList<RemoteEntry>> ListDirectoryAsync(
         string remotePath,
+        RemoteListOptions? options = null,
         CancellationToken cancellationToken = default)
     {
+        options ??= RemoteListOptions.Default;
         var client = RequireClient();
         var path = RemotePath.Normalize(remotePath);
-        var items = await client.GetListing(path, cancellationToken).ConfigureAwait(false);
+        var listOpts = options.IncludeHidden
+            ? FtpListOption.AllFiles | FtpListOption.ForceList
+            : FtpListOption.Auto;
+        var items = await client.GetListing(path, listOpts, cancellationToken).ConfigureAwait(false);
 
         return items
             .Where(i => i.Name is not ("." or ".."))
+            .Where(i => options.IncludeHidden || !i.Name.StartsWith(".", StringComparison.Ordinal))
             .Select(i => new RemoteEntry
             {
                 Name = i.Name,
@@ -128,7 +134,10 @@ public sealed class FluentFtpProtocolClient : IRemoteProtocolClient
                     : RemotePath.Normalize(i.FullName),
                 IsDirectory = i.Type == FtpObjectType.Directory,
                 Size = i.Type == FtpObjectType.Directory ? 0 : i.Size,
-                ModifiedUtc = i.Modified == default ? null : DateTime.SpecifyKind(i.Modified, DateTimeKind.Utc)
+                ModifiedUtc = i.Modified == default ? null : DateTime.SpecifyKind(i.Modified, DateTimeKind.Utc),
+                IsSymlink = i.Type == FtpObjectType.Link,
+                LinkTarget = i.LinkTarget,
+                UnixMode = ToUnixMode(i)
             })
             .OrderByDescending(e => e.IsDirectory)
             .ThenBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
@@ -256,7 +265,6 @@ public sealed class FluentFtpProtocolClient : IRemoteProtocolClient
         var ok = await client.MoveFile(from, to, FtpRemoteExists.Overwrite, cancellationToken).ConfigureAwait(false);
         if (!ok)
         {
-            // Directories (or some servers) need MoveDirectory / Rename.
             ok = await client.MoveDirectory(from, to, FtpRemoteExists.Overwrite, cancellationToken)
                 .ConfigureAwait(false);
         }
@@ -264,6 +272,162 @@ public sealed class FluentFtpProtocolClient : IRemoteProtocolClient
         if (!ok)
         {
             throw new IOException($"FluentFTP rename/move failed: '{from}' → '{to}'.");
+        }
+    }
+
+    public async Task CreateDirectoryAsync(string remotePath, CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        await client.CreateDirectory(RemotePath.Normalize(remotePath), force: true, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task CreateEmptyFileAsync(string remotePath, CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        var remote = RemotePath.Normalize(remotePath);
+        if (await client.FileExists(remote, cancellationToken).ConfigureAwait(false))
+        {
+            throw new IOException($"Remote path already exists: {remote}");
+        }
+
+        var status = await client.UploadBytes(
+                [],
+                remote,
+                FtpRemoteExists.Skip,
+                createRemoteDir: true,
+                progress: null,
+                token: cancellationToken)
+            .ConfigureAwait(false);
+        if (status == FtpStatus.Failed)
+        {
+            throw new IOException($"FluentFTP create file failed for '{remote}'.");
+        }
+    }
+
+    public async Task DeleteFileAsync(string remotePath, CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        await client.DeleteFile(RemotePath.Normalize(remotePath), cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task DeleteDirectoryAsync(string remotePath, CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        await client.DeleteDirectory(
+                RemotePath.Normalize(remotePath),
+                FtpListOption.Recursive,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task SetPermissionsAsync(
+        string remotePath,
+        UnixFilePermissions permissions,
+        CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        await client.SetFilePermissions(
+                RemotePath.Normalize(remotePath),
+                permissions.Mode,
+                cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<UnixFilePermissions?> GetPermissionsAsync(
+        string remotePath,
+        CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        try
+        {
+            var mode = await client.GetChmod(RemotePath.Normalize(remotePath), cancellationToken)
+                .ConfigureAwait(false);
+            return mode < 0 ? null : new UnixFilePermissions(mode);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
+
+    public async Task<DirectorySizeResult> CalculateDirectorySizeAsync(
+        string remotePath,
+        IProgress<DirectorySizeResult>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        var path = RemotePath.Normalize(remotePath);
+        long total = 0;
+        var files = 0;
+        var dirs = 0;
+        var stack = new Stack<string>();
+        stack.Push(path);
+        var client = RequireClient();
+        while (stack.Count > 0)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var current = stack.Pop();
+            dirs++;
+            var items = await client.GetListing(current, FtpListOption.AllFiles, cancellationToken)
+                .ConfigureAwait(false);
+            foreach (var item in items)
+            {
+                if (item.Name is "." or "..")
+                {
+                    continue;
+                }
+
+                if (item.Type == FtpObjectType.Directory)
+                {
+                    stack.Push(string.IsNullOrWhiteSpace(item.FullName)
+                        ? RemotePath.Combine(current, item.Name)
+                        : RemotePath.Normalize(item.FullName));
+                }
+                else if (item.Type == FtpObjectType.File)
+                {
+                    files++;
+                    total += item.Size;
+                }
+            }
+
+            progress?.Report(new DirectorySizeResult
+            {
+                Path = path,
+                TotalBytes = total,
+                FileCount = files,
+                DirectoryCount = dirs
+            });
+        }
+
+        var result = new DirectorySizeResult
+        {
+            Path = path,
+            TotalBytes = total,
+            FileCount = files,
+            DirectoryCount = dirs
+        };
+        progress?.Report(result);
+        return result;
+    }
+
+    private static int? ToUnixMode(FtpListItem item)
+    {
+        try
+        {
+            // FluentFTP exposes chmod-style special permissions on some listings.
+            var owner = (int)item.OwnerPermissions;
+            var group = (int)item.GroupPermissions;
+            var others = (int)item.OthersPermissions;
+            if (owner == 0 && group == 0 && others == 0)
+            {
+                return null;
+            }
+
+            return (owner << 6) | (group << 3) | others;
+        }
+        catch
+        {
+            return null;
         }
     }
 

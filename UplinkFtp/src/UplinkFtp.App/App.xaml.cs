@@ -70,6 +70,8 @@ public partial class App : Application
             new UplinkFtp.Services.Transfer.TransferQueueService(
                 sp.GetRequiredService<UplinkFtp.Services.Ftp.IFtpService>(),
                 sp.GetRequiredService<ILicenseService>()));
+        services.AddSingleton<UplinkFtp.Services.Browse.IDirectoryCompareService,
+            UplinkFtp.Services.Browse.DirectoryCompareService>();
 
         services.AddTransient<LocalBrowserViewModel>();
         services.AddTransient<RemoteBrowserViewModel>();

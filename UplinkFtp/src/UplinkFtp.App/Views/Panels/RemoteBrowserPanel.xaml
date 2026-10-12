@@ -50,6 +50,7 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <TextBox x:Name="PathBox"
                      FontFamily="{StaticResource UplinkUiFont}"
@@ -58,14 +59,22 @@
                      IsEnabled="{Binding IsConnected}"
                      Margin="0,0,6,0"
                      KeyDown="PathBox_KeyDown"/>
-            <Button Grid.Column="1"
+            <CheckBox Grid.Column="1"
+                      Content="Hidden"
+                      FontFamily="{StaticResource UplinkUiFont}"
+                      IsChecked="{Binding ShowHiddenFiles, Mode=TwoWay}"
+                      IsEnabled="{Binding IsConnected}"
+                      VerticalAlignment="Center"
+                      Margin="0,0,8,0"
+                      ToolTipService.ToolTip="Show dotfiles and hidden entries"/>
+            <Button Grid.Column="2"
                     Content="Up"
                     Style="{StaticResource UplinkNavButtonStyle}"
                     Command="{Binding NavigateUpCommand}"
                     IsEnabled="{Binding IsConnected}"
                     Margin="0,0,6,0"
                     ToolTipService.ToolTip="Parent folder"/>
-            <Button Grid.Column="2"
+            <Button Grid.Column="3"
                     Content="Refresh"
                     Style="{StaticResource UplinkNavButtonStyle}"
                     Command="{Binding RefreshCommand}"
@@ -109,13 +118,15 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="72"/>
                     <ColumnDefinition Width="100"/>
-                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="120"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="Name" Style="{StaticResource UplinkMutedTextStyle}"/>
                 <TextBlock Grid.Column="1" Text="Kind" Style="{StaticResource UplinkMutedTextStyle}"/>
-                <TextBlock Grid.Column="2" Text="Size" Style="{StaticResource UplinkMutedTextStyle}"/>
-                <TextBlock Grid.Column="3" Text="Modified" Style="{StaticResource UplinkMutedTextStyle}"/>
+                <TextBlock Grid.Column="2" Text="Diff" Style="{StaticResource UplinkMutedTextStyle}"/>
+                <TextBlock Grid.Column="3" Text="Size" Style="{StaticResource UplinkMutedTextStyle}"/>
+                <TextBlock Grid.Column="4" Text="Modified" Style="{StaticResource UplinkMutedTextStyle}"/>
             </Grid>
 
             <ListView x:Name="FileList"
@@ -132,29 +143,27 @@
                       Drop="DropTarget_Drop"
                       DoubleTapped="FileList_DoubleTapped"
                       RightTapped="FileList_RightTapped">
-                <ListView.ContextFlyout>
-                    <MenuFlyout>
-                        <MenuFlyoutItem Text="AI Quick Edit…"
-                                        Click="QuickEditMenu_Click"/>
-                        <MenuFlyoutItem Text="Download"
-                                        Click="DownloadSelected_Click"/>
-                    </MenuFlyout>
-                </ListView.ContextFlyout>
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:BrowserItemViewModel">
                         <Grid Padding="0,3">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="72"/>
                                 <ColumnDefinition Width="100"/>
-                                <ColumnDefinition Width="140"/>
+                                <ColumnDefinition Width="120"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="{x:Bind Name}"
                                        Style="{StaticResource UplinkBodyTextStyle}"
-                                       TextTrimming="CharacterEllipsis"/>
+                                       TextTrimming="CharacterEllipsis"
+                                       ToolTipService.ToolTip="{x:Bind ModeDisplay}"/>
                             <TextBlock Grid.Column="1" Text="{x:Bind Kind}" Style="{StaticResource UplinkMutedTextStyle}"/>
-                            <TextBlock Grid.Column="2" Text="{x:Bind SizeDisplay}" Style="{StaticResource UplinkBodyTextStyle}"/>
-                            <TextBlock Grid.Column="3" Text="{x:Bind ModifiedDisplay}" Style="{StaticResource UplinkMutedTextStyle}"/>
+                            <TextBlock Grid.Column="2"
+                                       Text="{x:Bind CompareLabel, Mode=OneWay}"
+                                       Style="{StaticResource UplinkStatusSignalStyle}"
+                                       FontSize="12"/>
+                            <TextBlock Grid.Column="3" Text="{x:Bind SizeDisplay}" Style="{StaticResource UplinkBodyTextStyle}"/>
+                            <TextBlock Grid.Column="4" Text="{x:Bind ModifiedDisplay}" Style="{StaticResource UplinkMutedTextStyle}"/>
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>

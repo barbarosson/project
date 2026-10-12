@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -9,6 +11,7 @@ using UplinkFtp.Helpers;
 using UplinkFtp.Models.Dto;
 using UplinkFtp.Models.Entities;
 using UplinkFtp.Models.Enums;
+using UplinkFtp.Services.Browse;
 using UplinkFtp.Services.Ftp;
 using UplinkFtp.Services.Licensing;
 using UplinkFtp.Services.Persistence;
@@ -26,11 +29,15 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly ITransferQueueService _transferQueue;
     private readonly ISiteRepository _sites;
     private readonly AppSettings _settings;
+    private readonly IDirectoryCompareService _compare;
     private readonly WebLicenseService? _webLicense;
     private readonly DispatcherQueue _dispatcher;
 
     private string? _privateKeyPath;
     private string? _pendingRemotePath;
+    private bool _syncNavigating;
+    private string? _lastLocalPath;
+    private string? _lastRemotePath;
 
     public LocalBrowserViewModel LocalBrowser { get; }
 
@@ -41,6 +48,15 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public TransferQueueViewModel TransferQueue { get; }
 
     public string[] ProtocolOptions { get; } = ["FTP", "FTPS", "SFTP"];
+
+    public string[] ConflictActionLabels { get; } =
+    [
+        "Overwrite",
+        "Skip",
+        "If newer",
+        "Rename",
+        "Resume"
+    ];
 
     /// <summary>Raised when Site Manager dialog should open.</summary>
     public event EventHandler? OpenSiteManagerRequested;
@@ -91,12 +107,22 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private string _statusText = "Ready";
 
+    [ObservableProperty]
+    private bool _synchronizedBrowsing;
+
+    [ObservableProperty]
+    private string _selectedConflictAction = "Overwrite";
+
+    [ObservableProperty]
+    private bool _hasCompareResults;
+
     public MainViewModel(
         IFtpService ftpService,
         ILicenseService licenseService,
         ITransferQueueService transferQueue,
         ISiteRepository sites,
         AppSettings settings,
+        IDirectoryCompareService compare,
         LocalBrowserViewModel localBrowser,
         RemoteBrowserViewModel remoteBrowser,
         LogViewModel log,
@@ -107,6 +133,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _transferQueue = transferQueue;
         _sites = sites;
         _settings = settings;
+        _compare = compare;
         _webLicense = licenseService as WebLicenseService;
         LocalBrowser = localBrowser;
         RemoteBrowser = remoteBrowser;
@@ -119,6 +146,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         SelectedProtocol = FormatProtocolLabel(settings.DefaultProtocol);
 
         _transferQueue.JobUpdated += OnTransferJobUpdated;
+        LocalBrowser.Navigated += OnLocalNavigated;
+        RemoteBrowser.Navigated += OnRemoteNavigated;
 
         StatusText =
             $"{_licenseService.Channel} · {_licenseService.GetCurrentTier()} · sites≤{FormatLimit(_licenseService.GetMaxSavedSites())} · conn≤{FormatLimit(_licenseService.GetMaxConcurrentConnections())} · xfer≤{FormatLimit(_licenseService.GetMaxConcurrentTransfers())}";
@@ -138,7 +167,42 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public void Dispose()
     {
         _transferQueue.JobUpdated -= OnTransferJobUpdated;
+        LocalBrowser.Navigated -= OnLocalNavigated;
+        RemoteBrowser.Navigated -= OnRemoteNavigated;
         TransferQueue.Dispose();
+    }
+
+    public TransferConflictPolicy CurrentConflictPolicy => new()
+    {
+        Action = ParseConflictAction(SelectedConflictAction)
+    };
+
+    [RelayCommand]
+    private void CompareDirectories()
+    {
+        if (!IsConnected)
+        {
+            Log.Warn("Connect before comparing directories.");
+            return;
+        }
+
+        var rows = _compare.Compare(LocalBrowser.GetFingerprints(), RemoteBrowser.GetFingerprints());
+        var map = rows.ToDictionary(r => r.Name, r => r.Status, StringComparer.OrdinalIgnoreCase);
+        LocalBrowser.ApplyCompare(map);
+        RemoteBrowser.ApplyCompare(map);
+        HasCompareResults = rows.Any(r => r.Status != DirectoryCompareStatus.Same);
+        var diffs = rows.Count(r => r.Status != DirectoryCompareStatus.Same);
+        Log.Info(diffs == 0
+            ? "Compare: directories match (size/date)."
+            : $"Compare: {diffs} difference(s) highlighted.");
+    }
+
+    [RelayCommand]
+    private void ClearCompare()
+    {
+        LocalBrowser.ClearCompare();
+        RemoteBrowser.ClearCompare();
+        HasCompareResults = false;
     }
 
     public async Task InitializeAsync()
@@ -327,8 +391,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
 
         var remotePath = RemotePath.Combine(RemoteBrowser.CurrentPath, item.Name);
-        TransferQueue.EnqueueUpload(item.FullPath, remotePath, item.IsDirectory);
-        Log.Info($"Queued upload {item.Name} → {remotePath}");
+        TransferQueue.EnqueueUpload(item.FullPath, remotePath, item.IsDirectory, CurrentConflictPolicy);
+        Log.Info($"Queued upload {item.Name} → {remotePath} ({SelectedConflictAction})");
     }
 
     /// <summary>Button fallback: download the selected remote item to the current local folder.</summary>
@@ -347,8 +411,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
 
         var localPath = Path.Combine(LocalBrowser.CurrentPath, item.Name);
-        TransferQueue.EnqueueDownload(item.FullPath, localPath, item.IsDirectory);
-        Log.Info($"Queued download {item.Name} → {localPath}");
+        TransferQueue.EnqueueDownload(item.FullPath, localPath, item.IsDirectory, CurrentConflictPolicy);
+        Log.Info($"Queued download {item.Name} → {localPath} ({SelectedConflictAction})");
     }
 
     private Task HandleDropAsync(string? dragText, bool targetIsRemote)
@@ -375,8 +439,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             }
 
             var remotePath = RemotePath.Combine(RemoteBrowser.CurrentPath, payload.Name);
-            TransferQueue.EnqueueUpload(payload.FullPath, remotePath, payload.IsDirectory);
-            Log.Info($"Queued upload {payload.Name} → {remotePath}");
+            TransferQueue.EnqueueUpload(payload.FullPath, remotePath, payload.IsDirectory, CurrentConflictPolicy);
+            Log.Info($"Queued upload {payload.Name} → {remotePath} ({SelectedConflictAction})");
         }
         else
         {
@@ -393,8 +457,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             }
 
             var localPath = Path.Combine(LocalBrowser.CurrentPath, payload.Name);
-            TransferQueue.EnqueueDownload(payload.FullPath, localPath, payload.IsDirectory);
-            Log.Info($"Queued download {payload.Name} → {localPath}");
+            TransferQueue.EnqueueDownload(payload.FullPath, localPath, payload.IsDirectory, CurrentConflictPolicy);
+            Log.Info($"Queued download {payload.Name} → {localPath} ({SelectedConflictAction})");
         }
 
         return Task.CompletedTask;
@@ -486,6 +550,187 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
     }
 
+    private void OnLocalNavigated(object? sender, string path)
+    {
+        if (!SynchronizedBrowsing || _syncNavigating || !IsConnected)
+        {
+            _lastLocalPath = path;
+            return;
+        }
+
+        var previous = _lastLocalPath;
+        _lastLocalPath = path;
+        _ = MirrorLocalToRemoteAsync(previous, path);
+    }
+
+    private void OnRemoteNavigated(object? sender, string path)
+    {
+        if (!SynchronizedBrowsing || _syncNavigating)
+        {
+            _lastRemotePath = path;
+            return;
+        }
+
+        var previous = _lastRemotePath;
+        _lastRemotePath = path;
+        _ = MirrorRemoteToLocalAsync(previous, path);
+    }
+
+    private async Task MirrorLocalToRemoteAsync(string? previousLocal, string localPath)
+    {
+        _syncNavigating = true;
+        try
+        {
+            if (IsParentOf(previousLocal, localPath))
+            {
+                await RemoteBrowser.NavigateUpCommand.ExecuteAsync(null).ConfigureAwait(true);
+                return;
+            }
+
+            var entered = TryGetEnteredName(previousLocal, localPath);
+            if (entered is null)
+            {
+                return;
+            }
+
+            var match = RemoteBrowser.Items.FirstOrDefault(i =>
+                !i.IsParentLink
+                && i.IsDirectory
+                && string.Equals(i.Name, entered, StringComparison.OrdinalIgnoreCase));
+            if (match is not null)
+            {
+                await RemoteBrowser.OpenItemCommand.ExecuteAsync(match).ConfigureAwait(true);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warn($"Sync browse: {ex.Message}");
+        }
+        finally
+        {
+            _syncNavigating = false;
+            _lastRemotePath = RemoteBrowser.CurrentPath;
+        }
+    }
+
+    private async Task MirrorRemoteToLocalAsync(string? previousRemote, string remotePath)
+    {
+        _syncNavigating = true;
+        try
+        {
+            if (IsRemoteParentOf(previousRemote, remotePath))
+            {
+                await LocalBrowser.NavigateUpCommand.ExecuteAsync(null).ConfigureAwait(true);
+                return;
+            }
+
+            var entered = TryGetEnteredRemoteName(previousRemote, remotePath);
+            if (entered is null)
+            {
+                return;
+            }
+
+            var match = LocalBrowser.Items.FirstOrDefault(i =>
+                !i.IsParentLink
+                && i.IsDirectory
+                && string.Equals(i.Name, entered, StringComparison.OrdinalIgnoreCase));
+            if (match is not null)
+            {
+                await LocalBrowser.OpenItemCommand.ExecuteAsync(match).ConfigureAwait(true);
+            }
+        }
+        catch (Exception ex)
+        {
+            Log.Warn($"Sync browse: {ex.Message}");
+        }
+        finally
+        {
+            _syncNavigating = false;
+            _lastLocalPath = LocalBrowser.CurrentPath;
+        }
+    }
+
+    private static bool IsParentOf(string? previous, string current)
+    {
+        if (string.IsNullOrWhiteSpace(previous) || string.IsNullOrWhiteSpace(current))
+        {
+            return false;
+        }
+
+        try
+        {
+            var parent = Directory.GetParent(previous);
+            return parent is not null
+                   && string.Equals(parent.FullName, Path.GetFullPath(current), StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static bool IsRemoteParentOf(string? previous, string current)
+    {
+        if (string.IsNullOrWhiteSpace(previous) || string.IsNullOrWhiteSpace(current))
+        {
+            return false;
+        }
+
+        return string.Equals(RemotePath.GetDirectoryName(previous), RemotePath.Normalize(current), StringComparison.Ordinal);
+    }
+
+    private static string? TryGetEnteredName(string? previous, string current)
+    {
+        if (string.IsNullOrWhiteSpace(previous) || string.IsNullOrWhiteSpace(current))
+        {
+            return null;
+        }
+
+        try
+        {
+            var prev = Path.GetFullPath(previous).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var cur = Path.GetFullPath(current).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            if (!cur.StartsWith(prev + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                && !cur.StartsWith(prev + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            var relative = cur[prev.Length..].TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var segment = relative.Split([Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar], StringSplitOptions.RemoveEmptyEntries);
+            return segment.Length == 1 ? segment[0] : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string? TryGetEnteredRemoteName(string? previous, string current)
+    {
+        if (string.IsNullOrWhiteSpace(previous) || string.IsNullOrWhiteSpace(current))
+        {
+            return null;
+        }
+
+        var prev = RemotePath.Normalize(previous);
+        var cur = RemotePath.Normalize(current);
+        if (prev == "/")
+        {
+            var top = cur.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+            return top.Length == 1 ? top[0] : null;
+        }
+
+        if (!cur.StartsWith(prev + "/", StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var relative = cur[(prev.Length + 1)..];
+        var parts = relative.Split('/', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length == 1 ? parts[0] : null;
+    }
+
     private static string FormatProtocolLabel(RemoteProtocol protocol) => protocol switch
     {
         RemoteProtocol.Ftps => "FTPS",
@@ -498,5 +743,14 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         "FTPS" => RemoteProtocol.Ftps,
         "SFTP" => RemoteProtocol.Sftp,
         _ => RemoteProtocol.Ftp
+    };
+
+    private static TransferConflictAction ParseConflictAction(string label) => label switch
+    {
+        "Skip" => TransferConflictAction.Skip,
+        "If newer" => TransferConflictAction.OverwriteIfNewer,
+        "Rename" => TransferConflictAction.AutoRename,
+        "Resume" => TransferConflictAction.Resume,
+        _ => TransferConflictAction.Overwrite
     };
 }

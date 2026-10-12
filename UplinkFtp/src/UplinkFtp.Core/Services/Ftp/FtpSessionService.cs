@@ -117,8 +117,9 @@ public sealed class FtpSessionService : IFtpService
 
     public Task<IReadOnlyList<RemoteEntry>> ListDirectoryAsync(
         string remotePath,
+        RemoteListOptions? options = null,
         CancellationToken cancellationToken = default)
-        => WithConnectionAsync(c => c.ListDirectoryAsync(remotePath, cancellationToken), cancellationToken);
+        => WithConnectionAsync(c => c.ListDirectoryAsync(remotePath, options, cancellationToken), cancellationToken);
 
     public Task DownloadFileAsync(
         string remotePath,
@@ -192,6 +193,40 @@ public sealed class FtpSessionService : IFtpService
 
     public Task RenameAsync(string fromPath, string toPath, CancellationToken cancellationToken = default)
         => WithConnectionAsync(c => c.RenameAsync(fromPath, toPath, cancellationToken), cancellationToken);
+
+    public Task MoveAsync(string fromPath, string toPath, CancellationToken cancellationToken = default)
+        => RenameAsync(fromPath, toPath, cancellationToken);
+
+    public Task CreateDirectoryAsync(string remotePath, CancellationToken cancellationToken = default)
+        => WithConnectionAsync(c => c.CreateDirectoryAsync(remotePath, cancellationToken), cancellationToken);
+
+    public Task CreateEmptyFileAsync(string remotePath, CancellationToken cancellationToken = default)
+        => WithConnectionAsync(c => c.CreateEmptyFileAsync(remotePath, cancellationToken), cancellationToken);
+
+    public Task DeleteFileAsync(string remotePath, CancellationToken cancellationToken = default)
+        => WithConnectionAsync(c => c.DeleteFileAsync(remotePath, cancellationToken), cancellationToken);
+
+    public Task DeleteDirectoryAsync(string remotePath, CancellationToken cancellationToken = default)
+        => WithConnectionAsync(c => c.DeleteDirectoryAsync(remotePath, cancellationToken), cancellationToken);
+
+    public Task SetPermissionsAsync(
+        string remotePath,
+        UnixFilePermissions permissions,
+        CancellationToken cancellationToken = default)
+        => WithConnectionAsync(c => c.SetPermissionsAsync(remotePath, permissions, cancellationToken), cancellationToken);
+
+    public Task<UnixFilePermissions?> GetPermissionsAsync(
+        string remotePath,
+        CancellationToken cancellationToken = default)
+        => WithConnectionAsync(c => c.GetPermissionsAsync(remotePath, cancellationToken), cancellationToken);
+
+    public Task<DirectorySizeResult> CalculateDirectorySizeAsync(
+        string remotePath,
+        IProgress<DirectorySizeResult>? progress = null,
+        CancellationToken cancellationToken = default)
+        => WithConnectionAsync(
+            c => c.CalculateDirectorySizeAsync(remotePath, progress, cancellationToken),
+            cancellationToken);
 
     public Task<string> ReadTextFileAsync(string remotePath, CancellationToken cancellationToken = default)
         => WithConnectionAsync(c => c.ReadTextFileAsync(remotePath, cancellationToken), cancellationToken);

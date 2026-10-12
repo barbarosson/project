@@ -1,4 +1,5 @@
 using System;
+using UplinkFtp.Helpers;
 using UplinkFtp.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -22,6 +23,19 @@ public sealed partial class LocalBrowserPanel : UserControl
         _browser = browser;
         _shell = shell;
         DataContext = browser;
+        Loaded += OnLoadedOnce;
+    }
+
+    private void OnLoadedOnce(object sender, RoutedEventArgs e)
+    {
+        Loaded -= OnLoadedOnce;
+        if (_shell is null || _browser is null || XamlRoot is null)
+        {
+            return;
+        }
+
+        var menus = new BrowserContextMenuManager(_shell, XamlRoot);
+        FileList.ContextFlyout = menus.BuildLocalMenu(_browser);
     }
 
     private void PathBox_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -37,6 +51,15 @@ public sealed partial class LocalBrowserPanel : UserControl
         if (_browser is not null && FileList.SelectedItem is BrowserItemViewModel item)
         {
             _ = _browser.OpenItemCommand.ExecuteAsync(item);
+        }
+    }
+
+    private void FileList_RightTapped(object sender, RightTappedRoutedEventArgs e)
+    {
+        if (e.OriginalSource is FrameworkElement { DataContext: BrowserItemViewModel item }
+            && _browser is not null)
+        {
+            _browser.SelectedItem = item;
         }
     }
 

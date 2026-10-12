@@ -12,9 +12,12 @@ public sealed class TransferJob
 
     public string Source { get; init; } = string.Empty;
 
-    public string Destination { get; init; } = string.Empty;
+    /// <summary>May be rewritten by conflict AutoRename before transfer starts.</summary>
+    public string Destination { get; set; } = string.Empty;
 
     public bool IsDirectory { get; init; }
+
+    public TransferConflictPolicy ConflictPolicy { get; init; } = TransferConflictPolicy.Default;
 
     public string DisplayName { get; init; } = string.Empty;
 

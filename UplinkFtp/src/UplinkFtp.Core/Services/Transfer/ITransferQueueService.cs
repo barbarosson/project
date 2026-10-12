@@ -16,9 +16,17 @@ public interface ITransferQueueService
 
     IReadOnlyList<TransferJob> GetSnapshot();
 
-    TransferJob EnqueueUpload(string localPath, string remotePath, bool isDirectory);
+    TransferJob EnqueueUpload(
+        string localPath,
+        string remotePath,
+        bool isDirectory,
+        TransferConflictPolicy? conflictPolicy = null);
 
-    TransferJob EnqueueDownload(string remotePath, string localPath, bool isDirectory);
+    TransferJob EnqueueDownload(
+        string remotePath,
+        string localPath,
+        bool isDirectory,
+        TransferConflictPolicy? conflictPolicy = null);
 
     /// <summary>Cancels a running job and marks it Paused (keeps resume offset for files).</summary>
     bool Pause(Guid jobId);
