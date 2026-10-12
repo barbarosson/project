@@ -14,7 +14,7 @@ namespace FtpAi;
 
 /// <summary>
 /// Application entry point. Registers DI services and hosts the main window.
-/// ADIM 3: SQLite Site Manager persistence + PasswordVault/DPAPI credentials.
+/// ADIM 4: main UI shell ViewModels + panels.
 /// </summary>
 public partial class App : Application
 {
@@ -29,28 +29,24 @@ public partial class App : Application
         Services = ConfigureServices();
     }
 
-    /// <summary>
-    /// Builds the DI container.
-    /// </summary>
     private static IServiceProvider ConfigureServices()
     {
         var services = new ServiceCollection();
 
-        // Persistence — EF Core SQLite (EnsureCreated on launch)
         services.AddDbContextFactory<AppDbContext>(options =>
             options.UseSqlite(AppDatabasePaths.GetSqliteConnectionString()));
 
         services.AddSingleton<IDatabaseInitializer, DatabaseInitializer>();
         services.AddSingleton<ICredentialStore, WindowsCredentialStore>();
         services.AddSingleton<ISiteRepository, SiteRepository>();
-
-        // Protocol (ADIM 2)
         services.AddSingleton<IFtpService, FtpSessionService>();
-
-        // Licensing stub with Free-tier site-count hook
         services.AddSingleton<ILicenseService, LicenseServiceStub>();
 
-        // ViewModels / Views
+        // ADIM 4 ViewModels
+        services.AddTransient<LocalBrowserViewModel>();
+        services.AddTransient<RemoteBrowserViewModel>();
+        services.AddTransient<LogViewModel>();
+        services.AddTransient<TransferQueueViewModel>();
         services.AddTransient<MainViewModel>();
         services.AddTransient<MainWindow>();
 

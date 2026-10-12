@@ -6,7 +6,8 @@ Modern FileZilla alternative for Windows — WinUI 3 / Windows App SDK, MVVM, Fl
 
 - **ADIM 1:** solution skeleton, folders, NuGet, DI
 - **ADIM 2:** `IFtpService` with FluentFTP (FTP/FTPS) + SSH.NET (SFTP), list/upload/download (folder-aware), reconnect/keep-alive
-- **ADIM 3:** SQLite Site Manager persistence + PasswordVault/DPAPI credentials (no passwords in DB). No UI panels yet.
+- **ADIM 3:** SQLite Site Manager persistence + PasswordVault/DPAPI credentials (no passwords in DB)
+- **ADIM 4:** Main UI — quick connect, log, local/remote browsers, drag-drop upload/download, queue placeholder
 
 ## Requirements (Windows)
 
