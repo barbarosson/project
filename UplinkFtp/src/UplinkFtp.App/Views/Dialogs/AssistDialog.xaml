@@ -80,7 +80,7 @@
                                     MinWidth="0"/>
                             <Button Grid.Column="1"
                                     Content="Apply to Connect"
-                                    Style="{StaticResource AccentButtonStyle}"
+                                    Style="{StaticResource UplinkAccentButtonStyle}"
                                     FontFamily="{StaticResource UplinkUiFont}"
                                     Command="{x:Bind ViewModel.ApplyCommand}"
                                     HorizontalAlignment="Stretch"
@@ -112,7 +112,7 @@
                                     </StackPanel>
                                     <Button Grid.Column="1"
                                             Content="Solve with AI"
-                                            Style="{StaticResource AccentButtonStyle}"
+                                            Style="{StaticResource UplinkAccentButtonStyle}"
                                             FontFamily="{StaticResource UplinkUiFont}"
                                             Command="{x:Bind ViewModel.RefreshDiagnosisCommand}"
                                             VerticalAlignment="Top"
@@ -169,7 +169,7 @@
                                     MinWidth="0"/>
                             <Button Grid.Column="1"
                                     Content="Apply filter"
-                                    Style="{StaticResource AccentButtonStyle}"
+                                    Style="{StaticResource UplinkAccentButtonStyle}"
                                     FontFamily="{StaticResource UplinkUiFont}"
                                     Command="{x:Bind ViewModel.ApplySearchCommand}"
                                     HorizontalAlignment="Stretch"
@@ -229,7 +229,7 @@
                                             MinWidth="0"/>
                                     <Button Grid.Column="1"
                                             Content="Apply rename"
-                                            Style="{StaticResource AccentButtonStyle}"
+                                            Style="{StaticResource UplinkAccentButtonStyle}"
                                             FontFamily="{StaticResource UplinkUiFont}"
                                             Command="{x:Bind ViewModel.ApplyBatchRenameCommand}"
                                             HorizontalAlignment="Stretch"
@@ -269,7 +269,7 @@
                                             MinWidth="0"/>
                                     <Button Grid.Column="1"
                                             Content="Apply move"
-                                            Style="{StaticResource AccentButtonStyle}"
+                                            Style="{StaticResource UplinkAccentButtonStyle}"
                                             FontFamily="{StaticResource UplinkUiFont}"
                                             Command="{x:Bind ViewModel.ApplySmartMoveCommand}"
                                             HorizontalAlignment="Stretch"
@@ -339,7 +339,7 @@
                                            Style="{StaticResource UplinkMutedTextStyle}"
                                            TextWrapping="WrapWholeWords"/>
                                 <Button Content="Approve &amp; run"
-                                        Style="{StaticResource AccentButtonStyle}"
+                                        Style="{StaticResource UplinkAccentButtonStyle}"
                                         FontFamily="{StaticResource UplinkUiFont}"
                                         Command="{x:Bind ViewModel.ApproveSshCommand}"
                                         HorizontalAlignment="Stretch"
@@ -407,7 +407,7 @@
                                     MinWidth="0"/>
                             <Button Grid.Column="2"
                                     Content="Confirm upload"
-                                    Style="{StaticResource AccentButtonStyle}"
+                                    Style="{StaticResource UplinkAccentButtonStyle}"
                                     FontFamily="{StaticResource UplinkUiFont}"
                                     Command="{x:Bind ViewModel.ConfirmQuickEditUploadCommand}"
                                     HorizontalAlignment="Stretch"

@@ -406,6 +406,7 @@ public sealed class BrowserContextMenuManager
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = _xamlRoot
         };
+        ThemeHelper.ApplyToDialog(dialog);
 
         var result = await dialog.ShowAsync();
         if (result != ContentDialogResult.Primary)
@@ -428,6 +429,7 @@ public sealed class BrowserContextMenuManager
             DefaultButton = ContentDialogButton.Close,
             XamlRoot = _xamlRoot
         };
+        ThemeHelper.ApplyToDialog(dialog);
         return await dialog.ShowAsync() == ContentDialogResult.Primary;
     }
 
@@ -440,6 +442,7 @@ public sealed class BrowserContextMenuManager
             CloseButtonText = "OK",
             XamlRoot = _xamlRoot
         };
+        ThemeHelper.ApplyToDialog(dialog);
         await dialog.ShowAsync();
     }
 

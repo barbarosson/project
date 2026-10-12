@@ -125,6 +125,8 @@
     <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="{ThemeResource UplinkMutedTextColor}"/>
     <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="{ThemeResource UplinkBodyTextColor}"/>
     <SolidColorBrush x:Key="UplinkDividerBrush" Color="{ThemeResource UplinkDividerColor}"/>
+    <!-- Text on AccentButtons: white on teal/orange/red/blue; dark on ZEN silver. -->
+    <SolidColorBrush x:Key="UplinkAccentForegroundBrush" Color="#FFFFFFF2"/>
 
     <LinearGradientBrush x:Key="UplinkShellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
         <GradientStop Color="{ThemeResource UplinkShellTopColor}" Offset="0"/>

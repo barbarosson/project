@@ -58,6 +58,17 @@
         <Setter Property="CornerRadius" Value="10"/>
     </Style>
 
+    <!-- Uses UplinkAccentBrush so named themes (not system teal) drive primary CTAs. -->
+    <Style x:Key="UplinkAccentButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Setter Property="FontFamily" Value="{StaticResource UplinkUiFont}"/>
+        <Setter Property="Background" Value="{ThemeResource UplinkAccentBrush}"/>
+        <Setter Property="Foreground" Value="{ThemeResource UplinkAccentForegroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{ThemeResource UplinkAccentBrush}"/>
+        <Setter Property="Padding" Value="14,8"/>
+        <Setter Property="MinWidth" Value="78"/>
+        <Setter Property="CornerRadius" Value="10"/>
+    </Style>
+
     <Style x:Key="UplinkDialogTitleStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource UplinkDisplayFont}"/>
         <Setter Property="FontSize" Value="16"/>

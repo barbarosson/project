@@ -4,80 +4,145 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
-      Palette overlays for named themes. Brush keys match Colors.xaml so they
-      override when merged onto the shell root. Keep body/muted contrast readable
-      (near-black / off-white; avoid neon glare and washed gray-on-gray).
+      Full brush sets for named themes (shell + sections + text + scrollbars).
+      Applied to Application.Current.Resources so ContentDialogs and ThemeResource
+      styles see the active palette — not only RootGrid.
+      Each palette is chromatically exclusive (no teal bleed, no shared accent family).
     -->
 
-    <!-- Orange: orange accent on near-black. -->
+    <!-- Orange: orange + black only -->
     <ResourceDictionary x:Key="Orange">
         <x:String x:Key="UplinkThemePaletteId">Orange</x:String>
-        <SolidColorBrush x:Key="UplinkSectionFillBrush" Color="#241C16"/>
-        <SolidColorBrush x:Key="UplinkSectionStrokeBrush" Color="#4A3428"/>
-        <SolidColorBrush x:Key="UplinkAccentBrush" Color="#F97316"/>
-        <SolidColorBrush x:Key="UplinkAccentSoftBrush" Color="#3D2414"/>
-        <SolidColorBrush x:Key="UplinkBrandBrush" Color="#FDBA74"/>
-        <SolidColorBrush x:Key="UplinkSignalBrush" Color="#FB923C"/>
-        <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="#C9B2A0"/>
-        <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="#F7EFE7"/>
-        <SolidColorBrush x:Key="UplinkDividerBrush" Color="#5C4030"/>
+        <SolidColorBrush x:Key="UplinkSectionFillBrush" Color="#1F160E"/>
+        <SolidColorBrush x:Key="UplinkSectionStrokeBrush" Color="#5C3A18"/>
+        <SolidColorBrush x:Key="UplinkAccentBrush" Color="#FF7A00"/>
+        <SolidColorBrush x:Key="UplinkAccentForegroundBrush" Color="#0C0A08"/>
+        <SolidColorBrush x:Key="UplinkAccentSoftBrush" Color="#332010"/>
+        <SolidColorBrush x:Key="UplinkBrandBrush" Color="#FFB86B"/>
+        <SolidColorBrush x:Key="UplinkSignalBrush" Color="#FF9F1A"/>
+        <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="#D2B89A"/>
+        <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="#FFF3E6"/>
+        <SolidColorBrush x:Key="UplinkDividerBrush" Color="#6B4218"/>
         <LinearGradientBrush x:Key="UplinkShellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#14110E" Offset="0"/>
-            <GradientStop Color="#1C1612" Offset="1"/>
+            <GradientStop Color="#0C0A08" Offset="0"/>
+            <GradientStop Color="#16100A" Offset="1"/>
         </LinearGradientBrush>
+        <SolidColorBrush x:Key="ScrollBarThumbFill" Color="#FF7A00"/>
+        <SolidColorBrush x:Key="ScrollBarThumbFillPointerOver" Color="#FF9F1A"/>
+        <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="#FFB86B"/>
+        <SolidColorBrush x:Key="ScrollBarThumbFillDisabled" Color="#5C3A18"/>
+        <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="#FF7A00"/>
+        <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="#FF7A00"/>
+        <SolidColorBrush x:Key="ScrollBarTrackFill" Color="#1F160E"/>
+        <SolidColorBrush x:Key="ScrollBarTrackFillPointerOver" Color="#1F160E"/>
+        <SolidColorBrush x:Key="ScrollBarTrackFillDisabled" Color="#1F160E"/>
+        <SolidColorBrush x:Key="ScrollBarTrackStroke" Color="#5C3A18"/>
+        <SolidColorBrush x:Key="ScrollBarTrackStrokePointerOver" Color="#5C3A18"/>
+        <SolidColorBrush x:Key="ScrollBarBackground" Color="#1F160E"/>
+        <SolidColorBrush x:Key="ScrollBarBackgroundPointerOver" Color="#1F160E"/>
+        <SolidColorBrush x:Key="ScrollBarBorderBrush" Color="#5C3A18"/>
+        <SolidColorBrush x:Key="ScrollBarBorderBrushPointerOver" Color="#5C3A18"/>
     </ResourceDictionary>
 
-    <!-- Red Night: crimson accent on deep black-red. -->
+    <!-- Red Night: crimson + black only (not orange) -->
     <ResourceDictionary x:Key="RedNight">
         <x:String x:Key="UplinkThemePaletteId">RedNight</x:String>
-        <SolidColorBrush x:Key="UplinkSectionFillBrush" Color="#241418"/>
-        <SolidColorBrush x:Key="UplinkSectionStrokeBrush" Color="#4A2830"/>
-        <SolidColorBrush x:Key="UplinkAccentBrush" Color="#EF4444"/>
-        <SolidColorBrush x:Key="UplinkAccentSoftBrush" Color="#3A1418"/>
+        <SolidColorBrush x:Key="UplinkSectionFillBrush" Color="#1C0C10"/>
+        <SolidColorBrush x:Key="UplinkSectionStrokeBrush" Color="#5C1824"/>
+        <SolidColorBrush x:Key="UplinkAccentBrush" Color="#DC2626"/>
+        <SolidColorBrush x:Key="UplinkAccentForegroundBrush" Color="#FFF5F5"/>
+        <SolidColorBrush x:Key="UplinkAccentSoftBrush" Color="#2E0C12"/>
         <SolidColorBrush x:Key="UplinkBrandBrush" Color="#FCA5A5"/>
-        <SolidColorBrush x:Key="UplinkSignalBrush" Color="#F87171"/>
-        <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="#C9A8AE"/>
-        <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="#F7EAEA"/>
-        <SolidColorBrush x:Key="UplinkDividerBrush" Color="#5C3038"/>
+        <SolidColorBrush x:Key="UplinkSignalBrush" Color="#EF4444"/>
+        <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="#D4A8B0"/>
+        <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="#FFE8EC"/>
+        <SolidColorBrush x:Key="UplinkDividerBrush" Color="#6B2030"/>
         <LinearGradientBrush x:Key="UplinkShellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#120A0C" Offset="0"/>
-            <GradientStop Color="#1A0E12" Offset="1"/>
+            <GradientStop Color="#0A0608" Offset="0"/>
+            <GradientStop Color="#14080C" Offset="1"/>
         </LinearGradientBrush>
+        <SolidColorBrush x:Key="ScrollBarThumbFill" Color="#DC2626"/>
+        <SolidColorBrush x:Key="ScrollBarThumbFillPointerOver" Color="#EF4444"/>
+        <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="#FCA5A5"/>
+        <SolidColorBrush x:Key="ScrollBarThumbFillDisabled" Color="#5C1824"/>
+        <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="#DC2626"/>
+        <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="#DC2626"/>
+        <SolidColorBrush x:Key="ScrollBarTrackFill" Color="#1C0C10"/>
+        <SolidColorBrush x:Key="ScrollBarTrackFillPointerOver" Color="#1C0C10"/>
+        <SolidColorBrush x:Key="ScrollBarTrackFillDisabled" Color="#1C0C10"/>
+        <SolidColorBrush x:Key="ScrollBarTrackStroke" Color="#5C1824"/>
+        <SolidColorBrush x:Key="ScrollBarTrackStrokePointerOver" Color="#5C1824"/>
+        <SolidColorBrush x:Key="ScrollBarBackground" Color="#1C0C10"/>
+        <SolidColorBrush x:Key="ScrollBarBackgroundPointerOver" Color="#1C0C10"/>
+        <SolidColorBrush x:Key="ScrollBarBorderBrush" Color="#5C1824"/>
+        <SolidColorBrush x:Key="ScrollBarBorderBrushPointerOver" Color="#5C1824"/>
     </ResourceDictionary>
 
-    <!-- Sun Rise: soft yellow wash + sky-blue accent (light, readable). -->
+    <!-- Sun Rise: yellow + light blue only (light theme — no dark/orange/mono) -->
     <ResourceDictionary x:Key="SunRise">
         <x:String x:Key="UplinkThemePaletteId">SunRise</x:String>
-        <SolidColorBrush x:Key="UplinkSectionFillBrush" Color="#FFFCF5"/>
-        <SolidColorBrush x:Key="UplinkSectionStrokeBrush" Color="#C5D6E4"/>
-        <SolidColorBrush x:Key="UplinkAccentBrush" Color="#0284C7"/>
-        <SolidColorBrush x:Key="UplinkAccentSoftBrush" Color="#E0F2FE"/>
-        <SolidColorBrush x:Key="UplinkBrandBrush" Color="#0C4A6E"/>
-        <SolidColorBrush x:Key="UplinkSignalBrush" Color="#D97706"/>
-        <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="#475569"/>
-        <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="#1E293B"/>
-        <SolidColorBrush x:Key="UplinkDividerBrush" Color="#B8C9D8"/>
+        <SolidColorBrush x:Key="UplinkSectionFillBrush" Color="#FFFDF6"/>
+        <SolidColorBrush x:Key="UplinkSectionStrokeBrush" Color="#9DC4E0"/>
+        <SolidColorBrush x:Key="UplinkAccentBrush" Color="#0EA5E9"/>
+        <SolidColorBrush x:Key="UplinkAccentForegroundBrush" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="UplinkAccentSoftBrush" Color="#DDF4FF"/>
+        <SolidColorBrush x:Key="UplinkBrandBrush" Color="#075985"/>
+        <SolidColorBrush x:Key="UplinkSignalBrush" Color="#EAB308"/>
+        <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="#3D5A73"/>
+        <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="#0F2740"/>
+        <SolidColorBrush x:Key="UplinkDividerBrush" Color="#B7D4EA"/>
         <LinearGradientBrush x:Key="UplinkShellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#FFF6E0" Offset="0"/>
-            <GradientStop Color="#E8F4FC" Offset="1"/>
+            <GradientStop Color="#FFF4C8" Offset="0"/>
+            <GradientStop Color="#D6EEFC" Offset="1"/>
         </LinearGradientBrush>
+        <SolidColorBrush x:Key="ScrollBarThumbFill" Color="#0EA5E9"/>
+        <SolidColorBrush x:Key="ScrollBarThumbFillPointerOver" Color="#0284C7"/>
+        <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="#075985"/>
+        <SolidColorBrush x:Key="ScrollBarThumbFillDisabled" Color="#9DC4E0"/>
+        <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="#0EA5E9"/>
+        <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="#0EA5E9"/>
+        <SolidColorBrush x:Key="ScrollBarTrackFill" Color="#E8F6FD"/>
+        <SolidColorBrush x:Key="ScrollBarTrackFillPointerOver" Color="#E8F6FD"/>
+        <SolidColorBrush x:Key="ScrollBarTrackFillDisabled" Color="#E8F6FD"/>
+        <SolidColorBrush x:Key="ScrollBarTrackStroke" Color="#9DC4E0"/>
+        <SolidColorBrush x:Key="ScrollBarTrackStrokePointerOver" Color="#9DC4E0"/>
+        <SolidColorBrush x:Key="ScrollBarBackground" Color="#E8F6FD"/>
+        <SolidColorBrush x:Key="ScrollBarBackgroundPointerOver" Color="#E8F6FD"/>
+        <SolidColorBrush x:Key="ScrollBarBorderBrush" Color="#9DC4E0"/>
+        <SolidColorBrush x:Key="ScrollBarBorderBrushPointerOver" Color="#9DC4E0"/>
     </ResourceDictionary>
 
-    <!-- ZEN: calm near-black / off-white mono (not harsh #000/#FFF). -->
+    <!-- ZEN: black + white / grayscale only — no teal/orange/red -->
     <ResourceDictionary x:Key="ZEN">
         <x:String x:Key="UplinkThemePaletteId">ZEN</x:String>
-        <SolidColorBrush x:Key="UplinkSectionFillBrush" Color="#222222"/>
-        <SolidColorBrush x:Key="UplinkSectionStrokeBrush" Color="#3F3F46"/>
-        <SolidColorBrush x:Key="UplinkAccentBrush" Color="#E4E4E7"/>
-        <SolidColorBrush x:Key="UplinkAccentSoftBrush" Color="#2A2A2E"/>
+        <SolidColorBrush x:Key="UplinkSectionFillBrush" Color="#1E1E1E"/>
+        <SolidColorBrush x:Key="UplinkSectionStrokeBrush" Color="#525252"/>
+        <SolidColorBrush x:Key="UplinkAccentBrush" Color="#E5E5E5"/>
+        <SolidColorBrush x:Key="UplinkAccentForegroundBrush" Color="#121212"/>
+        <SolidColorBrush x:Key="UplinkAccentSoftBrush" Color="#2A2A2A"/>
         <SolidColorBrush x:Key="UplinkBrandBrush" Color="#FAFAFA"/>
-        <SolidColorBrush x:Key="UplinkSignalBrush" Color="#A1A1AA"/>
-        <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="#A1A1AA"/>
-        <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="#F4F4F5"/>
-        <SolidColorBrush x:Key="UplinkDividerBrush" Color="#3F3F46"/>
+        <SolidColorBrush x:Key="UplinkSignalBrush" Color="#A3A3A3"/>
+        <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="#A3A3A3"/>
+        <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="#F5F5F5"/>
+        <SolidColorBrush x:Key="UplinkDividerBrush" Color="#404040"/>
         <LinearGradientBrush x:Key="UplinkShellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#171717" Offset="0"/>
-            <GradientStop Color="#1C1C1E" Offset="1"/>
+            <GradientStop Color="#121212" Offset="0"/>
+            <GradientStop Color="#1A1A1A" Offset="1"/>
         </LinearGradientBrush>
+        <SolidColorBrush x:Key="ScrollBarThumbFill" Color="#D4D4D4"/>
+        <SolidColorBrush x:Key="ScrollBarThumbFillPointerOver" Color="#E5E5E5"/>
+        <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="#FAFAFA"/>
+        <SolidColorBrush x:Key="ScrollBarThumbFillDisabled" Color="#525252"/>
+        <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="#D4D4D4"/>
+        <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="#D4D4D4"/>
+        <SolidColorBrush x:Key="ScrollBarTrackFill" Color="#1E1E1E"/>
+        <SolidColorBrush x:Key="ScrollBarTrackFillPointerOver" Color="#1E1E1E"/>
+        <SolidColorBrush x:Key="ScrollBarTrackFillDisabled" Color="#1E1E1E"/>
+        <SolidColorBrush x:Key="ScrollBarTrackStroke" Color="#525252"/>
+        <SolidColorBrush x:Key="ScrollBarTrackStrokePointerOver" Color="#525252"/>
+        <SolidColorBrush x:Key="ScrollBarBackground" Color="#1E1E1E"/>
+        <SolidColorBrush x:Key="ScrollBarBackgroundPointerOver" Color="#1E1E1E"/>
+        <SolidColorBrush x:Key="ScrollBarBorderBrush" Color="#525252"/>
+        <SolidColorBrush x:Key="ScrollBarBorderBrushPointerOver" Color="#525252"/>
     </ResourceDictionary>
 </ResourceDictionary>

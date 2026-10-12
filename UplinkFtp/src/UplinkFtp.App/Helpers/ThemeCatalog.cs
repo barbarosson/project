@@ -76,10 +76,10 @@ public sealed record ThemePreviewCard(
 {
     public static ThemePreviewCard For(string name) => ThemeCatalog.MigrateLegacyName(name) switch
     {
-        "Orange" => new("Orange", "Orange + black · dark", "#1A1410", "#F97316", true),
-        "Red Night" => new("Red Night", "Red + black · dark", "#160A0E", "#EF4444", true),
-        "Sun Rise" => new("Sun Rise", "Yellow + sky · light", "#FFF6E0", "#0284C7", false),
-        "ZEN" => new("ZEN", "Black + white · calm", "#171717", "#E4E4E7", true),
-        _ => new("Orbit", "Follows your system", "#EEF4F6", "#0F766E", false)
+        "Orange" => new("Orange", "Orange + black · dark", "#0C0A08", "#FF7A00", true),
+        "Red Night" => new("Red Night", "Crimson + black · dark", "#0A0608", "#DC2626", true),
+        "Sun Rise" => new("Sun Rise", "Yellow + sky blue · light", "#FFF4C8", "#0EA5E9", false),
+        "ZEN" => new("ZEN", "Black + white · grayscale", "#121212", "#E5E5E5", true),
+        _ => new("Orbit", "Follows your system · warm-tech", "#EEF4F6", "#0F766E", false)
     };
 }

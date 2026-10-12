@@ -113,7 +113,7 @@
                               ToolTipService.ToolTip="Accept any FTPS certificate. Unsafe for production — only for self-signed lab servers."/>
                     <Button Grid.Column="6"
                             Content="Connect"
-                            Style="{StaticResource AccentButtonStyle}"
+                            Style="{StaticResource UplinkAccentButtonStyle}"
                             FontFamily="{StaticResource UplinkUiFont}"
                             Command="{x:Bind ViewModel.ConnectCommand}"
                             VerticalAlignment="Bottom"
