@@ -59,7 +59,7 @@
                       ItemsSource="{x:Bind ViewModel.ThemeOptions}"
                       SelectedItem="{x:Bind ViewModel.Theme, Mode=TwoWay}"
                       HorizontalAlignment="Stretch"/>
-            <TextBlock Text="Light, Dark, or System. Blocks keep the same teal/amber warm-tech palette in both themes."
+            <TextBlock Text="Orbit follows the system. Daybreak / Nightwatch are the warm-tech light and dark shells. Harbor is a cooler dockside light; Forge is a charcoal workshop dark."
                        Style="{StaticResource UplinkMutedTextStyle}"
                        TextWrapping="Wrap"/>
 

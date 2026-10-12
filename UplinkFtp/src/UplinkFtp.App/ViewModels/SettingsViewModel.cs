@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using UplinkFtp.Helpers;
 using UplinkFtp.Models.Enums;
 using UplinkFtp.Services.Ai;
 using UplinkFtp.Services.Privacy;
@@ -20,7 +21,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly ICredentialStore _credentials;
     private LogViewModel? _log;
 
-    public string[] ThemeOptions { get; } = ["System", "Light", "Dark"];
+    public string[] ThemeOptions { get; } = ThemeCatalog.DisplayNames;
 
     public string[] ProtocolOptions { get; } = ["FTP", "FTPS", "SFTP"];
 
@@ -40,7 +41,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private double _retryDelaySeconds = 1;
 
     [ObservableProperty]
-    private string _theme = "System";
+    private string _theme = ThemeCatalog.DefaultThemeName;
 
     [ObservableProperty]
     private string _defaultProtocol = "FTP";
@@ -102,7 +103,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         ReadTimeoutSeconds = Math.Clamp(_settings.ReadTimeout.TotalSeconds, 1, 3600);
         RetryCount = Math.Clamp(_settings.RetryCount, 0, 20);
         RetryDelaySeconds = Math.Clamp(_settings.RetryDelay.TotalSeconds, 0, 120);
-        Theme = string.IsNullOrWhiteSpace(_settings.Theme) ? "System" : _settings.Theme;
+        Theme = ThemeCatalog.MigrateLegacyName(_settings.Theme);
         DefaultProtocol = _settings.DefaultProtocol switch
         {
             RemoteProtocol.Ftps => "FTPS",
@@ -144,7 +145,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         _settings.ReadTimeout = TimeSpan.FromSeconds(Math.Clamp(ReadTimeoutSeconds, 1, 3600));
         _settings.RetryCount = (int)Math.Clamp(RetryCount, 0, 20);
         _settings.RetryDelay = TimeSpan.FromSeconds(Math.Clamp(RetryDelaySeconds, 0, 120));
-        _settings.Theme = ThemeOptions.Contains(Theme) ? Theme : "System";
+        _settings.Theme = ThemeCatalog.IsKnown(Theme) ? ThemeCatalog.MigrateLegacyName(Theme) : ThemeCatalog.DefaultThemeName;
         _settings.DefaultProtocol = DefaultProtocol.ToUpperInvariant() switch
         {
             "FTPS" => RemoteProtocol.Ftps,

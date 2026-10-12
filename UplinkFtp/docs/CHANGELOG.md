@@ -21,12 +21,13 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 - `AcceptAnyCertificate` defaults to false  
 - **Windows App SDK 1.6 → 2.5.1** (NuGet stable); BuildTools → `10.0.26100.9169`  
 - Unpackaged builds use `WindowsAppSDKSelfContained=true` (no EOL 1.6 Runtime install)  
-- **UI shell redesign:** sectioned blocks (connect / log / local·remote / queue), Light·Dark·System theme via Settings, Sora + JetBrains Mono, warm-tech teal/amber palette  
+- **UI shell redesign:** sectioned blocks (connect / log / local·remote / queue), five named themes (Orbit / Daybreak / Nightwatch / Harbor / Forge), Sora + JetBrains Mono, warm-tech teal/amber palette  
 
 ### Added (UI)
 
 - `Themes/Colors.xaml`, `Themes/Styles.xaml`, `Helpers/ThemeHelper.cs`  
 - Embedded fonts under `Assets/Fonts/` (Sora, JetBrains Mono)  
+- **Named themes (5):** Orbit, Daybreak, Nightwatch, Harbor, Forge (**Settings → Theme**; legacy System/Light/Dark migrate automatically)  
 - **AI Assist** hub (toolbar **Assist**): five tabs — Troubleshoot, Search, Batch, SSH, Quick Edit  
 - Message log **Solve with AI**; Local/Remote NL **Filter**; Remote **AI Quick Edit** context menu  
 - Protocol ops for AI apply paths: `RenameAsync`, `ReadTextFileAsync`, `WriteTextFileAsync`, `ExecuteShellCommandAsync` (SFTP)  

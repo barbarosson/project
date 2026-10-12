@@ -15,8 +15,11 @@ public sealed class AppSettings
 
     public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(1);
 
-    /// <summary>System, Light, or Dark.</summary>
-    public string Theme { get; set; } = "System";
+    /// <summary>
+    /// Named appearance: Orbit, Daybreak, Nightwatch, Harbor, Forge.
+    /// Legacy System/Light/Dark values are migrated by ThemeCatalog.
+    /// </summary>
+    public string Theme { get; set; } = "Orbit";
 
     public RemoteProtocol DefaultProtocol { get; set; } = RemoteProtocol.Ftp;
 
