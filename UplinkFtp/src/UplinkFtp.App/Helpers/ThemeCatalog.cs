@@ -50,7 +50,7 @@ public static class ThemeCatalog
 
     private static readonly ThemeProfile[] Profiles =
     [
-        // Follows the OS light/dark setting (default Colors.xaml light blue + gray).
+        // Follows the OS light/dark setting (default Colors.xaml soft cool daylight).
         new("Orbit", ElementTheme.Default, PaletteKey: null),
         // Orange + black.
         new("Orange", ElementTheme.Dark, PaletteKey: "Orange"),
@@ -80,6 +80,6 @@ public sealed record ThemePreviewCard(
         "Red Night" => new("Red Night", "Crimson + black · dark", "#0A0608", "#DC2626", true),
         "Sun Rise" => new("Sun Rise", "Yellow + sky blue · light", "#FFF4C8", "#0EA5E9", false),
         "ZEN" => new("ZEN", "Black + white · grayscale", "#121212", "#E5E5E5", true),
-        _ => new("Orbit", "Follows your system · light blue + gray", "#E8EEF5", "#2563EB", false)
+        _ => new("Orbit", "Follows your system · soft cool daylight", "#E9F0F7", "#2F6F9F", false)
     };
 }
