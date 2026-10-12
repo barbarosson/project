@@ -198,6 +198,18 @@ public sealed class TransferQueueLoadTests
         public Task<IConnectionLease> OpenTransferClientAsync(CancellationToken cancellationToken = default)
             => throw new NotSupportedException();
 
+        public Task RenameAsync(string fromPath, string toPath, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task<string> ReadTextFileAsync(string remotePath, CancellationToken cancellationToken = default)
+            => Task.FromResult(string.Empty);
+
+        public Task WriteTextFileAsync(string remotePath, string content, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task<string> ExecuteShellCommandAsync(string command, CancellationToken cancellationToken = default)
+            => Task.FromException<string>(new NotSupportedException());
+
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
         private async Task WorkAsync(

@@ -50,6 +50,48 @@ public sealed partial class RemoteBrowserPanel : UserControl
         _shell.EnqueueSelectedDownload(_browser.SelectedItem);
     }
 
+    private void QuickEditSelected_Click(object sender, RoutedEventArgs e)
+        => RequestQuickEdit();
+
+    private void QuickEditMenu_Click(object sender, RoutedEventArgs e)
+        => RequestQuickEdit();
+
+    private void FileList_RightTapped(object sender, RightTappedRoutedEventArgs e)
+    {
+        if (e.OriginalSource is FrameworkElement { DataContext: BrowserItemViewModel item })
+        {
+            if (_browser is not null)
+            {
+                _browser.SelectedItem = item;
+            }
+        }
+    }
+
+    private void AiSearchBox_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == Windows.System.VirtualKey.Enter && _browser is not null)
+        {
+            _ = _browser.ApplyAiSearchCommand.ExecuteAsync(null);
+        }
+    }
+
+    private void RequestQuickEdit()
+    {
+        if (_shell is null || _browser?.SelectedItem is null)
+        {
+            return;
+        }
+
+        var item = _browser.SelectedItem;
+        if (item.IsDirectory || item.IsParentLink)
+        {
+            _shell.Log.Warn("AI Quick Edit works on remote text files.");
+            return;
+        }
+
+        _shell.RequestAssistQuickEdit(item.FullPath);
+    }
+
     private void FileList_DragItemsStarting(object sender, DragItemsStartingEventArgs e)
     {
         if (e.Items.Count == 0 || e.Items[0] is not BrowserItemViewModel item || item.IsParentLink)

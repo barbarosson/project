@@ -27,8 +27,10 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 
 - `Themes/Colors.xaml`, `Themes/Styles.xaml`, `Helpers/ThemeHelper.cs`  
 - Embedded fonts under `Assets/Fonts/` (Sora, JetBrains Mono)  
-- **AI Assist** dialog (toolbar **Assist**): URI parse + `IAiAssistantService` troubleshoot  
-- **AI module scaffold:** BYOK Settings (Credential Locker `ai.apiKey`), `LocalAiAssistantService` + `CloudAiAssistantService`, checklist `docs/ai-module-checklist.md`, Cursor rule `.cursor/rules/uplink-ftp-ai-module.mdc`  
+- **AI Assist** hub (toolbar **Assist**): five tabs — Troubleshoot, Search, Batch, SSH, Quick Edit  
+- Message log **Solve with AI**; Local/Remote NL **Filter**; Remote **AI Quick Edit** context menu  
+- Protocol ops for AI apply paths: `RenameAsync`, `ReadTextFileAsync`, `WriteTextFileAsync`, `ExecuteShellCommandAsync` (SFTP)  
+- **AI module:** BYOK Settings (Credential Locker `ai.apiKey`), `LocalAiAssistantService` + `CloudAiAssistantService`, `AiFileFilterMatcher`, checklist `docs/ai-module-checklist.md`, Cursor rule `.cursor/rules/uplink-ftp-ai-module.mdc`  
 - App logo: `Assets/UplinkLogo.png`, `Assets/UplinkFtp.ico` (exe / taskbar / Store tile assets)  
 
 ### Fixed

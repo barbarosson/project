@@ -187,6 +187,18 @@ public sealed class FtpSessionService : IFtpService
         return await _pool.LeaseAsync(options, cancellationToken).ConfigureAwait(false);
     }
 
+    public Task RenameAsync(string fromPath, string toPath, CancellationToken cancellationToken = default)
+        => WithConnectionAsync(c => c.RenameAsync(fromPath, toPath, cancellationToken), cancellationToken);
+
+    public Task<string> ReadTextFileAsync(string remotePath, CancellationToken cancellationToken = default)
+        => WithConnectionAsync(c => c.ReadTextFileAsync(remotePath, cancellationToken), cancellationToken);
+
+    public Task WriteTextFileAsync(string remotePath, string content, CancellationToken cancellationToken = default)
+        => WithConnectionAsync(c => c.WriteTextFileAsync(remotePath, content, cancellationToken), cancellationToken);
+
+    public Task<string> ExecuteShellCommandAsync(string command, CancellationToken cancellationToken = default)
+        => WithConnectionAsync(c => c.ExecuteShellCommandAsync(command, cancellationToken), cancellationToken);
+
     public async ValueTask DisposeAsync()
     {
         await DisconnectAsync().ConfigureAwait(false);

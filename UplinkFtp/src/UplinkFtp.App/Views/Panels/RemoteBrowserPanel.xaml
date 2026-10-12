@@ -15,6 +15,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -22,9 +23,19 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock Text="Remote site" Style="{StaticResource UplinkSectionTitleStyle}" Margin="0"/>
             <Button Grid.Column="1"
+                    Content="AI Quick Edit"
+                    Style="{StaticResource UplinkNavButtonStyle}"
+                    Click="QuickEditSelected_Click"
+                    IsEnabled="{Binding IsConnected}"
+                    ToolTipService.ToolTip="Open AI Quick Edit for the selected remote text file"
+                    MinWidth="0"
+                    Padding="12,6"
+                    Margin="0,0,6,0"/>
+            <Button Grid.Column="2"
                     Content="← Download"
                     Style="{StaticResource UplinkNavButtonStyle}"
                     Click="DownloadSelected_Click"
@@ -34,7 +45,7 @@
                     Padding="12,6"/>
         </Grid>
 
-        <Grid Grid.Row="1" Margin="0,8,0,8">
+        <Grid Grid.Row="1" Margin="0,8,0,4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -61,10 +72,38 @@
                     IsEnabled="{Binding IsConnected}"/>
         </Grid>
 
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="2" Margin="0,0,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox FontFamily="{StaticResource UplinkUiFont}"
+                     Text="{Binding AiSearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     PlaceholderText="AI search: ZIP &gt; 50MB containing backup…"
+                     IsEnabled="{Binding IsConnected}"
+                     Margin="0,0,6,0"
+                     KeyDown="AiSearchBox_KeyDown"/>
+            <Button Grid.Column="1"
+                    Content="Filter"
+                    Style="{StaticResource UplinkNavButtonStyle}"
+                    Command="{Binding ApplyAiSearchCommand}"
+                    IsEnabled="{Binding IsConnected}"
+                    Margin="0,0,6,0"
+                    ToolTipService.ToolTip="Apply natural-language filter to this listing"/>
+            <Button Grid.Column="2"
+                    Content="Clear"
+                    Style="{StaticResource UplinkNavButtonStyle}"
+                    Command="{Binding ClearAiFilterCommand}"
+                    IsEnabled="{Binding HasAiFilter}"
+                    ToolTipService.ToolTip="Clear AI filter"/>
+        </Grid>
+
+        <Grid Grid.Row="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid Margin="4,0,4,6">
                 <Grid.ColumnDefinitions>
@@ -91,7 +130,16 @@
                       DragItemsStarting="FileList_DragItemsStarting"
                       DragOver="DropTarget_DragOver"
                       Drop="DropTarget_Drop"
-                      DoubleTapped="FileList_DoubleTapped">
+                      DoubleTapped="FileList_DoubleTapped"
+                      RightTapped="FileList_RightTapped">
+                <ListView.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="AI Quick Edit…"
+                                        Click="QuickEditMenu_Click"/>
+                        <MenuFlyoutItem Text="Download"
+                                        Click="DownloadSelected_Click"/>
+                    </MenuFlyout>
+                </ListView.ContextFlyout>
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:BrowserItemViewModel">
                         <Grid Padding="0,3">
@@ -111,6 +159,11 @@
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+            <TextBlock Grid.Row="2"
+                       Margin="4,4,4,0"
+                       Text="{Binding AiFilterStatus}"
+                       Style="{StaticResource UplinkMutedTextStyle}"
+                       TextTrimming="CharacterEllipsis"/>
         </Grid>
     </Grid>
 </UserControl>

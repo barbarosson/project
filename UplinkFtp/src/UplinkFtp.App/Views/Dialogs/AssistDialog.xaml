@@ -12,87 +12,313 @@
     MinWidth="520"
     FontFamily="{StaticResource UplinkUiFont}">
 
-    <ScrollViewer MaxHeight="560"
-                  VerticalScrollBarVisibility="Visible"
-                  HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Spacing="14" MinWidth="460" Padding="0,4,0,0">
-            <TextBlock Text="Smart connection helper"
+    <Grid MinWidth="460" MaxHeight="580">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Spacing="4" Margin="0,0,0,8">
+            <TextBlock Text="Five AI capabilities"
                        Style="{StaticResource UplinkDialogTitleStyle}"/>
             <TextBlock Style="{StaticResource UplinkMutedTextStyle}"
                        TextWrapping="Wrap"
-                       Text="IAiAssistantService: URI parse + Solve with AI (log troubleshoot). BYOK keys live in Credential Locker — Settings → AI."/>
-            <TextBlock Style="{StaticResource UplinkMutedTextStyle}"
-                       Text="{x:Bind ViewModel.AiModeText, Mode=OneWay}"
-                       TextWrapping="Wrap"/>
-
-            <TextBox Header="Paste URI or host:port"
-                     FontFamily="{StaticResource UplinkUiFont}"
-                     Text="{x:Bind ViewModel.ConnectionText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                     PlaceholderText="sftp://barba@127.0.0.1:22/"
-                     AcceptsReturn="False"/>
-            <TextBlock Text="{x:Bind ViewModel.ParseSummary, Mode=OneWay}"
-                       Style="{StaticResource UplinkMutedTextStyle}"
-                       TextWrapping="Wrap"/>
-
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="8"/>
-                    <ColumnDefinition Width="1.4*"/>
-                    <ColumnDefinition Width="8"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Button Grid.Column="0"
-                        Content="Parse"
-                        Style="{StaticResource UplinkNavButtonStyle}"
-                        Command="{x:Bind ViewModel.ParseCommand}"
-                        HorizontalAlignment="Stretch"
-                        MinWidth="0"/>
-                <Button Grid.Column="2"
-                        Content="Apply to Connect"
-                        Style="{StaticResource AccentButtonStyle}"
-                        FontFamily="{StaticResource UplinkUiFont}"
-                        Command="{x:Bind ViewModel.ApplyCommand}"
-                        HorizontalAlignment="Stretch"
-                        MinWidth="0"
-                        CornerRadius="10"/>
-                <Button Grid.Column="4"
-                        Content="Default port"
-                        Style="{StaticResource UplinkNavButtonStyle}"
-                        Command="{x:Bind ViewModel.SuggestPortsCommand}"
-                        ToolTipService.ToolTip="Set Connect port from the selected protocol"
-                        HorizontalAlignment="Stretch"
-                        MinWidth="0"/>
-            </Grid>
-
-            <Border Style="{StaticResource UplinkSectionBorderStyle}" Margin="0" Padding="12,10">
-                <StackPanel Spacing="8">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="{x:Bind ViewModel.DiagnosisTitle, Mode=OneWay}"
-                                   Style="{StaticResource UplinkDialogTitleStyle}"
-                                   Margin="0"/>
-                        <Button Grid.Column="1"
-                                Content="Refresh"
-                                Style="{StaticResource UplinkNavButtonStyle}"
-                                Command="{x:Bind ViewModel.RefreshDiagnosisCommand}"
-                                MinWidth="88"/>
-                    </Grid>
-                    <TextBlock Text="{x:Bind ViewModel.DiagnosisAdvice, Mode=OneWay}"
-                               Style="{StaticResource UplinkBodyTextStyle}"
-                               TextWrapping="Wrap"/>
-                    <TextBlock Text="{x:Bind ViewModel.DiagnosisSteps, Mode=OneWay}"
-                               Style="{StaticResource UplinkMutedTextStyle}"
-                               TextWrapping="Wrap"/>
-                </StackPanel>
-            </Border>
-
-            <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
-                       Style="{StaticResource UplinkMutedTextStyle}"
-                       TextWrapping="Wrap"/>
+                       Text="{x:Bind ViewModel.AiModeText, Mode=OneWay}"/>
         </StackPanel>
-    </ScrollViewer>
+
+        <Pivot Grid.Row="1"
+               SelectedIndex="{x:Bind ViewModel.SelectedTabIndex, Mode=TwoWay}">
+            <!-- 1 Troubleshoot + URI -->
+            <PivotItem Header="Troubleshoot">
+                <ScrollViewer MaxHeight="420"
+                              VerticalScrollBarVisibility="Visible"
+                              HorizontalScrollBarVisibility="Disabled"
+                              Padding="0,8,0,0">
+                    <StackPanel Spacing="12">
+                        <TextBox Header="Paste URI or host:port"
+                                 FontFamily="{StaticResource UplinkUiFont}"
+                                 Text="{x:Bind ViewModel.ConnectionText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 PlaceholderText="sftp://barba@127.0.0.1:22/"
+                                 AcceptsReturn="False"/>
+                        <TextBlock Text="{x:Bind ViewModel.ParseSummary, Mode=OneWay}"
+                                   Style="{StaticResource UplinkMutedTextStyle}"
+                                   TextWrapping="Wrap"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="1.4*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0"
+                                    Content="Parse"
+                                    Style="{StaticResource UplinkNavButtonStyle}"
+                                    Command="{x:Bind ViewModel.ParseCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    MinWidth="0"/>
+                            <Button Grid.Column="2"
+                                    Content="Apply to Connect"
+                                    Style="{StaticResource AccentButtonStyle}"
+                                    FontFamily="{StaticResource UplinkUiFont}"
+                                    Command="{x:Bind ViewModel.ApplyCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    MinWidth="0"
+                                    CornerRadius="10"/>
+                            <Button Grid.Column="4"
+                                    Content="Default port"
+                                    Style="{StaticResource UplinkNavButtonStyle}"
+                                    Command="{x:Bind ViewModel.SuggestPortsCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    MinWidth="0"/>
+                        </Grid>
+
+                        <Border Style="{StaticResource UplinkSectionBorderStyle}" Margin="0" Padding="12,10">
+                            <StackPanel Spacing="8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{x:Bind ViewModel.DiagnosisTitle, Mode=OneWay}"
+                                               Style="{StaticResource UplinkDialogTitleStyle}"
+                                               Margin="0"/>
+                                    <Button Grid.Column="1"
+                                            Content="Solve with AI"
+                                            Style="{StaticResource AccentButtonStyle}"
+                                            FontFamily="{StaticResource UplinkUiFont}"
+                                            Command="{x:Bind ViewModel.RefreshDiagnosisCommand}"
+                                            MinWidth="120"
+                                            CornerRadius="10"/>
+                                </Grid>
+                                <TextBlock Text="{x:Bind ViewModel.DiagnosisAdvice, Mode=OneWay}"
+                                           Style="{StaticResource UplinkBodyTextStyle}"
+                                           TextWrapping="Wrap"/>
+                                <TextBlock Text="{x:Bind ViewModel.DiagnosisSteps, Mode=OneWay}"
+                                           Style="{StaticResource UplinkMutedTextStyle}"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </PivotItem>
+
+            <!-- 2 NL search -->
+            <PivotItem Header="Search">
+                <ScrollViewer MaxHeight="420" VerticalScrollBarVisibility="Visible" Padding="0,8,0,0">
+                    <StackPanel Spacing="12">
+                        <TextBlock Style="{StaticResource UplinkMutedTextStyle}"
+                                   TextWrapping="Wrap"
+                                   Text="Natural-language filter for the current Local or Remote listing (not a recursive server search)."/>
+                        <TextBox Header="Query"
+                                 FontFamily="{StaticResource UplinkUiFont}"
+                                 Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 MinHeight="64"/>
+                        <ComboBox Header="Target"
+                                  ItemsSource="{x:Bind ViewModel.SearchTargets}"
+                                  SelectedItem="{x:Bind ViewModel.SearchTarget, Mode=TwoWay}"
+                                  HorizontalAlignment="Stretch"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Content="Parse"
+                                    Style="{StaticResource UplinkNavButtonStyle}"
+                                    Command="{x:Bind ViewModel.ParseSearchCommand}"
+                                    HorizontalAlignment="Stretch"/>
+                            <Button Grid.Column="2"
+                                    Content="Apply filter"
+                                    Style="{StaticResource AccentButtonStyle}"
+                                    FontFamily="{StaticResource UplinkUiFont}"
+                                    Command="{x:Bind ViewModel.ApplySearchCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    CornerRadius="10"/>
+                        </Grid>
+                        <TextBlock Text="{x:Bind ViewModel.SearchResultText, Mode=OneWay}"
+                                   Style="{StaticResource UplinkBodyTextStyle}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </PivotItem>
+
+            <!-- 3 Batch -->
+            <PivotItem Header="Batch">
+                <ScrollViewer MaxHeight="420" VerticalScrollBarVisibility="Visible" Padding="0,8,0,0">
+                    <StackPanel Spacing="12">
+                        <TextBlock Style="{StaticResource UplinkMutedTextStyle}"
+                                   TextWrapping="Wrap"
+                                   Text="Batch rename and smart move against the current remote listing. Preview is required before apply."/>
+                        <TextBox Header="Natural-language rule"
+                                 FontFamily="{StaticResource UplinkUiFont}"
+                                 Text="{x:Bind ViewModel.BatchRule, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Text="{x:Bind ViewModel.BatchPreviewText, Mode=OneWay}"
+                                   Style="{StaticResource UplinkMutedTextStyle}"
+                                   TextWrapping="Wrap"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Content="Preview rename"
+                                    Style="{StaticResource UplinkNavButtonStyle}"
+                                    Command="{x:Bind ViewModel.PreviewBatchRenameCommand}"
+                                    HorizontalAlignment="Stretch"/>
+                            <Button Grid.Column="2"
+                                    Content="Apply rename"
+                                    Style="{StaticResource AccentButtonStyle}"
+                                    FontFamily="{StaticResource UplinkUiFont}"
+                                    Command="{x:Bind ViewModel.ApplyBatchRenameCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    CornerRadius="10"/>
+                        </Grid>
+                        <ListView ItemsSource="{x:Bind ViewModel.RenamePreviewLines}"
+                                  MaxHeight="100"
+                                  SelectionMode="None"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Content="Preview move"
+                                    Style="{StaticResource UplinkNavButtonStyle}"
+                                    Command="{x:Bind ViewModel.PreviewSmartMoveCommand}"
+                                    HorizontalAlignment="Stretch"/>
+                            <Button Grid.Column="2"
+                                    Content="Apply move"
+                                    Style="{StaticResource AccentButtonStyle}"
+                                    FontFamily="{StaticResource UplinkUiFont}"
+                                    Command="{x:Bind ViewModel.ApplySmartMoveCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    CornerRadius="10"/>
+                        </Grid>
+                        <ListView ItemsSource="{x:Bind ViewModel.MovePreviewLines}"
+                                  MaxHeight="100"
+                                  SelectionMode="None"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </PivotItem>
+
+            <!-- 4 SSH -->
+            <PivotItem Header="SSH">
+                <ScrollViewer MaxHeight="420" VerticalScrollBarVisibility="Visible" Padding="0,8,0,0">
+                    <StackPanel Spacing="12">
+                        <TextBlock Style="{StaticResource UplinkMutedTextStyle}"
+                                   TextWrapping="Wrap"
+                                   Text="SFTP only. Propose a shell command, then approve explicitly — never auto-run."/>
+                        <TextBox Header="Request"
+                                 FontFamily="{StaticResource UplinkUiFont}"
+                                 Text="{x:Bind ViewModel.SshRequest, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 MinHeight="56"
+                                 IsEnabled="{x:Bind ViewModel.IsSshAvailable, Mode=OneWay}"/>
+                        <Button Content="Propose command"
+                                Style="{StaticResource UplinkNavButtonStyle}"
+                                Command="{x:Bind ViewModel.ProposeSshCommand}"
+                                HorizontalAlignment="Stretch"
+                                IsEnabled="{x:Bind ViewModel.IsSshAvailable, Mode=OneWay}"/>
+                        <TextBox Header="Proposed command"
+                                 FontFamily="{StaticResource UplinkMonoFont}"
+                                 Text="{x:Bind ViewModel.SshProposedCommand, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 MinHeight="56"
+                                 IsReadOnly="False"/>
+                        <TextBlock Text="{x:Bind ViewModel.SshExplanation, Mode=OneWay}"
+                                   Style="{StaticResource UplinkMutedTextStyle}"
+                                   TextWrapping="Wrap"/>
+                        <Button Content="Approve &amp; run"
+                                Style="{StaticResource AccentButtonStyle}"
+                                FontFamily="{StaticResource UplinkUiFont}"
+                                Command="{x:Bind ViewModel.ApproveSshCommand}"
+                                HorizontalAlignment="Stretch"
+                                CornerRadius="10"
+                                IsEnabled="{x:Bind ViewModel.IsSshAvailable, Mode=OneWay}"/>
+                        <TextBox Header="Output"
+                                 FontFamily="{StaticResource UplinkMonoFont}"
+                                 Text="{x:Bind ViewModel.SshOutput, Mode=OneWay}"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 MinHeight="80"
+                                 IsReadOnly="True"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </PivotItem>
+
+            <!-- 5 Quick Edit -->
+            <PivotItem Header="Quick Edit">
+                <ScrollViewer MaxHeight="420" VerticalScrollBarVisibility="Visible" Padding="0,8,0,0">
+                    <StackPanel Spacing="12">
+                        <TextBlock Style="{StaticResource UplinkMutedTextStyle}"
+                                   TextWrapping="Wrap"
+                                   Text="Load a remote text config, propose an NL edit, confirm before upload."/>
+                        <TextBox Header="Remote path"
+                                 FontFamily="{StaticResource UplinkUiFont}"
+                                 Text="{x:Bind ViewModel.QuickEditPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 PlaceholderText="/.htaccess"/>
+                        <TextBox Header="Instruction"
+                                 FontFamily="{StaticResource UplinkUiFont}"
+                                 Text="{x:Bind ViewModel.QuickEditInstruction, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Content="Load"
+                                    Style="{StaticResource UplinkNavButtonStyle}"
+                                    Command="{x:Bind ViewModel.LoadQuickEditCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    MinWidth="0"/>
+                            <Button Grid.Column="2"
+                                    Content="Propose"
+                                    Style="{StaticResource UplinkNavButtonStyle}"
+                                    Command="{x:Bind ViewModel.ProposeQuickEditCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    MinWidth="0"/>
+                            <Button Grid.Column="4"
+                                    Content="Confirm upload"
+                                    Style="{StaticResource AccentButtonStyle}"
+                                    FontFamily="{StaticResource UplinkUiFont}"
+                                    Command="{x:Bind ViewModel.ConfirmQuickEditUploadCommand}"
+                                    HorizontalAlignment="Stretch"
+                                    MinWidth="0"
+                                    CornerRadius="10"/>
+                        </Grid>
+                        <TextBlock Text="{x:Bind ViewModel.QuickEditSummary, Mode=OneWay}"
+                                   Style="{StaticResource UplinkMutedTextStyle}"
+                                   TextWrapping="Wrap"/>
+                        <TextBox Header="Original"
+                                 FontFamily="{StaticResource UplinkMonoFont}"
+                                 Text="{x:Bind ViewModel.QuickEditOriginal, Mode=OneWay}"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 MinHeight="72"
+                                 IsReadOnly="True"/>
+                        <TextBox Header="Proposed"
+                                 FontFamily="{StaticResource UplinkMonoFont}"
+                                 Text="{x:Bind ViewModel.QuickEditProposed, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 MinHeight="72"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </PivotItem>
+        </Pivot>
+
+        <TextBlock Grid.Row="2"
+                   Margin="0,8,0,0"
+                   Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                   Style="{StaticResource UplinkMutedTextStyle}"
+                   TextWrapping="Wrap"/>
+    </Grid>
 </ContentDialog>

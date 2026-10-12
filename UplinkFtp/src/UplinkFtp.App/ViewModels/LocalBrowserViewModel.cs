@@ -6,11 +6,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using UplinkFtp.Services.Ai;
 
 namespace UplinkFtp.ViewModels;
 
 public sealed partial class LocalBrowserViewModel : ObservableObject
 {
+    private readonly IAiAssistantService _ai;
+    private List<BrowserItemViewModel> _fullListing = [];
+
     public ObservableCollection<BrowserItemViewModel> Items { get; } = [];
 
     public ObservableCollection<string> RootPaths { get; } = [];
@@ -24,8 +28,19 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
     [ObservableProperty]
     private string _statusMessage = "Local";
 
-    public LocalBrowserViewModel()
+    [ObservableProperty]
+    private string _aiSearchQuery = string.Empty;
+
+    [ObservableProperty]
+    private string _aiFilterStatus = string.Empty;
+
+    [ObservableProperty]
+    private bool _hasAiFilter;
+
+    public LocalBrowserViewModel(IAiAssistantService ai)
     {
+        _ai = ai;
+
         try
         {
             foreach (var drive in DriveInfo.GetDrives().Where(d => d.IsReady))
@@ -61,6 +76,7 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
             {
                 StatusMessage = "Path not found";
                 Items.Clear();
+                _fullListing = [];
                 return;
             }
 
@@ -70,20 +86,25 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
                 CurrentPath = path;
             }
 
-            var entries = await Task.Run(() => BuildListing(path)).ConfigureAwait(true);
+            _fullListing = await Task.Run(() => BuildListing(path)).ConfigureAwait(true);
 
-            Items.Clear();
-            foreach (var item in entries)
+            if (HasAiFilter && !string.IsNullOrWhiteSpace(AiSearchQuery))
             {
-                Items.Add(item);
+                var filter = await _ai.ParseSearchQueryAsync(AiSearchQuery).ConfigureAwait(true);
+                await ApplyAiFilterAsync(filter).ConfigureAwait(true);
             }
-
-            StatusMessage = $"{Items.Count(i => !i.IsParentLink)} items";
+            else
+            {
+                ReplaceItems(_fullListing);
+                StatusMessage = $"{Items.Count(i => !i.IsParentLink)} items";
+                AiFilterStatus = string.Empty;
+            }
         }
         catch (Exception ex)
         {
             StatusMessage = ex.Message;
             Items.Clear();
+            _fullListing = [];
         }
     }
 
@@ -125,6 +146,57 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
 
         CurrentPath = root;
         await RefreshAsync().ConfigureAwait(false);
+    }
+
+    [RelayCommand]
+    private async Task ApplyAiSearchAsync()
+    {
+        if (_fullListing.Count == 0)
+        {
+            await RefreshAsync().ConfigureAwait(true);
+        }
+
+        var filter = await _ai.ParseSearchQueryAsync(AiSearchQuery).ConfigureAwait(true);
+        var count = await ApplyAiFilterAsync(filter).ConfigureAwait(true);
+        AiFilterStatus = count == 0
+            ? (string.IsNullOrWhiteSpace(filter.Explanation) ? "No matches." : filter.Explanation)
+            : $"AI filter: {count} file(s)";
+    }
+
+    [RelayCommand]
+    private void ClearAiFilter()
+    {
+        HasAiFilter = false;
+        AiFilterStatus = string.Empty;
+        if (_fullListing.Count > 0)
+        {
+            ReplaceItems(_fullListing);
+            StatusMessage = $"{Items.Count(i => !i.IsParentLink)} items";
+        }
+    }
+
+    public Task<int> ApplyAiFilterAsync(AiFileFilter filter)
+    {
+        HasAiFilter = true;
+        var parents = _fullListing.Where(i => i.IsParentLink);
+        var matches = _fullListing.Where(i =>
+            !i.IsParentLink
+            && AiFileFilterMatcher.Matches(i.Name, i.IsDirectory, i.Size, i.ModifiedUtc, filter));
+        var view = parents.Concat(matches).ToList();
+        ReplaceItems(view);
+        var count = view.Count(i => !i.IsParentLink);
+        StatusMessage = $"{count} filtered";
+        AiFilterStatus = filter.Explanation;
+        return Task.FromResult(count);
+    }
+
+    private void ReplaceItems(IEnumerable<BrowserItemViewModel> items)
+    {
+        Items.Clear();
+        foreach (var item in items)
+        {
+            Items.Add(item);
+        }
     }
 
     private static List<BrowserItemViewModel> BuildListing(string path)

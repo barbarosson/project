@@ -52,6 +52,12 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     /// <summary>Raised when AI Assist dialog should open.</summary>
     public event EventHandler? OpenAssistRequested;
 
+    /// <summary>Optional Assist pivot index (0 Troubleshoot … 4 Quick Edit).</summary>
+    public int AssistInitialTabIndex { get; private set; }
+
+    /// <summary>Optional remote path for Quick Edit when Assist opens.</summary>
+    public string? AssistQuickEditPath { get; private set; }
+
     /// <summary>Raised after <see cref="ApplySite"/> so the PasswordBox can sync.</summary>
     public event EventHandler? CredentialsApplied;
 
@@ -189,7 +195,26 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private void OpenLicense() => OpenLicenseRequested?.Invoke(this, EventArgs.Empty);
 
     [RelayCommand]
-    private void OpenAssist() => OpenAssistRequested?.Invoke(this, EventArgs.Empty);
+    private void OpenAssist()
+    {
+        AssistInitialTabIndex = 0;
+        AssistQuickEditPath = null;
+        OpenAssistRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void RequestAssistTroubleshoot()
+    {
+        AssistInitialTabIndex = 0;
+        AssistQuickEditPath = null;
+        OpenAssistRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void RequestAssistQuickEdit(string remotePath)
+    {
+        AssistInitialTabIndex = 4;
+        AssistQuickEditPath = remotePath;
+        OpenAssistRequested?.Invoke(this, EventArgs.Empty);
+    }
 
     [RelayCommand]
     private async Task ConnectAsync()
