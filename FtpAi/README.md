@@ -2,9 +2,10 @@
 
 Modern FileZilla alternative for Windows — WinUI 3 / Windows App SDK, MVVM, FluentFTP, SSH.NET, EF Core + SQLite.
 
-## ADIM 1 status
+## Status
 
-Solution skeleton only: project layout, NuGet packages, DI wiring, and stub services. No FTP UI or transfer logic yet.
+- **ADIM 1:** solution skeleton, folders, NuGet, DI
+- **ADIM 2:** `IFtpService` with FluentFTP (FTP/FTPS) + SSH.NET (SFTP), list/upload/download (folder-aware), reconnect/keep-alive. No UI panels yet.
 
 ## Requirements (Windows)
 

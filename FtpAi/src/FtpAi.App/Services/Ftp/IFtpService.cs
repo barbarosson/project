@@ -1,21 +1,59 @@
+using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using FtpAi.Models.Dto;
 
 namespace FtpAi.Services.Ftp;
 
 /// <summary>
-/// Abstraction over FTP / FTPS / SFTP sessions.
-/// Real FluentFTP + SSH.NET implementations land in ADIM 2.
+/// Unified FTP / FTPS / SFTP session API for ViewModels.
+/// Protocol details live behind FluentFTP and SSH.NET protocol clients.
 /// </summary>
-public interface IFtpService
+public interface IFtpService : IAsyncDisposable
 {
-    /// <summary>Display name for diagnostics / status bar.</summary>
+    /// <summary>Active protocol display name (e.g. FluentFTP / SSH.NET SFTP).</summary>
     string Name { get; }
 
-    /// <summary>Whether a remote session is currently open.</summary>
     bool IsConnected { get; }
 
-    Task ConnectAsync(CancellationToken cancellationToken = default);
+    /// <summary>Last successful connection options (password retained in-process for reconnect).</summary>
+    ConnectionOptions? ActiveConnection { get; }
+
+    Task ConnectAsync(ConnectionOptions options, CancellationToken cancellationToken = default);
 
     Task DisconnectAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Verifies the session; reconnects with <see cref="ActiveConnection"/> when dropped.
+    /// </summary>
+    Task EnsureConnectedAsync(CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<RemoteEntry>> ListDirectoryAsync(
+        string remotePath,
+        CancellationToken cancellationToken = default);
+
+    Task DownloadFileAsync(
+        string remotePath,
+        string localPath,
+        IProgress<TransferProgress>? progress = null,
+        CancellationToken cancellationToken = default);
+
+    Task UploadFileAsync(
+        string localPath,
+        string remotePath,
+        IProgress<TransferProgress>? progress = null,
+        CancellationToken cancellationToken = default);
+
+    Task DownloadDirectoryAsync(
+        string remotePath,
+        string localPath,
+        IProgress<TransferProgress>? progress = null,
+        CancellationToken cancellationToken = default);
+
+    Task UploadDirectoryAsync(
+        string localPath,
+        string remotePath,
+        IProgress<TransferProgress>? progress = null,
+        CancellationToken cancellationToken = default);
 }

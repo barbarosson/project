@@ -13,7 +13,7 @@ public partial class MainViewModel : ObservableObject
     private readonly ILicenseService _licenseService;
 
     [ObservableProperty]
-    private string _statusText = "ADIM 1 skeleton — ready for UI panels.";
+    private string _statusText = "ADIM 2 services — ready for UI panels.";
 
     public MainViewModel(IFtpService ftpService, ILicenseService licenseService)
     {
@@ -21,6 +21,6 @@ public partial class MainViewModel : ObservableObject
         _licenseService = licenseService;
 
         var tier = _licenseService.GetCurrentTier();
-        StatusText = $"ADIM 1 skeleton · {_ftpService.Name} · License: {tier}";
+        StatusText = $"ADIM 2 services · {_ftpService.Name} · License: {tier}";
     }
 }

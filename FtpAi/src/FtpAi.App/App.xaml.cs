@@ -14,7 +14,7 @@ namespace FtpAi;
 
 /// <summary>
 /// Application entry point. Registers DI services and hosts the main window.
-/// ADIM 1: skeleton only — FTP/transfer/licensing implementations are stubs.
+/// ADIM 2: real FTP/SFTP session service; licensing/site repo remain stubs.
 /// </summary>
 public partial class App : Application
 {
@@ -30,14 +30,14 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// Builds the DI container. Later ADIMs replace stubs with real implementations
-    /// without changing ViewModel constructor signatures.
+    /// Builds the DI container. Protocol work uses <see cref="FtpSessionService"/>;
+    /// licensing and site persistence stay stubbed until later ADIMs.
     /// </summary>
     private static IServiceProvider ConfigureServices()
     {
         var services = new ServiceCollection();
 
-        // Persistence (EF Core + SQLite) — schema/migrations land in ADIM 2+
+        // Persistence (EF Core + SQLite) — Site Manager UI/repo still stubbed
         var dbPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "FtpAi",
@@ -49,8 +49,8 @@ public partial class App : Application
 
         services.AddSingleton<ISiteRepository, SiteRepositoryStub>();
 
-        // Protocol / transfer stubs (ADIM 2–4)
-        services.AddSingleton<IFtpService, FtpServiceStub>();
+        // ADIM 2: FluentFTP + SSH.NET behind IFtpService
+        services.AddSingleton<IFtpService, FtpSessionService>();
         services.AddSingleton<ILicenseService, LicenseServiceStub>();
 
         // ViewModels
