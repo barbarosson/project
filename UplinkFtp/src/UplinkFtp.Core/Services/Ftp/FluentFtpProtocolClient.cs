@@ -206,7 +206,7 @@ public sealed class FluentFtpProtocolClient : IRemoteProtocolClient
             FtpLocalExists.Overwrite,
             FtpVerify.None,
             rules: null,
-            progress is null ? null : new Progress<FtpProgress>(p =>
+            progress is null ? null : new SynchronousProgress<FtpProgress>(p =>
             {
                 progress.Report(new TransferProgress
                 {
@@ -237,7 +237,7 @@ public sealed class FluentFtpProtocolClient : IRemoteProtocolClient
             FtpRemoteExists.Overwrite,
             FtpVerify.None,
             rules: null,
-            progress is null ? null : new Progress<FtpProgress>(p =>
+            progress is null ? null : new SynchronousProgress<FtpProgress>(p =>
             {
                 progress.Report(new TransferProgress
                 {
@@ -324,7 +324,7 @@ public sealed class FluentFtpProtocolClient : IRemoteProtocolClient
             remote,
             existsMode,
             FtpVerify.None,
-            progress is null ? null : new Progress<FtpProgress>(p =>
+            progress is null ? null : new SynchronousProgress<FtpProgress>(p =>
             {
                 progress.Report(new TransferProgress
                 {
@@ -364,7 +364,7 @@ public sealed class FluentFtpProtocolClient : IRemoteProtocolClient
             existsMode,
             createRemoteDir: true,
             FtpVerify.None,
-            progress is null ? null : new Progress<FtpProgress>(p =>
+            progress is null ? null : new SynchronousProgress<FtpProgress>(p =>
             {
                 progress.Report(new TransferProgress
                 {

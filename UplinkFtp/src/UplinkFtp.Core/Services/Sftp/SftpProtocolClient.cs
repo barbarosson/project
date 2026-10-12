@@ -207,9 +207,11 @@ public sealed class SftpProtocolClient : IRemoteProtocolClient
             useAsync: true);
 
         var total = input.Length;
+        // Use SynchronousProgress (not Progress<T>) so callbacks stay on the transfer
+        // worker and never post to a captured UI SynchronizationContext mid-upload.
         IProgress<UploadFileProgressReport>? reported = progress is null
             ? null
-            : new Progress<UploadFileProgressReport>(report => progress.Report(new TransferProgress
+            : new SynchronousProgress<UploadFileProgressReport>(report => progress.Report(new TransferProgress
             {
                 BytesTransferred = (long)report.TotalBytesUploaded,
                 TotalBytes = total,

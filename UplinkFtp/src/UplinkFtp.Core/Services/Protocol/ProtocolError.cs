@@ -57,11 +57,18 @@ public static class ProtocolError
                     return Sanitize(ssh.Message);
                 case COMException com:
                     return MapComException(com);
+                case ExternalException ext when unchecked((uint)ext.HResult) == 0x8001010E:
+                    return "Transfer hit a threading conflict. Retry the transfer; if it persists, disconnect and reconnect.";
             }
         }
 
         foreach (var current in Flatten(exception))
         {
+            if (current is COMException comFallback)
+            {
+                return MapComException(comFallback);
+            }
+
             var msg = Sanitize(current.Message);
             if (msg.Length > 0 &&
                 !msg.Equals("One or more errors occurred.", StringComparison.OrdinalIgnoreCase) &&
@@ -72,6 +79,11 @@ public static class ProtocolError
         }
 
         var typeName = exception.GetType().Name;
+        if (typeName.Contains("COM", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Transfer hit a COM/UI threading error. Rebuild to the latest build, then retry; if it persists, disconnect and reconnect.";
+        }
+
         return $"Transfer failed ({typeName}). Check remote path permissions and that you are still connected.";
     }
 

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.UI.Dispatching;
 using UplinkFtp.Models.Dto;
 using UplinkFtp.Models.Enums;
 using UplinkFtp.Services.Licensing;
@@ -15,7 +15,7 @@ namespace UplinkFtp.ViewModels;
 public sealed partial class TransferQueueViewModel : ObservableObject, IDisposable
 {
     private readonly ITransferQueueService _queue;
-    private readonly SynchronizationContext? _sync = SynchronizationContext.Current;
+    private readonly DispatcherQueue _dispatcher;
     private bool _disposed;
 
     public ObservableCollection<TransferQueueItemViewModel> QueuedItems { get; } = [];
@@ -42,6 +42,10 @@ public sealed partial class TransferQueueViewModel : ObservableObject, IDisposab
     public TransferQueueViewModel(ITransferQueueService queue)
     {
         _queue = queue;
+        // Must be constructed on the UI thread (App OnLaunched → MainWindow).
+        _dispatcher = DispatcherQueue.GetForCurrentThread()
+                      ?? throw new InvalidOperationException(
+                          "TransferQueueViewModel requires a UI DispatcherQueue.");
         _queue.QueueChanged += OnQueueChanged;
         _queue.JobUpdated += OnJobUpdated;
         Rebuild();
@@ -115,15 +119,32 @@ public sealed partial class TransferQueueViewModel : ObservableObject, IDisposab
 
     private void OnJobUpdated(object? sender, TransferJob job) => Post(() => Upsert(job));
 
+    /// <summary>
+    /// Always marshal to the UI dispatcher. Never run collection updates on a worker
+    /// thread — that throws COMException (RPC_E_WRONG_THREAD) and can fail the transfer
+    /// when progress callbacks invoke JobUpdated synchronously.
+    /// </summary>
     private void Post(Action action)
     {
-        if (_sync is null)
+        if (_dispatcher.HasThreadAccess)
         {
-            action();
+            SafeInvoke(action);
             return;
         }
 
-        _sync.Post(_ => action(), null);
+        _ = _dispatcher.TryEnqueue(() => SafeInvoke(action));
+    }
+
+    private static void SafeInvoke(Action action)
+    {
+        try
+        {
+            action();
+        }
+        catch
+        {
+            // UI refresh must never surface into transfer workers.
+        }
     }
 
     private void Rebuild()
