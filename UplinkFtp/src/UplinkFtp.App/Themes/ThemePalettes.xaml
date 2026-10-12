@@ -4,44 +4,80 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
-      Optional palette overlays for named themes that share Light/Dark ElementTheme
-      but need a distinct atmosphere. Brush keys match Colors.xaml so they override
-      when merged onto the shell root.
+      Palette overlays for named themes. Brush keys match Colors.xaml so they
+      override when merged onto the shell root. Keep body/muted contrast readable
+      (near-black / off-white; avoid neon glare and washed gray-on-gray).
     -->
 
-    <!-- Harbor: cooler dockside light (slate + deep sea-teal). -->
-    <ResourceDictionary x:Key="Harbor">
-        <x:String x:Key="UplinkThemePaletteId">Harbor</x:String>
-        <SolidColorBrush x:Key="UplinkSectionFillBrush" Color="#F5F8FAF2"/>
-        <SolidColorBrush x:Key="UplinkSectionStrokeBrush" Color="#B0C2CC"/>
-        <SolidColorBrush x:Key="UplinkAccentBrush" Color="#0B6E7A"/>
-        <SolidColorBrush x:Key="UplinkAccentSoftBrush" Color="#D4EEF2"/>
-        <SolidColorBrush x:Key="UplinkBrandBrush" Color="#0C4A56"/>
-        <SolidColorBrush x:Key="UplinkSignalBrush" Color="#B45309"/>
-        <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="#4F646E"/>
-        <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="#152530"/>
-        <SolidColorBrush x:Key="UplinkDividerBrush" Color="#A8BCC6"/>
+    <!-- Orange: orange accent on near-black. -->
+    <ResourceDictionary x:Key="Orange">
+        <x:String x:Key="UplinkThemePaletteId">Orange</x:String>
+        <SolidColorBrush x:Key="UplinkSectionFillBrush" Color="#241C16"/>
+        <SolidColorBrush x:Key="UplinkSectionStrokeBrush" Color="#4A3428"/>
+        <SolidColorBrush x:Key="UplinkAccentBrush" Color="#F97316"/>
+        <SolidColorBrush x:Key="UplinkAccentSoftBrush" Color="#3D2414"/>
+        <SolidColorBrush x:Key="UplinkBrandBrush" Color="#FDBA74"/>
+        <SolidColorBrush x:Key="UplinkSignalBrush" Color="#FB923C"/>
+        <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="#C9B2A0"/>
+        <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="#F7EFE7"/>
+        <SolidColorBrush x:Key="UplinkDividerBrush" Color="#5C4030"/>
         <LinearGradientBrush x:Key="UplinkShellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#E8F0F4" Offset="0"/>
-            <GradientStop Color="#D4E4EA" Offset="1"/>
+            <GradientStop Color="#14110E" Offset="0"/>
+            <GradientStop Color="#1C1612" Offset="1"/>
         </LinearGradientBrush>
     </ResourceDictionary>
 
-    <!-- Forge: charcoal workshop dark with copper signal. -->
-    <ResourceDictionary x:Key="Forge">
-        <x:String x:Key="UplinkThemePaletteId">Forge</x:String>
-        <SolidColorBrush x:Key="UplinkSectionFillBrush" Color="#1C1814"/>
-        <SolidColorBrush x:Key="UplinkSectionStrokeBrush" Color="#3D342C"/>
-        <SolidColorBrush x:Key="UplinkAccentBrush" Color="#E8A06A"/>
-        <SolidColorBrush x:Key="UplinkAccentSoftBrush" Color="#3A2A1C"/>
-        <SolidColorBrush x:Key="UplinkBrandBrush" Color="#F0D2B0"/>
-        <SolidColorBrush x:Key="UplinkSignalBrush" Color="#F59E0B"/>
-        <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="#B8A898"/>
-        <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="#F5EDE4"/>
-        <SolidColorBrush x:Key="UplinkDividerBrush" Color="#4A3F34"/>
+    <!-- Red Night: crimson accent on deep black-red. -->
+    <ResourceDictionary x:Key="RedNight">
+        <x:String x:Key="UplinkThemePaletteId">RedNight</x:String>
+        <SolidColorBrush x:Key="UplinkSectionFillBrush" Color="#241418"/>
+        <SolidColorBrush x:Key="UplinkSectionStrokeBrush" Color="#4A2830"/>
+        <SolidColorBrush x:Key="UplinkAccentBrush" Color="#EF4444"/>
+        <SolidColorBrush x:Key="UplinkAccentSoftBrush" Color="#3A1418"/>
+        <SolidColorBrush x:Key="UplinkBrandBrush" Color="#FCA5A5"/>
+        <SolidColorBrush x:Key="UplinkSignalBrush" Color="#F87171"/>
+        <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="#C9A8AE"/>
+        <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="#F7EAEA"/>
+        <SolidColorBrush x:Key="UplinkDividerBrush" Color="#5C3038"/>
         <LinearGradientBrush x:Key="UplinkShellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
-            <GradientStop Color="#120F0C" Offset="0"/>
-            <GradientStop Color="#1A1612" Offset="1"/>
+            <GradientStop Color="#120A0C" Offset="0"/>
+            <GradientStop Color="#1A0E12" Offset="1"/>
+        </LinearGradientBrush>
+    </ResourceDictionary>
+
+    <!-- Sun Rise: soft yellow wash + sky-blue accent (light, readable). -->
+    <ResourceDictionary x:Key="SunRise">
+        <x:String x:Key="UplinkThemePaletteId">SunRise</x:String>
+        <SolidColorBrush x:Key="UplinkSectionFillBrush" Color="#FFFCF5"/>
+        <SolidColorBrush x:Key="UplinkSectionStrokeBrush" Color="#C5D6E4"/>
+        <SolidColorBrush x:Key="UplinkAccentBrush" Color="#0284C7"/>
+        <SolidColorBrush x:Key="UplinkAccentSoftBrush" Color="#E0F2FE"/>
+        <SolidColorBrush x:Key="UplinkBrandBrush" Color="#0C4A6E"/>
+        <SolidColorBrush x:Key="UplinkSignalBrush" Color="#D97706"/>
+        <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="#475569"/>
+        <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="#1E293B"/>
+        <SolidColorBrush x:Key="UplinkDividerBrush" Color="#B8C9D8"/>
+        <LinearGradientBrush x:Key="UplinkShellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#FFF6E0" Offset="0"/>
+            <GradientStop Color="#E8F4FC" Offset="1"/>
+        </LinearGradientBrush>
+    </ResourceDictionary>
+
+    <!-- ZEN: calm near-black / off-white mono (not harsh #000/#FFF). -->
+    <ResourceDictionary x:Key="ZEN">
+        <x:String x:Key="UplinkThemePaletteId">ZEN</x:String>
+        <SolidColorBrush x:Key="UplinkSectionFillBrush" Color="#222222"/>
+        <SolidColorBrush x:Key="UplinkSectionStrokeBrush" Color="#3F3F46"/>
+        <SolidColorBrush x:Key="UplinkAccentBrush" Color="#E4E4E7"/>
+        <SolidColorBrush x:Key="UplinkAccentSoftBrush" Color="#2A2A2E"/>
+        <SolidColorBrush x:Key="UplinkBrandBrush" Color="#FAFAFA"/>
+        <SolidColorBrush x:Key="UplinkSignalBrush" Color="#A1A1AA"/>
+        <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="#A1A1AA"/>
+        <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="#F4F4F5"/>
+        <SolidColorBrush x:Key="UplinkDividerBrush" Color="#3F3F46"/>
+        <LinearGradientBrush x:Key="UplinkShellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#171717" Offset="0"/>
+            <GradientStop Color="#1C1C1E" Offset="1"/>
         </LinearGradientBrush>
     </ResourceDictionary>
 </ResourceDictionary>

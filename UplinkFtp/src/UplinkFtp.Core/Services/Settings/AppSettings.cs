@@ -16,8 +16,8 @@ public sealed class AppSettings
     public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(1);
 
     /// <summary>
-    /// Named appearance: Orbit, Daybreak, Nightwatch, Harbor, Forge.
-    /// Legacy System/Light/Dark values are migrated by ThemeCatalog.
+    /// Named appearance: Orbit, Orange, Red Night, Sun Rise, ZEN.
+    /// Legacy System/Light/Dark and Daybreak/Nightwatch/Harbor/Forge migrate in ThemeCatalog.
     /// </summary>
     public string Theme { get; set; } = "Orbit";
 
