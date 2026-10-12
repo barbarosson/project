@@ -80,6 +80,6 @@ public sealed record ThemePreviewCard(
         "Red Night" => new("Red Night", "Crimson + black · dark", "#0A0608", "#DC2626", true),
         "Sun Rise" => new("Sun Rise", "Yellow + sky blue · light", "#FFF4C8", "#0EA5E9", false),
         "ZEN" => new("ZEN", "Black + white · grayscale", "#121212", "#E5E5E5", true),
-        _ => new("Orbit", "Follows your system · light blue + gray", "#EEF3F8", "#3B82F6", false)
+        _ => new("Orbit", "Follows your system · light blue + gray", "#E8EEF5", "#2563EB", false)
     };
 }

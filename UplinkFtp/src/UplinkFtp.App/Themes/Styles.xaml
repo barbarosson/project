@@ -58,8 +58,25 @@
         <Setter Property="CornerRadius" Value="10"/>
     </Style>
 
-    <!-- Uses UplinkAccentBrush so named themes (not system teal) drive primary CTAs. -->
+    <!--
+      Fluent Button templates paint via ButtonBackground/ButtonForeground ThemeResources,
+      not the Background/Foreground properties alone — wire those so Save is never white-on-white.
+    -->
     <Style x:Key="UplinkAccentButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Style.Resources>
+            <StaticResource x:Key="ButtonBackground" ResourceKey="UplinkAccentBrush"/>
+            <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="UplinkBrandBrush"/>
+            <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="UplinkBrandBrush"/>
+            <StaticResource x:Key="ButtonBackgroundDisabled" ResourceKey="UplinkAccentSoftBrush"/>
+            <StaticResource x:Key="ButtonForeground" ResourceKey="UplinkAccentForegroundBrush"/>
+            <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="UplinkAccentForegroundBrush"/>
+            <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="UplinkAccentForegroundBrush"/>
+            <StaticResource x:Key="ButtonForegroundDisabled" ResourceKey="UplinkMutedTextBrush"/>
+            <StaticResource x:Key="ButtonBorderBrush" ResourceKey="UplinkAccentBrush"/>
+            <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="UplinkBrandBrush"/>
+            <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="UplinkBrandBrush"/>
+            <StaticResource x:Key="ButtonBorderBrushDisabled" ResourceKey="UplinkSectionStrokeBrush"/>
+        </Style.Resources>
         <Setter Property="FontFamily" Value="{StaticResource UplinkUiFont}"/>
         <Setter Property="Background" Value="{ThemeResource UplinkAccentBrush}"/>
         <Setter Property="Foreground" Value="{ThemeResource UplinkAccentForegroundBrush}"/>

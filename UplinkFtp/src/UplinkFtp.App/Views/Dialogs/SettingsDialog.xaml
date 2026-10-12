@@ -89,7 +89,7 @@
                         CommandParameter="Orbit"
                         ToolTipService.ToolTip="Orbit — light blue + gray, follows system light/dark">
                     <StackPanel Spacing="4">
-                        <Border Height="28" CornerRadius="4" Background="#EEF3F8" BorderBrush="#3B82F6" BorderThickness="0,0,0,4"/>
+                        <Border Height="28" CornerRadius="4" Background="#E8EEF5" BorderBrush="#2563EB" BorderThickness="0,0,0,4"/>
                         <TextBlock Text="Orbit" FontWeight="SemiBold" FontSize="11" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                         <TextBlock Text="Blue·Gray" FontSize="10" Opacity="0.75" HorizontalAlignment="Center"/>
                     </StackPanel>
