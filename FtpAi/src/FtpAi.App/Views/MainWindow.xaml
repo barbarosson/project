@@ -14,7 +14,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="140"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="160"/>
+            <RowDefinition Height="220"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
@@ -135,7 +135,7 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0">
             <TextBlock FontSize="12" Opacity="0.65">
-                <Run Text="Tip: drag local → remote to upload, remote → local to download. Queue manager lands in ADIM 5."/>
+                <Run Text="Tip: drag local → remote to upload, remote → local to download. Transfers go through the queue (pause restarts on resume)."/>
             </TextBlock>
         </Border>
     </Grid>

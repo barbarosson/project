@@ -9,14 +9,16 @@ using FtpAi.Models.Dto;
 using FtpAi.Models.Enums;
 using FtpAi.Services.Ftp;
 using FtpAi.Services.Licensing;
+using FtpAi.Services.Transfer;
 
 namespace FtpAi.ViewModels;
 
-/// <summary>Shell ViewModel: quick connect, browsers, log, placeholder queue, DnD transfers.</summary>
-public sealed partial class MainViewModel : ObservableObject
+/// <summary>Shell ViewModel: quick connect, browsers, log, transfer queue, DnD enqueue.</summary>
+public sealed partial class MainViewModel : ObservableObject, IDisposable
 {
     private readonly IFtpService _ftpService;
     private readonly ILicenseService _licenseService;
+    private readonly ITransferQueueService _transferQueue;
 
     public LocalBrowserViewModel LocalBrowser { get; }
 
@@ -59,20 +61,32 @@ public sealed partial class MainViewModel : ObservableObject
     public MainViewModel(
         IFtpService ftpService,
         ILicenseService licenseService,
+        ITransferQueueService transferQueue,
         LocalBrowserViewModel localBrowser,
         RemoteBrowserViewModel remoteBrowser,
         LogViewModel log,
-        TransferQueueViewModel transferQueue)
+        TransferQueueViewModel transferQueueViewModel)
     {
         _ftpService = ftpService;
         _licenseService = licenseService;
+        _transferQueue = transferQueue;
         LocalBrowser = localBrowser;
         RemoteBrowser = remoteBrowser;
         Log = log;
-        TransferQueue = transferQueue;
+        TransferQueue = transferQueueViewModel;
 
-        StatusText = $"ADIM 4 UI · License {_licenseService.GetCurrentTier()}";
-        Log.Info("FTP AI ready — use Quick Connect or drag files between panes.");
+        _transferQueue.JobUpdated += OnTransferJobUpdated;
+
+        StatusText =
+            $"ADIM 5 queue · License {_licenseService.GetCurrentTier()} · max {_licenseService.GetMaxConcurrentTransfers()} transfers";
+        Log.Info(
+            $"Transfer queue ready (max {_licenseService.GetMaxConcurrentTransfers()} concurrent). Drag files between panes to enqueue.");
+    }
+
+    public void Dispose()
+    {
+        _transferQueue.JobUpdated -= OnTransferJobUpdated;
+        TransferQueue.Dispose();
     }
 
     public async Task InitializeAsync()
@@ -87,7 +101,6 @@ public sealed partial class MainViewModel : ObservableObject
             port = 0;
         }
 
-        // Only auto-adjust when port still looks like a protocol default.
         if (port is 0 or 21 or 22 or 990)
         {
             PortText = value.ToUpperInvariant() switch
@@ -144,8 +157,6 @@ public sealed partial class MainViewModel : ObservableObject
         finally
         {
             IsBusy = false;
-            ConnectCommand.NotifyCanExecuteChanged();
-            DisconnectCommand.NotifyCanExecuteChanged();
         }
     }
 
@@ -173,26 +184,24 @@ public sealed partial class MainViewModel : ObservableObject
         finally
         {
             IsBusy = false;
-            ConnectCommand.NotifyCanExecuteChanged();
-            DisconnectCommand.NotifyCanExecuteChanged();
         }
     }
 
-    /// <summary>Drop onto the remote pane (upload from local).</summary>
+    /// <summary>Drop onto the remote pane (enqueue upload from local).</summary>
     public Task HandleDropOnRemoteAsync(string? dragText)
         => HandleDropAsync(dragText, targetIsRemote: true);
 
-    /// <summary>Drop onto the local pane (download from remote).</summary>
+    /// <summary>Drop onto the local pane (enqueue download from remote).</summary>
     public Task HandleDropOnLocalAsync(string? dragText)
         => HandleDropAsync(dragText, targetIsRemote: false);
 
-    private async Task HandleDropAsync(string? dragText, bool targetIsRemote)
+    private Task HandleDropAsync(string? dragText, bool targetIsRemote)
     {
         var payload = TryParsePayload(dragText);
         if (payload is null)
         {
             Log.Warn("Drop ignored — unrecognized drag payload.");
-            return;
+            return Task.CompletedTask;
         }
 
         if (targetIsRemote)
@@ -200,98 +209,74 @@ public sealed partial class MainViewModel : ObservableObject
             if (!TransferDragPayload.IsLocal(payload.Side))
             {
                 Log.Warn("Drop on remote only accepts local files.");
-                return;
+                return Task.CompletedTask;
             }
 
             if (!IsConnected)
             {
                 Log.Warn("Connect before uploading.");
-                return;
+                return Task.CompletedTask;
             }
 
-            await UploadAsync(payload).ConfigureAwait(true);
+            var remotePath = RemotePath.Combine(RemoteBrowser.CurrentPath, payload.Name);
+            TransferQueue.EnqueueUpload(payload.FullPath, remotePath, payload.IsDirectory);
+            Log.Info($"Queued upload {payload.Name} → {remotePath}");
         }
         else
         {
             if (!TransferDragPayload.IsRemote(payload.Side))
             {
                 Log.Warn("Drop on local only accepts remote files.");
-                return;
+                return Task.CompletedTask;
             }
 
             if (!IsConnected)
             {
                 Log.Warn("Connect before downloading.");
-                return;
+                return Task.CompletedTask;
             }
 
-            await DownloadAsync(payload).ConfigureAwait(true);
+            var localPath = Path.Combine(LocalBrowser.CurrentPath, payload.Name);
+            TransferQueue.EnqueueDownload(payload.FullPath, localPath, payload.IsDirectory);
+            Log.Info($"Queued download {payload.Name} → {localPath}");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private void OnTransferJobUpdated(object? sender, TransferJob job)
+    {
+        if (job.State == TransferJobState.Successful)
+        {
+            Log.Info($"{job.Direction} finished: {job.DisplayName}");
+            _ = RefreshBrowsersAfterTransferAsync(job.Direction);
+        }
+        else if (job.State == TransferJobState.Failed)
+        {
+            Log.Error($"{job.Direction} failed: {job.Error ?? job.DisplayName}");
+        }
+        else if (job.State == TransferJobState.Paused)
+        {
+            Log.Warn($"{job.Direction} paused: {job.DisplayName} (resume restarts from the beginning)");
         }
     }
 
-    private async Task UploadAsync(TransferDragPayload payload)
+    private async Task RefreshBrowsersAfterTransferAsync(TransferDirection direction)
     {
-        var remotePath = RemotePath.Combine(RemoteBrowser.CurrentPath, payload.Name);
-        var item = TransferQueue.Enqueue("Upload", payload.FullPath, remotePath);
-        Log.Info($"Upload {payload.Name} → {remotePath}");
-        IsBusy = true;
         try
         {
-            if (payload.IsDirectory)
+            if (direction == TransferDirection.Upload)
             {
-                await _ftpService.UploadDirectoryAsync(payload.FullPath, remotePath).ConfigureAwait(true);
+                await RemoteBrowser.RefreshCommand.ExecuteAsync(null).ConfigureAwait(true);
             }
             else
             {
-                await _ftpService.UploadFileAsync(payload.FullPath, remotePath).ConfigureAwait(true);
+                await LocalBrowser.RefreshCommand.ExecuteAsync(null).ConfigureAwait(true);
             }
-
-            item.Status = "Done";
-            await RemoteBrowser.RefreshCommand.ExecuteAsync(null).ConfigureAwait(true);
-            Log.Info($"Upload finished: {payload.Name}");
         }
         catch (Exception ex)
         {
-            item.Status = "Failed";
-            item.Detail = ex.Message;
-            Log.Error($"Upload failed: {ex.Message}");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    private async Task DownloadAsync(TransferDragPayload payload)
-    {
-        var localPath = Path.Combine(LocalBrowser.CurrentPath, payload.Name);
-        var item = TransferQueue.Enqueue("Download", payload.FullPath, localPath);
-        Log.Info($"Download {payload.Name} → {localPath}");
-        IsBusy = true;
-        try
-        {
-            if (payload.IsDirectory)
-            {
-                await _ftpService.DownloadDirectoryAsync(payload.FullPath, localPath).ConfigureAwait(true);
-            }
-            else
-            {
-                await _ftpService.DownloadFileAsync(payload.FullPath, localPath).ConfigureAwait(true);
-            }
-
-            item.Status = "Done";
-            await LocalBrowser.RefreshCommand.ExecuteAsync(null).ConfigureAwait(true);
-            Log.Info($"Download finished: {payload.Name}");
-        }
-        catch (Exception ex)
-        {
-            item.Status = "Failed";
-            item.Detail = ex.Message;
-            Log.Error($"Download failed: {ex.Message}");
-        }
-        finally
-        {
-            IsBusy = false;
+            Log.Warn($"Refresh after transfer: {ex.Message}");
         }
     }
 
@@ -307,7 +292,7 @@ public sealed partial class MainViewModel : ObservableObject
         return TransferDragPayload.DataFormatPrefix + JsonSerializer.Serialize(payload);
     }
 
-    private TransferDragPayload? TryParsePayload(string? dragText)
+    private static TransferDragPayload? TryParsePayload(string? dragText)
     {
         if (string.IsNullOrWhiteSpace(dragText) ||
             !dragText.StartsWith(TransferDragPayload.DataFormatPrefix, StringComparison.Ordinal))

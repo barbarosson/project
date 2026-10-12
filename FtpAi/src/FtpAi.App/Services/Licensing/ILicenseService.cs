@@ -2,7 +2,7 @@ namespace FtpAi.Services.Licensing;
 
 /// <summary>
 /// Free vs Pro gating and Store/Web license validation.
-/// Full Store/Web validation deferred; site-count hook is live for ADIM 3.
+/// Full Store/Web validation deferred; site-count and concurrency hooks are live.
 /// </summary>
 public interface ILicenseService
 {
@@ -14,6 +14,11 @@ public interface ILicenseService
     /// Max saved sites for the current tier. Free defaults to 5; Pro is effectively unlimited.
     /// </summary>
     int GetMaxSavedSites();
+
+    /// <summary>
+    /// Max simultaneous transfer workers. Free defaults to 2; Pro is higher.
+    /// </summary>
+    int GetMaxConcurrentTransfers();
 }
 
 public enum LicenseTier

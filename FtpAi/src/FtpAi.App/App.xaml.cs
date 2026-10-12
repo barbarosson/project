@@ -3,6 +3,7 @@ using FtpAi.Services.Ftp;
 using FtpAi.Services.Licensing;
 using FtpAi.Services.Persistence;
 using FtpAi.Services.Security;
+using FtpAi.Services.Transfer;
 using FtpAi.ViewModels;
 using FtpAi.Views;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,7 @@ namespace FtpAi;
 
 /// <summary>
 /// Application entry point. Registers DI services and hosts the main window.
-/// ADIM 4: main UI shell ViewModels + panels.
+/// ADIM 5: transfer queue service + tabbed queue UI.
 /// </summary>
 public partial class App : Application
 {
@@ -41,8 +42,8 @@ public partial class App : Application
         services.AddSingleton<ISiteRepository, SiteRepository>();
         services.AddSingleton<IFtpService, FtpSessionService>();
         services.AddSingleton<ILicenseService, LicenseServiceStub>();
+        services.AddSingleton<ITransferQueueService, TransferQueueService>();
 
-        // ADIM 4 ViewModels
         services.AddTransient<LocalBrowserViewModel>();
         services.AddTransient<RemoteBrowserViewModel>();
         services.AddTransient<LogViewModel>();
