@@ -22,7 +22,6 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
 {
     private readonly IFtpService _ftp;
     private readonly ILicenseService _license;
-    private readonly IConnectionPool? _pool;
     private readonly object _gate = new();
     private readonly List<TransferJob> _jobs = [];
     private readonly Dictionary<Guid, CancellationTokenSource> _tokens = [];
@@ -35,7 +34,10 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
     {
         _ftp = ftp;
         _license = license;
-        _pool = pool;
+        // pool is unused: transfers must go through IFtpService.OpenTransferClientAsync
+        // so Free (max 1 connection) reuses the primary browse session instead of
+        // opening a second SSH/FTP client that often fails or races.
+        _ = pool;
     }
 
     public event EventHandler? QueueChanged;
@@ -327,7 +329,7 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
         IConnectionLease? lease = null;
         try
         {
-            if (!_ftp.IsConnected && _pool is null)
+            if (!_ftp.IsConnected && _ftp.ActiveConnection is null)
             {
                 throw new InvalidOperationException("Not connected to a remote server.");
             }
@@ -359,13 +361,21 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
                 RaiseJobUpdated(job);
             });
 
-            // Prefer pool lease when available (Pro concurrent transfers); else primary IFtpService.
-            if (_pool is not null && _ftp.ActiveConnection is { } options)
+            // Session-aware lease: Free reuses primary; Pro opens pool clients.
+            // Do NOT call IConnectionPool.LeaseAsync here — that bypasses Free's
+            // single-connection rule and breaks uploads after a successful browse connect.
+            IRemoteProtocolClient? leasedClient = null;
+            try
             {
-                lease = await _pool.LeaseAsync(options, token).ConfigureAwait(false);
+                lease = await _ftp.OpenTransferClientAsync(token).ConfigureAwait(false);
+                leasedClient = lease.Client;
+            }
+            catch (NotSupportedException)
+            {
+                // Unit-test fakes may not implement OpenTransferClientAsync.
             }
 
-            await ExecuteTransferAsync(job, progress, lease?.Client, token).ConfigureAwait(false);
+            await ExecuteTransferAsync(job, progress, leasedClient, token).ConfigureAwait(false);
 
             token.ThrowIfCancellationRequested();
 

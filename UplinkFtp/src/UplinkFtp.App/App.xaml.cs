@@ -65,11 +65,11 @@ public partial class App : Application
             new UplinkFtp.Services.Ftp.FtpSessionService(
                 sp.GetRequiredService<ILicenseService>(),
                 sp.GetRequiredService<UplinkFtp.Services.Ftp.IConnectionPool>()));
+        // Transfers use IFtpService.OpenTransferClientAsync (Free reuses primary session).
         services.AddSingleton<UplinkFtp.Services.Transfer.ITransferQueueService>(sp =>
             new UplinkFtp.Services.Transfer.TransferQueueService(
                 sp.GetRequiredService<UplinkFtp.Services.Ftp.IFtpService>(),
-                sp.GetRequiredService<ILicenseService>(),
-                sp.GetRequiredService<UplinkFtp.Services.Ftp.IConnectionPool>()));
+                sp.GetRequiredService<ILicenseService>()));
 
         services.AddTransient<LocalBrowserViewModel>();
         services.AddTransient<RemoteBrowserViewModel>();

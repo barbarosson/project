@@ -33,7 +33,21 @@ public sealed class ProtocolErrorTests
     {
         var msg = ProtocolError.ToUserMessage(new Exception("Permission denied (password)."));
         Assert.Contains("Authentication failed", msg, StringComparison.OrdinalIgnoreCase);
-        Assert.DoesNotContain("Permission denied", msg, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("(password)", msg, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void BarePermissionDenied_MapsToRemoteWriteHint()
+    {
+        var msg = ProtocolError.ToUserMessage(new Exception("Permission denied"));
+        Assert.Contains("Remote permission denied", msg, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void EmptyOuterWithInnerMessage_UsesInner()
+    {
+        var msg = ProtocolError.ToUserMessage(new Exception("", new IOException("Remote disk full")));
+        Assert.Contains("disk full", msg, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
