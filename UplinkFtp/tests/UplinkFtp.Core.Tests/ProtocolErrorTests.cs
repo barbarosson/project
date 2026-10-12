@@ -21,10 +21,27 @@ public sealed class ProtocolErrorTests
     }
 
     [Fact]
-    public void Scrubs_secret_like_messages()
+    public void PasswordAuthFailure_MapsToAuthenticationFailed_WithoutEchoingRawException()
     {
-        var msg = ProtocolError.ToUserMessage(new IOException("password rejected for user"));
-        Assert.DoesNotContain("password", msg, StringComparison.OrdinalIgnoreCase);
+        var msg = ProtocolError.ToUserMessage(new IOException("password rejected for user foo"));
+        Assert.Contains("Authentication failed", msg, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("rejected for user", msg, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void PermissionDeniedPassword_MapsToAuthenticationFailed()
+    {
+        var msg = ProtocolError.ToUserMessage(new Exception("Permission denied (password)."));
+        Assert.Contains("Authentication failed", msg, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Permission denied", msg, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void SecretLikeNonAuth_IsSanitized()
+    {
+        var msg = ProtocolError.ToUserMessage(new IOException("cannot read password store secret"));
+        Assert.Contains("secure connection", msg, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("password store", msg, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

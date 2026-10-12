@@ -61,13 +61,33 @@ public static class ProtocolError
 
         // Never echo credential-like fragments into the UI.
         var trimmed = message.Trim();
+        if (LooksLikeAuthFailure(trimmed))
+        {
+            return "Authentication failed. Check username, password, or SFTP private key.";
+        }
+
         if (trimmed.Contains("password", StringComparison.OrdinalIgnoreCase) ||
             trimmed.Contains("private key", StringComparison.OrdinalIgnoreCase) ||
             trimmed.Contains("secret", StringComparison.OrdinalIgnoreCase))
         {
-            return "A secure connection error occurred.";
+            return "A secure connection error occurred. Check credentials or key path.";
         }
 
         return trimmed.Length > 240 ? trimmed[..240] + "…" : trimmed;
+    }
+
+    private static bool LooksLikeAuthFailure(string message)
+    {
+        // SSH.NET / OpenSSH often mention "password" in auth failures — map those clearly
+        // without echoing the raw exception (which may include sensitive wording).
+        return message.Contains("permission denied", StringComparison.OrdinalIgnoreCase)
+               || message.Contains("auth fail", StringComparison.OrdinalIgnoreCase)
+               || message.Contains("authentication", StringComparison.OrdinalIgnoreCase)
+               || message.Contains("not authenticated", StringComparison.OrdinalIgnoreCase)
+               || (message.Contains("password", StringComparison.OrdinalIgnoreCase)
+                   && (message.Contains("denied", StringComparison.OrdinalIgnoreCase)
+                       || message.Contains("failed", StringComparison.OrdinalIgnoreCase)
+                       || message.Contains("reject", StringComparison.OrdinalIgnoreCase)
+                       || message.Contains("invalid", StringComparison.OrdinalIgnoreCase)));
     }
 }

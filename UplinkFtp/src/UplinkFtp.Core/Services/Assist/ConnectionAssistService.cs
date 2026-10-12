@@ -142,13 +142,15 @@ public static class ConnectionAssistService
             };
         }
 
-        if (text.Contains("auth", StringComparison.Ordinal) &&
-            (text.Contains("fail", StringComparison.Ordinal) || text.Contains("denied", StringComparison.Ordinal)))
+        if ((text.Contains("auth", StringComparison.Ordinal) &&
+             (text.Contains("fail", StringComparison.Ordinal) || text.Contains("denied", StringComparison.Ordinal)))
+            || text.Contains("secure connection error", StringComparison.Ordinal)
+            || text.Contains("authentication failed", StringComparison.Ordinal))
         {
             return new ConnectionAssistDiagnosis
             {
                 Title = "Authentication failed",
-                Advice = "Check username/password (Windows OpenSSH often needs the local account name with no spaces). For SFTP you can also set a private key path in Sites."
+                Advice = "OpenSSH is reachable but login failed. Use the exact Windows username (e.g. barba — not the display name with spaces), the correct password, and confirm OpenSSH Authentication Agent / password auth is allowed. Sites → private key path is an alternative for SFTP."
             };
         }
 
