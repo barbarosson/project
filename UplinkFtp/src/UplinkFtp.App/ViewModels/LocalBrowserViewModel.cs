@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using UplinkFtp.Helpers;
 using UplinkFtp.Services.Ai;
 using UplinkFtp.Services.Browse;
 
@@ -15,6 +16,7 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
 {
     private readonly IAiAssistantService _ai;
     private List<BrowserItemViewModel> _fullListing = [];
+    private AiFileFilter? _activeFilter;
 
     public ObservableCollection<BrowserItemViewModel> Items { get; } = [];
 
@@ -42,6 +44,25 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _showHiddenFiles = true;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NameSortLabel))]
+    [NotifyPropertyChangedFor(nameof(KindSortLabel))]
+    [NotifyPropertyChangedFor(nameof(SizeSortLabel))]
+    [NotifyPropertyChangedFor(nameof(ModifiedSortLabel))]
+    private BrowserSortColumn _sortColumn = BrowserSortColumn.Name;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NameSortLabel))]
+    [NotifyPropertyChangedFor(nameof(KindSortLabel))]
+    [NotifyPropertyChangedFor(nameof(SizeSortLabel))]
+    [NotifyPropertyChangedFor(nameof(ModifiedSortLabel))]
+    private bool _sortAscending = true;
+
+    public string NameSortLabel => BrowserListingHelper.SortHeaderLabel("Name", BrowserSortColumn.Name, SortColumn, SortAscending);
+    public string KindSortLabel => BrowserListingHelper.SortHeaderLabel("Kind", BrowserSortColumn.Kind, SortColumn, SortAscending);
+    public string SizeSortLabel => BrowserListingHelper.SortHeaderLabel("Size", BrowserSortColumn.Size, SortColumn, SortAscending);
+    public string ModifiedSortLabel => BrowserListingHelper.SortHeaderLabel("Modified", BrowserSortColumn.Modified, SortColumn, SortAscending);
 
     public LocalBrowserViewModel(IAiAssistantService ai)
     {
@@ -102,7 +123,8 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
             }
             else
             {
-                ReplaceItems(_fullListing);
+                _activeFilter = null;
+                PublishListing();
                 StatusMessage = $"{Items.Count(i => !i.IsParentLink)} items";
                 AiFilterStatus = string.Empty;
             }
@@ -170,9 +192,26 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
         await RefreshAsync().ConfigureAwait(false);
     }
 
+    /// <summary>Called from the panel so Enter applies the TextBox text even if binding has not flushed.</summary>
+    public Task ApplySearchFromUiAsync(string? queryFromTextBox)
+    {
+        if (queryFromTextBox is not null)
+        {
+            AiSearchQuery = queryFromTextBox;
+        }
+
+        return ApplyAiSearchAsync();
+    }
+
     [RelayCommand]
     private async Task ApplyAiSearchAsync()
     {
+        if (string.IsNullOrWhiteSpace(AiSearchQuery))
+        {
+            ClearAiFilter();
+            return;
+        }
+
         if (_fullListing.Count == 0)
         {
             await RefreshAsync().ConfigureAwait(true);
@@ -182,31 +221,49 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
         var count = await ApplyAiFilterAsync(filter).ConfigureAwait(true);
         AiFilterStatus = count == 0
             ? (string.IsNullOrWhiteSpace(filter.Explanation) ? "No matches." : filter.Explanation)
-            : $"AI filter: {count} file(s)";
+            : $"{count} match(es) · {filter.Explanation}";
     }
 
     [RelayCommand]
     private void ClearAiFilter()
     {
         HasAiFilter = false;
+        _activeFilter = null;
         AiFilterStatus = string.Empty;
         if (_fullListing.Count > 0)
         {
-            ReplaceItems(_fullListing);
+            PublishListing();
             StatusMessage = $"{Items.Count(i => !i.IsParentLink)} items";
         }
+    }
+
+    [RelayCommand]
+    private void SortBy(string? columnName)
+    {
+        if (!Enum.TryParse<BrowserSortColumn>(columnName, ignoreCase: true, out var column))
+        {
+            return;
+        }
+
+        if (SortColumn == column)
+        {
+            SortAscending = !SortAscending;
+        }
+        else
+        {
+            SortColumn = column;
+            SortAscending = true;
+        }
+
+        PublishListing();
     }
 
     public Task<int> ApplyAiFilterAsync(AiFileFilter filter)
     {
         HasAiFilter = true;
-        var parents = _fullListing.Where(i => i.IsParentLink);
-        var matches = _fullListing.Where(i =>
-            !i.IsParentLink
-            && AiFileFilterMatcher.Matches(i.Name, i.IsDirectory, i.Size, i.ModifiedUtc, filter));
-        var view = parents.Concat(matches).ToList();
-        ReplaceItems(view);
-        var count = view.Count(i => !i.IsParentLink);
+        _activeFilter = filter;
+        PublishListing();
+        var count = Items.Count(i => !i.IsParentLink);
         StatusMessage = $"{count} filtered";
         AiFilterStatus = filter.Explanation;
         return Task.FromResult(count);
@@ -325,10 +382,11 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
         }
     }
 
-    private void ReplaceItems(IEnumerable<BrowserItemViewModel> items)
+    private void PublishListing()
     {
+        var view = BrowserListingHelper.Present(_fullListing, _activeFilter, SortColumn, SortAscending);
         Items.Clear();
-        foreach (var item in items)
+        foreach (var item in view)
         {
             Items.Add(item);
         }

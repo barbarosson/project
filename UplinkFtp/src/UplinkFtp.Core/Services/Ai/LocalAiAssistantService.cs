@@ -153,6 +153,20 @@ public sealed class LocalAiAssistantService : IAiAssistantService
             after = DateTimeOffset.UtcNow.AddDays(-7);
         }
 
+        // Plain name search (no NL keywords): use the whole query as a substring match.
+        // This makes the browser Filter box work without a cloud key.
+        if (contains is null
+            && ext is null
+            && minBytes is null
+            && after is null)
+        {
+            contains = q;
+        }
+
+        var explanation = contains is not null && ext is null && minBytes is null && after is null
+            ? $"Name contains “{contains}”."
+            : "Local filter parse (BYOK cloud parse not required).";
+
         return Task.FromResult(new AiFileFilter
         {
             RawQuery = q,
@@ -160,7 +174,7 @@ public sealed class LocalAiAssistantService : IAiAssistantService
             NameContains = contains,
             MinSizeBytes = minBytes,
             ModifiedAfterUtc = after,
-            Explanation = "Local filter parse (BYOK cloud parse not required)."
+            Explanation = explanation
         });
     }
 

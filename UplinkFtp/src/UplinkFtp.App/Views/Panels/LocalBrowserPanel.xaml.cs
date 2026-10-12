@@ -77,8 +77,20 @@ public sealed partial class LocalBrowserPanel : UserControl
     {
         if (e.Key == Windows.System.VirtualKey.Enter && _browser is not null)
         {
-            _ = _browser.ApplyAiSearchCommand.ExecuteAsync(null);
+            var text = sender is TextBox box ? box.Text : AiSearchBox.Text;
+            _ = _browser.ApplySearchFromUiAsync(text);
+            e.Handled = true;
         }
+    }
+
+    private void FilterButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_browser is null)
+        {
+            return;
+        }
+
+        _ = _browser.ApplySearchFromUiAsync(AiSearchBox.Text);
     }
 
     private void FileList_DragItemsStarting(object sender, DragItemsStartingEventArgs e)

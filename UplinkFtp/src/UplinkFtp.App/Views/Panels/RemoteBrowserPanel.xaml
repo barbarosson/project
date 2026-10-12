@@ -87,25 +87,26 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBox FontFamily="{StaticResource UplinkUiFont}"
+            <TextBox x:Name="AiSearchBox"
+                     FontFamily="{StaticResource UplinkUiFont}"
                      Text="{Binding AiSearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                     PlaceholderText="AI search: ZIP &gt; 50MB containing backup…"
+                     PlaceholderText="Filter by name… or NL: ZIP &gt; 50MB containing backup"
                      IsEnabled="{Binding IsConnected}"
                      Margin="0,0,6,0"
                      KeyDown="AiSearchBox_KeyDown"/>
             <Button Grid.Column="1"
                     Content="Filter"
                     Style="{StaticResource UplinkNavButtonStyle}"
-                    Command="{Binding ApplyAiSearchCommand}"
+                    Click="FilterButton_Click"
                     IsEnabled="{Binding IsConnected}"
                     Margin="0,0,6,0"
-                    ToolTipService.ToolTip="Apply natural-language filter to this listing"/>
+                    ToolTipService.ToolTip="Filter this listing (name match or natural language)"/>
             <Button Grid.Column="2"
                     Content="Clear"
                     Style="{StaticResource UplinkNavButtonStyle}"
                     Command="{Binding ClearAiFilterCommand}"
                     IsEnabled="{Binding HasAiFilter}"
-                    ToolTipService.ToolTip="Clear AI filter"/>
+                    ToolTipService.ToolTip="Clear filter"/>
         </Grid>
 
         <Grid Grid.Row="3">
@@ -122,11 +123,46 @@
                     <ColumnDefinition Width="100"/>
                     <ColumnDefinition Width="120"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Name" Style="{StaticResource UplinkMutedTextStyle}"/>
-                <TextBlock Grid.Column="1" Text="Kind" Style="{StaticResource UplinkMutedTextStyle}"/>
-                <TextBlock Grid.Column="2" Text="Diff" Style="{StaticResource UplinkMutedTextStyle}"/>
-                <TextBlock Grid.Column="3" Text="Size" Style="{StaticResource UplinkMutedTextStyle}"/>
-                <TextBlock Grid.Column="4" Text="Modified" Style="{StaticResource UplinkMutedTextStyle}"/>
+                <Button Content="{Binding NameSortLabel}"
+                        Style="{StaticResource UplinkNavButtonStyle}"
+                        Padding="4,2"
+                        MinWidth="0"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Command="{Binding SortByCommand}"
+                        CommandParameter="Name"
+                        ToolTipService.ToolTip="Sort by name"/>
+                <Button Grid.Column="1"
+                        Content="{Binding KindSortLabel}"
+                        Style="{StaticResource UplinkNavButtonStyle}"
+                        Padding="4,2"
+                        MinWidth="0"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Command="{Binding SortByCommand}"
+                        CommandParameter="Kind"
+                        ToolTipService.ToolTip="Sort by kind"/>
+                <TextBlock Grid.Column="2" Text="Diff" Style="{StaticResource UplinkMutedTextStyle}" VerticalAlignment="Center"/>
+                <Button Grid.Column="3"
+                        Content="{Binding SizeSortLabel}"
+                        Style="{StaticResource UplinkNavButtonStyle}"
+                        Padding="4,2"
+                        MinWidth="0"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Command="{Binding SortByCommand}"
+                        CommandParameter="Size"
+                        ToolTipService.ToolTip="Sort by size"/>
+                <Button Grid.Column="4"
+                        Content="{Binding ModifiedSortLabel}"
+                        Style="{StaticResource UplinkNavButtonStyle}"
+                        Padding="4,2"
+                        MinWidth="0"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Command="{Binding SortByCommand}"
+                        CommandParameter="Modified"
+                        ToolTipService.ToolTip="Sort by modified"/>
             </Grid>
 
             <ListView x:Name="FileList"
