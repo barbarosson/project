@@ -6,9 +6,13 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using UplinkFtp.Helpers;
 using UplinkFtp.Models.Dto;
+using UplinkFtp.Models.Entities;
 using UplinkFtp.Models.Enums;
 using UplinkFtp.Services.Ftp;
 using UplinkFtp.Services.Licensing;
+using UplinkFtp.Services.Persistence;
+using UplinkFtp.Services.Protocol;
+using UplinkFtp.Services.Settings;
 using UplinkFtp.Services.Transfer;
 
 namespace UplinkFtp.ViewModels;
@@ -19,6 +23,12 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly IFtpService _ftpService;
     private readonly ILicenseService _licenseService;
     private readonly ITransferQueueService _transferQueue;
+    private readonly ISiteRepository _sites;
+    private readonly AppSettings _settings;
+    private readonly WebLicenseService? _webLicense;
+
+    private string? _privateKeyPath;
+    private string? _pendingRemotePath;
 
     public LocalBrowserViewModel LocalBrowser { get; }
 
@@ -29,6 +39,18 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public TransferQueueViewModel TransferQueue { get; }
 
     public string[] ProtocolOptions { get; } = ["FTP", "FTPS", "SFTP"];
+
+    /// <summary>Raised when Site Manager dialog should open.</summary>
+    public event EventHandler? OpenSiteManagerRequested;
+
+    /// <summary>Raised when Settings dialog should open.</summary>
+    public event EventHandler? OpenSettingsRequested;
+
+    /// <summary>Raised when License dialog should open.</summary>
+    public event EventHandler? OpenLicenseRequested;
+
+    /// <summary>Raised after <see cref="ApplySite"/> so the PasswordBox can sync.</summary>
+    public event EventHandler? CredentialsApplied;
 
     [ObservableProperty]
     private string _host = string.Empty;
@@ -47,7 +69,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private string _password = string.Empty;
 
     [ObservableProperty]
-    private bool _acceptAnyCertificate = true;
+    private bool _acceptAnyCertificate;
 
     [ObservableProperty]
     private bool _isConnected;
@@ -62,6 +84,8 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         IFtpService ftpService,
         ILicenseService licenseService,
         ITransferQueueService transferQueue,
+        ISiteRepository sites,
+        AppSettings settings,
         LocalBrowserViewModel localBrowser,
         RemoteBrowserViewModel remoteBrowser,
         LogViewModel log,
@@ -70,21 +94,33 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _ftpService = ftpService;
         _licenseService = licenseService;
         _transferQueue = transferQueue;
+        _sites = sites;
+        _settings = settings;
+        _webLicense = licenseService as WebLicenseService;
         LocalBrowser = localBrowser;
         RemoteBrowser = remoteBrowser;
         Log = log;
         TransferQueue = transferQueueViewModel;
 
+        AcceptAnyCertificate = settings.AcceptAnyCertificate;
+        SelectedProtocol = FormatProtocolLabel(settings.DefaultProtocol);
+
         _transferQueue.JobUpdated += OnTransferJobUpdated;
 
         StatusText =
-            $"ADIM 6 · {_licenseService.Channel} · {_licenseService.GetCurrentTier()} · sites≤{FormatLimit(_licenseService.GetMaxSavedSites())} · conn≤{FormatLimit(_licenseService.GetMaxConcurrentConnections())} · xfer≤{FormatLimit(_licenseService.GetMaxConcurrentTransfers())}";
-        Log.Info($"{_licenseService.StatusDetail}. Drag files between panes to enqueue transfers.");
+            $"{_licenseService.Channel} · {_licenseService.GetCurrentTier()} · sites≤{FormatLimit(_licenseService.GetMaxSavedSites())} · conn≤{FormatLimit(_licenseService.GetMaxConcurrentConnections())} · xfer≤{FormatLimit(_licenseService.GetMaxConcurrentTransfers())}";
+        Log.Info($"{_licenseService.StatusDetail}. Drag files between panes to enqueue transfers. Pause/resume continues from byte offset for files; directories restart.");
     }
 
     private static string FormatLimit(int value)
         => value >= LicenseLimits.ProUnlimited ? "∞" : value.ToString();
 
+    /// <summary>Optional Web license service when channel is Web (null on Store).</summary>
+    public WebLicenseService? WebLicense => _webLicense;
+
+    public ISiteRepository Sites => _sites;
+
+    public AppSettings Settings => _settings;
 
     public void Dispose()
     {
@@ -95,6 +131,31 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     public async Task InitializeAsync()
     {
         await LocalBrowser.InitializeAsync().ConfigureAwait(true);
+    }
+
+    /// <summary>Refresh the toolbar status line after license activate/clear/refresh.</summary>
+    public void RefreshLicenseStatusText()
+    {
+        StatusText =
+            $"{_licenseService.Channel} · {_licenseService.GetCurrentTier()} · sites≤{FormatLimit(_licenseService.GetMaxSavedSites())} · conn≤{FormatLimit(_licenseService.GetMaxConcurrentConnections())} · xfer≤{FormatLimit(_licenseService.GetMaxConcurrentTransfers())}";
+    }
+
+    /// <summary>Fills quick-connect fields from a saved site (password from credential store).</summary>
+    public void ApplySite(SiteEntity site, string? password)
+    {
+        ArgumentNullException.ThrowIfNull(site);
+
+        Host = site.Host;
+        PortText = site.Port > 0 ? site.Port.ToString() : "0";
+        SelectedProtocol = FormatProtocolLabel(ParseProtocol(site.Protocol));
+        Username = site.Username ?? string.Empty;
+        Password = password ?? string.Empty;
+        _privateKeyPath = site.PrivateKeyPath;
+        _pendingRemotePath = string.IsNullOrWhiteSpace(site.InitialRemotePath)
+            ? "/"
+            : site.InitialRemotePath;
+        AcceptAnyCertificate = _settings.AcceptAnyCertificate;
+        CredentialsApplied?.Invoke(this, EventArgs.Empty);
     }
 
     partial void OnSelectedProtocolChanged(string value)
@@ -114,6 +175,15 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             };
         }
     }
+
+    [RelayCommand]
+    private void OpenSiteManager() => OpenSiteManagerRequested?.Invoke(this, EventArgs.Empty);
+
+    [RelayCommand]
+    private void OpenSettings() => OpenSettingsRequested?.Invoke(this, EventArgs.Empty);
+
+    [RelayCommand]
+    private void OpenLicense() => OpenLicenseRequested?.Invoke(this, EventArgs.Empty);
 
     [RelayCommand]
     private async Task ConnectAsync()
@@ -138,8 +208,14 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
                 Port = int.TryParse(PortText, out var p) ? p : 0,
                 Username = string.IsNullOrWhiteSpace(Username) ? "anonymous" : Username.Trim(),
                 Password = Password,
+                PrivateKeyPath = _privateKeyPath,
                 Protocol = ParseProtocol(SelectedProtocol),
-                AcceptAnyCertificate = AcceptAnyCertificate
+                AcceptAnyCertificate = AcceptAnyCertificate,
+                ConnectTimeout = _settings.ConnectTimeout,
+                ReadTimeout = _settings.ReadTimeout,
+                RetryCount = _settings.RetryCount,
+                RetryDelay = _settings.RetryDelay,
+                UsePassive = _settings.UsePassive
             };
 
             Log.Info($"Connecting to {options.Host}:{options.ResolvePort()} via {options.Protocol}…");
@@ -147,7 +223,9 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             IsConnected = true;
             StatusText = $"Connected · {_ftpService.Name}";
             RemoteBrowser.SetConnected(true);
-            await RemoteBrowser.NavigateToAsync("/").ConfigureAwait(true);
+            var remotePath = string.IsNullOrWhiteSpace(_pendingRemotePath) ? "/" : _pendingRemotePath;
+            _pendingRemotePath = null;
+            await RemoteBrowser.NavigateToAsync(remotePath).ConfigureAwait(true);
             Log.Info("Connected.");
         }
         catch (Exception ex)
@@ -155,7 +233,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             IsConnected = false;
             RemoteBrowser.SetConnected(false);
             StatusText = "Connection failed";
-            Log.Error(ex.Message);
+            Log.Error(ProtocolError.ToUserMessage(ex));
         }
         finally
         {
@@ -182,7 +260,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
         catch (Exception ex)
         {
-            Log.Error(ex.Message);
+            Log.Error(ProtocolError.ToUserMessage(ex));
         }
         finally
         {
@@ -260,7 +338,14 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         }
         else if (job.State == TransferJobState.Paused)
         {
-            Log.Warn($"{job.Direction} paused: {job.DisplayName} (resume restarts from the beginning)");
+            if (job.SupportsResume)
+            {
+                Log.Warn($"{job.Direction} paused: {job.DisplayName} (resume continues from byte offset {job.ResumeOffsetBytes})");
+            }
+            else
+            {
+                Log.Warn($"{job.Direction} paused: {job.DisplayName} (directories restart from the beginning)");
+            }
         }
     }
 
@@ -313,6 +398,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
             return null;
         }
     }
+
+    private static string FormatProtocolLabel(RemoteProtocol protocol) => protocol switch
+    {
+        RemoteProtocol.Ftps => "FTPS",
+        RemoteProtocol.Sftp => "SFTP",
+        _ => "FTP"
+    };
 
     private static RemoteProtocol ParseProtocol(string value) => value.ToUpperInvariant() switch
     {

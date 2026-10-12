@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="UplinkFtp.Views.Dialogs.SiteManagerDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Sites"
+    PrimaryButtonText="Close"
+    DefaultButton="Primary"
+    MinWidth="720"
+    MinHeight="480">
+
+    <Grid MinWidth="680" MinHeight="420">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="220"/>
+            <ColumnDefinition Width="16"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ListView x:Name="SitesList"
+                  Grid.RowSpan="2"
+                  ItemsSource="{x:Bind ViewModel.Sites, Mode=OneWay}"
+                  SelectedItem="{x:Bind ViewModel.SelectedSite, Mode=TwoWay}"
+                  SelectionChanged="SitesList_SelectionChanged">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Spacing="2" Padding="4,6">
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
+                        <TextBlock Opacity="0.7" FontSize="12">
+                            <Run Text="{Binding Host}"/>
+                            <Run Text=" · "/>
+                            <Run Text="{Binding Protocol}"/>
+                        </TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="10">
+                <TextBox Header="Name"
+                         Text="{x:Bind ViewModel.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="My server"/>
+                <TextBox Header="Host"
+                         Text="{x:Bind ViewModel.Host, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="ftp.example.com"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Header="Port"
+                             Text="{x:Bind ViewModel.PortText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    <ComboBox Grid.Column="2"
+                              Header="Protocol"
+                              ItemsSource="{x:Bind ViewModel.ProtocolOptions}"
+                              SelectedItem="{x:Bind ViewModel.Protocol, Mode=TwoWay}"
+                              HorizontalAlignment="Stretch"/>
+                </Grid>
+                <TextBox Header="User"
+                         Text="{x:Bind ViewModel.Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="anonymous"/>
+                <PasswordBox x:Name="SitePasswordBox"
+                             Header="Password"
+                             PasswordChanged="SitePasswordBox_PasswordChanged"/>
+                <TextBox Header="Private key path (SFTP)"
+                         Text="{x:Bind ViewModel.PrivateKeyPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="Optional OpenSSH key path"/>
+                <TextBox Header="Initial remote folder"
+                         Text="{x:Bind ViewModel.InitialRemotePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                         PlaceholderText="/"/>
+                <ComboBox Header="Folder"
+                          ItemsSource="{x:Bind ViewModel.Folders, Mode=OneWay}"
+                          SelectedItem="{x:Bind ViewModel.SelectedFolder, Mode=TwoWay}"
+                          DisplayMemberPath="Name"
+                          PlaceholderText="(none)"
+                          HorizontalAlignment="Stretch"/>
+            </StackPanel>
+        </ScrollViewer>
+
+        <StackPanel Grid.Row="1"
+                    Grid.Column="2"
+                    Orientation="Vertical"
+                    Spacing="8"
+                    Margin="0,12,0,0">
+            <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                       TextWrapping="Wrap"
+                       Opacity="0.75"
+                       FontSize="12"/>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="New" Command="{x:Bind ViewModel.NewSiteCommand}" MinWidth="72"/>
+                <Button Content="Add" Command="{x:Bind ViewModel.AddCommand}" MinWidth="72"/>
+                <Button Content="Save" Command="{x:Bind ViewModel.SaveCommand}" MinWidth="72"/>
+                <Button Content="Delete" Command="{x:Bind ViewModel.DeleteCommand}" MinWidth="72"/>
+                <Button Content="Connect"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Command="{x:Bind ViewModel.ConnectCommand}"
+                        MinWidth="96"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</ContentDialog>

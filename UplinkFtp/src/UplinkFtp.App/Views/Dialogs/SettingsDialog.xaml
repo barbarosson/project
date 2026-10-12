@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="UplinkFtp.Views.Dialogs.SettingsDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Settings"
+    PrimaryButtonText="Close"
+    DefaultButton="Primary"
+    MinWidth="480">
+
+    <!-- Keyboard: Tab cycles fields; Enter activates Save when focused on that button.
+         Narrator: Headers on inputs provide accessible names; status line announces results. -->
+    <ScrollViewer MaxHeight="520" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="12" MinWidth="420" Padding="0,4,0,0">
+            <TextBlock Text="Connection"
+                       Style="{StaticResource SubtitleTextBlockStyle}"/>
+            <NumberBox Header="Connect timeout (seconds)"
+                       Value="{x:Bind ViewModel.ConnectTimeoutSeconds, Mode=TwoWay}"
+                       Minimum="1"
+                       Maximum="600"
+                       SpinButtonPlacementMode="Inline"/>
+            <NumberBox Header="Read timeout (seconds)"
+                       Value="{x:Bind ViewModel.ReadTimeoutSeconds, Mode=TwoWay}"
+                       Minimum="1"
+                       Maximum="3600"
+                       SpinButtonPlacementMode="Inline"/>
+            <NumberBox Header="Retry count"
+                       Value="{x:Bind ViewModel.RetryCount, Mode=TwoWay}"
+                       Minimum="0"
+                       Maximum="20"
+                       SpinButtonPlacementMode="Inline"/>
+            <NumberBox Header="Retry delay (seconds)"
+                       Value="{x:Bind ViewModel.RetryDelaySeconds, Mode=TwoWay}"
+                       Minimum="0"
+                       Maximum="120"
+                       SpinButtonPlacementMode="Inline"/>
+            <CheckBox Content="Use passive mode (FTP/FTPS)"
+                      IsChecked="{x:Bind ViewModel.UsePassive, Mode=TwoWay}"/>
+            <CheckBox Content="Accept any FTPS certificate"
+                      IsChecked="{x:Bind ViewModel.AcceptAnyCertificate, Mode=TwoWay}"
+                      ToolTipService.ToolTip="Unsafe for production — only for self-signed lab servers."/>
+
+            <TextBlock Text="Defaults"
+                       Style="{StaticResource SubtitleTextBlockStyle}"
+                       Margin="0,8,0,0"/>
+            <ComboBox Header="Theme"
+                      ItemsSource="{x:Bind ViewModel.ThemeOptions}"
+                      SelectedItem="{x:Bind ViewModel.Theme, Mode=TwoWay}"
+                      HorizontalAlignment="Stretch"/>
+            <ComboBox Header="Default protocol"
+                      ItemsSource="{x:Bind ViewModel.ProtocolOptions}"
+                      SelectedItem="{x:Bind ViewModel.DefaultProtocol, Mode=TwoWay}"
+                      HorizontalAlignment="Stretch"/>
+
+            <TextBlock Text="Privacy"
+                       Style="{StaticResource SubtitleTextBlockStyle}"
+                       Margin="0,8,0,0"/>
+            <CheckBox Content="Telemetry opt-in"
+                      IsChecked="{x:Bind ViewModel.TelemetryOptIn, Mode=TwoWay}"
+                      ToolTipService.ToolTip="Off by default. Never sends passwords or license keys."/>
+
+            <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                       TextWrapping="Wrap"
+                       Opacity="0.75"
+                       FontSize="12"/>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Save"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Command="{x:Bind ViewModel.SaveCommand}"
+                        MinWidth="96"/>
+                <Button Content="Export logs"
+                        Command="{x:Bind ViewModel.ExportLogsCommand}"
+                        MinWidth="96"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

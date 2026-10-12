@@ -9,7 +9,7 @@
     mc:Ignorable="d"
     Title="Uplink FTP">
 
-    <Grid>
+    <Grid x:Name="RootGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="140"/>
@@ -29,15 +29,35 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <TextBlock Text="Uplink FTP"
-                               Style="{StaticResource SubtitleTextBlockStyle}"
-                               VerticalAlignment="Center"
-                               Margin="0,0,12,0"/>
-                    <TextBlock Text="{x:Bind ViewModel.StatusText, Mode=OneWay}"
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Uplink FTP"
+                                   Style="{StaticResource SubtitleTextBlockStyle}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0"/>
+                        <Button Content="Sites"
+                                Command="{x:Bind ViewModel.OpenSiteManagerCommand}"
+                                Padding="12,4"
+                                MinWidth="72"/>
+                        <Button Content="Settings"
+                                Command="{x:Bind ViewModel.OpenSettingsCommand}"
+                                Padding="12,4"
+                                MinWidth="72"/>
+                        <Button Content="License"
+                                Command="{x:Bind ViewModel.OpenLicenseCommand}"
+                                Padding="12,4"
+                                MinWidth="72"/>
+                    </StackPanel>
+                    <TextBlock Grid.Column="2"
+                               Text="{x:Bind ViewModel.StatusText, Mode=OneWay}"
                                Opacity="0.7"
                                VerticalAlignment="Center"/>
-                </StackPanel>
+                </Grid>
 
                 <Grid Grid.Row="1" Margin="0,10,0,0">
                     <Grid.ColumnDefinitions>
@@ -81,7 +101,7 @@
                               IsChecked="{x:Bind ViewModel.AcceptAnyCertificate, Mode=TwoWay}"
                               VerticalAlignment="Bottom"
                               Margin="0,0,8,8"
-                              ToolTipService.ToolTip="Accept any FTPS certificate (dev)"/>
+                              ToolTipService.ToolTip="Accept any FTPS certificate. Unsafe for production — only for self-signed lab servers."/>
                     <Button Grid.Column="6"
                             Content="Connect"
                             Style="{StaticResource AccentButtonStyle}"
@@ -122,7 +142,7 @@
             </Border>
         </Grid>
 
-        <!-- Transfer queue placeholder -->
+        <!-- Transfer queue -->
         <Border Grid.Row="3"
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0"
@@ -135,7 +155,7 @@
                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                 BorderThickness="0,1,0,0">
             <TextBlock FontSize="12" Opacity="0.65">
-                <Run Text="Tip: drag local → remote to upload, remote → local to download. Transfers go through the queue (pause restarts on resume)."/>
+                <Run Text="Tip: drag local → remote to upload, remote → local to download. Pause/resume continues from byte offset for files; directories restart."/>
             </TextBlock>
         </Border>
     </Grid>
