@@ -65,7 +65,7 @@ public partial class App : Application
             new UplinkFtp.Services.Ftp.FtpSessionService(
                 sp.GetRequiredService<ILicenseService>(),
                 sp.GetRequiredService<UplinkFtp.Services.Ftp.IConnectionPool>()));
-        // Transfers use IFtpService.OpenTransferClientAsync (Free reuses primary session).
+        // Transfers: Pro leases pool clients; Free falls back to gated IFtpService APIs.
         services.AddSingleton<UplinkFtp.Services.Transfer.ITransferQueueService>(sp =>
             new UplinkFtp.Services.Transfer.TransferQueueService(
                 sp.GetRequiredService<UplinkFtp.Services.Ftp.IFtpService>(),

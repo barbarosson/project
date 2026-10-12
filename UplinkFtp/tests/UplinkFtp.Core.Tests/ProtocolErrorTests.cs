@@ -1,4 +1,5 @@
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using UplinkFtp.Services.Protocol;
 
@@ -62,5 +63,13 @@ public sealed class ProtocolErrorTests
     public void Cancel_is_clear()
     {
         Assert.Contains("cancelled", ProtocolError.ToUserMessage(new OperationCanceledException()), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void ComWrongThread_MapsToRetryHint()
+    {
+        var msg = ProtocolError.ToUserMessage(new COMException("RPC_E_WRONG_THREAD", unchecked((int)0x8001010E)));
+        Assert.Contains("threading", msg, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("COMException", msg, StringComparison.Ordinal);
     }
 }

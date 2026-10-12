@@ -37,8 +37,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 
 - Sites / Settings / License / Transfer queue action buttons no longer clip horizontally (equal-column grids)  
 - Drag-and-drop enqueue: WinUI Drop handlers now take a deferral (async drop was silently cancelled); panel-wide drop targets + **Upload →** / **← Download** buttons as fallback  
-- Sites dialog: fit ContentDialog max width (~520px) so **Connect** / New·Add·Save·Delete no longer clip  
-- Transfer queue: Free tier uploads reuse the primary SFTP session (no second pool connect); clearer remote permission / empty-exception messages  
+- Sites dialog: raise ContentDialog max width (~720–780px) so Protocol / actions / **Connect** / Close stay fully visible  
+- Transfer queue: action buttons in a 2×3 grid; Free tier transfers use session-gated APIs (avoids COMException from concurrent SFTP client use); clearer COM / permission messages  
 - Scrollbars: rectangular (0 radius), thicker track/thumb, teal-muted colors app-wide (Settings / Sites / Assist / lists)  
 
 ## [0.1.0-beta] — TBD

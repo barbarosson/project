@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using Renci.SshNet.Common;
 
@@ -54,6 +55,8 @@ public static class ProtocolError
                     return Sanitize(io.Message);
                 case SshException ssh when !string.IsNullOrWhiteSpace(ssh.Message):
                     return Sanitize(ssh.Message);
+                case COMException com:
+                    return MapComException(com);
             }
         }
 
@@ -91,6 +94,30 @@ public static class ProtocolError
         {
             yield return current;
         }
+    }
+
+    private static string MapComException(COMException com)
+    {
+        // 0x8001010E RPC_E_WRONG_THREAD — usually UI/collection touch off the UI thread,
+        // or Free-tier concurrent use of the same protocol client.
+        if (unchecked((uint)com.HResult) == 0x8001010E)
+        {
+            return "Transfer hit a threading conflict. Retry the transfer; if it persists, disconnect and reconnect.";
+        }
+
+        var inner = Sanitize(com.InnerException?.Message);
+        if (inner.Length > 0)
+        {
+            return inner;
+        }
+
+        var own = Sanitize(com.Message);
+        if (own.Length > 0)
+        {
+            return own;
+        }
+
+        return "Transfer failed (COM). Check remote path permissions and that you are still connected.";
     }
 
     private static string Sanitize(string? message)

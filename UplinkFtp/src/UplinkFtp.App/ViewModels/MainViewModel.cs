@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -26,6 +27,7 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     private readonly ISiteRepository _sites;
     private readonly AppSettings _settings;
     private readonly WebLicenseService? _webLicense;
+    private readonly SynchronizationContext? _uiSync = SynchronizationContext.Current;
 
     private string? _privateKeyPath;
     private string? _pendingRemotePath;
@@ -397,6 +399,18 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
     }
 
     private void OnTransferJobUpdated(object? sender, TransferJob job)
+    {
+        // Transfer workers raise JobUpdated off the UI thread — marshal before touching Log/UI.
+        if (_uiSync is null)
+        {
+            HandleTransferJobUpdated(job);
+            return;
+        }
+
+        _uiSync.Post(_ => HandleTransferJobUpdated(job), null);
+    }
+
+    private void HandleTransferJobUpdated(TransferJob job)
     {
         if (job.State == TransferJobState.Successful)
         {

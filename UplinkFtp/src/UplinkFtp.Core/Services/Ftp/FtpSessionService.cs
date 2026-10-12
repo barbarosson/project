@@ -176,12 +176,15 @@ public sealed class FtpSessionService : IFtpService
     {
         var options = _active ?? throw new InvalidOperationException("Not connected. Call ConnectAsync first.");
 
-        // Free (max 1): transfer workers reuse the primary session via a no-op lease.
+        // Free (max 1): do NOT hand out the primary client. Concurrent browse + transfer
+        // on the same SSH.NET/FluentFTP instance races and surfaces as COMException /
+        // "secure connection" failures. Callers catch NotSupportedException and use the
+        // gated IFtpService Upload*/Download* APIs instead (same session, serialized).
         if (_license.GetMaxConcurrentConnections() <= LicenseLimits.FreeMaxConcurrentConnections)
         {
             await EnsureConnectedAsync(cancellationToken).ConfigureAwait(false);
-            var primary = _client ?? throw new InvalidOperationException("Not connected.");
-            return new PrimarySessionLease(primary);
+            throw new NotSupportedException(
+                "Free tier transfers use the session-gated IFtpService APIs.");
         }
 
         return await _pool.LeaseAsync(options, cancellationToken).ConfigureAwait(false);
@@ -300,12 +303,4 @@ public sealed class FtpSessionService : IFtpService
         RemoteProtocol.Sftp => new SftpProtocolClient(),
         _ => throw new NotSupportedException($"Protocol '{protocol}' is not supported.")
     };
-
-    /// <summary>Lease wrapper that does not dispose the primary browse session.</summary>
-    private sealed class PrimarySessionLease(IRemoteProtocolClient client) : IConnectionLease
-    {
-        public IRemoteProtocolClient Client { get; } = client;
-
-        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
-    }
 }

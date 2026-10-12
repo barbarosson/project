@@ -549,8 +549,17 @@ public sealed class SftpProtocolClient : IRemoteProtocolClient
         {
             cancellationToken.ThrowIfCancellationRequested();
             var name = Path.GetFileName(file);
-            await UploadFileAsync(file, RemotePath.Combine(remoteDir, name), progress, cancellationToken)
-                .ConfigureAwait(false);
+            try
+            {
+                await UploadFileAsync(file, RemotePath.Combine(remoteDir, name), progress, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                throw new IOException(
+                    $"Failed uploading '{name}' in '{localDir}': {ex.Message}",
+                    ex);
+            }
         }
     }
 
