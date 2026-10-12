@@ -89,6 +89,6 @@ WinUI 3 targets `net8.0-windows10.0.*` and requires Windows App SDK tooling.
 - [Security review](docs/security-review.md)  
 - [Performance notes](docs/performance-notes.md)  
 - [Release checklist](docs/release-checklist.md) · [Known issues](docs/known-issues.md) · [Changelog](docs/CHANGELOG.md) · [Support](docs/support.md)  
-- Packaging: [MSIX](packaging/msix/README.md) · [Web/sideload](packaging/web/README.md)  
+- Packaging: [MSIX](packaging/msix/README.md) · [Web/sideload](packaging/web/README.md) · [Store docs](docs/store/README.md)  
 
 Coordinator durable docs (Project Context store): `docs/project-context.md`, roadmap, ADIM notes.

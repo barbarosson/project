@@ -90,7 +90,10 @@ public partial class App : Application
     private static void RegisterLicensing(IServiceCollection services)
     {
 #if UPLINK_CHANNEL_STORE
-        services.AddSingleton<ILicenseService, StoreLicenseService>();
+        // Store IDs from env after Partner Center — never hard-code production IDs here.
+        services.AddSingleton(new UplinkFtp.Services.Licensing.StoreCommerceOptions());
+        services.AddSingleton<ILicenseService>(sp =>
+            new StoreLicenseService(sp.GetRequiredService<UplinkFtp.Services.Licensing.StoreCommerceOptions>()));
 #else
         var allowStubKeys =
             UplinkFtp.Services.Licensing.WebLicenseOptions.DefaultAllowStubKeys()

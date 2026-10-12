@@ -14,6 +14,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 - Sample license validate API (`samples/LicenseApi`) — not production-hosted  
 - Packaging scaffolds under `packaging/` (MSIX/web docs, scripts that refuse missing certs)  
 - Docs: licensing contract, privacy draft, security review, performance notes, release checklist, support placeholder  
+- **Store commerce prep:** durable Pro add-on entitlement (`StoreEntitlementEvaluator`), env `UPLINK_STORE_PRO_ADDON_ID`, License **Buy Pro** → `RequestPurchaseAsync` (graceful if unassociated), Store/Web channel scripts, `docs/store/*` listing/IARC/capabilities, screenshot size placeholders  
+
 
 ### Changed
 

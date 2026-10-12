@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  LOCAL DEVELOPMENT PLACEHOLDERS — not Partner Center production identity.
+  After VS "Associate App with the Store", Identity / PhoneIdentity / PublisherDisplayName
+  are replaced with real values. Never invent production Store IDs in git.
+  Restricted capability justifications: docs/store/capability-justifications.md
+  Association workflow: packaging/msix/README.md
+-->
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
@@ -6,15 +13,18 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap rescap">
 
+  <!-- PLACEHOLDER: replaced by Store association -->
   <Identity
     Name="UplinkFtp.Desktop"
     Publisher="CN=UplinkFtp"
     Version="0.1.0.0" />
 
+  <!-- PLACEHOLDER PhoneIdentity — do not treat as a real Store product -->
   <mp:PhoneIdentity PhoneProductId="a1b2c3d4-e5f6-7890-abcd-ef1234567890" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>Uplink FTP</DisplayName>
+    <!-- PLACEHOLDER: must match Partner Center publisher display name after association -->
     <PublisherDisplayName>Uplink FTP</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -34,16 +44,24 @@
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
         DisplayName="Uplink FTP"
-        Description="Modern FTP / SFTP client"
+        Description="Desktop FTP, FTPS, and SFTP client with dual-pane transfers and optional Pro unlock."
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
-        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" />
+        <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"
+                         ShortName="Uplink FTP" />
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
     </Application>
   </Applications>
 
+  <!--
+    Capabilities (justify restricted caps in Partner Center — see docs/store/capability-justifications.md):
+      runFullTrust              — WinUI 3 desktop full-trust process
+      broadFileSystemAccess     — local browser + drag/drop outside Restricted AppContainer paths
+      internetClient            — FTP/FTPS/SFTP to remote hosts; Store entitlement APIs
+      privateNetworkClientServer — LAN / private-host FTP commonly used by developers
+  -->
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
     <rescap:Capability Name="broadFileSystemAccess" />
