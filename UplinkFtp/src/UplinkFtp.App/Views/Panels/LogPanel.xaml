@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Padding="8,4">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -17,26 +17,34 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="Message log" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <TextBlock Text="Message log"
+                       Style="{StaticResource UplinkSectionTitleStyle}"
+                       Margin="0"/>
             <Button Grid.Column="1"
                     Content="Clear"
-                    Command="{Binding ClearCommand}"
-                    Padding="12,4"/>
+                    Style="{StaticResource UplinkNavButtonStyle}"
+                    Command="{Binding ClearCommand}"/>
         </Grid>
-        <ListView x:Name="LogList"
-                  Grid.Row="1"
-                  ItemsSource="{Binding Lines}"
-                  SelectionMode="None"
-                  IsItemClickEnabled="False"
-                  Margin="0,4,0,0">
-            <ListView.ItemTemplate>
-                <DataTemplate x:DataType="x:String">
-                    <TextBlock Text="{x:Bind}"
-                               FontFamily="Consolas"
-                               FontSize="12"
-                               TextWrapping="Wrap"/>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+        <Border Grid.Row="1"
+                Margin="0,8,0,0"
+                Padding="8,6"
+                CornerRadius="10"
+                Background="{ThemeResource UplinkAccentSoftBrush}"
+                BorderBrush="{ThemeResource UplinkSectionStrokeBrush}"
+                BorderThickness="1">
+            <ListView x:Name="LogList"
+                      ItemsSource="{Binding Lines}"
+                      SelectionMode="None"
+                      IsItemClickEnabled="False">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <TextBlock Text="{x:Bind}"
+                                   Style="{StaticResource UplinkMonoTextStyle}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,1"/>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Border>
     </Grid>
 </UserControl>

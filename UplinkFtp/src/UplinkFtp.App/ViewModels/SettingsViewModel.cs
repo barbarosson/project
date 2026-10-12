@@ -52,6 +52,9 @@ public sealed partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _statusMessage = string.Empty;
 
+    /// <summary>Raised after Save so the shell can apply theme immediately.</summary>
+    public event EventHandler? SettingsSaved;
+
     public SettingsViewModel(AppSettings settings, TelemetryService telemetry)
     {
         _settings = settings;
@@ -99,7 +102,8 @@ public sealed partial class SettingsViewModel : ObservableObject
         _settings.UsePassive = UsePassive;
         _settings.TelemetryOptIn = TelemetryOptIn;
         _telemetry.SetOptIn(TelemetryOptIn);
-        StatusMessage = "Settings saved for this session.";
+        StatusMessage = "Settings saved for this session. Theme applied.";
+        SettingsSaved?.Invoke(this, EventArgs.Empty);
     }
 
     [RelayCommand]

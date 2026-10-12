@@ -10,7 +10,8 @@
     PrimaryButtonText="Close"
     DefaultButton="Primary"
     MinWidth="720"
-    MinHeight="480">
+    MinHeight="480"
+    FontFamily="{StaticResource UplinkUiFont}">
 
     <Grid MinWidth="680" MinHeight="420">
         <Grid.ColumnDefinitions>
@@ -23,31 +24,40 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <ListView x:Name="SitesList"
-                  Grid.RowSpan="2"
-                  ItemsSource="{x:Bind ViewModel.Sites, Mode=OneWay}"
-                  SelectedItem="{x:Bind ViewModel.SelectedSite, Mode=TwoWay}"
-                  SelectionChanged="SitesList_SelectionChanged">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Spacing="2" Padding="4,6">
-                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
-                        <TextBlock Opacity="0.7" FontSize="12">
-                            <Run Text="{Binding Host}"/>
-                            <Run Text=" · "/>
-                            <Run Text="{Binding Protocol}"/>
-                        </TextBlock>
-                    </StackPanel>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+        <Border Style="{StaticResource UplinkSectionBorderStyle}"
+                Margin="0"
+                Padding="8,6"
+                Grid.RowSpan="2">
+            <ListView x:Name="SitesList"
+                      ItemsSource="{x:Bind ViewModel.Sites, Mode=OneWay}"
+                      SelectedItem="{x:Bind ViewModel.SelectedSite, Mode=TwoWay}"
+                      SelectionChanged="SitesList_SelectionChanged">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Spacing="2" Padding="4,6">
+                            <TextBlock Text="{Binding Name}"
+                                       Style="{StaticResource UplinkBodyTextStyle}"
+                                       FontWeight="SemiBold"/>
+                            <TextBlock Style="{StaticResource UplinkMutedTextStyle}">
+                                <Run Text="{Binding Host}"/>
+                                <Run Text=" · "/>
+                                <Run Text="{Binding Protocol}"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Border>
 
         <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="10">
+                <TextBlock Text="Site details" Style="{StaticResource UplinkDialogTitleStyle}"/>
                 <TextBox Header="Name"
+                         FontFamily="{StaticResource UplinkUiFont}"
                          Text="{x:Bind ViewModel.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="My server"/>
                 <TextBox Header="Host"
+                         FontFamily="{StaticResource UplinkUiFont}"
                          Text="{x:Bind ViewModel.Host, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="ftp.example.com"/>
                 <Grid>
@@ -57,26 +67,33 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <TextBox Header="Port"
+                             FontFamily="{StaticResource UplinkUiFont}"
                              Text="{x:Bind ViewModel.PortText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     <ComboBox Grid.Column="2"
                               Header="Protocol"
+                              FontFamily="{StaticResource UplinkUiFont}"
                               ItemsSource="{x:Bind ViewModel.ProtocolOptions}"
                               SelectedItem="{x:Bind ViewModel.Protocol, Mode=TwoWay}"
                               HorizontalAlignment="Stretch"/>
                 </Grid>
                 <TextBox Header="User"
+                         FontFamily="{StaticResource UplinkUiFont}"
                          Text="{x:Bind ViewModel.Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="anonymous"/>
                 <PasswordBox x:Name="SitePasswordBox"
                              Header="Password"
+                             FontFamily="{StaticResource UplinkUiFont}"
                              PasswordChanged="SitePasswordBox_PasswordChanged"/>
                 <TextBox Header="Private key path (SFTP)"
+                         FontFamily="{StaticResource UplinkUiFont}"
                          Text="{x:Bind ViewModel.PrivateKeyPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="Optional OpenSSH key path"/>
                 <TextBox Header="Initial remote folder"
+                         FontFamily="{StaticResource UplinkUiFont}"
                          Text="{x:Bind ViewModel.InitialRemotePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                          PlaceholderText="/"/>
                 <ComboBox Header="Folder"
+                          FontFamily="{StaticResource UplinkUiFont}"
                           ItemsSource="{x:Bind ViewModel.Folders, Mode=OneWay}"
                           SelectedItem="{x:Bind ViewModel.SelectedFolder, Mode=TwoWay}"
                           DisplayMemberPath="Name"
@@ -91,18 +108,19 @@
                     Spacing="8"
                     Margin="0,12,0,0">
             <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
-                       TextWrapping="Wrap"
-                       Opacity="0.75"
-                       FontSize="12"/>
+                       Style="{StaticResource UplinkMutedTextStyle}"
+                       TextWrapping="Wrap"/>
             <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Content="New" Command="{x:Bind ViewModel.NewSiteCommand}" MinWidth="72"/>
-                <Button Content="Add" Command="{x:Bind ViewModel.AddCommand}" MinWidth="72"/>
-                <Button Content="Save" Command="{x:Bind ViewModel.SaveCommand}" MinWidth="72"/>
-                <Button Content="Delete" Command="{x:Bind ViewModel.DeleteCommand}" MinWidth="72"/>
+                <Button Content="New" Style="{StaticResource UplinkNavButtonStyle}" Command="{x:Bind ViewModel.NewSiteCommand}" MinWidth="72"/>
+                <Button Content="Add" Style="{StaticResource UplinkNavButtonStyle}" Command="{x:Bind ViewModel.AddCommand}" MinWidth="72"/>
+                <Button Content="Save" Style="{StaticResource UplinkNavButtonStyle}" Command="{x:Bind ViewModel.SaveCommand}" MinWidth="72"/>
+                <Button Content="Delete" Style="{StaticResource UplinkNavButtonStyle}" Command="{x:Bind ViewModel.DeleteCommand}" MinWidth="72"/>
                 <Button Content="Connect"
                         Style="{StaticResource AccentButtonStyle}"
+                        FontFamily="{StaticResource UplinkUiFont}"
                         Command="{x:Bind ViewModel.ConnectCommand}"
-                        MinWidth="96"/>
+                        MinWidth="96"
+                        CornerRadius="10"/>
             </StackPanel>
         </StackPanel>
     </Grid>

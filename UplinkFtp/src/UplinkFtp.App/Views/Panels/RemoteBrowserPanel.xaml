@@ -8,22 +8,23 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Padding="8">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Remote site" FontWeight="SemiBold" Margin="0,0,0,6"/>
+        <TextBlock Text="Remote site" Style="{StaticResource UplinkSectionTitleStyle}"/>
 
-        <Grid Grid.Row="1" Margin="0,0,0,6">
+        <Grid Grid.Row="1" Margin="0,0,0,8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <TextBox x:Name="PathBox"
+                     FontFamily="{StaticResource UplinkUiFont}"
                      Text="{Binding CurrentPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                      PlaceholderText="Remote path"
                      IsEnabled="{Binding IsConnected}"
@@ -31,11 +32,14 @@
                      KeyDown="PathBox_KeyDown"/>
             <Button Grid.Column="1"
                     Content="Up"
+                    Style="{StaticResource UplinkNavButtonStyle}"
                     Command="{Binding NavigateUpCommand}"
                     IsEnabled="{Binding IsConnected}"
-                    Margin="0,0,6,0"/>
+                    Margin="0,0,6,0"
+                    ToolTipService.ToolTip="Parent folder"/>
             <Button Grid.Column="2"
                     Content="Refresh"
+                    Style="{StaticResource UplinkNavButtonStyle}"
                     Command="{Binding RefreshCommand}"
                     IsEnabled="{Binding IsConnected}"/>
         </Grid>
@@ -45,17 +49,17 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Grid Margin="4,0,4,4">
+            <Grid Margin="4,0,4,6">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="80"/>
                     <ColumnDefinition Width="100"/>
                     <ColumnDefinition Width="140"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Text="Name" Opacity="0.7"/>
-                <TextBlock Grid.Column="1" Text="Kind" Opacity="0.7"/>
-                <TextBlock Grid.Column="2" Text="Size" Opacity="0.7"/>
-                <TextBlock Grid.Column="3" Text="Modified" Opacity="0.7"/>
+                <TextBlock Text="Name" Style="{StaticResource UplinkMutedTextStyle}"/>
+                <TextBlock Grid.Column="1" Text="Kind" Style="{StaticResource UplinkMutedTextStyle}"/>
+                <TextBlock Grid.Column="2" Text="Size" Style="{StaticResource UplinkMutedTextStyle}"/>
+                <TextBlock Grid.Column="3" Text="Modified" Style="{StaticResource UplinkMutedTextStyle}"/>
             </Grid>
 
             <ListView x:Name="FileList"
@@ -73,17 +77,19 @@
                       DoubleTapped="FileList_DoubleTapped">
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="vm:BrowserItemViewModel">
-                        <Grid Padding="0,2">
+                        <Grid Padding="0,3">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="80"/>
                                 <ColumnDefinition Width="100"/>
                                 <ColumnDefinition Width="140"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Text="{x:Bind Name}" TextTrimming="CharacterEllipsis"/>
-                            <TextBlock Grid.Column="1" Text="{x:Bind Kind}" Opacity="0.8"/>
-                            <TextBlock Grid.Column="2" Text="{x:Bind SizeDisplay}"/>
-                            <TextBlock Grid.Column="3" Text="{x:Bind ModifiedDisplay}" Opacity="0.8"/>
+                            <TextBlock Text="{x:Bind Name}"
+                                       Style="{StaticResource UplinkBodyTextStyle}"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Grid.Column="1" Text="{x:Bind Kind}" Style="{StaticResource UplinkMutedTextStyle}"/>
+                            <TextBlock Grid.Column="2" Text="{x:Bind SizeDisplay}" Style="{StaticResource UplinkBodyTextStyle}"/>
+                            <TextBlock Grid.Column="3" Text="{x:Bind ModifiedDisplay}" Style="{StaticResource UplinkMutedTextStyle}"/>
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>

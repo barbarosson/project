@@ -8,28 +8,45 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Padding="8,4">
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Margin="0,0,0,4">
+        <Grid Margin="0,0,0,8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <StackPanel Orientation="Horizontal" Spacing="12">
-                <TextBlock Text="Transfer queue" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding SummaryText}" Opacity="0.7" VerticalAlignment="Center" FontSize="12"/>
+            <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <TextBlock Text="Transfer queue"
+                           Style="{StaticResource UplinkSectionTitleStyle}"
+                           Margin="0"
+                           VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding SummaryText}"
+                           Style="{StaticResource UplinkMutedTextStyle}"
+                           VerticalAlignment="Center"/>
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-                <Button Content="Pause" Command="{Binding PauseSelectedCommand}" Padding="10,4"/>
-                <Button Content="Resume" Command="{Binding ResumeSelectedCommand}" Padding="10,4"/>
-                <Button Content="Cancel" Command="{Binding CancelSelectedCommand}" Padding="10,4"/>
-                <Button Content="Retry" Command="{Binding RetrySelectedCommand}" Padding="10,4"/>
-                <Button Content="Clear done" Command="{Binding ClearSuccessfulCommand}" Padding="10,4"/>
-                <Button Content="Clear failed" Command="{Binding ClearFailedCommand}" Padding="10,4"/>
+                <Button Content="Pause"
+                        Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{Binding PauseSelectedCommand}"/>
+                <Button Content="Resume"
+                        Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{Binding ResumeSelectedCommand}"/>
+                <Button Content="Cancel"
+                        Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{Binding CancelSelectedCommand}"/>
+                <Button Content="Retry"
+                        Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{Binding RetrySelectedCommand}"/>
+                <Button Content="Clear done"
+                        Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{Binding ClearSuccessfulCommand}"/>
+                <Button Content="Clear failed"
+                        Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{Binding ClearFailedCommand}"/>
             </StackPanel>
         </Grid>
 
@@ -51,28 +68,33 @@
                                         <ColumnDefinition Width="90"/>
                                         <ColumnDefinition Width="180"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{x:Bind Direction, Mode=OneWay}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="{x:Bind Direction, Mode=OneWay}"
+                                               Style="{StaticResource UplinkBodyTextStyle}"
+                                               VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="1"
                                                Text="{x:Bind DisplayName, Mode=OneWay}"
+                                               Style="{StaticResource UplinkBodyTextStyle}"
                                                TextTrimming="CharacterEllipsis"
                                                VerticalAlignment="Center"/>
                                     <StackPanel Grid.Column="2" Spacing="2" VerticalAlignment="Center">
                                         <TextBlock Text="{x:Bind Detail, Mode=OneWay}"
+                                                   Style="{StaticResource UplinkMutedTextStyle}"
                                                    FontSize="11"
-                                                   Opacity="0.75"
                                                    TextTrimming="CharacterEllipsis"/>
                                         <ProgressBar Minimum="0"
                                                      Maximum="100"
                                                      Value="{x:Bind ProgressPercent, Mode=OneWay}"
-                                                     Height="6"/>
+                                                     Height="6"
+                                                     Foreground="{ThemeResource UplinkAccentBrush}"/>
                                     </StackPanel>
                                     <TextBlock Grid.Column="3"
                                                Text="{x:Bind Status, Mode=OneWay}"
+                                               Style="{StaticResource UplinkBodyTextStyle}"
                                                VerticalAlignment="Center"/>
                                     <TextBlock Grid.Column="4"
                                                Text="{x:Bind Destination, Mode=OneWay}"
+                                               Style="{StaticResource UplinkMutedTextStyle}"
                                                FontSize="11"
-                                               Opacity="0.7"
                                                TextTrimming="CharacterEllipsis"
                                                VerticalAlignment="Center"/>
                                 </Grid>
@@ -94,10 +116,20 @@
                                         <ColumnDefinition Width="90"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{x:Bind Direction, Mode=OneWay}"/>
-                                    <TextBlock Grid.Column="1" Text="{x:Bind DisplayName, Mode=OneWay}" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Grid.Column="2" Text="{x:Bind Status, Mode=OneWay}"/>
-                                    <TextBlock Grid.Column="3" Text="{x:Bind Detail, Mode=OneWay}" Opacity="0.8" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{x:Bind Direction, Mode=OneWay}" Style="{StaticResource UplinkBodyTextStyle}"/>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{x:Bind DisplayName, Mode=OneWay}"
+                                               Style="{StaticResource UplinkBodyTextStyle}"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="2"
+                                               Text="{x:Bind Status, Mode=OneWay}"
+                                               Foreground="{ThemeResource UplinkSignalBrush}"
+                                               FontFamily="{StaticResource UplinkUiFont}"
+                                               FontSize="13"/>
+                                    <TextBlock Grid.Column="3"
+                                               Text="{x:Bind Detail, Mode=OneWay}"
+                                               Style="{StaticResource UplinkMutedTextStyle}"
+                                               TextTrimming="CharacterEllipsis"/>
                                 </Grid>
                             </DataTemplate>
                         </ListView.ItemTemplate>
@@ -117,10 +149,19 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="{x:Bind Direction, Mode=OneWay}"/>
-                                    <TextBlock Grid.Column="1" Text="{x:Bind DisplayName, Mode=OneWay}" TextTrimming="CharacterEllipsis"/>
-                                    <TextBlock Grid.Column="2" Text="{x:Bind Source, Mode=OneWay}" TextTrimming="CharacterEllipsis" Opacity="0.75"/>
-                                    <TextBlock Grid.Column="3" Text="{x:Bind Destination, Mode=OneWay}" TextTrimming="CharacterEllipsis" Opacity="0.75"/>
+                                    <TextBlock Text="{x:Bind Direction, Mode=OneWay}" Style="{StaticResource UplinkBodyTextStyle}"/>
+                                    <TextBlock Grid.Column="1"
+                                               Text="{x:Bind DisplayName, Mode=OneWay}"
+                                               Style="{StaticResource UplinkBodyTextStyle}"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="2"
+                                               Text="{x:Bind Source, Mode=OneWay}"
+                                               Style="{StaticResource UplinkMutedTextStyle}"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Column="3"
+                                               Text="{x:Bind Destination, Mode=OneWay}"
+                                               Style="{StaticResource UplinkMutedTextStyle}"
+                                               TextTrimming="CharacterEllipsis"/>
                                 </Grid>
                             </DataTemplate>
                         </ListView.ItemTemplate>

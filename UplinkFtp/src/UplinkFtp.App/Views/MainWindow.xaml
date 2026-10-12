@@ -9,21 +9,17 @@
     mc:Ignorable="d"
     Title="Uplink FTP">
 
-    <Grid x:Name="RootGrid">
+    <Grid x:Name="RootGrid" Background="{ThemeResource UplinkShellBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="140"/>
+            <RowDefinition Height="168"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="220"/>
+            <RowDefinition Height="236"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Quick connect / toolbar -->
-        <Border Grid.Row="0"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="0,0,0,1"
-                Padding="12,10">
+        <!-- Connect / brand -->
+        <Border Grid.Row="0" Style="{StaticResource UplinkSectionBorderStyle}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -35,35 +31,36 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <StackPanel Orientation="Horizontal" Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Border Width="10" Height="10" CornerRadius="5"
+                                Background="{ThemeResource UplinkAccentBrush}"
+                                VerticalAlignment="Center"/>
                         <TextBlock Text="Uplink FTP"
-                                   Style="{StaticResource SubtitleTextBlockStyle}"
-                                   VerticalAlignment="Center"
-                                   Margin="0,0,12,0"/>
+                                   Style="{StaticResource UplinkBrandTextStyle}"
+                                   VerticalAlignment="Center"/>
                         <Button Content="Sites"
-                                Command="{x:Bind ViewModel.OpenSiteManagerCommand}"
-                                Padding="12,4"
-                                MinWidth="72"/>
+                                Style="{StaticResource UplinkNavButtonStyle}"
+                                Command="{x:Bind ViewModel.OpenSiteManagerCommand}"/>
                         <Button Content="Settings"
-                                Command="{x:Bind ViewModel.OpenSettingsCommand}"
-                                Padding="12,4"
-                                MinWidth="72"/>
+                                Style="{StaticResource UplinkNavButtonStyle}"
+                                Command="{x:Bind ViewModel.OpenSettingsCommand}"/>
                         <Button Content="License"
-                                Command="{x:Bind ViewModel.OpenLicenseCommand}"
-                                Padding="12,4"
-                                MinWidth="72"/>
+                                Style="{StaticResource UplinkNavButtonStyle}"
+                                Command="{x:Bind ViewModel.OpenLicenseCommand}"/>
                     </StackPanel>
-                    <TextBlock Grid.Column="2"
+                    <TextBlock x:Name="StatusTextBlock"
+                               Grid.Column="2"
                                Text="{x:Bind ViewModel.StatusText, Mode=OneWay}"
-                               Opacity="0.7"
-                               VerticalAlignment="Center"/>
+                               Style="{StaticResource UplinkMutedTextStyle}"
+                               VerticalAlignment="Center"
+                               TextAlignment="Right"/>
                 </Grid>
 
-                <Grid Grid.Row="1" Margin="0,10,0,0">
+                <Grid Grid.Row="1" Margin="0,14,0,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="2*"/>
                         <ColumnDefinition Width="80"/>
-                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="110"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
@@ -72,32 +69,38 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBox Header="Host"
+                             FontFamily="{StaticResource UplinkUiFont}"
                              Text="{x:Bind ViewModel.Host, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              PlaceholderText="ftp.example.com"
                              Margin="0,0,8,0"/>
                     <TextBox Grid.Column="1"
                              Header="Port"
+                             FontFamily="{StaticResource UplinkUiFont}"
                              Text="{x:Bind ViewModel.PortText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              Margin="0,0,8,0"/>
                     <ComboBox Grid.Column="2"
                               Header="Protocol"
+                              FontFamily="{StaticResource UplinkUiFont}"
                               ItemsSource="{x:Bind ViewModel.ProtocolOptions}"
                               SelectedItem="{x:Bind ViewModel.SelectedProtocol, Mode=TwoWay}"
                               Margin="0,0,8,0"
                               HorizontalAlignment="Stretch"/>
                     <TextBox Grid.Column="3"
                              Header="User"
+                             FontFamily="{StaticResource UplinkUiFont}"
                              Text="{x:Bind ViewModel.Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                              PlaceholderText="anonymous"
                              Margin="0,0,8,0"/>
                     <PasswordBox x:Name="PasswordBox"
                                  Grid.Column="4"
                                  Header="Password"
+                                 FontFamily="{StaticResource UplinkUiFont}"
                                  PlaceholderText="Password"
                                  Margin="0,0,8,0"
                                  PasswordChanged="PasswordBox_PasswordChanged"/>
                     <CheckBox Grid.Column="5"
                               Content="Trust cert"
+                              FontFamily="{StaticResource UplinkUiFont}"
                               IsChecked="{x:Bind ViewModel.AcceptAnyCertificate, Mode=TwoWay}"
                               VerticalAlignment="Bottom"
                               Margin="0,0,8,8"
@@ -105,57 +108,62 @@
                     <Button Grid.Column="6"
                             Content="Connect"
                             Style="{StaticResource AccentButtonStyle}"
+                            FontFamily="{StaticResource UplinkUiFont}"
                             Command="{x:Bind ViewModel.ConnectCommand}"
                             VerticalAlignment="Bottom"
                             Margin="0,0,8,4"
-                            MinWidth="96"/>
+                            MinWidth="104"
+                            CornerRadius="10"/>
                     <Button Grid.Column="7"
                             Content="Disconnect"
+                            Style="{StaticResource UplinkNavButtonStyle}"
                             Command="{x:Bind ViewModel.DisconnectCommand}"
                             VerticalAlignment="Bottom"
-                            Margin="0,0,0,4"
-                            MinWidth="96"/>
+                            Margin="0,0,0,4"/>
                 </Grid>
             </Grid>
         </Border>
 
         <!-- Message log -->
-        <Border Grid.Row="1"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="0,0,0,1">
+        <Border Grid.Row="1" Style="{StaticResource UplinkSectionBorderStyle}">
             <panels:LogPanel x:Name="LogPanel"/>
         </Border>
 
         <!-- Local | Remote browsers -->
-        <Grid Grid.Row="2">
+        <Grid Grid.Row="2" Margin="4,0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="8"/>
+                <ColumnDefinition Width="12"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Border BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,1,0">
+            <Border Style="{StaticResource UplinkSectionBorderStyle}" Margin="6,6,0,6">
                 <panels:LocalBrowserPanel x:Name="LocalPanel"/>
             </Border>
-            <Border Grid.Column="1" Background="{ThemeResource CardStrokeColorDefaultBrush}"/>
-            <Border Grid.Column="2">
+            <Border Grid.Column="1"
+                    Width="4"
+                    CornerRadius="2"
+                    Background="{ThemeResource UplinkDividerBrush}"
+                    VerticalAlignment="Stretch"
+                    Margin="0,18"/>
+            <Border Grid.Column="2" Style="{StaticResource UplinkSectionBorderStyle}" Margin="0,6,6,6">
                 <panels:RemoteBrowserPanel x:Name="RemotePanel"/>
             </Border>
         </Grid>
 
         <!-- Transfer queue -->
-        <Border Grid.Row="3"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="0,1,0,0"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
+        <Border Grid.Row="3" Style="{StaticResource UplinkSectionBorderStyle}">
             <panels:TransferQueuePanel x:Name="QueuePanel"/>
         </Border>
 
         <Border Grid.Row="4"
-                Padding="12,6"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="0,1,0,0">
-            <TextBlock FontSize="12" Opacity="0.65">
-                <Run Text="Tip: drag local → remote to upload, remote → local to download. Pause/resume continues from byte offset for files; directories restart."/>
+                Margin="10,2,10,10"
+                Padding="12,8"
+                CornerRadius="10"
+                Background="{ThemeResource UplinkAccentSoftBrush}"
+                BorderBrush="{ThemeResource UplinkSectionStrokeBrush}"
+                BorderThickness="1">
+            <TextBlock Style="{StaticResource UplinkMutedTextStyle}" FontSize="12">
+                <Run Text="Tip: drag local → remote to upload, remote → local to download. Pause/resume continues from byte offset for files; directories restart. Theme: Settings → Light / Dark / System."/>
             </TextBlock>
         </Border>
     </Grid>

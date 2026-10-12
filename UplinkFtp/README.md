@@ -17,6 +17,8 @@ ADIM 1–6 client skeleton is in place. Post–ADIM work (P1–P11) adds **Core*
 
 CI: `.github/workflows/uplink-ftp-ci.yml` (Linux Core tests + Windows WinUI build).
 
+**UI:** Sectioned shell (connect, message log, local/remote browsers, transfer queue) with Light / Dark / System theme (**Settings → Theme**). Warm-tech teal accent, Sora UI font, JetBrains Mono for the log.
+
 ### Free vs Pro (enforced in Core)
 
 | Capability | Free | Pro |

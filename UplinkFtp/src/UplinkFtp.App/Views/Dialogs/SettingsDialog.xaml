@@ -9,69 +9,87 @@
     Title="Settings"
     PrimaryButtonText="Close"
     DefaultButton="Primary"
-    MinWidth="480">
+    MinWidth="480"
+    FontFamily="{StaticResource UplinkUiFont}">
 
     <!-- Keyboard: Tab cycles fields; Enter activates Save when focused on that button.
          Narrator: Headers on inputs provide accessible names; status line announces results. -->
     <ScrollViewer MaxHeight="520" VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="12" MinWidth="420" Padding="0,4,0,0">
-            <TextBlock Text="Connection"
-                       Style="{StaticResource SubtitleTextBlockStyle}"/>
+            <TextBlock Text="Connection" Style="{StaticResource UplinkDialogTitleStyle}"/>
             <NumberBox Header="Connect timeout (seconds)"
+                       FontFamily="{StaticResource UplinkUiFont}"
                        Value="{x:Bind ViewModel.ConnectTimeoutSeconds, Mode=TwoWay}"
                        Minimum="1"
                        Maximum="600"
                        SpinButtonPlacementMode="Inline"/>
             <NumberBox Header="Read timeout (seconds)"
+                       FontFamily="{StaticResource UplinkUiFont}"
                        Value="{x:Bind ViewModel.ReadTimeoutSeconds, Mode=TwoWay}"
                        Minimum="1"
                        Maximum="3600"
                        SpinButtonPlacementMode="Inline"/>
             <NumberBox Header="Retry count"
+                       FontFamily="{StaticResource UplinkUiFont}"
                        Value="{x:Bind ViewModel.RetryCount, Mode=TwoWay}"
                        Minimum="0"
                        Maximum="20"
                        SpinButtonPlacementMode="Inline"/>
             <NumberBox Header="Retry delay (seconds)"
+                       FontFamily="{StaticResource UplinkUiFont}"
                        Value="{x:Bind ViewModel.RetryDelaySeconds, Mode=TwoWay}"
                        Minimum="0"
                        Maximum="120"
                        SpinButtonPlacementMode="Inline"/>
             <CheckBox Content="Use passive mode (FTP/FTPS)"
+                      FontFamily="{StaticResource UplinkUiFont}"
                       IsChecked="{x:Bind ViewModel.UsePassive, Mode=TwoWay}"/>
             <CheckBox Content="Accept any FTPS certificate"
+                      FontFamily="{StaticResource UplinkUiFont}"
                       IsChecked="{x:Bind ViewModel.AcceptAnyCertificate, Mode=TwoWay}"
                       ToolTipService.ToolTip="Unsafe for production — only for self-signed lab servers."/>
 
-            <TextBlock Text="Defaults"
-                       Style="{StaticResource SubtitleTextBlockStyle}"
+            <TextBlock Text="Appearance"
+                       Style="{StaticResource UplinkDialogTitleStyle}"
                        Margin="0,8,0,0"/>
             <ComboBox Header="Theme"
+                      FontFamily="{StaticResource UplinkUiFont}"
                       ItemsSource="{x:Bind ViewModel.ThemeOptions}"
                       SelectedItem="{x:Bind ViewModel.Theme, Mode=TwoWay}"
                       HorizontalAlignment="Stretch"/>
+            <TextBlock Text="Light, Dark, or System. Blocks keep the same teal/amber warm-tech palette in both themes."
+                       Style="{StaticResource UplinkMutedTextStyle}"
+                       TextWrapping="Wrap"/>
+
+            <TextBlock Text="Defaults"
+                       Style="{StaticResource UplinkDialogTitleStyle}"
+                       Margin="0,8,0,0"/>
             <ComboBox Header="Default protocol"
+                      FontFamily="{StaticResource UplinkUiFont}"
                       ItemsSource="{x:Bind ViewModel.ProtocolOptions}"
                       SelectedItem="{x:Bind ViewModel.DefaultProtocol, Mode=TwoWay}"
                       HorizontalAlignment="Stretch"/>
 
             <TextBlock Text="Privacy"
-                       Style="{StaticResource SubtitleTextBlockStyle}"
+                       Style="{StaticResource UplinkDialogTitleStyle}"
                        Margin="0,8,0,0"/>
             <CheckBox Content="Telemetry opt-in"
+                      FontFamily="{StaticResource UplinkUiFont}"
                       IsChecked="{x:Bind ViewModel.TelemetryOptIn, Mode=TwoWay}"
                       ToolTipService.ToolTip="Off by default. Never sends passwords or license keys."/>
 
             <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
-                       TextWrapping="Wrap"
-                       Opacity="0.75"
-                       FontSize="12"/>
+                       Style="{StaticResource UplinkMutedTextStyle}"
+                       TextWrapping="Wrap"/>
             <StackPanel Orientation="Horizontal" Spacing="8">
                 <Button Content="Save"
                         Style="{StaticResource AccentButtonStyle}"
+                        FontFamily="{StaticResource UplinkUiFont}"
                         Command="{x:Bind ViewModel.SaveCommand}"
-                        MinWidth="96"/>
+                        MinWidth="96"
+                        CornerRadius="10"/>
                 <Button Content="Export logs"
+                        Style="{StaticResource UplinkNavButtonStyle}"
                         Command="{x:Bind ViewModel.ExportLogsCommand}"
                         MinWidth="96"/>
             </StackPanel>

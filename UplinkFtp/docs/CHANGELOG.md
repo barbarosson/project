@@ -21,6 +21,12 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 - `AcceptAnyCertificate` defaults to false  
 - **Windows App SDK 1.6 → 2.5.1** (NuGet stable); BuildTools → `10.0.26100.9169`  
 - Unpackaged builds use `WindowsAppSDKSelfContained=true` (no EOL 1.6 Runtime install)  
+- **UI shell redesign:** sectioned blocks (connect / log / local·remote / queue), Light·Dark·System theme via Settings, Sora + JetBrains Mono, warm-tech teal/amber palette  
+
+### Added (UI)
+
+- `Themes/Colors.xaml`, `Themes/Styles.xaml`, `Helpers/ThemeHelper.cs`  
+- Embedded fonts under `Assets/Fonts/` (Sora, JetBrains Mono)  
 
 ## [0.1.0-beta] — TBD
 

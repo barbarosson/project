@@ -1,4 +1,5 @@
 using System;
+using UplinkFtp.Helpers;
 using UplinkFtp.ViewModels;
 using UplinkFtp.Views.Dialogs;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,14 +27,55 @@ public sealed partial class MainWindow : Window
         ViewModel.OpenSettingsRequested += OnOpenSettingsRequested;
         ViewModel.OpenLicenseRequested += OnOpenLicenseRequested;
         ViewModel.CredentialsApplied += OnCredentialsApplied;
+        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
 
+        ApplyThemeFromSettings();
+        UpdateStatusAppearance();
         Activated += OnActivatedOnce;
     }
 
     private async void OnActivatedOnce(object sender, WindowActivatedEventArgs args)
     {
         Activated -= OnActivatedOnce;
+        ApplyThemeFromSettings();
         await ViewModel.InitializeAsync();
+    }
+
+    private void ApplyThemeFromSettings()
+        => ThemeHelper.ApplyFromSettings(ViewModel.Settings, RootGrid);
+
+    private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is nameof(MainViewModel.StatusText) or nameof(MainViewModel.IsConnected))
+        {
+            UpdateStatusAppearance();
+        }
+    }
+
+    private void UpdateStatusAppearance()
+    {
+        var text = ViewModel.StatusText ?? string.Empty;
+        var isError = text.Contains("fail", StringComparison.OrdinalIgnoreCase)
+                      || text.Contains("error", StringComparison.OrdinalIgnoreCase);
+
+        if (isError)
+        {
+            StatusTextBlock.ClearValue(TextBlock.ForegroundProperty);
+            StatusTextBlock.Style = (Style)Application.Current.Resources["UplinkStatusSignalStyle"];
+            return;
+        }
+
+        if (ViewModel.IsConnected)
+        {
+            StatusTextBlock.Style = (Style)Application.Current.Resources["UplinkMutedTextStyle"];
+            StatusTextBlock.Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["UplinkAccentBrush"];
+            StatusTextBlock.FontWeight = Microsoft.UI.Text.FontWeights.SemiBold;
+            return;
+        }
+
+        StatusTextBlock.ClearValue(TextBlock.ForegroundProperty);
+        StatusTextBlock.ClearValue(TextBlock.FontWeightProperty);
+        StatusTextBlock.Style = (Style)Application.Current.Resources["UplinkMutedTextStyle"];
     }
 
     private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
@@ -95,15 +137,30 @@ public sealed partial class MainWindow : Window
         vm.AttachLog(ViewModel.Log);
         vm.LoadFromSettings();
 
-        var dialog = new SettingsDialog(vm)
+        void OnSettingsSaved(object? sender, EventArgs e)
         {
-            XamlRoot = RootGrid.XamlRoot
-        };
+            ViewModel.AcceptAnyCertificate = ViewModel.Settings.AcceptAnyCertificate;
+            ApplyThemeFromSettings();
+        }
 
-        await dialog.ShowAsync();
+        vm.SettingsSaved += OnSettingsSaved;
+        try
+        {
+            var dialog = new SettingsDialog(vm)
+            {
+                XamlRoot = RootGrid.XamlRoot
+            };
+
+            await dialog.ShowAsync();
+        }
+        finally
+        {
+            vm.SettingsSaved -= OnSettingsSaved;
+        }
 
         // Keep quick-connect trust checkbox in sync with saved setting.
         ViewModel.AcceptAnyCertificate = ViewModel.Settings.AcceptAnyCertificate;
+        ApplyThemeFromSettings();
     }
 
     private async System.Threading.Tasks.Task ShowLicenseAsync()
