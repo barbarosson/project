@@ -19,6 +19,15 @@
     <LangVersion>latest</LangVersion>
     <!-- Allows restore of windows TFM packages on non-Windows CI; full WinUI build still requires Windows. -->
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+
+    <!--
+      Distribution channel for ILicenseService:
+        Web  (default) — sideload / web license key + REST/JWT
+        Store          — Microsoft Store API
+      Override: dotnet build -p:UplinkDistributionChannel=Store
+    -->
+    <UplinkDistributionChannel Condition="'$(UplinkDistributionChannel)' == ''">Web</UplinkDistributionChannel>
+    <DefineConstants Condition="'$(UplinkDistributionChannel)' == 'Store'">$(DefineConstants);UPLINK_CHANNEL_STORE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

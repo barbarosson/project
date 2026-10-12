@@ -1,24 +1,31 @@
+using System.Threading;
+using System.Threading.Tasks;
+
 namespace UplinkFtp.Services.Licensing;
 
 /// <summary>
-/// Free vs Pro gating and Store/Web license validation.
-/// Full Store/Web validation deferred; site-count and concurrency hooks are live.
+/// Free vs Pro gating. Implementations: <see cref="StoreLicenseService"/>, <see cref="WebLicenseService"/>.
 /// </summary>
 public interface ILicenseService
 {
+    DistributionChannel Channel { get; }
+
     LicenseTier GetCurrentTier();
+
+    /// <summary>Human-readable status (trial, key source, last refresh error).</summary>
+    string StatusDetail { get; }
 
     bool IsFeatureEnabled(LicenseFeature feature);
 
-    /// <summary>
-    /// Max saved sites for the current tier. Free defaults to 5; Pro is effectively unlimited.
-    /// </summary>
     int GetMaxSavedSites();
 
-    /// <summary>
-    /// Max simultaneous transfer workers. Free defaults to 2; Pro is higher.
-    /// </summary>
     int GetMaxConcurrentTransfers();
+
+    /// <summary>Max simultaneous live FTP/SFTP sessions. Free = 1; Pro = unlimited.</summary>
+    int GetMaxConcurrentConnections();
+
+    /// <summary>Refresh entitlement from Store or Web API / local key.</summary>
+    Task RefreshAsync(CancellationToken cancellationToken = default);
 }
 
 public enum LicenseTier
@@ -31,6 +38,7 @@ public enum LicenseFeature
 {
     UnlimitedSites,
     ConcurrentTransfers,
+    ConcurrentConnections,
     Sync,
     Scripting
 }

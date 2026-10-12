@@ -281,7 +281,8 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
                     next.ProgressPercent = 0;
                     next.BytesTransferred = 0;
                     next.Error = null;
-                    next.Detail = $"Running (slot {_active + 1}/{MaxConcurrent})";
+                    var maxLabel = MaxConcurrent >= LicenseLimits.ProUnlimited ? "∞" : MaxConcurrent.ToString();
+                    next.Detail = $"Running (slot {_active + 1}/{maxLabel})";
                     _active++;
                     cts = new CancellationTokenSource();
                     _tokens[next.Id] = cts;

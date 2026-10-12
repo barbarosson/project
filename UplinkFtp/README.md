@@ -9,6 +9,7 @@ Modern FileZilla alternative for Windows — WinUI 3 / Windows App SDK, MVVM, Fl
 - **ADIM 3:** SQLite Site Manager persistence + PasswordVault/DPAPI credentials (no passwords in DB)
 - **ADIM 4:** Main UI — quick connect, log, local/remote browsers, drag-drop upload/download
 - **ADIM 5:** Transfer queue — concurrent workers, Queued/Failed/Successful tabs, pause/resume (restart), Free-tier concurrency cap
+- **ADIM 6:** Licensing — Store/Web channel, Free (3 sites / 1 connection / 1 transfer) vs Pro unlimited
 
 ## Requirements (Windows)
 

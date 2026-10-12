@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using UplinkFtp.Models.Dto;
 using UplinkFtp.Models.Enums;
+using UplinkFtp.Services.Licensing;
 using UplinkFtp.Services.Transfer;
 
 namespace UplinkFtp.ViewModels;
@@ -159,8 +160,11 @@ public sealed partial class TransferQueueViewModel : ObservableObject, IDisposab
         var queued = snapshot.Count(IsActiveTab);
         var failed = snapshot.Count(j => j.State is TransferJobState.Failed or TransferJobState.Cancelled);
         var ok = snapshot.Count(j => j.State == TransferJobState.Successful);
+        var maxLabel = _queue.MaxConcurrent >= LicenseLimits.ProUnlimited
+            ? "∞"
+            : _queue.MaxConcurrent.ToString();
         SummaryText =
-            $"Active {queued} · Failed {failed} · Done {ok} · Workers {_queue.ActiveCount}/{_queue.MaxConcurrent}";
+            $"Active {queued} · Failed {failed} · Done {ok} · Workers {_queue.ActiveCount}/{maxLabel}";
     }
 
     private static bool IsActiveTab(TransferJob job)

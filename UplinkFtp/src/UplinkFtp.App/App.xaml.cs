@@ -15,7 +15,7 @@ namespace UplinkFtp;
 
 /// <summary>
 /// Application entry point. Registers DI services and hosts the main window.
-/// ADIM 5: transfer queue service + tabbed queue UI.
+/// ADIM 6: Store / Web licensing with Free/Pro gates.
 /// </summary>
 public partial class App : Application
 {
@@ -40,8 +40,10 @@ public partial class App : Application
         services.AddSingleton<IDatabaseInitializer, DatabaseInitializer>();
         services.AddSingleton<ICredentialStore, WindowsCredentialStore>();
         services.AddSingleton<ISiteRepository, SiteRepository>();
+
+        RegisterLicensing(services);
+
         services.AddSingleton<IFtpService, FtpSessionService>();
-        services.AddSingleton<ILicenseService, LicenseServiceStub>();
         services.AddSingleton<ITransferQueueService, TransferQueueService>();
 
         services.AddTransient<LocalBrowserViewModel>();
@@ -54,10 +56,33 @@ public partial class App : Application
         return services.BuildServiceProvider();
     }
 
+    private static void RegisterLicensing(IServiceCollection services)
+    {
+        if (DistributionOptions.Channel == DistributionChannel.Store)
+        {
+            services.AddSingleton<ILicenseService, StoreLicenseService>();
+            return;
+        }
+
+        services.AddSingleton(new WebLicenseOptions
+        {
+            ValidationBaseUrl = Environment.GetEnvironmentVariable("UPLINK_LICENSE_URL"),
+            InitialLicenseKey = Environment.GetEnvironmentVariable("UPLINK_LICENSE_KEY")
+        });
+        services.AddSingleton<ILicenseService>(sp =>
+            new WebLicenseService(
+                sp.GetRequiredService<WebLicenseOptions>(),
+                sp.GetRequiredService<ICredentialStore>()));
+    }
+
     protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
         await Services.GetRequiredService<IDatabaseInitializer>()
             .InitializeAsync()
+            .ConfigureAwait(true);
+
+        await Services.GetRequiredService<ILicenseService>()
+            .RefreshAsync()
             .ConfigureAwait(true);
 
         _mainWindow = Services.GetRequiredService<MainWindow>();

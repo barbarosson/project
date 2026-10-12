@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UplinkFtp.Models.Dto;
 using UplinkFtp.Models.Enums;
+using UplinkFtp.Services.Licensing;
 using UplinkFtp.Services.Sftp;
 
 namespace UplinkFtp.Services.Ftp;
@@ -11,12 +12,19 @@ namespace UplinkFtp.Services.Ftp;
 /// <summary>
 /// Facade <see cref="IFtpService"/> that owns one active protocol client and
 /// provides ensure-connected / reconnect for ViewModels.
+/// Free tier: max one live connection (reconnect to same endpoint OK; switch host requires disconnect).
 /// </summary>
 public sealed class FtpSessionService : IFtpService
 {
+    private readonly ILicenseService _license;
     private readonly SemaphoreSlim _gate = new(1, 1);
     private IRemoteProtocolClient? _client;
     private ConnectionOptions? _active;
+
+    public FtpSessionService(ILicenseService license)
+    {
+        _license = license;
+    }
 
     public string Name => _client?.ProtocolName ?? "FtpSessionService (idle)";
 
@@ -35,6 +43,8 @@ public sealed class FtpSessionService : IFtpService
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            EnforceConnectionLimit(options);
+
             await DisposeClientAsync().ConfigureAwait(false);
             _client = CreateClient(options.Protocol);
             await _client.ConnectAsync(options, cancellationToken).ConfigureAwait(false);
@@ -63,7 +73,6 @@ public sealed class FtpSessionService : IFtpService
             }
 
             await DisposeClientAsync().ConfigureAwait(false);
-            // Intentional disconnect clears reconnect target.
             _active = null;
         }
         finally
@@ -131,6 +140,27 @@ public sealed class FtpSessionService : IFtpService
         await DisconnectAsync().ConfigureAwait(false);
         _gate.Dispose();
     }
+
+    private void EnforceConnectionLimit(ConnectionOptions options)
+    {
+        var max = _license.GetMaxConcurrentConnections();
+        if (max >= LicenseLimits.ProUnlimited)
+        {
+            return;
+        }
+
+        // Free (max 1): allow idle→connect and reconnect to the same endpoint; block a second host.
+        if (_active is not null && IsConnected && !SameEndpoint(_active, options))
+        {
+            throw new InvalidOperationException(
+                $"Free tier allows at most {max} concurrent connection. Disconnect first or upgrade to Pro.");
+        }
+    }
+
+    private static bool SameEndpoint(ConnectionOptions a, ConnectionOptions b)
+        => string.Equals(a.Host, b.Host, StringComparison.OrdinalIgnoreCase)
+           && a.ResolvePort() == b.ResolvePort()
+           && a.Protocol == b.Protocol;
 
     private async Task EnsureConnectedCoreAsync(CancellationToken cancellationToken)
     {

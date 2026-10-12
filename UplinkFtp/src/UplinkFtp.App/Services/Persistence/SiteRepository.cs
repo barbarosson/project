@@ -61,7 +61,8 @@ public sealed class SiteRepository : ISiteRepository
         ArgumentNullException.ThrowIfNull(site);
 
         var max = _license.GetMaxSavedSites();
-        if (!_license.IsFeatureEnabled(LicenseFeature.UnlimitedSites))
+        if (_license.GetCurrentTier() != LicenseTier.Pro &&
+            !_license.IsFeatureEnabled(LicenseFeature.UnlimitedSites))
         {
             var count = await CountAsync(cancellationToken).ConfigureAwait(false);
             if (count >= max)

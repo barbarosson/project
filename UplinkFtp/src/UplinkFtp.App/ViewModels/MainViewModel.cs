@@ -78,10 +78,13 @@ public sealed partial class MainViewModel : ObservableObject, IDisposable
         _transferQueue.JobUpdated += OnTransferJobUpdated;
 
         StatusText =
-            $"ADIM 5 queue · License {_licenseService.GetCurrentTier()} · max {_licenseService.GetMaxConcurrentTransfers()} transfers";
-        Log.Info(
-            $"Transfer queue ready (max {_licenseService.GetMaxConcurrentTransfers()} concurrent). Drag files between panes to enqueue.");
+            $"ADIM 6 · {_licenseService.Channel} · {_licenseService.GetCurrentTier()} · sites≤{FormatLimit(_licenseService.GetMaxSavedSites())} · conn≤{FormatLimit(_licenseService.GetMaxConcurrentConnections())} · xfer≤{FormatLimit(_licenseService.GetMaxConcurrentTransfers())}";
+        Log.Info($"{_licenseService.StatusDetail}. Drag files between panes to enqueue transfers.");
     }
+
+    private static string FormatLimit(int value)
+        => value >= LicenseLimits.ProUnlimited ? "∞" : value.ToString();
+
 
     public void Dispose()
     {
