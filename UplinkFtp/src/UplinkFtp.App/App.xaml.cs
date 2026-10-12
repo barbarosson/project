@@ -78,12 +78,9 @@ public partial class App : Application
 
     private static void RegisterLicensing(IServiceCollection services)
     {
-        if (DistributionOptions.Channel == DistributionChannel.Store)
-        {
-            services.AddSingleton<ILicenseService, StoreLicenseService>();
-            return;
-        }
-
+#if UPLINK_CHANNEL_STORE
+        services.AddSingleton<ILicenseService, StoreLicenseService>();
+#else
         var allowStubKeys =
             UplinkFtp.Services.Licensing.WebLicenseOptions.DefaultAllowStubKeys()
             || string.Equals(
@@ -101,6 +98,7 @@ public partial class App : Application
             new UplinkFtp.Services.Licensing.WebLicenseService(
                 sp.GetRequiredService<UplinkFtp.Services.Licensing.WebLicenseOptions>(),
                 sp.GetRequiredService<ICredentialStore>()));
+#endif
     }
 
     protected override async void OnLaunched(LaunchActivatedEventArgs args)

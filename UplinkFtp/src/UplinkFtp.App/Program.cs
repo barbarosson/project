@@ -15,12 +15,13 @@ public static class Program
     private static void Main(string[] args)
     {
         ComWrappersSupport.InitializeComWrappers();
-        Application.Start(_ =>
+        // Do not name the callback parameter `_` — `_ = new App()` would try to assign into it.
+        Application.Start(p =>
         {
             var context = new DispatcherQueueSynchronizationContext(
                 DispatcherQueue.GetForCurrentThread());
             SynchronizationContext.SetSynchronizationContext(context);
-            _ = new App();
+            new App();
         });
     }
 }
