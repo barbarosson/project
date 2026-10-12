@@ -2,19 +2,19 @@ using FtpAi.Data;
 using FtpAi.Services.Ftp;
 using FtpAi.Services.Licensing;
 using FtpAi.Services.Persistence;
+using FtpAi.Services.Security;
 using FtpAi.ViewModels;
 using FtpAi.Views;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using System;
-using System.IO;
 
 namespace FtpAi;
 
 /// <summary>
 /// Application entry point. Registers DI services and hosts the main window.
-/// ADIM 2: real FTP/SFTP session service; licensing/site repo remain stubs.
+/// ADIM 3: SQLite Site Manager persistence + PasswordVault/DPAPI credentials.
 /// </summary>
 public partial class App : Application
 {
@@ -30,40 +30,39 @@ public partial class App : Application
     }
 
     /// <summary>
-    /// Builds the DI container. Protocol work uses <see cref="FtpSessionService"/>;
-    /// licensing and site persistence stay stubbed until later ADIMs.
+    /// Builds the DI container.
     /// </summary>
     private static IServiceProvider ConfigureServices()
     {
         var services = new ServiceCollection();
 
-        // Persistence (EF Core + SQLite) — Site Manager UI/repo still stubbed
-        var dbPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "FtpAi",
-            "ftpai.db");
-        Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
+        // Persistence — EF Core SQLite (EnsureCreated on launch)
+        services.AddDbContextFactory<AppDbContext>(options =>
+            options.UseSqlite(AppDatabasePaths.GetSqliteConnectionString()));
 
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlite($"Data Source={dbPath}"));
+        services.AddSingleton<IDatabaseInitializer, DatabaseInitializer>();
+        services.AddSingleton<ICredentialStore, WindowsCredentialStore>();
+        services.AddSingleton<ISiteRepository, SiteRepository>();
 
-        services.AddSingleton<ISiteRepository, SiteRepositoryStub>();
-
-        // ADIM 2: FluentFTP + SSH.NET behind IFtpService
+        // Protocol (ADIM 2)
         services.AddSingleton<IFtpService, FtpSessionService>();
+
+        // Licensing stub with Free-tier site-count hook
         services.AddSingleton<ILicenseService, LicenseServiceStub>();
 
-        // ViewModels
+        // ViewModels / Views
         services.AddTransient<MainViewModel>();
-
-        // Views (resolved when MainWindow is created)
         services.AddTransient<MainWindow>();
 
         return services.BuildServiceProvider();
     }
 
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
+        await Services.GetRequiredService<IDatabaseInitializer>()
+            .InitializeAsync()
+            .ConfigureAwait(true);
+
         _mainWindow = Services.GetRequiredService<MainWindow>();
         _mainWindow.Activate();
     }
