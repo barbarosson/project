@@ -16,10 +16,10 @@ public sealed class AppSettings
     public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(1);
 
     /// <summary>
-    /// Named appearance: Orbit, Orange, Red Night, Sun Rise, ZEN.
-    /// Legacy System/Light/Dark and Daybreak/Nightwatch/Harbor/Forge migrate in ThemeCatalog.
+    /// Named appearance: Sun Rise, Orange, Red Night, ZEN.
+    /// Legacy Orbit/System/Light/Dark and Daybreak/Nightwatch/Harbor/Forge migrate in ThemeCatalog.
     /// </summary>
-    public string Theme { get; set; } = "Orbit";
+    public string Theme { get; set; } = "Sun Rise";
 
     public RemoteProtocol DefaultProtocol { get; set; } = RemoteProtocol.Ftp;
 

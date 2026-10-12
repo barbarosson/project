@@ -10,8 +10,7 @@ namespace UplinkFtp.Helpers;
 /// <summary>
 /// Applies a named ThemeCatalog profile app-wide.
 /// Named palettes mutate the live brushes already resolved by ThemeResource
-/// (Application.Current.Resources). Replacing brush identity left MainWindow on Orbit
-/// while Settings (explicit Background) appeared to update alone.
+/// (Application.Current.Resources) so MainWindow and dialogs update together.
 /// </summary>
 public static class ThemeHelper
 {
@@ -47,11 +46,11 @@ public static class ThemeHelper
     ];
 
     private static ResourceDictionary? _paletteCatalog;
-    /// <summary>Original Application.Resources entries for Orbit restore (null = key was absent).</summary>
-    private static readonly Dictionary<string, object?> OrbitOriginals = new(StringComparer.Ordinal);
+    /// <summary>Original Application.Resources entries for base restore (null = key was absent).</summary>
+    private static readonly Dictionary<string, object?> BaseBrushSnapshot = new(StringComparer.Ordinal);
     /// <summary>App-level scrollbar brushes we own (ThemeDictionary entries must not be polluted).</summary>
     private static readonly Dictionary<string, Brush> AppScrollbarBrushes = new(StringComparer.Ordinal);
-    private static bool _orbitSnapshotTaken;
+    private static bool _baseSnapshotTaken;
     private static string? _activePaletteKey;
 
     /// <summary>Last applied profile (for ContentDialog RequestedTheme).</summary>
@@ -88,7 +87,7 @@ public static class ThemeHelper
     public static ElementTheme Parse(string? themeName)
         => ThemeCatalog.Resolve(themeName).ElementTheme;
 
-    /// <summary>Brush from the active application palette (never a stale Orbit snapshot).</summary>
+    /// <summary>Brush from the active application palette.</summary>
     public static Brush? GetBrush(string key)
     {
         if (Application.Current?.Resources.TryGetValue(key, out var value) == true
@@ -131,11 +130,11 @@ public static class ThemeHelper
             return;
         }
 
-        EnsureOrbitSnapshot(resources);
+        EnsureBaseSnapshot(resources);
 
         if (string.IsNullOrWhiteSpace(paletteKey))
         {
-            RestoreOrbit(resources);
+            RestoreBaseBrushes(resources);
             _activePaletteKey = null;
             return;
         }
@@ -143,7 +142,7 @@ public static class ThemeHelper
         var palette = GetPalette(paletteKey);
         if (palette is null)
         {
-            RestoreOrbit(resources);
+            RestoreBaseBrushes(resources);
             _activePaletteKey = null;
             return;
         }
@@ -163,9 +162,9 @@ public static class ThemeHelper
 
     /// <summary>
     /// Mutate the live brush ThemeResource already holds. Never replace Uplink* brush
-    /// identity — that left MainWindow on Orbit while Settings (explicit set) updated.
+    /// identity — that left MainWindow stuck while Settings (explicit set) updated.
     /// ScrollBar keys live in ThemeDictionaries; install stable app-level brushes instead
-    /// of mutating the themed instances (which would pollute Orbit Light/Dark).
+    /// of mutating the themed instances.
     /// </summary>
     private static void AssignOverlay(ResourceDictionary resources, string key, object entry)
     {
@@ -238,23 +237,23 @@ public static class ThemeHelper
         return false;
     }
 
-    private static void EnsureOrbitSnapshot(ResourceDictionary resources)
+    private static void EnsureBaseSnapshot(ResourceDictionary resources)
     {
-        if (_orbitSnapshotTaken)
+        if (_baseSnapshotTaken)
         {
             return;
         }
 
         foreach (var key in OverlayKeys)
         {
-            // Keep live ThemeResource-backed brushes (do not clone) so Orbit can follow system again.
-            OrbitOriginals[key] = resources.TryGetValue(key, out var value) ? value : null;
+            // Keep live ThemeResource-backed brushes (do not clone) for emergency restore.
+            BaseBrushSnapshot[key] = resources.TryGetValue(key, out var value) ? value : null;
         }
 
-        _orbitSnapshotTaken = true;
+        _baseSnapshotTaken = true;
     }
 
-    private static void RestoreOrbit(ResourceDictionary resources)
+    private static void RestoreBaseBrushes(ResourceDictionary resources)
     {
         foreach (var key in OverlayKeys)
         {
@@ -265,7 +264,7 @@ public static class ThemeHelper
                 continue;
             }
 
-            if (!OrbitOriginals.TryGetValue(key, out var original) || original is null)
+            if (!BaseBrushSnapshot.TryGetValue(key, out var original) || original is null)
             {
                 resources.Remove(key);
                 continue;

@@ -4,34 +4,32 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!--
-      Orbit (rewritten): soft cool daylight — misty sky wash, ink text, ocean-blue CTAs.
-      Not harsh white, not teal/warm-tech, not the prior washed blue-gray.
+      Base ThemeDictionaries aligned with Sun Rise (default daytime).
+      Named themes (Orange / Red Night / Sun Rise / ZEN) overlay via ThemeHelper.
     -->
     <ResourceDictionary.ThemeDictionaries>
         <ResourceDictionary x:Key="Light">
-            <!-- Fluent system text/buttons inherit these — Pause/tabs/headers stay readable. -->
-            <Color x:Key="TextFillColorPrimary">#132338</Color>
-            <Color x:Key="TextFillColorSecondary">#3A4A5C</Color>
-            <Color x:Key="TextFillColorTertiary">#5A6B7D</Color>
-            <Color x:Key="TextFillColorDisabled">#9AA8B8</Color>
+            <Color x:Key="TextFillColorPrimary">#0F2740</Color>
+            <Color x:Key="TextFillColorSecondary">#3D5A73</Color>
+            <Color x:Key="TextFillColorTertiary">#5A7A90</Color>
+            <Color x:Key="TextFillColorDisabled">#9DC4E0</Color>
 
-            <Color x:Key="UplinkShellTopColor">#E9F0F7</Color>
-            <Color x:Key="UplinkShellBottomColor">#D9E4F0</Color>
-            <Color x:Key="UplinkSectionFillColor">#F5F8FC</Color>
-            <Color x:Key="UplinkSectionStrokeColor">#8494A8</Color>
-            <Color x:Key="UplinkAccentColor">#2F6F9F</Color>
-            <Color x:Key="UplinkAccentSoftColor">#C5DBEE</Color>
+            <Color x:Key="UplinkShellTopColor">#FFF4C8</Color>
+            <Color x:Key="UplinkShellBottomColor">#D6EEFC</Color>
+            <Color x:Key="UplinkSectionFillColor">#FFFDF6</Color>
+            <Color x:Key="UplinkSectionStrokeColor">#9DC4E0</Color>
+            <Color x:Key="UplinkAccentColor">#0EA5E9</Color>
+            <Color x:Key="UplinkAccentSoftColor">#DDF4FF</Color>
             <Color x:Key="UplinkAccentForegroundColor">#FFFFFF</Color>
-            <Color x:Key="UplinkBrandColor">#132338</Color>
-            <Color x:Key="UplinkSignalColor">#9A3B2F</Color>
-            <Color x:Key="UplinkMutedTextColor">#3A4A5C</Color>
-            <Color x:Key="UplinkBodyTextColor">#132338</Color>
-            <Color x:Key="UplinkDividerColor">#9AA8B8</Color>
-            <Color x:Key="UplinkScrollThumbColor">#5A6B7D</Color>
-            <Color x:Key="UplinkScrollThumbHoverColor">#2F6F9F</Color>
-            <Color x:Key="UplinkScrollTrackColor">#C8D4E2</Color>
+            <Color x:Key="UplinkBrandColor">#075985</Color>
+            <Color x:Key="UplinkSignalColor">#EAB308</Color>
+            <Color x:Key="UplinkMutedTextColor">#3D5A73</Color>
+            <Color x:Key="UplinkBodyTextColor">#0F2740</Color>
+            <Color x:Key="UplinkDividerColor">#B7D4EA</Color>
+            <Color x:Key="UplinkScrollThumbColor">#0EA5E9</Color>
+            <Color x:Key="UplinkScrollThumbHoverColor">#0284C7</Color>
+            <Color x:Key="UplinkScrollTrackColor">#E8F6FD</Color>
 
-            <!-- Rectangular, prominent WinUI ScrollBar (overrides Fluent overlay look). -->
             <x:Double x:Key="ScrollBarSize">18</x:Double>
             <x:Double x:Key="ScrollBarVerticalThumbMinWidth">14</x:Double>
             <x:Double x:Key="ScrollBarHorizontalThumbMinHeight">14</x:Double>
@@ -39,7 +37,7 @@
             <SolidColorBrush x:Key="ScrollBarThumbFill" Color="{StaticResource UplinkScrollThumbColor}"/>
             <SolidColorBrush x:Key="ScrollBarThumbFillPointerOver" Color="{StaticResource UplinkScrollThumbHoverColor}"/>
             <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="{StaticResource UplinkBrandColor}"/>
-            <SolidColorBrush x:Key="ScrollBarThumbFillDisabled" Color="#A0B0B8"/>
+            <SolidColorBrush x:Key="ScrollBarThumbFillDisabled" Color="#9DC4E0"/>
             <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="{StaticResource UplinkScrollThumbColor}"/>
             <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="{StaticResource UplinkScrollThumbColor}"/>
             <SolidColorBrush x:Key="ScrollBarTrackFill" Color="{StaticResource UplinkScrollTrackColor}"/>
@@ -53,26 +51,27 @@
             <SolidColorBrush x:Key="ScrollBarBorderBrushPointerOver" Color="{StaticResource UplinkSectionStrokeColor}"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
-            <Color x:Key="TextFillColorPrimary">#F0F4F8</Color>
-            <Color x:Key="TextFillColorSecondary">#C8D4E2</Color>
-            <Color x:Key="TextFillColorTertiary">#9AA8B8</Color>
-            <Color x:Key="TextFillColorDisabled">#5A6B7D</Color>
+            <!-- Used when ElementTheme.Dark (Orange / Red Night / ZEN) for Fluent TextFill*. -->
+            <Color x:Key="TextFillColorPrimary">#F5F5F5</Color>
+            <Color x:Key="TextFillColorSecondary">#D4D4D4</Color>
+            <Color x:Key="TextFillColorTertiary">#A3A3A3</Color>
+            <Color x:Key="TextFillColorDisabled">#525252</Color>
 
-            <Color x:Key="UplinkShellTopColor">#121A24</Color>
-            <Color x:Key="UplinkShellBottomColor">#1A2430</Color>
-            <Color x:Key="UplinkSectionFillColor">#1C2836</Color>
-            <Color x:Key="UplinkSectionStrokeColor">#4A5C70</Color>
-            <Color x:Key="UplinkAccentColor">#5B9FD4</Color>
-            <Color x:Key="UplinkAccentSoftColor">#243447</Color>
-            <Color x:Key="UplinkAccentForegroundColor">#121A24</Color>
-            <Color x:Key="UplinkBrandColor">#E9F0F7</Color>
-            <Color x:Key="UplinkSignalColor">#E07A5F</Color>
-            <Color x:Key="UplinkMutedTextColor">#B8C4D0</Color>
-            <Color x:Key="UplinkBodyTextColor">#F0F4F8</Color>
-            <Color x:Key="UplinkDividerColor">#4A5C70</Color>
-            <Color x:Key="UplinkScrollThumbColor">#8494A8</Color>
-            <Color x:Key="UplinkScrollThumbHoverColor">#5B9FD4</Color>
-            <Color x:Key="UplinkScrollTrackColor">#1C2836</Color>
+            <Color x:Key="UplinkShellTopColor">#121212</Color>
+            <Color x:Key="UplinkShellBottomColor">#1A1A1A</Color>
+            <Color x:Key="UplinkSectionFillColor">#1E1E1E</Color>
+            <Color x:Key="UplinkSectionStrokeColor">#525252</Color>
+            <Color x:Key="UplinkAccentColor">#E5E5E5</Color>
+            <Color x:Key="UplinkAccentSoftColor">#2A2A2A</Color>
+            <Color x:Key="UplinkAccentForegroundColor">#121212</Color>
+            <Color x:Key="UplinkBrandColor">#FAFAFA</Color>
+            <Color x:Key="UplinkSignalColor">#A3A3A3</Color>
+            <Color x:Key="UplinkMutedTextColor">#A3A3A3</Color>
+            <Color x:Key="UplinkBodyTextColor">#F5F5F5</Color>
+            <Color x:Key="UplinkDividerColor">#404040</Color>
+            <Color x:Key="UplinkScrollThumbColor">#D4D4D4</Color>
+            <Color x:Key="UplinkScrollThumbHoverColor">#E5E5E5</Color>
+            <Color x:Key="UplinkScrollTrackColor">#1E1E1E</Color>
 
             <x:Double x:Key="ScrollBarSize">18</x:Double>
             <x:Double x:Key="ScrollBarVerticalThumbMinWidth">14</x:Double>
@@ -81,7 +80,7 @@
             <SolidColorBrush x:Key="ScrollBarThumbFill" Color="{StaticResource UplinkScrollThumbColor}"/>
             <SolidColorBrush x:Key="ScrollBarThumbFillPointerOver" Color="{StaticResource UplinkScrollThumbHoverColor}"/>
             <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="{StaticResource UplinkAccentColor}"/>
-            <SolidColorBrush x:Key="ScrollBarThumbFillDisabled" Color="#4A5C66"/>
+            <SolidColorBrush x:Key="ScrollBarThumbFillDisabled" Color="#525252"/>
             <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="{StaticResource UplinkScrollThumbColor}"/>
             <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="{StaticResource UplinkScrollThumbColor}"/>
             <SolidColorBrush x:Key="ScrollBarTrackFill" Color="{StaticResource UplinkScrollTrackColor}"/>
@@ -95,26 +94,26 @@
             <SolidColorBrush x:Key="ScrollBarBorderBrushPointerOver" Color="{StaticResource UplinkSectionStrokeColor}"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Default">
-            <Color x:Key="TextFillColorPrimary">#132338</Color>
-            <Color x:Key="TextFillColorSecondary">#3A4A5C</Color>
-            <Color x:Key="TextFillColorTertiary">#5A6B7D</Color>
-            <Color x:Key="TextFillColorDisabled">#9AA8B8</Color>
+            <Color x:Key="TextFillColorPrimary">#0F2740</Color>
+            <Color x:Key="TextFillColorSecondary">#3D5A73</Color>
+            <Color x:Key="TextFillColorTertiary">#5A7A90</Color>
+            <Color x:Key="TextFillColorDisabled">#9DC4E0</Color>
 
-            <Color x:Key="UplinkShellTopColor">#E9F0F7</Color>
-            <Color x:Key="UplinkShellBottomColor">#D9E4F0</Color>
-            <Color x:Key="UplinkSectionFillColor">#F5F8FC</Color>
-            <Color x:Key="UplinkSectionStrokeColor">#8494A8</Color>
-            <Color x:Key="UplinkAccentColor">#2F6F9F</Color>
-            <Color x:Key="UplinkAccentSoftColor">#C5DBEE</Color>
+            <Color x:Key="UplinkShellTopColor">#FFF4C8</Color>
+            <Color x:Key="UplinkShellBottomColor">#D6EEFC</Color>
+            <Color x:Key="UplinkSectionFillColor">#FFFDF6</Color>
+            <Color x:Key="UplinkSectionStrokeColor">#9DC4E0</Color>
+            <Color x:Key="UplinkAccentColor">#0EA5E9</Color>
+            <Color x:Key="UplinkAccentSoftColor">#DDF4FF</Color>
             <Color x:Key="UplinkAccentForegroundColor">#FFFFFF</Color>
-            <Color x:Key="UplinkBrandColor">#132338</Color>
-            <Color x:Key="UplinkSignalColor">#9A3B2F</Color>
-            <Color x:Key="UplinkMutedTextColor">#3A4A5C</Color>
-            <Color x:Key="UplinkBodyTextColor">#132338</Color>
-            <Color x:Key="UplinkDividerColor">#9AA8B8</Color>
-            <Color x:Key="UplinkScrollThumbColor">#5A6B7D</Color>
-            <Color x:Key="UplinkScrollThumbHoverColor">#2F6F9F</Color>
-            <Color x:Key="UplinkScrollTrackColor">#C8D4E2</Color>
+            <Color x:Key="UplinkBrandColor">#075985</Color>
+            <Color x:Key="UplinkSignalColor">#EAB308</Color>
+            <Color x:Key="UplinkMutedTextColor">#3D5A73</Color>
+            <Color x:Key="UplinkBodyTextColor">#0F2740</Color>
+            <Color x:Key="UplinkDividerColor">#B7D4EA</Color>
+            <Color x:Key="UplinkScrollThumbColor">#0EA5E9</Color>
+            <Color x:Key="UplinkScrollThumbHoverColor">#0284C7</Color>
+            <Color x:Key="UplinkScrollTrackColor">#E8F6FD</Color>
 
             <x:Double x:Key="ScrollBarSize">18</x:Double>
             <x:Double x:Key="ScrollBarVerticalThumbMinWidth">14</x:Double>
@@ -123,7 +122,7 @@
             <SolidColorBrush x:Key="ScrollBarThumbFill" Color="{StaticResource UplinkScrollThumbColor}"/>
             <SolidColorBrush x:Key="ScrollBarThumbFillPointerOver" Color="{StaticResource UplinkScrollThumbHoverColor}"/>
             <SolidColorBrush x:Key="ScrollBarThumbFillPressed" Color="{StaticResource UplinkBrandColor}"/>
-            <SolidColorBrush x:Key="ScrollBarThumbFillDisabled" Color="#A0B0B8"/>
+            <SolidColorBrush x:Key="ScrollBarThumbFillDisabled" Color="#9DC4E0"/>
             <SolidColorBrush x:Key="ScrollBarThumbBackground" Color="{StaticResource UplinkScrollThumbColor}"/>
             <SolidColorBrush x:Key="ScrollBarPanningThumbBackground" Color="{StaticResource UplinkScrollThumbColor}"/>
             <SolidColorBrush x:Key="ScrollBarTrackFill" Color="{StaticResource UplinkScrollTrackColor}"/>
@@ -147,7 +146,6 @@
     <SolidColorBrush x:Key="UplinkMutedTextBrush" Color="{ThemeResource UplinkMutedTextColor}"/>
     <SolidColorBrush x:Key="UplinkBodyTextBrush" Color="{ThemeResource UplinkBodyTextColor}"/>
     <SolidColorBrush x:Key="UplinkDividerBrush" Color="{ThemeResource UplinkDividerColor}"/>
-    <!-- Accent CTA label (Orbit daylight = white on ocean blue); named themes overlay this brush. -->
     <SolidColorBrush x:Key="UplinkAccentForegroundBrush" Color="{ThemeResource UplinkAccentForegroundColor}"/>
 
     <LinearGradientBrush x:Key="UplinkShellBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
