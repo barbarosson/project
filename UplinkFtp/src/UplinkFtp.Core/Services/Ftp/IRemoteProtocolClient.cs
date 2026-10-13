@@ -24,7 +24,10 @@ public interface IRemoteProtocolClient : IAsyncDisposable
 
     Task EnsureKeepAliveConfiguredAsync(ConnectionOptions options, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<RemoteEntry>> ListDirectoryAsync(string remotePath, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<RemoteEntry>> ListDirectoryAsync(
+        string remotePath,
+        RemoteListOptions? options = null,
+        CancellationToken cancellationToken = default);
 
     Task DownloadFileAsync(
         string remotePath,
@@ -64,13 +67,32 @@ public interface IRemoteProtocolClient : IAsyncDisposable
         IProgress<TransferProgress>? progress = null,
         CancellationToken cancellationToken = default);
 
-    /// <summary>Rename or move a remote path (same as FTP RNFR/RNTO / SFTP rename).</summary>
     Task RenameAsync(string fromPath, string toPath, CancellationToken cancellationToken = default);
 
-    /// <summary>Read a remote text file into memory (UTF-8).</summary>
+    Task CreateDirectoryAsync(string remotePath, CancellationToken cancellationToken = default);
+
+    Task CreateEmptyFileAsync(string remotePath, CancellationToken cancellationToken = default);
+
+    Task DeleteFileAsync(string remotePath, CancellationToken cancellationToken = default);
+
+    Task DeleteDirectoryAsync(string remotePath, CancellationToken cancellationToken = default);
+
+    Task SetPermissionsAsync(
+        string remotePath,
+        UnixFilePermissions permissions,
+        CancellationToken cancellationToken = default);
+
+    Task<UnixFilePermissions?> GetPermissionsAsync(
+        string remotePath,
+        CancellationToken cancellationToken = default);
+
+    Task<DirectorySizeResult> CalculateDirectorySizeAsync(
+        string remotePath,
+        IProgress<DirectorySizeResult>? progress = null,
+        CancellationToken cancellationToken = default);
+
     Task<string> ReadTextFileAsync(string remotePath, CancellationToken cancellationToken = default);
 
-    /// <summary>Write UTF-8 text to a remote file (overwrite).</summary>
     Task WriteTextFileAsync(string remotePath, string content, CancellationToken cancellationToken = default);
 
     /// <summary>

@@ -48,6 +48,28 @@ public sealed class AiAssistantServiceTests
     }
 
     [Fact]
+    public async Task ParseSearch_PlainNameBecomesSubstringFilter()
+    {
+        var ai = CreateLocal();
+        var filter = await ai.ParseSearchQueryAsync("readme");
+
+        Assert.Equal("readme", filter.NameContains);
+        Assert.Null(filter.Extension);
+        Assert.True(AiFileFilterMatcher.Matches(
+            "README.md",
+            isDirectory: false,
+            size: 10,
+            modifiedUtc: DateTime.UtcNow,
+            filter));
+        Assert.True(AiFileFilterMatcher.Matches(
+            "readme-docs",
+            isDirectory: true,
+            size: 0,
+            modifiedUtc: null,
+            filter));
+    }
+
+    [Fact]
     public async Task HasApiKey_FalseUntilStored()
     {
         var store = new MemoryCredentialStore();
@@ -100,6 +122,12 @@ public sealed class AiAssistantServiceTests
             size: 0,
             modifiedUtc: null,
             filter));
+        Assert.True(AiFileFilterMatcher.Matches(
+            "backup-folder",
+            isDirectory: true,
+            size: 0,
+            modifiedUtc: null,
+            new AiFileFilter { NameContains = "backup" }));
     }
 
     [Fact]

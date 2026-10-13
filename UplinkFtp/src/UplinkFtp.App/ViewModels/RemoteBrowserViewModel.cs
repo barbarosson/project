@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using UplinkFtp.Helpers;
+using UplinkFtp.Models.Dto;
 using UplinkFtp.Services.Ai;
+using UplinkFtp.Services.Browse;
 using UplinkFtp.Services.Ftp;
 
 namespace UplinkFtp.ViewModels;
@@ -16,8 +18,11 @@ public sealed partial class RemoteBrowserViewModel : ObservableObject
     private readonly IFtpService _ftp;
     private readonly IAiAssistantService _ai;
     private List<BrowserItemViewModel> _fullListing = [];
+    private AiFileFilter? _activeFilter;
 
     public ObservableCollection<BrowserItemViewModel> Items { get; } = [];
+
+    public event EventHandler<string>? Navigated;
 
     [ObservableProperty]
     private string _currentPath = "/";
@@ -40,6 +45,31 @@ public sealed partial class RemoteBrowserViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasAiFilter;
 
+    [ObservableProperty]
+    private bool _showHiddenFiles = true;
+
+    [ObservableProperty]
+    private string _directorySizeText = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NameSortLabel))]
+    [NotifyPropertyChangedFor(nameof(KindSortLabel))]
+    [NotifyPropertyChangedFor(nameof(SizeSortLabel))]
+    [NotifyPropertyChangedFor(nameof(ModifiedSortLabel))]
+    private BrowserSortColumn _sortColumn = BrowserSortColumn.Name;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NameSortLabel))]
+    [NotifyPropertyChangedFor(nameof(KindSortLabel))]
+    [NotifyPropertyChangedFor(nameof(SizeSortLabel))]
+    [NotifyPropertyChangedFor(nameof(ModifiedSortLabel))]
+    private bool _sortAscending = true;
+
+    public string NameSortLabel => BrowserListingHelper.SortHeaderLabel("Name", BrowserSortColumn.Name, SortColumn, SortAscending);
+    public string KindSortLabel => BrowserListingHelper.SortHeaderLabel("Kind", BrowserSortColumn.Kind, SortColumn, SortAscending);
+    public string SizeSortLabel => BrowserListingHelper.SortHeaderLabel("Size", BrowserSortColumn.Size, SortColumn, SortAscending);
+    public string ModifiedSortLabel => BrowserListingHelper.SortHeaderLabel("Modified", BrowserSortColumn.Modified, SortColumn, SortAscending);
+
     public RemoteBrowserViewModel(IFtpService ftp, IAiAssistantService ai)
     {
         _ftp = ftp;
@@ -56,6 +86,7 @@ public sealed partial class RemoteBrowserViewModel : ObservableObject
             CurrentPath = "/";
             StatusMessage = "Not connected";
             ClearAiFilter();
+            DirectorySizeText = string.Empty;
         }
     }
 
@@ -73,7 +104,10 @@ public sealed partial class RemoteBrowserViewModel : ObservableObject
             IsConnected = true;
             var path = RemotePath.Normalize(CurrentPath);
             CurrentPath = path;
-            var entries = await _ftp.ListDirectoryAsync(path).ConfigureAwait(true);
+            var entries = await _ftp.ListDirectoryAsync(
+                    path,
+                    new RemoteListOptions { IncludeHidden = ShowHiddenFiles })
+                .ConfigureAwait(true);
 
             _fullListing = [];
             if (path != "/")
@@ -94,7 +128,10 @@ public sealed partial class RemoteBrowserViewModel : ObservableObject
                     entry.FullPath,
                     entry.IsDirectory,
                     entry.Size,
-                    entry.ModifiedUtc));
+                    entry.ModifiedUtc,
+                    isSymlink: entry.IsSymlink,
+                    linkTarget: entry.LinkTarget,
+                    unixMode: entry.UnixMode));
             }
 
             if (HasAiFilter && !string.IsNullOrWhiteSpace(AiSearchQuery))
@@ -104,16 +141,27 @@ public sealed partial class RemoteBrowserViewModel : ObservableObject
             }
             else
             {
-                ReplaceItems(_fullListing);
+                _activeFilter = null;
+                PublishListing();
                 StatusMessage = $"{entries.Count} items · {path}";
                 AiFilterStatus = string.Empty;
             }
+
+            Navigated?.Invoke(this, path);
         }
         catch (Exception ex)
         {
             StatusMessage = ex.Message;
             Items.Clear();
             _fullListing = [];
+        }
+    }
+
+    partial void OnShowHiddenFilesChanged(bool value)
+    {
+        if (IsConnected)
+        {
+            _ = RefreshAsync();
         }
     }
 
@@ -132,7 +180,22 @@ public sealed partial class RemoteBrowserViewModel : ObservableObject
     [RelayCommand]
     private async Task OpenItemAsync(BrowserItemViewModel? item)
     {
-        if (item is null || (!item.IsDirectory && !item.IsParentLink))
+        if (item is null)
+        {
+            return;
+        }
+
+        if (item.IsSymlink && !string.IsNullOrWhiteSpace(item.LinkTarget))
+        {
+            var target = item.LinkTarget!.StartsWith('/')
+                ? RemotePath.Normalize(item.LinkTarget)
+                : RemotePath.Combine(CurrentPath, item.LinkTarget);
+            CurrentPath = target;
+            await RefreshAsync().ConfigureAwait(false);
+            return;
+        }
+
+        if (!item.IsDirectory && !item.IsParentLink)
         {
             return;
         }
@@ -147,12 +210,29 @@ public sealed partial class RemoteBrowserViewModel : ObservableObject
         await RefreshAsync().ConfigureAwait(false);
     }
 
+    /// <summary>Called from the panel so Enter applies the TextBox text even if binding has not flushed.</summary>
+    public Task ApplySearchFromUiAsync(string? queryFromTextBox)
+    {
+        if (queryFromTextBox is not null)
+        {
+            AiSearchQuery = queryFromTextBox;
+        }
+
+        return ApplyAiSearchAsync();
+    }
+
     [RelayCommand]
     private async Task ApplyAiSearchAsync()
     {
         if (!_ftp.IsConnected)
         {
             AiFilterStatus = "Not connected";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(AiSearchQuery))
+        {
+            ClearAiFilter();
             return;
         }
 
@@ -165,43 +245,211 @@ public sealed partial class RemoteBrowserViewModel : ObservableObject
         var count = await ApplyAiFilterAsync(filter).ConfigureAwait(true);
         AiFilterStatus = count == 0
             ? (string.IsNullOrWhiteSpace(filter.Explanation) ? "No matches." : filter.Explanation)
-            : $"AI filter: {count} file(s)";
+            : $"{count} match(es) · {filter.Explanation}";
     }
 
     [RelayCommand]
     private void ClearAiFilter()
     {
         HasAiFilter = false;
+        _activeFilter = null;
         AiFilterStatus = string.Empty;
         if (_fullListing.Count > 0)
         {
-            ReplaceItems(_fullListing);
+            PublishListing();
             var files = _fullListing.Count(i => !i.IsParentLink);
             StatusMessage = $"{files} items · {CurrentPath}";
         }
     }
 
+    [RelayCommand]
+    private void SortBy(string? columnName)
+    {
+        if (!Enum.TryParse<BrowserSortColumn>(columnName, ignoreCase: true, out var column))
+        {
+            return;
+        }
+
+        if (SortColumn == column)
+        {
+            SortAscending = !SortAscending;
+        }
+        else
+        {
+            SortColumn = column;
+            SortAscending = true;
+        }
+
+        PublishListing();
+    }
+
     public Task<int> ApplyAiFilterAsync(AiFileFilter filter)
     {
         HasAiFilter = true;
-        var parents = _fullListing.Where(i => i.IsParentLink);
-        var matches = _fullListing.Where(i =>
-            !i.IsParentLink
-            && AiFileFilterMatcher.Matches(i.Name, i.IsDirectory, i.Size, i.ModifiedUtc, filter));
-        var view = parents.Concat(matches).ToList();
-        ReplaceItems(view);
-        var count = view.Count(i => !i.IsParentLink);
+        _activeFilter = filter;
+        PublishListing();
+        var count = Items.Count(i => !i.IsParentLink);
         StatusMessage = $"{count} filtered · {CurrentPath}";
         AiFilterStatus = filter.Explanation;
         return Task.FromResult(count);
     }
 
-    private void ReplaceItems(IEnumerable<BrowserItemViewModel> items)
+    public async Task RenameSelectedAsync(string newName)
     {
+        if (SelectedItem is null || SelectedItem.IsParentLink || string.IsNullOrWhiteSpace(newName))
+        {
+            return;
+        }
+
+        var to = RemotePath.Combine(CurrentPath, newName.Trim());
+        await _ftp.RenameAsync(SelectedItem.FullPath, to).ConfigureAwait(true);
+        await RefreshAsync().ConfigureAwait(true);
+    }
+
+    public async Task DeleteSelectedAsync()
+    {
+        if (SelectedItem is null || SelectedItem.IsParentLink)
+        {
+            return;
+        }
+
+        if (SelectedItem.IsDirectory)
+        {
+            await _ftp.DeleteDirectoryAsync(SelectedItem.FullPath).ConfigureAwait(true);
+        }
+        else
+        {
+            await _ftp.DeleteFileAsync(SelectedItem.FullPath).ConfigureAwait(true);
+        }
+
+        await RefreshAsync().ConfigureAwait(true);
+    }
+
+    public async Task CreateDirectoryAsync(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return;
+        }
+
+        await _ftp.CreateDirectoryAsync(RemotePath.Combine(CurrentPath, name.Trim())).ConfigureAwait(true);
+        await RefreshAsync().ConfigureAwait(true);
+    }
+
+    public async Task CreateEmptyFileAsync(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return;
+        }
+
+        await _ftp.CreateEmptyFileAsync(RemotePath.Combine(CurrentPath, name.Trim())).ConfigureAwait(true);
+        await RefreshAsync().ConfigureAwait(true);
+    }
+
+    public async Task MoveSelectedAsync(string destinationDirectory)
+    {
+        if (SelectedItem is null || SelectedItem.IsParentLink || string.IsNullOrWhiteSpace(destinationDirectory))
+        {
+            return;
+        }
+
+        var to = RemotePath.Combine(destinationDirectory.Trim(), SelectedItem.Name);
+        await _ftp.MoveAsync(SelectedItem.FullPath, to).ConfigureAwait(true);
+        await RefreshAsync().ConfigureAwait(true);
+    }
+
+    public async Task SetPermissionsAsync(UnixFilePermissions permissions)
+    {
+        if (SelectedItem is null || SelectedItem.IsParentLink)
+        {
+            return;
+        }
+
+        await _ftp.SetPermissionsAsync(SelectedItem.FullPath, permissions).ConfigureAwait(true);
+        await RefreshAsync().ConfigureAwait(true);
+    }
+
+    public async Task CalculateSelectedSizeAsync()
+    {
+        if (SelectedItem is null || !SelectedItem.IsDirectory || SelectedItem.IsParentLink)
+        {
+            DirectorySizeText = string.Empty;
+            return;
+        }
+
+        DirectorySizeText = "Calculating…";
+        try
+        {
+            var result = await _ftp.CalculateDirectorySizeAsync(SelectedItem.FullPath).ConfigureAwait(true);
+            DirectorySizeText =
+                $"{SelectedItem.Name}: {FormatBytes(result.TotalBytes)} · {result.FileCount} files · {result.DirectoryCount} folders";
+            StatusMessage = DirectorySizeText;
+        }
+        catch (Exception ex)
+        {
+            DirectorySizeText = ex.Message;
+            StatusMessage = ex.Message;
+        }
+    }
+
+    public IReadOnlyList<FileListFingerprint> GetFingerprints()
+        => Items
+            .Where(i => !i.IsParentLink)
+            .Select(i => new FileListFingerprint
+            {
+                Name = i.Name,
+                IsDirectory = i.IsDirectory,
+                Size = i.Size,
+                ModifiedUtc = i.ModifiedUtc
+            })
+            .ToList();
+
+    public void ApplyCompare(IReadOnlyDictionary<string, DirectoryCompareStatus> byName)
+    {
+        foreach (var item in Items)
+        {
+            if (item.IsParentLink)
+            {
+                item.CompareStatus = DirectoryCompareStatus.Same;
+                continue;
+            }
+
+            item.CompareStatus = byName.TryGetValue(item.Name, out var status)
+                ? status
+                : DirectoryCompareStatus.Same;
+        }
+    }
+
+    public void ClearCompare()
+    {
+        foreach (var item in Items)
+        {
+            item.CompareStatus = DirectoryCompareStatus.Same;
+        }
+    }
+
+    private void PublishListing()
+    {
+        var view = BrowserListingHelper.Present(_fullListing, _activeFilter, SortColumn, SortAscending);
         Items.Clear();
-        foreach (var item in items)
+        foreach (var item in view)
         {
             Items.Add(item);
         }
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        string[] units = ["B", "KB", "MB", "GB", "TB"];
+        double value = bytes;
+        var unit = 0;
+        while (value >= 1024 && unit < units.Length - 1)
+        {
+            value /= 1024;
+            unit++;
+        }
+
+        return unit == 0 ? $"{bytes} {units[unit]}" : $"{value:0.##} {units[unit]}";
     }
 }

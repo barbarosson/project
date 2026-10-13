@@ -16,10 +16,10 @@ public sealed class AppSettings
     public TimeSpan RetryDelay { get; set; } = TimeSpan.FromSeconds(1);
 
     /// <summary>
-    /// Named appearance: Orbit, Daybreak, Nightwatch, Harbor, Forge.
-    /// Legacy System/Light/Dark values are migrated by ThemeCatalog.
+    /// Named appearance: Sun Rise, Orange, Red Night, ZEN.
+    /// Legacy Orbit/System/Light/Dark and Daybreak/Nightwatch/Harbor/Forge migrate in ThemeCatalog.
     /// </summary>
-    public string Theme { get; set; } = "Orbit";
+    public string Theme { get; set; } = "Sun Rise";
 
     public RemoteProtocol DefaultProtocol { get; set; } = RemoteProtocol.Ftp;
 
@@ -34,9 +34,17 @@ public sealed class AppSettings
     /// <summary>BYOK LLM provider. API key itself lives in Credential Locker, not here.</summary>
     public AiProviderKind AiProvider { get; set; } = AiProviderKind.None;
 
-    /// <summary>Optional model id (e.g. gpt-4o-mini). Empty → provider default.</summary>
+    /// <summary>
+    /// Optional model id. Empty → provider default
+    /// (Gemini: gemini-2.0-flash, OpenAI: gpt-4o-mini).
+    /// </summary>
     public string AiModel { get; set; } = string.Empty;
 
-    /// <summary>Optional OpenAI-compatible endpoint override.</summary>
+    /// <summary>
+    /// Optional endpoint override.
+    /// OpenAI/Anthropic: Chat Completions URL.
+    /// Gemini: full generateContent URL (key sent via x-goog-api-key header).
+    /// Empty → provider default.
+    /// </summary>
     public string AiEndpoint { get; set; } = string.Empty;
 }

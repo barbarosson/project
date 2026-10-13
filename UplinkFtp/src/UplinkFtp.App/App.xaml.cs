@@ -70,6 +70,8 @@ public partial class App : Application
             new UplinkFtp.Services.Transfer.TransferQueueService(
                 sp.GetRequiredService<UplinkFtp.Services.Ftp.IFtpService>(),
                 sp.GetRequiredService<ILicenseService>()));
+        services.AddSingleton<UplinkFtp.Services.Browse.IDirectoryCompareService,
+            UplinkFtp.Services.Browse.DirectoryCompareService>();
 
         services.AddTransient<LocalBrowserViewModel>();
         services.AddTransient<RemoteBrowserViewModel>();
@@ -88,7 +90,10 @@ public partial class App : Application
     private static void RegisterLicensing(IServiceCollection services)
     {
 #if UPLINK_CHANNEL_STORE
-        services.AddSingleton<ILicenseService, StoreLicenseService>();
+        // Store IDs from env after Partner Center — never hard-code production IDs here.
+        services.AddSingleton(new UplinkFtp.Services.Licensing.StoreCommerceOptions());
+        services.AddSingleton<ILicenseService>(sp =>
+            new StoreLicenseService(sp.GetRequiredService<UplinkFtp.Services.Licensing.StoreCommerceOptions>()));
 #else
         var allowStubKeys =
             UplinkFtp.Services.Licensing.WebLicenseOptions.DefaultAllowStubKeys()

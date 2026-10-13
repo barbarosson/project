@@ -70,7 +70,10 @@ public sealed partial class MainWindow : Window
     }
 
     private void ApplyThemeFromSettings()
-        => ThemeHelper.ApplyFromSettings(ViewModel.Settings, RootGrid);
+    {
+        ThemeHelper.ApplyFromSettings(ViewModel.Settings, RootGrid);
+        UpdateStatusAppearance();
+    }
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
@@ -96,7 +99,8 @@ public sealed partial class MainWindow : Window
         if (ViewModel.IsConnected)
         {
             StatusTextBlock.Style = (Style)Application.Current.Resources["UplinkMutedTextStyle"];
-            StatusTextBlock.Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["UplinkAccentBrush"];
+            StatusTextBlock.Foreground = ThemeHelper.GetBrush("UplinkAccentBrush")
+                                         ?? (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["UplinkAccentBrush"];
             StatusTextBlock.FontWeight = Microsoft.UI.Text.FontWeights.SemiBold;
             return;
         }
@@ -145,6 +149,7 @@ public sealed partial class MainWindow : Window
         {
             XamlRoot = RootGrid.XamlRoot
         };
+        ThemeHelper.ApplyToDialog(dialog);
 
         void OnConnect(object? s, SiteConnectRequest request)
         {
@@ -176,24 +181,44 @@ public sealed partial class MainWindow : Window
             ApplyThemeFromSettings();
         }
 
+        var dialog = new SettingsDialog(vm)
+        {
+            XamlRoot = RootGrid.XamlRoot
+        };
+        ThemeHelper.ApplyToDialog(dialog);
+
+        void OnThemePreview(object? sender, string themeName)
+        {
+            ThemeHelper.Apply(themeName, RootGrid);
+            ThemeHelper.ApplyToDialog(dialog);
+            UpdateStatusAppearance();
+        }
+
         vm.SettingsSaved += OnSettingsSaved;
+        vm.ThemePreviewRequested += OnThemePreview;
         try
         {
-            var dialog = new SettingsDialog(vm)
-            {
-                XamlRoot = RootGrid.XamlRoot
-            };
-
             await dialog.ShowAsync();
         }
         finally
         {
             vm.SettingsSaved -= OnSettingsSaved;
+            vm.ThemePreviewRequested -= OnThemePreview;
         }
 
         // Keep quick-connect trust checkbox in sync with saved setting.
         ViewModel.AcceptAnyCertificate = ViewModel.Settings.AcceptAnyCertificate;
-        ApplyThemeFromSettings();
+
+        // Close without Save restores the theme that was active when Settings opened.
+        if (vm.ThemePersisted)
+        {
+            ApplyThemeFromSettings();
+        }
+        else
+        {
+            ThemeHelper.Apply(vm.ThemeAtOpen, RootGrid);
+            UpdateStatusAppearance();
+        }
     }
 
     private async System.Threading.Tasks.Task ShowLicenseAsync()
@@ -205,6 +230,7 @@ public sealed partial class MainWindow : Window
         {
             XamlRoot = RootGrid.XamlRoot
         };
+        ThemeHelper.ApplyToDialog(dialog);
 
         await dialog.ShowAsync();
         ViewModel.RefreshLicenseStatusText();
@@ -235,6 +261,7 @@ public sealed partial class MainWindow : Window
             {
                 XamlRoot = RootGrid.XamlRoot
             };
+            ThemeHelper.ApplyToDialog(dialog);
             await dialog.ShowAsync();
         }
         finally

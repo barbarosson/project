@@ -6,11 +6,12 @@ using UplinkFtp.Services.Licensing;
 
 namespace UplinkFtp.ViewModels;
 
-/// <summary>License status, Web key entry, and purchase guidance (P7 client UX).</summary>
+/// <summary>License status, Web key entry, and Store purchase (P7 client UX).</summary>
 public sealed partial class LicenseViewModel : ObservableObject
 {
     private readonly ILicenseService _license;
     private readonly WebLicenseService? _webLicense;
+    private readonly StoreLicenseService? _storeLicense;
 
     [ObservableProperty]
     private string _channelText = string.Empty;
@@ -34,6 +35,12 @@ public sealed partial class LicenseViewModel : ObservableObject
     private bool _isWebChannel;
 
     [ObservableProperty]
+    private bool _isStoreChannel;
+
+    [ObservableProperty]
+    private bool _showBuyPro;
+
+    [ObservableProperty]
     private bool _isBusy;
 
     [ObservableProperty]
@@ -46,6 +53,7 @@ public sealed partial class LicenseViewModel : ObservableObject
     {
         _license = license;
         _webLicense = license as WebLicenseService;
+        _storeLicense = license as StoreLicenseService;
         RefreshDisplay();
     }
 
@@ -57,10 +65,16 @@ public sealed partial class LicenseViewModel : ObservableObject
         TierLine = $"Tier: {TierText}";
         StatusDetail = _license.StatusDetail;
         IsWebChannel = _license.Channel == DistributionChannel.Web && _webLicense is not null;
+        IsStoreChannel = _license.Channel == DistributionChannel.Store && _storeLicense is not null;
+        ShowBuyPro = IsStoreChannel
+                     && _license.GetCurrentTier() != LicenseTier.Pro
+                     && _storeLicense is not null;
 
-        if (_license.Channel == DistributionChannel.Store)
+        if (IsStoreChannel)
         {
-            PurchaseInfo = "Buy Pro from Microsoft Store.";
+            PurchaseInfo = _storeLicense!.CanRequestPurchase
+                ? "Unlock Pro with a one-time Microsoft Store add-on (Uplink FTP Pro)."
+                : "Pro add-on Store ID is missing. Set UPLINK_STORE_PRO_ADDON_ID (default 9MTN64PZGQCM) and rebuild the Store channel.";
         }
         else
         {
@@ -71,6 +85,32 @@ public sealed partial class LicenseViewModel : ObservableObject
         }
 
         StatusMessage = string.Empty;
+    }
+
+    [RelayCommand]
+    private async Task BuyProAsync()
+    {
+        if (_storeLicense is null)
+        {
+            StatusMessage = "In-app purchase is only available on the Store channel build.";
+            return;
+        }
+
+        IsBusy = true;
+        try
+        {
+            var message = await _storeLicense.RequestPurchaseProAsync().ConfigureAwait(true);
+            RefreshDisplay();
+            StatusMessage = message;
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = ex.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     [RelayCommand]

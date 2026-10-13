@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using UplinkFtp.Models.Dto;
@@ -8,9 +7,9 @@ namespace UplinkFtp.Services.Ftp;
 
 /// <summary>
 /// Unified FTP / FTPS / SFTP session API for ViewModels and the transfer queue.
-/// Protocol details live behind FluentFTP and SSH.NET protocol clients.
+/// File-management APIs live on <see cref="IFtpFileOperations"/>.
 /// </summary>
-public interface IFtpService : IAsyncDisposable
+public interface IFtpService : IFtpFileOperations, IAsyncDisposable
 {
     /// <summary>Active protocol display name (e.g. FluentFTP / SSH.NET SFTP).</summary>
     string Name { get; }
@@ -28,10 +27,6 @@ public interface IFtpService : IAsyncDisposable
     /// Verifies the session; reconnects with <see cref="ActiveConnection"/> when dropped.
     /// </summary>
     Task EnsureConnectedAsync(CancellationToken cancellationToken = default);
-
-    Task<IReadOnlyList<RemoteEntry>> ListDirectoryAsync(
-        string remotePath,
-        CancellationToken cancellationToken = default);
 
     Task DownloadFileAsync(
         string remotePath,
@@ -76,8 +71,6 @@ public interface IFtpService : IAsyncDisposable
     /// Caller must dispose the lease to return the client.
     /// </summary>
     Task<IConnectionLease> OpenTransferClientAsync(CancellationToken cancellationToken = default);
-
-    Task RenameAsync(string fromPath, string toPath, CancellationToken cancellationToken = default);
 
     Task<string> ReadTextFileAsync(string remotePath, CancellationToken cancellationToken = default);
 

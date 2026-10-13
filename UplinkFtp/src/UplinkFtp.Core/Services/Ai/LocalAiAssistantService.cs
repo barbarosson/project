@@ -59,7 +59,10 @@ public sealed class LocalAiAssistantService : IAiAssistantService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        if (await HasApiKeyAsync(cancellationToken).ConfigureAwait(false) && _cloud is not null)
+        string? cloudError = null;
+        if (_settings.AiProvider != AiProviderKind.None
+            && await HasApiKeyAsync(cancellationToken).ConfigureAwait(false)
+            && _cloud is not null)
         {
             try
             {
@@ -69,20 +72,24 @@ public sealed class LocalAiAssistantService : IAiAssistantService
                     return cloud;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Fall through to local heuristics.
+                // Keep local heuristics, but surface the cloud failure clearly in the UI.
+                cloudError = ex.Message;
             }
         }
 
         var redacted = AiPromptRedaction.RedactLogLines(request.LogLines);
         var diagnosis = ConnectionAssistService.Diagnose(redacted);
         var steps = BuildTroubleshootSteps(redacted, diagnosis, request.Protocol);
+        var advice = string.IsNullOrWhiteSpace(cloudError)
+            ? diagnosis.Advice
+            : $"Cloud AI ({_settings.AiProvider}) failed: {cloudError}\n\nLocal fallback:\n{diagnosis.Advice}";
 
         return new AiTroubleshootResult
         {
-            Title = diagnosis.Title,
-            Advice = diagnosis.Advice,
+            Title = string.IsNullOrWhiteSpace(cloudError) ? diagnosis.Title : "Cloud AI failed — local fallback",
+            Advice = advice,
             Steps = steps,
             SuggestedUiAction = MapSuggestedAction(diagnosis),
             UsedCloudModel = false
@@ -146,6 +153,20 @@ public sealed class LocalAiAssistantService : IAiAssistantService
             after = DateTimeOffset.UtcNow.AddDays(-7);
         }
 
+        // Plain name search (no NL keywords): use the whole query as a substring match.
+        // This makes the browser Filter box work without a cloud key.
+        if (contains is null
+            && ext is null
+            && minBytes is null
+            && after is null)
+        {
+            contains = q;
+        }
+
+        var explanation = contains is not null && ext is null && minBytes is null && after is null
+            ? $"Name contains “{contains}”."
+            : "Local filter parse (BYOK cloud parse not required).";
+
         return Task.FromResult(new AiFileFilter
         {
             RawQuery = q,
@@ -153,7 +174,7 @@ public sealed class LocalAiAssistantService : IAiAssistantService
             NameContains = contains,
             MinSizeBytes = minBytes,
             ModifiedAfterUtc = after,
-            Explanation = "Local filter parse (BYOK cloud parse not required)."
+            Explanation = explanation
         });
     }
 

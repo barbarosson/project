@@ -1,4 +1,5 @@
 using System;
+using UplinkFtp.Helpers;
 using UplinkFtp.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -22,6 +23,19 @@ public sealed partial class RemoteBrowserPanel : UserControl
         _browser = browser;
         _shell = shell;
         DataContext = browser;
+        Loaded += OnLoadedOnce;
+    }
+
+    private void OnLoadedOnce(object sender, RoutedEventArgs e)
+    {
+        Loaded -= OnLoadedOnce;
+        if (_shell is null || _browser is null || XamlRoot is null)
+        {
+            return;
+        }
+
+        var menus = new BrowserContextMenuManager(_shell, XamlRoot);
+        FileList.ContextFlyout = menus.BuildRemoteMenu(_browser);
     }
 
     private void PathBox_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -53,9 +67,6 @@ public sealed partial class RemoteBrowserPanel : UserControl
     private void QuickEditSelected_Click(object sender, RoutedEventArgs e)
         => RequestQuickEdit();
 
-    private void QuickEditMenu_Click(object sender, RoutedEventArgs e)
-        => RequestQuickEdit();
-
     private void FileList_RightTapped(object sender, RightTappedRoutedEventArgs e)
     {
         if (e.OriginalSource is FrameworkElement { DataContext: BrowserItemViewModel item })
@@ -71,8 +82,20 @@ public sealed partial class RemoteBrowserPanel : UserControl
     {
         if (e.Key == Windows.System.VirtualKey.Enter && _browser is not null)
         {
-            _ = _browser.ApplyAiSearchCommand.ExecuteAsync(null);
+            var text = sender is TextBox box ? box.Text : AiSearchBox.Text;
+            _ = _browser.ApplySearchFromUiAsync(text);
+            e.Handled = true;
         }
+    }
+
+    private void FilterButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_browser is null)
+        {
+            return;
+        }
+
+        _ = _browser.ApplySearchFromUiAsync(AiSearchBox.Text);
     }
 
     private void RequestQuickEdit()

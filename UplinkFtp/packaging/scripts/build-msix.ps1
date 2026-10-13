@@ -48,7 +48,7 @@ Write-Host "Publishing UplinkFtp.App ($Configuration|$Platform, channel=$Channel
 dotnet publish "src\UplinkFtp.App\UplinkFtp.App.csproj" `
     -c $Configuration `
     -p:Platform=$Platform `
-    -p:WindowsPackageType=Msix `
+    -p:WindowsPackageType=MSIX `
     -p:UplinkDistributionChannel=$Channel `
     -p:EnableWindowsTargeting=true
 

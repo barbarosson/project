@@ -6,18 +6,33 @@ using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using UplinkFtp.Helpers;
 using UplinkFtp.Services.Ai;
+using UplinkFtp.Services.Browse;
 
 namespace UplinkFtp.ViewModels;
 
 public sealed partial class LocalBrowserViewModel : ObservableObject
 {
+    public const string ComputerRootPath = "This PC";
+
     private readonly IAiAssistantService _ai;
     private List<BrowserItemViewModel> _fullListing = [];
+    private AiFileFilter? _activeFilter;
+    private LocalFolderNodeViewModel? _thisPcNode;
 
     public ObservableCollection<BrowserItemViewModel> Items { get; } = [];
 
     public ObservableCollection<string> RootPaths { get; } = [];
+
+    /// <summary>Left-hand drive/folder tree (This PC → drives → folders).</summary>
+    public ObservableCollection<LocalFolderNodeViewModel> FolderTree { get; } = [];
+
+    public event EventHandler<string>? Navigated;
+
+    public bool IsComputerRoot =>
+        string.IsNullOrWhiteSpace(CurrentPath)
+        || string.Equals(CurrentPath.Trim(), ComputerRootPath, StringComparison.OrdinalIgnoreCase);
 
     [ObservableProperty]
     private string _currentPath = string.Empty;
@@ -37,31 +52,37 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasAiFilter;
 
+    [ObservableProperty]
+    private bool _showHiddenFiles = true;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NameSortLabel))]
+    [NotifyPropertyChangedFor(nameof(KindSortLabel))]
+    [NotifyPropertyChangedFor(nameof(SizeSortLabel))]
+    [NotifyPropertyChangedFor(nameof(ModifiedSortLabel))]
+    private BrowserSortColumn _sortColumn = BrowserSortColumn.Name;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NameSortLabel))]
+    [NotifyPropertyChangedFor(nameof(KindSortLabel))]
+    [NotifyPropertyChangedFor(nameof(SizeSortLabel))]
+    [NotifyPropertyChangedFor(nameof(ModifiedSortLabel))]
+    private bool _sortAscending = true;
+
+    public string NameSortLabel => BrowserListingHelper.SortHeaderLabel("Name", BrowserSortColumn.Name, SortColumn, SortAscending);
+    public string KindSortLabel => BrowserListingHelper.SortHeaderLabel("Kind", BrowserSortColumn.Kind, SortColumn, SortAscending);
+    public string SizeSortLabel => BrowserListingHelper.SortHeaderLabel("Size", BrowserSortColumn.Size, SortColumn, SortAscending);
+    public string ModifiedSortLabel => BrowserListingHelper.SortHeaderLabel("Modified", BrowserSortColumn.Modified, SortColumn, SortAscending);
+
     public LocalBrowserViewModel(IAiAssistantService ai)
     {
         _ai = ai;
-
-        try
-        {
-            foreach (var drive in DriveInfo.GetDrives().Where(d => d.IsReady))
-            {
-                RootPaths.Add(drive.RootDirectory.FullName);
-            }
-        }
-        catch
-        {
-            // Non-Windows smoke / restricted environment.
-        }
-
-        if (RootPaths.Count == 0)
-        {
-            RootPaths.Add(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile));
-        }
+        RebuildDriveRoots();
 
         CurrentPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         if (string.IsNullOrWhiteSpace(CurrentPath))
         {
-            CurrentPath = RootPaths[0];
+            CurrentPath = RootPaths.Count > 0 ? RootPaths[0] : ComputerRootPath;
         }
     }
 
@@ -72,9 +93,18 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
     {
         try
         {
+            if (IsComputerRoot)
+            {
+                CurrentPath = ComputerRootPath;
+                RebuildDriveRoots();
+                _fullListing = BuildComputerRootListing();
+                await ApplyListingAfterLoadAsync(ComputerRootPath).ConfigureAwait(true);
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(CurrentPath) || !Directory.Exists(CurrentPath))
             {
-                StatusMessage = "Path not found";
+                StatusMessage = "Path not found — pick a drive in the tree";
                 Items.Clear();
                 _fullListing = [];
                 return;
@@ -86,19 +116,9 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
                 CurrentPath = path;
             }
 
-            _fullListing = await Task.Run(() => BuildListing(path)).ConfigureAwait(true);
-
-            if (HasAiFilter && !string.IsNullOrWhiteSpace(AiSearchQuery))
-            {
-                var filter = await _ai.ParseSearchQueryAsync(AiSearchQuery).ConfigureAwait(true);
-                await ApplyAiFilterAsync(filter).ConfigureAwait(true);
-            }
-            else
-            {
-                ReplaceItems(_fullListing);
-                StatusMessage = $"{Items.Count(i => !i.IsParentLink)} items";
-                AiFilterStatus = string.Empty;
-            }
+            var includeHidden = ShowHiddenFiles;
+            _fullListing = await Task.Run(() => BuildListing(path, includeHidden)).ConfigureAwait(true);
+            await ApplyListingAfterLoadAsync(path).ConfigureAwait(true);
         }
         catch (Exception ex)
         {
@@ -108,12 +128,60 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
         }
     }
 
+    private async Task ApplyListingAfterLoadAsync(string path)
+    {
+        if (HasAiFilter && !string.IsNullOrWhiteSpace(AiSearchQuery) && !IsComputerRoot)
+        {
+            var filter = await _ai.ParseSearchQueryAsync(AiSearchQuery).ConfigureAwait(true);
+            await ApplyAiFilterAsync(filter).ConfigureAwait(true);
+        }
+        else
+        {
+            if (IsComputerRoot)
+            {
+                _activeFilter = null;
+                HasAiFilter = false;
+            }
+
+            PublishListing();
+            StatusMessage = IsComputerRoot
+                ? $"{Items.Count(i => !i.IsParentLink)} drives"
+                : $"{Items.Count(i => !i.IsParentLink)} items";
+            AiFilterStatus = IsComputerRoot ? "Select a drive or expand the tree" : string.Empty;
+        }
+
+        Navigated?.Invoke(this, path);
+    }
+
+    partial void OnShowHiddenFilesChanged(bool value)
+    {
+        InvalidateFolderTreeChildren();
+        _ = RefreshAsync();
+    }
+
+    [RelayCommand]
+    private void RefreshDrives()
+    {
+        RebuildDriveRoots();
+        if (IsComputerRoot)
+        {
+            _ = RefreshAsync();
+        }
+    }
+
     [RelayCommand]
     private async Task NavigateUpAsync()
     {
+        if (IsComputerRoot)
+        {
+            return;
+        }
+
         var parent = Directory.GetParent(CurrentPath);
         if (parent is null)
         {
+            CurrentPath = ComputerRootPath;
+            await RefreshAsync().ConfigureAwait(false);
             return;
         }
 
@@ -136,11 +204,64 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
         }
     }
 
+    public async Task NavigateToAsync(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return;
+        }
+
+        CurrentPath = path;
+        await RefreshAsync().ConfigureAwait(false);
+    }
+
+    public async Task NavigateTreeNodeAsync(LocalFolderNodeViewModel? node)
+    {
+        if (node is null)
+        {
+            return;
+        }
+
+        if (ReferenceEquals(node, _thisPcNode) || string.Equals(node.Label, ComputerRootPath, StringComparison.OrdinalIgnoreCase)
+            && string.IsNullOrWhiteSpace(node.FullPath))
+        {
+            CurrentPath = ComputerRootPath;
+            await RefreshAsync().ConfigureAwait(false);
+            return;
+        }
+
+        if (!node.IsNavigable)
+        {
+            return;
+        }
+
+        CurrentPath = node.FullPath;
+        await RefreshAsync().ConfigureAwait(false);
+    }
+
+    public Task EnsureTreeNodeChildrenAsync(LocalFolderNodeViewModel? node)
+    {
+        if (node is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        if (ReferenceEquals(node, _thisPcNode))
+        {
+            // Children are the current drive list — already set by RebuildDriveRoots.
+            return Task.CompletedTask;
+        }
+
+        return node.EnsureChildrenLoadedAsync(ShowHiddenFiles);
+    }
+
     [RelayCommand]
     private async Task GoToRootAsync(string? root)
     {
         if (string.IsNullOrWhiteSpace(root))
         {
+            CurrentPath = ComputerRootPath;
+            await RefreshAsync().ConfigureAwait(false);
             return;
         }
 
@@ -148,9 +269,160 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
         await RefreshAsync().ConfigureAwait(false);
     }
 
+    private void RebuildDriveRoots()
+    {
+        RootPaths.Clear();
+        var driveNodes = new List<LocalFolderNodeViewModel>();
+
+        try
+        {
+            foreach (var drive in DriveInfo.GetDrives())
+            {
+                var node = LocalFolderNodeViewModel.CreateDrive(drive);
+                driveNodes.Add(node);
+                if (drive.IsReady)
+                {
+                    RootPaths.Add(drive.RootDirectory.FullName);
+                }
+            }
+        }
+        catch
+        {
+            // Non-Windows smoke / restricted environment.
+        }
+
+        if (RootPaths.Count == 0)
+        {
+            var profile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (!string.IsNullOrWhiteSpace(profile))
+            {
+                RootPaths.Add(profile);
+                driveNodes.Add(LocalFolderNodeViewModel.CreateQuickAccess("User profile", profile));
+            }
+        }
+        else
+        {
+            var profile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (!string.IsNullOrWhiteSpace(profile) && Directory.Exists(profile))
+            {
+                // Pin profile under This PC for one-click access (does not replace drives).
+                driveNodes.Insert(0, LocalFolderNodeViewModel.CreateQuickAccess("User profile", profile));
+            }
+        }
+
+        _thisPcNode = LocalFolderNodeViewModel.CreateThisPcRoot();
+        _thisPcNode.SetChildren(driveNodes);
+        _thisPcNode.IsExpanded = true;
+
+        FolderTree.Clear();
+        FolderTree.Add(_thisPcNode);
+    }
+
+    private void InvalidateFolderTreeChildren()
+    {
+        if (_thisPcNode is null)
+        {
+            return;
+        }
+
+        foreach (var drive in _thisPcNode.Children)
+        {
+            drive.InvalidateChildren();
+            InvalidateDescendants(drive);
+        }
+    }
+
+    private static void InvalidateDescendants(LocalFolderNodeViewModel node)
+    {
+        foreach (var child in node.Children.ToList())
+        {
+            if (child.IsPlaceholder)
+            {
+                continue;
+            }
+
+            child.InvalidateChildren();
+        }
+    }
+
+    private List<BrowserItemViewModel> BuildComputerRootListing()
+    {
+        var list = new List<BrowserItemViewModel>();
+        try
+        {
+            foreach (var drive in DriveInfo.GetDrives())
+            {
+                var root = drive.RootDirectory.FullName;
+                var letter = root.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                if (!drive.IsReady)
+                {
+                    list.Add(new BrowserItemViewModel(
+                        $"{letter} (not ready)",
+                        root,
+                        isDirectory: true,
+                        size: 0,
+                        modifiedUtc: null));
+                    continue;
+                }
+
+                string label;
+                try
+                {
+                    var detail = !string.IsNullOrWhiteSpace(drive.VolumeLabel)
+                        ? drive.VolumeLabel
+                        : drive.DriveType.ToString();
+                    label = $"{letter} ({detail})";
+                }
+                catch
+                {
+                    label = letter;
+                }
+
+                DateTime? modified = null;
+                try
+                {
+                    modified = drive.RootDirectory.LastWriteTimeUtc;
+                }
+                catch
+                {
+                    // Some roots omit timestamps.
+                }
+
+                list.Add(new BrowserItemViewModel(label, root, isDirectory: true, size: 0, modifiedUtc: modified));
+            }
+        }
+        catch
+        {
+            var profile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            if (!string.IsNullOrWhiteSpace(profile))
+            {
+                list.Add(new BrowserItemViewModel("User profile", profile, true, 0, null));
+            }
+        }
+
+        return list;
+    }
+
+    /// <summary>Called from the panel so Enter applies the TextBox text even if binding has not flushed.</summary>
+    public Task ApplySearchFromUiAsync(string? queryFromTextBox)
+    {
+        if (queryFromTextBox is not null)
+        {
+            AiSearchQuery = queryFromTextBox;
+        }
+
+        return ApplyAiSearchAsync();
+    }
+
     [RelayCommand]
     private async Task ApplyAiSearchAsync()
     {
+        if (string.IsNullOrWhiteSpace(AiSearchQuery))
+        {
+            ClearAiFilter();
+            return;
+        }
+
         if (_fullListing.Count == 0)
         {
             await RefreshAsync().ConfigureAwait(true);
@@ -160,46 +432,178 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
         var count = await ApplyAiFilterAsync(filter).ConfigureAwait(true);
         AiFilterStatus = count == 0
             ? (string.IsNullOrWhiteSpace(filter.Explanation) ? "No matches." : filter.Explanation)
-            : $"AI filter: {count} file(s)";
+            : $"{count} match(es) · {filter.Explanation}";
     }
 
     [RelayCommand]
     private void ClearAiFilter()
     {
         HasAiFilter = false;
+        _activeFilter = null;
         AiFilterStatus = string.Empty;
         if (_fullListing.Count > 0)
         {
-            ReplaceItems(_fullListing);
+            PublishListing();
             StatusMessage = $"{Items.Count(i => !i.IsParentLink)} items";
         }
+    }
+
+    [RelayCommand]
+    private void SortBy(string? columnName)
+    {
+        if (!Enum.TryParse<BrowserSortColumn>(columnName, ignoreCase: true, out var column))
+        {
+            return;
+        }
+
+        if (SortColumn == column)
+        {
+            SortAscending = !SortAscending;
+        }
+        else
+        {
+            SortColumn = column;
+            SortAscending = true;
+        }
+
+        PublishListing();
     }
 
     public Task<int> ApplyAiFilterAsync(AiFileFilter filter)
     {
         HasAiFilter = true;
-        var parents = _fullListing.Where(i => i.IsParentLink);
-        var matches = _fullListing.Where(i =>
-            !i.IsParentLink
-            && AiFileFilterMatcher.Matches(i.Name, i.IsDirectory, i.Size, i.ModifiedUtc, filter));
-        var view = parents.Concat(matches).ToList();
-        ReplaceItems(view);
-        var count = view.Count(i => !i.IsParentLink);
+        _activeFilter = filter;
+        PublishListing();
+        var count = Items.Count(i => !i.IsParentLink);
         StatusMessage = $"{count} filtered";
         AiFilterStatus = filter.Explanation;
         return Task.FromResult(count);
     }
 
-    private void ReplaceItems(IEnumerable<BrowserItemViewModel> items)
+    public async Task RenameSelectedAsync(string newName)
     {
+        if (IsComputerRoot || SelectedItem is null || SelectedItem.IsParentLink || string.IsNullOrWhiteSpace(newName))
+        {
+            return;
+        }
+
+        var dest = Path.Combine(CurrentPath, newName.Trim());
+        await Task.Run(() =>
+        {
+            if (SelectedItem.IsDirectory)
+            {
+                Directory.Move(SelectedItem.FullPath, dest);
+            }
+            else
+            {
+                File.Move(SelectedItem.FullPath, dest);
+            }
+        }).ConfigureAwait(true);
+        await RefreshAsync().ConfigureAwait(true);
+    }
+
+    public async Task DeleteSelectedAsync()
+    {
+        if (IsComputerRoot || SelectedItem is null || SelectedItem.IsParentLink)
+        {
+            return;
+        }
+
+        var path = SelectedItem.FullPath;
+        var isDir = SelectedItem.IsDirectory;
+        await Task.Run(() =>
+        {
+            if (isDir)
+            {
+                Directory.Delete(path, recursive: true);
+            }
+            else
+            {
+                File.Delete(path);
+            }
+        }).ConfigureAwait(true);
+        await RefreshAsync().ConfigureAwait(true);
+    }
+
+    public async Task CreateDirectoryAsync(string name)
+    {
+        if (IsComputerRoot || string.IsNullOrWhiteSpace(name))
+        {
+            return;
+        }
+
+        var path = Path.Combine(CurrentPath, name.Trim());
+        await Task.Run(() => Directory.CreateDirectory(path)).ConfigureAwait(true);
+        await RefreshAsync().ConfigureAwait(true);
+    }
+
+    public async Task CreateEmptyFileAsync(string name)
+    {
+        if (IsComputerRoot || string.IsNullOrWhiteSpace(name))
+        {
+            return;
+        }
+
+        var path = Path.Combine(CurrentPath, name.Trim());
+        await Task.Run(() =>
+        {
+            if (File.Exists(path) || Directory.Exists(path))
+            {
+                throw new IOException($"'{name}' already exists.");
+            }
+
+            using var _ = File.Create(path);
+        }).ConfigureAwait(true);
+        await RefreshAsync().ConfigureAwait(true);
+    }
+
+    public IReadOnlyList<FileListFingerprint> GetFingerprints()
+        => Items
+            .Where(i => !i.IsParentLink)
+            .Select(i => new FileListFingerprint
+            {
+                Name = i.Name,
+                IsDirectory = i.IsDirectory,
+                Size = i.Size,
+                ModifiedUtc = i.ModifiedUtc
+            })
+            .ToList();
+
+    public void ApplyCompare(IReadOnlyDictionary<string, DirectoryCompareStatus> byName)
+    {
+        foreach (var item in Items)
+        {
+            if (item.IsParentLink)
+            {
+                item.CompareStatus = DirectoryCompareStatus.Same;
+                continue;
+            }
+
+            item.CompareStatus = byName.TryGetValue(item.Name, out var status)
+                ? status
+                : DirectoryCompareStatus.Same;
+        }
+    }
+
+    public void ClearCompare()
+    {
+        foreach (var item in Items)
+        {
+            item.CompareStatus = DirectoryCompareStatus.Same;
+        }
+    }
+
+    private void PublishListing()
+    {
+        var view = BrowserListingHelper.Present(_fullListing, _activeFilter, SortColumn, SortAscending);
         Items.Clear();
-        foreach (var item in items)
+        foreach (var item in view)
         {
             Items.Add(item);
         }
     }
 
-    private static List<BrowserItemViewModel> BuildListing(string path)
+    private static List<BrowserItemViewModel> BuildListing(string path, bool includeHidden)
     {
         var list = new List<BrowserItemViewModel>();
         var parent = Directory.GetParent(path);
@@ -207,19 +611,51 @@ public sealed partial class LocalBrowserViewModel : ObservableObject
         {
             list.Add(new BrowserItemViewModel("..", parent.FullName, isDirectory: true, 0, null, isParentLink: true));
         }
+        else
+        {
+            // Drive root → This PC (all drives).
+            list.Add(new BrowserItemViewModel("..", ComputerRootPath, isDirectory: true, 0, null, isParentLink: true));
+        }
 
         foreach (var dir in Directory.EnumerateDirectories(path).OrderBy(d => d, StringComparer.OrdinalIgnoreCase))
         {
             var info = new DirectoryInfo(dir);
+            if (!includeHidden && IsHidden(info))
+            {
+                continue;
+            }
+
             list.Add(new BrowserItemViewModel(info.Name, info.FullName, true, 0, info.LastWriteTimeUtc));
         }
 
         foreach (var file in Directory.EnumerateFiles(path).OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
         {
             var info = new FileInfo(file);
+            if (!includeHidden && IsHidden(info))
+            {
+                continue;
+            }
+
             list.Add(new BrowserItemViewModel(info.Name, info.FullName, false, info.Length, info.LastWriteTimeUtc));
         }
 
         return list;
+    }
+
+    private static bool IsHidden(FileSystemInfo info)
+    {
+        if (info.Name.StartsWith(".", StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        try
+        {
+            return (info.Attributes & FileAttributes.Hidden) != 0;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
