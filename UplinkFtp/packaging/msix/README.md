@@ -1,15 +1,22 @@
 # MSIX packaging (Store + sideload)
 
-Scaffold only. **No certificates, Store IDs, or publisher secrets belong in this repo.**
+**No certificates or Pro add-on secrets belong in this repo.** Public Partner Center identity is documented in [`docs/store/product-identity.md`](../../docs/store/product-identity.md).
 
 ## App manifest (source of truth)
 
 `src/UplinkFtp.App/Package.appxmanifest`
 
-Identity today uses **local placeholders** (`Name="UplinkFtp.Desktop"`, `Publisher="CN=UplinkFtp"`).  
-**Do not overwrite that file with invented Partner Center IDs.** Association on a Windows machine replaces them with the real publisher CN and package identity.
+Identity (applied from Partner Center):
 
-Template for offline experiments: `Package.appxmanifest.template` (`REPLACE_ME_*` fields).
+| Field | Value |
+| --- | --- |
+| Name | `MODULUSTECH.UplinkFTP` |
+| Publisher | `CN=7E7A2323-C3C3-4A9A-A4D1-832D351FC4BA` |
+| PublisherDisplayName | `MODULUSTECH` |
+| DisplayName | `Uplink FTP` |
+| Store ID | `9MZKMN2ZH0DG` |
+
+Template for offline experiments: `Package.appxmanifest.template`.
 
 Restricted capability justifications (copy into Partner Center):  
 [`docs/store/capability-justifications.md`](../../docs/store/capability-justifications.md)
@@ -55,18 +62,17 @@ dotnet publish src\UplinkFtp.App\UplinkFtp.App.csproj `
 # then SignTool / Partner Center Store-managed signing
 ```
 
-## Partner Center association (Barbaros — Windows)
+## Partner Center (Barbaros — remaining)
 
-1. Create / open the app in [Partner Center](https://partner.microsoft.com/).  
-2. Note **Package identity name**, **Publisher CN**, **Publisher display name**.  
-3. Create durable add-on **Uplink FTP Pro**; copy its Store ID.  
-4. Visual Studio → Project → Package and Publish → **Associate App with the Store**.  
-5. Commit only non-secret identity updates to `Package.appxmanifest` (never commit `.pfx` or `Package.StoreAssociation.xml` if it contains secrets — already gitignored).  
-6. Set `UPLINK_STORE_PRO_ADDON_ID` locally for Store builds.  
-7. Submit a package flight — **not automated from this repo**.
+App identity / Store ID are already in the manifest and `product-identity.md`.
+
+1. Create durable add-on **Uplink FTP Pro**; copy its Store ID.  
+2. On Windows, Visual Studio → Package and Publish → **Associate App with the Store** (refresh PhoneIdentity / association XML if needed).  
+3. Set `UPLINK_STORE_PRO_ADDON_ID` in local `signing.env` for Store builds — **do not invent**.  
+4. Sign / Store-sign MSIX and submit a package flight — **not automated from this repo**.
 
 ## Explicit non-goals in-repo
 
 - No `.pfx` / fake self-signed certs committed  
-- No invented Store association GUIDs as production truth  
+- No invented Pro add-on Store IDs  
 - No automatic Store publish  

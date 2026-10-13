@@ -29,10 +29,11 @@ Versioning starts at **0.1.0-beta** (see `CHANGELOG.md`). Check items before tag
 
 ### Barbaros before first certification
 
-- [ ] Partner Center account + app reservation + Pro add-on SKU  
+- [x] Partner Center app reservation + package identity (`docs/store/product-identity.md`)  
+- [ ] Create durable **Uplink FTP Pro** add-on SKU; set `UPLINK_STORE_PRO_ADDON_ID`  
 - [ ] Public **FILL_IN_PRIVACY_POLICY_HTTPS_URL** hosted  
-- [ ] VS Associate App with the Store (real Identity / Publisher)  
-- [ ] Set `UPLINK_STORE_PRO_ADDON_ID`; Store-channel MSIX signed / Store-signed  
+- [ ] VS Associate App with the Store on Windows (refresh association / PhoneIdentity if needed)  
+- [ ] Store-channel MSIX signed / Store-signed  
 - [ ] Real desktop screenshots (not placeholders)  
 - [ ] Listing + IARC + capability justifications pasted  
 - [ ] Sandbox: Free → purchase Pro → limits lift  

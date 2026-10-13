@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  LOCAL DEVELOPMENT PLACEHOLDERS — not Partner Center production identity.
-  After VS "Associate App with the Store", Identity / PhoneIdentity / PublisherDisplayName
-  are replaced with real values. Never invent production Store IDs in git.
+  Partner Center product identity (MODULUSTECH / Uplink FTP).
+  See docs/store/product-identity.md for PFN, SID, Store URL, MSA app Id.
+  Pro durable add-on Store ID is NOT set here — configure UPLINK_STORE_PRO_ADDON_ID after Partner Center.
   Restricted capability justifications: docs/store/capability-justifications.md
-  Association workflow: packaging/msix/README.md
+  Association / build: packaging/msix/README.md
 -->
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
@@ -13,19 +13,17 @@
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   IgnorableNamespaces="uap rescap">
 
-  <!-- PLACEHOLDER: replaced by Store association -->
   <Identity
-    Name="UplinkFtp.Desktop"
-    Publisher="CN=UplinkFtp"
+    Name="MODULUSTECH.UplinkFTP"
+    Publisher="CN=7E7A2323-C3C3-4A9A-A4D1-832D351FC4BA"
     Version="0.1.0.0" />
 
-  <!-- PLACEHOLDER PhoneIdentity — do not treat as a real Store product -->
+  <!-- PhoneIdentity may still be refreshed by VS Store association; not supplied separately. -->
   <mp:PhoneIdentity PhoneProductId="a1b2c3d4-e5f6-7890-abcd-ef1234567890" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>Uplink FTP</DisplayName>
-    <!-- PLACEHOLDER: must match Partner Center publisher display name after association -->
-    <PublisherDisplayName>Uplink FTP</PublisherDisplayName>
+    <PublisherDisplayName>MODULUSTECH</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 

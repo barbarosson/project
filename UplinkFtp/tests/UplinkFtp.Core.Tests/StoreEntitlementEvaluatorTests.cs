@@ -51,17 +51,24 @@ public sealed class StoreEntitlementEvaluatorTests
     [Fact]
     public void StoreCommerceOptions_reads_env_placeholders()
     {
-        var previous = Environment.GetEnvironmentVariable("UPLINK_STORE_PRO_ADDON_ID");
+        var previousAddon = Environment.GetEnvironmentVariable("UPLINK_STORE_PRO_ADDON_ID");
+        var previousApp = Environment.GetEnvironmentVariable("UPLINK_STORE_APP_ID");
         try
         {
             Environment.SetEnvironmentVariable("UPLINK_STORE_PRO_ADDON_ID", " 9NBLGGH4N15H ");
+            Environment.SetEnvironmentVariable("UPLINK_STORE_APP_ID", null);
             var opts = new StoreCommerceOptions();
             Assert.True(opts.HasProAddOnId);
             Assert.Equal("9NBLGGH4N15H", opts.ProAddOnStoreId);
+            Assert.Equal(StoreCommerceOptions.DefaultAppStoreId, opts.AppStoreId);
+            Assert.Equal(
+                $"ms-windows-store://pdp/?productid={StoreCommerceOptions.DefaultAppStoreId}",
+                opts.StoreProtocolUrl);
         }
         finally
         {
-            Environment.SetEnvironmentVariable("UPLINK_STORE_PRO_ADDON_ID", previous);
+            Environment.SetEnvironmentVariable("UPLINK_STORE_PRO_ADDON_ID", previousAddon);
+            Environment.SetEnvironmentVariable("UPLINK_STORE_APP_ID", previousApp);
         }
     }
 }
