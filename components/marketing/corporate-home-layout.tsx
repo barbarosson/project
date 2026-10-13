@@ -6,6 +6,7 @@ import {
   Building2,
   CalendarClock,
   Check,
+  FolderSync,
   MessageSquareHeart,
   ScrollText,
   TrendingUp,
@@ -44,6 +45,11 @@ const PRODUCT_STYLES: Record<
     icon: TrendingUp,
     accent: '#4F46E5',
     bg: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)',
+  },
+  uplinkFtp: {
+    icon: FolderSync,
+    accent: '#0284C7',
+    bg: 'linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%)',
   },
   erp: {
     icon: Building2,

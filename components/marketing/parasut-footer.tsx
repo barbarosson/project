@@ -26,6 +26,7 @@ export function ModulusFooter() {
         { name: 'isendAI', href: '/products/isendai' },
         { name: 'Digital Legacy', href: '/products/digital-legacy' },
         { name: 'SeekDesk', href: '/products/seekdesk' },
+        { name: 'Uplink FTP', href: '/products/uplink-ftp' },
         { name: language === 'en' ? 'Corporate home' : 'Kurumsal ana sayfa', href: '/' },
       ],
     },
