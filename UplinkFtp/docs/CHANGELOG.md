@@ -24,7 +24,7 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 - **Windows App SDK 1.6 → 2.5.1** (NuGet stable); BuildTools → `10.0.26100.9169`  
 - Unpackaged builds use `WindowsAppSDKSelfContained=true` (no EOL 1.6 Runtime install)  
 - **UI shell redesign:** sectioned blocks (connect / log / local·remote / queue), four named themes (Sun Rise / Orange / Red Night / ZEN), Sora + JetBrains Mono  
-- **Store product identity:** `Package.appxmanifest` → `MODULUSTECH.UplinkFTP` / `CN=7E7A2323-…` / publisher `MODULUSTECH`; default `UPLINK_STORE_APP_ID=9MZKMN2ZH0DG` (`docs/store/product-identity.md`)  
+- **Store product identity:** `Package.appxmanifest` → `MODULUSTECH.UplinkFTP` / `CN=7E7A2323-…` / publisher `MODULUSTECH`; default `UPLINK_STORE_APP_ID=9MZKMN2ZH0DG`; Pro add-on `UPLINK_STORE_PRO_ADDON_ID=9MTN64PZGQCM` (`docs/store/product-identity.md`)  
 
 
 

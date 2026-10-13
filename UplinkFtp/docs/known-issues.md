@@ -22,7 +22,7 @@ Living list for dogfood and public beta. Update as defects are fixed.
 - Production license backend hosting is an **external blocker** (sample only: `samples/LicenseApi`).  
 - Client Debug stubs (`UPLINK-PRO*`) must stay disabled in Release shipping builds.  
 - MSIX / web installer scripts remain fail-closed without a real signing cert — **no certs in repo**.  
-- Store association, Pro add-on Store ID (`UPLINK_STORE_PRO_ADDON_ID`), and Partner Center submission are **human / Partner Center** steps (code path ready).  
+- Store association / sandbox purchase / Partner Center submission remain **human** steps. App + Pro add-on Store IDs are wired in-repo (`docs/store/product-identity.md`).  
 
 ## Telemetry / privacy
 

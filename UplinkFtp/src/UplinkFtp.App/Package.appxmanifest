@@ -2,7 +2,7 @@
 <!--
   Partner Center product identity (MODULUSTECH / Uplink FTP).
   See docs/store/product-identity.md for PFN, SID, Store URL, MSA app Id.
-  Pro durable add-on Store ID is NOT set here — configure UPLINK_STORE_PRO_ADDON_ID after Partner Center.
+  Pro durable add-on Store ID: 9MTN64PZGQCM (StoreCommerceOptions / UPLINK_STORE_PRO_ADDON_ID).
   Restricted capability justifications: docs/store/capability-justifications.md
   Association / build: packaging/msix/README.md
 -->

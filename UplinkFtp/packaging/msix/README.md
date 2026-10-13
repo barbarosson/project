@@ -28,7 +28,7 @@ Restricted capability justifications (copy into Partner Center):
 | **Store** | `-p:UplinkDistributionChannel=Store` or `build-store-channel.ps1` | `StoreLicenseService` + optional Pro add-on ID |
 | **Web** (default unpackaged) | `-p:UplinkDistributionChannel=Web` or `build-web-channel.ps1` | `WebLicenseService` + license key |
 
-Pro add-on Store ID (after Partner Center): set `UPLINK_STORE_PRO_ADDON_ID` in the environment or `signing.env` before building Store channel.
+Pro add-on Store ID defaults to `9MTN64PZGQCM` (`UPLINK_STORE_PRO_ADDON_ID` / `StoreCommerceOptions.DefaultProAddOnStoreId`). Override via env or local `signing.env` if Partner Center changes it.
 
 ## Produce an MSIX (Windows)
 
@@ -64,15 +64,13 @@ dotnet publish src\UplinkFtp.App\UplinkFtp.App.csproj `
 
 ## Partner Center (Barbaros — remaining)
 
-App identity / Store ID are already in the manifest and `product-identity.md`.
+App identity, app Store ID (`9MZKMN2ZH0DG`), and Pro add-on ID (`9MTN64PZGQCM`) are in `product-identity.md` / defaults.
 
-1. Create durable add-on **Uplink FTP Pro**; copy its Store ID.  
-2. On Windows, Visual Studio → Package and Publish → **Associate App with the Store** (refresh PhoneIdentity / association XML if needed).  
-3. Set `UPLINK_STORE_PRO_ADDON_ID` in local `signing.env` for Store builds — **do not invent**.  
-4. Sign / Store-sign MSIX and submit a package flight — **not automated from this repo**.
+1. On Windows, Visual Studio → Package and Publish → **Associate App with the Store** (refresh PhoneIdentity / association XML if needed).  
+2. Sign / Store-sign MSIX and submit a package flight — **not automated from this repo**.  
+3. Sandbox: Free → Buy Pro → limits lift.
 
 ## Explicit non-goals in-repo
 
 - No `.pfx` / fake self-signed certs committed  
-- No invented Pro add-on Store IDs  
 - No automatic Store publish  

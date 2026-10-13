@@ -4,18 +4,21 @@ namespace UplinkFtp.Services.Licensing;
 
 /// <summary>
 /// Configurable Microsoft Store product / add-on IDs.
-/// App Store ID defaults to the Partner Center listing; Pro add-on ID stays empty until created.
+/// Defaults match Partner Center public Store IDs; override via env when needed.
 /// </summary>
 public sealed class StoreCommerceOptions
 {
     /// <summary>Partner Center app Store ID (listing). Override with <c>UPLINK_STORE_APP_ID</c>.</summary>
     public const string DefaultAppStoreId = "9MZKMN2ZH0DG";
 
+    /// <summary>Durable Pro add-on Store ID. Override with <c>UPLINK_STORE_PRO_ADDON_ID</c>.</summary>
+    public const string DefaultProAddOnStoreId = "9MTN64PZGQCM";
+
     /// <summary>
     /// Durable Pro add-on Store ID from Partner Center.
-    /// Env: <c>UPLINK_STORE_PRO_ADDON_ID</c>. Leave empty until the add-on exists — never invent.
+    /// Env: <c>UPLINK_STORE_PRO_ADDON_ID</c>; defaults to <see cref="DefaultProAddOnStoreId"/>.
     /// </summary>
-    public string ProAddOnStoreId { get; set; } = ReadEnv("UPLINK_STORE_PRO_ADDON_ID");
+    public string ProAddOnStoreId { get; set; } = ReadEnvOrDefault("UPLINK_STORE_PRO_ADDON_ID", DefaultProAddOnStoreId);
 
     /// <summary>
     /// App Store ID (listing / diagnostics / PDP link).

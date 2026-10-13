@@ -74,7 +74,7 @@ public sealed partial class LicenseViewModel : ObservableObject
         {
             PurchaseInfo = _storeLicense!.CanRequestPurchase
                 ? "Unlock Pro with a one-time Microsoft Store add-on (Uplink FTP Pro)."
-                : "Store purchase is ready in code. After Partner Center, set UPLINK_STORE_PRO_ADDON_ID and rebuild the Store channel. Until then, Buy Pro explains the missing association.";
+                : "Pro add-on Store ID is missing. Set UPLINK_STORE_PRO_ADDON_ID (default 9MTN64PZGQCM) and rebuild the Store channel.";
         }
         else
         {
