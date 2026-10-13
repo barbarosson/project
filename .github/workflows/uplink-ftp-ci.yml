@@ -1,0 +1,94 @@
+# Uplink FTP CI — Linux unit tests + Windows WinUI build
+name: Uplink FTP CI
+
+on:
+  push:
+    paths:
+      - 'UplinkFtp/**'
+      - '.github/workflows/uplink-ftp-ci.yml'
+  pull_request:
+    paths:
+      - 'UplinkFtp/**'
+      - '.github/workflows/uplink-ftp-ci.yml'
+
+jobs:
+  linux-core-tests:
+    name: Linux — Core restore + test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: UplinkFtp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore Core + tests
+        run: |
+          dotnet restore src/UplinkFtp.Core/UplinkFtp.Core.csproj
+          dotnet restore tests/UplinkFtp.Core.Tests/UplinkFtp.Core.Tests.csproj
+      - name: Build + test
+        run: |
+          dotnet build src/UplinkFtp.Core/UplinkFtp.Core.csproj -c Release --no-restore
+          dotnet test tests/UplinkFtp.Core.Tests/UplinkFtp.Core.Tests.csproj -c Release --verbosity normal
+
+  windows-winui-build:
+    name: Windows — WinUI App build
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: UplinkFtp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore solution
+        run: dotnet restore UplinkFtp.sln
+      - name: Build App (x64 Debug, Web channel, WASDK self-contained)
+        run: >
+          dotnet build src/UplinkFtp.App/UplinkFtp.App.csproj
+          -c Debug -p:Platform=x64
+          -p:UplinkDistributionChannel=Web
+          -p:EnableWindowsTargeting=true
+          -p:WindowsAppSDKSelfContained=true
+      - name: Verify unpackaged exe + WASDK payload present
+        shell: pwsh
+        run: |
+          # WindowsAppSDKSelfContained emits under …\net8.0-windows…\win-x64\
+          $candidates = @(
+            "src/UplinkFtp.App/bin/x64/Debug/net8.0-windows10.0.19041.0/win-x64",
+            "src/UplinkFtp.App/bin/x64/Debug/net8.0-windows10.0.19041.0"
+          )
+          $out = $candidates | Where-Object { Test-Path (Join-Path $_ "UplinkFtp.exe") } | Select-Object -First 1
+          if (-not $out) {
+            Get-ChildItem "src/UplinkFtp.App/bin" -Recurse -Filter "UplinkFtp.exe" -ErrorAction SilentlyContinue |
+              ForEach-Object { Write-Host "found: $($_.FullName)" }
+            throw "Missing UplinkFtp.exe under expected Debug output folders."
+          }
+          $exe = Join-Path $out "UplinkFtp.exe"
+          $markers = @(
+            "Microsoft.WindowsAppRuntime*.dll",
+            "Microsoft.UI.Xaml*.dll",
+            "Microsoft.WinUI.dll",
+            "CoreMessagingXP.dll",
+            "Microsoft.InteractiveExperiences.Projection.dll"
+          )
+          $hits = @()
+          foreach ($pat in $markers) {
+            $hits += Get-ChildItem $out -Recurse -Filter $pat -ErrorAction SilentlyContinue
+          }
+          if ($hits.Count -eq 0) {
+            Write-Host "Top-level output files:"
+            Get-ChildItem $out -File | Select-Object -First 40 | ForEach-Object { Write-Host $_.Name }
+            throw "Windows App SDK self-contained payload not found under $out"
+          }
+          Write-Host "OK exe=$exe"
+          Write-Host "WASDK hits: $(($hits | Select-Object -First 8).Name -join '; ')"
+      - name: Build App (x64 Release, Store channel define)
+        run: >
+          dotnet build src/UplinkFtp.App/UplinkFtp.App.csproj
+          -c Release -p:Platform=x64
+          -p:UplinkDistributionChannel=Store
+          -p:EnableWindowsTargeting=true
+          -p:WindowsAppSDKSelfContained=true

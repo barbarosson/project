@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="UplinkFtp.Views.Dialogs.LicenseDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="License"
+    PrimaryButtonText="Close"
+    DefaultButton="Primary"
+    MinWidth="440"
+    FontFamily="{StaticResource UplinkUiFont}">
+
+    <StackPanel Spacing="12" MinWidth="400" Padding="0,4,0,0">
+        <!-- Prefer TextBlock.Text over Run+x:Bind (Run bindings are unreliable in WinUI). -->
+        <TextBlock Style="{StaticResource UplinkDialogTitleStyle}"
+                   Text="{x:Bind ViewModel.ChannelLine, Mode=OneWay}"/>
+        <TextBlock Style="{StaticResource UplinkBodyTextStyle}"
+                   FontWeight="SemiBold"
+                   Text="{x:Bind ViewModel.TierLine, Mode=OneWay}"/>
+        <TextBlock Style="{StaticResource UplinkBodyTextStyle}"
+                   Text="{x:Bind ViewModel.StatusDetail, Mode=OneWay}"
+                   TextWrapping="Wrap"/>
+        <TextBlock Style="{StaticResource UplinkMutedTextStyle}"
+                   Text="{x:Bind ViewModel.PurchaseInfo, Mode=OneWay}"
+                   TextWrapping="Wrap"/>
+
+        <StackPanel x:Name="WebKeyPanel" Spacing="8">
+            <TextBox Header="License key"
+                     FontFamily="{StaticResource UplinkUiFont}"
+                     Text="{x:Bind ViewModel.LicenseKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     PlaceholderText="Paste your Pro key"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.2*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0"
+                        Content="Activate"
+                        Style="{StaticResource AccentButtonStyle}"
+                        FontFamily="{StaticResource UplinkUiFont}"
+                        Command="{x:Bind ViewModel.ActivateCommand}"
+                        HorizontalAlignment="Stretch"
+                        MinWidth="0"
+                        CornerRadius="10"/>
+                <Button Grid.Column="2"
+                        Content="Clear"
+                        Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{x:Bind ViewModel.ClearCommand}"
+                        HorizontalAlignment="Stretch"
+                        MinWidth="0"/>
+            </Grid>
+        </StackPanel>
+
+        <Button Content="Refresh status"
+                Style="{StaticResource UplinkNavButtonStyle}"
+                Command="{x:Bind ViewModel.RefreshCommand}"
+                HorizontalAlignment="Left"
+                MinWidth="120"/>
+
+        <TextBlock Style="{StaticResource UplinkMutedTextStyle}"
+                   Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                   TextWrapping="Wrap"/>
+    </StackPanel>
+</ContentDialog>

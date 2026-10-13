@@ -1,0 +1,18 @@
+{
+  "product": "UplinkFtp",
+  "channel": "beta",
+  "version": "0.1.0-beta",
+  "minOsVersion": "10.0.17763.0",
+  "publishedAt": "REPLACE_ME_ISO8601",
+  "notesUrl": "REPLACE_ME_RELEASE_NOTES_URL",
+  "packages": [
+    {
+      "arch": "x64",
+      "url": "REPLACE_ME_HTTPS_PACKAGE_URL",
+      "sha256": "REPLACE_ME_SHA256",
+      "sizeBytes": 0,
+      "format": "msix"
+    }
+  ],
+  "mandatory": false
+}

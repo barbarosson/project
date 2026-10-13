@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="UplinkFtp.Views.Panels.RemoteBrowserPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:UplinkFtp.ViewModels"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid x:Name="DropTarget"
+          AllowDrop="True"
+          DragOver="DropTarget_DragOver"
+          Drop="DropTarget_Drop">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Remote site" Style="{StaticResource UplinkSectionTitleStyle}" Margin="0"/>
+            <Button Grid.Column="1"
+                    Content="← Download"
+                    Style="{StaticResource UplinkNavButtonStyle}"
+                    Click="DownloadSelected_Click"
+                    IsEnabled="{Binding IsConnected}"
+                    ToolTipService.ToolTip="Download the selected remote file/folder to the local path"
+                    MinWidth="0"
+                    Padding="12,6"/>
+        </Grid>
+
+        <Grid Grid.Row="1" Margin="0,8,0,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="PathBox"
+                     FontFamily="{StaticResource UplinkUiFont}"
+                     Text="{Binding CurrentPath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     PlaceholderText="Remote path"
+                     IsEnabled="{Binding IsConnected}"
+                     Margin="0,0,6,0"
+                     KeyDown="PathBox_KeyDown"/>
+            <Button Grid.Column="1"
+                    Content="Up"
+                    Style="{StaticResource UplinkNavButtonStyle}"
+                    Command="{Binding NavigateUpCommand}"
+                    IsEnabled="{Binding IsConnected}"
+                    Margin="0,0,6,0"
+                    ToolTipService.ToolTip="Parent folder"/>
+            <Button Grid.Column="2"
+                    Content="Refresh"
+                    Style="{StaticResource UplinkNavButtonStyle}"
+                    Command="{Binding RefreshCommand}"
+                    IsEnabled="{Binding IsConnected}"/>
+        </Grid>
+
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid Margin="4,0,4,6">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="140"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Name" Style="{StaticResource UplinkMutedTextStyle}"/>
+                <TextBlock Grid.Column="1" Text="Kind" Style="{StaticResource UplinkMutedTextStyle}"/>
+                <TextBlock Grid.Column="2" Text="Size" Style="{StaticResource UplinkMutedTextStyle}"/>
+                <TextBlock Grid.Column="3" Text="Modified" Style="{StaticResource UplinkMutedTextStyle}"/>
+            </Grid>
+
+            <ListView x:Name="FileList"
+                      Grid.Row="1"
+                      ItemsSource="{Binding Items}"
+                      SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+                      SelectionMode="Single"
+                      CanDragItems="True"
+                      AllowDrop="True"
+                      CanReorderItems="False"
+                      IsEnabled="{Binding IsConnected}"
+                      DragItemsStarting="FileList_DragItemsStarting"
+                      DragOver="DropTarget_DragOver"
+                      Drop="DropTarget_Drop"
+                      DoubleTapped="FileList_DoubleTapped">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:BrowserItemViewModel">
+                        <Grid Padding="0,3">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="80"/>
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="140"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{x:Bind Name}"
+                                       Style="{StaticResource UplinkBodyTextStyle}"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Grid.Column="1" Text="{x:Bind Kind}" Style="{StaticResource UplinkMutedTextStyle}"/>
+                            <TextBlock Grid.Column="2" Text="{x:Bind SizeDisplay}" Style="{StaticResource UplinkBodyTextStyle}"/>
+                            <TextBlock Grid.Column="3" Text="{x:Bind ModifiedDisplay}" Style="{StaticResource UplinkMutedTextStyle}"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+    </Grid>
+</UserControl>

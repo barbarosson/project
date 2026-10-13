@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentDialog
+    x:Class="UplinkFtp.Views.Dialogs.AssistDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="AI Assist"
+    PrimaryButtonText="Close"
+    DefaultButton="Primary"
+    MinWidth="520"
+    FontFamily="{StaticResource UplinkUiFont}">
+
+    <ScrollViewer MaxHeight="560"
+                  VerticalScrollBarVisibility="Visible"
+                  HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="14" MinWidth="460" Padding="0,4,0,0">
+            <TextBlock Text="Smart connection helper"
+                       Style="{StaticResource UplinkDialogTitleStyle}"/>
+            <TextBlock Style="{StaticResource UplinkMutedTextStyle}"
+                       TextWrapping="Wrap"
+                       Text="IAiAssistantService: URI parse + Solve with AI (log troubleshoot). BYOK keys live in Credential Locker — Settings → AI."/>
+            <TextBlock Style="{StaticResource UplinkMutedTextStyle}"
+                       Text="{x:Bind ViewModel.AiModeText, Mode=OneWay}"
+                       TextWrapping="Wrap"/>
+
+            <TextBox Header="Paste URI or host:port"
+                     FontFamily="{StaticResource UplinkUiFont}"
+                     Text="{x:Bind ViewModel.ConnectionText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     PlaceholderText="sftp://barba@127.0.0.1:22/"
+                     AcceptsReturn="False"/>
+            <TextBlock Text="{x:Bind ViewModel.ParseSummary, Mode=OneWay}"
+                       Style="{StaticResource UplinkMutedTextStyle}"
+                       TextWrapping="Wrap"/>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="1.4*"/>
+                    <ColumnDefinition Width="8"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0"
+                        Content="Parse"
+                        Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{x:Bind ViewModel.ParseCommand}"
+                        HorizontalAlignment="Stretch"
+                        MinWidth="0"/>
+                <Button Grid.Column="2"
+                        Content="Apply to Connect"
+                        Style="{StaticResource AccentButtonStyle}"
+                        FontFamily="{StaticResource UplinkUiFont}"
+                        Command="{x:Bind ViewModel.ApplyCommand}"
+                        HorizontalAlignment="Stretch"
+                        MinWidth="0"
+                        CornerRadius="10"/>
+                <Button Grid.Column="4"
+                        Content="Default port"
+                        Style="{StaticResource UplinkNavButtonStyle}"
+                        Command="{x:Bind ViewModel.SuggestPortsCommand}"
+                        ToolTipService.ToolTip="Set Connect port from the selected protocol"
+                        HorizontalAlignment="Stretch"
+                        MinWidth="0"/>
+            </Grid>
+
+            <Border Style="{StaticResource UplinkSectionBorderStyle}" Margin="0" Padding="12,10">
+                <StackPanel Spacing="8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{x:Bind ViewModel.DiagnosisTitle, Mode=OneWay}"
+                                   Style="{StaticResource UplinkDialogTitleStyle}"
+                                   Margin="0"/>
+                        <Button Grid.Column="1"
+                                Content="Refresh"
+                                Style="{StaticResource UplinkNavButtonStyle}"
+                                Command="{x:Bind ViewModel.RefreshDiagnosisCommand}"
+                                MinWidth="88"/>
+                    </Grid>
+                    <TextBlock Text="{x:Bind ViewModel.DiagnosisAdvice, Mode=OneWay}"
+                               Style="{StaticResource UplinkBodyTextStyle}"
+                               TextWrapping="Wrap"/>
+                    <TextBlock Text="{x:Bind ViewModel.DiagnosisSteps, Mode=OneWay}"
+                               Style="{StaticResource UplinkMutedTextStyle}"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                       Style="{StaticResource UplinkMutedTextStyle}"
+                       TextWrapping="Wrap"/>
+        </StackPanel>
+    </ScrollViewer>
+</ContentDialog>

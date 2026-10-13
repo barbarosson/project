@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="UplinkFtp.Views.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:panels="using:UplinkFtp.Views.Panels"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="Uplink FTP">
+
+    <Grid x:Name="RootGrid" Background="{ThemeResource UplinkShellBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="168"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="236"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Connect / brand -->
+        <Border Grid.Row="0" Style="{StaticResource UplinkSectionBorderStyle}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Image Source="ms-appx:///Assets/UplinkLogo.png"
+                               Width="28" Height="28"
+                               Stretch="Uniform"
+                               VerticalAlignment="Center"
+                               ToolTipService.ToolTip="Uplink FTP"/>
+                        <TextBlock Text="Uplink FTP"
+                                   Style="{StaticResource UplinkBrandTextStyle}"
+                                   VerticalAlignment="Center"/>
+                        <Button Content="Sites"
+                                Style="{StaticResource UplinkNavButtonStyle}"
+                                Command="{x:Bind ViewModel.OpenSiteManagerCommand}"/>
+                        <Button Content="Assist"
+                                Style="{StaticResource UplinkNavButtonStyle}"
+                                Command="{x:Bind ViewModel.OpenAssistCommand}"
+                                ToolTipService.ToolTip="AI Assist — parse URIs and diagnose connection errors"/>
+                        <Button Content="Settings"
+                                Style="{StaticResource UplinkNavButtonStyle}"
+                                Command="{x:Bind ViewModel.OpenSettingsCommand}"/>
+                        <Button Content="License"
+                                Style="{StaticResource UplinkNavButtonStyle}"
+                                Command="{x:Bind ViewModel.OpenLicenseCommand}"/>
+                    </StackPanel>
+                    <TextBlock x:Name="StatusTextBlock"
+                               Grid.Column="2"
+                               Text="{x:Bind ViewModel.StatusText, Mode=OneWay}"
+                               Style="{StaticResource UplinkMutedTextStyle}"
+                               VerticalAlignment="Center"
+                               TextAlignment="Right"/>
+                </Grid>
+
+                <Grid Grid.Row="1" Margin="0,14,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="110"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox Header="Host"
+                             FontFamily="{StaticResource UplinkUiFont}"
+                             Text="{x:Bind ViewModel.Host, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             PlaceholderText="ftp.example.com"
+                             Margin="0,0,8,0"/>
+                    <TextBox Grid.Column="1"
+                             Header="Port"
+                             FontFamily="{StaticResource UplinkUiFont}"
+                             Text="{x:Bind ViewModel.PortText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,0,8,0"/>
+                    <ComboBox Grid.Column="2"
+                              Header="Protocol"
+                              FontFamily="{StaticResource UplinkUiFont}"
+                              ItemsSource="{x:Bind ViewModel.ProtocolOptions}"
+                              SelectedItem="{x:Bind ViewModel.SelectedProtocol, Mode=TwoWay}"
+                              Margin="0,0,8,0"
+                              HorizontalAlignment="Stretch"/>
+                    <TextBox Grid.Column="3"
+                             Header="User"
+                             FontFamily="{StaticResource UplinkUiFont}"
+                             Text="{x:Bind ViewModel.Username, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             PlaceholderText="anonymous"
+                             Margin="0,0,8,0"/>
+                    <PasswordBox x:Name="PasswordBox"
+                                 Grid.Column="4"
+                                 Header="Password"
+                                 FontFamily="{StaticResource UplinkUiFont}"
+                                 PlaceholderText="Password"
+                                 Margin="0,0,8,0"
+                                 PasswordChanged="PasswordBox_PasswordChanged"/>
+                    <CheckBox Grid.Column="5"
+                              Content="Trust cert"
+                              FontFamily="{StaticResource UplinkUiFont}"
+                              IsChecked="{x:Bind ViewModel.AcceptAnyCertificate, Mode=TwoWay}"
+                              VerticalAlignment="Bottom"
+                              Margin="0,0,8,8"
+                              ToolTipService.ToolTip="Accept any FTPS certificate. Unsafe for production — only for self-signed lab servers."/>
+                    <Button Grid.Column="6"
+                            Content="Connect"
+                            Style="{StaticResource AccentButtonStyle}"
+                            FontFamily="{StaticResource UplinkUiFont}"
+                            Command="{x:Bind ViewModel.ConnectCommand}"
+                            VerticalAlignment="Bottom"
+                            Margin="0,0,8,4"
+                            MinWidth="104"
+                            CornerRadius="10"/>
+                    <Button Grid.Column="7"
+                            Content="Disconnect"
+                            Style="{StaticResource UplinkNavButtonStyle}"
+                            Command="{x:Bind ViewModel.DisconnectCommand}"
+                            VerticalAlignment="Bottom"
+                            Margin="0,0,0,4"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Message log -->
+        <Border Grid.Row="1" Style="{StaticResource UplinkSectionBorderStyle}">
+            <panels:LogPanel x:Name="LogPanel"/>
+        </Border>
+
+        <!-- Local | Remote browsers -->
+        <Grid Grid.Row="2" Margin="4,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Border Style="{StaticResource UplinkSectionBorderStyle}" Margin="6,6,0,6">
+                <panels:LocalBrowserPanel x:Name="LocalPanel"/>
+            </Border>
+            <Border Grid.Column="1"
+                    Width="4"
+                    CornerRadius="2"
+                    Background="{ThemeResource UplinkDividerBrush}"
+                    VerticalAlignment="Stretch"
+                    Margin="0,18"/>
+            <Border Grid.Column="2" Style="{StaticResource UplinkSectionBorderStyle}" Margin="0,6,6,6">
+                <panels:RemoteBrowserPanel x:Name="RemotePanel"/>
+            </Border>
+        </Grid>
+
+        <!-- Transfer queue -->
+        <Border Grid.Row="3" Style="{StaticResource UplinkSectionBorderStyle}">
+            <panels:TransferQueuePanel x:Name="QueuePanel"/>
+        </Border>
+
+        <Border Grid.Row="4"
+                Margin="10,2,10,10"
+                Padding="12,8"
+                CornerRadius="10"
+                Background="{ThemeResource UplinkAccentSoftBrush}"
+                BorderBrush="{ThemeResource UplinkSectionStrokeBrush}"
+                BorderThickness="1">
+            <TextBlock Style="{StaticResource UplinkMutedTextStyle}" FontSize="12">
+                <Run Text="Tip: drag local → remote to upload (or Local Upload →). Drag remote → local to download (or Remote ← Download). Assist: URI parse + log diagnosis."/>
+            </TextBlock>
+        </Border>
+    </Grid>
+</Window>
