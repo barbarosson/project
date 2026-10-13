@@ -46,6 +46,7 @@ export function MarketingHeader() {
     isendai: c.nav.isendai,
     digitalLegacy: c.nav.digitalLegacy,
     seekdesk: c.nav.seekdesk,
+    uplinkFtp: c.nav.uplinkFtp,
     erp: c.nav.modulusErp,
     appointflow: c.nav.appointflow,
   }

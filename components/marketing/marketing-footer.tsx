@@ -25,6 +25,7 @@ export function MarketingFooter() {
         { name: 'isendAI', href: '/products/isendai' },
         { name: 'Digital Legacy', href: '/products/digital-legacy' },
         { name: 'SeekDesk', href: '/products/seekdesk' },
+        { name: 'Uplink FTP', href: '/products/uplink-ftp' },
         { name: language === 'tr' ? 'Kurumsal ana sayfa' : 'Corporate home', href: '/' },
       ],
     },

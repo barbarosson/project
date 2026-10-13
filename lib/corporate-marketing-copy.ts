@@ -5,7 +5,7 @@ export const corporateCopy = {
     meta: {
       homeTitle: 'MODULUS — Technology products by Songurtech',
       homeDescription:
-        'Songurtech builds MODULUS: Modulus ERP, AppointFlow, isendAI, Digital Legacy, and SeekDesk — software for modern businesses and personal planning.',
+        'Songurtech builds MODULUS: Modulus ERP, AppointFlow, isendAI, Digital Legacy, SeekDesk, and Uplink FTP — software for modern businesses and personal planning.',
     },
     nav: {
       products: 'Products',
@@ -19,6 +19,7 @@ export const corporateCopy = {
       isendai: 'isendAI',
       digitalLegacy: 'Digital Legacy',
       seekdesk: 'SeekDesk',
+      uplinkFtp: 'Uplink FTP',
     },
     hero: {
       company: 'Songurtech',
@@ -66,6 +67,12 @@ export const corporateCopy = {
         tagline: 'SEO & competitor analytics',
         description:
           'Desktop SEO desk for agencies — Rank Tracker, Competitor Radar, and SERP Volatility. Free · Pro from $29.99/mo · Agency $79.99/mo. Brave Search on the server only.',
+      },
+      uplinkFtp: {
+        name: 'Uplink FTP',
+        tagline: 'FTP / SFTP / FTPS for Windows 11',
+        description:
+          'Modern WinUI 3 FTP client with dual-pane transfers, resume, themes, and Credential Locker. Free tier; unlock Pro in the Microsoft Store.',
       },
     },
     details: {
@@ -127,6 +134,18 @@ export const corporateCopy = {
           'SERP Volatility scores for sector keyword sets',
           'Brave API key never ships in the client — JWT to our Node API',
           'Free · Pro $29.99/mo ($199/yr) · Agency $79.99/mo — Microsoft Store IAP',
+        ],
+      },
+      uplinkFtp: {
+        summary:
+          'Uplink FTP is a modern Windows 11 Fluent FTP / FTPS / SFTP client (WinUI 3): dual-pane local and remote browsers, transfer resume, themes, optional Gemini AI assist (BYOK), and OS Credential Locker — with a clear Free tier and a durable Pro Store add-on.',
+        highlights: [
+          'Dual-pane local and remote browsing for FTP, FTPS, and SFTP',
+          'Transfer queue with pause / resume / retry',
+          'Site Manager with Windows Credential Locker (passwords not in the site DB)',
+          'Themes: Sun Rise, Orange, Red Night, and ZEN',
+          'Optional AI assistant (Gemini bring-your-own-key)',
+          'Free: 3 sites, 1 connection, 1 transfer — Pro unlocks higher limits via Store add-on',
         ],
       },
     },
@@ -308,6 +327,55 @@ export const corporateCopy = {
       trust: 'Contact for demo · Store listing coming · No Brave key in the client',
       primaryCta: 'Talk to us about SeekDesk',
     },
+    uplinkFtpPage: {
+      metaTitle: 'Uplink FTP — Modern FTP / SFTP / FTPS for Windows 11 | MODULUS',
+      metaDescription:
+        'WinUI 3 Fluent FTP client: dual-pane transfers, resume, themes, Credential Locker, optional Gemini AI (BYOK). Free tier; Pro via Microsoft Store. Published by MODULUSTECH.',
+      backToModulus: '← All MODULUS products',
+      hero: {
+        kicker: 'Windows 11 · WinUI 3 · MODULUSTECH',
+        title: 'FTP, FTPS, and SFTP — Fluent and freemium.',
+        subtitle:
+          'Connect quickly, browse local and remote folders side by side, queue transfers, and manage saved sites. Clear Free limits; unlock Pro in the Microsoft Store.',
+        cta: 'Get it on Microsoft Store',
+        taglines: [
+          'Dual-pane local / remote with pause, resume, and retry',
+          'Themes: Sun Rise · Orange · Red Night · ZEN',
+          'Credential Locker — passwords stay out of the site database',
+          'Optional Gemini AI assist (bring your own API key)',
+          'Free: 3 sites · 1 connection · 1 transfer — Pro via Store add-on',
+        ],
+      },
+      features: {
+        title: 'Built for everyday file transfer',
+        subtitle:
+          'A modern Fluent shell for Windows 11 — marketing and Store links on this site; the product runs on your PC.',
+      },
+      pricing: {
+        title: 'Free tier, Pro unlock',
+        subtitle: 'Install free from the Microsoft Store. Buy the durable Uplink FTP Pro add-on in-app when you need more capacity.',
+        plans: [
+          {
+            name: 'Free',
+            price: '$0',
+            detail: 'Up to 3 saved sites · 1 concurrent connection · 1 concurrent transfer',
+          },
+          {
+            name: 'Pro',
+            price: 'Store add-on',
+            detail: 'Unlimited sites, connections, and transfers via durable Microsoft Store add-on',
+          },
+        ],
+      },
+      links: {
+        privacy: 'Privacy policy',
+        support: 'Support',
+        publisher: 'Publisher',
+      },
+      trust:
+        'Download via Microsoft Store · Privacy & support on this domain · Telemetry off by default · No account on modulusaas.com',
+      primaryCta: 'Open Microsoft Store listing',
+    },
     footer: {
       products: 'Products',
       legalHome: 'Corporate home',
@@ -317,7 +385,7 @@ export const corporateCopy = {
     meta: {
       homeTitle: 'MODULUS — Songurtech teknoloji ürünleri',
       homeDescription:
-        'Songurtech, MODULUS markasıyla Modulus ERP, AppointFlow, isendAI, Digital Legacy ve SeekDesk ürünlerini geliştirir — işletmeler ve kişisel planlama için yazılım.',
+        'Songurtech, MODULUS markasıyla Modulus ERP, AppointFlow, isendAI, Digital Legacy, SeekDesk ve Uplink FTP ürünlerini geliştirir — işletmeler ve kişisel planlama için yazılım.',
     },
     nav: {
       products: 'Ürünler',
@@ -331,6 +399,7 @@ export const corporateCopy = {
       isendai: 'isendAI',
       digitalLegacy: 'Digital Legacy',
       seekdesk: 'SeekDesk',
+      uplinkFtp: 'Uplink FTP',
     },
     hero: {
       company: 'Songurtech',
@@ -378,6 +447,12 @@ export const corporateCopy = {
         tagline: 'SEO ve rakip analitiği',
         description:
           'Ajanslar için SEO masaüstü paneli — Rank Tracker, Competitor Radar ve SERP Volatility. Free · Pro $29.99/ay · Agency $79.99/ay. Brave Search yalnızca sunucuda.',
+      },
+      uplinkFtp: {
+        name: 'Uplink FTP',
+        tagline: 'Windows 11 için FTP / SFTP / FTPS',
+        description:
+          'Çift panelli aktarım, devam ettirme, temalar ve Credential Locker ile modern WinUI 3 FTP istemcisi. Ücretsiz katman; Pro’yu Microsoft Store’dan açın.',
       },
     },
     details: {
@@ -439,6 +514,18 @@ export const corporateCopy = {
           'SERP Volatility ile sektör top-10 oynaklık skoru',
           'Brave API anahtarı istemcide değil — uygulama JWT ile API’ye bağlanır',
           'Free · Pro $29.99/ay ($199/yıl) · Agency $79.99/ay — Microsoft Store IAP',
+        ],
+      },
+      uplinkFtp: {
+        summary:
+          'Uplink FTP, Windows 11 için modern Fluent FTP / FTPS / SFTP istemcisidir (WinUI 3): çift panelli yerel/uzak gezinti, aktarım devamı, temalar, isteğe bağlı Gemini AI (kendi anahtarınız) ve OS Credential Locker — net Ücretsiz katman ve dayanıklı Pro Store eklentisi ile.',
+        highlights: [
+          'FTP, FTPS ve SFTP için çift panelli yerel ve uzak gezinti',
+          'Duraklat / sürdür / yeniden dene destekli aktarım kuyruğu',
+          'Windows Credential Locker ile Site Yöneticisi (parolalar site DB’de değil)',
+          'Temalar: Sun Rise, Orange, Red Night ve ZEN',
+          'İsteğe bağlı AI asistan (Gemini BYOK)',
+          'Ücretsiz: 3 site, 1 bağlantı, 1 aktarım — Pro Store eklentisiyle daha yüksek limitler',
         ],
       },
     },
@@ -619,6 +706,56 @@ export const corporateCopy = {
       },
       trust: 'Demo için iletişim · Store yayını yakında · İstemcide Brave anahtarı yok',
       primaryCta: 'SeekDesk için bizimle konuşun',
+    },
+    uplinkFtpPage: {
+      metaTitle: 'Uplink FTP — Windows 11 için modern FTP / SFTP / FTPS | MODULUS',
+      metaDescription:
+        'WinUI 3 Fluent FTP istemcisi: çift panelli aktarım, devam ettirme, temalar, Credential Locker, isteğe bağlı Gemini AI (BYOK). Ücretsiz katman; Pro Microsoft Store’da. Yayıncı: MODULUSTECH.',
+      backToModulus: '← Tüm MODULUS ürünleri',
+      hero: {
+        kicker: 'Windows 11 · WinUI 3 · MODULUSTECH',
+        title: 'FTP, FTPS ve SFTP — Fluent ve freemium.',
+        subtitle:
+          'Hızlı bağlanın, yerel ve uzak klasörleri yan yana gezin, aktarımları kuyruğa alın ve kayıtlı siteleri yönetin. Net Ücretsiz limitler; Pro’yu Microsoft Store’dan açın.',
+        cta: 'Microsoft Store’dan edinin',
+        taglines: [
+          'Çift panelli yerel / uzak — duraklat, sürdür, yeniden dene',
+          'Temalar: Sun Rise · Orange · Red Night · ZEN',
+          'Credential Locker — parolalar site veritabanında tutulmaz',
+          'İsteğe bağlı Gemini AI asistan (kendi API anahtarınız)',
+          'Ücretsiz: 3 site · 1 bağlantı · 1 aktarım — Pro Store eklentisiyle',
+        ],
+      },
+      features: {
+        title: 'Günlük dosya aktarımı için',
+        subtitle:
+          'Windows 11 için modern Fluent kabuk — tanıtım ve Store bağlantıları bu sitede; ürün bilgisayarınızda çalışır.',
+      },
+      pricing: {
+        title: 'Ücretsiz katman, Pro kilidi',
+        subtitle:
+          'Microsoft Store’dan ücretsiz kurun. Daha fazla kapasite gerektiğinde uygulama içinden dayanıklı Uplink FTP Pro eklentisini alın.',
+        plans: [
+          {
+            name: 'Ücretsiz',
+            price: '$0',
+            detail: 'En fazla 3 kayıtlı site · 1 eşzamanlı bağlantı · 1 eşzamanlı aktarım',
+          },
+          {
+            name: 'Pro',
+            price: 'Store eklentisi',
+            detail: 'Sınırsız site, bağlantı ve aktarım — dayanıklı Microsoft Store eklentisi',
+          },
+        ],
+      },
+      links: {
+        privacy: 'Gizlilik politikası',
+        support: 'Destek',
+        publisher: 'Yayıncı',
+      },
+      trust:
+        'Microsoft Store üzerinden indirme · Gizlilik ve destek bu domainde · Telemetri varsayılan kapalı · modulusaas.com’da hesap gerekmez',
+      primaryCta: 'Microsoft Store listesini aç',
     },
     footer: {
       products: 'Ürünler',

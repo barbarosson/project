@@ -2,7 +2,13 @@
 
 import { ModulusLogoSvgOnly } from '@/components/modulus-logo'
 
-type ProductKey = 'erp' | 'appointflow' | 'isendai' | 'digitalLegacy' | 'seekdesk'
+type ProductKey =
+  | 'erp'
+  | 'appointflow'
+  | 'isendai'
+  | 'digitalLegacy'
+  | 'seekdesk'
+  | 'uplinkFtp'
 
 export function ProductMenuIcon({
   product,
@@ -13,6 +19,72 @@ export function ProductMenuIcon({
 }) {
   if (product === 'erp') {
     return <ModulusLogoSvgOnly size={size} />
+  }
+
+  if (product === 'uplinkFtp') {
+    const uid = `uf-${size}`
+    return (
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 64 64"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="shrink-0"
+        aria-hidden
+      >
+        <rect width="64" height="64" rx="12" fill="#0C4A6E" />
+        <rect
+          x="12"
+          y="14"
+          width="18"
+          height="36"
+          rx="4"
+          fill={`url(#${uid}-p)`}
+          fillOpacity="0.35"
+          stroke="#7DD3FC"
+          strokeWidth="2"
+        />
+        <rect
+          x="34"
+          y="14"
+          width="18"
+          height="36"
+          rx="4"
+          fill={`url(#${uid}-p)`}
+          fillOpacity="0.35"
+          stroke="#7DD3FC"
+          strokeWidth="2"
+        />
+        <path
+          d="M22 28h4M22 34h6M22 40h5M38 28h6M38 34h4M38 40h5"
+          stroke="#E0F2FE"
+          strokeWidth="2"
+          strokeLinecap="round"
+          opacity="0.9"
+        />
+        <path
+          d="M28 32h8"
+          stroke="#38BDF8"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M33 28l4 4-4 4"
+          stroke="#38BDF8"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+        <defs>
+          <linearGradient id={`${uid}-p`} x1="12" y1="14" x2="52" y2="50">
+            <stop stopColor="#0EA5E9" />
+            <stop offset="1" stopColor="#0369A1" />
+          </linearGradient>
+        </defs>
+      </svg>
+    )
   }
 
   if (product === 'digitalLegacy') {
