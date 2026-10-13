@@ -57,7 +57,7 @@ Manual publish:
 ```powershell
 dotnet publish src\UplinkFtp.App\UplinkFtp.App.csproj `
   -c Release -p:Platform=x64 `
-  -p:WindowsPackageType=Msix `
+  -p:WindowsPackageType=MSIX `
   -p:UplinkDistributionChannel=Store
 # then SignTool / Partner Center Store-managed signing
 ```
