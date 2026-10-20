@@ -1,9 +1,14 @@
 namespace HaSetup.Core.Store;
 
 /// <summary>
-/// Microsoft Store / Partner Center product identity for Container Manager for HA.
+/// Microsoft Store / Partner Center product identity for Container Manager for HA
+/// (display name — not "Smart Home Assistant").
 /// App Store ID is for listing / deep-links; durable IAP add-on id is separate
 /// (<see cref="Licensing.StoreLicenseService.PremiumUnlockIdPlaceholder"/>).
+/// <para>
+/// Policy (2026-10-20): paid listing / paid IAP submission is <b>FROZEN</b> until the
+/// product promise is fixed (HomeKit/mDNS gap). Keep these constants; do not delete identity.
+/// </para>
 /// </summary>
 public static class StoreIdentity
 {

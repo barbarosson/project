@@ -1,5 +1,7 @@
 # Container Manager for HA (HaSetup MVP)
 
+> **Microsoft Store paid listing / IAP: FROZEN (2026-10-20).** Do not submit a paid Store package or paid unlock until the product promise is fixed (HomeKit/mDNS gap). Store identity constants stay in code. Display name is **Container Manager for HA** (not Smart Home Assistant).
+
 **Container Manager for HA** — Windows masaüstü uygulaması: **Docker Desktop** üzerinden `homeassistant/home-assistant:stable` container’ını kurar, yönetir ve `http://localhost:8123` adresini açar.
 
 Bu ürün **evinizdeki tüm cihazları bağlayan bir köprü değildir**; yalnızca Windows’ta HA container lifecycle yönetir. **Apple HomeKit / HomePod / Apple TV** Windows Docker bridge/NAT nedeniyle **kapsam dışı** (mDNS keşfi container’a ulaşmaz; bilinen IP ile de eklenemez).

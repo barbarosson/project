@@ -5,11 +5,16 @@ namespace HaSetup.Core.Licensing;
 /// <summary>
 /// Microsoft Store durable IAP unlock. Product id is a Partner Center placeholder until configured.
 /// Real <c>StoreContext</c> calls are injected via <see cref="IStorePurchaseClient"/> (App wires WinRT on Store builds).
+/// <para>
+/// Policy (2026-10-20): paid IAP submission is <b>FROZEN</b> — do not configure or submit a
+/// paid unlock (especially mDNS/discovery) until the product promise is honest.
+/// </para>
 /// </summary>
 public sealed class StoreLicenseService : ILicenseService
 {
     /// <summary>
-    /// Replace with the durable add-on Store product id from Partner Center.
+    /// Placeholder only while Store paid IAP is frozen. Do not replace with a live Partner Center
+    /// add-on id for submission until the freeze is lifted.
     /// </summary>
     public const string PremiumUnlockIdPlaceholder = "PREMIUM_UNLOCK_ID_PLACEHOLDER";
 
