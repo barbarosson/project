@@ -11,7 +11,7 @@ public enum DockerInstallState
 public sealed record DockerAvailability(
     DockerInstallState State,
     string? Version,
-    string MessageTr,
+    string Message,
     string? DockerPath = null,
     string? Detail = null)
 {

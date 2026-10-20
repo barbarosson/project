@@ -49,32 +49,32 @@ public sealed class HaHealthChecker : IHaHealthChecker
                 return new HaHealthResult(
                     IsReachable: true,
                     StatusCode: code,
-                    MessageTr: $"Home Assistant yanıt veriyor (HTTP {code}).",
+                    Message: $"Home Assistant is responding (HTTP {code}).",
                     Elapsed: sw.Elapsed);
             }
 
             return new HaHealthResult(
                 IsReachable: false,
                 StatusCode: code,
-                MessageTr: $"Beklenmeyen yanıt: HTTP {code}.",
+                Message: $"Unexpected response: HTTP {code}.",
                 Elapsed: sw.Elapsed);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             sw.Stop();
-            return HaHealthResult.Unreachable("Zaman aşımı — Home Assistant henüz hazır olmayabilir.", sw.Elapsed);
+            return HaHealthResult.Unreachable("Timed out — Home Assistant may not be ready yet.", sw.Elapsed);
         }
         catch (HttpRequestException ex)
         {
             sw.Stop();
             return HaHealthResult.Unreachable(
-                $"Erişilemiyor: {ex.Message}. Container yeni başladıysa 1–2 dakika bekleyin.",
+                $"Unreachable: {ex.Message}. If the container just started, wait 1–2 minutes.",
                 sw.Elapsed);
         }
         catch (Exception ex)
         {
             sw.Stop();
-            return HaHealthResult.Unreachable($"Sağlık kontrolü hatası: {ex.Message}", sw.Elapsed);
+            return HaHealthResult.Unreachable($"Health check error: {ex.Message}", sw.Elapsed);
         }
     }
 }

@@ -22,7 +22,7 @@ public sealed class DockerClient : IDockerClient
             return new DockerAvailability(
                 DockerInstallState.CliMissing,
                 Version: null,
-                MessageTr: "Docker Desktop bulunamadı. Home Assistant için Docker Desktop kurmanız gerekir.",
+                Message: "Docker Desktop was not found. Install Docker Desktop to run Home Assistant.",
                 DockerPath: null,
                 Detail: "docker executable not found on PATH or common install locations.");
         }
@@ -36,7 +36,7 @@ public sealed class DockerClient : IDockerClient
             return new DockerAvailability(
                 DockerInstallState.Ready,
                 Version: serverVersion,
-                MessageTr: $"Docker hazır (sunucu {serverVersion}).",
+                Message: $"Docker ready (server {serverVersion}).",
                 DockerPath: dockerPath);
         }
 
@@ -49,7 +49,7 @@ public sealed class DockerClient : IDockerClient
         return new DockerAvailability(
             DockerInstallState.InstalledButNotRunning,
             Version: null,
-            MessageTr: "Docker CLI bulundu ancak Docker Desktop çalışmıyor. Lütfen Docker Desktop'ı başlatıp yeniden deneyin.",
+            Message: "Docker CLI was found, but Docker Desktop is not running. Start Docker Desktop and try again.",
             DockerPath: dockerPath,
             Detail: detail);
     }

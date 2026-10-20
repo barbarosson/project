@@ -17,7 +17,7 @@ public sealed class MainViewModel : ObservableObject
     private readonly IProcessRunner _runner;
     private readonly DispatcherTimer _pollTimer;
 
-    private string _dockerStatusText = "Kontrol ediliyor…";
+    private string _dockerStatusText = "Checking…";
     private string _containerStatusText = "—";
     private string _healthStatusText = "—";
     private string _logText = string.Empty;
@@ -56,12 +56,12 @@ public sealed class MainViewModel : ObservableObject
         OpenBrowserCommand = new AsyncRelayCommand(OpenBrowserAsync, () => !IsBusy);
         LoadLogsCommand = new AsyncRelayCommand(LoadLogsAsync, () => !IsBusy && DockerReady && ContainerExists);
 
-        NextStepsTitle = TurkishNextSteps.Title;
-        NextStepsBody = TurkishNextSteps.Body;
+        NextStepsTitle = EnglishNextSteps.Title;
+        NextStepsBody = EnglishNextSteps.Body;
         LocalUrl = HaConstants.LocalUrl;
         DockerDownloadUrl = DockerDesktopGuidance.DownloadUrl;
-        DockerRequirementDisclosure = DockerDesktopGuidance.RequirementDisclosureTr;
-        ChannelLabel = AppChannel.ChannelLabelTr;
+        DockerRequirementDisclosure = DockerDesktopGuidance.RequirementDisclosure;
+        ChannelLabel = AppChannel.ChannelLabel;
         IsStoreBuild = AppChannel.IsStoreBuild;
         ShowSilentInstall = AppChannel.AllowsSilentDockerInstall;
 
@@ -199,7 +199,7 @@ public sealed class MainViewModel : ObservableObject
         {
             var availability = await _docker.ProbeAsync().ConfigureAwait(true);
             DockerReady = availability.IsReady;
-            DockerStatusText = availability.MessageTr;
+            DockerStatusText = availability.Message;
 
             var stateChanged = _lastDockerState != availability.State;
             _lastDockerState = availability.State;
@@ -212,10 +212,10 @@ public sealed class MainViewModel : ObservableObject
             {
                 if (availability.State == DockerInstallState.CliMissing)
                 {
-                    DockerStatusText = DockerDesktopGuidance.BuildMissingMessageTr().Split('\n')[0].Trim();
+                    DockerStatusText = DockerDesktopGuidance.BuildMissingMessage().Split('\n')[0].Trim();
                     if (!_guidanceLoggedForCurrentState)
                     {
-                        AppendLog(DockerDesktopGuidance.BuildMissingMessageTr());
+                        AppendLog(DockerDesktopGuidance.BuildMissingMessage());
                         _guidanceLoggedForCurrentState = true;
                     }
                 }
@@ -223,17 +223,17 @@ public sealed class MainViewModel : ObservableObject
                 {
                     if (!_guidanceLoggedForCurrentState)
                     {
-                        AppendLog(DockerDesktopGuidance.BuildNotRunningMessageTr());
+                        AppendLog(DockerDesktopGuidance.BuildNotRunningMessage());
                         if (!string.IsNullOrWhiteSpace(availability.Detail))
                         {
-                            AppendLog($"Docker ayrıntı: {availability.Detail}");
+                            AppendLog($"Docker detail: {availability.Detail}");
                         }
 
                         _guidanceLoggedForCurrentState = true;
                     }
                 }
 
-                ContainerStatusText = "Docker hazır değil";
+                ContainerStatusText = "Docker is not ready";
                 HealthStatusText = "—";
                 ContainerExists = false;
                 ContainerRunning = false;
@@ -246,23 +246,23 @@ public sealed class MainViewModel : ObservableObject
             ContainerRunning = info.State == HaLifecycleState.Running;
             ContainerStatusText = info.Exists
                 ? $"{info.State} ({info.StatusText}) · {info.ContainerId ?? "?"} · {info.Image ?? HaConstants.Image}"
-                : "Container henüz oluşturulmadı";
+                : "Container not created yet";
 
             if (ContainerRunning)
             {
                 var health = await _health.CheckAsync().ConfigureAwait(true);
                 HaReachable = health.IsReachable;
-                HealthStatusText = health.MessageTr;
+                HealthStatusText = health.Message;
             }
             else
             {
                 HaReachable = false;
-                HealthStatusText = ContainerExists ? "Container çalışmıyor" : "—";
+                HealthStatusText = ContainerExists ? "Container is not running" : "—";
             }
         }
         catch (Exception ex)
         {
-            AppendLog($"Yenileme hatası: {ex.Message}");
+            AppendLog($"Refresh error: {ex.Message}");
         }
         finally
         {
@@ -280,7 +280,7 @@ public sealed class MainViewModel : ObservableObject
             return;
         }
 
-        await RunBusyAsync("Docker Desktop kurulumu deneniyor…", async () =>
+        await RunBusyAsync("Trying Docker Desktop install…", async () =>
         {
             var message = await DockerDesktopGuidance.TrySilentInstallAsync(_runner).ConfigureAwait(true);
             AppendLog(message);
@@ -294,11 +294,11 @@ public sealed class MainViewModel : ObservableObject
         try
         {
             Process.Start(new ProcessStartInfo(DockerDesktopGuidance.DownloadUrl) { UseShellExecute = true });
-            AppendLog($"Docker resmi indirme açıldı: {DockerDesktopGuidance.DownloadUrl}");
+            AppendLog($"Opened Docker download: {DockerDesktopGuidance.DownloadUrl}");
         }
         catch (Exception ex)
         {
-            AppendLog($"İndirme linki açılamadı: {ex.Message}");
+            AppendLog($"Could not open download link: {ex.Message}");
         }
     }
 
@@ -307,25 +307,25 @@ public sealed class MainViewModel : ObservableObject
         try
         {
             Process.Start(new ProcessStartInfo(DockerDesktopGuidance.MicrosoftStoreDeepLink) { UseShellExecute = true });
-            AppendLog("Microsoft Store — Docker Desktop sayfası açıldı.");
+            AppendLog("Opened Microsoft Store — Docker Desktop page.");
         }
         catch (Exception)
         {
             try
             {
                 Process.Start(new ProcessStartInfo(DockerDesktopGuidance.MicrosoftStoreWebUrl) { UseShellExecute = true });
-                AppendLog($"Docker Store web sayfası açıldı: {DockerDesktopGuidance.MicrosoftStoreWebUrl}");
+                AppendLog($"Opened Docker Store web page: {DockerDesktopGuidance.MicrosoftStoreWebUrl}");
             }
             catch (Exception ex)
             {
-                AppendLog($"Docker Store açılamadı: {ex.Message}");
+                AppendLog($"Could not open Docker Store: {ex.Message}");
             }
         }
     }
 
     private async Task CreateStartAsync()
     {
-        await RunBusyAsync("Home Assistant kuruluyor / başlatılıyor…", async () =>
+        await RunBusyAsync("Setting up Home Assistant…", async () =>
         {
             var progress = new Progress<string>(AppendLog);
             await _ha.CreateAndStartAsync(progress: progress).ConfigureAwait(true);
@@ -340,7 +340,7 @@ public sealed class MainViewModel : ObservableObject
 
     private async Task StartAsync()
     {
-        await RunBusyAsync("Başlatılıyor…", async () =>
+        await RunBusyAsync("Starting…", async () =>
         {
             await _ha.StartAsync().ConfigureAwait(true);
             if (await WaitForHealthyAsync().ConfigureAwait(true))
@@ -354,7 +354,7 @@ public sealed class MainViewModel : ObservableObject
 
     private async Task StopAsync()
     {
-        await RunBusyAsync("Durduruluyor…", async () =>
+        await RunBusyAsync("Stopping…", async () =>
         {
             await _ha.StopAsync().ConfigureAwait(true);
             await RefreshAsync().ConfigureAwait(true);
@@ -363,7 +363,7 @@ public sealed class MainViewModel : ObservableObject
 
     private async Task RestartAsync()
     {
-        await RunBusyAsync("Yeniden başlatılıyor…", async () =>
+        await RunBusyAsync("Restarting…", async () =>
         {
             await _ha.RestartAsync().ConfigureAwait(true);
             if (await WaitForHealthyAsync().ConfigureAwait(true))
@@ -378,7 +378,7 @@ public sealed class MainViewModel : ObservableObject
     private async Task RemoveAsync()
     {
         var confirm = MessageBox.Show(
-            "Home Assistant container silinsin mi?\n\nEvet: container silinir; yapılandırma volume’u (smart-home-ha-config) korunur.\nHayır: işlem iptal edilir.\n\nVolume’u da silmek için PowerShell:\ndocker volume rm smart-home-ha-config",
+            "Remove the Home Assistant container?\n\nYes: container is removed; config volume (smart-home-ha-config) is kept.\nNo: cancel.\n\nTo also remove the volume in PowerShell:\ndocker volume rm smart-home-ha-config",
             "Smart Home Assistant",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
@@ -388,7 +388,7 @@ public sealed class MainViewModel : ObservableObject
             return;
         }
 
-        await RunBusyAsync("Siliniyor…", async () =>
+        await RunBusyAsync("Removing…", async () =>
         {
             await _ha.RemoveAsync(removeVolume: false).ConfigureAwait(true);
             await RefreshAsync().ConfigureAwait(true);
@@ -406,23 +406,23 @@ public sealed class MainViewModel : ObservableObject
         try
         {
             Process.Start(new ProcessStartInfo(HaConstants.LocalUrl) { UseShellExecute = true });
-            AppendLog($"Tarayıcı açıldı: {HaConstants.LocalUrl}");
+            AppendLog($"Opened browser: {HaConstants.LocalUrl}");
         }
         catch (Exception ex)
         {
-            AppendLog($"Tarayıcı açılamadı: {ex.Message}");
+            AppendLog($"Could not open browser: {ex.Message}");
         }
     }
 
     private async Task LoadLogsAsync()
     {
-        await RunBusyAsync("Loglar alınıyor…", async () =>
+        await RunBusyAsync("Fetching logs…", async () =>
         {
             var logs = await _ha.GetLogsAsync(150).ConfigureAwait(true);
             var body = string.IsNullOrWhiteSpace(logs.CombinedOutput)
-                ? "(log yok)"
+                ? "(no logs)"
                 : logs.CombinedOutput.Trim();
-            AppendLog("--- Docker container logları ---");
+            AppendLog("--- Docker container logs ---");
             LogText = string.IsNullOrWhiteSpace(LogText)
                 ? body
                 : LogText + Environment.NewLine + body;
@@ -431,18 +431,18 @@ public sealed class MainViewModel : ObservableObject
 
     private async Task<bool> WaitForHealthyAsync()
     {
-        AppendLog("Home Assistant hazır olana kadar bekleniyor (en fazla ~2 dk)…");
+        AppendLog("Waiting for Home Assistant to become ready (up to ~2 min)…");
         using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2));
         try
         {
             while (!cts.IsCancellationRequested)
             {
                 var health = await _health.CheckAsync(cancellationToken: cts.Token).ConfigureAwait(true);
-                HealthStatusText = health.MessageTr;
+                HealthStatusText = health.Message;
                 HaReachable = health.IsReachable;
                 if (health.IsReachable)
                 {
-                    AppendLog("Home Assistant erişilebilir.");
+                    AppendLog("Home Assistant is reachable.");
                     return true;
                 }
 
@@ -451,7 +451,7 @@ public sealed class MainViewModel : ObservableObject
         }
         catch (OperationCanceledException)
         {
-            AppendLog("Zaman aşımı: HA henüz yanıt vermedi. Biraz bekleyip «Tarayıcıda aç» veya «Yenile» deneyin.");
+            AppendLog("Timed out: HA has not responded yet. Wait a bit, then try “Open in browser” or “Refresh”.");
         }
 
         return false;
@@ -468,7 +468,7 @@ public sealed class MainViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            AppendLog($"Hata: {ex.Message}");
+            AppendLog($"Error: {ex.Message}");
             MessageBox.Show(ex.Message, "Smart Home Assistant", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally

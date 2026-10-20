@@ -73,20 +73,20 @@ public sealed class HaContainerService : IHaContainerService
         if (!create.Succeeded)
         {
             throw new InvalidOperationException(
-                $"Config volume oluşturulamadı ({HaConstants.VolumeName}): {create.CombinedOutput}");
+                $"Could not create config volume ({HaConstants.VolumeName}): {create.CombinedOutput}");
         }
     }
 
     public async Task PullImageAsync(CancellationToken cancellationToken = default, IProgress<string>? progress = null)
     {
-        progress?.Report($"İmaj çekiliyor: {HaConstants.Image}");
+        progress?.Report($"Pulling image: {HaConstants.Image}");
         var pull = await _docker.RunDockerAsync(["pull", HaConstants.Image], cancellationToken).ConfigureAwait(false);
         if (!pull.Succeeded)
         {
-            throw new InvalidOperationException($"İmaj çekilemedi: {pull.CombinedOutput}");
+            throw new InvalidOperationException($"Image pull failed: {pull.CombinedOutput}");
         }
 
-        progress?.Report("İmaj hazır.");
+        progress?.Report("Image ready.");
     }
 
     public async Task CreateAndStartAsync(CancellationToken cancellationToken = default, IProgress<string>? progress = null)
@@ -96,11 +96,11 @@ public sealed class HaContainerService : IHaContainerService
         {
             if (existing.State == HaLifecycleState.Running)
             {
-                progress?.Report("Home Assistant zaten çalışıyor.");
+                progress?.Report("Home Assistant is already running.");
                 return;
             }
 
-            progress?.Report("Mevcut container başlatılıyor…");
+            progress?.Report("Starting existing container…");
             await StartAsync(cancellationToken).ConfigureAwait(false);
             return;
         }
@@ -108,13 +108,13 @@ public sealed class HaContainerService : IHaContainerService
         await EnsureVolumeAsync(cancellationToken).ConfigureAwait(false);
         await PullImageAsync(cancellationToken, progress).ConfigureAwait(false);
 
-        progress?.Report("Container oluşturuluyor…");
+        progress?.Report("Creating container…");
         var create = await _docker.RunDockerAsync(
             [
                 "create",
                 "--name", HaConstants.ContainerName,
                 "--restart", "unless-stopped",
-                "-e", "TZ=Europe/Istanbul",
+                "-e", "TZ=UTC",
                 "-v", $"{HaConstants.VolumeName}:{HaConstants.ConfigMount}",
                 "-p", $"{HaConstants.HostPort}:{HaConstants.ContainerPort}",
                 HaConstants.Image,
@@ -129,15 +129,15 @@ public sealed class HaContainerService : IHaContainerService
                 detail.Contains("Bind for", StringComparison.OrdinalIgnoreCase))
             {
                 throw new InvalidOperationException(
-                    $"Port {HaConstants.HostPort} kullanımda. Başka bir Home Assistant veya servisi durdurup yeniden deneyin.\n\n{detail}");
+                    $"Port {HaConstants.HostPort} is already in use. Stop another Home Assistant or service, then try again.\n\n{detail}");
             }
 
-            throw new InvalidOperationException($"Container oluşturulamadı: {detail}");
+            throw new InvalidOperationException($"Could not create container: {detail}");
         }
 
-        progress?.Report("Container başlatılıyor…");
+        progress?.Report("Starting container…");
         await StartAsync(cancellationToken).ConfigureAwait(false);
-        progress?.Report("Home Assistant başlatıldı.");
+        progress?.Report("Home Assistant started.");
     }
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -146,7 +146,7 @@ public sealed class HaContainerService : IHaContainerService
             .ConfigureAwait(false);
         if (!result.Succeeded)
         {
-            throw new InvalidOperationException($"Başlatma başarısız: {result.CombinedOutput}");
+            throw new InvalidOperationException($"Start failed: {result.CombinedOutput}");
         }
     }
 
@@ -156,7 +156,7 @@ public sealed class HaContainerService : IHaContainerService
             .ConfigureAwait(false);
         if (!result.Succeeded)
         {
-            throw new InvalidOperationException($"Durdurma başarısız: {result.CombinedOutput}");
+            throw new InvalidOperationException($"Stop failed: {result.CombinedOutput}");
         }
     }
 
@@ -166,7 +166,7 @@ public sealed class HaContainerService : IHaContainerService
             .ConfigureAwait(false);
         if (!result.Succeeded)
         {
-            throw new InvalidOperationException($"Yeniden başlatma başarısız: {result.CombinedOutput}");
+            throw new InvalidOperationException($"Restart failed: {result.CombinedOutput}");
         }
     }
 
@@ -187,7 +187,7 @@ public sealed class HaContainerService : IHaContainerService
             .ConfigureAwait(false);
         if (!remove.Succeeded)
         {
-            throw new InvalidOperationException($"Silme başarısız: {remove.CombinedOutput}");
+            throw new InvalidOperationException($"Remove failed: {remove.CombinedOutput}");
         }
 
         if (removeVolume)
@@ -196,7 +196,7 @@ public sealed class HaContainerService : IHaContainerService
                 .ConfigureAwait(false);
             if (!vol.Succeeded)
             {
-                throw new InvalidOperationException($"Volume silinemedi: {vol.CombinedOutput}");
+                throw new InvalidOperationException($"Could not remove volume: {vol.CombinedOutput}");
             }
         }
     }

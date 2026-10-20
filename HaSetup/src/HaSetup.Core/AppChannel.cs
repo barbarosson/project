@@ -15,6 +15,6 @@ public static class AppChannel
     /// <summary>Silent/winget Docker install is only for non-Store (dev/sideload) builds.</summary>
     public static bool AllowsSilentDockerInstall => !IsStoreBuild;
 
-    public static string ChannelLabelTr =>
-        IsStoreBuild ? "Microsoft Store sürümü" : "Geliştirme / sideload sürümü";
+    public static string ChannelLabel =>
+        IsStoreBuild ? "Microsoft Store build" : "Development / sideload build";
 }

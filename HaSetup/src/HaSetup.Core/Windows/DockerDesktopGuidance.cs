@@ -4,7 +4,7 @@ namespace HaSetup.Core.Windows;
 
 /// <summary>
 /// Docker Desktop guidance for Windows.
-/// Store builds: deep-link + Turkish steps only (no silent/winget install, no elevation).
+/// Store builds: deep-link + English steps only (no silent/winget install, no elevation).
 /// Dev/sideload builds may attempt best-effort silent install.
 /// </summary>
 public static class DockerDesktopGuidance
@@ -16,54 +16,54 @@ public static class DockerDesktopGuidance
     public const string MicrosoftStoreDeepLink = "ms-windows-store://pdp/?ProductId=XP8CBJ40XLBWKX";
 
     /// <summary>
-    /// Listing / first-run disclosure (Turkish). Docker is a separate product.
+    /// Listing / first-run disclosure. Docker is a separate product.
     /// </summary>
-    public static string RequirementDisclosureTr { get; } =
-        "Docker Desktop gerekir ve ayrı kurulur (bu uygulama Docker kurmaz). " +
-        "Docker hazırsa Home Assistant container’ı yönetilir. " +
-        "Microsoft Store / resmi indirme sayfasından Docker Desktop’ı yükleyin.";
+    public static string RequirementDisclosure { get; } =
+        "Docker Desktop is required and installs separately (this app does not install Docker). " +
+        "When Docker is ready, this app manages the Home Assistant container. " +
+        "Install Docker Desktop from the Microsoft Store or the official download page.";
 
-    public static string BuildMissingMessageTr() =>
-        AppChannel.IsStoreBuild ? BuildMissingMessageStoreTr() : BuildMissingMessageDevTr();
+    public static string BuildMissingMessage() =>
+        AppChannel.IsStoreBuild ? BuildMissingMessageStore() : BuildMissingMessageDev();
 
-    private static string BuildMissingMessageStoreTr() =>
+    private static string BuildMissingMessageStore() =>
         """
-        Docker Desktop yüklü değil.
+        Docker Desktop is not installed.
 
-        Bu Store uygulaması Docker’ı kurmaz (yükseltme / sessiz kurulum yok).
+        This Store app does not install Docker (no elevation / silent install).
 
-        Ne yapmalısınız:
-        1) “Docker Store’da aç” ile Microsoft Store’daki Docker Desktop sayfasını açın
-           (veya resmi indirme linkini kullanın).
-        2) Docker Desktop’ı kurun; gerekirse bilgisayarı yeniden başlatın.
-        3) Docker Desktop’ı açın ve “Engine running” olana kadar bekleyin.
-        4) Bu uygulamaya dönüp “Yenile”ye basın.
+        What to do:
+        1) Use “Open Docker in Store” to open Docker Desktop in the Microsoft Store
+           (or use the official download link).
+        2) Install Docker Desktop; restart the PC if prompted.
+        3) Open Docker Desktop and wait until the engine is running.
+        4) Return here and press Refresh.
 
-        Not: Windows Home’da WSL 2 gerekir. Kurumsal PC’lerde Docker lisansı ayrı olabilir.
+        Note: Windows Home needs WSL 2. On managed PCs, Docker licensing may be separate.
         """;
 
-    private static string BuildMissingMessageDevTr() =>
+    private static string BuildMissingMessageDev() =>
         """
-        Docker Desktop yüklü değil.
+        Docker Desktop is not installed.
 
-        Ne yapmalısınız:
-        1) “Docker Store’da aç” / “Docker indir” veya “Sessiz kurulum dene”yi kullanın.
-        2) Kurulum bitince bilgisayarı yeniden başlatmanız istenebilir.
-        3) Docker Desktop’ı açın ve “Engine running” olana kadar bekleyin.
-        4) Bu uygulamaya dönüp “Yenile”ye basın.
+        What to do:
+        1) Use “Open Docker in Store” / “Download Docker” or “Try silent install”.
+        2) After install you may be asked to restart.
+        3) Open Docker Desktop and wait until the engine is running.
+        4) Return here and press Refresh.
 
-        Not: Windows Home’da WSL 2 gerekir; kurulum sihirbazı bunu açmaya çalışır.
-        Kurumsal bilgisayarlarda Docker Desktop lisansı ayrıca gerekebilir.
-        Store (MSIX) sürümünde sessiz kurulum kapalıdır.
+        Note: Windows Home needs WSL 2; the installer usually enables it.
+        On managed PCs, a separate Docker Desktop license may be required.
+        Silent install is disabled in the Store (MSIX) build.
         """;
 
-    public static string BuildNotRunningMessageTr() =>
+    public static string BuildNotRunningMessage() =>
         """
-        Docker CLI bulundu ancak Docker Desktop çalışmıyor.
+        Docker CLI was found, but Docker Desktop is not running.
 
-        1) Başlat menüsünden “Docker Desktop”ı açın.
-        2) Sistem tepsisinde balina ikonu yeşil/idle olana kadar bekleyin.
-        3) Bu uygulamada “Yenile”ye basın.
+        1) Open “Docker Desktop” from the Start menu.
+        2) Wait until the whale tray icon is idle/green.
+        3) Press Refresh in this app.
         """;
 
     /// <summary>
@@ -77,14 +77,14 @@ public static class DockerDesktopGuidance
         if (!AppChannel.AllowsSilentDockerInstall)
         {
             return """
-                Bu Microsoft Store sürümü Docker Desktop kurmaz.
-                “Docker Store’da aç” veya resmi indirme sayfasını kullanın; kurulum bitince Yenile’ye basın.
+                This Microsoft Store build does not install Docker Desktop.
+                Use “Open Docker in Store” or the official download page; then press Refresh.
                 """;
         }
 
         if (!OperatingSystem.IsWindows())
         {
-            return "Sessiz kurulum yalnızca Windows üzerinde çalışır. Linux/macOS için Docker’ı manuel kurun.";
+            return "Silent install only works on Windows. Install Docker manually on Linux/macOS.";
         }
 
         var winget = await runner.RunAsync(
@@ -101,7 +101,7 @@ public static class DockerDesktopGuidance
 
         if (winget.Succeeded)
         {
-            return "winget ile Docker Desktop kurulumu başlatıldı. Kurulum bitince Docker Desktop’ı açın ve uygulamayı yenileyin.";
+            return "Docker Desktop install started via winget. When it finishes, open Docker Desktop and refresh this app.";
         }
 
         var tempDir = Path.Combine(Path.GetTempPath(), "HaSetup");
@@ -119,7 +119,7 @@ public static class DockerDesktopGuidance
         }
         catch (Exception ex)
         {
-            return $"İndirme başarısız ({ex.Message}). Manuel indirin: {DownloadUrl}";
+            return $"Download failed ({ex.Message}). Install manually: {DownloadUrl}";
         }
 
         var install = await runner.RunAsync(
@@ -129,19 +129,19 @@ public static class DockerDesktopGuidance
 
         if (install.Succeeded)
         {
-            return "Docker Desktop sessiz kurulum tamamlandı (veya başlatıldı). Yeniden başlatma gerekebilir; sonra Docker Desktop’ı açın.";
+            return "Docker Desktop silent install finished (or started). A reboot may be required; then open Docker Desktop.";
         }
 
         return $"""
-            Otomatik kurulum tamamlanamadı (çıkış {install.ExitCode}).
-            UAC onayı veya yönetici hakları gerekebilir.
+            Automatic install could not finish (exit {install.ExitCode}).
+            UAC approval or administrator rights may be required.
 
-            Manuel kurulum:
+            Manual install:
             - Microsoft Store: {MicrosoftStoreWebUrl}
-            - İndirme: {DownloadUrl}
-            - Belgeler: {DocsUrl}
+            - Download: {DownloadUrl}
+            - Docs: {DocsUrl}
 
-            Ayrıntı: {install.CombinedOutput}
+            Detail: {install.CombinedOutput}
             """;
     }
 }

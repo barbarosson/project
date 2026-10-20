@@ -49,7 +49,7 @@ public class DockerClientTests
 
         Assert.Equal(DockerInstallState.CliMissing, result.State);
         Assert.False(result.IsReady);
-        Assert.Contains("Docker Desktop", result.MessageTr, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Docker Desktop", result.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -76,7 +76,7 @@ public class DockerClientTests
         var result = await client.ProbeAsync();
 
         Assert.Equal(DockerInstallState.InstalledButNotRunning, result.State);
-        Assert.Contains("çalışmıyor", result.MessageTr, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("not running", result.Message, StringComparison.OrdinalIgnoreCase);
     }
 }
 
@@ -161,7 +161,7 @@ public class HaContainerServiceTests
     }
 
     [Fact]
-    public async Task CreateAndStartAsync_WhenPortBusy_ThrowsTurkishHint()
+    public async Task CreateAndStartAsync_WhenPortBusy_ThrowsEnglishHint()
     {
         var runner = new FakeProcessRunner();
         runner.Enqueue("docker", ["inspect"], new DockerCommandResult(1, string.Empty, "No such object"));
@@ -177,7 +177,24 @@ public class HaContainerServiceTests
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateAndStartAsync());
         Assert.Contains("Port 8123", ex.Message, StringComparison.Ordinal);
-        Assert.Contains("kullanımda", ex.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("already in use", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task PullImageAsync_ReportsEnglishProgress()
+    {
+        var runner = new FakeProcessRunner();
+        runner.Enqueue("docker", ["pull"], new DockerCommandResult(0, "Pulled\n", string.Empty));
+        var docker = new DockerClient(runner, () => "docker");
+        var service = new HaContainerService(docker);
+        var lines = new List<string>();
+        var progress = new Progress<string>(lines.Add);
+
+        await service.PullImageAsync(progress: progress);
+
+        Assert.Contains(lines, l => l.Contains("Pulling image:", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(lines, l => l.Contains(HaConstants.Image, StringComparison.Ordinal));
+        Assert.Contains(lines, l => l.Contains("Image ready", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -200,7 +217,7 @@ public class HaHealthCheckerTests
         var result = await checker.CheckAsync(new Uri("http://127.0.0.1:59999"), TimeSpan.FromSeconds(1));
 
         Assert.False(result.IsReachable);
-        Assert.Contains("Erişilemiyor", result.MessageTr, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Unreachable", result.Message, StringComparison.OrdinalIgnoreCase);
     }
 }
 
@@ -210,14 +227,22 @@ public class AppChannelAndStoreGuidanceTests
     public void AppChannel_SilentInstall_MatchesStoreFlag()
     {
         Assert.Equal(!AppChannel.IsStoreBuild, AppChannel.AllowsSilentDockerInstall);
-        Assert.False(string.IsNullOrWhiteSpace(AppChannel.ChannelLabelTr));
+        Assert.False(string.IsNullOrWhiteSpace(AppChannel.ChannelLabel));
     }
 
     [Fact]
     public void RequirementDisclosure_MentionsDockerSeparate()
     {
-        Assert.Contains("Docker Desktop", DockerDesktopGuidance.RequirementDisclosureTr, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains("kurmaz", DockerDesktopGuidance.RequirementDisclosureTr, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Docker Desktop", DockerDesktopGuidance.RequirementDisclosure, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("does not install Docker", DockerDesktopGuidance.RequirementDisclosure, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void EnglishNextSteps_AreEnglish()
+    {
+        Assert.Contains("Next steps", EnglishNextSteps.Title, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("localhost:8123", EnglishNextSteps.Body, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("Sonraki", EnglishNextSteps.Title, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -233,7 +258,7 @@ public class AppChannelAndStoreGuidanceTests
         var runner = new FakeProcessRunner();
         runner.Enqueue("winget", ["install"], new DockerCommandResult(1, string.Empty, "winget missing"));
         var message = await DockerDesktopGuidance.TrySilentInstallAsync(runner);
-        var storeBlock = "Bu Microsoft Store sürümü Docker Desktop kurmaz";
+        var storeBlock = "This Microsoft Store build does not install Docker Desktop";
         Assert.Equal(AppChannel.IsStoreBuild, message.Contains(storeBlock, StringComparison.Ordinal));
     }
 }

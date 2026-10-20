@@ -19,7 +19,7 @@
     <DisplayName>Smart Home Assistant</DisplayName>
     <PublisherDisplayName>Smart Home Assistant</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
-    <Description>Home Assistant kurulum yardımcısı. Docker Desktop ayrı kurulur; bu paket Docker kurmaz.</Description>
+    <Description>Home Assistant setup helper. Docker Desktop installs separately; this package does not install Docker.</Description>
   </Properties>
 
   <Dependencies>
@@ -27,7 +27,6 @@
   </Dependencies>
 
   <Resources>
-    <Resource Language="tr-TR" />
     <Resource Language="en-US" />
   </Resources>
 
@@ -37,7 +36,7 @@
                  EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="Smart Home Assistant"
-        Description="Docker Desktop hazırsa Home Assistant container yaşam döngüsü. Docker ayrı kurulur."
+        Description="Manages the Home Assistant container lifecycle when Docker Desktop is ready. Docker installs separately."
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
         Square44x44Logo="Images\Square44x44Logo.png">

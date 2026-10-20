@@ -31,7 +31,7 @@ Or open `HaSetup.sln` in Visual Studio 2022 and press F5 (set `HaSetup.App` as s
 3. Creates container `smart-home-ha` with port **8123**, volume **`smart-home-ha-config` → `/config`**
 4. Start / stop / restart / remove
 5. Health-checks `http://localhost:8123` and opens the browser
-6. Shows Turkish next-steps for HA onboarding
+6. Shows English next-steps for HA onboarding
 
 ### Compose alternative (no UI)
 ```powershell
@@ -53,7 +53,7 @@ Uygulama adı (pencere başlığı): **Smart Home Assistant**.
 ### Gereksinimler
 - Windows 10/11 (x64)
 - Kaynaktan derlemek için [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) (yoksa uygulama Türkçe rehber + indirme / sessiz kurulum dener)
+- [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) (yoksa uygulama İngilizce rehber + indirme / sessiz kurulum dener)
 
 ### Derleme ve çalıştırma
 ```powershell
@@ -71,7 +71,7 @@ Visual Studio 2022 ile `HaSetup.sln` açıp `HaSetup.App` başlangıç projesi o
 3. `smart-home-ha` container’ını **8123** portu ve kalıcı **`smart-home-ha-config`** volume’u ile oluşturur
 4. Başlat / durdur / yeniden başlat / sil
 5. `http://localhost:8123` sağlık kontrolü + tarayıcıda açma
-6. HA onboarding için Türkçe sonraki adımlar paneli
+6. HA onboarding için İngilizce sonraki adımlar paneli
 
 ### Compose (arayüzsüz)
 ```powershell
@@ -92,7 +92,7 @@ Zigbee/USB, add-on mağazası, Proxmox, bulut tüneli.
 |--|----------------|------------------------------|
 | Display name | Smart Home Assistant | Smart Home Assistant |
 | Silent / winget Docker install | Allowed (best-effort) | **Disabled** |
-| Docker missing | Download + optional silent | Store deep-link + Turkish steps only |
+| Docker missing | Download + optional silent | Store deep-link + English steps only |
 | HA lifecycle (Docker ready) | Yes | Yes (`runFullTrust` MSIX) |
 | Elevation / Docker install from package | N/A (dev EXE) | **No** |
 
@@ -118,7 +118,7 @@ Package identity display name: **Smart Home Assistant**. Capability: `runFullTru
 | Path | Role |
 |------|------|
 | `src/HaSetup.Core` | Docker probe, HA lifecycle, health check, Windows install guidance |
-| `src/HaSetup.App` | WPF status UI (Turkish) |
+| `src/HaSetup.App` | WPF status UI (English default) |
 | `packaging/HaSetup.Package` | MSIX / Windows Application Packaging Project |
 | `tests/HaSetup.Core.Tests` | Unit tests (fake Docker CLI) |
 | `docker-compose.yml` | Same container contract for CLI smoke tests |

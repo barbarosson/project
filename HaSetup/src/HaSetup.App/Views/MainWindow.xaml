@@ -2,13 +2,13 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Smart Home Assistant"
-        Height="760" Width="920"
-        MinHeight="580" MinWidth="760"
+        Height="780" Width="960"
+        MinHeight="600" MinWidth="800"
         WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </Window.Resources>
-    <Grid Margin="20">
+    <Grid Margin="24">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -19,19 +19,38 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <StackPanel Grid.Row="0" Margin="0,0,0,12">
-            <TextBlock Text="Smart Home Assistant" FontSize="28" FontWeight="Bold" />
-            <TextBlock Text="Home Assistant’ı Docker Desktop ile otomatik kurun"
-                       Style="{StaticResource MutedText}" Margin="0,4,0,0" />
-            <TextBlock Text="{Binding ChannelLabel}" Style="{StaticResource MutedText}" FontSize="12" Margin="0,4,0,0" />
-            <TextBlock Text="{Binding BusyText}" Foreground="{StaticResource AccentBrush}" Margin="0,8,0,0" />
-        </StackPanel>
+        <Border Grid.Row="0" Style="{StaticResource ChromePanel}" Padding="18,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Image Grid.Column="0"
+                       Source="/Assets/app-logo.png"
+                       Width="48" Height="48"
+                       Margin="0,0,16,0"
+                       Stretch="Uniform"
+                       RenderOptions.BitmapScalingMode="HighQuality" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="Smart Home Assistant" Style="{StaticResource BrandTitle}" />
+                    <TextBlock Text="Set up Home Assistant automatically with Docker Desktop"
+                               Style="{StaticResource MutedText}" Margin="0,4,0,0" />
+                    <TextBlock Text="{Binding ChannelLabel}" Style="{StaticResource MutedText}" FontSize="12" Margin="0,6,0,0" />
+                    <TextBlock Text="{Binding BusyText}"
+                               Foreground="#7BE0B4"
+                               FontWeight="SemiBold"
+                               Margin="0,10,0,0" />
+                </StackPanel>
+            </Grid>
+        </Border>
 
         <!-- First-run / listing disclosure -->
-        <Border Grid.Row="1" Style="{StaticResource PanelBorder}" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1">
+        <Border Grid.Row="1" Style="{StaticResource PanelBorder}"
+                BorderBrush="{StaticResource AccentBrush}" BorderThickness="1.5"
+                Background="{StaticResource AccentSoftBrush}">
             <StackPanel>
-                <TextBlock Text="Önemli — Docker Desktop önkoşulu" Style="{StaticResource SectionTitle}" />
-                <TextBlock Text="{Binding DockerRequirementDisclosure}" TextWrapping="Wrap" LineHeight="20" />
+                <TextBlock Text="Important — Docker Desktop required" Style="{StaticResource SectionTitle}" />
+                <TextBlock Text="{Binding DockerRequirementDisclosure}" Style="{StaticResource BodyText}" />
             </StackPanel>
         </Border>
 
@@ -43,44 +62,44 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                <StackPanel Grid.Column="0" Margin="0,0,16,0">
                     <TextBlock Text="Docker" Style="{StaticResource SectionTitle}" />
-                    <TextBlock Text="{Binding DockerStatusText}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding DockerStatusText}" Style="{StaticResource StatusValue}" />
                 </StackPanel>
-                <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                <StackPanel Grid.Column="1" Margin="0,0,16,0">
                     <TextBlock Text="Container" Style="{StaticResource SectionTitle}" />
-                    <TextBlock Text="{Binding ContainerStatusText}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding ContainerStatusText}" Style="{StaticResource StatusValue}" />
                 </StackPanel>
                 <StackPanel Grid.Column="2">
-                    <TextBlock Text="Sağlık (8123)" Style="{StaticResource SectionTitle}" />
-                    <TextBlock Text="{Binding HealthStatusText}" TextWrapping="Wrap" />
-                    <TextBlock Margin="0,8,0,0" Style="{StaticResource MutedText}">
+                    <TextBlock Text="Health (port 8123)" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Text="{Binding HealthStatusText}" Style="{StaticResource StatusValue}" />
+                    <TextBlock Margin="0,10,0,0" Style="{StaticResource ContentMutedText}">
                         <Run Text="URL: " />
-                        <Run Text="{Binding LocalUrl, Mode=OneWay}" />
+                        <Run Text="{Binding LocalUrl, Mode=OneWay}" FontWeight="SemiBold" />
                     </TextBlock>
                 </StackPanel>
             </Grid>
         </Border>
 
         <!-- Actions -->
-        <Border Grid.Row="3" Style="{StaticResource PanelBorder}">
+        <Border Grid.Row="3" Style="{StaticResource ChromePanel}">
             <StackPanel>
-                <TextBlock Text="İşlemler" Style="{StaticResource SectionTitle}" />
+                <TextBlock Text="Actions" Style="{StaticResource ChromeSectionTitle}" />
                 <WrapPanel>
-                    <Button Content="Yenile" Command="{Binding RefreshCommand}" Style="{StaticResource SecondaryButton}" />
-                    <Button Content="Docker Store’da aç" Command="{Binding OpenDockerStoreCommand}" Style="{StaticResource PrimaryButton}" />
-                    <Button Content="Docker indir" Command="{Binding OpenDockerDownloadCommand}" Style="{StaticResource SecondaryButton}" />
-                    <Button Content="Sessiz kurulum dene"
+                    <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource SecondaryButton}" />
+                    <Button Content="Open Docker in Store" Command="{Binding OpenDockerStoreCommand}" Style="{StaticResource PrimaryButton}" />
+                    <Button Content="Download Docker" Command="{Binding OpenDockerDownloadCommand}" Style="{StaticResource SecondaryButton}" />
+                    <Button Content="Try silent install"
                             Command="{Binding InstallDockerCommand}"
                             Style="{StaticResource SecondaryButton}"
                             Visibility="{Binding ShowSilentInstall, Converter={StaticResource BoolToVis}}" />
-                    <Button Content="Kur / Başlat" Command="{Binding CreateStartCommand}" Style="{StaticResource PrimaryButton}" />
-                    <Button Content="Başlat" Command="{Binding StartCommand}" Style="{StaticResource SecondaryButton}" />
-                    <Button Content="Durdur" Command="{Binding StopCommand}" Style="{StaticResource SecondaryButton}" />
-                    <Button Content="Yeniden başlat" Command="{Binding RestartCommand}" Style="{StaticResource SecondaryButton}" />
-                    <Button Content="Tarayıcıda aç" Command="{Binding OpenBrowserCommand}" Style="{StaticResource PrimaryButton}" />
-                    <Button Content="Logları al" Command="{Binding LoadLogsCommand}" Style="{StaticResource SecondaryButton}" />
-                    <Button Content="Container sil" Command="{Binding RemoveCommand}" Style="{StaticResource DangerButton}" />
+                    <Button Content="Install / Start" Command="{Binding CreateStartCommand}" Style="{StaticResource PrimaryButton}" />
+                    <Button Content="Start" Command="{Binding StartCommand}" Style="{StaticResource SecondaryButton}" />
+                    <Button Content="Stop" Command="{Binding StopCommand}" Style="{StaticResource SecondaryButton}" />
+                    <Button Content="Restart" Command="{Binding RestartCommand}" Style="{StaticResource SecondaryButton}" />
+                    <Button Content="Open in browser" Command="{Binding OpenBrowserCommand}" Style="{StaticResource PrimaryButton}" />
+                    <Button Content="Fetch logs" Command="{Binding LoadLogsCommand}" Style="{StaticResource SecondaryButton}" />
+                    <Button Content="Remove container" Command="{Binding RemoveCommand}" Style="{StaticResource DangerButton}" />
                 </WrapPanel>
             </StackPanel>
         </Border>
@@ -93,34 +112,28 @@
             </Grid.ColumnDefinitions>
 
             <Border Grid.Column="0" Style="{StaticResource PanelBorder}" Margin="0,0,8,0">
-                <DockPanel>
+                <DockPanel LastChildFill="True">
                     <TextBlock DockPanel.Dock="Top" Text="{Binding NextStepsTitle}" Style="{StaticResource SectionTitle}" />
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <TextBlock Text="{Binding NextStepsBody}" TextWrapping="Wrap" LineHeight="22" />
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,4,0">
+                        <TextBlock Text="{Binding NextStepsBody}" Style="{StaticResource BodyText}" />
                     </ScrollViewer>
                 </DockPanel>
             </Border>
 
-            <Border Grid.Column="1" Style="{StaticResource PanelBorder}" Margin="8,0,0,0">
-                <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" Text="Günlük / çıktı" Style="{StaticResource SectionTitle}" />
-                    <TextBox Text="{Binding LogText}"
-                             IsReadOnly="True"
-                             TextWrapping="Wrap"
-                             AcceptsReturn="True"
-                             VerticalScrollBarVisibility="Auto"
-                             Background="#0B151A"
-                             Foreground="{StaticResource TextBrush}"
-                             BorderThickness="0"
-                             FontFamily="Consolas, Cascadia Mono, monospace"
-                             FontSize="12" />
+            <Border Grid.Column="1" Style="{StaticResource ChromePanel}" Margin="8,0,0,0" Padding="16">
+                <DockPanel LastChildFill="True">
+                    <TextBlock DockPanel.Dock="Top" Text="Log / output" Style="{StaticResource ChromeSectionTitle}" />
+                    <Border CornerRadius="6" Background="{StaticResource LogBgBrush}" ClipToBounds="True">
+                        <TextBox Text="{Binding LogText}" Style="{StaticResource LogBox}" />
+                    </Border>
                 </DockPanel>
             </Border>
         </Grid>
 
         <TextBlock Grid.Row="5"
                    Style="{StaticResource MutedText}"
-                   Margin="0,8,0,0"
-                   Text="Kapsam dışı: Zigbee/USB, Supervisor add-on’ları, Proxmox, bulut tüneli. Docker kurulumu Store paketinden yapılmaz." />
+                   Margin="0,4,0,0"
+                   FontSize="12"
+                   Text="Out of scope: Zigbee/USB, Supervisor add-ons, Proxmox, cloud tunnels. Docker is not installed by the Store package." />
     </Grid>
 </Window>

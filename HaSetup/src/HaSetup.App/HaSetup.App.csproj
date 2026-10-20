@@ -19,4 +19,8 @@
     <ProjectReference Include="..\HaSetup.Core\HaSetup.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Resource Include="Assets\app-logo.png" />
+  </ItemGroup>
+
 </Project>

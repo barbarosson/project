@@ -1,62 +1,139 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Color x:Key="BgColor">#0F1C24</Color>
-    <Color x:Key="PanelColor">#17303C</Color>
-    <Color x:Key="AccentColor">#3DBE8B</Color>
-    <Color x:Key="TextColor">#E8F1F4</Color>
-    <Color x:Key="MutedColor">#9BB4BE</Color>
-    <Color x:Key="DangerColor">#E07A5F</Color>
+    <!-- Dark chrome + light content panels for readable contrast -->
+    <Color x:Key="BgColor">#0B1820</Color>
+    <Color x:Key="ChromeColor">#132832</Color>
+    <Color x:Key="PanelColor">#F3F7F9</Color>
+    <Color x:Key="PanelBorderColor">#C5D4DB</Color>
+    <Color x:Key="AccentColor">#1FA878</Color>
+    <Color x:Key="AccentSoftColor">#D8F3E8</Color>
+    <Color x:Key="TextColor">#F4F8FA</Color>
+    <Color x:Key="ContentTextColor">#15262E</Color>
+    <Color x:Key="MutedColor">#A8BEC8</Color>
+    <Color x:Key="ContentMutedColor">#4A6570</Color>
+    <Color x:Key="DangerColor">#D4654A</Color>
+    <Color x:Key="LogBgColor">#0E1A22</Color>
 
     <SolidColorBrush x:Key="BgBrush" Color="{StaticResource BgColor}" />
+    <SolidColorBrush x:Key="ChromeBrush" Color="{StaticResource ChromeColor}" />
     <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}" />
+    <SolidColorBrush x:Key="PanelBorderBrush" Color="{StaticResource PanelBorderColor}" />
     <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
+    <SolidColorBrush x:Key="AccentSoftBrush" Color="{StaticResource AccentSoftColor}" />
     <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}" />
+    <SolidColorBrush x:Key="ContentTextBrush" Color="{StaticResource ContentTextColor}" />
     <SolidColorBrush x:Key="MutedBrush" Color="{StaticResource MutedColor}" />
+    <SolidColorBrush x:Key="ContentMutedBrush" Color="{StaticResource ContentMutedColor}" />
     <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource DangerColor}" />
+    <SolidColorBrush x:Key="LogBgBrush" Color="{StaticResource LogBgColor}" />
 
     <Style TargetType="Window">
         <Setter Property="Background" Value="{StaticResource BgBrush}" />
         <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-        <Setter Property="FontFamily" Value="Segoe UI Variable, Segoe UI, sans-serif" />
+        <Setter Property="FontFamily" Value="Segoe UI Variable Text, Segoe UI, sans-serif" />
         <Setter Property="FontSize" Value="14" />
     </Style>
 
     <Style x:Key="PrimaryButton" TargetType="Button">
         <Setter Property="Background" Value="{StaticResource AccentBrush}" />
-        <Setter Property="Foreground" Value="#0B151A" />
+        <Setter Property="Foreground" Value="#FFFFFF" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Padding" Value="14,8" />
-        <Setter Property="Margin" Value="0,0,8,8" />
+        <Setter Property="Padding" Value="16,10" />
+        <Setter Property="Margin" Value="0,0,10,10" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="MinHeight" Value="36" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}"
+                            CornerRadius="6"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-        <Setter Property="Background" Value="#2A4A58" />
-        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="Background" Value="#2A4552" />
+        <Setter Property="Foreground" Value="#F4F8FA" />
     </Style>
 
     <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
         <Setter Property="Background" Value="{StaticResource DangerBrush}" />
-        <Setter Property="Foreground" Value="#1A0F0C" />
+        <Setter Property="Foreground" Value="#FFFFFF" />
     </Style>
 
     <Style x:Key="PanelBorder" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource PanelBrush}" />
-        <Setter Property="CornerRadius" Value="8" />
-        <Setter Property="Padding" Value="16" />
-        <Setter Property="Margin" Value="0,0,0,12" />
+        <Setter Property="BorderBrush" Value="{StaticResource PanelBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="20" />
+        <Setter Property="Margin" Value="0,0,0,14" />
+    </Style>
+
+    <Style x:Key="ChromePanel" TargetType="Border" BasedOn="{StaticResource PanelBorder}">
+        <Setter Property="Background" Value="{StaticResource ChromeBrush}" />
+        <Setter Property="BorderBrush" Value="#1F3A46" />
+        <Setter Property="BorderThickness" Value="1" />
     </Style>
 
     <Style x:Key="SectionTitle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontSize" Value="15" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Margin" Value="0,0,0,8" />
+        <Setter Property="Foreground" Value="{StaticResource ContentTextBrush}" />
+        <Setter Property="Margin" Value="0,0,0,10" />
+    </Style>
+
+    <Style x:Key="ChromeSectionTitle" TargetType="TextBlock" BasedOn="{StaticResource SectionTitle}">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <Style x:Key="BodyText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource ContentTextBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="LineHeight" Value="22" />
+        <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+    </Style>
+
+    <Style x:Key="StatusValue" TargetType="TextBlock" BasedOn="{StaticResource BodyText}">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="LineHeight" Value="20" />
     </Style>
 
     <Style x:Key="MutedText" TargetType="TextBlock">
         <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
         <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="ContentMutedText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource ContentMutedBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="FontSize" Value="12" />
+    </Style>
+
+    <Style x:Key="BrandTitle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="26" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="FontFamily" Value="Segoe UI Variable Display, Segoe UI, sans-serif" />
+    </Style>
+
+    <Style x:Key="LogBox" TargetType="TextBox">
+        <Setter Property="Background" Value="{StaticResource LogBgBrush}" />
+        <Setter Property="Foreground" Value="#E8F2F6" />
+        <Setter Property="CaretBrush" Value="#E8F2F6" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="12" />
+        <Setter Property="FontFamily" Value="Cascadia Mono, Consolas, monospace" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="AcceptsReturn" Value="True" />
+        <Setter Property="IsReadOnly" Value="True" />
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto" />
     </Style>
 </ResourceDictionary>
