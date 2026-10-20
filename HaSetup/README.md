@@ -8,6 +8,8 @@
 
 ## English — Run on Windows
 
+App display name (window title): **Smart Home Assistant**.
+
 ### Prerequisites
 - Windows 10/11 (x64)
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) (to build from source)
