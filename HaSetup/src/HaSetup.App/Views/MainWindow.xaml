@@ -124,7 +124,7 @@
                 <DockPanel LastChildFill="True">
                     <TextBlock DockPanel.Dock="Top" Text="Log / output" Style="{StaticResource ChromeSectionTitle}" />
                     <Border CornerRadius="6" Background="{StaticResource LogBgBrush}" ClipToBounds="True">
-                        <TextBox Text="{Binding LogText}" Style="{StaticResource LogBox}" />
+                        <TextBox Text="{Binding LogText, Mode=OneWay}" Style="{StaticResource LogBox}" />
                     </Border>
                 </DockPanel>
             </Border>
