@@ -1,12 +1,17 @@
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Threading;
+using HaSetup.App.Licensing;
 using HaSetup.App.Mvvm;
 using HaSetup.Core;
+using HaSetup.Core.Backup;
 using HaSetup.Core.Diagnostics;
 using HaSetup.Core.Docker;
 using HaSetup.Core.HomeAssistant;
+using HaSetup.Core.Licensing;
+using HaSetup.Core.Network;
 using HaSetup.Core.Windows;
+using Microsoft.Win32;
 
 namespace HaSetup.App.ViewModels;
 
@@ -17,6 +22,10 @@ public sealed class MainViewModel : ObservableObject
     private readonly IHaHealthChecker _health;
     private readonly IProcessRunner _runner;
     private readonly EnvironmentPreflight _preflight;
+    private readonly IFirewallRuleService _firewall;
+    private readonly ILicenseService _license;
+    private readonly IConfigVolumeBackupService _backup;
+    private readonly MdnsForwarderHostedService _mdns;
     private readonly DispatcherTimer _pollTimer;
 
     private string _dockerStatusText = "Checking…";
@@ -24,12 +33,18 @@ public sealed class MainViewModel : ObservableObject
     private string _healthStatusText = "—";
     private string _logText = string.Empty;
     private string _busyText = string.Empty;
+    private string _licenseStatusText = PremiumGate.StatusText(new DevLicenseService(false));
+    private string _mdnsStatusText = "mDNS helper is off (default).";
     private bool _isBusy;
     private bool _isRefreshing;
     private bool _dockerReady;
     private bool _containerExists;
     private bool _containerRunning;
     private bool _haReachable;
+    private bool _isPremium;
+    private bool _mdnsEnabled;
+    private bool _simulatePremium;
+    private bool _mdnsApplyInProgress;
     private DockerInstallState? _lastDockerState;
     private bool _guidanceLoggedForCurrentState;
 
@@ -38,13 +53,39 @@ public sealed class MainViewModel : ObservableObject
         IHaContainerService? ha = null,
         IHaHealthChecker? health = null,
         IProcessRunner? runner = null,
-        EnvironmentPreflight? preflight = null)
+        EnvironmentPreflight? preflight = null,
+        IFirewallRuleService? firewall = null,
+        ILicenseService? license = null,
+        IConfigVolumeBackupService? backup = null,
+        MdnsForwarderHostedService? mdns = null)
     {
         _runner = runner ?? new ProcessRunner();
         _docker = docker ?? new DockerClient(_runner);
         _ha = ha ?? new HaContainerService(_docker);
         _health = health ?? new HaHealthChecker();
         _preflight = preflight ?? new EnvironmentPreflight(_runner, _docker);
+        _firewall = firewall ?? new FirewallRuleService();
+        _license = license ?? CreateDefaultLicenseService();
+        _backup = backup ?? new ConfigVolumeBackupService(_docker);
+        _mdns = mdns ?? new MdnsForwarderHostedService();
+
+        _isPremium = _license.IsPremium;
+        _simulatePremium = _license is DevLicenseService dev && dev.SimulatePremium;
+        _licenseStatusText = PremiumGate.StatusText(_license);
+        _mdnsStatusText = _mdns.StatusText;
+        _mdnsEnabled = _mdns.IsEnabled;
+
+        _license.Changed += (_, _) =>
+        {
+            IsPremium = _license.IsPremium;
+            LicenseStatusText = PremiumGate.StatusText(_license);
+            if (_license is DevLicenseService d)
+            {
+                SimulatePremium = d.SimulatePremium;
+            }
+
+            RaiseCommands();
+        };
 
         RefreshCommand = new AsyncRelayCommand(RefreshAsync, () => !IsBusy && !_isRefreshing);
         InstallDockerCommand = new AsyncRelayCommand(
@@ -60,6 +101,14 @@ public sealed class MainViewModel : ObservableObject
         OpenBrowserCommand = new AsyncRelayCommand(OpenBrowserAsync, () => !IsBusy);
         LoadLogsCommand = new AsyncRelayCommand(LoadLogsAsync, () => !IsBusy && DockerReady && ContainerExists);
 
+        AddFirewallRulesCommand = new AsyncRelayCommand(AddFirewallRulesAsync, () => !IsBusy);
+        BackupConfigCommand = new AsyncRelayCommand(BackupConfigAsync, () => !IsBusy && DockerReady);
+        RestoreConfigCommand = new AsyncRelayCommand(RestoreConfigAsync, () => !IsBusy && DockerReady);
+        PurchasePremiumCommand = new AsyncRelayCommand(PurchasePremiumAsync, () => !IsBusy && !IsPremium);
+        RestoreLicenseCommand = new AsyncRelayCommand(RestoreLicenseAsync, () => !IsBusy);
+        ToggleSimulatePremiumCommand = new RelayCommand(ToggleSimulatePremium, () => ShowDevLicenseControls);
+        ToggleMdnsCommand = new AsyncRelayCommand(ToggleMdnsAsync, () => !IsBusy);
+
         NextStepsTitle = EnglishNextSteps.Title;
         NextStepsBody = EnglishNextSteps.Body;
         LocalUrl = HaConstants.LocalUrl;
@@ -68,6 +117,20 @@ public sealed class MainViewModel : ObservableObject
         ChannelLabel = AppChannel.ChannelLabel;
         IsStoreBuild = AppChannel.IsStoreBuild;
         ShowSilentInstall = AppChannel.AllowsSilentDockerInstall;
+        ShowDevLicenseControls = !AppChannel.IsStoreBuild && _license is DevLicenseService;
+
+        NetworkPanelTitle = NetworkDiscoveryGuidance.PanelTitle;
+        WhyAutoDiscoveryFails = NetworkDiscoveryGuidance.WhyAutoDiscoveryFails;
+        ManualIpGuideTitle = NetworkDiscoveryGuidance.ManualIpGuideTitle;
+        ManualIpGuideBody = NetworkDiscoveryGuidance.ManualIpGuideBody;
+        FirewallSectionTitle = NetworkDiscoveryGuidance.FirewallSectionTitle;
+        FirewallSectionBody = NetworkDiscoveryGuidance.FirewallSectionBody;
+        FirewallButtonLabel = NetworkDiscoveryGuidance.FirewallButtonLabel;
+        MdnsSectionTitle = NetworkDiscoveryGuidance.MdnsSectionTitle;
+        MdnsSectionBody = NetworkDiscoveryGuidance.MdnsSectionBody;
+        MdnsToggleLabel = NetworkDiscoveryGuidance.MdnsToggleLabel;
+        PremiumLockHint = NetworkDiscoveryGuidance.PremiumLockHint;
+        ConfigVolumeName = HaConstants.VolumeName;
 
         _pollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(8) };
         _pollTimer.Tick += async (_, _) =>
@@ -87,6 +150,20 @@ public sealed class MainViewModel : ObservableObject
     public string ChannelLabel { get; }
     public bool IsStoreBuild { get; }
     public bool ShowSilentInstall { get; }
+    public bool ShowDevLicenseControls { get; }
+    public string ConfigVolumeName { get; }
+
+    public string NetworkPanelTitle { get; }
+    public string WhyAutoDiscoveryFails { get; }
+    public string ManualIpGuideTitle { get; }
+    public string ManualIpGuideBody { get; }
+    public string FirewallSectionTitle { get; }
+    public string FirewallSectionBody { get; }
+    public string FirewallButtonLabel { get; }
+    public string MdnsSectionTitle { get; }
+    public string MdnsSectionBody { get; }
+    public string MdnsToggleLabel { get; }
+    public string PremiumLockHint { get; }
 
     public string DockerStatusText
     {
@@ -116,6 +193,18 @@ public sealed class MainViewModel : ObservableObject
     {
         get => _busyText;
         private set => SetProperty(ref _busyText, value);
+    }
+
+    public string LicenseStatusText
+    {
+        get => _licenseStatusText;
+        private set => SetProperty(ref _licenseStatusText, value);
+    }
+
+    public string MdnsStatusText
+    {
+        get => _mdnsStatusText;
+        private set => SetProperty(ref _mdnsStatusText, value);
     }
 
     public bool IsBusy
@@ -172,6 +261,54 @@ public sealed class MainViewModel : ObservableObject
         private set => SetProperty(ref _haReachable, value);
     }
 
+    public bool IsPremium
+    {
+        get => _isPremium;
+        private set
+        {
+            if (SetProperty(ref _isPremium, value))
+            {
+                OnPropertyChanged(nameof(PremiumFeaturesUnlocked));
+                OnPropertyChanged(nameof(BackupButtonLabel));
+                OnPropertyChanged(nameof(RestoreButtonLabel));
+                OnPropertyChanged(nameof(MdnsToggleEnabledLabel));
+                RaiseCommands();
+            }
+        }
+    }
+
+    public bool PremiumFeaturesUnlocked => IsPremium;
+
+    public bool SimulatePremium
+    {
+        get => _simulatePremium;
+        private set => SetProperty(ref _simulatePremium, value);
+    }
+
+    public bool MdnsEnabled
+    {
+        get => _mdnsEnabled;
+        set
+        {
+            if (_mdnsApplyInProgress || _mdnsEnabled == value)
+            {
+                return;
+            }
+
+            // Two-way CheckBox: kick async toggle without blocking the binding thread.
+            _ = ApplyMdnsEnabledAsync(value);
+        }
+    }
+
+    public string BackupButtonLabel =>
+        IsPremium ? "Backup config volume…" : PremiumGate.LockedLabel("Backup config volume");
+
+    public string RestoreButtonLabel =>
+        IsPremium ? "Restore config volume…" : PremiumGate.LockedLabel("Restore config volume");
+
+    public string MdnsToggleEnabledLabel =>
+        IsPremium ? MdnsToggleLabel : PremiumGate.LockedLabel(MdnsToggleLabel);
+
     public AsyncRelayCommand RefreshCommand { get; }
     public AsyncRelayCommand InstallDockerCommand { get; }
     public RelayCommand OpenDockerDownloadCommand { get; }
@@ -183,9 +320,27 @@ public sealed class MainViewModel : ObservableObject
     public AsyncRelayCommand RemoveCommand { get; }
     public AsyncRelayCommand OpenBrowserCommand { get; }
     public AsyncRelayCommand LoadLogsCommand { get; }
+    public AsyncRelayCommand AddFirewallRulesCommand { get; }
+    public AsyncRelayCommand BackupConfigCommand { get; }
+    public AsyncRelayCommand RestoreConfigCommand { get; }
+    public AsyncRelayCommand PurchasePremiumCommand { get; }
+    public AsyncRelayCommand RestoreLicenseCommand { get; }
+    public RelayCommand ToggleSimulatePremiumCommand { get; }
+    public AsyncRelayCommand ToggleMdnsCommand { get; }
 
     public async Task InitializeAsync()
     {
+        try
+        {
+            await _license.RefreshAsync().ConfigureAwait(true);
+            IsPremium = _license.IsPremium;
+            LicenseStatusText = PremiumGate.StatusText(_license);
+        }
+        catch (Exception ex)
+        {
+            AppendLog(FriendlyErrorHandler.ToUserMessage(ex, "License refresh failed."));
+        }
+
         await RefreshAsync().ConfigureAwait(true);
         _pollTimer.Start();
     }
@@ -455,6 +610,241 @@ public sealed class MainViewModel : ObservableObject
         }).ConfigureAwait(true);
     }
 
+    private async Task AddFirewallRulesAsync()
+    {
+        await RunBusyAsync("Adding Windows Firewall rules (UAC)…", async () =>
+        {
+            var result = await _firewall.EnsureHaDiscoveryRulesAsync().ConfigureAwait(true);
+            AppendLog(result.Message);
+            if (!string.IsNullOrWhiteSpace(result.Detail))
+            {
+                AppendLog($"Detail: {result.Detail}");
+            }
+
+            MessageBox.Show(
+                result.Message,
+                AppBrand.DisplayName,
+                MessageBoxButton.OK,
+                result.Succeeded ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        }).ConfigureAwait(true);
+    }
+
+    private async Task BackupConfigAsync()
+    {
+        if (!await EnsurePremiumOrOfferPurchaseAsync("Config volume backup").ConfigureAwait(true))
+        {
+            return;
+        }
+
+        var dialog = new SaveFileDialog
+        {
+            Title = "Backup config volume",
+            Filter = "Config archive (*.zip)|*.zip",
+            FileName = $"{HaConstants.VolumeName}-{DateTime.Now:yyyyMMdd-HHmm}.zip",
+            AddExtension = true,
+            DefaultExt = ".zip",
+        };
+
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        await RunBusyAsync("Backing up config volume…", async () =>
+        {
+            var progress = new Progress<string>(AppendLog);
+            var result = await _backup.BackupToZipAsync(dialog.FileName, progress: progress).ConfigureAwait(true);
+            AppendLog(result.Message);
+            if (!string.IsNullOrWhiteSpace(result.Detail))
+            {
+                AppendLog($"Detail: {result.Detail}");
+            }
+
+            MessageBox.Show(
+                result.Message,
+                AppBrand.DisplayName,
+                MessageBoxButton.OK,
+                result.Succeeded ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        }).ConfigureAwait(true);
+    }
+
+    private async Task RestoreConfigAsync()
+    {
+        if (!await EnsurePremiumOrOfferPurchaseAsync("Config volume restore").ConfigureAwait(true))
+        {
+            return;
+        }
+
+        var dialog = new OpenFileDialog
+        {
+            Title = "Restore config volume",
+            Filter = "Config archive (*.zip)|*.zip|All files (*.*)|*.*",
+            CheckFileExists = true,
+        };
+
+        if (dialog.ShowDialog() != true)
+        {
+            return;
+        }
+
+        var confirm = MessageBox.Show(
+            $"Restore will replace files in Docker volume “{HaConstants.VolumeName}”.\n\nContinue?",
+            AppBrand.DisplayName,
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        await RunBusyAsync("Restoring config volume…", async () =>
+        {
+            var progress = new Progress<string>(AppendLog);
+            var result = await _backup.RestoreFromZipAsync(dialog.FileName, progress: progress).ConfigureAwait(true);
+            AppendLog(result.Message);
+            if (!string.IsNullOrWhiteSpace(result.Detail))
+            {
+                AppendLog($"Detail: {result.Detail}");
+            }
+
+            MessageBox.Show(
+                result.Message,
+                AppBrand.DisplayName,
+                MessageBoxButton.OK,
+                result.Succeeded ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        }).ConfigureAwait(true);
+    }
+
+    private async Task PurchasePremiumAsync()
+    {
+        await RunBusyAsync("Opening Premium purchase…", async () =>
+        {
+            var result = await _license.PurchaseAsync().ConfigureAwait(true);
+            IsPremium = _license.IsPremium;
+            LicenseStatusText = PremiumGate.StatusText(_license);
+            AppendLog(result.Message);
+            MessageBox.Show(
+                result.Message,
+                AppBrand.DisplayName,
+                MessageBoxButton.OK,
+                result.Succeeded ? MessageBoxImage.Information : MessageBoxImage.Warning);
+        }).ConfigureAwait(true);
+    }
+
+    private async Task RestoreLicenseAsync()
+    {
+        await RunBusyAsync("Restoring license…", async () =>
+        {
+            var result = await _license.RestoreAsync().ConfigureAwait(true);
+            IsPremium = _license.IsPremium;
+            LicenseStatusText = PremiumGate.StatusText(_license);
+            AppendLog(result.Message);
+            MessageBox.Show(
+                result.Message,
+                AppBrand.DisplayName,
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }).ConfigureAwait(true);
+    }
+
+    private void ToggleSimulatePremium()
+    {
+        if (_license is not DevLicenseService dev)
+        {
+            return;
+        }
+
+        try
+        {
+            dev.SetSimulatePremium(!dev.SimulatePremium);
+            SimulatePremium = dev.SimulatePremium;
+            IsPremium = _license.IsPremium;
+            LicenseStatusText = PremiumGate.StatusText(_license);
+            AppendLog(SimulatePremium
+                ? "Simulate premium: ON (dev / sideload)."
+                : "Simulate premium: OFF (Free tier).");
+            RaiseCommands();
+        }
+        catch (Exception ex)
+        {
+            AppendLog(FriendlyErrorHandler.ToUserMessage(ex, "Could not toggle premium simulation."));
+        }
+    }
+
+    private async Task ToggleMdnsAsync()
+    {
+        await ApplyMdnsEnabledAsync(!_mdns.IsEnabled).ConfigureAwait(true);
+    }
+
+    private async Task ApplyMdnsEnabledAsync(bool wantEnabled)
+    {
+        if (_mdnsApplyInProgress)
+        {
+            return;
+        }
+
+        _mdnsApplyInProgress = true;
+        try
+        {
+            if (wantEnabled && !IsPremium)
+            {
+                SetProperty(ref _mdnsEnabled, false, nameof(MdnsEnabled));
+                await EnsurePremiumOrOfferPurchaseAsync("mDNS helper").ConfigureAwait(true);
+                MdnsStatusText = _mdns.StatusText;
+                return;
+            }
+
+            await RunBusyAsync(wantEnabled ? "Enabling mDNS helper…" : "Disabling mDNS helper…", async () =>
+            {
+                var result = await _mdns.SetEnabledAsync(wantEnabled, IsPremium).ConfigureAwait(true);
+                SetProperty(ref _mdnsEnabled, _mdns.IsEnabled, nameof(MdnsEnabled));
+                MdnsStatusText = result.Message;
+                AppendLog(result.Message);
+                if (!result.Succeeded)
+                {
+                    MessageBox.Show(result.Message, AppBrand.DisplayName, MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }).ConfigureAwait(true);
+        }
+        finally
+        {
+            _mdnsApplyInProgress = false;
+        }
+    }
+
+    private async Task<bool> EnsurePremiumOrOfferPurchaseAsync(string featureName)
+    {
+        if (IsPremium)
+        {
+            return true;
+        }
+
+        var prompt = PremiumGate.PurchasePrompt(featureName);
+        var choice = MessageBox.Show(
+            prompt + "\n\nYes = unlock / purchase now\nNo = cancel",
+            AppBrand.DisplayName,
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Information);
+
+        if (choice != MessageBoxResult.Yes)
+        {
+            AppendLog($"{featureName}: Premium required (cancelled).");
+            return false;
+        }
+
+        var result = await _license.PurchaseAsync().ConfigureAwait(true);
+        IsPremium = _license.IsPremium;
+        LicenseStatusText = PremiumGate.StatusText(_license);
+        AppendLog(result.Message);
+        if (!IsPremium)
+        {
+            MessageBox.Show(result.Message, AppBrand.DisplayName, MessageBoxButton.OK, MessageBoxImage.Warning);
+            return false;
+        }
+
+        return true;
+    }
+
     private async Task<bool> EnsurePreflightAsync()
     {
         AppendLog("Preflight: checking WSL and Docker daemon…");
@@ -550,5 +940,17 @@ public sealed class MainViewModel : ObservableObject
         RemoveCommand.RaiseCanExecuteChanged();
         OpenBrowserCommand.RaiseCanExecuteChanged();
         LoadLogsCommand.RaiseCanExecuteChanged();
+        AddFirewallRulesCommand.RaiseCanExecuteChanged();
+        BackupConfigCommand.RaiseCanExecuteChanged();
+        RestoreConfigCommand.RaiseCanExecuteChanged();
+        PurchasePremiumCommand.RaiseCanExecuteChanged();
+        RestoreLicenseCommand.RaiseCanExecuteChanged();
+        ToggleSimulatePremiumCommand.RaiseCanExecuteChanged();
+        ToggleMdnsCommand.RaiseCanExecuteChanged();
     }
+
+    private static ILicenseService CreateDefaultLicenseService() =>
+        AppChannel.IsStoreBuild
+            ? new StoreLicenseService(new WindowsStorePurchaseClient())
+            : new DevLicenseService();
 }

@@ -77,6 +77,21 @@ public static class ErrorPatternCatalog
             "permission denied",
             "Permission was denied for a Docker operation. Ensure Docker Desktop is running and you are signed into Windows as a user allowed to use Docker."),
         new(
+            "canceled by the user",
+            "The elevation prompt was cancelled. Approve User Account Control (UAC) to continue."),
+        new(
+            "cancelled by the user",
+            "The elevation prompt was cancelled. Approve User Account Control (UAC) to continue."),
+        new(
+            "the operation was canceled by the user",
+            "The elevation prompt was cancelled. Approve User Account Control (UAC) to continue."),
+        new(
+            "access is denied",
+            "Access was denied. Approve the UAC prompt, or run with an account that can change Windows Firewall."),
+        new(
+            "no such volume",
+            "The config volume was not found. Use Install / Start to create the local hub first, then retry."),
+        new(
             "no such object",
             "The container was not found. Use Install / Start to create it again."),
         new(

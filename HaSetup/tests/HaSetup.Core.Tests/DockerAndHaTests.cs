@@ -190,13 +190,19 @@ public class HaContainerServiceTests
         var docker = new DockerClient(runner, () => "docker");
         var service = new HaContainerService(docker);
         var lines = new List<string>();
-        var progress = new Progress<string>(lines.Add);
+        // Avoid System.Progress<T> (may post to ThreadPool); collect synchronously.
+        IProgress<string> progress = new SyncProgress(lines);
 
         await service.PullImageAsync(progress: progress);
 
         Assert.Contains(lines, l => l.Contains("Pulling image:", StringComparison.OrdinalIgnoreCase));
         Assert.Contains(lines, l => l.Contains(HaConstants.Image, StringComparison.Ordinal));
         Assert.Contains(lines, l => l.Contains("Image ready", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private sealed class SyncProgress(List<string> lines) : IProgress<string>
+    {
+        public void Report(string value) => lines.Add(value);
     }
 
     [Fact]

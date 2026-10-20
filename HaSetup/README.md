@@ -32,6 +32,19 @@ Or open `HaSetup.sln` in Visual Studio 2022 and press F5 (set `HaSetup.App` as s
 4. Start / stop / restart / remove
 5. Health-checks `http://localhost:8123` and opens the browser
 6. Shows English next-steps for local hub onboarding
+7. **Network & discovery** tab: why auto-discovery fails on Docker/WSL2, manual IP guide, **Free** firewall rules (UAC)
+8. **Premium** (Store IAP placeholder / dev simulate): config volume zip backup/restore; experimental mDNS helper (default off)
+
+### Freemium quick try (dev)
+```powershell
+# Option A: env before launch
+$env:HASETTUP_SIMULATE_PREMIUM = "1"
+dotnet run --project src\HaSetup.App\HaSetup.App.csproj -c Release
+
+# Option B: in UI → Network & discovery → "Simulate premium (dev)"
+```
+- Free: **Add firewall rules (UAC)** (8123/TCP, 5353/UDP, 1900/UDP)
+- Premium: Backup / Restore config volume; Enable mDNS helper (Experimental)
 
 ### Compose alternative (no UI)
 ```powershell
@@ -72,6 +85,8 @@ Visual Studio 2022 ile `HaSetup.sln` açıp `HaSetup.App` başlangıç projesi o
 4. Başlat / durdur / yeniden başlat / sil
 5. `http://localhost:8123` sağlık kontrolü + tarayıcıda açma
 6. Yerel hub onboarding için İngilizce sonraki adımlar paneli
+7. **Network & discovery** sekmesi: WSL2/Docker NAT keşif sorunları, manuel IP, **Free** firewall (UAC)
+8. **Premium**: config volume zip yedek/geri yükleme; deneysel mDNS yardımcısı (varsayılan kapalı; dev’de Simulate premium)
 
 ### Compose (arayüzsüz)
 ```powershell
@@ -95,6 +110,9 @@ Zigbee/USB, add-on mağazası, Proxmox, bulut tüneli.
 | Docker missing | Download + optional silent | Store deep-link + English steps only |
 | HA lifecycle (Docker ready) | Yes | Yes (`runFullTrust` MSIX) |
 | Elevation / Docker install from package | N/A (dev EXE) | **No** |
+| License | `DevLicenseService` (Simulate premium / `HASETTUP_SIMULATE_PREMIUM`) | `StoreLicenseService` (`PREMIUM_UNLOCK_ID_PLACEHOLDER`) |
+| Firewall rules (UAC) | Free | Free |
+| Backup / mDNS helper | Premium (simulated) | Premium (IAP when Partner Center id set) |
 
 ```powershell
 # Store-oriented binaries (defines STORE_BUILD)
@@ -117,12 +135,13 @@ Package identity display name: **Container Manager for HA**. Capability: `runFul
 
 | Path | Role |
 |------|------|
-| `src/HaSetup.Core` | Docker probe, HA lifecycle, health check, WSL/Docker preflight, friendly errors |
-| `src/HaSetup.App` | WPF status UI (English default) |
+| `src/HaSetup.Core` | Docker, HA lifecycle, preflight, network/firewall, licensing, backup, mDNS skeleton |
+| `src/HaSetup.App` | WPF UI: Setup + Network & discovery tabs |
 | `packaging/HaSetup.Package` | MSIX / Windows Application Packaging Project |
-| `tests/HaSetup.Core.Tests` | Unit tests (fake Docker CLI) |
+| `tests/HaSetup.Core.Tests` | Unit tests (fake Docker CLI, license, firewall) |
 | `docker-compose.yml` | Same container contract for CLI smoke tests |
 | `scripts/smoke-ha-lifecycle.sh` | Pull/create/start/stop/restart/remove smoke script |
+| `scripts/mdns-udp-forward.ps1` | Experimental mDNS forwarder skeleton |
 | `scripts/build-msix-store.cmd` | StoreBuild + MSBuild package helper |
 
 ## Verification notes
