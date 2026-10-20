@@ -122,6 +122,15 @@
                     <Border Grid.Row="2" Style="{StaticResource ChromePanel}">
                         <StackPanel>
                             <TextBlock Text="Actions" Style="{StaticResource ChromeSectionTitle}" />
+                            <CheckBox IsChecked="{Binding IsAppleLimitationAcknowledged, Mode=TwoWay}"
+                                      Margin="0,4,0,12"
+                                      FontSize="12">
+                                <TextBlock Text="{Binding AppleLimitationConsentLabel}"
+                                           Style="{StaticResource MutedText}"
+                                           TextWrapping="Wrap"
+                                           FontSize="12"
+                                           MaxWidth="900" />
+                            </CheckBox>
                             <WrapPanel>
                                 <Button Content="Refresh" Command="{Binding RefreshCommand}" Style="{StaticResource SecondaryButton}" />
                                 <Button Content="Open Docker in Store" Command="{Binding OpenDockerStoreCommand}" Style="{StaticResource PrimaryButton}" />
@@ -192,6 +201,6 @@
                    Style="{StaticResource MutedText}"
                    Margin="0,4,0,0"
                    FontSize="12"
-                   Text="Out of scope: Zigbee/USB, Supervisor add-ons, Proxmox, cloud tunnels. Docker is not installed by the Store package. Firewall rules are Free (UAC). Backup / mDNS helper are Premium." />
+                   Text="Out of scope: Apple HomeKit devices (HomePod, Apple TV), Zigbee/USB, Supervisor add-ons, Proxmox, cloud tunnels. This app manages the HA container on Windows — it is not a device bridge. Docker is not installed by the Store package. Firewall rules are Free (UAC). Backup / mDNS helper are Premium." />
     </Grid>
 </Window>

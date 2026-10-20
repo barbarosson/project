@@ -45,6 +45,7 @@ public sealed class MainViewModel : ObservableObject
     private bool _mdnsEnabled;
     private bool _simulatePremium;
     private bool _mdnsApplyInProgress;
+    private bool _isAppleLimitationAcknowledged;
     private DockerInstallState? _lastDockerState;
     private bool _guidanceLoggedForCurrentState;
 
@@ -93,7 +94,9 @@ public sealed class MainViewModel : ObservableObject
             () => !IsBusy && !DockerReady && ShowSilentInstall);
         OpenDockerDownloadCommand = new RelayCommand(OpenDockerDownload);
         OpenDockerStoreCommand = new RelayCommand(OpenDockerStore);
-        CreateStartCommand = new AsyncRelayCommand(CreateStartAsync, () => !IsBusy && DockerReady);
+        CreateStartCommand = new AsyncRelayCommand(
+            CreateStartAsync,
+            () => !IsBusy && DockerReady && IsAppleLimitationAcknowledged);
         StartCommand = new AsyncRelayCommand(StartAsync, () => !IsBusy && DockerReady && ContainerExists && !ContainerRunning);
         StopCommand = new AsyncRelayCommand(StopAsync, () => !IsBusy && DockerReady && ContainerRunning);
         RestartCommand = new AsyncRelayCommand(RestartAsync, () => !IsBusy && DockerReady && ContainerExists);
@@ -121,6 +124,9 @@ public sealed class MainViewModel : ObservableObject
 
         NetworkPanelTitle = NetworkDiscoveryGuidance.PanelTitle;
         WhyAutoDiscoveryFails = NetworkDiscoveryGuidance.WhyAutoDiscoveryFails;
+        AppleEcosystemWarningTitle = NetworkDiscoveryGuidance.AppleEcosystemWarningTitle;
+        AppleEcosystemWarningBody = NetworkDiscoveryGuidance.AppleEcosystemWarningBody;
+        AppleLimitationConsentLabel = NetworkDiscoveryGuidance.AppleLimitationConsentLabel;
         ManualIpGuideTitle = NetworkDiscoveryGuidance.ManualIpGuideTitle;
         ManualIpGuideBody = NetworkDiscoveryGuidance.ManualIpGuideBody;
         FirewallSectionTitle = NetworkDiscoveryGuidance.FirewallSectionTitle;
@@ -155,6 +161,9 @@ public sealed class MainViewModel : ObservableObject
 
     public string NetworkPanelTitle { get; }
     public string WhyAutoDiscoveryFails { get; }
+    public string AppleEcosystemWarningTitle { get; }
+    public string AppleEcosystemWarningBody { get; }
+    public string AppleLimitationConsentLabel { get; }
     public string ManualIpGuideTitle { get; }
     public string ManualIpGuideBody { get; }
     public string FirewallSectionTitle { get; }
@@ -164,6 +173,22 @@ public sealed class MainViewModel : ObservableObject
     public string MdnsSectionBody { get; }
     public string MdnsToggleLabel { get; }
     public string PremiumLockHint { get; }
+
+    /// <summary>
+    /// Onboarding consent: user acknowledges Apple HomeKit cannot pair on Windows Docker bridge/NAT.
+    /// Required before Install / Start.
+    /// </summary>
+    public bool IsAppleLimitationAcknowledged
+    {
+        get => _isAppleLimitationAcknowledged;
+        set
+        {
+            if (SetProperty(ref _isAppleLimitationAcknowledged, value))
+            {
+                RaiseCommands();
+            }
+        }
+    }
 
     public string DockerStatusText
     {

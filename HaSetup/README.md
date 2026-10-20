@@ -2,6 +2,8 @@
 
 **Container Manager for HA** — Windows masaüstü uygulaması: **Docker Desktop** üzerinden `homeassistant/home-assistant:stable` container’ını kurar, yönetir ve `http://localhost:8123` adresini açar.
 
+Bu ürün **evinizdeki tüm cihazları bağlayan bir köprü değildir**; yalnızca Windows’ta HA container lifecycle yönetir. **Apple HomeKit / HomePod / Apple TV** Windows Docker bridge/NAT nedeniyle **kapsam dışı** (mDNS keşfi container’a ulaşmaz; bilinen IP ile de eklenemez).
+
 **Stack:** .NET 8 · WPF (`HaSetup.App`) · Docker CLI (`HaSetup.Core`) · repo folder `HaSetup/`
 
 ---
@@ -32,8 +34,9 @@ Or open `HaSetup.sln` in Visual Studio 2022 and press F5 (set `HaSetup.App` as s
 4. Start / stop / restart / remove
 5. Health-checks `http://localhost:8123` and opens the browser
 6. Shows English next-steps for local hub onboarding
-7. **Network & discovery** tab: why auto-discovery fails on Docker/WSL2, manual IP guide, **Free** firewall rules (UAC)
-8. **Premium** (Store IAP placeholder / dev simulate): config volume zip backup/restore; experimental mDNS helper (default off)
+7. **Network & discovery** tab: why auto-discovery fails on Docker/WSL2, **Apple HomeKit warning**, manual IP guide (Wi‑Fi/cloud — not HomeKit), **Free** firewall rules (UAC)
+8. Setup consent checkbox before **Install / Start** (Apple limitation acknowledgment)
+9. **Premium** (Store IAP placeholder / dev simulate): config volume zip backup/restore; experimental mDNS helper (default off; does **not** unlock HomeKit)
 
 ### Freemium quick try (dev)
 ```powershell
@@ -55,7 +58,7 @@ docker compose down   # keeps named volume
 ```
 
 ### Out of scope (MVP)
-Zigbee/USB passthrough, Supervisor add-ons, Proxmox, cloud tunnels.
+Apple HomeKit devices (HomePod, Apple TV), Zigbee/USB passthrough, Supervisor add-ons, Proxmox, cloud tunnels.
 
 ---
 

@@ -18,6 +18,17 @@ public class NetworkDiscoveryGuidanceTests
         Assert.Contains("Experimental", NetworkDiscoveryGuidance.MdnsSectionTitle, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Premium", NetworkDiscoveryGuidance.MdnsSectionTitle, StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public void Guidance_StatesAppleHomeKitIsOutOfScopeEvenWithKnownIp()
+    {
+        Assert.Contains("HomeKit", NetworkDiscoveryGuidance.AppleEcosystemWarningBody, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("NAT", NetworkDiscoveryGuidance.AppleEcosystemWarningBody, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("even if you know their IP", NetworkDiscoveryGuidance.AppleEcosystemWarningBody, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("HomePod", NetworkDiscoveryGuidance.AppleLimitationConsentLabel, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("HomeKit", NetworkDiscoveryGuidance.ManualIpGuideBody, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("HomeKit", NetworkDiscoveryGuidance.MdnsSectionBody, StringComparison.OrdinalIgnoreCase);
+    }
 }
 
 public class FirewallRuleServiceTests
