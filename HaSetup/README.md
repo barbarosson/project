@@ -1,8 +1,8 @@
-# HaSetup — Home Assistant auto-setup (MVP)
+# Smart Home Assistant (HaSetup MVP)
 
-Windows masaüstü uygulaması: **Docker Desktop** üzerinden `homeassistant/home-assistant:stable` container’ını kurar, yönetir ve `http://localhost:8123` adresini açar.
+**Smart Home Assistant** — Windows masaüstü uygulaması: **Docker Desktop** üzerinden `homeassistant/home-assistant:stable` container’ını kurar, yönetir ve `http://localhost:8123` adresini açar.
 
-**Stack:** .NET 8 · WPF (`HaSetup.App`) · Docker CLI (`HaSetup.Core`)
+**Stack:** .NET 8 · WPF (`HaSetup.App`) · Docker CLI (`HaSetup.Core`) · repo folder `HaSetup/`
 
 ---
 
@@ -45,6 +45,8 @@ Zigbee/USB passthrough, Supervisor add-ons, Proxmox, cloud tunnels.
 ---
 
 ## Türkçe — Windows’ta çalıştırma
+
+Uygulama adı (pencere başlığı): **Smart Home Assistant**.
 
 ### Gereksinimler
 - Windows 10/11 (x64)

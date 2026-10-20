@@ -5,10 +5,12 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <RootNamespace>HaSetup.App</RootNamespace>
     <AssemblyName>HaSetup</AssemblyName>
+    <AssemblyTitle>Smart Home Assistant</AssemblyTitle>
+    <Product>Smart Home Assistant</Product>
     <UseWPF>true</UseWPF>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <InvariantGlobalization>false</InvariantGlobalization>
-    <ApplicationTitle>Smart Home — Home Assistant Kurulum</ApplicationTitle>
+    <ApplicationTitle>Smart Home Assistant</ApplicationTitle>
     <!-- Allow restore/design-time on non-Windows CI; full WPF build still needs Windows. -->
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
