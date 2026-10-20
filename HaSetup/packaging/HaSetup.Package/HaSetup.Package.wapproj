@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Windows Application Packaging Project for Smart Home Assistant (HaSetup.App).
+  Windows Application Packaging Project for Container Manager for HA (HaSetup.App).
   Build on Windows with Visual Studio 2022 (Windows application packaging / MSIX tooling).
   Store channel: msbuild with /p:StoreBuild=true so STORE_BUILD disables silent Docker install.
 -->
