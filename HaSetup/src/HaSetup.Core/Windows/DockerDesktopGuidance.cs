@@ -3,26 +3,58 @@ using HaSetup.Core.Docker;
 namespace HaSetup.Core.Windows;
 
 /// <summary>
-/// Docker Desktop installation helpers for Windows.
-/// Silent install is best-effort: UAC, reboot, and WSL enablement often still need the user.
+/// Docker Desktop guidance for Windows.
+/// Store builds: deep-link + Turkish steps only (no silent/winget install, no elevation).
+/// Dev/sideload builds may attempt best-effort silent install.
 /// </summary>
 public static class DockerDesktopGuidance
 {
     public const string DownloadUrl = "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe";
     public const string DocsUrl = "https://docs.docker.com/desktop/setup/install/windows-install/";
+    public const string MicrosoftStoreWebUrl = "https://apps.microsoft.com/detail/xp8cbj40xlbwkx";
+    public const string MicrosoftStoreProductId = "XP8CBJ40XLBWKX";
+    public const string MicrosoftStoreDeepLink = "ms-windows-store://pdp/?ProductId=XP8CBJ40XLBWKX";
+
+    /// <summary>
+    /// Listing / first-run disclosure (Turkish). Docker is a separate product.
+    /// </summary>
+    public static string RequirementDisclosureTr { get; } =
+        "Docker Desktop gerekir ve ayrı kurulur (bu uygulama Docker kurmaz). " +
+        "Docker hazırsa Home Assistant container’ı yönetilir. " +
+        "Microsoft Store / resmi indirme sayfasından Docker Desktop’ı yükleyin.";
 
     public static string BuildMissingMessageTr() =>
+        AppChannel.IsStoreBuild ? BuildMissingMessageStoreTr() : BuildMissingMessageDevTr();
+
+    private static string BuildMissingMessageStoreTr() =>
+        """
+        Docker Desktop yüklü değil.
+
+        Bu Store uygulaması Docker’ı kurmaz (yükseltme / sessiz kurulum yok).
+
+        Ne yapmalısınız:
+        1) “Docker Store’da aç” ile Microsoft Store’daki Docker Desktop sayfasını açın
+           (veya resmi indirme linkini kullanın).
+        2) Docker Desktop’ı kurun; gerekirse bilgisayarı yeniden başlatın.
+        3) Docker Desktop’ı açın ve “Engine running” olana kadar bekleyin.
+        4) Bu uygulamaya dönüp “Yenile”ye basın.
+
+        Not: Windows Home’da WSL 2 gerekir. Kurumsal PC’lerde Docker lisansı ayrı olabilir.
+        """;
+
+    private static string BuildMissingMessageDevTr() =>
         """
         Docker Desktop yüklü değil.
 
         Ne yapmalısınız:
-        1) Aşağıdaki indirme bağlantısını açın veya “Sessiz kurulum dene”ye basın.
+        1) “Docker Store’da aç” / “Docker indir” veya “Sessiz kurulum dene”yi kullanın.
         2) Kurulum bitince bilgisayarı yeniden başlatmanız istenebilir.
         3) Docker Desktop’ı açın ve “Engine running” olana kadar bekleyin.
         4) Bu uygulamaya dönüp “Yenile”ye basın.
 
         Not: Windows Home’da WSL 2 gerekir; kurulum sihirbazı bunu açmaya çalışır.
         Kurumsal bilgisayarlarda Docker Desktop lisansı ayrıca gerekebilir.
+        Store (MSIX) sürümünde sessiz kurulum kapalıdır.
         """;
 
     public static string BuildNotRunningMessageTr() =>
@@ -36,12 +68,20 @@ public static class DockerDesktopGuidance
 
     /// <summary>
     /// Attempts a quiet Docker Desktop install via winget, then falls back to downloading the installer.
-    /// Returns guidance text; never throws for expected user-facing failures.
+    /// Disabled for Store builds. Never throws for expected user-facing failures.
     /// </summary>
     public static async Task<string> TrySilentInstallAsync(
         IProcessRunner runner,
         CancellationToken cancellationToken = default)
     {
+        if (!AppChannel.AllowsSilentDockerInstall)
+        {
+            return """
+                Bu Microsoft Store sürümü Docker Desktop kurmaz.
+                “Docker Store’da aç” veya resmi indirme sayfasını kullanın; kurulum bitince Yenile’ye basın.
+                """;
+        }
+
         if (!OperatingSystem.IsWindows())
         {
             return "Sessiz kurulum yalnızca Windows üzerinde çalışır. Linux/macOS için Docker’ı manuel kurun.";
@@ -97,6 +137,7 @@ public static class DockerDesktopGuidance
             UAC onayı veya yönetici hakları gerekebilir.
 
             Manuel kurulum:
+            - Microsoft Store: {MicrosoftStoreWebUrl}
             - İndirme: {DownloadUrl}
             - Belgeler: {DocsUrl}
 

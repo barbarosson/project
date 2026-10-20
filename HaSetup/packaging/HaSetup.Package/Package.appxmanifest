@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  IgnorableNamespaces="uap rescap desktop">
+
+  <!--
+    Identity Name / Publisher: replace Publisher CN with your Partner Center certificate
+    before Store submission. Microsoft re-signs on upload.
+  -->
+  <Identity
+    Name="SmartHomeAssistant"
+    Publisher="CN=SmartHomeAssistant"
+    Version="1.0.0.0" />
+
+  <Properties>
+    <DisplayName>Smart Home Assistant</DisplayName>
+    <PublisherDisplayName>Smart Home Assistant</PublisherDisplayName>
+    <Logo>Images\StoreLogo.png</Logo>
+    <Description>Home Assistant kurulum yardımcısı. Docker Desktop ayrı kurulur; bu paket Docker kurmaz.</Description>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.22621.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="tr-TR" />
+    <Resource Language="en-US" />
+  </Resources>
+
+  <Applications>
+    <Application Id="App"
+                 Executable="HaSetup\HaSetup.exe"
+                 EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="Smart Home Assistant"
+        Description="Docker Desktop hazırsa Home Assistant container yaşam döngüsü. Docker ayrı kurulur."
+        BackgroundColor="transparent"
+        Square150x150Logo="Images\Square150x150Logo.png"
+        Square44x44Logo="Images\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png" />
+        <uap:SplashScreen Image="Images\SplashScreen.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <!-- WPF desktop bridge: full trust to invoke local docker CLI when user already installed Docker Desktop.
+         No allowElevation. Package must NOT install Docker. -->
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

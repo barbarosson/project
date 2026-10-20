@@ -43,8 +43,11 @@ public sealed class MainViewModel : ObservableObject
         _health = health ?? new HaHealthChecker();
 
         RefreshCommand = new AsyncRelayCommand(RefreshAsync, () => !IsBusy && !_isRefreshing);
-        InstallDockerCommand = new AsyncRelayCommand(InstallDockerAsync, () => !IsBusy && !DockerReady);
+        InstallDockerCommand = new AsyncRelayCommand(
+            InstallDockerAsync,
+            () => !IsBusy && !DockerReady && ShowSilentInstall);
         OpenDockerDownloadCommand = new RelayCommand(OpenDockerDownload);
+        OpenDockerStoreCommand = new RelayCommand(OpenDockerStore);
         CreateStartCommand = new AsyncRelayCommand(CreateStartAsync, () => !IsBusy && DockerReady);
         StartCommand = new AsyncRelayCommand(StartAsync, () => !IsBusy && DockerReady && ContainerExists && !ContainerRunning);
         StopCommand = new AsyncRelayCommand(StopAsync, () => !IsBusy && DockerReady && ContainerRunning);
@@ -57,6 +60,10 @@ public sealed class MainViewModel : ObservableObject
         NextStepsBody = TurkishNextSteps.Body;
         LocalUrl = HaConstants.LocalUrl;
         DockerDownloadUrl = DockerDesktopGuidance.DownloadUrl;
+        DockerRequirementDisclosure = DockerDesktopGuidance.RequirementDisclosureTr;
+        ChannelLabel = AppChannel.ChannelLabelTr;
+        IsStoreBuild = AppChannel.IsStoreBuild;
+        ShowSilentInstall = AppChannel.AllowsSilentDockerInstall;
 
         _pollTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(8) };
         _pollTimer.Tick += async (_, _) =>
@@ -72,6 +79,10 @@ public sealed class MainViewModel : ObservableObject
     public string NextStepsBody { get; }
     public string LocalUrl { get; }
     public string DockerDownloadUrl { get; }
+    public string DockerRequirementDisclosure { get; }
+    public string ChannelLabel { get; }
+    public bool IsStoreBuild { get; }
+    public bool ShowSilentInstall { get; }
 
     public string DockerStatusText
     {
@@ -160,6 +171,7 @@ public sealed class MainViewModel : ObservableObject
     public AsyncRelayCommand RefreshCommand { get; }
     public AsyncRelayCommand InstallDockerCommand { get; }
     public RelayCommand OpenDockerDownloadCommand { get; }
+    public RelayCommand OpenDockerStoreCommand { get; }
     public AsyncRelayCommand CreateStartCommand { get; }
     public AsyncRelayCommand StartCommand { get; }
     public AsyncRelayCommand StopCommand { get; }
@@ -261,11 +273,18 @@ public sealed class MainViewModel : ObservableObject
 
     private async Task InstallDockerAsync()
     {
+        if (!ShowSilentInstall)
+        {
+            AppendLog(await DockerDesktopGuidance.TrySilentInstallAsync(_runner).ConfigureAwait(true));
+            OpenDockerStore();
+            return;
+        }
+
         await RunBusyAsync("Docker Desktop kurulumu deneniyor…", async () =>
         {
             var message = await DockerDesktopGuidance.TrySilentInstallAsync(_runner).ConfigureAwait(true);
             AppendLog(message);
-            MessageBox.Show(message, "Docker Desktop", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(message, "Smart Home Assistant", MessageBoxButton.OK, MessageBoxImage.Information);
             await RefreshAsync().ConfigureAwait(true);
         }).ConfigureAwait(true);
     }
@@ -275,10 +294,32 @@ public sealed class MainViewModel : ObservableObject
         try
         {
             Process.Start(new ProcessStartInfo(DockerDesktopGuidance.DownloadUrl) { UseShellExecute = true });
+            AppendLog($"Docker resmi indirme açıldı: {DockerDesktopGuidance.DownloadUrl}");
         }
         catch (Exception ex)
         {
             AppendLog($"İndirme linki açılamadı: {ex.Message}");
+        }
+    }
+
+    private void OpenDockerStore()
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo(DockerDesktopGuidance.MicrosoftStoreDeepLink) { UseShellExecute = true });
+            AppendLog("Microsoft Store — Docker Desktop sayfası açıldı.");
+        }
+        catch (Exception)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo(DockerDesktopGuidance.MicrosoftStoreWebUrl) { UseShellExecute = true });
+                AppendLog($"Docker Store web sayfası açıldı: {DockerDesktopGuidance.MicrosoftStoreWebUrl}");
+            }
+            catch (Exception ex)
+            {
+                AppendLog($"Docker Store açılamadı: {ex.Message}");
+            }
         }
     }
 
@@ -338,7 +379,7 @@ public sealed class MainViewModel : ObservableObject
     {
         var confirm = MessageBox.Show(
             "Home Assistant container silinsin mi?\n\nEvet: container silinir; yapılandırma volume’u (smart-home-ha-config) korunur.\nHayır: işlem iptal edilir.\n\nVolume’u da silmek için PowerShell:\ndocker volume rm smart-home-ha-config",
-            "Container sil",
+            "Smart Home Assistant",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning);
 
@@ -428,7 +469,7 @@ public sealed class MainViewModel : ObservableObject
         catch (Exception ex)
         {
             AppendLog($"Hata: {ex.Message}");
-            MessageBox.Show(ex.Message, "Hata", MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show(ex.Message, "Smart Home Assistant", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally
         {

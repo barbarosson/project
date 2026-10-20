@@ -1,5 +1,7 @@
+using HaSetup.Core;
 using HaSetup.Core.Docker;
 using HaSetup.Core.HomeAssistant;
+using HaSetup.Core.Windows;
 
 namespace HaSetup.Core.Tests;
 
@@ -199,5 +201,39 @@ public class HaHealthCheckerTests
 
         Assert.False(result.IsReachable);
         Assert.Contains("Erişilemiyor", result.MessageTr, StringComparison.OrdinalIgnoreCase);
+    }
+}
+
+public class AppChannelAndStoreGuidanceTests
+{
+    [Fact]
+    public void AppChannel_SilentInstall_MatchesStoreFlag()
+    {
+        Assert.Equal(!AppChannel.IsStoreBuild, AppChannel.AllowsSilentDockerInstall);
+        Assert.False(string.IsNullOrWhiteSpace(AppChannel.ChannelLabelTr));
+    }
+
+    [Fact]
+    public void RequirementDisclosure_MentionsDockerSeparate()
+    {
+        Assert.Contains("Docker Desktop", DockerDesktopGuidance.RequirementDisclosureTr, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("kurmaz", DockerDesktopGuidance.RequirementDisclosureTr, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void StoreDeepLink_UsesDockerDesktopProductId()
+    {
+        Assert.Contains("XP8CBJ40XLBWKX", DockerDesktopGuidance.MicrosoftStoreDeepLink, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("xp8cbj40xlbwkx", DockerDesktopGuidance.MicrosoftStoreWebUrl, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task TrySilentInstall_RespectsStoreChannel()
+    {
+        var runner = new FakeProcessRunner();
+        runner.Enqueue("winget", ["install"], new DockerCommandResult(1, string.Empty, "winget missing"));
+        var message = await DockerDesktopGuidance.TrySilentInstallAsync(runner);
+        var storeBlock = "Bu Microsoft Store sürümü Docker Desktop kurmaz";
+        Assert.Equal(AppChannel.IsStoreBuild, message.Contains(storeBlock, StringComparison.Ordinal));
     }
 }

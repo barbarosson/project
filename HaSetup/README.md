@@ -86,17 +86,47 @@ Zigbee/USB, add-on mağazası, Proxmox, bulut tüneli.
 
 ---
 
+## Microsoft Store vs dev builds
+
+| | Dev / sideload | Store (`-p:StoreBuild=true`) |
+|--|----------------|------------------------------|
+| Display name | Smart Home Assistant | Smart Home Assistant |
+| Silent / winget Docker install | Allowed (best-effort) | **Disabled** |
+| Docker missing | Download + optional silent | Store deep-link + Turkish steps only |
+| HA lifecycle (Docker ready) | Yes | Yes (`runFullTrust` MSIX) |
+| Elevation / Docker install from package | N/A (dev EXE) | **No** |
+
+```powershell
+# Store-oriented binaries (defines STORE_BUILD)
+dotnet build src\HaSetup.App\HaSetup.App.csproj -c Release -p:StoreBuild=true
+```
+
+### Produce `.msix` (Windows + Visual Studio)
+
+See **[`packaging/README.md`](packaging/README.md)** and `scripts/build-msix-store.cmd`.
+
+```powershell
+cd HaSetup
+.\scripts\build-msix-store.cmd
+# or: Publish → Create App Packages on packaging\HaSetup.Package\HaSetup.Package.wapproj
+```
+
+Package identity display name: **Smart Home Assistant**. Capability: `runFullTrust` only (no elevation).
+
 ## Repo layout
 
 | Path | Role |
 |------|------|
 | `src/HaSetup.Core` | Docker probe, HA lifecycle, health check, Windows install guidance |
 | `src/HaSetup.App` | WPF status UI (Turkish) |
+| `packaging/HaSetup.Package` | MSIX / Windows Application Packaging Project |
 | `tests/HaSetup.Core.Tests` | Unit tests (fake Docker CLI) |
 | `docker-compose.yml` | Same container contract for CLI smoke tests |
 | `scripts/smoke-ha-lifecycle.sh` | Pull/create/start/stop/restart/remove smoke script |
+| `scripts/build-msix-store.cmd` | StoreBuild + MSBuild package helper |
 
 ## Verification notes
 - Unit tests run on Linux/Windows without Docker Desktop.
 - Full Docker Desktop + WPF UI must be verified on a real Windows machine.
+- MSIX packaging requires Windows + VS packaging tools.
 - Linux CI can smoke-test `scripts/smoke-ha-lifecycle.sh` / compose when a Docker Engine is available.
