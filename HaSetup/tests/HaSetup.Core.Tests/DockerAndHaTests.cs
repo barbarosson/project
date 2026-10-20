@@ -76,7 +76,7 @@ public class DockerClientTests
         var result = await client.ProbeAsync();
 
         Assert.Equal(DockerInstallState.InstalledButNotRunning, result.State);
-        Assert.Contains("not running", result.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Docker Desktop is not running", result.Message, StringComparison.OrdinalIgnoreCase);
     }
 }
 
@@ -178,6 +178,8 @@ public class HaContainerServiceTests
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateAndStartAsync());
         Assert.Contains("Port 8123", ex.Message, StringComparison.Ordinal);
         Assert.Contains("already in use", ex.Message, StringComparison.OrdinalIgnoreCase);
+        // FriendlyErrorHandler must not dump raw docker stderr as the primary line.
+        Assert.DoesNotContain("Bind for", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

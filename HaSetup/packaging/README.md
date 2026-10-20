@@ -1,4 +1,4 @@
-# MSIX packaging — Smart Home Assistant
+# MSIX packaging — Container Manager for HA
 
 Windows-only. Produces a Store-oriented package with **`runFullTrust`** (WPF + local `docker` CLI).  
 **Does not** elevate or install Docker Desktop.
@@ -36,7 +36,7 @@ Output: `HaSetup\artifacts\msix\` (or VS AppPackages folder) → `.msix` / `.msi
 2. Set configuration **Release** | **x64**
 3. Right-click **HaSetup.Package** → **Publish** → **Create App Packages…**
 4. Choose **Microsoft Store** (or sideload for local test)
-5. Confirm identity in `Package.appxmanifest` matches Partner Center reserved name **Smart Home Assistant**
+5. Confirm identity in `Package.appxmanifest` matches Partner Center reserved name **Container Manager for HA**
 
 ## Dev / sideload (silent install allowed)
 
@@ -50,7 +50,7 @@ dotnet run --project src\HaSetup.App\HaSetup.App.csproj -c Release
 
 | Item | Value |
 |------|--------|
-| Display name | Smart Home Assistant |
+| Display name | Container Manager for HA |
 | Capability | `runFullTrust` only (no `allowElevation`) |
 | Docker | User installs separately (Store deep-link / download) |
 | HA lifecycle | When Docker is ready: existing Core service (port 8123) |

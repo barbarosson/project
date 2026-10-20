@@ -20,7 +20,7 @@ public static class DockerDesktopGuidance
     /// </summary>
     public static string RequirementDisclosure { get; } =
         "Docker Desktop is required and installs separately (this app does not install Docker). " +
-        "When Docker is ready, this app manages the Home Assistant container. " +
+        "When Docker is ready, this app manages the local HA container. " +
         "Install Docker Desktop from the Microsoft Store or the official download page.";
 
     public static string BuildMissingMessage() =>

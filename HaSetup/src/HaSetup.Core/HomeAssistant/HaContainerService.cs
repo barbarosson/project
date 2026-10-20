@@ -1,4 +1,5 @@
 using System.Globalization;
+using HaSetup.Core.Diagnostics;
 using HaSetup.Core.Docker;
 
 namespace HaSetup.Core.HomeAssistant;
@@ -72,8 +73,7 @@ public sealed class HaContainerService : IHaContainerService
             .ConfigureAwait(false);
         if (!create.Succeeded)
         {
-            throw new InvalidOperationException(
-                $"Could not create config volume ({HaConstants.VolumeName}): {create.CombinedOutput}");
+            throw Fail("Could not create the config volume.", create.CombinedOutput);
         }
     }
 
@@ -83,7 +83,7 @@ public sealed class HaContainerService : IHaContainerService
         var pull = await _docker.RunDockerAsync(["pull", HaConstants.Image], cancellationToken).ConfigureAwait(false);
         if (!pull.Succeeded)
         {
-            throw new InvalidOperationException($"Image pull failed: {pull.CombinedOutput}");
+            throw Fail("Image pull failed.", pull.CombinedOutput);
         }
 
         progress?.Report("Image ready.");
@@ -96,7 +96,7 @@ public sealed class HaContainerService : IHaContainerService
         {
             if (existing.State == HaLifecycleState.Running)
             {
-                progress?.Report("Home Assistant is already running.");
+                progress?.Report("Local HA container is already running.");
                 return;
             }
 
@@ -123,21 +123,12 @@ public sealed class HaContainerService : IHaContainerService
 
         if (!create.Succeeded)
         {
-            var detail = create.CombinedOutput;
-            if (detail.Contains("port is already allocated", StringComparison.OrdinalIgnoreCase) ||
-                detail.Contains("address already in use", StringComparison.OrdinalIgnoreCase) ||
-                detail.Contains("Bind for", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException(
-                    $"Port {HaConstants.HostPort} is already in use. Stop another Home Assistant or service, then try again.\n\n{detail}");
-            }
-
-            throw new InvalidOperationException($"Could not create container: {detail}");
+            throw Fail("Could not create the container.", create.CombinedOutput);
         }
 
         progress?.Report("Starting container…");
         await StartAsync(cancellationToken).ConfigureAwait(false);
-        progress?.Report("Home Assistant started.");
+        progress?.Report("Local HA container started.");
     }
 
     public async Task StartAsync(CancellationToken cancellationToken = default)
@@ -146,7 +137,7 @@ public sealed class HaContainerService : IHaContainerService
             .ConfigureAwait(false);
         if (!result.Succeeded)
         {
-            throw new InvalidOperationException($"Start failed: {result.CombinedOutput}");
+            throw Fail("Could not start the container.", result.CombinedOutput);
         }
     }
 
@@ -156,7 +147,7 @@ public sealed class HaContainerService : IHaContainerService
             .ConfigureAwait(false);
         if (!result.Succeeded)
         {
-            throw new InvalidOperationException($"Stop failed: {result.CombinedOutput}");
+            throw Fail("Could not stop the container.", result.CombinedOutput);
         }
     }
 
@@ -166,7 +157,7 @@ public sealed class HaContainerService : IHaContainerService
             .ConfigureAwait(false);
         if (!result.Succeeded)
         {
-            throw new InvalidOperationException($"Restart failed: {result.CombinedOutput}");
+            throw Fail("Could not restart the container.", result.CombinedOutput);
         }
     }
 
@@ -187,7 +178,7 @@ public sealed class HaContainerService : IHaContainerService
             .ConfigureAwait(false);
         if (!remove.Succeeded)
         {
-            throw new InvalidOperationException($"Remove failed: {remove.CombinedOutput}");
+            throw Fail("Could not remove the container.", remove.CombinedOutput);
         }
 
         if (removeVolume)
@@ -196,10 +187,13 @@ public sealed class HaContainerService : IHaContainerService
                 .ConfigureAwait(false);
             if (!vol.Succeeded)
             {
-                throw new InvalidOperationException($"Could not remove volume: {vol.CombinedOutput}");
+                throw Fail("Could not remove the config volume.", vol.CombinedOutput);
             }
         }
     }
+
+    private static InvalidOperationException Fail(string context, string? raw) =>
+        new(FriendlyErrorHandler.ToUserMessage(raw, context));
 
     public Task<DockerCommandResult> GetLogsAsync(int tail = 100, CancellationToken cancellationToken = default) =>
         _docker.RunDockerAsync(["logs", "--tail", tail.ToString(CultureInfo.InvariantCulture), HaConstants.ContainerName], cancellationToken);

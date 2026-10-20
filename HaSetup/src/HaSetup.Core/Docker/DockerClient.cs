@@ -1,3 +1,5 @@
+using HaSetup.Core.Diagnostics;
+
 namespace HaSetup.Core.Docker;
 
 /// <summary>
@@ -22,11 +24,12 @@ public sealed class DockerClient : IDockerClient
             return new DockerAvailability(
                 DockerInstallState.CliMissing,
                 Version: null,
-                Message: "Docker Desktop was not found. Install Docker Desktop to run Home Assistant.",
+                Message: "Docker Desktop was not found. Install Docker Desktop to manage the local HA container.",
                 DockerPath: null,
                 Detail: "docker executable not found on PATH or common install locations.");
         }
 
+        // Prefer a short server-version probe; fall back to `docker info` for richer daemon errors.
         var version = await _runner.RunAsync(dockerPath, ["version", "--format", "{{.Server.Version}}"], cancellationToken)
             .ConfigureAwait(false);
 
@@ -40,18 +43,25 @@ public sealed class DockerClient : IDockerClient
                 DockerPath: dockerPath);
         }
 
-        // CLI exists but daemon is down (Desktop not started / WSL not ready).
         var info = await _runner.RunAsync(dockerPath, ["info"], cancellationToken).ConfigureAwait(false);
-        var detail = string.IsNullOrWhiteSpace(version.CombinedOutput)
-            ? info.CombinedOutput
-            : version.CombinedOutput;
+        var detail = string.IsNullOrWhiteSpace(info.CombinedOutput)
+            ? version.CombinedOutput
+            : info.CombinedOutput;
+        if (string.IsNullOrWhiteSpace(detail))
+        {
+            detail = version.CombinedOutput;
+        }
+
+        var friendly = FriendlyErrorHandler.ToUserMessage(
+            detail,
+            "Docker CLI was found, but the Docker engine is not ready.");
 
         return new DockerAvailability(
             DockerInstallState.InstalledButNotRunning,
             Version: null,
-            Message: "Docker CLI was found, but Docker Desktop is not running. Start Docker Desktop and try again.",
+            Message: friendly,
             DockerPath: dockerPath,
-            Detail: detail);
+            Detail: FriendlyErrorHandler.FormatDetailForLog(detail));
     }
 
     public async Task<DockerCommandResult> RunDockerAsync(

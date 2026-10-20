@@ -5,7 +5,7 @@ namespace HaSetup.Core;
 /// </summary>
 public static class EnglishNextSteps
 {
-    public const string Title = "Next steps (Home Assistant)";
+    public const string Title = "Next steps (local hub)";
 
     public static string Body { get; } =
         """
@@ -19,7 +19,7 @@ public static class EnglishNextSteps
         4) From your phone on the same Wi‑Fi, open http://<PC-IP>:8123
            (if Windows Firewall prompts, choose Allow).
 
-        5) Zigbee USB sticks, the add-on store, and cloud tunnels are out of scope for this MVP.
+        5) Zigbee USB sticks, add-on stores, and cloud tunnels are out of scope for this MVP.
 
         Config persists in Docker volume “smart-home-ha-config”.
         """;

@@ -1,7 +1,7 @@
 <Window x:Class="HaSetup.App.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Smart Home Assistant"
+        Title="Container Manager for HA"
         Height="780" Width="960"
         MinHeight="600" MinWidth="800"
         WindowStartupLocation="CenterScreen">
@@ -32,8 +32,8 @@
                        Stretch="Uniform"
                        RenderOptions.BitmapScalingMode="HighQuality" />
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="Smart Home Assistant" Style="{StaticResource BrandTitle}" />
-                    <TextBlock Text="Set up Home Assistant automatically with Docker Desktop"
+                    <TextBlock Text="Container Manager for HA" Style="{StaticResource BrandTitle}" />
+                    <TextBlock Text="Manage your local HA container with Docker Desktop"
                                Style="{StaticResource MutedText}" Margin="0,4,0,0" />
                     <TextBlock Text="{Binding ChannelLabel}" Style="{StaticResource MutedText}" FontSize="12" Margin="0,6,0,0" />
                     <TextBlock Text="{Binding BusyText}"

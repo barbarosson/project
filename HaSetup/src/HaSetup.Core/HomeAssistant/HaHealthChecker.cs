@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using HaSetup.Core.Diagnostics;
 
 namespace HaSetup.Core.HomeAssistant;
 
@@ -49,7 +50,7 @@ public sealed class HaHealthChecker : IHaHealthChecker
                 return new HaHealthResult(
                     IsReachable: true,
                     StatusCode: code,
-                    Message: $"Home Assistant is responding (HTTP {code}).",
+                    Message: $"Local hub is responding (HTTP {code}).",
                     Elapsed: sw.Elapsed);
             }
 
@@ -62,19 +63,21 @@ public sealed class HaHealthChecker : IHaHealthChecker
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             sw.Stop();
-            return HaHealthResult.Unreachable("Timed out — Home Assistant may not be ready yet.", sw.Elapsed);
+            return HaHealthResult.Unreachable("Timed out — the local hub may not be ready yet.", sw.Elapsed);
         }
         catch (HttpRequestException ex)
         {
             sw.Stop();
             return HaHealthResult.Unreachable(
-                $"Unreachable: {ex.Message}. If the container just started, wait 1–2 minutes.",
+                FriendlyErrorHandler.ToUserMessage(
+                    ex.Message,
+                    "Unreachable. If the container just started, wait 1–2 minutes."),
                 sw.Elapsed);
         }
         catch (Exception ex)
         {
             sw.Stop();
-            return HaHealthResult.Unreachable($"Health check error: {ex.Message}", sw.Elapsed);
+            return HaHealthResult.Unreachable(FriendlyErrorHandler.ToUserMessage(ex, "Health check failed."), sw.Elapsed);
         }
     }
 }
