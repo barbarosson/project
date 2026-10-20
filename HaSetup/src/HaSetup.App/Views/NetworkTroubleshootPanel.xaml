@@ -13,6 +13,17 @@
                 </StackPanel>
             </Border>
 
+            <Border Style="{StaticResource PanelBorder}"
+                    BorderBrush="#C94A4A" BorderThickness="1.5"
+                    Background="#2A1618">
+                <StackPanel>
+                    <TextBlock Text="{Binding AppleEcosystemWarningTitle}" Style="{StaticResource SectionTitle}"
+                               Foreground="#F0A0A0" />
+                    <TextBlock Text="{Binding AppleEcosystemWarningBody}" Style="{StaticResource BodyText}"
+                               Margin="0,4,0,0" Foreground="#E8C8C8" />
+                </StackPanel>
+            </Border>
+
             <Border Style="{StaticResource PanelBorder}">
                 <StackPanel>
                     <TextBlock Text="{Binding ManualIpGuideTitle}" Style="{StaticResource SectionTitle}" />

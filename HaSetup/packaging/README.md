@@ -1,7 +1,9 @@
 # MSIX packaging — Container Manager for HA
 
+> **FROZEN (2026-10-20):** Do **not** upload a paid Store submission / paid IAP until the product promise is fixed. Building MSIX for local/sideload is fine. Keep Partner Center identity in the manifest; freeze is policy, not identity deletion.
+
 Windows-only. Produces a Store-oriented package with **`runFullTrust`** (WPF + local `docker` CLI).  
-**Does not** elevate or install Docker Desktop.
+**Does not** elevate or install Docker Desktop. Display name: **Container Manager for HA**.
 
 ## Prerequisites (Windows)
 
