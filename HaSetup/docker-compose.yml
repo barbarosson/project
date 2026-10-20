@@ -1,0 +1,19 @@
+# Companion compose for smoke-testing HA lifecycle without the WPF UI.
+# Windows: docker compose -f docker-compose.yml up -d
+# Linux CI: same (Docker Engine), not Docker Desktop.
+
+services:
+  homeassistant:
+    image: homeassistant/home-assistant:stable
+    container_name: smart-home-ha
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Istanbul
+    volumes:
+      - smart-home-ha-config:/config
+    ports:
+      - "8123:8123"
+
+volumes:
+  smart-home-ha-config:
+    name: smart-home-ha-config

@@ -1,0 +1,83 @@
+<UserControl x:Class="HaSetup.App.Views.NetworkTroubleshootPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </UserControl.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,0,8,0">
+        <StackPanel>
+            <Border Style="{StaticResource PanelBorder}">
+                <StackPanel>
+                    <TextBlock Text="{Binding NetworkPanelTitle}" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Text="{Binding WhyAutoDiscoveryFails}" Style="{StaticResource BodyText}" Margin="0,4,0,0" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource PanelBorder}">
+                <StackPanel>
+                    <TextBlock Text="{Binding ManualIpGuideTitle}" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Text="{Binding ManualIpGuideBody}" Style="{StaticResource BodyText}" Margin="0,4,0,0" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource ChromePanel}">
+                <StackPanel>
+                    <TextBlock Text="{Binding FirewallSectionTitle}" Style="{StaticResource ChromeSectionTitle}" />
+                    <TextBlock Text="{Binding FirewallSectionBody}" Style="{StaticResource MutedText}" Margin="0,4,0,12" TextWrapping="Wrap" />
+                    <Button Content="{Binding FirewallButtonLabel}"
+                            Command="{Binding AddFirewallRulesCommand}"
+                            Style="{StaticResource PrimaryButton}"
+                            HorizontalAlignment="Left" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource PanelBorder}">
+                <StackPanel>
+                    <TextBlock Text="Premium" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Text="{Binding LicenseStatusText}" Style="{StaticResource StatusValue}" Margin="0,4,0,8" />
+                    <WrapPanel>
+                        <Button Content="Unlock Premium"
+                                Command="{Binding PurchasePremiumCommand}"
+                                Style="{StaticResource PrimaryButton}" />
+                        <Button Content="Restore purchases"
+                                Command="{Binding RestoreLicenseCommand}"
+                                Style="{StaticResource SecondaryButton}" />
+                        <Button Content="Simulate premium (dev)"
+                                Command="{Binding ToggleSimulatePremiumCommand}"
+                                Style="{StaticResource SecondaryButton}"
+                                Visibility="{Binding ShowDevLicenseControls, Converter={StaticResource BoolToVis}}" />
+                    </WrapPanel>
+                    <TextBlock Text="{Binding PremiumLockHint}" Style="{StaticResource ContentMutedText}" Margin="0,8,0,0" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource ChromePanel}">
+                <StackPanel>
+                    <TextBlock Text="Config volume backup / restore (Premium)" Style="{StaticResource ChromeSectionTitle}" />
+                    <TextBlock Style="{StaticResource MutedText}" Margin="0,4,0,12" TextWrapping="Wrap"
+                               Text="{Binding ConfigVolumeName, StringFormat=Volume: {0} — zip archive via Docker helper container.}" />
+                    <WrapPanel>
+                        <Button Content="{Binding BackupButtonLabel}"
+                                Command="{Binding BackupConfigCommand}"
+                                Style="{StaticResource PrimaryButton}" />
+                        <Button Content="{Binding RestoreButtonLabel}"
+                                Command="{Binding RestoreConfigCommand}"
+                                Style="{StaticResource SecondaryButton}" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource PanelBorder}">
+                <StackPanel>
+                    <TextBlock Text="{Binding MdnsSectionTitle}" Style="{StaticResource SectionTitle}" />
+                    <TextBlock Text="{Binding MdnsSectionBody}" Style="{StaticResource BodyText}" Margin="0,4,0,12" />
+                    <CheckBox Content="{Binding MdnsToggleEnabledLabel}"
+                              IsChecked="{Binding MdnsEnabled, Mode=TwoWay}"
+                              Foreground="{StaticResource ContentTextBrush}"
+                              Margin="0,0,0,8" />
+                    <TextBlock Text="{Binding MdnsStatusText}" Style="{StaticResource ContentMutedText}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

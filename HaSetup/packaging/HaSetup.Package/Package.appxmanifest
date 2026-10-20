@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package
+  xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+  xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+  xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+  IgnorableNamespaces="uap rescap desktop">
+
+  <!--
+    Partner Center identity (MODULUSTECH). Package Family Name:
+    MODULUSTECH.ContainerManagerforHA_6w2d1brm94m3m
+    Store ID: 9P1W6J8VRGCV — see HaSetup.Core/Store/StoreIdentity.cs
+  -->
+  <Identity
+    Name="MODULUSTECH.ContainerManagerforHA"
+    Publisher="CN=7E7A2323-C3C3-4A9A-A4D1-832D351FC4BA"
+    Version="1.0.0.0" />
+
+  <Properties>
+    <DisplayName>Container Manager for HA</DisplayName>
+    <PublisherDisplayName>MODULUSTECH</PublisherDisplayName>
+    <Logo>Images\StoreLogo.png</Logo>
+    <Description>Local HA container manager for Windows. Docker Desktop installs separately; this package does not install Docker.</Description>
+  </Properties>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.19041.0" MaxVersionTested="10.0.22621.0" />
+  </Dependencies>
+
+  <Resources>
+    <Resource Language="en-US" />
+  </Resources>
+
+  <Applications>
+    <Application Id="App"
+                 Executable="HaSetup\HaSetup.exe"
+                 EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements
+        DisplayName="Container Manager for HA"
+        Description="Manages the local HA container lifecycle when Docker Desktop is ready. Docker installs separately."
+        BackgroundColor="transparent"
+        Square150x150Logo="Images\Square150x150Logo.png"
+        Square44x44Logo="Images\Square44x44Logo.png">
+        <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png" />
+        <uap:SplashScreen Image="Images\SplashScreen.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+
+  <Capabilities>
+    <!-- WPF desktop bridge: full trust to invoke local docker CLI when user already installed Docker Desktop.
+         No allowElevation. Package must NOT install Docker. -->
+    <rescap:Capability Name="runFullTrust" />
+  </Capabilities>
+</Package>

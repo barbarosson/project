@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>HaSetup.App</RootNamespace>
+    <AssemblyName>HaSetup</AssemblyName>
+    <AssemblyTitle>Container Manager for HA</AssemblyTitle>
+    <Product>Container Manager for HA</Product>
+    <UseWPF>true</UseWPF>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <ApplicationTitle>Container Manager for HA</ApplicationTitle>
+    <ApplicationIcon>Assets\app-logo.ico</ApplicationIcon>
+    <!-- Allow restore/design-time on non-Windows CI; full WPF build still needs Windows. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HaSetup.Core\HaSetup.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\app-logo.png" />
+    <None Include="Assets\app-logo.ico" />
+  </ItemGroup>
+
+</Project>
