@@ -7,17 +7,18 @@
   IgnorableNamespaces="uap rescap desktop">
 
   <!--
-    Identity Name / Publisher: replace Publisher CN with your Partner Center certificate
-    before Store submission. Microsoft re-signs on upload.
+    Partner Center identity (MODULUSTECH). Package Family Name:
+    MODULUSTECH.ContainerManagerforHA_6w2d1brm94m3m
+    Store ID: 9P1W6J8VRGCV — see HaSetup.Core/Store/StoreIdentity.cs
   -->
   <Identity
-    Name="SmartHomeAssistant"
-    Publisher="CN=SmartHomeAssistant"
+    Name="MODULUSTECH.ContainerManagerforHA"
+    Publisher="CN=7E7A2323-C3C3-4A9A-A4D1-832D351FC4BA"
     Version="1.0.0.0" />
 
   <Properties>
     <DisplayName>Container Manager for HA</DisplayName>
-    <PublisherDisplayName>Container Manager for HA</PublisherDisplayName>
+    <PublisherDisplayName>MODULUSTECH</PublisherDisplayName>
     <Logo>Images\StoreLogo.png</Logo>
     <Description>Local HA container manager for Windows. Docker Desktop installs separately; this package does not install Docker.</Description>
   </Properties>

@@ -51,8 +51,14 @@ dotnet run --project src\HaSetup.App\HaSetup.App.csproj -c Release
 | Item | Value |
 |------|--------|
 | Display name | Container Manager for HA |
+| Identity Name | `MODULUSTECH.ContainerManagerforHA` |
+| Publisher | `CN=7E7A2323-C3C3-4A9A-A4D1-832D351FC4BA` |
+| PublisherDisplayName | `MODULUSTECH` |
+| Package Family Name | `MODULUSTECH.ContainerManagerforHA_6w2d1brm94m3m` |
+| App Store ID | `9P1W6J8VRGCV` |
 | Capability | `runFullTrust` only (no `allowElevation`) |
 | Docker | User installs separately (Store deep-link / download) |
 | HA lifecycle | When Docker is ready: existing Core service (port 8123) |
 
-Replace `Publisher="CN=SmartHomeAssistant"` with your Partner Center publisher CN before submission.
+Code constants: `HaSetup.Core/Store/StoreIdentity.cs` (`AppStoreId`, PFN, MSA app id).  
+IAP add-on id remains `PREMIUM_UNLOCK_ID_PLACEHOLDER` — do not replace it with the app Store ID.
