@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  TEMPLATE ONLY — do not use as-is.
+  TEMPLATE — mirrors Partner Center identity (see docs/store/product-identity.md).
   Real app manifest: src/UplinkFtp.App/Package.appxmanifest
-  Replace every REPLACE_ME* value from Partner Center / your signing identity.
-  Never commit real Store IDs or certificate material into this repo.
+  Never commit certificate material into this repo.
 -->
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
@@ -13,8 +12,8 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="REPLACE_ME_PACKAGE_IDENTITY_NAME"
-    Publisher="CN=REPLACE_ME_PUBLISHER"
+    Name="MODULUSTECH.UplinkFTP"
+    Publisher="CN=7E7A2323-C3C3-4A9A-A4D1-832D351FC4BA"
     Version="0.1.0.0" />
 
   <mp:PhoneIdentity
@@ -23,7 +22,7 @@
 
   <Properties>
     <DisplayName>Uplink FTP</DisplayName>
-    <PublisherDisplayName>REPLACE_ME_PUBLISHER_DISPLAY_NAME</PublisherDisplayName>
+    <PublisherDisplayName>MODULUSTECH</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 

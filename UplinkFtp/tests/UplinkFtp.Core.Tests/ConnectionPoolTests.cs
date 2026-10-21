@@ -109,9 +109,6 @@ public sealed class ConnectionPoolTests
         public Task EnsureKeepAliveConfiguredAsync(ConnectionOptions options, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
-        public Task<IReadOnlyList<RemoteEntry>> ListDirectoryAsync(string remotePath, CancellationToken cancellationToken = default)
-            => Task.FromResult<IReadOnlyList<RemoteEntry>>([]);
-
         public Task DownloadFileAsync(string remotePath, string localPath, IProgress<TransferProgress>? progress = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
@@ -130,8 +127,32 @@ public sealed class ConnectionPoolTests
         public Task UploadDirectoryAsync(string localPath, string remotePath, IProgress<TransferProgress>? progress = null, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
 
+        public Task<IReadOnlyList<RemoteEntry>> ListDirectoryAsync(string remotePath, RemoteListOptions? options = null, CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<RemoteEntry>>([]);
+
         public Task RenameAsync(string fromPath, string toPath, CancellationToken cancellationToken = default)
             => Task.CompletedTask;
+
+        public Task CreateDirectoryAsync(string remotePath, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task CreateEmptyFileAsync(string remotePath, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task DeleteFileAsync(string remotePath, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task DeleteDirectoryAsync(string remotePath, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task SetPermissionsAsync(string remotePath, UnixFilePermissions permissions, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task<UnixFilePermissions?> GetPermissionsAsync(string remotePath, CancellationToken cancellationToken = default)
+            => Task.FromResult<UnixFilePermissions?>(null);
+
+        public Task<DirectorySizeResult> CalculateDirectorySizeAsync(string remotePath, IProgress<DirectorySizeResult>? progress = null, CancellationToken cancellationToken = default)
+            => Task.FromResult(new DirectorySizeResult { Path = remotePath, TotalBytes = 0, FileCount = 0, DirectoryCount = 0 });
 
         public Task<string> ReadTextFileAsync(string remotePath, CancellationToken cancellationToken = default)
             => Task.FromResult(string.Empty);

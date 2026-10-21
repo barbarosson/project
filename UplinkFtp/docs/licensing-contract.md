@@ -69,11 +69,17 @@ When `AllowStubKeys` is true (Debug default; Release requires `UPLINK_ALLOW_STUB
 
 The **sample API Production profile must not seed those stubs**. Development sample keys use the `SAMPLE-*` prefix (e.g. `SAMPLE-PRO-KEY`).
 
+## Store channel (freemium + durable add-on)
+
+- Entitlement: `StoreEntitlementEvaluator` — when a Pro add-on ID is configured, **only** an active durable Pro add-on grants Pro (free app `IsActive && !IsTrial` stays Free). Without an add-on ID (legacy paid-app SKU), a non-trial active app license is Pro.
+- Purchase: `StoreLicenseService.RequestPurchaseProAsync` via configured `UPLINK_STORE_PRO_ADDON_ID` (default `9MTN64PZGQCM`). License dialog **Buy Pro** shows on Store channel when tier is Free.
+- Defaults match Partner Center public Store IDs; override with env when needed.
+
 ## External blockers
 
-- Hosted HTTPS deployment and TLS  
+- Hosted HTTPS deployment and TLS (Web license API)  
 - Production signing key management  
-- Key issuance / revocation / billing  
-- Partner Center association for Store channel  
+- Key issuance / revocation / billing (Web)  
+- Partner Center association + real Store add-on ID  
 
-See `samples/LicenseApi/README.md`.
+See `samples/LicenseApi/README.md` and `docs/store/`.

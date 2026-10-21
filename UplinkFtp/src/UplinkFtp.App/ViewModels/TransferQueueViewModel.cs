@@ -63,11 +63,19 @@ public sealed partial class TransferQueueViewModel : ObservableObject, IDisposab
         _queue.JobUpdated -= OnJobUpdated;
     }
 
-    public TransferJob EnqueueUpload(string localPath, string remotePath, bool isDirectory)
-        => _queue.EnqueueUpload(localPath, remotePath, isDirectory);
+    public TransferJob EnqueueUpload(
+        string localPath,
+        string remotePath,
+        bool isDirectory,
+        TransferConflictPolicy? conflictPolicy = null)
+        => _queue.EnqueueUpload(localPath, remotePath, isDirectory, conflictPolicy);
 
-    public TransferJob EnqueueDownload(string remotePath, string localPath, bool isDirectory)
-        => _queue.EnqueueDownload(remotePath, localPath, isDirectory);
+    public TransferJob EnqueueDownload(
+        string remotePath,
+        string localPath,
+        bool isDirectory,
+        TransferConflictPolicy? conflictPolicy = null)
+        => _queue.EnqueueDownload(remotePath, localPath, isDirectory, conflictPolicy);
 
     [RelayCommand]
     private void PauseSelected()

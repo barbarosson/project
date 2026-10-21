@@ -224,7 +224,7 @@ public sealed partial class AssistViewModel : ObservableObject
         var hasKey = await _ai.HasApiKeyAsync().ConfigureAwait(true);
         AiModeText = hasKey
             ? $"BYOK cloud ready ({_ai.ConfiguredProvider}). Troubleshoot may call your provider."
-            : "Local mode — Settings → AI (BYOK) to add your API key. Checklist: docs/ai-module-checklist.md";
+            : "Local mode — Settings → AI (BYOK) → Gemini / OpenAI key. Checklist: docs/ai-module-checklist.md";
 
         if (_main is null && _log is null)
         {

@@ -6,7 +6,9 @@ public enum AiProviderKind
 {
     None = 0,
     OpenAi = 1,
-    Anthropic = 2
+    Anthropic = 2,
+    /// <summary>Google Gemini (Generative Language API) — BYOK.</summary>
+    Gemini = 3
 }
 
 public enum AiCapability

@@ -26,6 +26,16 @@
                    Text="{x:Bind ViewModel.PurchaseInfo, Mode=OneWay}"
                    TextWrapping="Wrap"/>
 
+        <Button x:Name="BuyProButton"
+                Content="Buy Pro"
+                Style="{StaticResource UplinkAccentButtonStyle}"
+                FontFamily="{StaticResource UplinkUiFont}"
+                Command="{x:Bind ViewModel.BuyProCommand}"
+                HorizontalAlignment="Left"
+                MinWidth="120"
+                CornerRadius="10"
+                AutomationProperties.Name="Buy Pro from Microsoft Store"/>
+
         <StackPanel x:Name="WebKeyPanel" Spacing="8">
             <TextBox Header="License key"
                      FontFamily="{StaticResource UplinkUiFont}"
@@ -39,7 +49,7 @@
                 </Grid.ColumnDefinitions>
                 <Button Grid.Column="0"
                         Content="Activate"
-                        Style="{StaticResource AccentButtonStyle}"
+                        Style="{StaticResource UplinkAccentButtonStyle}"
                         FontFamily="{StaticResource UplinkUiFont}"
                         Command="{x:Bind ViewModel.ActivateCommand}"
                         HorizontalAlignment="Stretch"

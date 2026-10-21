@@ -6,6 +6,10 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 
 ## [Unreleased]
 
+### Fixed
+
+- **Store freemium:** free app license (`IsActive && !IsTrial`) no longer maps to Pro when Pro add-on ID is configured — License **Buy Pro** shows again and calls `RequestPurchaseProAsync` for `9MTN64PZGQCM`
+
 ### Added
 
 - ADIM 1–6 client skeleton: WinUI shell, FluentFTP/SSH.NET, SQLite sites, PasswordVault credentials, transfer queue, Free/Pro licensing gates  
@@ -14,6 +18,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 - Sample license validate API (`samples/LicenseApi`) — not production-hosted  
 - Packaging scaffolds under `packaging/` (MSIX/web docs, scripts that refuse missing certs)  
 - Docs: licensing contract, privacy draft, security review, performance notes, release checklist, support placeholder  
+- **Store commerce prep:** durable Pro add-on entitlement (`StoreEntitlementEvaluator`), env `UPLINK_STORE_PRO_ADDON_ID`, License **Buy Pro** → `RequestPurchaseAsync` (graceful if unassociated), Store/Web channel scripts, `docs/store/*` listing/IARC/capabilities, screenshot size placeholders  
+
 
 ### Changed
 
@@ -21,13 +27,16 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 - `AcceptAnyCertificate` defaults to false  
 - **Windows App SDK 1.6 → 2.5.1** (NuGet stable); BuildTools → `10.0.26100.9169`  
 - Unpackaged builds use `WindowsAppSDKSelfContained=true` (no EOL 1.6 Runtime install)  
-- **UI shell redesign:** sectioned blocks (connect / log / local·remote / queue), five named themes (Orbit / Daybreak / Nightwatch / Harbor / Forge), Sora + JetBrains Mono, warm-tech teal/amber palette  
+- **UI shell redesign:** sectioned blocks (connect / log / local·remote / queue), four named themes (Sun Rise / Orange / Red Night / ZEN), Sora + JetBrains Mono  
+- **Store product identity:** `Package.appxmanifest` → `MODULUSTECH.UplinkFTP` / `CN=7E7A2323-…` / publisher `MODULUSTECH`; default `UPLINK_STORE_APP_ID=9MZKMN2ZH0DG`; Pro add-on `UPLINK_STORE_PRO_ADDON_ID=9MTN64PZGQCM` (`docs/store/product-identity.md`)  
+
+
 
 ### Added (UI)
 
 - `Themes/Colors.xaml`, `Themes/Styles.xaml`, `Helpers/ThemeHelper.cs`  
 - Embedded fonts under `Assets/Fonts/` (Sora, JetBrains Mono)  
-- **Named themes (5):** Orbit, Daybreak, Nightwatch, Harbor, Forge (**Settings → Theme**; legacy System/Light/Dark migrate automatically)  
+- **Named themes (4):** Sun Rise (default), Orange, Red Night, ZEN (**Settings → Theme**; legacy Orbit/System/Light/Dark and Daybreak/Nightwatch/Harbor/Forge migrate automatically)  
 - **AI Assist** hub (toolbar **Assist**): five tabs — Troubleshoot, Search, Batch, SSH, Quick Edit  
 - Message log **Solve with AI**; Local/Remote NL **Filter**; Remote **AI Quick Edit** context menu  
 - Protocol ops for AI apply paths: `RenameAsync`, `ReadTextFileAsync`, `WriteTextFileAsync`, `ExecuteShellCommandAsync` (SFTP)  

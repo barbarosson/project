@@ -94,8 +94,10 @@ public sealed class SftpProtocolClient : IRemoteProtocolClient
 
     public async Task<IReadOnlyList<RemoteEntry>> ListDirectoryAsync(
         string remotePath,
+        RemoteListOptions? options = null,
         CancellationToken cancellationToken = default)
     {
+        options ??= RemoteListOptions.Default;
         var client = RequireClient();
         var path = RemotePath.Normalize(remotePath);
         var entries = new List<RemoteEntry>();
@@ -107,13 +109,21 @@ public sealed class SftpProtocolClient : IRemoteProtocolClient
                 continue;
             }
 
+            if (!options.IncludeHidden && item.Name.StartsWith(".", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var isDir = item.IsDirectory && !item.IsSymbolicLink;
             entries.Add(new RemoteEntry
             {
                 Name = item.Name,
                 FullPath = RemotePath.Normalize(item.FullName),
-                IsDirectory = item.IsDirectory,
+                IsDirectory = isDir || (item.IsSymbolicLink && item.IsDirectory),
                 Size = item.IsDirectory ? 0 : item.Length,
-                ModifiedUtc = item.LastWriteTimeUtc == default ? null : item.LastWriteTimeUtc
+                ModifiedUtc = item.LastWriteTimeUtc == default ? null : item.LastWriteTimeUtc,
+                IsSymlink = item.IsSymbolicLink,
+                UnixMode = ToUnixMode(item)
             });
         }
 
@@ -260,6 +270,178 @@ public sealed class SftpProtocolClient : IRemoteProtocolClient
         await EnsureRemoteDirectoryAsync(client, RemotePath.GetDirectoryName(to), cancellationToken)
             .ConfigureAwait(false);
         await client.RenameFileAsync(from, to, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task CreateDirectoryAsync(string remotePath, CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        await EnsureRemoteDirectoryAsync(client, RemotePath.Normalize(remotePath), cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task CreateEmptyFileAsync(string remotePath, CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        var remote = RemotePath.Normalize(remotePath);
+        if (await client.ExistsAsync(remote, cancellationToken).ConfigureAwait(false))
+        {
+            throw new IOException($"Remote path already exists: {remote}");
+        }
+
+        await EnsureRemoteDirectoryAsync(client, RemotePath.GetDirectoryName(remote), cancellationToken)
+            .ConfigureAwait(false);
+        await using var stream = await client.OpenAsync(remote, FileMode.CreateNew, FileAccess.Write, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task DeleteFileAsync(string remotePath, CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        await client.DeleteFileAsync(RemotePath.Normalize(remotePath), cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task DeleteDirectoryAsync(string remotePath, CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        var path = RemotePath.Normalize(remotePath);
+        await DeleteDirectoryRecursiveAsync(client, path, cancellationToken).ConfigureAwait(false);
+    }
+
+    public Task SetPermissionsAsync(
+        string remotePath,
+        UnixFilePermissions permissions,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var client = RequireClient();
+        client.ChangePermissions(RemotePath.Normalize(remotePath), (short)permissions.Mode);
+        return Task.CompletedTask;
+    }
+
+    public async Task<UnixFilePermissions?> GetPermissionsAsync(
+        string remotePath,
+        CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        var attrs = await client.GetAttributesAsync(RemotePath.Normalize(remotePath), cancellationToken)
+            .ConfigureAwait(false);
+        return new UnixFilePermissions(ToUnixModeFromAttributes(attrs));
+    }
+
+    public async Task<DirectorySizeResult> CalculateDirectorySizeAsync(
+        string remotePath,
+        IProgress<DirectorySizeResult>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        var client = RequireClient();
+        var path = RemotePath.Normalize(remotePath);
+        long total = 0;
+        var files = 0;
+        var dirs = 0;
+        var stack = new Stack<string>();
+        stack.Push(path);
+        while (stack.Count > 0)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var current = stack.Pop();
+            dirs++;
+            await foreach (var item in client.ListDirectoryAsync(current, cancellationToken).ConfigureAwait(false))
+            {
+                if (item.Name is "." or "..")
+                {
+                    continue;
+                }
+
+                if (item.IsSymbolicLink)
+                {
+                    continue;
+                }
+
+                if (item.IsDirectory)
+                {
+                    stack.Push(RemotePath.Normalize(item.FullName));
+                }
+                else
+                {
+                    files++;
+                    total += item.Length;
+                }
+            }
+
+            progress?.Report(new DirectorySizeResult
+            {
+                Path = path,
+                TotalBytes = total,
+                FileCount = files,
+                DirectoryCount = dirs
+            });
+        }
+
+        var result = new DirectorySizeResult
+        {
+            Path = path,
+            TotalBytes = total,
+            FileCount = files,
+            DirectoryCount = dirs
+        };
+        progress?.Report(result);
+        return result;
+    }
+
+    private async Task DeleteDirectoryRecursiveAsync(
+        SftpClient client,
+        string path,
+        CancellationToken cancellationToken)
+    {
+        await foreach (var item in client.ListDirectoryAsync(path, cancellationToken).ConfigureAwait(false))
+        {
+            if (item.Name is "." or "..")
+            {
+                continue;
+            }
+
+            var child = RemotePath.Normalize(item.FullName);
+            if (item.IsDirectory && !item.IsSymbolicLink)
+            {
+                await DeleteDirectoryRecursiveAsync(client, child, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                await client.DeleteAsync(child, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        await client.DeleteDirectoryAsync(path, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static int ToUnixMode(Renci.SshNet.Sftp.ISftpFile item)
+    {
+        var mode = 0;
+        if (item.OwnerCanRead) mode |= 0b100_000_000;
+        if (item.OwnerCanWrite) mode |= 0b010_000_000;
+        if (item.OwnerCanExecute) mode |= 0b001_000_000;
+        if (item.GroupCanRead) mode |= 0b000_100_000;
+        if (item.GroupCanWrite) mode |= 0b000_010_000;
+        if (item.GroupCanExecute) mode |= 0b000_001_000;
+        if (item.OthersCanRead) mode |= 0b000_000_100;
+        if (item.OthersCanWrite) mode |= 0b000_000_010;
+        if (item.OthersCanExecute) mode |= 0b000_000_001;
+        return mode;
+    }
+
+    private static int ToUnixModeFromAttributes(Renci.SshNet.Sftp.SftpFileAttributes attrs)
+    {
+        var mode = 0;
+        if (attrs.OwnerCanRead) mode |= 0b100_000_000;
+        if (attrs.OwnerCanWrite) mode |= 0b010_000_000;
+        if (attrs.OwnerCanExecute) mode |= 0b001_000_000;
+        if (attrs.GroupCanRead) mode |= 0b000_100_000;
+        if (attrs.GroupCanWrite) mode |= 0b000_010_000;
+        if (attrs.GroupCanExecute) mode |= 0b000_001_000;
+        if (attrs.OthersCanRead) mode |= 0b000_000_100;
+        if (attrs.OthersCanWrite) mode |= 0b000_000_010;
+        if (attrs.OthersCanExecute) mode |= 0b000_000_001;
+        return mode;
     }
 
     public async Task<string> ReadTextFileAsync(string remotePath, CancellationToken cancellationToken = default)

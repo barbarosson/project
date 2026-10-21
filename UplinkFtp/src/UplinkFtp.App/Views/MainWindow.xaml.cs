@@ -35,30 +35,39 @@ public sealed partial class MainWindow : Window
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
 
         ApplyThemeFromSettings();
-        ApplyWindowIcon();
+        ApplyWindowChrome();
         UpdateStatusAppearance();
         Activated += OnActivatedOnce;
     }
 
-    /// <summary>Taskbar / title-bar icon for unpackaged runs (exe icon comes from ApplicationIcon).</summary>
-    private void ApplyWindowIcon()
+    /// <summary>
+    /// Icon + minimum client size so dual-pane Local/Remote stay usable at 125–150% DPI
+    /// on ~1366 effective-pixel laptops (not only 1920@100%).
+    /// </summary>
+    private void ApplyWindowChrome()
     {
         try
         {
-            var ico = Path.Combine(AppContext.BaseDirectory, "Assets", "UplinkFtp.ico");
-            if (!File.Exists(ico))
-            {
-                return;
-            }
-
             var hwnd = WindowNative.GetWindowHandle(this);
             var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
             var appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon(ico);
+
+            var ico = Path.Combine(AppContext.BaseDirectory, "Assets", "UplinkFtp.ico");
+            if (File.Exists(ico))
+            {
+                appWindow.SetIcon(ico);
+            }
+
+            // Local MinWidth 440 + gutter 12 + Remote MinWidth 360 ≈ 812; leave chrome headroom.
+            if (appWindow.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.PreferredMinimumWidth = 1024;
+                presenter.PreferredMinimumHeight = 640;
+            }
         }
         catch (Exception)
         {
-            // Best-effort: missing native icon must not block launch.
+            // Best-effort: missing native icon / presenter must not block launch.
         }
     }
 
@@ -70,7 +79,10 @@ public sealed partial class MainWindow : Window
     }
 
     private void ApplyThemeFromSettings()
-        => ThemeHelper.ApplyFromSettings(ViewModel.Settings, RootGrid);
+    {
+        ThemeHelper.ApplyFromSettings(ViewModel.Settings, RootGrid);
+        UpdateStatusAppearance();
+    }
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
@@ -96,7 +108,8 @@ public sealed partial class MainWindow : Window
         if (ViewModel.IsConnected)
         {
             StatusTextBlock.Style = (Style)Application.Current.Resources["UplinkMutedTextStyle"];
-            StatusTextBlock.Foreground = (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["UplinkAccentBrush"];
+            StatusTextBlock.Foreground = ThemeHelper.GetBrush("UplinkAccentBrush")
+                                         ?? (Microsoft.UI.Xaml.Media.Brush)Application.Current.Resources["UplinkAccentBrush"];
             StatusTextBlock.FontWeight = Microsoft.UI.Text.FontWeights.SemiBold;
             return;
         }
@@ -145,6 +158,7 @@ public sealed partial class MainWindow : Window
         {
             XamlRoot = RootGrid.XamlRoot
         };
+        ThemeHelper.ApplyToDialog(dialog);
 
         void OnConnect(object? s, SiteConnectRequest request)
         {
@@ -176,24 +190,44 @@ public sealed partial class MainWindow : Window
             ApplyThemeFromSettings();
         }
 
+        var dialog = new SettingsDialog(vm)
+        {
+            XamlRoot = RootGrid.XamlRoot
+        };
+        ThemeHelper.ApplyToDialog(dialog);
+
+        void OnThemePreview(object? sender, string themeName)
+        {
+            ThemeHelper.Apply(themeName, RootGrid);
+            ThemeHelper.ApplyToDialog(dialog);
+            UpdateStatusAppearance();
+        }
+
         vm.SettingsSaved += OnSettingsSaved;
+        vm.ThemePreviewRequested += OnThemePreview;
         try
         {
-            var dialog = new SettingsDialog(vm)
-            {
-                XamlRoot = RootGrid.XamlRoot
-            };
-
             await dialog.ShowAsync();
         }
         finally
         {
             vm.SettingsSaved -= OnSettingsSaved;
+            vm.ThemePreviewRequested -= OnThemePreview;
         }
 
         // Keep quick-connect trust checkbox in sync with saved setting.
         ViewModel.AcceptAnyCertificate = ViewModel.Settings.AcceptAnyCertificate;
-        ApplyThemeFromSettings();
+
+        // Close without Save restores the theme that was active when Settings opened.
+        if (vm.ThemePersisted)
+        {
+            ApplyThemeFromSettings();
+        }
+        else
+        {
+            ThemeHelper.Apply(vm.ThemeAtOpen, RootGrid);
+            UpdateStatusAppearance();
+        }
     }
 
     private async System.Threading.Tasks.Task ShowLicenseAsync()
@@ -205,6 +239,7 @@ public sealed partial class MainWindow : Window
         {
             XamlRoot = RootGrid.XamlRoot
         };
+        ThemeHelper.ApplyToDialog(dialog);
 
         await dialog.ShowAsync();
         ViewModel.RefreshLicenseStatusText();
@@ -235,6 +270,7 @@ public sealed partial class MainWindow : Window
             {
                 XamlRoot = RootGrid.XamlRoot
             };
+            ThemeHelper.ApplyToDialog(dialog);
             await dialog.ShowAsync();
         }
         finally
