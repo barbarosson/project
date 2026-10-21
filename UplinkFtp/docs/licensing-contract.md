@@ -71,9 +71,9 @@ The **sample API Production profile must not seed those stubs**. Development sam
 
 ## Store channel (freemium + durable add-on)
 
-- Entitlement: `StoreEntitlementEvaluator` — Pro add-on active **or** paid non-trial app license.  
-- Purchase: `StoreLicenseService.RequestPurchaseAsync` via configured `UPLINK_STORE_PRO_ADDON_ID`.  
-- IDs are **not** hard-coded; set after Partner Center.
+- Entitlement: `StoreEntitlementEvaluator` — when a Pro add-on ID is configured, **only** an active durable Pro add-on grants Pro (free app `IsActive && !IsTrial` stays Free). Without an add-on ID (legacy paid-app SKU), a non-trial active app license is Pro.
+- Purchase: `StoreLicenseService.RequestPurchaseProAsync` via configured `UPLINK_STORE_PRO_ADDON_ID` (default `9MTN64PZGQCM`). License dialog **Buy Pro** shows on Store channel when tier is Free.
+- Defaults match Partner Center public Store IDs; override with env when needed.
 
 ## External blockers
 

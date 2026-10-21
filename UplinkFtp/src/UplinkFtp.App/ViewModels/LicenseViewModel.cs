@@ -66,6 +66,8 @@ public sealed partial class LicenseViewModel : ObservableObject
         StatusDetail = _license.StatusDetail;
         IsWebChannel = _license.Channel == DistributionChannel.Web && _webLicense is not null;
         IsStoreChannel = _license.Channel == DistributionChannel.Store && _storeLicense is not null;
+        // Visible for Free Store installs so users can buy the durable Pro add-on.
+        // (Free listings report an active non-trial app license — entitlement must stay Free.)
         ShowBuyPro = IsStoreChannel
                      && _license.GetCurrentTier() != LicenseTier.Pro
                      && _storeLicense is not null;

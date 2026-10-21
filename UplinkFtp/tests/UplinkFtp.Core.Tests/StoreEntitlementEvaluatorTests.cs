@@ -38,6 +38,27 @@ public sealed class StoreEntitlementEvaluatorTests
     }
 
     [Fact]
+    public void Free_Store_app_license_stays_Free_when_add_on_configured_but_not_owned()
+    {
+        // Free MSIX listings report IsActive=true and IsTrial=false; that must not grant Pro.
+        var tier = StoreEntitlementEvaluator.Evaluate(
+            appLicenseActive: true,
+            appLicenseIsTrial: false,
+            proAddOnConfigured: true,
+            proAddOnActive: false);
+        Assert.Equal(LicenseTier.Free, tier);
+
+        var detail = StoreEntitlementEvaluator.Describe(
+            tier,
+            appLicenseActive: true,
+            appLicenseIsTrial: false,
+            proAddOnConfigured: true,
+            proAddOnActive: false);
+        Assert.Contains("Pro add-on not owned", detail, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("purchased app license (Pro)", detail, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Inactive_license_is_Free()
     {
         var tier = StoreEntitlementEvaluator.Evaluate(

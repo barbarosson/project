@@ -6,6 +6,10 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 
 ## [Unreleased]
 
+### Fixed
+
+- **Store freemium:** free app license (`IsActive && !IsTrial`) no longer maps to Pro when Pro add-on ID is configured — License **Buy Pro** shows again and calls `RequestPurchaseProAsync` for `9MTN64PZGQCM`
+
 ### Added
 
 - ADIM 1–6 client skeleton: WinUI shell, FluentFTP/SSH.NET, SQLite sites, PasswordVault credentials, transfer queue, Free/Pro licensing gates  

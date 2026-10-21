@@ -4,8 +4,9 @@ namespace UplinkFtp.Services.Licensing;
 public static class StoreEntitlementEvaluator
 {
     /// <summary>
-    /// Freemium rule: durable Pro add-on wins when configured; otherwise paid (non-trial) app license.
-    /// Store trial of the free app stays Free.
+    /// Freemium rule: when a Pro add-on Store ID is configured, only that add-on grants Pro.
+    /// Free Store apps report <c>IsActive=true</c> and <c>IsTrial=false</c> — that must stay Free.
+    /// Without an add-on ID (legacy paid-app SKU), a non-trial active app license is Pro.
     /// </summary>
     public static LicenseTier Evaluate(
         bool appLicenseActive,
@@ -13,9 +14,9 @@ public static class StoreEntitlementEvaluator
         bool proAddOnConfigured,
         bool proAddOnActive)
     {
-        if (proAddOnConfigured && proAddOnActive)
+        if (proAddOnConfigured)
         {
-            return LicenseTier.Pro;
+            return proAddOnActive ? LicenseTier.Pro : LicenseTier.Free;
         }
 
         if (appLicenseActive && !appLicenseIsTrial)
@@ -43,14 +44,20 @@ public static class StoreEntitlementEvaluator
             return "Store: purchased app license (Pro)";
         }
 
+        if (proAddOnConfigured && !proAddOnActive)
+        {
+            if (appLicenseActive && appLicenseIsTrial)
+            {
+                return "Store: trial / freemium (Free limits)";
+            }
+
+            // Free listing: Store still reports an active non-trial app license.
+            return "Store: free app license; Pro add-on not owned (Free)";
+        }
+
         if (appLicenseActive && appLicenseIsTrial)
         {
             return "Store: trial / freemium (Free limits)";
-        }
-
-        if (proAddOnConfigured && !proAddOnActive)
-        {
-            return "Store: Pro add-on not owned (Free)";
         }
 
         return "Store: Free tier";
