@@ -135,12 +135,12 @@
             <panels:LogPanel x:Name="LogPanel"/>
         </Border>
 
-        <!-- Local | Remote browsers -->
-        <Grid Grid.Row="2" Margin="4,0">
+        <!-- Local | Remote browsers (MinWidth keeps panes usable at 125–150% / ~1366 epx) -->
+        <Grid Grid.Row="2" Margin="4,0" x:Name="BrowserPanesGrid">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*" MinWidth="440"/>
                 <ColumnDefinition Width="12"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*" MinWidth="360"/>
             </Grid.ColumnDefinitions>
             <Border Style="{StaticResource UplinkSectionBorderStyle}" Margin="6,6,0,6">
                 <panels:LocalBrowserPanel x:Name="LocalPanel"/>

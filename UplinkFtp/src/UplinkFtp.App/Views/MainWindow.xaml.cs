@@ -35,30 +35,39 @@ public sealed partial class MainWindow : Window
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
 
         ApplyThemeFromSettings();
-        ApplyWindowIcon();
+        ApplyWindowChrome();
         UpdateStatusAppearance();
         Activated += OnActivatedOnce;
     }
 
-    /// <summary>Taskbar / title-bar icon for unpackaged runs (exe icon comes from ApplicationIcon).</summary>
-    private void ApplyWindowIcon()
+    /// <summary>
+    /// Icon + minimum client size so dual-pane Local/Remote stay usable at 125–150% DPI
+    /// on ~1366 effective-pixel laptops (not only 1920@100%).
+    /// </summary>
+    private void ApplyWindowChrome()
     {
         try
         {
-            var ico = Path.Combine(AppContext.BaseDirectory, "Assets", "UplinkFtp.ico");
-            if (!File.Exists(ico))
-            {
-                return;
-            }
-
             var hwnd = WindowNative.GetWindowHandle(this);
             var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
             var appWindow = AppWindow.GetFromWindowId(windowId);
-            appWindow.SetIcon(ico);
+
+            var ico = Path.Combine(AppContext.BaseDirectory, "Assets", "UplinkFtp.ico");
+            if (File.Exists(ico))
+            {
+                appWindow.SetIcon(ico);
+            }
+
+            // Local MinWidth 440 + gutter 12 + Remote MinWidth 360 ≈ 812; leave chrome headroom.
+            if (appWindow.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.PreferredMinimumWidth = 1024;
+                presenter.PreferredMinimumHeight = 640;
+            }
         }
         catch (Exception)
         {
-            // Best-effort: missing native icon must not block launch.
+            // Best-effort: missing native icon / presenter must not block launch.
         }
     }
 
