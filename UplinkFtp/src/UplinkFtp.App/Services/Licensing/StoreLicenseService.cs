@@ -7,8 +7,9 @@ namespace UplinkFtp.Services.Licensing;
 
 /// <summary>
 /// Microsoft Store entitlement via <see cref="StoreContext"/>.
-/// Pro when durable Pro add-on is active (if <see cref="StoreCommerceOptions.ProAddOnStoreId"/> set),
-/// else when app license is active and non-trial. Failures degrade to Free.
+/// When a Pro add-on Store ID is configured: Pro only if that add-on is active
+/// (free app licenses stay Free). Without an add-on ID: Pro when app license is
+/// active and non-trial. Failures degrade to Free.
 /// </summary>
 public sealed class StoreLicenseService : LicenseServiceBase
 {
