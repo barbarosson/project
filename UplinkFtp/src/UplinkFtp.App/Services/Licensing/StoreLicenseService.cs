@@ -2,6 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Services.Store;
+using WinRT.Interop;
 
 namespace UplinkFtp.Services.Licensing;
 
@@ -14,10 +15,14 @@ namespace UplinkFtp.Services.Licensing;
 public sealed class StoreLicenseService : LicenseServiceBase
 {
     private readonly StoreCommerceOptions _commerce;
+    private readonly IWindowHandleProvider? _windowHandle;
 
-    public StoreLicenseService(StoreCommerceOptions? commerce = null)
+    public StoreLicenseService(
+        StoreCommerceOptions? commerce = null,
+        IWindowHandleProvider? windowHandle = null)
     {
         _commerce = commerce ?? new StoreCommerceOptions();
+        _windowHandle = windowHandle;
     }
 
     public override DistributionChannel Channel => DistributionChannel.Store;
@@ -31,7 +36,7 @@ public sealed class StoreLicenseService : LicenseServiceBase
 
         try
         {
-            var context = StoreContext.GetDefault();
+            var context = CreateStoreContext();
             var license = await context.GetAppLicenseAsync();
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -79,7 +84,7 @@ public sealed class StoreLicenseService : LicenseServiceBase
 
         try
         {
-            var context = StoreContext.GetDefault();
+            var context = CreateStoreContext();
             var result = await context.RequestPurchaseAsync(_commerce.ProAddOnStoreId.Trim());
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -97,8 +102,24 @@ public sealed class StoreLicenseService : LicenseServiceBase
         }
         catch (Exception ex)
         {
-            return $"Store purchase unavailable ({ex.GetType().Name}). Associate the app with the Store and sign in with a sandbox/test account.";
+            return StorePurchaseMessages.FormatUnavailable(ex);
         }
+    }
+
+    /// <summary>
+    /// WinUI 3 desktop: <see cref="StoreContext.RequestPurchaseAsync"/> needs
+    /// <see cref="InitializeWithWindow"/> with the main HWND or it throws COMException.
+    /// </summary>
+    private StoreContext CreateStoreContext()
+    {
+        var context = StoreContext.GetDefault();
+        var hwnd = _windowHandle?.GetMainWindowHandle() ?? IntPtr.Zero;
+        if (hwnd != IntPtr.Zero)
+        {
+            InitializeWithWindow.Initialize(context, hwnd);
+        }
+
+        return context;
     }
 
     private static bool IsProAddOnActive(StoreAppLicense appLicense, string? proAddOnStoreId)

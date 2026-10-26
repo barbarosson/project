@@ -14,7 +14,7 @@
   <Identity
     Name="MODULUSTECH.UplinkFTP"
     Publisher="CN=7E7A2323-C3C3-4A9A-A4D1-832D351FC4BA"
-    Version="0.1.0.0" />
+    Version="0.1.2.0" />
 
   <mp:PhoneIdentity
     PhoneProductId="REPLACE_ME_PHONE_PRODUCT_ID"

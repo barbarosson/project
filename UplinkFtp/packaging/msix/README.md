@@ -28,7 +28,9 @@ Restricted capability justifications (copy into Partner Center):
 | **Store** | `-p:UplinkDistributionChannel=Store` or `build-store-channel.ps1` | `StoreLicenseService` + optional Pro add-on ID |
 | **Web** (default unpackaged) | `-p:UplinkDistributionChannel=Web` or `build-web-channel.ps1` | `WebLicenseService` + license key |
 
-Pro add-on Store ID defaults to `9MTN64PZGQCM` (`UPLINK_STORE_PRO_ADDON_ID` / `StoreCommerceOptions.DefaultProAddOnStoreId`). Override via env or local `signing.env` if Partner Center changes it.
+Pro add-on Store ID defaults to `9MTN64PZGQCM` (`UPLINK_STORE_PRO_ADDON_ID` / `StoreCommerceOptions.DefaultProAddOnStoreId`) and is baked into Store-channel builds via that default (no env required). Override via env or local `signing.env` if Partner Center changes it.
+
+Package identity version is set in `src/UplinkFtp.App/Package.appxmanifest` (currently **0.1.2.0**).
 
 ## Produce an MSIX (Windows)
 

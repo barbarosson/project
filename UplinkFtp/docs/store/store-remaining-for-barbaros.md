@@ -22,7 +22,7 @@ Partner Center **app identity** and **Pro add-on Store ID** are done in git. Can
 2. Host public privacy URL (`FILL_IN_PRIVACY_POLICY_HTTPS_URL`) + support email FILL_INs.  
 3. Capture real desktop screenshots (see `screenshot-shot-list.md`).  
 4. Paste listing EN/TR, IARC answers, capability justifications into Partner Center.  
-5. Sign / Store-sign Store-channel MSIX; sandbox Free → Buy Pro → limits lift.  
+5. Sign / Store-sign Store-channel MSIX **0.1.2.0**; sandbox Free → Buy Pro → limits lift (needs HWND/`InitializeWithWindow` fix — see `docs/licensing-contract.md`).  
 6. Submit certification flight.
 
 ## Do not commit
