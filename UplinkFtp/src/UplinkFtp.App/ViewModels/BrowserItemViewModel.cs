@@ -1,5 +1,6 @@
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
+using UplinkFtp.Services.Browse;
 
 namespace UplinkFtp.ViewModels;
 
@@ -12,7 +13,10 @@ public sealed partial class BrowserItemViewModel : ObservableObject
         bool isDirectory,
         long size,
         DateTime? modifiedUtc,
-        bool isParentLink = false)
+        bool isParentLink = false,
+        bool isSymlink = false,
+        string? linkTarget = null,
+        int? unixMode = null)
     {
         Name = name;
         FullPath = fullPath;
@@ -20,6 +24,9 @@ public sealed partial class BrowserItemViewModel : ObservableObject
         Size = size;
         ModifiedUtc = modifiedUtc;
         IsParentLink = isParentLink;
+        IsSymlink = isSymlink;
+        LinkTarget = linkTarget;
+        UnixMode = unixMode;
     }
 
     public string Name { get; }
@@ -34,13 +41,51 @@ public sealed partial class BrowserItemViewModel : ObservableObject
 
     public bool IsParentLink { get; }
 
-    public string Kind => IsParentLink ? "Up" : IsDirectory ? "Folder" : "File";
+    public bool IsSymlink { get; }
+
+    public string? LinkTarget { get; }
+
+    public int? UnixMode { get; }
+
+    public bool IsHidden => !IsParentLink && Name.StartsWith(".", StringComparison.Ordinal);
+
+    public string Kind => IsParentLink
+        ? "Up"
+        : IsSymlink
+            ? (IsDirectory ? "Link→Folder" : "Link")
+            : IsDirectory
+                ? "Folder"
+                : "File";
 
     public string SizeDisplay => IsDirectory || IsParentLink ? string.Empty : FormatSize(Size);
 
     public string ModifiedDisplay => ModifiedUtc is null
         ? string.Empty
         : ModifiedUtc.Value.ToLocalTime().ToString("g");
+
+    [ObservableProperty]
+    private DirectoryCompareStatus _compareStatus = DirectoryCompareStatus.Same;
+
+    public bool HasCompareHighlight => CompareStatus is not DirectoryCompareStatus.Same;
+
+    public string CompareLabel => CompareStatus switch
+    {
+        DirectoryCompareStatus.LocalOnly => "Local",
+        DirectoryCompareStatus.RemoteOnly => "Remote",
+        DirectoryCompareStatus.SizeDiffers => "Size≠",
+        DirectoryCompareStatus.DateDiffers => "Date≠",
+        _ => string.Empty
+    };
+
+    public string ModeDisplay => UnixMode is int mode
+        ? Convert.ToString(mode & 0x1FF, 8).PadLeft(3, '0')
+        : string.Empty;
+
+    partial void OnCompareStatusChanged(DirectoryCompareStatus value)
+    {
+        OnPropertyChanged(nameof(HasCompareHighlight));
+        OnPropertyChanged(nameof(CompareLabel));
+    }
 
     private static string FormatSize(long bytes)
     {

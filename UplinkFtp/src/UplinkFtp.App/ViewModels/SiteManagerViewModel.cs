@@ -25,6 +25,9 @@ public sealed partial class SiteManagerViewModel : ObservableObject
     /// <summary>Raised when the user wants to connect using the selected (or form) site.</summary>
     public event EventHandler<SiteConnectRequest>? ConnectRequested;
 
+    /// <summary>Raised when Free site limit is hit — shell should open License / Buy Pro.</summary>
+    public event EventHandler? UpgradeToProRequested;
+
     [ObservableProperty]
     private SiteEntity? _selectedSite;
 
@@ -167,12 +170,13 @@ public sealed partial class SiteManagerViewModel : ObservableObject
             return;
         }
 
-        // Free 3-site gate — surface a clear message before hitting the repository.
+        // Free 3-site gate — surface a clear message and open License (Buy Pro) upsell.
         if (!await CanAddSiteAsync().ConfigureAwait(true))
         {
             var max = _license.GetMaxSavedSites();
             StatusMessage =
-                $"Free tier allows at most {max} saved sites. Upgrade to Pro for unlimited sites.";
+                $"Free tier allows at most {max} saved sites. Opening License to upgrade to Pro…";
+            UpgradeToProRequested?.Invoke(this, EventArgs.Empty);
             return;
         }
 

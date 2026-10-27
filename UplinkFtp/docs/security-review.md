@@ -33,7 +33,7 @@ Documented in privacy policy. Location: `src/UplinkFtp.Core/Services/Privacy/Tel
 | Package | Role | Notes |
 | --- | --- | --- |
 | FluentFTP | FTP/FTPS | Cert validation tied to `AcceptAnyCertificate` |
-| SSH.NET | SFTP | Key/password auth; keep host-key UX on roadmap |
+| SSH.NET | SFTP | Key/password auth; host-key prompt + pin (`SshHostKeyVerifier` / `ssh-host-keys.json`) |
 | EF Core + SQLite | Sites | `EnsureCreated` only — migrations / backup policy open |
 | CommunityToolkit.Mvvm | UI | No network |
 | Windows App SDK / WinUI | Shell | Store APIs only on Store channel |
@@ -51,7 +51,8 @@ dotnet list src/UplinkFtp.App/UplinkFtp.App.csproj --vulnerable
 - [ ] Confirm no password strings in Release log export  
 - [ ] Production license host + signing key custody  
 - [ ] Code signing certificate + Partner Center publisher CN  
-- [ ] Host key verification UX for SFTP (prompt / pin)  
+- [x] Host key verification UX for SFTP (prompt / pin) — MVP shipped; Windows soak still required  
+
 - [ ] FTPS custom trust store / pin policy beyond AcceptAny toggle  
 - [ ] Dependency vulnerability scan on release branch  
 - [ ] Legal review of privacy policy draft  

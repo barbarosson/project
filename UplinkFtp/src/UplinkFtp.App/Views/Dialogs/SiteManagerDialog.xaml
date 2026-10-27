@@ -180,7 +180,7 @@
                         Padding="8,6"/>
             </Grid>
             <Button Content="Connect"
-                    Style="{StaticResource AccentButtonStyle}"
+                    Style="{StaticResource UplinkAccentButtonStyle}"
                     FontFamily="{StaticResource UplinkUiFont}"
                     Command="{x:Bind ViewModel.ConnectCommand}"
                     HorizontalAlignment="Stretch"

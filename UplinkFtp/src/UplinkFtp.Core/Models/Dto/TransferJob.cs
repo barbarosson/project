@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UplinkFtp.Models.Enums;
 
 namespace UplinkFtp.Models.Dto;
@@ -12,9 +13,12 @@ public sealed class TransferJob
 
     public string Source { get; init; } = string.Empty;
 
-    public string Destination { get; init; } = string.Empty;
+    /// <summary>May be rewritten by conflict AutoRename before transfer starts.</summary>
+    public string Destination { get; set; } = string.Empty;
 
     public bool IsDirectory { get; init; }
+
+    public TransferConflictPolicy ConflictPolicy { get; init; } = TransferConflictPolicy.Default;
 
     public string DisplayName { get; init; } = string.Empty;
 
@@ -31,8 +35,18 @@ public sealed class TransferJob
     /// <summary>Byte offset to continue from after pause (file transfers only).</summary>
     public long ResumeOffsetBytes { get; set; }
 
-    /// <summary>True when pause/resume can continue from <see cref="ResumeOffsetBytes"/>.</summary>
+    /// <summary>
+    /// True when pause/resume can continue from <see cref="ResumeOffsetBytes"/> (files)
+    /// or from <see cref="CompletedRelativePaths"/> (directory checkpoint).
+    /// </summary>
     public bool SupportsResume { get; set; }
+
+    /// <summary>
+    /// Relative paths (forward-slash) already transferred inside a directory job.
+    /// Used for per-file directory resume / checkpoint.
+    /// </summary>
+    public HashSet<string> CompletedRelativePaths { get; set; } =
+        new(StringComparer.OrdinalIgnoreCase);
 
     public string? Detail { get; set; }
 

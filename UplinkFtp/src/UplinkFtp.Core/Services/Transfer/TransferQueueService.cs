@@ -22,18 +22,29 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
 {
     private readonly IFtpService _ftp;
     private readonly ILicenseService _license;
+    private readonly ITransferConflictPrompt? _conflictPrompt;
+    private readonly TransferConflictAction _askSuggestedDefault;
     private readonly object _gate = new();
     private readonly List<TransferJob> _jobs = [];
     private readonly Dictionary<Guid, CancellationTokenSource> _tokens = [];
     private readonly HashSet<Guid> _pauseRequested = [];
     private readonly SemaphoreSlim _scheduleLock = new(1, 1);
+    /// <summary>Session-scoped “apply to all” from an Ask prompt (cleared when queue drains).</summary>
+    private TransferConflictAction? _applyToAllAction;
     private int _active;
     private bool _disposed;
 
-    public TransferQueueService(IFtpService ftp, ILicenseService license, IConnectionPool? pool = null)
+    public TransferQueueService(
+        IFtpService ftp,
+        ILicenseService license,
+        IConnectionPool? pool = null,
+        ITransferConflictPrompt? conflictPrompt = null,
+        TransferConflictAction askSuggestedDefault = TransferConflictAction.Overwrite)
     {
         _ftp = ftp;
         _license = license;
+        _conflictPrompt = conflictPrompt;
+        _askSuggestedDefault = askSuggestedDefault;
         // pool is unused: transfers must go through IFtpService.OpenTransferClientAsync
         // so Free (max 1 connection) reuses the primary browse session instead of
         // opening a second SSH/FTP client that often fails or races.
@@ -59,7 +70,11 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
         }
     }
 
-    public TransferJob EnqueueUpload(string localPath, string remotePath, bool isDirectory)
+    public TransferJob EnqueueUpload(
+        string localPath,
+        string remotePath,
+        bool isDirectory,
+        TransferConflictPolicy? conflictPolicy = null)
     {
         var name = isDirectory
             ? new DirectoryInfo(localPath).Name
@@ -73,12 +88,18 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
             IsDirectory = isDirectory,
             DisplayName = string.IsNullOrWhiteSpace(name) ? localPath : name,
             State = TransferJobState.Queued,
-            SupportsResume = !isDirectory,
+            // Files: byte resume. Directories: per-file checkpoint via CompletedRelativePaths.
+            SupportsResume = true,
+            ConflictPolicy = conflictPolicy ?? TransferConflictPolicy.Default,
             Detail = "Waiting for a worker slot"
         });
     }
 
-    public TransferJob EnqueueDownload(string remotePath, string localPath, bool isDirectory)
+    public TransferJob EnqueueDownload(
+        string remotePath,
+        string localPath,
+        bool isDirectory,
+        TransferConflictPolicy? conflictPolicy = null)
     {
         var name = Path.GetFileName(remotePath.TrimEnd('/'));
         return EnqueueCore(new TransferJob
@@ -89,9 +110,34 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
             IsDirectory = isDirectory,
             DisplayName = string.IsNullOrWhiteSpace(name) ? remotePath : name,
             State = TransferJobState.Queued,
-            SupportsResume = !isDirectory,
+            SupportsResume = true,
+            ConflictPolicy = conflictPolicy ?? TransferConflictPolicy.Default,
             Detail = "Waiting for a worker slot"
         });
+    }
+
+    /// <summary>Restore a previously persisted queued/failed job without starting transfer yet.</summary>
+    public TransferJob RestoreJob(TransferJob job)
+    {
+        ArgumentNullException.ThrowIfNull(job);
+        if (job.State is not (TransferJobState.Queued or TransferJobState.Failed or TransferJobState.Paused))
+        {
+            job.State = TransferJobState.Queued;
+        }
+
+        job.Detail ??= job.State == TransferJobState.Failed
+            ? (job.Error ?? "Restored failed job — tap Retry")
+            : "Restored — waiting for a worker slot";
+        return EnqueueCore(job);
+    }
+
+    /// <summary>Clear session “apply to all” (e.g. after operator changes Settings).</summary>
+    public void ClearApplyToAll()
+    {
+        lock (_gate)
+        {
+            _applyToAllAction = null;
+        }
     }
 
     public bool Pause(Guid jobId)
@@ -373,6 +419,16 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
                 // Free tier and unit-test fakes — use session-gated upload/download below.
             }
 
+            if (!await ApplyConflictPolicyAsync(job, leasedClient, token).ConfigureAwait(false))
+            {
+                job.State = TransferJobState.Successful;
+                job.ProgressPercent = 100;
+                job.Detail = "Skipped (conflict policy)";
+                job.CompletedAt = DateTimeOffset.Now;
+                RaiseJobUpdatedSafe(job);
+                return;
+            }
+
             await ExecuteTransferAsync(job, progress, leasedClient, token).ConfigureAwait(false);
 
             token.ThrowIfCancellationRequested();
@@ -445,6 +501,251 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
         }
     }
 
+    /// <summary>
+    /// Returns false when the job should be marked skipped (Skip policy).
+    /// May mutate Destination (AutoRename) or ResumeOffsetBytes (Resume).
+    /// </summary>
+    private async Task<bool> ApplyConflictPolicyAsync(
+        TransferJob job,
+        IRemoteProtocolClient? leased,
+        CancellationToken token)
+    {
+        if (job.IsDirectory)
+        {
+            // Directory transfers resolve conflicts per child file inside the checkpoint walker.
+            return true;
+        }
+
+        var policy = job.ConflictPolicy?.Action ?? TransferConflictAction.Overwrite;
+        var promptPerFile = job.ConflictPolicy?.PromptPerFile == true;
+        if (policy == TransferConflictAction.Ask || promptPerFile)
+        {
+            lock (_gate)
+            {
+                if (_applyToAllAction is { } applyAll)
+                {
+                    policy = applyAll;
+                }
+            }
+
+            if (policy == TransferConflictAction.Ask || promptPerFile)
+            {
+                if (!await DestinationExistsAsync(job, leased, token).ConfigureAwait(false))
+                {
+                    return true;
+                }
+
+                policy = await ResolveAskAsync(job, token).ConfigureAwait(false);
+            }
+        }
+
+        if (policy == TransferConflictAction.Overwrite)
+        {
+            return true;
+        }
+
+        if (job.Direction == TransferDirection.Upload)
+        {
+            return await ApplyUploadConflictAsync(job, leased, policy, token).ConfigureAwait(false);
+        }
+
+        return ApplyDownloadConflict(job, policy);
+    }
+
+    private async Task<TransferConflictAction> ResolveAskAsync(TransferJob job, CancellationToken token)
+    {
+        if (_conflictPrompt is null)
+        {
+            // Headless tests without a prompt: treat Ask as Overwrite to keep CI deterministic.
+            return TransferConflictAction.Overwrite;
+        }
+
+        var result = await _conflictPrompt.PromptAsync(
+            new TransferConflictPromptRequest
+            {
+                Job = job,
+                ConflictPath = job.Direction == TransferDirection.Upload ? job.Destination : job.Destination,
+                Direction = job.Direction,
+                SuggestedAction = _askSuggestedDefault
+            },
+            token).ConfigureAwait(false);
+
+        if (result is null)
+        {
+            return TransferConflictAction.Skip;
+        }
+
+        if (result.ApplyToAll)
+        {
+            lock (_gate)
+            {
+                _applyToAllAction = result.Action;
+            }
+        }
+
+        return result.Action;
+    }
+
+    private async Task<bool> DestinationExistsAsync(
+        TransferJob job,
+        IRemoteProtocolClient? leased,
+        CancellationToken token)
+    {
+        if (job.Direction == TransferDirection.Download)
+        {
+            return File.Exists(job.Destination);
+        }
+
+        try
+        {
+            var parent = RemotePath.GetDirectoryName(job.Destination);
+            var name = RemotePath.GetFileName(job.Destination);
+            IReadOnlyList<RemoteEntry> listing;
+            if (leased is not null)
+            {
+                listing = await leased.ListDirectoryAsync(parent, null, token).ConfigureAwait(false);
+            }
+            else
+            {
+                listing = await _ftp.ListDirectoryAsync(parent, null, token).ConfigureAwait(false);
+            }
+
+            return listing.Any(e =>
+                !e.IsDirectory && string.Equals(e.Name, name, StringComparison.OrdinalIgnoreCase));
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private async Task<bool> ApplyUploadConflictAsync(
+        TransferJob job,
+        IRemoteProtocolClient? leased,
+        TransferConflictAction policy,
+        CancellationToken token)
+    {
+        IReadOnlyList<RemoteEntry> listing;
+        var parent = RemotePath.GetDirectoryName(job.Destination);
+        var name = RemotePath.GetFileName(job.Destination);
+        try
+        {
+            if (leased is not null)
+            {
+                listing = await leased.ListDirectoryAsync(parent, null, token).ConfigureAwait(false);
+            }
+            else
+            {
+                listing = await _ftp.ListDirectoryAsync(parent, null, token).ConfigureAwait(false);
+            }
+        }
+        catch
+        {
+            return true;
+        }
+
+        var existing = listing.FirstOrDefault(e =>
+            !e.IsDirectory && string.Equals(e.Name, name, StringComparison.OrdinalIgnoreCase));
+        if (existing is null)
+        {
+            return true;
+        }
+
+        switch (policy)
+        {
+            case TransferConflictAction.Skip:
+                return false;
+            case TransferConflictAction.OverwriteIfNewer:
+            {
+                var localInfo = new FileInfo(job.Source);
+                var localNewer = localInfo.LastWriteTimeUtc > (existing.ModifiedUtc ?? DateTime.MinValue);
+                var sizeDiffers = localInfo.Exists && localInfo.Length != existing.Size;
+                return localNewer || sizeDiffers;
+            }
+            case TransferConflictAction.AutoRename:
+                job.Destination = NextAvailableRemoteName(listing, parent, name);
+                return true;
+            case TransferConflictAction.Resume:
+                if (existing.Size > 0 && new FileInfo(job.Source).Length > existing.Size)
+                {
+                    job.ResumeOffsetBytes = existing.Size;
+                    job.SupportsResume = true;
+                }
+
+                return true;
+            default:
+                return true;
+        }
+    }
+
+    private static bool ApplyDownloadConflict(TransferJob job, TransferConflictAction policy)
+    {
+        if (!File.Exists(job.Destination))
+        {
+            return true;
+        }
+
+        var local = new FileInfo(job.Destination);
+        switch (policy)
+        {
+            case TransferConflictAction.Skip:
+                return false;
+            case TransferConflictAction.OverwriteIfNewer:
+                // Without remote mtime here, keep existing file unless sizes differ — caller can Overwrite.
+                return false;
+            case TransferConflictAction.AutoRename:
+                job.Destination = NextAvailableLocalName(job.Destination);
+                return true;
+            case TransferConflictAction.Resume:
+                if (local.Length > 0)
+                {
+                    job.ResumeOffsetBytes = local.Length;
+                    job.SupportsResume = true;
+                }
+
+                return true;
+            default:
+                return true;
+        }
+    }
+
+    private static string NextAvailableRemoteName(
+        IReadOnlyList<RemoteEntry> listing,
+        string parent,
+        string fileName)
+    {
+        var stem = Path.GetFileNameWithoutExtension(fileName);
+        var ext = Path.GetExtension(fileName);
+        var taken = new HashSet<string>(listing.Select(e => e.Name), StringComparer.OrdinalIgnoreCase);
+        for (var i = 1; i < 10_000; i++)
+        {
+            var candidate = $"{stem} ({i}){ext}";
+            if (!taken.Contains(candidate))
+            {
+                return RemotePath.Combine(parent, candidate);
+            }
+        }
+
+        return RemotePath.Combine(parent, $"{stem}-{Guid.NewGuid():N}{ext}");
+    }
+
+    private static string NextAvailableLocalName(string path)
+    {
+        var dir = Path.GetDirectoryName(path) ?? ".";
+        var stem = Path.GetFileNameWithoutExtension(path);
+        var ext = Path.GetExtension(path);
+        for (var i = 1; i < 10_000; i++)
+        {
+            var candidate = Path.Combine(dir, $"{stem} ({i}){ext}");
+            if (!File.Exists(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        return Path.Combine(dir, $"{stem}-{Guid.NewGuid():N}{ext}");
+    }
+
     private async Task ExecuteTransferAsync(
         TransferJob job,
         IProgress<TransferProgress> progress,
@@ -453,24 +754,25 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
     {
         var offset = job.SupportsResume ? Math.Max(0, job.ResumeOffsetBytes) : 0;
 
+        if (job.IsDirectory)
+        {
+            if (job.Direction == TransferDirection.Upload)
+            {
+                await ExecuteDirectoryUploadAsync(job, progress, leased, token).ConfigureAwait(false);
+            }
+            else
+            {
+                await ExecuteDirectoryDownloadAsync(job, progress, leased, token).ConfigureAwait(false);
+            }
+
+            return;
+        }
+
         if (leased is not null)
         {
             if (job.Direction == TransferDirection.Upload)
             {
-                if (job.IsDirectory)
-                {
-                    await leased.UploadDirectoryAsync(job.Source, job.Destination, progress, token)
-                        .ConfigureAwait(false);
-                }
-                else
-                {
-                    await leased.UploadFileAsync(job.Source, job.Destination, offset, progress, token)
-                        .ConfigureAwait(false);
-                }
-            }
-            else if (job.IsDirectory)
-            {
-                await leased.DownloadDirectoryAsync(job.Source, job.Destination, progress, token)
+                await leased.UploadFileAsync(job.Source, job.Destination, offset, progress, token)
                     .ConfigureAwait(false);
             }
             else
@@ -484,20 +786,7 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
 
         if (job.Direction == TransferDirection.Upload)
         {
-            if (job.IsDirectory)
-            {
-                await _ftp.UploadDirectoryAsync(job.Source, job.Destination, progress, token)
-                    .ConfigureAwait(false);
-            }
-            else
-            {
-                await _ftp.UploadFileAsync(job.Source, job.Destination, offset, progress, token)
-                    .ConfigureAwait(false);
-            }
-        }
-        else if (job.IsDirectory)
-        {
-            await _ftp.DownloadDirectoryAsync(job.Source, job.Destination, progress, token)
+            await _ftp.UploadFileAsync(job.Source, job.Destination, offset, progress, token)
                 .ConfigureAwait(false);
         }
         else
@@ -507,11 +796,149 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
         }
     }
 
+    private async Task ExecuteDirectoryUploadAsync(
+        TransferJob job,
+        IProgress<TransferProgress> progress,
+        IRemoteProtocolClient? leased,
+        CancellationToken token)
+    {
+        if (!Directory.Exists(job.Source))
+        {
+            throw new DirectoryNotFoundException($"Local directory not found: {job.Source}");
+        }
+
+        var root = Path.GetFullPath(job.Source);
+        var files = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories).ToList();
+        var done = 0;
+        foreach (var localFile in files)
+        {
+            token.ThrowIfCancellationRequested();
+            var relative = Path.GetRelativePath(root, localFile).Replace('\\', '/');
+            if (job.CompletedRelativePaths.Contains(relative))
+            {
+                done++;
+                continue;
+            }
+
+            var remoteFile = RemotePath.Combine(job.Destination, relative.Replace('\\', '/'));
+            job.Detail = relative;
+            RaiseJobUpdatedSafe(job);
+
+            if (leased is not null)
+            {
+                await leased.UploadFileAsync(localFile, remoteFile, 0, progress, token).ConfigureAwait(false);
+            }
+            else
+            {
+                await _ftp.UploadFileAsync(localFile, remoteFile, 0, progress, token).ConfigureAwait(false);
+            }
+
+            job.CompletedRelativePaths.Add(relative);
+            done++;
+            job.ProgressPercent = files.Count == 0 ? 100 : 100.0 * done / files.Count;
+            RaiseJobUpdatedSafe(job);
+        }
+    }
+
+    private async Task ExecuteDirectoryDownloadAsync(
+        TransferJob job,
+        IProgress<TransferProgress> progress,
+        IRemoteProtocolClient? leased,
+        CancellationToken token)
+    {
+        Directory.CreateDirectory(job.Destination);
+        var files = await ListRemoteFilesRecursiveAsync(job.Source, leased, token).ConfigureAwait(false);
+        var done = 0;
+        foreach (var (remoteFile, relative) in files)
+        {
+            token.ThrowIfCancellationRequested();
+            if (job.CompletedRelativePaths.Contains(relative))
+            {
+                done++;
+                continue;
+            }
+
+            var localFile = Path.Combine(job.Destination, relative.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(localFile)!);
+            job.Detail = relative;
+            RaiseJobUpdatedSafe(job);
+
+            if (leased is not null)
+            {
+                await leased.DownloadFileAsync(remoteFile, localFile, 0, progress, token).ConfigureAwait(false);
+            }
+            else
+            {
+                await _ftp.DownloadFileAsync(remoteFile, localFile, 0, progress, token).ConfigureAwait(false);
+            }
+
+            job.CompletedRelativePaths.Add(relative);
+            done++;
+            job.ProgressPercent = files.Count == 0 ? 100 : 100.0 * done / files.Count;
+            RaiseJobUpdatedSafe(job);
+        }
+    }
+
+    private async Task<List<(string RemotePath, string Relative)>> ListRemoteFilesRecursiveAsync(
+        string remoteRoot,
+        IRemoteProtocolClient? leased,
+        CancellationToken token)
+    {
+        var root = RemotePath.Normalize(remoteRoot).TrimEnd('/');
+        if (string.IsNullOrEmpty(root))
+        {
+            root = "/";
+        }
+
+        var results = new List<(string, string)>();
+        var stack = new Stack<string>();
+        stack.Push(root);
+
+        while (stack.Count > 0)
+        {
+            token.ThrowIfCancellationRequested();
+            var current = stack.Pop();
+            IReadOnlyList<RemoteEntry> listing;
+            if (leased is not null)
+            {
+                listing = await leased.ListDirectoryAsync(current, null, token).ConfigureAwait(false);
+            }
+            else
+            {
+                listing = await _ftp.ListDirectoryAsync(current, null, token).ConfigureAwait(false);
+            }
+
+            foreach (var entry in listing)
+            {
+                var child = RemotePath.Combine(current, entry.Name);
+                if (entry.IsDirectory)
+                {
+                    stack.Push(child);
+                    continue;
+                }
+
+                var relative = child.StartsWith(root + "/", StringComparison.OrdinalIgnoreCase)
+                    ? child[(root.Length + 1)..]
+                    : entry.Name;
+                results.Add((child, relative.Replace('\\', '/')));
+            }
+        }
+
+        return results;
+    }
+
     private static void PrepareForResume(TransferJob job)
     {
         job.State = TransferJobState.Queued;
         job.Error = null;
         job.CompletedAt = null;
+
+        if (job.IsDirectory && job.CompletedRelativePaths.Count > 0)
+        {
+            job.Detail =
+                $"Resumed — skipping {job.CompletedRelativePaths.Count} completed file(s) in directory";
+            return;
+        }
 
         if (job.SupportsResume && job.ResumeOffsetBytes > 0)
         {
@@ -531,6 +958,13 @@ public sealed class TransferQueueService : ITransferQueueService, IAsyncDisposab
 
     private static string FormatPausedDetail(TransferJob job)
     {
+        if (job.IsDirectory)
+        {
+            return job.CompletedRelativePaths.Count > 0
+                ? $"Paused — directory checkpoint ({job.CompletedRelativePaths.Count} file(s) done)"
+                : "Paused — directory will resume with per-file checkpoint";
+        }
+
         if (job.SupportsResume && job.ResumeOffsetBytes > 0)
         {
             return $"Paused — resume continues from {job.ResumeOffsetBytes} bytes";

@@ -1,3 +1,4 @@
+using UplinkFtp.Helpers;
 using UplinkFtp.Models.Dto;
 using UplinkFtp.Models.Enums;
 using UplinkFtp.Services.Ftp;
@@ -78,20 +79,40 @@ public sealed class TransferQueueServiceTests
     }
 
     [Fact]
-    public async Task Directory_jobs_do_not_byte_resume()
+    public async Task Directory_jobs_support_per_file_checkpoint()
     {
         var ftp = new FakeFtpService();
         await using var queue = new TransferQueueService(ftp, new FakeLicense(LicenseTier.Free));
 
         var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var pauseGate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        ftp.OnDownloadDirectory = async (_, _, _, ct) =>
+        var listCalls = 0;
+        ftp.OnListDirectory = (path, _, ct) =>
+        {
+            // First list of the root returns one file so the walker starts a download.
+            if (Interlocked.Increment(ref listCalls) == 1)
+            {
+                return Task.FromResult<IReadOnlyList<RemoteEntry>>(
+                [
+                    new RemoteEntry
+                    {
+                        Name = "slow.bin",
+                        FullPath = RemotePath.Combine(path, "slow.bin"),
+                        IsDirectory = false,
+                        Size = 10
+                    }
+                ]);
+            }
+
+            return Task.FromResult<IReadOnlyList<RemoteEntry>>([]);
+        };
+        ftp.OnDownloadFile = async (_, _, _, _, ct) =>
         {
             started.TrySetResult();
             await pauseGate.Task.WaitAsync(ct);
         };
 
-        var job = queue.EnqueueDownload("/remote/dir", "/tmp/dir", isDirectory: true);
+        var job = queue.EnqueueDownload("/remote/dir", Path.Combine(Path.GetTempPath(), "uplink-q-" + Guid.NewGuid().ToString("N")), isDirectory: true);
         await started.Task.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.True(queue.Pause(job.Id));
         pauseGate.TrySetCanceled();
@@ -100,8 +121,8 @@ public sealed class TransferQueueServiceTests
             queue.GetSnapshot().First(j => j.Id == job.Id).State == TransferJobState.Paused);
 
         var paused = queue.GetSnapshot().First(j => j.Id == job.Id);
-        Assert.False(paused.SupportsResume);
-        Assert.Contains("restarts", paused.Detail!, StringComparison.OrdinalIgnoreCase);
+        Assert.True(paused.SupportsResume);
+        Assert.Contains("checkpoint", paused.Detail!, StringComparison.OrdinalIgnoreCase);
     }
 
     private static async Task WaitForAsync(Func<bool> condition, int timeoutMs = 5000)
@@ -131,6 +152,7 @@ public sealed class TransferQueueServiceTests
     {
         public Func<string, string, long, IProgress<TransferProgress>?, CancellationToken, Task>? OnDownloadFile { get; set; }
         public Func<string, string, IProgress<TransferProgress>?, CancellationToken, Task>? OnDownloadDirectory { get; set; }
+        public Func<string, RemoteListOptions?, CancellationToken, Task<IReadOnlyList<RemoteEntry>>>? OnListDirectory { get; set; }
         public long LastDownloadResumeOffset { get; set; }
 
         public string Name => "Fake";
@@ -140,8 +162,46 @@ public sealed class TransferQueueServiceTests
         public Task ConnectAsync(ConnectionOptions options, CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task DisconnectAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
         public Task EnsureConnectedAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
-        public Task<IReadOnlyList<RemoteEntry>> ListDirectoryAsync(string remotePath, CancellationToken cancellationToken = default)
-            => Task.FromResult<IReadOnlyList<RemoteEntry>>([]);
+        public Task<IReadOnlyList<RemoteEntry>> ListDirectoryAsync(string remotePath, RemoteListOptions? options = null, CancellationToken cancellationToken = default)
+            => OnListDirectory is null
+                ? Task.FromResult<IReadOnlyList<RemoteEntry>>([])
+                : OnListDirectory(remotePath, options, cancellationToken);
+
+        public Task RenameAsync(string fromPath, string toPath, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task MoveAsync(string fromPath, string toPath, CancellationToken cancellationToken = default)
+            => RenameAsync(fromPath, toPath, cancellationToken);
+
+        public Task CreateDirectoryAsync(string remotePath, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task CreateEmptyFileAsync(string remotePath, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task DeleteFileAsync(string remotePath, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task DeleteDirectoryAsync(string remotePath, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task SetPermissionsAsync(string remotePath, UnixFilePermissions permissions, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task<UnixFilePermissions?> GetPermissionsAsync(string remotePath, CancellationToken cancellationToken = default)
+            => Task.FromResult<UnixFilePermissions?>(null);
+
+        public Task<DirectorySizeResult> CalculateDirectorySizeAsync(string remotePath, IProgress<DirectorySizeResult>? progress = null, CancellationToken cancellationToken = default)
+            => Task.FromResult(new DirectorySizeResult { Path = remotePath, TotalBytes = 0, FileCount = 0, DirectoryCount = 0 });
+
+        public Task<string> ReadTextFileAsync(string remotePath, CancellationToken cancellationToken = default)
+            => Task.FromResult(string.Empty);
+
+        public Task WriteTextFileAsync(string remotePath, string content, CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
+
+        public Task<string> ExecuteShellCommandAsync(string command, CancellationToken cancellationToken = default)
+            => Task.FromException<string>(new NotSupportedException());
 
         public Task DownloadFileAsync(string remotePath, string localPath, IProgress<TransferProgress>? progress = null, CancellationToken cancellationToken = default)
             => DownloadFileAsync(remotePath, localPath, 0, progress, cancellationToken);
@@ -163,18 +223,6 @@ public sealed class TransferQueueServiceTests
 
         public Task<IConnectionLease> OpenTransferClientAsync(CancellationToken cancellationToken = default)
             => throw new NotSupportedException();
-
-        public Task RenameAsync(string fromPath, string toPath, CancellationToken cancellationToken = default)
-            => Task.CompletedTask;
-
-        public Task<string> ReadTextFileAsync(string remotePath, CancellationToken cancellationToken = default)
-            => Task.FromResult(string.Empty);
-
-        public Task WriteTextFileAsync(string remotePath, string content, CancellationToken cancellationToken = default)
-            => Task.CompletedTask;
-
-        public Task<string> ExecuteShellCommandAsync(string command, CancellationToken cancellationToken = default)
-            => Task.FromException<string>(new NotSupportedException());
 
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }

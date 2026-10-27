@@ -15,9 +15,21 @@ public static class AiFileFilterMatcher
     {
         ArgumentNullException.ThrowIfNull(filter);
 
-        if (isDirectory)
+        var nameContains = filter.NameContains;
+        if (string.IsNullOrWhiteSpace(nameContains) && !string.IsNullOrWhiteSpace(filter.RawQuery))
         {
-            // NL file search targets files; keep parent ".." and folders out of filter hits.
+            // Plain typed queries land in RawQuery when NL parse finds no structured fields.
+            nameContains = filter.RawQuery;
+        }
+
+        var hasSizeOrDate = filter.MinSizeBytes is not null
+                            || filter.MaxSizeBytes is not null
+                            || filter.ModifiedAfterUtc is not null
+                            || filter.ModifiedBeforeUtc is not null;
+
+        // Size/date filters are file-oriented; still allow directory name matches for findability.
+        if (isDirectory && hasSizeOrDate)
+        {
             return false;
         }
 
@@ -32,8 +44,8 @@ public static class AiFileFilterMatcher
             }
         }
 
-        if (!string.IsNullOrWhiteSpace(filter.NameContains)
-            && name.IndexOf(filter.NameContains!, StringComparison.OrdinalIgnoreCase) < 0)
+        if (!string.IsNullOrWhiteSpace(nameContains)
+            && name.IndexOf(nameContains!, StringComparison.OrdinalIgnoreCase) < 0)
         {
             return false;
         }
@@ -65,11 +77,8 @@ public static class AiFileFilterMatcher
         }
 
         var hasConstraint = !string.IsNullOrWhiteSpace(filter.Extension)
-                            || !string.IsNullOrWhiteSpace(filter.NameContains)
-                            || filter.MinSizeBytes is not null
-                            || filter.MaxSizeBytes is not null
-                            || filter.ModifiedAfterUtc is not null
-                            || filter.ModifiedBeforeUtc is not null;
+                            || !string.IsNullOrWhiteSpace(nameContains)
+                            || hasSizeOrDate;
         // No parsed constraints → do not treat as a match (UI shows filter.Explanation).
         return hasConstraint;
     }

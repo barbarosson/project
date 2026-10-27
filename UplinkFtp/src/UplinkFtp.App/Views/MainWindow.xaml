@@ -113,7 +113,7 @@
                               ToolTipService.ToolTip="Accept any FTPS certificate. Unsafe for production — only for self-signed lab servers."/>
                     <Button Grid.Column="6"
                             Content="Connect"
-                            Style="{StaticResource AccentButtonStyle}"
+                            Style="{StaticResource UplinkAccentButtonStyle}"
                             FontFamily="{StaticResource UplinkUiFont}"
                             Command="{x:Bind ViewModel.ConnectCommand}"
                             VerticalAlignment="Bottom"
@@ -135,12 +135,12 @@
             <panels:LogPanel x:Name="LogPanel"/>
         </Border>
 
-        <!-- Local | Remote browsers -->
-        <Grid Grid.Row="2" Margin="4,0">
+        <!-- Local | Remote browsers (MinWidth keeps panes usable at 125–150% / ~1366 epx) -->
+        <Grid Grid.Row="2" Margin="4,0" x:Name="BrowserPanesGrid">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*" MinWidth="440"/>
                 <ColumnDefinition Width="12"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*" MinWidth="360"/>
             </Grid.ColumnDefinitions>
             <Border Style="{StaticResource UplinkSectionBorderStyle}" Margin="6,6,0,6">
                 <panels:LocalBrowserPanel x:Name="LocalPanel"/>
@@ -168,9 +168,63 @@
                 Background="{ThemeResource UplinkAccentSoftBrush}"
                 BorderBrush="{ThemeResource UplinkSectionStrokeBrush}"
                 BorderThickness="1">
-            <TextBlock Style="{StaticResource UplinkMutedTextStyle}" FontSize="12">
-                <Run Text="Tip: drag local → remote to upload (or Local Upload →). Drag remote → local to download (or Remote ← Download). Assist: URI parse + log diagnosis."/>
-            </TextBlock>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Style="{StaticResource UplinkMutedTextStyle}" FontSize="12" VerticalAlignment="Center"
+                           TextWrapping="WrapWholeWords">
+                    <Run Text="Tip: right-click for rename/delete/create/chmod. Drag panes to transfer. Assist: URI parse + log diagnosis."/>
+                </TextBlock>
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            Spacing="10"
+                            VerticalAlignment="Center"
+                            Margin="16,0,0,0">
+                    <CheckBox Content="Sync browse"
+                              FontFamily="{StaticResource UplinkUiFont}"
+                              IsChecked="{x:Bind ViewModel.SynchronizedBrowsing, Mode=TwoWay}"
+                              ToolTipService.ToolTip="Enter/leave matching folders on both sides together"/>
+                    <TextBlock Text="On conflict"
+                               Style="{StaticResource UplinkMutedTextStyle}"
+                               VerticalAlignment="Center"/>
+                    <ComboBox FontFamily="{StaticResource UplinkUiFont}"
+                              ItemsSource="{x:Bind ViewModel.ConflictActionLabels}"
+                              SelectedItem="{x:Bind ViewModel.SelectedConflictAction, Mode=TwoWay}"
+                              MinWidth="120"
+                              VerticalAlignment="Center"
+                              ToolTipService.ToolTip="Ask prompts before overwrite; other actions apply automatically"/>
+                    <Button Content="Compare"
+                            Style="{StaticResource UplinkNavButtonStyle}"
+                            Command="{x:Bind ViewModel.CompareDirectoriesCommand}"
+                            ToolTipService.ToolTip="Highlight size/date differences between panes"/>
+                    <Button Content="↑ diffs"
+                            Style="{StaticResource UplinkNavButtonStyle}"
+                            Command="{x:Bind ViewModel.EnqueueCompareUploadCommand}"
+                            IsEnabled="{x:Bind ViewModel.HasCompareResults, Mode=OneWay}"
+                            ToolTipService.ToolTip="Enqueue local-only / differing files for upload"/>
+                    <Button Content="↓ diffs"
+                            Style="{StaticResource UplinkNavButtonStyle}"
+                            Command="{x:Bind ViewModel.EnqueueCompareDownloadCommand}"
+                            IsEnabled="{x:Bind ViewModel.HasCompareResults, Mode=OneWay}"
+                            ToolTipService.ToolTip="Enqueue remote-only / differing files for download"/>
+                    <Button Content="Sync…"
+                            Style="{StaticResource UplinkNavButtonStyle}"
+                            Command="{x:Bind ViewModel.PreviewDirectorySyncCommand}"
+                            Visibility="{x:Bind ViewModel.DirectorySyncButtonVisibility, Mode=OneWay}"
+                            ToolTipService.ToolTip="Pro: dry-run one-way mirror from compare results"/>
+                    <Button Content="Pin path"
+                            Style="{StaticResource UplinkNavButtonStyle}"
+                            Command="{x:Bind ViewModel.PinRemotePathCommand}"
+                            ToolTipService.ToolTip="Pin current remote path for the active saved site"/>
+                    <Button Content="Clear diff"
+                            Style="{StaticResource UplinkNavButtonStyle}"
+                            Command="{x:Bind ViewModel.ClearCompareCommand}"
+                            IsEnabled="{x:Bind ViewModel.HasCompareResults, Mode=OneWay}"
+                            ToolTipService.ToolTip="Clear compare highlights"/>
+                </StackPanel>
+            </Grid>
         </Border>
     </Grid>
 </Window>

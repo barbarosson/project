@@ -17,7 +17,7 @@ ADIM 1–6 client skeleton is in place. Post–ADIM work (P1–P11) adds **Core*
 
 CI: `.github/workflows/uplink-ftp-ci.yml` (Linux Core tests + Windows WinUI build).
 
-**UI:** Sectioned shell (connect, message log, local/remote browsers, transfer queue) with five named themes — **Orbit**, **Daybreak**, **Nightwatch**, **Harbor**, **Forge** (**Settings → Theme**). Sora UI font, JetBrains Mono for the log. Toolbar **Assist** = five-capability AI hub (troubleshoot, NL search, batch rename/move, SSH propose/approve, Quick Edit). App icon: `Assets/UplinkFtp.ico` / `UplinkLogo.png`.
+**UI:** Sectioned shell (connect, message log, local/remote browsers, transfer queue) with four named themes — **Sun Rise** (default), **Orange**, **Red Night**, **ZEN** (**Settings → Theme**). Sora UI font, JetBrains Mono for the log. Toolbar **Assist** = five-capability AI hub (troubleshoot, NL search, batch rename/move, SSH propose/approve, Quick Edit). App icon: `Assets/UplinkFtp.ico` / `UplinkLogo.png`.
 
 **AI module:** Implemented checklist in [`docs/ai-module-checklist.md`](docs/ai-module-checklist.md); Cursor rule `.cursor/rules/uplink-ftp-ai-module.mdc`. Local heuristics without a key; optional BYOK cloud via **Settings → AI**. No embedded API keys.
 
@@ -89,6 +89,6 @@ WinUI 3 targets `net8.0-windows10.0.*` and requires Windows App SDK tooling.
 - [Security review](docs/security-review.md)  
 - [Performance notes](docs/performance-notes.md)  
 - [Release checklist](docs/release-checklist.md) · [Known issues](docs/known-issues.md) · [Changelog](docs/CHANGELOG.md) · [Support](docs/support.md)  
-- Packaging: [MSIX](packaging/msix/README.md) · [Web/sideload](packaging/web/README.md)  
+- Packaging: [MSIX](packaging/msix/README.md) · [Web/sideload](packaging/web/README.md) · [Store docs](docs/store/README.md)  
 
 Coordinator durable docs (Project Context store): `docs/project-context.md`, roadmap, ADIM notes.

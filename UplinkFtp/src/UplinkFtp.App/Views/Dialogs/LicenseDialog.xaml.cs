@@ -13,18 +13,20 @@ public sealed partial class LicenseDialog : ContentDialog
         ViewModel = viewModel;
         DataContext = viewModel;
         InitializeComponent();
-        UpdateWebPanelVisibility();
+        UpdateChannelPanels();
         viewModel.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName is nameof(LicenseViewModel.IsWebChannel))
+            if (e.PropertyName is nameof(LicenseViewModel.IsWebChannel)
+                or nameof(LicenseViewModel.ShowBuyPro))
             {
-                UpdateWebPanelVisibility();
+                UpdateChannelPanels();
             }
         };
     }
 
-    private void UpdateWebPanelVisibility()
+    private void UpdateChannelPanels()
     {
         WebKeyPanel.Visibility = ViewModel.IsWebChannel ? Visibility.Visible : Visibility.Collapsed;
+        BuyProButton.Visibility = ViewModel.ShowBuyPro ? Visibility.Visible : Visibility.Collapsed;
     }
 }
