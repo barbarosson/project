@@ -19,6 +19,7 @@ public sealed partial class SettingsViewModel : ObservableObject
     private readonly AppSettings _settings;
     private readonly TelemetryService _telemetry;
     private readonly ICredentialStore _credentials;
+    private readonly IAppSettingsStore _settingsStore;
     private LogViewModel? _log;
     private bool _suppressThemePreview;
     private string _themeAtOpen = ThemeCatalog.DefaultThemeName;
@@ -112,11 +113,13 @@ public sealed partial class SettingsViewModel : ObservableObject
     public SettingsViewModel(
         AppSettings settings,
         TelemetryService telemetry,
-        ICredentialStore credentials)
+        ICredentialStore credentials,
+        IAppSettingsStore settingsStore)
     {
         _settings = settings;
         _telemetry = telemetry;
         _credentials = credentials;
+        _settingsStore = settingsStore;
         LoadFromSettings();
     }
 
@@ -281,10 +284,11 @@ public sealed partial class SettingsViewModel : ObservableObject
             AiApiKeyInput = string.Empty;
         }
 
+        await _settingsStore.SaveAsync(_settings).ConfigureAwait(true);
         await RefreshAiKeyStatusAsync().ConfigureAwait(true);
         StatusMessage = AiKeyConfigured
-            ? $"Settings saved. {_settings.AiProvider} key stored in Windows Credential Locker."
-            : "Settings saved. Theme kept. AI runs locally until you add a BYOK key.";
+            ? $"Settings saved to LocalAppData. {_settings.AiProvider} key stored in Windows Credential Locker."
+            : "Settings saved to LocalAppData. Theme kept. AI runs locally until you add a BYOK key.";
         SettingsSaved?.Invoke(this, EventArgs.Empty);
     }
 

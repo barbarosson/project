@@ -194,11 +194,30 @@
                               SelectedItem="{x:Bind ViewModel.SelectedConflictAction, Mode=TwoWay}"
                               MinWidth="120"
                               VerticalAlignment="Center"
-                              ToolTipService.ToolTip="Applied when the destination already has the same name"/>
+                              ToolTipService.ToolTip="Ask prompts before overwrite; other actions apply automatically"/>
                     <Button Content="Compare"
                             Style="{StaticResource UplinkNavButtonStyle}"
                             Command="{x:Bind ViewModel.CompareDirectoriesCommand}"
                             ToolTipService.ToolTip="Highlight size/date differences between panes"/>
+                    <Button Content="↑ diffs"
+                            Style="{StaticResource UplinkNavButtonStyle}"
+                            Command="{x:Bind ViewModel.EnqueueCompareUploadCommand}"
+                            IsEnabled="{x:Bind ViewModel.HasCompareResults, Mode=OneWay}"
+                            ToolTipService.ToolTip="Enqueue local-only / differing files for upload"/>
+                    <Button Content="↓ diffs"
+                            Style="{StaticResource UplinkNavButtonStyle}"
+                            Command="{x:Bind ViewModel.EnqueueCompareDownloadCommand}"
+                            IsEnabled="{x:Bind ViewModel.HasCompareResults, Mode=OneWay}"
+                            ToolTipService.ToolTip="Enqueue remote-only / differing files for download"/>
+                    <Button Content="Sync…"
+                            Style="{StaticResource UplinkNavButtonStyle}"
+                            Command="{x:Bind ViewModel.PreviewDirectorySyncCommand}"
+                            Visibility="{x:Bind ViewModel.DirectorySyncButtonVisibility, Mode=OneWay}"
+                            ToolTipService.ToolTip="Pro: dry-run one-way mirror from compare results"/>
+                    <Button Content="Pin path"
+                            Style="{StaticResource UplinkNavButtonStyle}"
+                            Command="{x:Bind ViewModel.PinRemotePathCommand}"
+                            ToolTipService.ToolTip="Pin current remote path for the active saved site"/>
                     <Button Content="Clear diff"
                             Style="{StaticResource UplinkNavButtonStyle}"
                             Command="{x:Bind ViewModel.ClearCompareCommand}"

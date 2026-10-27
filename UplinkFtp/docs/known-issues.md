@@ -7,15 +7,17 @@ Living list for dogfood and public beta. Update as defects are fixed.
 - Full WinUI build and run require Windows 10/11. App targets **Windows App SDK 2.5.1** with `WindowsAppSDKSelfContained=true` for unpackaged output (no separate Runtime 1.6 install).  
 - Launch the self-contained output exe: `bin\x64\Debug\net8.0-windows10.0.19041.0\win-x64\UplinkFtp.exe`. Plain `dotnet run` may look under `bin\Debug\` and fail.  
 - Linux agents run **Core tests only**.  
-- **P0 Windows smoke is still user-owned** — not validated in cloud Linux agents.  
+- **P0 Windows smoke is still user-owned** — see `docs/windows-soak-checklist.md`.  
 
 ## Product gaps vs FileZilla-class expectations
 
-- Directory transfers: pause restarts the directory job (no per-file directory resume UX yet).  
+- Directory transfers now checkpoint completed relative paths on pause/resume; nested conflict Ask inside a directory walk still follows the job-level policy (no per-child Ask UI yet).  
 - File byte-resume depends on server/protocol support; edge servers may fail offset resume.  
-- Site Manager / Settings / License dialogs exist but need Windows UI validation.  
-- App settings are primarily in-memory until persistence lands.  
-- SFTP host-key pinning UX incomplete (see `security-review.md`).  
+- Site Manager / Settings / License dialogs exist but need Windows UI validation on each flight.  
+- ~~App settings are primarily in-memory~~ **Fixed:** non-secret settings persist to LocalAppData JSON.  
+- ~~SFTP host-key pinning UX incomplete~~ **Fixed (MVP):** first-connect / mismatch prompt + pin store; FTPS custom CA trust store still open.  
+- Pro **Scripting** feature flag has no product UI yet — do not promise in Store listing.  
+- Multi-remote tabs / proxy / rate limit still absent.  
 
 ## Licensing / distribution
 

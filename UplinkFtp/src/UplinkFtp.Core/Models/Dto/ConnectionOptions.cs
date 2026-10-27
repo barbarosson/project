@@ -1,5 +1,6 @@
 using System;
 using UplinkFtp.Models.Enums;
+using UplinkFtp.Services.Security;
 
 namespace UplinkFtp.Models.Dto;
 
@@ -41,6 +42,9 @@ public sealed class ConnectionOptions
     public bool UsePassive { get; init; } = true;
 
     public TimeSpan KeepAliveInterval { get; init; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>Optional SFTP host-key verifier (prompt + pin). Null → auto-pin in Core headless paths.</summary>
+    public SshHostKeyVerifier? HostKeyVerifier { get; init; }
 
     public int ResolvePort() => Port > 0
         ? Port

@@ -96,7 +96,7 @@ public sealed class LocalAiAssistantService : IAiAssistantService
         };
     }
 
-    public Task<AiFileFilter> ParseSearchQueryAsync(
+    public async Task<AiFileFilter> ParseSearchQueryAsync(
         string naturalLanguageQuery,
         CancellationToken cancellationToken = default)
     {
@@ -104,13 +104,27 @@ public sealed class LocalAiAssistantService : IAiAssistantService
         var q = naturalLanguageQuery?.Trim() ?? string.Empty;
         if (q.Length == 0)
         {
-            return Task.FromResult(new AiFileFilter
+            return new AiFileFilter
             {
                 Explanation = "Enter a natural-language search (e.g. ZIP files larger than 50MB)."
-            });
+            };
         }
 
-        // Local keyword heuristics — cloud parse plugs in when BYOK + CloudAiAssistantService exist.
+        if (_settings.AiProvider != AiProviderKind.None
+            && await HasApiKeyAsync(cancellationToken).ConfigureAwait(false)
+            && _cloud is not null)
+        {
+            try
+            {
+                return await _cloud.ParseSearchQueryAsync(q, cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Fall through to local heuristics.
+            }
+        }
+
+        // Local keyword heuristics.
         string? ext = null;
         if (Regex.IsMatch(q, @"\bzip\b", RegexOptions.IgnoreCase))
         {
@@ -167,7 +181,7 @@ public sealed class LocalAiAssistantService : IAiAssistantService
             ? $"Name contains “{contains}”."
             : "Local filter parse (BYOK cloud parse not required).";
 
-        return Task.FromResult(new AiFileFilter
+        return new AiFileFilter
         {
             RawQuery = q,
             Extension = ext,
@@ -175,15 +189,30 @@ public sealed class LocalAiAssistantService : IAiAssistantService
             MinSizeBytes = minBytes,
             ModifiedAfterUtc = after,
             Explanation = explanation
-        });
+        };
     }
 
-    public Task<AiRenamePreview> PreviewBatchRenameAsync(
+    public async Task<AiRenamePreview> PreviewBatchRenameAsync(
         IReadOnlyList<string> fileNames,
         string naturalLanguageRule,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        if (_settings.AiProvider != AiProviderKind.None
+            && await HasApiKeyAsync(cancellationToken).ConfigureAwait(false)
+            && _cloud is not null)
+        {
+            try
+            {
+                return await _cloud.PreviewBatchRenameAsync(fileNames, naturalLanguageRule, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch
+            {
+                // Local fallback below.
+            }
+        }
+
         var rule = naturalLanguageRule?.Trim() ?? string.Empty;
         var items = new List<AiRenamePreviewItem>();
 
@@ -208,21 +237,36 @@ public sealed class LocalAiAssistantService : IAiAssistantService
             }
         }
 
-        return Task.FromResult(new AiRenamePreview
+        return new AiRenamePreview
         {
             Items = items,
             RuleSummary = string.IsNullOrWhiteSpace(rule)
                 ? "No rule"
                 : $"Preview for: {rule}"
-        });
+        };
     }
 
-    public Task<AiMovePreview> PreviewSmartMoveAsync(
+    public async Task<AiMovePreview> PreviewSmartMoveAsync(
         IReadOnlyList<string> fileNames,
         string naturalLanguageRule,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        if (_settings.AiProvider != AiProviderKind.None
+            && await HasApiKeyAsync(cancellationToken).ConfigureAwait(false)
+            && _cloud is not null)
+        {
+            try
+            {
+                return await _cloud.PreviewSmartMoveAsync(fileNames, naturalLanguageRule, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch
+            {
+                // Local fallback.
+            }
+        }
+
         _ = naturalLanguageRule;
         var items = new List<AiMovePreviewItem>();
         foreach (var name in fileNames ?? [])
@@ -240,19 +284,34 @@ public sealed class LocalAiAssistantService : IAiAssistantService
             }
         }
 
-        return Task.FromResult(new AiMovePreview
+        return new AiMovePreview
         {
             Items = items,
             RuleSummary = "Heuristic: images → Images/, documents → Docs/ (confirm before enqueue)."
-        });
+        };
     }
 
-    public Task<AiSshCommandProposal> ProposeSshCommandAsync(
+    public async Task<AiSshCommandProposal> ProposeSshCommandAsync(
         string naturalLanguageRequest,
         string currentRemotePath,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        if (_settings.AiProvider != AiProviderKind.None
+            && await HasApiKeyAsync(cancellationToken).ConfigureAwait(false)
+            && _cloud is not null)
+        {
+            try
+            {
+                return await _cloud.ProposeSshCommandAsync(naturalLanguageRequest, currentRemotePath, cancellationToken)
+                    .ConfigureAwait(false);
+            }
+            catch
+            {
+                // Local fallback.
+            }
+        }
+
         var req = naturalLanguageRequest?.Trim() ?? string.Empty;
         var cwd = string.IsNullOrWhiteSpace(currentRemotePath) ? "." : currentRemotePath.Trim();
 
@@ -275,19 +334,33 @@ public sealed class LocalAiAssistantService : IAiAssistantService
             explanation = "Empty request — showing working directory check only.";
         }
 
-        return Task.FromResult(new AiSshCommandProposal
+        return new AiSshCommandProposal
         {
             Command = command,
             Explanation = explanation + " Auto-execute is disabled."
-        });
+        };
     }
 
-    public Task<AiQuickEditProposal> ProposeQuickEditAsync(
+    public async Task<AiQuickEditProposal> ProposeQuickEditAsync(
         AiQuickEditRequest request,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ArgumentNullException.ThrowIfNull(request);
+
+        if (_settings.AiProvider != AiProviderKind.None
+            && await HasApiKeyAsync(cancellationToken).ConfigureAwait(false)
+            && _cloud is not null)
+        {
+            try
+            {
+                return await _cloud.ProposeQuickEditAsync(request, cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Local fallback.
+            }
+        }
 
         var original = request.FileContent ?? string.Empty;
         var instruction = request.Instruction?.Trim() ?? string.Empty;
@@ -307,14 +380,14 @@ public sealed class LocalAiAssistantService : IAiAssistantService
             }
         }
 
-        return Task.FromResult(new AiQuickEditProposal
+        return new AiQuickEditProposal
         {
             OriginalContent = original,
             ProposedContent = proposed,
             Summary = string.Equals(original, proposed, StringComparison.Ordinal)
                 ? "No local heuristic change — configure BYOK for general NL edits. Upload only after you confirm."
                 : "Proposed HTTPS redirect block for .htaccess. Confirm before upload."
-        });
+        };
     }
 
     private static string QuoteShell(string path)
