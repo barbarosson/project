@@ -28,6 +28,9 @@ public interface ITransferQueueService
         bool isDirectory,
         TransferConflictPolicy? conflictPolicy = null);
 
+    /// <summary>Re-insert a persisted queued/failed/paused job after restart.</summary>
+    TransferJob RestoreJob(TransferJob job);
+
     /// <summary>Cancels a running job and marks it Paused (keeps resume offset for files).</summary>
     bool Pause(Guid jobId);
 

@@ -47,4 +47,16 @@ public sealed class AppSettings
     /// Empty → provider default.
     /// </summary>
     public string AiEndpoint { get; set; } = string.Empty;
+
+    /// <summary>Mirror enter/leave between local and remote panes.</summary>
+    public bool SynchronizedBrowsing { get; set; }
+
+    /// <summary>Default transfer conflict action for new queue items.</summary>
+    public TransferConflictAction DefaultConflictAction { get; set; } = TransferConflictAction.Ask;
+
+    /// <summary>
+    /// When the operator picks Ask and then chooses an action with “apply to all”,
+    /// this is the preferred one-shot action offered next time (not auto-applied).
+    /// </summary>
+    public TransferConflictAction ConflictAskDefault { get; set; } = TransferConflictAction.Overwrite;
 }

@@ -20,10 +20,11 @@ Partner Center **app identity** and **Pro add-on Store ID** are done in git. Can
 
 1. On Windows: VS **Associate App with the Store** (refresh PhoneIdentity / association XML if Partner Center expects it).  
 2. Host public privacy URL (`FILL_IN_PRIVACY_POLICY_HTTPS_URL`) + support email FILL_INs.  
-3. Capture real desktop screenshots (see `screenshot-shot-list.md`).  
+3. Capture real desktop screenshots from a Windows run (see `screenshot-shot-list.md` + `docs/windows-soak-checklist.md`). Do **not** upload agent mock media as final Store assets.  
 4. Paste listing EN/TR, IARC answers, capability justifications into Partner Center.  
-5. Sign / Store-sign Store-channel MSIX **0.1.2.0**; sandbox Free → Buy Pro → limits lift (needs HWND/`InitializeWithWindow` fix — see `docs/licensing-contract.md`).  
-6. Submit certification flight.
+5. Sign / Store-sign Store-channel MSIX **0.1.2.0** (or next flight version you choose); sandbox Free → Buy Pro → limits lift (`InitializeWithWindow` is in-tree).  
+6. Run `docs/windows-soak-checklist.md` P0 before certification.  
+7. Submit certification flight.
 
 ## Do not commit
 

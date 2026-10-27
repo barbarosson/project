@@ -1,6 +1,10 @@
 using System;
 using System.IO;
+using System.Text;
 using UplinkFtp.Helpers;
+using UplinkFtp.Services.Browse;
+using UplinkFtp.Services.Security;
+using UplinkFtp.Services.Transfer;
 using UplinkFtp.ViewModels;
 using UplinkFtp.Views.Dialogs;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,6 +35,7 @@ public sealed partial class MainWindow : Window
         ViewModel.OpenSettingsRequested += OnOpenSettingsRequested;
         ViewModel.OpenLicenseRequested += OnOpenLicenseRequested;
         ViewModel.OpenAssistRequested += OnOpenAssistRequested;
+        ViewModel.OpenSyncPlanRequested += OnOpenSyncPlanRequested;
         ViewModel.CredentialsApplied += OnCredentialsApplied;
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
 
@@ -38,6 +43,7 @@ public sealed partial class MainWindow : Window
         ApplyWindowChrome();
         UpdateStatusAppearance();
         Activated += OnActivatedOnce;
+        Closed += OnWindowClosed;
     }
 
     /// <summary>
@@ -75,7 +81,15 @@ public sealed partial class MainWindow : Window
     {
         Activated -= OnActivatedOnce;
         ApplyThemeFromSettings();
+        // Prompts need a live XamlRoot (available after first activate).
+        App.Services.GetRequiredService<UiTransferConflictPrompt>().SetXamlRoot(RootGrid.XamlRoot);
+        App.Services.GetRequiredService<UiSshHostKeyPrompt>().SetXamlRoot(RootGrid.XamlRoot);
         await ViewModel.InitializeAsync();
+    }
+
+    private void OnWindowClosed(object sender, WindowEventArgs args)
+    {
+        ViewModel.Dispose();
     }
 
     private void ApplyThemeFromSettings()
@@ -167,7 +181,14 @@ public sealed partial class MainWindow : Window
             _ = ViewModel.ConnectCommand.ExecuteAsync(null);
         }
 
+        async void OnUpgrade(object? s, EventArgs e)
+        {
+            dialog.Hide();
+            await ShowLicenseAsync().ConfigureAwait(true);
+        }
+
         vm.ConnectRequested += OnConnect;
+        vm.UpgradeToProRequested += OnUpgrade;
         try
         {
             await dialog.ShowAsync();
@@ -175,6 +196,7 @@ public sealed partial class MainWindow : Window
         finally
         {
             vm.ConnectRequested -= OnConnect;
+            vm.UpgradeToProRequested -= OnUpgrade;
         }
     }
 
@@ -243,6 +265,58 @@ public sealed partial class MainWindow : Window
 
         await dialog.ShowAsync();
         ViewModel.RefreshLicenseStatusText();
+        ViewModel.RefreshProFeatureGates();
+    }
+
+    private async void OnOpenSyncPlanRequested(object? sender, DirectorySyncPlan plan)
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine($"Dry-run · {plan.Direction} · delete extras: {plan.DeleteExtras}");
+        sb.AppendLine($"Upload {plan.UploadCount} · Download {plan.DownloadCount} · Delete {plan.DeleteCount}");
+        sb.AppendLine();
+        foreach (var item in plan.Items)
+        {
+            sb.AppendLine($"{item.Action}: {item.Name} ({item.CompareStatus})");
+        }
+
+        var executeDeletes = new CheckBox
+        {
+            Content = "Also execute deletes listed above",
+            IsChecked = false,
+            Margin = new Thickness(0, 8, 0, 0)
+        };
+        var panel = new StackPanel { Spacing = 6 };
+        panel.Children.Add(new ScrollViewer
+        {
+            MaxHeight = 280,
+            Content = new TextBlock
+            {
+                Text = sb.ToString(),
+                FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Consolas"),
+                TextWrapping = TextWrapping.Wrap,
+                IsTextSelectionEnabled = true
+            }
+        });
+        if (plan.DeleteCount > 0)
+        {
+            panel.Children.Add(executeDeletes);
+        }
+
+        var dialog = new ContentDialog
+        {
+            Title = "Pro directory sync (dry-run)",
+            Content = panel,
+            PrimaryButtonText = "Enqueue transfers",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = RootGrid.XamlRoot
+        };
+        ThemeHelper.ApplyToDialog(dialog);
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+        {
+            await ViewModel.ApplySyncPlanAsync(plan, executeDeletes.IsChecked == true).ConfigureAwait(true);
+        }
     }
 
     private async System.Threading.Tasks.Task ShowAssistAsync()

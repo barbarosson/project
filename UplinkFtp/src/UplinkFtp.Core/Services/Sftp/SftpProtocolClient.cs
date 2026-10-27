@@ -9,6 +9,7 @@ using UplinkFtp.Helpers;
 using UplinkFtp.Models.Dto;
 using UplinkFtp.Models.Enums;
 using UplinkFtp.Services.Ftp;
+using UplinkFtp.Services.Security;
 using Renci.SshNet;
 using Renci.SshNet.Common;
 
@@ -45,8 +46,42 @@ public sealed class SftpProtocolClient : IRemoteProtocolClient
                 : options.ReadTimeout
         };
 
+        AttachHostKeyHandler(client, options, cancellationToken);
+
         await client.ConnectAsync(cancellationToken).ConfigureAwait(false);
         _client = client;
+    }
+
+    private static void AttachHostKeyHandler(
+        SftpClient client,
+        ConnectionOptions options,
+        CancellationToken cancellationToken)
+    {
+        var verifier = options.HostKeyVerifier;
+        client.HostKeyReceived += (_, e) =>
+        {
+            try
+            {
+                if (verifier is null)
+                {
+                    // No verifier registered — trust (legacy / unit paths). Prefer DI wiring in App.
+                    e.CanTrust = true;
+                    return;
+                }
+
+                var keyType = e.HostKeyName;
+                var trusted = verifier
+                    .EvaluateAsync(options.Host, options.ResolvePort(), e.HostKey, keyType, cancellationToken)
+                    .ConfigureAwait(false)
+                    .GetAwaiter()
+                    .GetResult();
+                e.CanTrust = trusted;
+            }
+            catch
+            {
+                e.CanTrust = false;
+            }
+        };
     }
 
     public Task DisconnectAsync(CancellationToken cancellationToken = default)

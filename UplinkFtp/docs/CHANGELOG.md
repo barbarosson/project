@@ -10,8 +10,20 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 
 - **Store Buy Pro COMException:** WinUI 3 desktop now calls `InitializeWithWindow` on `StoreContext` with the main HWND before license refresh / `RequestPurchaseAsync` (fixes Store-installed Free → Buy Pro purchase UI)
 - **Store freemium:** free app license (`IsActive && !IsTrial`) no longer maps to Pro when Pro add-on ID is configured — License **Buy Pro** shows again and calls `RequestPurchaseProAsync` for `9MTN64PZGQCM`
+- **AppSettings persistence:** theme / timeouts / AI provider metadata / AcceptAnyCertificate / sync-browse / default conflict action now load/save under `%LocalAppData%/UplinkFtp/settings.json` (API keys remain in Credential Locker)
 
 ### Added
+
+- Transfer conflict **Ask** with apply-to-all ContentDialog (default conflict action)
+- SFTP host-key first-connect / mismatch prompt + SHA-256 pin store (`ssh-host-keys.json`)
+- Directory transfer **per-file checkpoint** (pause/resume skips completed relative paths)
+- Compare → **↑ diffs** / **↓ diffs** enqueue; Pro **Sync…** dry-run one-way mirror (`LicenseFeature.Sync`; hidden on Free)
+- Transfer queue persistence for Queued / Failed / Paused across restart (`transfer-queue.json`)
+- Site remote **Pin path** bookmarks (`site-bookmarks.json`); Free 4th-site limit opens License dialog
+- Cloud AI BYOK for Search / Batch rename / Smart move / SSH assist / Quick Edit (local heuristics remain fallback)
+- `docs/windows-soak-checklist.md` for Barbaros Windows soak + Store listing manual steps
+
+### Added (prior)
 
 - ADIM 1–6 client skeleton: WinUI shell, FluentFTP/SSH.NET, SQLite sites, PasswordVault credentials, transfer queue, Free/Pro licensing gates  
 - `UplinkFtp.Core` library + xUnit tests (limits, path safety, queue, license, pool, load concurrency)  

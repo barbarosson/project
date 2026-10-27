@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | Free max 1 concurrent transfer | `tests/.../Load/TransferQueueLoadTests.cs` | Many enqueued fake downloads/uploads never exceed `ActiveCount` / FakeFtp peak of 1 |
 | Pro schedules multiple | same | With delayed FakeFtp, peak concurrency &gt; 1 under Pro limits |
-| Queue unit behavior | `TransferQueueServiceTests` | Pause/resume offset, directory restart policy |
+| Queue unit behavior | `TransferQueueServiceTests` | Pause/resume offset, directory per-file checkpoint |
 
 These use in-process `Task.Delay` fakes — **not** real sockets, disk, or UI.
 

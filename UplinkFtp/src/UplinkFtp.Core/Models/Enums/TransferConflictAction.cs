@@ -7,5 +7,7 @@ public enum TransferConflictAction
     Skip = 1,
     OverwriteIfNewer = 2,
     AutoRename = 3,
-    Resume = 4
+    Resume = 4,
+    /// <summary>Prompt the operator (optional apply-to-all for the rest of the batch).</summary>
+    Ask = 5
 }
