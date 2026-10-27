@@ -8,6 +8,7 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 
 ### Fixed
 
+- **Store Buy Pro COMException:** WinUI 3 desktop now calls `InitializeWithWindow` on `StoreContext` with the main HWND before license refresh / `RequestPurchaseAsync` (fixes Store-installed Free → Buy Pro purchase UI)
 - **Store freemium:** free app license (`IsActive && !IsTrial`) no longer maps to Pro when Pro add-on ID is configured — License **Buy Pro** shows again and calls `RequestPurchaseProAsync` for `9MTN64PZGQCM`
 
 ### Added
@@ -23,6 +24,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/). Versioning s
 
 ### Changed
 
+- Package identity version **0.1.2.0** (`Package.appxmanifest`) for the next Store flight after 0.1.1.0  
+- Store purchase failure text includes exception type **and** message for clearer sandbox diagnostics  
 - Stub Pro keys disabled by default in Release (`AllowStubKeys` / `UPLINK_ALLOW_STUB_KEYS`)  
 - `AcceptAnyCertificate` defaults to false  
 - **Windows App SDK 1.6 → 2.5.1** (NuGet stable); BuildTools → `10.0.26100.9169`  

@@ -58,6 +58,10 @@ public partial class App : Application
                 sp.GetRequiredService<UplinkFtp.Services.Settings.AppSettings>(),
                 sp.GetRequiredService<UplinkFtp.Services.Ai.CloudAiAssistantService>()));
 
+        // HWND for WinRT Store purchase UI (InitializeWithWindow) — Window set in OnLaunched.
+        services.AddSingleton<MainWindowHandleProvider>();
+        services.AddSingleton<IWindowHandleProvider>(sp => sp.GetRequiredService<MainWindowHandleProvider>());
+
         RegisterLicensing(services);
 
         services.AddSingleton<UplinkFtp.Services.Ftp.IConnectionPool, UplinkFtp.Services.Ftp.ConnectionPool>();
@@ -90,10 +94,12 @@ public partial class App : Application
     private static void RegisterLicensing(IServiceCollection services)
     {
 #if UPLINK_CHANNEL_STORE
-        // Store IDs from env after Partner Center — never hard-code production IDs here.
+        // Store IDs: defaults match Partner Center (9MTN64PZGQCM); override via UPLINK_STORE_* env.
         services.AddSingleton(new UplinkFtp.Services.Licensing.StoreCommerceOptions());
         services.AddSingleton<ILicenseService>(sp =>
-            new StoreLicenseService(sp.GetRequiredService<UplinkFtp.Services.Licensing.StoreCommerceOptions>()));
+            new StoreLicenseService(
+                sp.GetRequiredService<UplinkFtp.Services.Licensing.StoreCommerceOptions>(),
+                sp.GetRequiredService<IWindowHandleProvider>()));
 #else
         var allowStubKeys =
             UplinkFtp.Services.Licensing.WebLicenseOptions.DefaultAllowStubKeys()
@@ -121,11 +127,16 @@ public partial class App : Application
             .InitializeAsync()
             .ConfigureAwait(true);
 
+        // Construct the window first so StoreContext can InitializeWithWindow (WinUI 3
+        // desktop throws COMException on RequestPurchaseAsync without an HWND). Refresh
+        // before Activate so MainViewModel.InitializeAsync still sees a ready tier.
+        _mainWindow = Services.GetRequiredService<MainWindow>();
+        Services.GetRequiredService<MainWindowHandleProvider>().Window = _mainWindow;
+
         await Services.GetRequiredService<ILicenseService>()
             .RefreshAsync()
             .ConfigureAwait(true);
 
-        _mainWindow = Services.GetRequiredService<MainWindow>();
         _mainWindow.Activate();
     }
 }
