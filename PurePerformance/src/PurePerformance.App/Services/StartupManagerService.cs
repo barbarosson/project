@@ -83,37 +83,48 @@ public sealed class StartupManagerService : IStartupManagerService
             }
         }
 
-        // Disabled backups under HKCU (we always store backups in HKCU for Store-safe writes)
+        // Disabled backups under HKCU (we always store backups in HKCU for Store-safe writes).
+        // Collect first — C# forbids yield inside try/catch (CS1626 / CS1631).
         var backupPath = $@"{DisabledRoot}\{location}";
+        List<StartupEntry>? disabledEntries = null;
         try
         {
             using var cu = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64);
             using var disabled = cu.OpenSubKey(backupPath, writable: false);
-            if (disabled is null)
+            if (disabled is not null)
             {
-                yield break;
-            }
-
-            foreach (var name in disabled.GetValueNames())
-            {
-                ct.ThrowIfCancellationRequested();
-                var command = disabled.GetValue(name)?.ToString() ?? string.Empty;
-                var id = MakeId(location, name, enabled: false);
-                Meta[id] = new StartupEntryMeta(location, name, null);
-                yield return new StartupEntry
+                disabledEntries = [];
+                foreach (var name in disabled.GetValueNames())
                 {
-                    Id = id,
-                    Name = name,
-                    Command = command,
-                    Location = location,
-                    IsEnabled = false,
-                    RequiresAdmin = requiresAdmin
-                };
+                    ct.ThrowIfCancellationRequested();
+                    var command = disabled.GetValue(name)?.ToString() ?? string.Empty;
+                    var id = MakeId(location, name, enabled: false);
+                    Meta[id] = new StartupEntryMeta(location, name, null);
+                    disabledEntries.Add(new StartupEntry
+                    {
+                        Id = id,
+                        Name = name,
+                        Command = command,
+                        Location = location,
+                        IsEnabled = false,
+                        RequiresAdmin = requiresAdmin
+                    });
+                }
             }
         }
         catch (UnauthorizedAccessException)
         {
             // Ignore backup enumeration failures.
+        }
+
+        if (disabledEntries is null)
+        {
+            yield break;
+        }
+
+        foreach (var entry in disabledEntries)
+        {
+            yield return entry;
         }
     }
 

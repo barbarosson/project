@@ -21,13 +21,16 @@ public sealed class PerformanceMonitorService : IPerformanceMonitorService
         while (!cancellationToken.IsCancellationRequested)
         {
             PerformanceSample sample;
+            var cancelled = false;
+
             try
             {
                 sample = await Task.Run(() => state.TakeSample(), cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
-                yield break;
+                cancelled = true;
+                sample = null!;
             }
             catch
             {
@@ -41,6 +44,12 @@ public sealed class PerformanceMonitorService : IPerformanceMonitorService
                 };
             }
 
+            // yield must stay outside try/catch (CS1626 / CS1631).
+            if (cancelled)
+            {
+                yield break;
+            }
+
             yield return sample;
 
             try
@@ -48,6 +57,11 @@ public sealed class PerformanceMonitorService : IPerformanceMonitorService
                 await Task.Delay(interval, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
+            {
+                cancelled = true;
+            }
+
+            if (cancelled)
             {
                 yield break;
             }
