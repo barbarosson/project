@@ -42,7 +42,8 @@
                           IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
         </StackPanel>
 
-        <ListView Grid.Row="2"
+        <ListView x:Name="EntriesList"
+                  Grid.Row="2"
                   ItemsSource="{x:Bind ViewModel.Entries, Mode=OneWay}"
                   SelectionMode="None">
             <ListView.ItemTemplate>
