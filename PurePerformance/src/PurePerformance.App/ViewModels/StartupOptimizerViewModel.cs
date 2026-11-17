@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PurePerformance.Helpers;
+using PurePerformance.Models;
 using PurePerformance.Services;
 
 namespace PurePerformance.ViewModels;
@@ -50,18 +51,30 @@ public partial class StartupOptimizerViewModel : ObservableObject
         }
     }
 
-    private async Task LoadEntriesAsync()
+    private async Task LoadEntriesAsync(bool replaceAll = true)
     {
         ErrorMessage = null;
         StatusMessage = "Reading startup entries…";
-        Entries.Clear();
 
         try
         {
             var list = await _startup.GetStartupEntriesAsync();
-            foreach (var e in list.OrderBy(x => x.LocationLabel).ThenBy(x => x.Name))
+            var ordered = list
+                .OrderBy(x => x.LocationLabel)
+                .ThenBy(x => x.Name)
+                .ToList();
+
+            if (replaceAll || Entries.Count == 0)
             {
-                Entries.Add(new StartupEntryItem(e));
+                Entries.Clear();
+                foreach (var e in ordered)
+                {
+                    Entries.Add(new StartupEntryItem(e));
+                }
+            }
+            else
+            {
+                MergeEntries(ordered);
             }
 
             StatusMessage = $"Found {Entries.Count} startup entr{(Entries.Count == 1 ? "y" : "ies")}.";
@@ -78,12 +91,51 @@ public partial class StartupOptimizerViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// Diffs the ObservableCollection in place so ListView does not reset scroll
+    /// after enable/disable (Clear + re-Add would jump to the top).
+    /// </summary>
+    private void MergeEntries(IReadOnlyList<StartupEntry> ordered)
+    {
+        var existingByKey = Entries.ToDictionary(e => e.StableKey);
+        var nextKeys = new HashSet<string>(
+            ordered.Select(e => StartupEntryItem.MakeStableKey(e.Location, e.Name)));
+
+        for (var i = Entries.Count - 1; i >= 0; i--)
+        {
+            if (!nextKeys.Contains(Entries[i].StableKey))
+            {
+                Entries.RemoveAt(i);
+            }
+        }
+
+        for (var i = 0; i < ordered.Count; i++)
+        {
+            var entry = ordered[i];
+            var key = StartupEntryItem.MakeStableKey(entry.Location, entry.Name);
+            if (existingByKey.TryGetValue(key, out var item))
+            {
+                item.Apply(entry);
+                var currentIndex = Entries.IndexOf(item);
+                if (currentIndex >= 0 && currentIndex != i)
+                {
+                    Entries.Move(currentIndex, i);
+                }
+            }
+            else
+            {
+                Entries.Insert(i, new StartupEntryItem(entry));
+            }
+        }
+    }
+
     [RelayCommand]
     private async Task SetEnabledAsync(StartupEntryItem? item)
     {
         if (item is null || IsBusy) return;
 
         var desired = !item.IsEnabled;
+        var stableKey = item.StableKey;
         IsBusy = true;
         ErrorMessage = null;
         StatusMessage = desired ? $"Enabling “{item.Name}”…" : $"Disabling “{item.Name}”…";
@@ -102,8 +154,16 @@ public partial class StartupOptimizerViewModel : ObservableObject
                 return;
             }
 
+            // Merge refresh — keep the same item instances so ListView scroll stays put.
+            await LoadEntriesAsync(replaceAll: false);
+
+            var updated = Entries.FirstOrDefault(e => e.StableKey == stableKey);
+            if (updated is not null)
+            {
+                updated.LastMessage = result.Message;
+            }
+
             StatusMessage = result.Message;
-            await LoadEntriesAsync();
         }
         catch (Exception ex)
         {
