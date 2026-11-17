@@ -1,0 +1,44 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## Visual Studio / VS Code
+.vs/
+.vscode/*
+!.vscode/extensions.json
+*.rsuser
+*.DotSettings.user
+
+## MSIX / packaging
+AppPackages/
+BundleArtifacts/
+Package.StoreAssociation.xml
+*_TemporaryKey.pfx
+*.appx
+*.msix
+*.msixbundle
+
+## Windows App SDK generated
+**/Generated Files/
+*.pri
+*.pdb
+
+## OS
+Thumbs.db
+Desktop.ini
+.DS_Store
