@@ -5,10 +5,8 @@ namespace PurePerformance.Views;
 
 public sealed partial class CrashAnalyzerPage : Page
 {
-    private CrashAnalyzerViewModel? _viewModel;
-
-    public CrashAnalyzerViewModel ViewModel =>
-        _viewModel ?? throw new InvalidOperationException("ViewModel not set.");
+    // null! until SetViewModel — avoids throwing during InitializeComponent / x:Bind warmup.
+    public CrashAnalyzerViewModel ViewModel { get; private set; } = null!;
 
     public CrashAnalyzerPage()
     {
@@ -17,12 +15,12 @@ public sealed partial class CrashAnalyzerPage : Page
 
     public void SetViewModel(CrashAnalyzerViewModel viewModel)
     {
-        if (_viewModel is not null)
+        if (ViewModel is not null)
         {
-            _viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+            ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
         }
 
-        _viewModel = viewModel;
+        ViewModel = viewModel;
         DataContext = viewModel;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         Bindings.Update();
@@ -41,8 +39,8 @@ public sealed partial class CrashAnalyzerPage : Page
 
     private void SyncError()
     {
-        var hasError = _viewModel?.HasError == true;
+        var hasError = ViewModel?.HasError == true;
         ErrorBar.IsOpen = hasError;
-        ErrorBar.Message = _viewModel?.ErrorMessage ?? string.Empty;
+        ErrorBar.Message = ViewModel?.ErrorMessage ?? string.Empty;
     }
 }
