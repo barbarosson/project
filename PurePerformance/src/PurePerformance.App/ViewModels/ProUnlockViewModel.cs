@@ -44,7 +44,7 @@ public partial class ProUnlockViewModel : ObservableObject
     public bool CanAct => !IsBusy;
 
     public string HonestCopy { get; } =
-        "Crash Analyzer stays free. Startup Manager, System Cleaner, and Memory Optimizer are optional Pro tools. Pure Performance does not claim deceptive “PC cleaned” scores or blind registry cleaning.";
+        "Core tools stay free (Crash Analyzer, Dashboard, Startup, Cleaner, Memory). Pro is an optional durable Store add-on for scheduled reports, advanced crash tools, auto rules, multi-PC profiles, alerts, whitelist/rules, and bring-your-own AI assist. No deceptive junk scores.";
 
     [RelayCommand]
     private async Task PurchaseAsync()

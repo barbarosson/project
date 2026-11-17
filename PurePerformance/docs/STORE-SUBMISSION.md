@@ -1,6 +1,6 @@
 # Microsoft Store submission checklist — Pure Performance
 
-Position the app as **Crash Analyzer + Startup Manager**, with optional Pro cleanup tools. Keep copy honest.
+Position the app as **Crash Analyzer + Startup Manager**, with optional Pro productivity tools. Keep copy honest.
 
 ## Package identity
 
@@ -17,7 +17,7 @@ Update **Publisher** (`CN=…`) to match your Partner Center certificate before 
 
 Declared in `Package.appxmanifest`:
 
-- `internetClient` — Store license/purchase + privacy hyperlink
+- `internetClient` — Store license/purchase, privacy hyperlink, optional user-configured AI endpoint
 - `runFullTrust` — Desktop Bridge for Event Log / startup / cleanup APIs
 
 Do **not** add unrelated restricted capabilities. Everyday launch stays `asInvoker`; elevate on demand (see `UAC-AND-RUNFULLTRUST.md`).
@@ -39,14 +39,14 @@ Suggested public URL (publish the page before submission):
 ## Age rating / category
 
 - Category suggestion: **Utilities & tools** / productivity utilities
-- Declarations: local system diagnostics and optional folder cleanup; no account required for Crash Analyzer
+- Declarations: local system diagnostics and optional folder cleanup; no account required for free tools
 
 ## Freemium disclosure
 
 In Store description, state clearly:
 
-1. Crash Analyzer is free.
-2. Startup Manager, System Cleaner, and Memory Optimizer unlock with optional **Pure Performance Pro**.
+1. Crash Analyzer, Dashboard, Startup Optimizer, System Cleaner, and Memory Optimizer are free.
+2. Optional **Pure Performance Pro** (durable add-on) unlocks scheduled reports, advanced crash tools, auto rules, profiles, alerts, whitelist, and bring-your-own AI assist.
 3. Not a registry cleaner.
 
 See `PARTNER-CENTER-ADDON.md` for the durable add-on steps.
@@ -60,4 +60,4 @@ See `PARTNER-CENTER-ADDON.md` for the durable add-on steps.
 
 ## Local testing without Store
 
-Unpackaged Debug uses a labeled Pro bypass so F5 still exercises Startup / Cleaner / Memory. That bypass is **not** a Store license.
+Unpackaged Debug uses a labeled Pro bypass so F5 still exercises Pro panes. That bypass is **not** a Store license.

@@ -10,8 +10,8 @@ Positioning for Store: **Crash Analyzer + Startup Manager**. Not a registry clea
 
 | Tier | Features |
 |------|----------|
-| **Free** | Crash Analyzer + Dashboard |
-| **Pro (optional)** | Startup Optimizer, System Cleaner, Memory Optimizer |
+| **Free** | Crash Analyzer (copyable), Dashboard, Startup Optimizer, System Cleaner, Memory Optimizer, Light/Dark/System theme, accent color packs |
+| **Pro (optional durable add-on)** | Scheduled scans + local reports, Advanced Crash Analyzer, auto optimization rules, multi-PC profiles (local + cloud scaffold), real-time alerts, whitelist/rules, bring-your-own AI assist |
 
 Unpackaged **Debug** F5 unlocks Pro via a labeled local/dev bypass so tools stay testable without Store. Packaged builds use `Windows.Services.Store` (`StoreContext`). See `docs/PARTNER-CENTER-ADDON.md`.
 
@@ -36,20 +36,31 @@ Store package: right-click the project → **Package and Publish** → create MS
 
 ## Settings
 
-**Settings** (NavigationView gear): Light / Dark / Follow system. Preference is persisted under `%LocalAppData%\PurePerformance\user-settings.json` and applied on the main window root via `ElementTheme` — the app does **not** set `Application.RequestedTheme` to `Default` (that caused WMC0055).
+**Settings** (NavigationView gear):
+
+- Light / Dark / Follow system (contrast-safe chips — always visible)
+- Free accent packs: Windows / Ocean / Forest / Sunset / Slate / Berry
+- License status + Unlock Pro…
+- Pro AI assist: base URL, model, API key (PasswordVault) when Pro is unlocked
+
+Preference is persisted under `%LocalAppData%\PurePerformance\user-settings.json` and applied on the main window root via `ElementTheme`.
 
 ## What the app does
 
-| Pane | Behavior |
-|------|----------|
-| **Dashboard** | Live CPU / RAM / Disk / GPU (best effort) + high-usage process list |
-| **Crash Analyzer** | Scans Application + System Event Logs (24h / 72h) with plain-English fixes (**free**) |
-| **Startup Optimizer** | Lists HKCU/HKLM Run + Startup folders; enable/disable via reversible backup (**Pro**) |
-| **System Cleaner** | User TEMP, Windows TEMP, Prefetch, Chrome/Edge/Firefox caches — no registry cleaning (**Pro**) |
-| **Memory Optimizer** | `EmptyWorkingSet` on accessible processes; shows before/after available RAM (**Pro**) |
-| **Settings** | Theme + Pro license / purchase |
-
-UAC: everyday launch is `asInvoker`. Use **Relaunch as admin** only for HKLM / Common Startup / Windows Temp / Prefetch when Windows denies access. See `docs/UAC-AND-RUNFULLTRUST.md`.
+| Pane | Tier | Behavior |
+|------|------|----------|
+| **Dashboard** | Free | Live CPU / RAM / Disk / GPU (best effort) + high-usage process list |
+| **Crash Analyzer** | Free | Event Log scan; copyable details; optional Pro AI suggestions |
+| **Startup Optimizer** | Free | HKCU/HKLM Run + Startup folders; reversible disable |
+| **System Cleaner** | Free | Named temp/cache folders only — no registry cleaning |
+| **Memory Optimizer** | Free | `EmptyWorkingSet` on accessible processes |
+| **Scheduled scans** | Pro | Daily/weekly local Markdown summary (email stub) |
+| **Advanced Crash** | Pro | Trends, correlations, export |
+| **Auto rules** | Pro | Conditional cleanup/startup suggestions |
+| **Profiles** | Pro | Local multi-profile; cloud sync scaffold (honest UI) |
+| **Alerts** | Pro | CPU/disk spike InfoBar + history |
+| **Whitelist / Rules** | Pro | Protect Cleaner paths / Startup entries |
+| **Settings** | Free (+ Pro AI) | Theme, accents, license, optional AI key |
 
 ## Docs
 

@@ -13,7 +13,7 @@
                         PaneDisplayMode="Left"
                         IsBackButtonVisible="Collapsed"
                         IsSettingsVisible="True"
-                        OpenPaneLength="240"
+                        OpenPaneLength="260"
                         IsTitleBarAutoPaddingEnabled="True"
                         SelectionChanged="NavView_SelectionChanged">
             <NavigationView.MenuItems>
@@ -42,9 +42,50 @@
                         <FontIcon Glyph="&#xE950;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+
+                <NavigationViewItemHeader Content="Pro" />
+                <NavigationViewItem Content="Scheduled scans" Tag="scheduled">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE787;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Advanced Crash" Tag="advanced-crash">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE9D9;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Auto rules" Tag="auto-rules">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE945;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Profiles" Tag="profiles">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE77B;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Alerts" Tag="alerts">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xEA8F;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Whitelist / Rules" Tag="rules">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE72E;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
             </NavigationView.MenuItems>
 
-            <Frame x:Name="ContentFrame" />
+            <Grid>
+                <Frame x:Name="ContentFrame" />
+                <InfoBar x:Name="GlobalAlertBar"
+                         VerticalAlignment="Top"
+                         HorizontalAlignment="Stretch"
+                         Margin="12"
+                         IsClosable="True"
+                         Severity="Warning"
+                         Title="Performance alert" />
+            </Grid>
         </NavigationView>
     </Grid>
 </Window>

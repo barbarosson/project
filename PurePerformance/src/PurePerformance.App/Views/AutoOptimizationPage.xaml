@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="PurePerformance.Views.AutoOptimizationPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:models="using:PurePerformance.Models"
+      NavigationCacheMode="Disabled">
+  <ScrollViewer Padding="24">
+    <StackPanel Spacing="16" MaxWidth="860">
+      <TextBlock Text="Auto optimization rules" Style="{StaticResource TitleTextBlockStyle}" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+      <TextBlock TextWrapping="WrapWholeWords" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                 Text="Conditional cleanup / startup suggestions. Auto-apply only touches non-admin Cleaner targets when you explicitly enable it." />
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <Button Content="Add sample rule" Command="{x:Bind ViewModel.AddRuleCommand}" />
+        <Button Content="Save" Style="{StaticResource AccentButtonStyle}" Command="{x:Bind ViewModel.SaveCommand}" />
+        <Button Content="Evaluate now" Command="{x:Bind ViewModel.EvaluateCommand}" IsEnabled="{x:Bind ViewModel.CanRun, Mode=OneWay}" />
+        <Button Content="Remove selected" Click="RemoveSelected_Click" />
+      </StackPanel>
+      <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" TextWrapping="WrapWholeWords" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+      <ListView x:Name="RulesList" ItemsSource="{x:Bind ViewModel.Rules, Mode=OneWay}" SelectionMode="Single">
+        <ListView.ItemTemplate>
+          <DataTemplate x:DataType="models:AutoOptimizationRule">
+            <StackPanel Spacing="4" Padding="8">
+              <TextBox Text="{x:Bind Name, Mode=TwoWay}" Header="Name" />
+              <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" IsTextSelectionEnabled="True">
+                <Run Text="{x:Bind Condition}" /><Run Text=" threshold " /><Run Text="{x:Bind Threshold}" /><Run Text=" → " /><Run Text="{x:Bind Action}" />
+              </TextBlock>
+              <ToggleSwitch Header="Enabled" IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+              <ToggleSwitch Header="Auto-apply (Cleaner only)" IsOn="{x:Bind AutoApply, Mode=TwoWay}" />
+              <TextBlock Text="{x:Bind LastResult}" TextWrapping="WrapWholeWords" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+          </DataTemplate>
+        </ListView.ItemTemplate>
+      </ListView>
+    </StackPanel>
+  </ScrollViewer>
+</Page>

@@ -13,11 +13,18 @@ public sealed class StartupManagerService : IStartupManagerService
 {
     private const string DisabledRoot = @"Software\PurePerformance\DisabledStartup";
     private static readonly ConcurrentDictionary<string, StartupEntryMeta> Meta = new();
+    private readonly IRuleEngineService? _rules;
+
+    public StartupManagerService(IRuleEngineService? rules = null)
+    {
+        _rules = rules;
+    }
 
     private sealed record StartupEntryMeta(
         StartupLocation Location,
         string Name,
-        string? OriginalPath);
+        string? OriginalPath,
+        string Command = "");
 
     public Task<IReadOnlyList<StartupEntry>> GetStartupEntriesAsync(
         CancellationToken cancellationToken = default) =>
@@ -69,7 +76,7 @@ public sealed class StartupManagerService : IStartupManagerService
                     ct.ThrowIfCancellationRequested();
                     var command = key.GetValue(name)?.ToString() ?? string.Empty;
                     var id = MakeId(location, name, enabled: true);
-                    Meta[id] = new StartupEntryMeta(location, name, null);
+                    Meta[id] = new StartupEntryMeta(location, name, null, command);
                     yield return new StartupEntry
                     {
                         Id = id,
@@ -99,7 +106,7 @@ public sealed class StartupManagerService : IStartupManagerService
                     ct.ThrowIfCancellationRequested();
                     var command = disabled.GetValue(name)?.ToString() ?? string.Empty;
                     var id = MakeId(location, name, enabled: false);
-                    Meta[id] = new StartupEntryMeta(location, name, null);
+                    Meta[id] = new StartupEntryMeta(location, name, null, command);
                     disabledEntries.Add(new StartupEntry
                     {
                         Id = id,
@@ -141,7 +148,7 @@ public sealed class StartupManagerService : IStartupManagerService
                 ct.ThrowIfCancellationRequested();
                 var name = Path.GetFileName(file);
                 var id = MakeId(location, name, enabled: true);
-                Meta[id] = new StartupEntryMeta(location, name, file);
+                Meta[id] = new StartupEntryMeta(location, name, file, file);
                 yield return new StartupEntry
                 {
                     Id = id,
@@ -165,7 +172,7 @@ public sealed class StartupManagerService : IStartupManagerService
             ct.ThrowIfCancellationRequested();
             var name = Path.GetFileName(file);
             var id = MakeId(location, name, enabled: false);
-            Meta[id] = new StartupEntryMeta(location, name, file);
+            Meta[id] = new StartupEntryMeta(location, name, file, file);
             yield return new StartupEntry
             {
                 Id = id,
@@ -178,7 +185,7 @@ public sealed class StartupManagerService : IStartupManagerService
         }
     }
 
-    private static StartupChangeResult SetEnabledCore(string entryId, bool enabled)
+    private StartupChangeResult SetEnabledCore(string entryId, bool enabled)
     {
         if (!Meta.TryGetValue(entryId, out var meta))
         {
@@ -192,6 +199,16 @@ public sealed class StartupManagerService : IStartupManagerService
                     Message = "Entry not found. Refresh the list and try again."
                 };
             }
+        }
+
+        if (!enabled && _rules?.IsStartupWhitelisted(meta.Name, meta.Command) == true)
+        {
+            return new StartupChangeResult
+            {
+                Success = false,
+                Message =
+                    $"“{meta.Name}” is protected by a Pro whitelist rule. Remove or edit the rule under Whitelist / Rules before disabling it."
+            };
         }
 
         var needsAdmin = meta.Location is StartupLocation.LocalMachineRun or StartupLocation.StartupFolderCommon;

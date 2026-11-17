@@ -30,6 +30,7 @@ public sealed partial class SettingsPage : Page
     {
         if (e.PropertyName is nameof(SettingsViewModel.IsUsingDevBypass)
             or nameof(SettingsViewModel.IsProLocked)
+            or nameof(SettingsViewModel.ShowProAiSettings)
             or null)
         {
             SyncChrome();
@@ -42,5 +43,14 @@ public sealed partial class SettingsPage : Page
         UnlockButton.Visibility = ViewModel.IsProLocked
             ? Visibility.Visible
             : Visibility.Collapsed;
+        ProAiPanel.Visibility = ViewModel.ShowProAiSettings
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+    }
+
+    private void AiKeyBox_PasswordChanged(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel is null) return;
+        ViewModel.AiKeyInput = AiKeyBox.Password;
     }
 }

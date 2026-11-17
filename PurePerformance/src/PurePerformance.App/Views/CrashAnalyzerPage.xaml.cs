@@ -26,35 +26,17 @@ public sealed partial class CrashAnalyzerPage : Page
         DataContext = viewModel;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         Bindings.Update();
-        SyncDetails();
         SyncError();
     }
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(CrashAnalyzerViewModel.SelectedFinding)
-            or null)
-        {
-            SyncDetails();
-        }
-
         if (e.PropertyName is nameof(CrashAnalyzerViewModel.ErrorMessage)
             or nameof(CrashAnalyzerViewModel.HasError)
             or null)
         {
             SyncError();
         }
-    }
-
-    private void SyncDetails()
-    {
-        var finding = _viewModel?.SelectedFinding;
-        ExplanationText.Text = finding?.Explanation
-            ?? "Select a finding to see a plain-English explanation.";
-        FixText.Text = finding?.RecommendedFix
-            ?? "Recommended fixes appear here after you select an item.";
-        RawText.Text = finding?.RawMessage
-            ?? "—";
     }
 
     private void SyncError()
