@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="PurePerformance.Views.TutorialPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:PurePerformance.Helpers"
+    NavigationCacheMode="Disabled">
+
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="20" MaxWidth="760">
+            <StackPanel Spacing="6">
+                <TextBlock Text="Help / Tutorial"
+                           Style="{StaticResource TitleTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                <TextBlock Text="{x:Bind ViewModel.Intro}"
+                           TextWrapping="WrapWholeWords"
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                           Opacity="0.92" />
+            </StackPanel>
+
+            <InfoBar IsOpen="True"
+                     IsClosable="False"
+                     Severity="Informational"
+                     Title="Quick path"
+                     Message="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
+
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button Content="Mark tutorial done"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Command="{x:Bind ViewModel.MarkDoneCommand}" />
+                <Button Content="Show again next launch"
+                        Command="{x:Bind ViewModel.ResetTutorialFlagCommand}"
+                        Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+            </StackPanel>
+
+            <ItemsControl ItemsSource="{x:Bind ViewModel.Sections}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="helpers:TutorialSection">
+                        <Border Margin="0,0,0,12"
+                                Padding="16"
+                                CornerRadius="8"
+                                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                BorderThickness="1">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="{x:Bind Title}"
+                                           Style="{StaticResource SubtitleTextBlockStyle}"
+                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                <TextBlock Text="{x:Bind Steps}"
+                                           TextWrapping="WrapWholeWords"
+                                           IsTextSelectionEnabled="True"
+                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                           Opacity="0.92" />
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock TextWrapping="WrapWholeWords"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                       FontSize="12"
+                       Text="More detail for Pro AI (Base URL, model, API key, provider examples) lives under Settings → Pro AI assist when Pro is unlocked." />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

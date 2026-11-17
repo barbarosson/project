@@ -136,6 +136,21 @@ public sealed class UserSettingsStore
         }
     }
 
+    /// <summary>When false, MainWindow opens Help / Tutorial once after launch.</summary>
+    public bool HasCompletedTutorial
+    {
+        get { lock (_gate) return _settings.HasCompletedTutorial; }
+        set
+        {
+            lock (_gate)
+            {
+                if (_settings.HasCompletedTutorial == value) return;
+                _settings.HasCompletedTutorial = value;
+                SaveUnlocked();
+            }
+        }
+    }
+
     public IReadOnlyList<WhitelistRule> GetWhitelist()
     {
         lock (_gate) return _settings.Whitelist.Select(CloneRule).ToList();
@@ -352,5 +367,7 @@ public sealed class UserSettingsStore
         public string AiBaseUrl { get; set; } = "https://api.openai.com/v1";
 
         public string AiModel { get; set; } = "gpt-4o-mini";
+
+        public bool HasCompletedTutorial { get; set; }
     }
 }

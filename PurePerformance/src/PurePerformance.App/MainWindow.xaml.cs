@@ -45,9 +45,15 @@ public sealed partial class MainWindow : Window
 
         _ = InitializeLicenseAsync();
 
-        if (NavView.MenuItems[0] is NavigationViewItem first)
+        // First run → Help / Tutorial; otherwise Dashboard.
+        var wantTag = _viewModel.SettingsStore.HasCompletedTutorial ? "dashboard" : "tutorial";
+        foreach (var raw in NavView.MenuItems)
         {
-            NavView.SelectedItem = first;
+            if (raw is NavigationViewItem nav && nav.Tag as string == wantTag)
+            {
+                NavView.SelectedItem = nav;
+                break;
+            }
         }
     }
 
@@ -99,6 +105,13 @@ public sealed partial class MainWindow : Window
                 dashboard.SetViewModel(_viewModel.Dashboard);
                 ContentFrame.Content = dashboard;
                 SetTitle("Dashboard");
+                break;
+
+            case "tutorial":
+                var tutorial = new TutorialPage();
+                tutorial.SetViewModel(_viewModel.Tutorial);
+                ContentFrame.Content = tutorial;
+                SetTitle("Help / Tutorial");
                 break;
 
             case "crash":

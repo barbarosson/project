@@ -174,7 +174,41 @@
                            Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                 <TextBlock TextWrapping="WrapWholeWords"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                           Text="Bring your own OpenAI-compatible API key. Stored in Windows PasswordVault on this PC — never hardcoded in the app. Used only when you tap “Suggest fix with AI” on a Crash Analyzer finding." />
+                           Text="{x:Bind ViewModel.AiHelpSummary}" />
+
+                <Expander HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Stretch"
+                          IsExpanded="True"
+                          Header="How to fill Base URL, Model, and API key">
+                    <TextBlock Margin="0,8,0,0"
+                               TextWrapping="WrapWholeWords"
+                               IsTextSelectionEnabled="True"
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                               Text="{x:Bind ViewModel.AiHelpFieldGuide}" />
+                </Expander>
+
+                <Expander HorizontalAlignment="Stretch"
+                          HorizontalContentAlignment="Stretch"
+                          Header="Examples — OpenAI, Groq, Ollama, LM Studio">
+                    <TextBlock Margin="0,8,0,0"
+                               TextWrapping="WrapWholeWords"
+                               IsTextSelectionEnabled="True"
+                               FontFamily="Consolas"
+                               Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                               Text="{x:Bind ViewModel.AiHelpExamples}" />
+                </Expander>
+
+                <InfoBar IsOpen="True"
+                         IsClosable="False"
+                         Severity="Informational"
+                         Title="Claude / Gemini"
+                         Message="{x:Bind ViewModel.AiHelpProviderNote}" />
+
+                <TextBlock TextWrapping="WrapWholeWords"
+                           FontSize="12"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           Text="{x:Bind ViewModel.AiHelpPrivacyNote}" />
+
                 <TextBox Header="Base URL"
                          Text="{x:Bind ViewModel.AiBaseUrl, Mode=TwoWay}"
                          PlaceholderText="https://api.openai.com/v1" />

@@ -1,18 +1,20 @@
 # Store / package assets
 
-Replace these placeholder PNGs with final art before Store certification.
+Teal pulse-on-navy Pure Performance mark (not a generic purple AI look).
+`Package.appxmanifest` and unpackaged `ApplicationIcon` both use these files.
 
-| File | Typical size | Notes |
-|------|----------------|-------|
-| `StoreLogo.png` | 50×50 | Package logo in manifest Properties |
-| `Square44x44Logo.png` | 44×44 | App list / taskbar small |
-| `Square71x71Logo.png` | 71×71 | Medium tile variant |
+| File | Size | Use |
+|------|------|-----|
+| `StoreLogo.png` | 50×50 | Package Properties logo |
+| `AppList.png` | 44×44 | App list companion (same art as Square44) |
+| `Square44x44Logo.png` | 44×44 | App list / taskbar small (`uap:VisualElements`) |
+| `Square71x71Logo.png` | 71×71 | Small tile |
 | `Square150x150Logo.png` | 150×150 | Medium tile |
 | `Square310x310Logo.png` | 310×310 | Large tile |
-| `Wide310x150Logo.png` | 310×150 | Wide tile |
-| `SplashScreen.png` | 620×300 | Splash |
-
-`Package.appxmanifest` already references these paths. Visual Studio may warn until real assets are provided.
+| `Wide310x150Logo.png` | 310×150 | Wide tile (mark + wordmark) |
+| `SplashScreen.png` | 620×300 | Splash (mark + wordmark) |
+| `ApplicationIcon.ico` | 16–256 | Unpackaged EXE / desktop shortcut (`ApplicationIcon` in csproj) |
+| `AppIcon256.png` | 256×256 | Source plate for regenerating the ICO |
 
 ## Partner Center screenshots (not in this folder)
 

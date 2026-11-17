@@ -34,7 +34,11 @@ dotnet build PurePerformance.sln -c Debug -p:Platform=x64
 
 Store package: right-click the project → **Package and Publish** → create MSIX upload package. Checklist: `docs/STORE-SUBMISSION.md`.
 
-## Settings
+## Settings & Help
+
+**Help / Tutorial** (left nav, also first-run until marked done):
+
+- Step-by-step for Dashboard, Crash Analyzer (copy), Startup/Cleaner/Memory, themes/accents, Pro panes, and AI setup
 
 **Settings** (NavigationView gear):
 
@@ -42,9 +46,11 @@ Store package: right-click the project → **Package and Publish** → create MS
 - Free accent packs: Windows / Ocean / Forest / Sunset / Slate / Berry (applied live — no restart)
 - Caption buttons (min / max / close) follow light/dark so they stay visible on extended title bars
 - License status + Unlock Pro…
-- Pro AI assist: base URL, model, API key (PasswordVault) when Pro is unlocked
+- Pro AI assist (when Pro unlocked): Base URL, Model, API key (PasswordVault) plus in-app examples for OpenAI, Groq, Ollama, LM Studio; Claude/Gemini need an OpenAI-compatible proxy
 
 Preference is persisted under `%LocalAppData%\PurePerformance\user-settings.json` and applied on the main window root via `ElementTheme`. Accent packs update `Application` + root resources and refresh ThemeResources immediately.
+
+Brand: Store/desktop logos live under `src/PurePerformance.App/Assets/` (teal pulse mark + `ApplicationIcon.ico` for unpackaged shortcuts).
 
 ## What the app does
 
@@ -61,7 +67,8 @@ Preference is persisted under `%LocalAppData%\PurePerformance\user-settings.json
 | **Profiles** | Pro | Local multi-profile; cloud sync scaffold (honest UI) |
 | **Alerts** | Pro | CPU/disk spike InfoBar + history |
 | **Whitelist / Rules** | Pro | Protect Cleaner paths / Startup entries |
-| **Settings** | Free (+ Pro AI) | Theme, accents, license, optional AI key |
+| **Help / Tutorial** | Free | First-run + anytime step-by-step guide |
+| **Settings** | Free (+ Pro AI) | Theme, accents, license, optional AI key + setup help |
 
 ## Docs
 
