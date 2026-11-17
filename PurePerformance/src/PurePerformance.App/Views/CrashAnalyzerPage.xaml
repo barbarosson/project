@@ -176,7 +176,7 @@
                        Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                        Opacity="0.9" />
             <TextBlock Text="{x:Bind ViewModel.CopyStatus, Mode=OneWay}"
-                       Foreground="{ThemeResource TextTextFillColorSecondaryBrush}"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                        FontSize="12" />
             <InfoBar x:Name="ErrorBar"
                      Severity="Error"
