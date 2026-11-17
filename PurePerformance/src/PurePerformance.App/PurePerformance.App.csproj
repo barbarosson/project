@@ -19,12 +19,15 @@
     <!-- Unpackaged local F5 still works; Store builds use the MSIX Package.appxmanifest. -->
     <WindowsPackageType>None</WindowsPackageType>
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <!-- Desktop / unpackaged shortcut + taskbar icon -->
+    <ApplicationIcon>Assets\ApplicationIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <Content Include="Assets\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Assets\ApplicationIcon.ico" />
   </ItemGroup>
 
   <ItemGroup>

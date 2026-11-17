@@ -65,7 +65,7 @@
     - Elevate via UAC only when the user starts an admin-needed action.
     - Privacy policy URL for Partner Center: see docs/PRIVACY.md
       (https://modulusaas.com/products/pure-performance/privacy).
-    - Replace placeholder PNGs under Assets/ before certification (see Assets/README.md).
+    - Brand assets: teal pulse mark under Assets/ (StoreLogo, Square*, Wide, Splash, ApplicationIcon.ico).
   -->
   <Capabilities>
     <Capability Name="internetClient" />

@@ -24,7 +24,7 @@ Do **not** add unrelated restricted capabilities. Everyday launch stays `asInvok
 
 ## Assets
 
-Replace placeholders under `src/PurePerformance.App/Assets/` before certification. Required filenames and sizes are listed in `Assets/README.md`.
+Brand PNGs + `ApplicationIcon.ico` under `src/PurePerformance.App/Assets/` (teal pulse mark). Filenames/sizes are listed in `Assets/README.md`. `Package.appxmanifest` and unpackaged `ApplicationIcon` already reference them.
 
 Partner Center also needs Store screenshots (desktop 1366×768 or larger) showing Crash Analyzer and Startup Manager — not fake “cleaned” dashboards.
 

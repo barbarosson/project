@@ -22,6 +22,11 @@
                         <FontIcon Glyph="&#xE80F;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
+                <NavigationViewItem Content="Help / Tutorial" Tag="tutorial">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE897;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
                 <NavigationViewItem Content="Crash Analyzer" Tag="crash">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xEBE8;" />

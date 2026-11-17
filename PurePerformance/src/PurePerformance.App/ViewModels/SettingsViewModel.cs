@@ -107,6 +107,16 @@ public partial class SettingsViewModel : ObservableObject
 
     public string AddOnStoreId => _license.ProAddOnStoreId;
 
+    public string AiHelpSummary => AiSetupHelp.Summary;
+
+    public string AiHelpFieldGuide => AiSetupHelp.FieldGuide;
+
+    public string AiHelpExamples => AiSetupHelp.Examples;
+
+    public string AiHelpProviderNote => AiSetupHelp.ProviderNote;
+
+    public string AiHelpPrivacyNote => AiSetupHelp.PrivacyNote;
+
     [RelayCommand]
     private void SelectSystemTheme()
     {

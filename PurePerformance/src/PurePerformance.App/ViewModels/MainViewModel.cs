@@ -12,6 +12,7 @@ public partial class MainViewModel : ObservableObject
         SystemCleanerViewModel systemCleaner,
         MemoryOptimizerViewModel memoryOptimizer,
         SettingsViewModel settings,
+        TutorialViewModel tutorial,
         ProUnlockViewModel proUnlock,
         ScheduledScansViewModel scheduledScans,
         AdvancedCrashViewModel advancedCrash,
@@ -21,7 +22,8 @@ public partial class MainViewModel : ObservableObject
         RuleEngineViewModel ruleEngine,
         IThemeService theme,
         ILicenseService license,
-        IRealtimeAlertService realtimeAlerts)
+        IRealtimeAlertService realtimeAlerts,
+        UserSettingsStore settingsStore)
     {
         Dashboard = dashboard;
         CrashAnalyzer = crashAnalyzer;
@@ -29,6 +31,7 @@ public partial class MainViewModel : ObservableObject
         SystemCleaner = systemCleaner;
         MemoryOptimizer = memoryOptimizer;
         Settings = settings;
+        Tutorial = tutorial;
         ProUnlock = proUnlock;
         ScheduledScans = scheduledScans;
         AdvancedCrash = advancedCrash;
@@ -39,6 +42,7 @@ public partial class MainViewModel : ObservableObject
         Theme = theme;
         License = license;
         RealtimeAlerts = realtimeAlerts;
+        SettingsStore = settingsStore;
         CurrentPageTitle = "Dashboard";
     }
 
@@ -48,6 +52,7 @@ public partial class MainViewModel : ObservableObject
     public SystemCleanerViewModel SystemCleaner { get; }
     public MemoryOptimizerViewModel MemoryOptimizer { get; }
     public SettingsViewModel Settings { get; }
+    public TutorialViewModel Tutorial { get; }
     public ProUnlockViewModel ProUnlock { get; }
     public ScheduledScansViewModel ScheduledScans { get; }
     public AdvancedCrashViewModel AdvancedCrash { get; }
@@ -58,6 +63,7 @@ public partial class MainViewModel : ObservableObject
     public IThemeService Theme { get; }
     public ILicenseService License { get; }
     public IRealtimeAlertService RealtimeAlerts { get; }
+    public UserSettingsStore SettingsStore { get; }
 
     [ObservableProperty]
     private string currentPageTitle;
@@ -89,6 +95,7 @@ public partial class MainViewModel : ObservableObject
             new SystemCleanerViewModel(cleaner),
             new MemoryOptimizerViewModel(memory),
             new SettingsViewModel(theme, license, ai),
+            new TutorialViewModel(settingsStore),
             new ProUnlockViewModel(license),
             new ScheduledScansViewModel(scheduled),
             new AdvancedCrashViewModel(advanced),
@@ -98,6 +105,7 @@ public partial class MainViewModel : ObservableObject
             new RuleEngineViewModel(rules),
             theme,
             license,
-            alerts);
+            alerts,
+            settingsStore);
     }
 }
