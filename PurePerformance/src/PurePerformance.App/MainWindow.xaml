@@ -8,12 +8,13 @@
     mc:Ignorable="d"
     Title="Pure Performance">
 
-    <Grid>
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <NavigationView x:Name="NavView"
                         PaneDisplayMode="Left"
                         IsBackButtonVisible="Collapsed"
                         IsSettingsVisible="False"
-                        OpenPaneLength="220"
+                        OpenPaneLength="240"
+                        IsTitleBarAutoPaddingEnabled="True"
                         SelectionChanged="NavView_SelectionChanged">
             <NavigationView.MenuItems>
                 <NavigationViewItem Content="Dashboard" Tag="dashboard">
@@ -34,6 +35,11 @@
                 <NavigationViewItem Content="System Cleaner" Tag="cleaner">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE74D;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem Content="Memory Optimizer" Tag="memory">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE950;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>

@@ -9,12 +9,14 @@ public partial class MainViewModel : ObservableObject
         DashboardViewModel dashboard,
         CrashAnalyzerViewModel crashAnalyzer,
         StartupOptimizerViewModel startupOptimizer,
-        SystemCleanerViewModel systemCleaner)
+        SystemCleanerViewModel systemCleaner,
+        MemoryOptimizerViewModel memoryOptimizer)
     {
         Dashboard = dashboard;
         CrashAnalyzer = crashAnalyzer;
         StartupOptimizer = startupOptimizer;
         SystemCleaner = systemCleaner;
+        MemoryOptimizer = memoryOptimizer;
         CurrentPageTitle = "Dashboard";
     }
 
@@ -26,19 +28,24 @@ public partial class MainViewModel : ObservableObject
 
     public SystemCleanerViewModel SystemCleaner { get; }
 
+    public MemoryOptimizerViewModel MemoryOptimizer { get; }
+
     [ObservableProperty]
     private string currentPageTitle;
 
     public static MainViewModel CreateDefault()
     {
         var eventLog = new EventLogService();
-        var startup = new StartupManagerServiceStub();
-        var cleaner = new SystemCleanerServiceStub();
+        var startup = new StartupManagerService();
+        var cleaner = new SystemCleanerService();
+        var memory = new MemoryOptimizerService();
+        var perf = new PerformanceMonitorService();
 
         return new MainViewModel(
-            new DashboardViewModel(),
+            new DashboardViewModel(perf),
             new CrashAnalyzerViewModel(eventLog),
             new StartupOptimizerViewModel(startup),
-            new SystemCleanerViewModel(cleaner));
+            new SystemCleanerViewModel(cleaner),
+            new MemoryOptimizerViewModel(memory));
     }
 }

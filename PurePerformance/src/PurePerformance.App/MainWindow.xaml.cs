@@ -16,7 +16,8 @@ public sealed partial class MainWindow : Window
         ExtendsContentIntoTitleBar = true;
         Title = "Pure Performance";
 
-        // Default selection → Dashboard
+        Closed += (_, _) => _viewModel.Dashboard.StopIfNeeded();
+
         if (NavView.MenuItems[0] is NavigationViewItem first)
         {
             NavView.SelectedItem = first;
@@ -36,29 +37,38 @@ public sealed partial class MainWindow : Window
                 var dashboard = new DashboardPage();
                 dashboard.SetViewModel(_viewModel.Dashboard);
                 ContentFrame.Content = dashboard;
-                _viewModel.CurrentPageTitle = "Dashboard";
+                SetTitle("Dashboard");
                 break;
 
             case "crash":
                 var crash = new CrashAnalyzerPage();
                 crash.SetViewModel(_viewModel.CrashAnalyzer);
                 ContentFrame.Content = crash;
-                _viewModel.CurrentPageTitle = "Crash Analyzer";
+                SetTitle("Crash Analyzer");
                 break;
 
             case "startup":
                 var startup = new StartupOptimizerPage();
                 startup.SetViewModel(_viewModel.StartupOptimizer);
                 ContentFrame.Content = startup;
-                _viewModel.CurrentPageTitle = "Startup Optimizer";
+                SetTitle("Startup Optimizer");
                 break;
 
             case "cleaner":
                 var cleaner = new SystemCleanerPage();
                 cleaner.SetViewModel(_viewModel.SystemCleaner);
                 ContentFrame.Content = cleaner;
-                _viewModel.CurrentPageTitle = "System Cleaner";
+                SetTitle("System Cleaner");
+                break;
+
+            case "memory":
+                var memory = new MemoryOptimizerPage();
+                memory.SetViewModel(_viewModel.MemoryOptimizer);
+                ContentFrame.Content = memory;
+                SetTitle("Memory Optimizer");
                 break;
         }
     }
+
+    private void SetTitle(string title) => _viewModel.CurrentPageTitle = title;
 }
