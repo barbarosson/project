@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="PurePerformance.Views.SystemCleanerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    NavigationCacheMode="Enabled">
+
+    <StackPanel Padding="24" Spacing="12" MaxWidth="720">
+        <TextBlock Text="System Cleaner"
+                   Style="{StaticResource TitleTextBlockStyle}" />
+        <TextBlock Text="{x:Bind ViewModel.StatusMessage}"
+                   TextWrapping="WrapWholeWords"
+                   Style="{StaticResource BodyTextBlockStyle}" />
+        <InfoBar IsOpen="True"
+                 IsClosable="False"
+                 Severity="Warning"
+                 Title="Not a registry cleaner"
+                 Message="Future cleanup actions will name exact folders (for example user %TEMP%). Pure Performance does not offer aggressive or blind registry deletion." />
+    </StackPanel>
+</Page>

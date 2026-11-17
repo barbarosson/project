@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "PurePerformance (Unpackaged)": {
+      "commandName": "Project"
+    },
+    "PurePerformance (MsixPackage)": {
+      "commandName": "MsixPackage"
+    }
+  }
+}
