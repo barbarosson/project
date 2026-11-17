@@ -11,10 +11,12 @@ namespace PurePerformance.Services;
 public sealed class StoreLicenseService : ILicenseService
 {
     /// <summary>
-    /// Replace with the durable add-on Store ID from Partner Center after you create it.
+    /// *** PLACEHOLDER — NOT A REAL MICROSOFT STORE ID ***
+    /// Replace with the durable add-on Store ID from Partner Center after you create it
+    /// (looks like 9N…). Until then, purchase is blocked with an explicit message.
     /// See docs/PARTNER-CENTER-ADDON.md.
     /// </summary>
-    public const string DefaultProAddOnStoreId = "9NXXXXXXXXXX";
+    public const string DefaultProAddOnStoreId = "9NXXXXXXXXXX"; // PLACEHOLDER — Partner Center
 
     private readonly object _gate = new();
     private bool _isProUnlocked;
@@ -125,7 +127,7 @@ public sealed class StoreLicenseService : ILicenseService
             SetState(
                 unlocked: IsProUnlocked,
                 bypass: IsUsingDevBypass,
-                "Pro add-on Store ID is still the placeholder (9NXXXXXXXXXX). Create the durable add-on in Partner Center and update StoreLicenseService.DefaultProAddOnStoreId — see docs/PARTNER-CENTER-ADDON.md.");
+                "Pro add-on Store ID is still the PLACEHOLDER (9NXXXXXXXXXX). Create the durable add-on in Partner Center and replace StoreLicenseService.DefaultProAddOnStoreId — see docs/PARTNER-CENTER-ADDON.md.");
             NotifyChanged();
             return false;
         }

@@ -6,6 +6,16 @@
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   IgnorableNamespaces="uap rescap desktop">
 
+  <!--
+    *** PUBLISHER / IDENTITY PLACEHOLDERS (Partner Center — Barbaros only) ***
+    - Identity/@Publisher (CN=…) MUST match the signing certificate from Partner Center.
+      "CN=Modulus" below is a LOCAL DEVELOPMENT PLACEHOLDER.
+      Visual Studio → Project → Package and Publish → Associate App with the Store
+      rewrites Name + Publisher to the reserved Store identity — do that before upload.
+    - PublisherDisplayName should match the Partner Center publisher display name.
+    - Version: bump Identity/@Version (and csproj ApplicationDisplayVersion) for every Store upload.
+    See docs/STORE-SUBMISSION.md and docs/MSIX-PACKAGING.md.
+  -->
   <Identity
     Name="Modulus.PurePerformance"
     Publisher="CN=Modulus"
@@ -16,9 +26,9 @@
     <PublisherDisplayName>Modulus</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
     <Description>
-      Pure Performance is a Crash Analyzer and Startup Manager for Windows, with optional Pro tools for named-folder cleanup and memory working-set trim.
-      Free: diagnose unexpected shutdowns, hangs, disk errors, and BSODs from Event Log.
-      Pro (optional): Startup Manager, System Cleaner, Memory Optimizer.
+      Pure Performance is a Crash Analyzer and Startup Manager for Windows.
+      Free: Event Log crash diagnosis, live dashboard, Startup Manager, named-folder System Cleaner, and Memory Optimizer.
+      Optional Pro: scheduled reports, advanced crash tools, auto rules, profiles, alerts, whitelist, and bring-your-own AI assist.
       Not a registry cleaner. No deceptive “junk score” cleanup claims.
     </Description>
   </Properties>
@@ -37,7 +47,7 @@
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
         DisplayName="Pure Performance"
-        Description="Crash Analyzer + Startup Manager for Windows. Optional Pro cleanup tools — not a registry cleaner."
+        Description="Crash Analyzer + Startup Manager for Windows. Free named-folder cleanup — not a registry cleaner. Optional Pro productivity add-on."
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
@@ -60,12 +70,14 @@
     Store / Desktop Bridge checklist notes:
     - Position as Crash Analyzer + Startup Manager (honest listing).
     - internetClient: Store license / purchase + privacy policy hyperlink.
-    - runFullTrust: Event Log, startup edits, cleanup under MSIX Desktop Bridge.
-    - Do NOT add broad restricted capabilities “just in case”.
-    - Elevate via UAC only when the user starts an admin-needed action.
+    - runFullTrust: REQUIRED for Event Log, startup edits, and named-folder cleanup
+      under MSIX Desktop Bridge. Do not add other restricted capabilities “just in case”.
+    - Elevate via UAC only when the user starts an admin-needed action (asInvoker day-to-day).
     - Privacy policy URL for Partner Center: see docs/PRIVACY.md
-      (https://modulusaas.com/products/pure-performance/privacy).
-    - Brand assets: teal pulse mark under Assets/ (StoreLogo, Square*, Wide, Splash, ApplicationIcon.ico).
+      (https://modulusaas.com/products/pure-performance/privacy) — publish the page before cert.
+    - Brand assets under Assets/ (StoreLogo, Square*, Wide, Splash, ApplicationIcon.ico).
+    - Pro durable add-on Store ID is a CODE PLACEHOLDER (9NXXXXXXXXXX) until Partner Center
+      creates the add-on — see StoreLicenseService.DefaultProAddOnStoreId.
   -->
   <Capabilities>
     <Capability Name="internetClient" />

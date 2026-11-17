@@ -24,11 +24,18 @@ This is **not** a registry cleaner and must not use deceptive “cleaned X MB of
 
 ## Wire the Store ID in the app
 
+**Current repo value (PLACEHOLDER — not a real Store ID):**
+
+```csharp
+// StoreLicenseService.cs
+public const string DefaultProAddOnStoreId = "9NXXXXXXXXXX"; // PLACEHOLDER — Partner Center
+```
+
 1. Open `src/PurePerformance.App/Services/StoreLicenseService.cs`.
-2. Replace `DefaultProAddOnStoreId = "9NXXXXXXXXXX"` with the real Store ID.
+2. Replace `DefaultProAddOnStoreId = "9NXXXXXXXXXX"` with the real Store ID from step 7 above.
 3. Ship an MSIX update so packaged builds can call `StoreContext.RequestPurchaseAsync`.
 
-Until the placeholder is replaced, the in-app **Unlock Pro…** button explains that Partner Center setup is incomplete — it will not fake a purchase.
+Until the PLACEHOLDER is replaced, Settings labels the ID as PLACEHOLDER and **Unlock Pro…** explains that Partner Center setup is incomplete — it will not fake a purchase.
 
 ## License check behavior
 

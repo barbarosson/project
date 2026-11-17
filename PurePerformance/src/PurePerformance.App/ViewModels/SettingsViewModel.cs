@@ -107,6 +107,18 @@ public partial class SettingsViewModel : ObservableObject
 
     public string AddOnStoreId => _license.ProAddOnStoreId;
 
+    /// <summary>True while DefaultProAddOnStoreId is still the Partner Center PLACEHOLDER.</summary>
+    public bool IsProAddOnStoreIdPlaceholder =>
+        string.Equals(
+            _license.ProAddOnStoreId,
+            StoreLicenseService.DefaultProAddOnStoreId,
+            StringComparison.Ordinal);
+
+    public string AddOnStoreIdDisplay =>
+        IsProAddOnStoreIdPlaceholder
+            ? $"{_license.ProAddOnStoreId}  ← PLACEHOLDER (create durable add-on in Partner Center, then update StoreLicenseService)"
+            : _license.ProAddOnStoreId;
+
     public string AiHelpSummary => AiSetupHelp.Summary;
 
     public string AiHelpFieldGuide => AiSetupHelp.FieldGuide;

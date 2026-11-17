@@ -13,7 +13,7 @@ public interface ILicenseService
     /// <summary>Honest status line for Settings / Pro gate UI.</summary>
     string StatusMessage { get; }
 
-    /// <summary>Partner Center durable add-on Store ID (placeholder until created).</summary>
+    /// <summary>Partner Center durable add-on Store ID (PLACEHOLDER 9NXXXXXXXXXX until created).</summary>
     string ProAddOnStoreId { get; }
 
     event EventHandler? Changed;

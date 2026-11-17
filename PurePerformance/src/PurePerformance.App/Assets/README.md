@@ -16,11 +16,15 @@ Teal pulse-on-navy Pure Performance mark (not a generic purple AI look).
 | `ApplicationIcon.ico` | 16–256 | Unpackaged EXE / desktop shortcut (`ApplicationIcon` in csproj) |
 | `AppIcon256.png` | 256×256 | Source plate for regenerating the ICO |
 
-## Partner Center screenshots (not in this folder)
+## Status
+
+Package/tile PNGs and the unpackaged ICO are present at Store-required sizes (branded teal pulse mark). Replace with final marketing art only if Partner Center / brand review asks for a different look.
+
+## Partner Center screenshots (not in this folder — Barbaros)
 
 Upload desktop screenshots (≥1366×768) that show:
 
 1. Crash Analyzer with honest Event Log findings  
 2. Startup Manager (or Pro unlock screen — never fake cleanup scores)
 
-See `docs/STORE-SUBMISSION.md`.
+See `docs/STORE-SUBMISSION.md` and `docs/MSIX-PACKAGING.md`.
