@@ -20,4 +20,9 @@ public interface IThemeService
     /// Uses ElementTheme only — does not set Application.RequestedTheme.
     /// </summary>
     void ApplyToRoot(FrameworkElement root);
+
+    /// <summary>
+    /// Binds caption-button chrome (AppWindow.TitleBar) to the effective light/dark theme.
+    /// </summary>
+    void AttachWindow(Window window);
 }

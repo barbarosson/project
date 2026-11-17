@@ -18,7 +18,9 @@ public sealed partial class MainWindow : Window
         Title = "Pure Performance";
 
         // Theme on the window root only — never Application.RequestedTheme=Default.
+        // AttachWindow sets AppWindow.TitleBar caption-button colors for light/dark contrast.
         _viewModel.Theme.ApplyToRoot(RootGrid);
+        _viewModel.Theme.AttachWindow(this);
         _viewModel.Settings.AttachWindow(this);
         _viewModel.ProUnlock.AttachWindow(this);
 
