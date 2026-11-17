@@ -3,8 +3,9 @@
     x:Class="PurePerformance.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- Omit RequestedTheme so WinUI follows the Windows light/dark setting.
-         ApplicationTheme only allows Light|Dark (WMC0055 if Default is set). -->
+    <!-- Do not set RequestedTheme here. ApplicationTheme only allows Light|Dark
+         (WMC0055 if Default). User Light/Dark/System is applied on MainWindow
+         RootGrid via ElementTheme (see ThemeService). -->
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

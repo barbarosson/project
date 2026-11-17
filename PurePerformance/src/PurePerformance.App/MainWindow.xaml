@@ -8,11 +8,11 @@
     mc:Ignorable="d"
     Title="Pure Performance">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid x:Name="RootGrid" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <NavigationView x:Name="NavView"
                         PaneDisplayMode="Left"
                         IsBackButtonVisible="Collapsed"
-                        IsSettingsVisible="False"
+                        IsSettingsVisible="True"
                         OpenPaneLength="240"
                         IsTitleBarAutoPaddingEnabled="True"
                         SelectionChanged="NavView_SelectionChanged">

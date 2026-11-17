@@ -24,7 +24,7 @@ public partial class DashboardViewModel : ObservableObject
 
     public string ProductName => "Pure Performance";
 
-    public string Tagline => "Crash Analyzer · Startup Manager · Safe optimization tools";
+    public string Tagline => "Free Crash Analyzer · optional Pro Startup Manager & safe cleanup — not a registry cleaner";
 
     public ObservableCollection<ProcessUsage> TopProcesses { get; } = new();
 

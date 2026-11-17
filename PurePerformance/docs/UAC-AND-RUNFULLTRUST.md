@@ -1,8 +1,8 @@
-# UAC and `runFullTrust` (next modules)
+# UAC and `runFullTrust`
 
 ## Current foundation
 
-- `Package.appxmanifest` declares **`runFullTrust`** so Pure Performance can use classic desktop APIs (Event Viewer, future startup enumeration) inside an MSIX Desktop Bridge package.
+- `Package.appxmanifest` declares **`runFullTrust`** so Pure Performance can use classic desktop APIs (Event Viewer, startup enumeration, cleanup) inside an MSIX Desktop Bridge package, plus **`internetClient`** for Store license/purchase and privacy links.
 - `app.manifest` uses **`asInvoker`** — the app does **not** force an admin launch every time.
 - Crash Analyzer Event Log reads are designed to work for standard users; access-denied paths surface a clear finding instead of crashing.
 

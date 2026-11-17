@@ -16,9 +16,10 @@
     <PublisherDisplayName>Modulus</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
     <Description>
-      Crash Analyzer, Startup Manager, and safe optimization tools for Windows.
-      Diagnoses unexpected shutdowns, hangs, disk errors, and BSODs.
-      Does not include aggressive or blind registry cleaning.
+      Pure Performance is a Crash Analyzer and Startup Manager for Windows, with optional Pro tools for named-folder cleanup and memory working-set trim.
+      Free: diagnose unexpected shutdowns, hangs, disk errors, and BSODs from Event Log.
+      Pro (optional): Startup Manager, System Cleaner, Memory Optimizer.
+      Not a registry cleaner. No deceptive “junk score” cleanup claims.
     </Description>
   </Properties>
 
@@ -36,26 +37,38 @@
       EntryPoint="$targetentrypoint$">
       <uap:VisualElements
         DisplayName="Pure Performance"
-        Description="Crash Analyzer + Startup Manager + safe PC optimization tools"
+        Description="Crash Analyzer + Startup Manager for Windows. Optional Pro cleanup tools — not a registry cleaner."
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png"
                         Square71x71Logo="Assets\Square71x71Logo.png"
-                        Square310x310Logo="Assets\Square310x310Logo.png" />
+                        Square310x310Logo="Assets\Square310x310Logo.png"
+                        ShortName="Pure Performance">
+          <uap:ShowNameOnTiles>
+            <uap:ShowOn Tile="square150x150Logo" />
+            <uap:ShowOn Tile="wide310x150Logo" />
+            <uap:ShowOn Tile="square310x310Logo" />
+          </uap:ShowNameOnTiles>
+        </uap:DefaultTile>
         <uap:SplashScreen Image="Assets\SplashScreen.png" />
       </uap:VisualElements>
     </Application>
   </Applications>
 
   <!--
-    Store / Desktop Bridge notes:
-    - runFullTrust enables full desktop APIs (Event Log, future startup edits) under MSIX.
-    - Do NOT add broad restricted capabilities "just in case". Request elevation via UAC
-      only when the user starts an admin-needed action (see Helpers/ElevationHelper.cs).
-    - Positioning: Crash Analyzer + Startup Manager + safe cleanup — not a registry cleaner.
+    Store / Desktop Bridge checklist notes:
+    - Position as Crash Analyzer + Startup Manager (honest listing).
+    - internetClient: Store license / purchase + privacy policy hyperlink.
+    - runFullTrust: Event Log, startup edits, cleanup under MSIX Desktop Bridge.
+    - Do NOT add broad restricted capabilities “just in case”.
+    - Elevate via UAC only when the user starts an admin-needed action.
+    - Privacy policy URL for Partner Center: see docs/PRIVACY.md
+      (https://modulusaas.com/products/pure-performance/privacy).
+    - Replace placeholder PNGs under Assets/ before certification (see Assets/README.md).
   -->
   <Capabilities>
+    <Capability Name="internetClient" />
     <rescap:Capability Name="runFullTrust" />
   </Capabilities>
 </Package>
