@@ -1,0 +1,63 @@
+# Microsoft Store submission checklist — Pure Performance
+
+Position the app as **Crash Analyzer + Startup Manager**, with optional Pro cleanup tools. Keep copy honest.
+
+## Package identity
+
+| Field | Value in repo |
+|-------|----------------|
+| Package identity name | `Modulus.PurePerformance` |
+| Display name | Pure Performance |
+| Publisher display name | Modulus |
+| Version | `1.0.0.0` (bump for each Store upload) |
+
+Update **Publisher** (`CN=…`) to match your Partner Center certificate before packaging.
+
+## Capabilities (keep minimal)
+
+Declared in `Package.appxmanifest`:
+
+- `internetClient` — Store license/purchase + privacy hyperlink
+- `runFullTrust` — Desktop Bridge for Event Log / startup / cleanup APIs
+
+Do **not** add unrelated restricted capabilities. Everyday launch stays `asInvoker`; elevate on demand (see `UAC-AND-RUNFULLTRUST.md`).
+
+## Assets
+
+Replace placeholders under `src/PurePerformance.App/Assets/` before certification. Required filenames and sizes are listed in `Assets/README.md`.
+
+Partner Center also needs Store screenshots (desktop 1366×768 or larger) showing Crash Analyzer and Startup Manager — not fake “cleaned” dashboards.
+
+## Privacy policy
+
+Partner Center requires a privacy policy URL. Stub content lives in `docs/PRIVACY.md`.
+
+Suggested public URL (publish the page before submission):
+
+`https://modulusaas.com/products/pure-performance/privacy`
+
+## Age rating / category
+
+- Category suggestion: **Utilities & tools** / productivity utilities
+- Declarations: local system diagnostics and optional folder cleanup; no account required for Crash Analyzer
+
+## Freemium disclosure
+
+In Store description, state clearly:
+
+1. Crash Analyzer is free.
+2. Startup Manager, System Cleaner, and Memory Optimizer unlock with optional **Pure Performance Pro**.
+3. Not a registry cleaner.
+
+See `PARTNER-CENTER-ADDON.md` for the durable add-on steps.
+
+## Build / upload
+
+1. On Windows: open `PurePerformance.sln` in Visual Studio 2022.
+2. Set package identity / signing for Store.
+3. Right-click project → **Package and Publish** → **Create App Packages…** → Microsoft Store ready.
+4. Upload the `.msixupload` (or `.msix`) in Partner Center.
+
+## Local testing without Store
+
+Unpackaged Debug uses a labeled Pro bypass so F5 still exercises Startup / Cleaner / Memory. That bypass is **not** a Store license.

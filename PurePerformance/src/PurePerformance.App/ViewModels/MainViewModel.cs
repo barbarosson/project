@@ -10,13 +10,21 @@ public partial class MainViewModel : ObservableObject
         CrashAnalyzerViewModel crashAnalyzer,
         StartupOptimizerViewModel startupOptimizer,
         SystemCleanerViewModel systemCleaner,
-        MemoryOptimizerViewModel memoryOptimizer)
+        MemoryOptimizerViewModel memoryOptimizer,
+        SettingsViewModel settings,
+        ProUnlockViewModel proUnlock,
+        IThemeService theme,
+        ILicenseService license)
     {
         Dashboard = dashboard;
         CrashAnalyzer = crashAnalyzer;
         StartupOptimizer = startupOptimizer;
         SystemCleaner = systemCleaner;
         MemoryOptimizer = memoryOptimizer;
+        Settings = settings;
+        ProUnlock = proUnlock;
+        Theme = theme;
+        License = license;
         CurrentPageTitle = "Dashboard";
     }
 
@@ -30,11 +38,23 @@ public partial class MainViewModel : ObservableObject
 
     public MemoryOptimizerViewModel MemoryOptimizer { get; }
 
+    public SettingsViewModel Settings { get; }
+
+    public ProUnlockViewModel ProUnlock { get; }
+
+    public IThemeService Theme { get; }
+
+    public ILicenseService License { get; }
+
     [ObservableProperty]
     private string currentPageTitle;
 
     public static MainViewModel CreateDefault()
     {
+        var settingsStore = new UserSettingsStore();
+        var theme = new ThemeService(settingsStore);
+        var license = new StoreLicenseService();
+
         var eventLog = new EventLogService();
         var startup = new StartupManagerService();
         var cleaner = new SystemCleanerService();
@@ -46,6 +66,10 @@ public partial class MainViewModel : ObservableObject
             new CrashAnalyzerViewModel(eventLog),
             new StartupOptimizerViewModel(startup),
             new SystemCleanerViewModel(cleaner),
-            new MemoryOptimizerViewModel(memory));
+            new MemoryOptimizerViewModel(memory),
+            new SettingsViewModel(theme, license),
+            new ProUnlockViewModel(license),
+            theme,
+            license);
     }
 }

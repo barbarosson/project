@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="PurePerformance.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    NavigationCacheMode="Disabled">
+
+    <ScrollViewer Padding="24">
+        <StackPanel Spacing="24" MaxWidth="720">
+            <StackPanel Spacing="6">
+                <TextBlock Text="Settings"
+                           Style="{StaticResource TitleTextBlockStyle}" />
+                <TextBlock Text="Theme preference and optional Pro unlock. Crash Analyzer remains free."
+                           TextWrapping="WrapWholeWords"
+                           Opacity="0.9" />
+            </StackPanel>
+
+            <StackPanel Spacing="12">
+                <TextBlock Text="Appearance"
+                           Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock Text="Applied on this window via ElementTheme. Follow system does not set Application.RequestedTheme (avoids WMC0055)."
+                           TextWrapping="WrapWholeWords"
+                           Opacity="0.75"
+                           FontSize="12" />
+                <StackPanel Spacing="8">
+                    <RadioButton Content="Follow system"
+                                 GroupName="ThemePreference"
+                                 IsChecked="{x:Bind ViewModel.IsSystemTheme, Mode=OneWay}"
+                                 Command="{x:Bind ViewModel.SelectSystemThemeCommand}" />
+                    <RadioButton Content="Light"
+                                 GroupName="ThemePreference"
+                                 IsChecked="{x:Bind ViewModel.IsLightTheme, Mode=OneWay}"
+                                 Command="{x:Bind ViewModel.SelectLightThemeCommand}" />
+                    <RadioButton Content="Dark"
+                                 GroupName="ThemePreference"
+                                 IsChecked="{x:Bind ViewModel.IsDarkTheme, Mode=OneWay}"
+                                 Command="{x:Bind ViewModel.SelectDarkThemeCommand}" />
+                </StackPanel>
+                <TextBlock Text="{x:Bind ViewModel.ThemeStatus, Mode=OneWay}"
+                           Opacity="0.8" />
+            </StackPanel>
+
+            <StackPanel Spacing="12">
+                <TextBlock Text="Feature tiers"
+                           Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock Text="{x:Bind ViewModel.FreeTierSummary}"
+                           TextWrapping="WrapWholeWords" />
+                <TextBlock Text="{x:Bind ViewModel.ProTierSummary}"
+                           TextWrapping="WrapWholeWords" />
+
+                <InfoBar IsOpen="True"
+                         IsClosable="False"
+                         Severity="Informational"
+                         Title="License status"
+                         Message="{x:Bind ViewModel.LicenseStatus, Mode=OneWay}" />
+
+                <InfoBar x:Name="DevBypassBar"
+                         IsClosable="False"
+                         Severity="Warning"
+                         Title="Local / dev bypass"
+                         Message="Pro is unlocked for development only. Packaged Store builds still require a real Pro add-on purchase." />
+
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Button Content="Refresh license"
+                            Command="{x:Bind ViewModel.RefreshLicenseCommand}"
+                            IsEnabled="{x:Bind ViewModel.CanRefresh, Mode=OneWay}" />
+                    <Button x:Name="UnlockButton"
+                            Content="Unlock Pro…"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Command="{x:Bind ViewModel.PurchaseProCommand}"
+                            IsEnabled="{x:Bind ViewModel.CanPurchase, Mode=OneWay}" />
+                    <ProgressRing Width="24" Height="24"
+                                  IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+                </StackPanel>
+
+                <TextBlock Opacity="0.7" FontSize="12" TextWrapping="WrapWholeWords">
+                    <Run Text="Configured Pro add-on Store ID: " />
+                    <Run Text="{x:Bind ViewModel.AddOnStoreId}" />
+                </TextBlock>
+            </StackPanel>
+
+            <StackPanel Spacing="8">
+                <TextBlock Text="Privacy"
+                           Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock TextWrapping="WrapWholeWords"
+                           Opacity="0.9"
+                           Text="Event logs and cleanup stay on this PC. See the privacy policy stub for Store listing (also in PurePerformance/docs/PRIVACY.md)." />
+                <HyperlinkButton Content="Open privacy policy"
+                                 NavigateUri="{x:Bind ViewModel.PrivacyPolicyUrl}" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
