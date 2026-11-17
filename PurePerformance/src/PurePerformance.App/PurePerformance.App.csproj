@@ -21,6 +21,16 @@
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
     <!-- Desktop / unpackaged shortcut + taskbar icon -->
     <ApplicationIcon>Assets\ApplicationIcon.ico</ApplicationIcon>
+    <!--
+      Versioning — keep in sync with Package.appxmanifest Identity/@Version and app.manifest.
+      Bump before every Partner Center upload (see docs/STORE-SUBMISSION.md).
+      ApplicationDisplayVersion = user-visible x.y.z; ApplicationVersion = integer revision for MSIX tooling.
+    -->
+    <Version>1.0.0</Version>
+    <FileVersion>1.0.0.0</FileVersion>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
+    <ApplicationVersion>0</ApplicationVersion>
   </PropertyGroup>
 
   <ItemGroup>

@@ -164,7 +164,7 @@
                 <TextBlock FontSize="12" TextWrapping="WrapWholeWords"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                     <Run Text="Configured Pro add-on Store ID: " />
-                    <Run Text="{x:Bind ViewModel.AddOnStoreId}" />
+                    <Run Text="{x:Bind ViewModel.AddOnStoreIdDisplay}" />
                 </TextBlock>
             </StackPanel>
 

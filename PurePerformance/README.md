@@ -32,7 +32,7 @@ dotnet restore PurePerformance.sln
 dotnet build PurePerformance.sln -c Debug -p:Platform=x64
 ```
 
-Store package: right-click the project → **Package and Publish** → create MSIX upload package. Checklist: `docs/STORE-SUBMISSION.md`.
+Store package: right-click the project → **Package and Publish** → **Create App Packages…**. Checklist: `docs/STORE-SUBMISSION.md`. Step-by-step: `docs/MSIX-PACKAGING.md`.
 
 ## Settings & Help
 
@@ -72,7 +72,9 @@ Brand: Store/desktop logos live under `src/PurePerformance.App/Assets/` (teal pu
 
 ## Docs
 
-- `docs/PARTNER-CENTER-ADDON.md` — durable Pro add-on setup  
-- `docs/STORE-SUBMISSION.md` — MSIX / listing checklist  
-- `docs/PRIVACY.md` — privacy policy stub for Partner Center  
-- `docs/UAC-AND-RUNFULLTRUST.md` — elevation pattern  
+- `docs/STORE-SUBMISSION.md` — Store listing checklist + code-done vs Partner Center  
+- `docs/MSIX-PACKAGING.md` — VS Create App Packages / Partner Center upload  
+- `docs/PARTNER-CENTER-ADDON.md` — durable Pro add-on + Store ID PLACEHOLDER  
+- `docs/PRIVACY.md` — privacy policy stub (publish HTTPS URL before cert)  
+- `docs/UAC-AND-RUNFULLTRUST.md` — elevation pattern / `runFullTrust`  
+
