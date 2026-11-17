@@ -71,21 +71,27 @@ public sealed class EventLogService : IEventLogService
         }
     }
 
+    /// <summary>
+    /// Collects findings then returns them. Avoids yield inside try/catch (CS1626 / CS1631).
+    /// </summary>
     private static IEnumerable<CrashEvent> ReadLog(
         string logName,
         DateTime since,
         CancellationToken cancellationToken)
     {
+        var results = new List<CrashEvent>();
+
         // XPath: Errors (Level=2) and Warnings (Level=3) after the lookback window.
         var queryText =
             $"*[System[(Level=2 or Level=3) and TimeCreated[@SystemTime>='{since.ToUniversalTime():yyyy-MM-ddTHH:mm:ss.fffZ}']]]";
 
-        EventLogQuery? query = null;
         EventLogReader? reader = null;
+        CrashEvent? openError = null;
+        var notFound = false;
 
         try
         {
-            query = new EventLogQuery(logName, PathType.LogName, queryText)
+            var query = new EventLogQuery(logName, PathType.LogName, queryText)
             {
                 ReverseDirection = true
             };
@@ -93,12 +99,11 @@ public sealed class EventLogService : IEventLogService
         }
         catch (EventLogNotFoundException)
         {
-            yield break;
+            notFound = true;
         }
         catch (UnauthorizedAccessException)
         {
-            // Graceful permission-denied: surface a synthetic finding instead of crashing.
-            yield return new CrashEvent
+            openError = new CrashEvent
             {
                 Timestamp = DateTimeOffset.Now,
                 LogName = logName,
@@ -117,11 +122,10 @@ public sealed class EventLogService : IEventLogService
                     "Elevation is usually not required for standard Application/System log reads.",
                 RawMessage = null
             };
-            yield break;
         }
         catch (EventLogException ex)
         {
-            yield return new CrashEvent
+            openError = new CrashEvent
             {
                 Timestamp = DateTimeOffset.Now,
                 LogName = logName,
@@ -136,7 +140,22 @@ public sealed class EventLogService : IEventLogService
                     "If the log is corrupted, clear or rebuild it from Event Viewer after backing up.",
                 RawMessage = ex.ToString()
             };
-            yield break;
+        }
+
+        if (notFound)
+        {
+            return results;
+        }
+
+        if (openError is not null)
+        {
+            results.Add(openError);
+            return results;
+        }
+
+        if (reader is null)
+        {
+            return results;
         }
 
         using (reader)
@@ -145,19 +164,26 @@ public sealed class EventLogService : IEventLogService
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                EventRecord? record;
+                EventRecord? record = null;
+                var readFailed = false;
+
                 try
                 {
                     record = reader.ReadEvent();
                 }
                 catch (EventLogException)
                 {
-                    yield break;
+                    readFailed = true;
+                }
+
+                if (readFailed)
+                {
+                    break;
                 }
 
                 if (record is null)
                 {
-                    yield break;
+                    break;
                 }
 
                 using (record)
@@ -179,13 +205,12 @@ public sealed class EventLogService : IEventLogService
                         _ => CrashSeverity.Warning
                     };
 
-                    // Level 1 is Critical in Event Log.
                     if (record.Level == 1)
                     {
                         severity = CrashSeverity.Critical;
                     }
 
-                    yield return new CrashEvent
+                    results.Add(new CrashEvent
                     {
                         Timestamp = record.TimeCreated.HasValue
                             ? new DateTimeOffset(DateTime.SpecifyKind(record.TimeCreated.Value, DateTimeKind.Local))
@@ -199,10 +224,12 @@ public sealed class EventLogService : IEventLogService
                         Explanation = explanation,
                         RecommendedFix = fix,
                         RawMessage = Truncate(rawMessage, 800)
-                    };
+                    });
                 }
             }
         }
+
+        return results;
     }
 
     /// <summary>
@@ -254,7 +281,6 @@ public sealed class EventLogService : IEventLogService
             return true;
         }
 
-        // Catch unexpected shutdown language without pulling every generic warning.
         if (text.Contains("unexpected shutdown", StringComparison.OrdinalIgnoreCase)
             || text.Contains("was restarted without first shutting down", StringComparison.OrdinalIgnoreCase))
         {
