@@ -12,10 +12,12 @@
                 <TextBlock Text="{x:Bind ViewModel.ProductName}"
                            Style="{StaticResource TitleTextBlockStyle}"
                            FontSize="34"
-                           FontWeight="SemiBold" />
+                           FontWeight="SemiBold"
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                 <TextBlock Text="{x:Bind ViewModel.Tagline}"
                            Style="{StaticResource SubtitleTextBlockStyle}"
-                           Opacity="0.9" />
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                           Opacity="0.92" />
                 <InfoBar IsOpen="True"
                          IsClosable="False"
                          Severity="Informational"

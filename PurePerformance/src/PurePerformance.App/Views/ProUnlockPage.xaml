@@ -9,16 +9,18 @@
         <StackPanel Spacing="16" MaxWidth="640">
             <TextBlock Text="{x:Bind ViewModel.Headline, Mode=OneWay}"
                        Style="{StaticResource TitleTextBlockStyle}"
-                       TextWrapping="WrapWholeWords" />
+                       TextWrapping="WrapWholeWords"
+                       Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
             <TextBlock Text="{x:Bind ViewModel.HonestCopy}"
                        TextWrapping="WrapWholeWords"
-                       Opacity="0.9" />
+                       Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                       Opacity="0.92" />
 
             <InfoBar IsOpen="True"
                      IsClosable="False"
                      Severity="Informational"
                      Title="What you already have"
-                     Message="Crash Analyzer (and the live dashboard) work on the free tier — no purchase required." />
+                     Message="Crash Analyzer, Dashboard, Startup Optimizer, System Cleaner, and Memory Optimizer work on the free tier — no purchase required." />
 
             <InfoBar IsOpen="True"
                      IsClosable="False"
@@ -39,14 +41,15 @@
                         IsEnabled="{x:Bind ViewModel.CanAct, Mode=OneWay}" />
                 <Button Content="Refresh license"
                         Command="{x:Bind ViewModel.RefreshCommand}"
-                        IsEnabled="{x:Bind ViewModel.CanAct, Mode=OneWay}" />
+                        IsEnabled="{x:Bind ViewModel.CanAct, Mode=OneWay}"
+                        Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                 <ProgressRing Width="24" Height="24"
                               IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
             </StackPanel>
 
-            <TextBlock Text="After unlocking, select Startup Optimizer, System Cleaner, or Memory Optimizer again from the left pane."
+            <TextBlock Text="After unlocking, open the Pro pane again from the left navigation."
                        TextWrapping="WrapWholeWords"
-                       Opacity="0.75"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                        FontSize="12" />
         </StackPanel>
     </ScrollViewer>

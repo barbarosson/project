@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="PurePerformance.Views.AdvancedCrashPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:models="using:PurePerformance.Models"
+      NavigationCacheMode="Disabled">
+  <ScrollViewer Padding="24">
+    <StackPanel Spacing="16" MaxWidth="900">
+      <TextBlock Text="Advanced Crash Analyzer" Style="{StaticResource TitleTextBlockStyle}" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+      <TextBlock TextWrapping="WrapWholeWords" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                 Text="Correlation groups, category trends, and local Markdown export. Free Crash Analyzer remains available without Pro." />
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <Button Content="Analyze trends" Style="{StaticResource AccentButtonStyle}" Command="{x:Bind ViewModel.AnalyzeCommand}" IsEnabled="{x:Bind ViewModel.CanRun, Mode=OneWay}" />
+        <Button Content="Export report" Command="{x:Bind ViewModel.ExportCommand}" IsEnabled="{x:Bind ViewModel.CanRun, Mode=OneWay}" />
+        <ProgressRing Width="24" Height="24" IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
+      </StackPanel>
+      <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" TextWrapping="WrapWholeWords" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+      <TextBlock Text="Trends" Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+      <ListView ItemsSource="{x:Bind ViewModel.Trends, Mode=OneWay}">
+        <ListView.ItemTemplate>
+          <DataTemplate x:DataType="models:CrashTrendBucket">
+            <TextBlock IsTextSelectionEnabled="True" Foreground="{ThemeResource TextFillColorPrimaryBrush}">
+              <Run Text="{x:Bind Label}" /><Run Text=" — " /><Run Text="{x:Bind Count}" /><Run Text=" finding(s)" />
+            </TextBlock>
+          </DataTemplate>
+        </ListView.ItemTemplate>
+      </ListView>
+      <TextBlock Text="Correlations" Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+      <ListView ItemsSource="{x:Bind ViewModel.Correlations, Mode=OneWay}">
+        <ListView.ItemTemplate>
+          <DataTemplate x:DataType="models:CrashCorrelationGroup">
+            <TextBlock TextWrapping="WrapWholeWords" IsTextSelectionEnabled="True" Foreground="{ThemeResource TextFillColorPrimaryBrush}">
+              <Run Text="{x:Bind Title}" /><Run Text=" (" /><Run Text="{x:Bind Count}" /><Run Text=")" />
+            </TextBlock>
+          </DataTemplate>
+        </ListView.ItemTemplate>
+      </ListView>
+      <TextBox Header="Export path" IsReadOnly="True" Text="{x:Bind ViewModel.ExportPath, Mode=OneWay}" TextWrapping="Wrap" />
+    </StackPanel>
+  </ScrollViewer>
+</Page>

@@ -1,20 +1,34 @@
 using System.Collections.ObjectModel;
+using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PurePerformance.Models;
 using PurePerformance.Services;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace PurePerformance.ViewModels;
 
 public partial class CrashAnalyzerViewModel : ObservableObject
 {
     private readonly IEventLogService _eventLogService;
+    private readonly ILicenseService _license;
+    private readonly IAiAssistService _ai;
     private CancellationTokenSource? _cts;
 
-    public CrashAnalyzerViewModel(IEventLogService eventLogService)
+    public CrashAnalyzerViewModel(
+        IEventLogService eventLogService,
+        ILicenseService license,
+        IAiAssistService ai)
     {
         _eventLogService = eventLogService;
+        _license = license;
+        _ai = ai;
         SelectedLookback = CrashLookback.Hours24;
+        _license.Changed += (_, _) =>
+        {
+            OnPropertyChanged(nameof(IsProUnlocked));
+            OnPropertyChanged(nameof(CanRequestAi));
+        };
     }
 
     public ObservableCollection<CrashEvent> Findings { get; } = new();
@@ -33,10 +47,17 @@ public partial class CrashAnalyzerViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSelection))]
+    [NotifyPropertyChangedFor(nameof(CanCopy))]
+    [NotifyPropertyChangedFor(nameof(CanRequestAi))]
+    [NotifyPropertyChangedFor(nameof(ExplanationText))]
+    [NotifyPropertyChangedFor(nameof(FixText))]
+    [NotifyPropertyChangedFor(nameof(RawText))]
     private CrashEvent? selectedFinding;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanScan))]
+    [NotifyPropertyChangedFor(nameof(CanCopy))]
+    [NotifyPropertyChangedFor(nameof(CanRequestAi))]
     private bool isBusy;
 
     [ObservableProperty]
@@ -46,11 +67,34 @@ public partial class CrashAnalyzerViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(HasError))]
     private string? errorMessage;
 
+    [ObservableProperty]
+    private string copyStatus = string.Empty;
+
+    [ObservableProperty]
+    private string aiSuggestion = string.Empty;
+
+    [ObservableProperty]
+    private string aiStatus = string.Empty;
+
     public bool CanScan => !IsBusy;
 
     public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
 
     public bool HasSelection => SelectedFinding is not null;
+
+    public bool CanCopy => HasSelection && !IsBusy;
+
+    public bool IsProUnlocked => _license.IsProUnlocked;
+
+    public bool CanRequestAi => IsProUnlocked && HasSelection && !IsBusy;
+
+    public string ExplanationText => SelectedFinding?.Explanation
+        ?? "Select a finding to see a plain-English explanation.";
+
+    public string FixText => SelectedFinding?.RecommendedFix
+        ?? "Recommended fixes appear here after you select an item.";
+
+    public string RawText => SelectedFinding?.RawMessage ?? "—";
 
     public bool IsLookback24
     {
@@ -95,6 +139,8 @@ public partial class CrashAnalyzerViewModel : ObservableObject
 
         IsBusy = true;
         ErrorMessage = null;
+        AiSuggestion = string.Empty;
+        AiStatus = string.Empty;
         Findings.Clear();
         SelectedFinding = null;
         StatusMessage = $"Scanning Application and System logs ({LookbackLabel})…";
@@ -142,4 +188,77 @@ public partial class CrashAnalyzerViewModel : ObservableObject
     {
         _cts?.Cancel();
     }
+
+    [RelayCommand]
+    private void CopySelected()
+    {
+        if (SelectedFinding is null) return;
+
+        var text = FormatFinding(SelectedFinding);
+        var package = new DataPackage();
+        package.SetText(text);
+        Clipboard.SetContent(package);
+        CopyStatus = "Copied finding to clipboard.";
+    }
+
+    [RelayCommand]
+    private void CopyAll()
+    {
+        if (Findings.Count == 0)
+        {
+            CopyStatus = "Nothing to copy — run a scan first.";
+            return;
+        }
+
+        var sb = new StringBuilder();
+        foreach (var f in Findings)
+        {
+            sb.AppendLine(FormatFinding(f));
+            sb.AppendLine(new string('-', 40));
+        }
+
+        var package = new DataPackage();
+        package.SetText(sb.ToString());
+        Clipboard.SetContent(package);
+        CopyStatus = $"Copied {Findings.Count} finding(s) to clipboard.";
+    }
+
+    [RelayCommand]
+    private async Task AskAiAsync()
+    {
+        if (!CanRequestAi || SelectedFinding is null) return;
+
+        IsBusy = true;
+        AiStatus = "Asking your configured AI endpoint…";
+        AiSuggestion = string.Empty;
+        try
+        {
+            var result = await _ai.SuggestFixAsync(SelectedFinding);
+            if (result.Success)
+            {
+                AiSuggestion = result.Message;
+                AiStatus = "AI suggestion ready (from your key / endpoint). Review before acting.";
+            }
+            else
+            {
+                AiSuggestion = string.Empty;
+                AiStatus = result.Message;
+            }
+        }
+        catch (Exception ex)
+        {
+            AiStatus = $"AI request failed: {ex.Message}";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    private static string FormatFinding(CrashEvent f) =>
+        $"{f.Title}\n" +
+        $"{f.SummaryLine}\n" +
+        $"Explanation: {f.Explanation}\n" +
+        $"Recommended fix: {f.RecommendedFix}\n" +
+        $"Raw: {f.RawMessage}";
 }

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="PurePerformance.Views.AlertsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:models="using:PurePerformance.Models"
+      NavigationCacheMode="Disabled">
+  <ScrollViewer Padding="24">
+    <StackPanel Spacing="16" MaxWidth="760">
+      <TextBlock Text="Real-time alerts" Style="{StaticResource TitleTextBlockStyle}" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+      <TextBlock TextWrapping="WrapWholeWords" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                 Text="In-app CPU/disk spike notices while Pure Performance is open, plus a local history. Not a background Windows service." />
+      <InfoBar x:Name="ToastBar" IsClosable="True" Severity="Warning" Title="Spike" />
+      <ToggleSwitch Header="Alerts enabled" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+      <NumberBox Header="CPU spike %" Value="{x:Bind ViewModel.CpuSpikePercent, Mode=TwoWay}" Minimum="50" Maximum="100" SpinButtonPlacementMode="Inline" />
+      <NumberBox Header="Disk spike %" Value="{x:Bind ViewModel.DiskSpikePercent, Mode=TwoWay}" Minimum="50" Maximum="100" SpinButtonPlacementMode="Inline" />
+      <NumberBox Header="Cooldown seconds" Value="{x:Bind ViewModel.CooldownSeconds, Mode=TwoWay}" Minimum="15" Maximum="600" SpinButtonPlacementMode="Inline" />
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <Button Content="Save" Style="{StaticResource AccentButtonStyle}" Command="{x:Bind ViewModel.SaveCommand}" />
+        <Button Content="Start monitoring" Command="{x:Bind ViewModel.StartCommand}" />
+        <Button Content="Stop" Command="{x:Bind ViewModel.StopCommand}" />
+        <Button Content="Clear history" Command="{x:Bind ViewModel.ClearCommand}" />
+      </StackPanel>
+      <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" TextWrapping="WrapWholeWords" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+      <ListView ItemsSource="{x:Bind ViewModel.History, Mode=OneWay}" MinHeight="200">
+        <ListView.ItemTemplate>
+          <DataTemplate x:DataType="models:AlertHistoryEntry">
+            <TextBlock TextWrapping="WrapWholeWords" IsTextSelectionEnabled="True" Foreground="{ThemeResource TextFillColorPrimaryBrush}">
+              <Run Text="{x:Bind Timestamp}" /><Run Text=" · " /><Run Text="{x:Bind Kind}" /><Run Text=" · " /><Run Text="{x:Bind Message}" />
+            </TextBlock>
+          </DataTemplate>
+        </ListView.ItemTemplate>
+      </ListView>
+    </StackPanel>
+  </ScrollViewer>
+</Page>

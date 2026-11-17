@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page x:Class="PurePerformance.Views.RuleEnginePage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:models="using:PurePerformance.Models"
+      NavigationCacheMode="Disabled">
+  <ScrollViewer Padding="24">
+    <StackPanel Spacing="16" MaxWidth="760">
+      <TextBlock Text="Whitelist / rule engine" Style="{StaticResource TitleTextBlockStyle}" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+      <TextBlock TextWrapping="WrapWholeWords" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                 Text="Protect Cleaner paths and Startup entries with contains-match patterns. Free Cleaner/Startup still work without rules." />
+      <TextBox Header="Pattern" Text="{x:Bind ViewModel.Pattern, Mode=TwoWay}" PlaceholderText="e.g. Chrome or \\MyApp\\" />
+      <TextBox Header="Notes" Text="{x:Bind ViewModel.Notes, Mode=TwoWay}" />
+      <StackPanel Orientation="Horizontal" Spacing="16">
+        <RadioButton Content="Cleaner" IsChecked="{x:Bind ViewModel.ScopeCleaner, Mode=TwoWay}" GroupName="Scope" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+        <RadioButton Content="Startup" IsChecked="{x:Bind ViewModel.ScopeStartup, Mode=TwoWay}" GroupName="Scope" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+        <RadioButton Content="Both" IsChecked="{x:Bind ViewModel.ScopeBoth, Mode=TwoWay}" GroupName="Scope" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+      </StackPanel>
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <Button Content="Add rule" Style="{StaticResource AccentButtonStyle}" Command="{x:Bind ViewModel.AddCommand}" />
+        <Button Content="Save" Command="{x:Bind ViewModel.SaveCommand}" />
+        <Button Content="Remove selected" Click="Remove_Click" />
+      </StackPanel>
+      <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" TextWrapping="WrapWholeWords" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+      <ListView x:Name="RulesList" ItemsSource="{x:Bind ViewModel.Rules, Mode=OneWay}" SelectionMode="Single">
+        <ListView.ItemTemplate>
+          <DataTemplate x:DataType="models:WhitelistRule">
+            <StackPanel Padding="8" Spacing="2">
+              <TextBlock FontWeight="SemiBold" IsTextSelectionEnabled="True" Foreground="{ThemeResource TextFillColorPrimaryBrush}" Text="{x:Bind Pattern}" />
+              <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}" IsTextSelectionEnabled="True">
+                <Run Text="{x:Bind Scope}" /><Run Text=" · " /><Run Text="{x:Bind Notes}" />
+              </TextBlock>
+              <ToggleSwitch Header="Enabled" IsOn="{x:Bind IsEnabled, Mode=TwoWay}" />
+            </StackPanel>
+          </DataTemplate>
+        </ListView.ItemTemplate>
+      </ListView>
+    </StackPanel>
+  </ScrollViewer>
+</Page>

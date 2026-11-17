@@ -9,6 +9,13 @@ namespace PurePerformance.Services;
 /// </summary>
 public sealed class SystemCleanerService : ISystemCleanerService
 {
+    private readonly IRuleEngineService? _rules;
+
+    public SystemCleanerService(IRuleEngineService? rules = null)
+    {
+        _rules = rules;
+    }
+
     public Task<IReadOnlyList<CleanupTarget>> GetSafeCleanupTargetsAsync(
         CancellationToken cancellationToken = default) =>
         Task.Run(() => (IReadOnlyList<CleanupTarget>)BuildTargets(cancellationToken), cancellationToken);
@@ -101,7 +108,7 @@ public sealed class SystemCleanerService : ISystemCleanerService
         };
     }
 
-    private static CleanupResult CleanCore(
+    private CleanupResult CleanCore(
         HashSet<string> ids,
         IProgress<string>? progress,
         CancellationToken ct)
@@ -126,6 +133,13 @@ public sealed class SystemCleanerService : ISystemCleanerService
 
             foreach (var path in target.Paths)
             {
+                if (_rules?.IsCleanerPathWhitelisted(path) == true)
+                {
+                    notes.Add($"{target.DisplayName}: skipped by Pro whitelist rule ({path}).");
+                    skipped++;
+                    continue;
+                }
+
                 if (!Directory.Exists(path) && !File.Exists(path))
                 {
                     notes.Add($"{target.DisplayName}: path not found ({path}) — skipped.");
@@ -134,7 +148,7 @@ public sealed class SystemCleanerService : ISystemCleanerService
 
                 try
                 {
-                    var (b, f, s) = DeleteContents(path, ct);
+                    var (b, f, s) = DeleteContents(path, ct, _rules);
                     removedBytes += b;
                     removedFiles += f;
                     skipped += s;
@@ -166,7 +180,10 @@ public sealed class SystemCleanerService : ISystemCleanerService
         };
     }
 
-    private static (long bytes, int files, int skipped) DeleteContents(string path, CancellationToken ct)
+    private static (long bytes, int files, int skipped) DeleteContents(
+        string path,
+        CancellationToken ct,
+        IRuleEngineService? rules)
     {
         long bytes = 0;
         int files = 0;
@@ -174,6 +191,11 @@ public sealed class SystemCleanerService : ISystemCleanerService
 
         if (File.Exists(path))
         {
+            if (rules?.IsCleanerPathWhitelisted(path) == true)
+            {
+                return (0, 0, 1);
+            }
+
             try
             {
                 var info = new FileInfo(path);
@@ -195,6 +217,12 @@ public sealed class SystemCleanerService : ISystemCleanerService
         foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
         {
             ct.ThrowIfCancellationRequested();
+            if (rules?.IsCleanerPathWhitelisted(file) == true)
+            {
+                skipped++;
+                continue;
+            }
+
             try
             {
                 var info = new FileInfo(file);

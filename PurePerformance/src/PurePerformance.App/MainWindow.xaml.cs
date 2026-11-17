@@ -1,5 +1,6 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using PurePerformance.Models;
 using PurePerformance.ViewModels;
 using PurePerformance.Views;
 
@@ -21,7 +22,24 @@ public sealed partial class MainWindow : Window
         _viewModel.Settings.AttachWindow(this);
         _viewModel.ProUnlock.AttachWindow(this);
 
-        Closed += (_, _) => _viewModel.Dashboard.StopIfNeeded();
+        Closed += (_, _) =>
+        {
+            _viewModel.Dashboard.StopIfNeeded();
+            _viewModel.RealtimeAlerts.Stop();
+        };
+
+        _viewModel.RealtimeAlerts.AlertRaised += OnAlertRaised;
+        _viewModel.License.Changed += (_, _) =>
+        {
+            if (_viewModel.License.IsProUnlocked)
+            {
+                _viewModel.RealtimeAlerts.Start();
+            }
+            else
+            {
+                _viewModel.RealtimeAlerts.Stop();
+            }
+        };
 
         _ = InitializeLicenseAsync();
 
@@ -36,11 +54,24 @@ public sealed partial class MainWindow : Window
         try
         {
             await _viewModel.License.RefreshAsync();
+            if (_viewModel.License.IsProUnlocked)
+            {
+                _viewModel.RealtimeAlerts.Start();
+            }
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"License refresh: {ex.Message}");
         }
+    }
+
+    private void OnAlertRaised(object? sender, AlertHistoryEntry entry)
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            GlobalAlertBar.Message = entry.Message;
+            GlobalAlertBar.IsOpen = true;
+        });
     }
 
     private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -76,32 +107,83 @@ public sealed partial class MainWindow : Window
                 break;
 
             case "startup":
-                NavigateProOrGate("Startup Optimizer", () =>
-                {
-                    var startup = new StartupOptimizerPage();
-                    startup.SetViewModel(_viewModel.StartupOptimizer);
-                    ContentFrame.Content = startup;
-                    SetTitle("Startup Optimizer");
-                });
+                var startup = new StartupOptimizerPage();
+                startup.SetViewModel(_viewModel.StartupOptimizer);
+                ContentFrame.Content = startup;
+                SetTitle("Startup Optimizer");
                 break;
 
             case "cleaner":
-                NavigateProOrGate("System Cleaner", () =>
-                {
-                    var cleaner = new SystemCleanerPage();
-                    cleaner.SetViewModel(_viewModel.SystemCleaner);
-                    ContentFrame.Content = cleaner;
-                    SetTitle("System Cleaner");
-                });
+                var cleaner = new SystemCleanerPage();
+                cleaner.SetViewModel(_viewModel.SystemCleaner);
+                ContentFrame.Content = cleaner;
+                SetTitle("System Cleaner");
                 break;
 
             case "memory":
-                NavigateProOrGate("Memory Optimizer", () =>
+                var memory = new MemoryOptimizerPage();
+                memory.SetViewModel(_viewModel.MemoryOptimizer);
+                ContentFrame.Content = memory;
+                SetTitle("Memory Optimizer");
+                break;
+
+            case "scheduled":
+                NavigateProOrGate("Scheduled scans", () =>
                 {
-                    var memory = new MemoryOptimizerPage();
-                    memory.SetViewModel(_viewModel.MemoryOptimizer);
-                    ContentFrame.Content = memory;
-                    SetTitle("Memory Optimizer");
+                    var page = new ScheduledScansPage();
+                    page.SetViewModel(_viewModel.ScheduledScans);
+                    ContentFrame.Content = page;
+                    SetTitle("Scheduled scans");
+                });
+                break;
+
+            case "advanced-crash":
+                NavigateProOrGate("Advanced Crash Analyzer", () =>
+                {
+                    var page = new AdvancedCrashPage();
+                    page.SetViewModel(_viewModel.AdvancedCrash);
+                    ContentFrame.Content = page;
+                    SetTitle("Advanced Crash Analyzer");
+                });
+                break;
+
+            case "auto-rules":
+                NavigateProOrGate("Auto optimization rules", () =>
+                {
+                    var page = new AutoOptimizationPage();
+                    page.SetViewModel(_viewModel.AutoOptimization);
+                    ContentFrame.Content = page;
+                    SetTitle("Auto optimization rules");
+                });
+                break;
+
+            case "profiles":
+                NavigateProOrGate("Multi-PC profiles", () =>
+                {
+                    var page = new ProfilesPage();
+                    page.SetViewModel(_viewModel.Profiles);
+                    ContentFrame.Content = page;
+                    SetTitle("Multi-PC profiles");
+                });
+                break;
+
+            case "alerts":
+                NavigateProOrGate("Real-time alerts", () =>
+                {
+                    var page = new AlertsPage();
+                    page.SetViewModel(_viewModel.Alerts);
+                    ContentFrame.Content = page;
+                    SetTitle("Real-time alerts");
+                });
+                break;
+
+            case "rules":
+                NavigateProOrGate("Whitelist / rule engine", () =>
+                {
+                    var page = new RuleEnginePage();
+                    page.SetViewModel(_viewModel.RuleEngine);
+                    ContentFrame.Content = page;
+                    SetTitle("Whitelist / Rules");
                 });
                 break;
         }

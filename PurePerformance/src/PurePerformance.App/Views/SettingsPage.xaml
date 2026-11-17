@@ -9,44 +9,131 @@
         <StackPanel Spacing="24" MaxWidth="720">
             <StackPanel Spacing="6">
                 <TextBlock Text="Settings"
-                           Style="{StaticResource TitleTextBlockStyle}" />
-                <TextBlock Text="Theme preference and optional Pro unlock. Crash Analyzer remains free."
+                           Style="{StaticResource TitleTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                <TextBlock Text="Appearance stays free. Optional Pro tools and AI assist are listed honestly below."
                            TextWrapping="WrapWholeWords"
-                           Opacity="0.9" />
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                           Opacity="0.92" />
+            </StackPanel>
+
+            <!-- Theme chips: bordered so they never disappear on light or dark -->
+            <StackPanel Spacing="12">
+                <TextBlock Text="Appearance"
+                           Style="{StaticResource SubtitleTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                <TextBlock Text="Light / Dark / Follow system always stay visible. Applied on this window via ElementTheme (never Application.RequestedTheme=Default)."
+                           TextWrapping="WrapWholeWords"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           FontSize="12" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <ToggleButton MinWidth="120" Padding="12,8"
+                                  IsChecked="{x:Bind ViewModel.IsSystemTheme, Mode=OneWay}"
+                                  Command="{x:Bind ViewModel.SelectSystemThemeCommand}"
+                                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                  BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                                  BorderThickness="1"
+                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                  Content="Follow system" />
+                    <ToggleButton MinWidth="100" Padding="12,8"
+                                  IsChecked="{x:Bind ViewModel.IsLightTheme, Mode=OneWay}"
+                                  Command="{x:Bind ViewModel.SelectLightThemeCommand}"
+                                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                  BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                                  BorderThickness="1"
+                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                  Content="Light" />
+                    <ToggleButton MinWidth="100" Padding="12,8"
+                                  IsChecked="{x:Bind ViewModel.IsDarkTheme, Mode=OneWay}"
+                                  Command="{x:Bind ViewModel.SelectDarkThemeCommand}"
+                                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                  BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                                  BorderThickness="1"
+                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                  Content="Dark" />
+                </StackPanel>
+                <TextBlock Text="{x:Bind ViewModel.ThemeStatus, Mode=OneWay}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
 
             <StackPanel Spacing="12">
-                <TextBlock Text="Appearance"
-                           Style="{StaticResource SubtitleTextBlockStyle}" />
-                <TextBlock Text="Applied on this window via ElementTheme. Follow system does not set Application.RequestedTheme (avoids WMC0055)."
+                <TextBlock Text="Accent color (free)"
+                           Style="{StaticResource SubtitleTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                <TextBlock Text="Pick an accent pack for buttons and highlights. Independent of Pro."
                            TextWrapping="WrapWholeWords"
-                           Opacity="0.75"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            FontSize="12" />
-                <StackPanel Spacing="8">
-                    <RadioButton Content="Follow system"
-                                 GroupName="ThemePreference"
-                                 IsChecked="{x:Bind ViewModel.IsSystemTheme, Mode=OneWay}"
-                                 Command="{x:Bind ViewModel.SelectSystemThemeCommand}" />
-                    <RadioButton Content="Light"
-                                 GroupName="ThemePreference"
-                                 IsChecked="{x:Bind ViewModel.IsLightTheme, Mode=OneWay}"
-                                 Command="{x:Bind ViewModel.SelectLightThemeCommand}" />
-                    <RadioButton Content="Dark"
-                                 GroupName="ThemePreference"
-                                 IsChecked="{x:Bind ViewModel.IsDarkTheme, Mode=OneWay}"
-                                 Command="{x:Bind ViewModel.SelectDarkThemeCommand}" />
-                </StackPanel>
-                <TextBlock Text="{x:Bind ViewModel.ThemeStatus, Mode=OneWay}"
-                           Opacity="0.8" />
+                <VariableSizedWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="3" ItemWidth="140" ItemHeight="44">
+                    <ToggleButton Margin="0,0,8,8"
+                                  IsChecked="{x:Bind ViewModel.IsAccentSystem, Mode=OneWay}"
+                                  Command="{x:Bind ViewModel.SelectAccentCommand}"
+                                  CommandParameter="System"
+                                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                  BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                                  BorderThickness="1"
+                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                  Content="Windows" />
+                    <ToggleButton Margin="0,0,8,8"
+                                  IsChecked="{x:Bind ViewModel.IsAccentOcean, Mode=OneWay}"
+                                  Command="{x:Bind ViewModel.SelectAccentCommand}"
+                                  CommandParameter="Ocean"
+                                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                  BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                                  BorderThickness="1"
+                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                  Content="Ocean" />
+                    <ToggleButton Margin="0,0,8,8"
+                                  IsChecked="{x:Bind ViewModel.IsAccentForest, Mode=OneWay}"
+                                  Command="{x:Bind ViewModel.SelectAccentCommand}"
+                                  CommandParameter="Forest"
+                                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                  BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                                  BorderThickness="1"
+                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                  Content="Forest" />
+                    <ToggleButton Margin="0,0,8,8"
+                                  IsChecked="{x:Bind ViewModel.IsAccentSunset, Mode=OneWay}"
+                                  Command="{x:Bind ViewModel.SelectAccentCommand}"
+                                  CommandParameter="Sunset"
+                                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                  BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                                  BorderThickness="1"
+                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                  Content="Sunset" />
+                    <ToggleButton Margin="0,0,8,8"
+                                  IsChecked="{x:Bind ViewModel.IsAccentSlate, Mode=OneWay}"
+                                  Command="{x:Bind ViewModel.SelectAccentCommand}"
+                                  CommandParameter="Slate"
+                                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                  BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                                  BorderThickness="1"
+                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                  Content="Slate" />
+                    <ToggleButton Margin="0,0,8,8"
+                                  IsChecked="{x:Bind ViewModel.IsAccentBerry, Mode=OneWay}"
+                                  Command="{x:Bind ViewModel.SelectAccentCommand}"
+                                  CommandParameter="Berry"
+                                  Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                  BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                                  BorderThickness="1"
+                                  Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                  Content="Berry" />
+                </VariableSizedWrapGrid>
+                <TextBlock Text="{x:Bind ViewModel.AccentStatus, Mode=OneWay}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
 
             <StackPanel Spacing="12">
                 <TextBlock Text="Feature tiers"
-                           Style="{StaticResource SubtitleTextBlockStyle}" />
+                           Style="{StaticResource SubtitleTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                 <TextBlock Text="{x:Bind ViewModel.FreeTierSummary}"
-                           TextWrapping="WrapWholeWords" />
+                           TextWrapping="WrapWholeWords"
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                 <TextBlock Text="{x:Bind ViewModel.ProTierSummary}"
-                           TextWrapping="WrapWholeWords" />
+                           TextWrapping="WrapWholeWords"
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
 
                 <InfoBar IsOpen="True"
                          IsClosable="False"
@@ -63,7 +150,8 @@
                 <StackPanel Orientation="Horizontal" Spacing="12">
                     <Button Content="Refresh license"
                             Command="{x:Bind ViewModel.RefreshLicenseCommand}"
-                            IsEnabled="{x:Bind ViewModel.CanRefresh, Mode=OneWay}" />
+                            IsEnabled="{x:Bind ViewModel.CanRefresh, Mode=OneWay}"
+                            Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                     <Button x:Name="UnlockButton"
                             Content="Unlock Pro…"
                             Style="{StaticResource AccentButtonStyle}"
@@ -73,18 +161,49 @@
                                   IsActive="{x:Bind ViewModel.IsBusy, Mode=OneWay}" />
                 </StackPanel>
 
-                <TextBlock Opacity="0.7" FontSize="12" TextWrapping="WrapWholeWords">
+                <TextBlock FontSize="12" TextWrapping="WrapWholeWords"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}">
                     <Run Text="Configured Pro add-on Store ID: " />
                     <Run Text="{x:Bind ViewModel.AddOnStoreId}" />
                 </TextBlock>
             </StackPanel>
 
+            <StackPanel x:Name="ProAiPanel" Spacing="12">
+                <TextBlock Text="Pro AI assist"
+                           Style="{StaticResource SubtitleTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                <TextBlock TextWrapping="WrapWholeWords"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           Text="Bring your own OpenAI-compatible API key. Stored in Windows PasswordVault on this PC — never hardcoded in the app. Used only when you tap “Suggest fix with AI” on a Crash Analyzer finding." />
+                <TextBox Header="Base URL"
+                         Text="{x:Bind ViewModel.AiBaseUrl, Mode=TwoWay}"
+                         PlaceholderText="https://api.openai.com/v1" />
+                <TextBox Header="Model"
+                         Text="{x:Bind ViewModel.AiModel, Mode=TwoWay}"
+                         PlaceholderText="gpt-4o-mini" />
+                <PasswordBox x:Name="AiKeyBox"
+                             Header="API key (paste to update; leave blank to keep existing)"
+                             PasswordChanged="AiKeyBox_PasswordChanged" />
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Button Content="Save AI settings"
+                            Style="{StaticResource AccentButtonStyle}"
+                            Command="{x:Bind ViewModel.SaveAiSettingsCommand}" />
+                    <Button Content="Clear API key"
+                            Command="{x:Bind ViewModel.ClearAiKeyCommand}" />
+                </StackPanel>
+                <TextBlock Text="{x:Bind ViewModel.AiKeyStatus, Mode=OneWay}"
+                           TextWrapping="WrapWholeWords"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+
             <StackPanel Spacing="8">
                 <TextBlock Text="Privacy"
-                           Style="{StaticResource SubtitleTextBlockStyle}" />
+                           Style="{StaticResource SubtitleTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                 <TextBlock TextWrapping="WrapWholeWords"
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                            Opacity="0.9"
-                           Text="Event logs and cleanup stay on this PC. See the privacy policy stub for Store listing (also in PurePerformance/docs/PRIVACY.md)." />
+                           Text="Event logs and cleanup stay on this PC. Optional AI calls go only to the base URL you configure. See the privacy policy stub for Store listing." />
                 <HyperlinkButton Content="Open privacy policy"
                                  NavigateUri="{x:Bind ViewModel.PrivacyPolicyUrl}" />
             </StackPanel>

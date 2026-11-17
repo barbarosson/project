@@ -4,7 +4,7 @@ namespace PurePerformance.Services;
 
 public interface ILicenseService
 {
-    /// <summary>True when Pro tools (Startup / Cleaner / Memory) may run.</summary>
+    /// <summary>True when optional Pro tools (schedules, advanced crash, rules, alerts, AI, …) may run.</summary>
     bool IsProUnlocked { get; }
 
     /// <summary>True when Pro is unlocked only via local/dev bypass (not a Store license).</summary>

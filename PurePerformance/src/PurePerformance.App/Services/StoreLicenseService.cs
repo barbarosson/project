@@ -4,7 +4,8 @@ using Windows.Services.Store;
 namespace PurePerformance.Services;
 
 /// <summary>
-/// Free core = Crash Analyzer (+ Dashboard). Pro = Startup Manager, System Cleaner, Memory Optimizer.
+/// Free core = Crash Analyzer, Dashboard, Startup, Cleaner, Memory.
+/// Pro = scheduled scans, advanced crash tools, auto rules, profiles, alerts, whitelist, AI assist.
 /// Uses Windows.Services.Store.StoreContext when packaged; unpackaged Debug uses an explicit bypass.
 /// </summary>
 public sealed class StoreLicenseService : ILicenseService
@@ -58,7 +59,7 @@ public sealed class StoreLicenseService : ILicenseService
             SetState(
                 unlocked: false,
                 bypass: false,
-                "Store license checks require an MSIX / Store install. Unpackaged Release builds stay on the free tier (Crash Analyzer). Use Debug unpackaged or PUREPERFORMANCE_UNLOCK_PRO=1 for a local Pro bypass.");
+                "Store license checks require an MSIX / Store install. Unpackaged Release builds stay on the free tier. Use Debug unpackaged or PUREPERFORMANCE_UNLOCK_PRO=1 for a local Pro bypass.");
             NotifyChanged();
             return;
         }
@@ -74,14 +75,14 @@ public sealed class StoreLicenseService : ILicenseService
                 SetState(
                     unlocked: true,
                     bypass: false,
-                    "Pure Performance Pro is active (Microsoft Store license). Startup Manager, System Cleaner, and Memory Optimizer are unlocked.");
+                    "Pure Performance Pro is active (Microsoft Store license). Scheduled scans, advanced crash tools, auto rules, profiles, alerts, whitelist, and AI assist are available.");
             }
             else
             {
                 SetState(
                     unlocked: false,
                     bypass: false,
-                    "Free tier: Crash Analyzer is included. Unlock Pure Performance Pro for Startup Manager, System Cleaner, and Memory Optimizer.");
+                    "Free tier: Crash Analyzer, Dashboard, Startup Optimizer, System Cleaner, and Memory Optimizer. Optional Pro adds scheduled reports, advanced crash tools, auto rules, multi-PC profiles, alerts, whitelist, and AI assist.");
             }
         }
         catch (Exception ex)
@@ -89,7 +90,7 @@ public sealed class StoreLicenseService : ILicenseService
             SetState(
                 unlocked: false,
                 bypass: false,
-                $"Could not read Store license ({ex.Message}). Free tier remains available (Crash Analyzer).");
+                $"Could not read Store license ({ex.Message}). Free tools remain available.");
         }
 
         NotifyChanged();
@@ -146,10 +147,10 @@ public sealed class StoreLicenseService : ILicenseService
                 bypass: false,
                 result.Status switch
                 {
-                    StorePurchaseStatus.NotPurchased => "Purchase was cancelled. Free Crash Analyzer stays available.",
+                    StorePurchaseStatus.NotPurchased => "Purchase was cancelled. Free tools stay available.",
                     StorePurchaseStatus.NetworkError => "Network error during purchase. Try again when online.",
                     StorePurchaseStatus.ServerError => "Store server error during purchase. Try again later.",
-                    _ => $"Purchase did not complete ({result.Status}). Free Crash Analyzer stays available."
+                    _ => $"Purchase did not complete ({result.Status}). Free tools stay available."
                 });
             NotifyChanged();
             return false;
@@ -159,7 +160,7 @@ public sealed class StoreLicenseService : ILicenseService
             SetState(
                 unlocked: false,
                 bypass: false,
-                $"Purchase failed: {ex.Message}. Free Crash Analyzer stays available.");
+                $"Purchase failed: {ex.Message}. Free tools stay available.");
             NotifyChanged();
             return false;
         }
@@ -196,19 +197,17 @@ public sealed class StoreLicenseService : ILicenseService
             return;
         }
 
-        // Leave prior Store-derived state; RefreshAsync fills it when packaged.
         if (!_isProUnlocked && string.IsNullOrWhiteSpace(_statusMessage))
         {
             SetState(
                 unlocked: false,
                 bypass: false,
-                "Free tier: Crash Analyzer is included. Unlock Pure Performance Pro for Startup Manager, System Cleaner, and Memory Optimizer.");
+                "Free tier includes Crash Analyzer, Dashboard, Startup, Cleaner, and Memory. Optional Pro adds scheduled reports and advanced tools.");
         }
     }
 
     private bool HasActiveProAddOn(StoreAppLicense license)
     {
-        // Placeholder ID means Partner Center add-on is not wired yet — never invent Pro.
         if (string.Equals(ProAddOnStoreId, DefaultProAddOnStoreId, StringComparison.Ordinal))
         {
             return false;
