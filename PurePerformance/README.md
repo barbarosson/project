@@ -39,11 +39,12 @@ Store package: right-click the project → **Package and Publish** → create MS
 **Settings** (NavigationView gear):
 
 - Light / Dark / Follow system (contrast-safe chips — always visible)
-- Free accent packs: Windows / Ocean / Forest / Sunset / Slate / Berry
+- Free accent packs: Windows / Ocean / Forest / Sunset / Slate / Berry (applied live — no restart)
+- Caption buttons (min / max / close) follow light/dark so they stay visible on extended title bars
 - License status + Unlock Pro…
 - Pro AI assist: base URL, model, API key (PasswordVault) when Pro is unlocked
 
-Preference is persisted under `%LocalAppData%\PurePerformance\user-settings.json` and applied on the main window root via `ElementTheme`.
+Preference is persisted under `%LocalAppData%\PurePerformance\user-settings.json` and applied on the main window root via `ElementTheme`. Accent packs update `Application` + root resources and refresh ThemeResources immediately.
 
 ## What the app does
 

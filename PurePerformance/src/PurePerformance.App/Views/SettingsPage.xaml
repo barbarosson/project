@@ -60,7 +60,7 @@
                 <TextBlock Text="Accent color (free)"
                            Style="{StaticResource SubtitleTextBlockStyle}"
                            Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                <TextBlock Text="Pick an accent pack for buttons and highlights. Independent of Pro."
+                <TextBlock Text="Pick an accent pack for buttons and highlights. Applied immediately — no restart. Independent of Pro."
                            TextWrapping="WrapWholeWords"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                            FontSize="12" />
