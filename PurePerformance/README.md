@@ -72,6 +72,7 @@ Brand: Store/desktop logos live under `src/PurePerformance.App/Assets/` (teal pu
 
 ## Docs
 
+- `docs/store-listing/` — Partner Center listing text (EN/TR), screenshots, icons, upload checklist  
 - `docs/STORE-SUBMISSION.md` — Store listing checklist + code-done vs Partner Center  
 - `docs/MSIX-PACKAGING.md` — VS Create App Packages / Partner Center upload  
 - `docs/PARTNER-CENTER-ADDON.md` — durable Pro add-on + Store ID PLACEHOLDER  

@@ -43,7 +43,7 @@ Do **not** add unrelated restricted capabilities. Everyday launch stays `asInvok
 
 Brand PNGs + `ApplicationIcon.ico` under `src/PurePerformance.App/Assets/` (teal pulse mark). Filenames/sizes: `Assets/README.md`. Manifest + unpackaged `ApplicationIcon` already reference them.
 
-**Still Partner Center-only:** Store listing screenshots (≥1366×768) showing Crash Analyzer and Startup Manager — never fake “cleaned X MB” dashboards. Optional Store promo art sizes per Partner Center UI.
+**Store listing package (copy + screenshots + Partner Center checklist):** [`store-listing/`](store-listing/) — English/Turkish listing text, Store-sized screenshots (1366×768 / 1920×1080) for Dashboard, Crash Analyzer, Startup, Settings/theme, and Pro, plus `icon/` copies of package logos. Prefer real Windows captures when available; never upload fake “cleaned X MB” dashboards.
 
 ---
 
@@ -121,8 +121,8 @@ Unpackaged Debug uses a labeled Pro bypass so F5 still exercises Pro panes. That
 - [ ] Run VS **Associate App with the Store** so `CN=…` matches the Store certificate (replace placeholder)
 - [ ] Create **Pure Performance Pro** durable add-on; paste real Store ID into `StoreLicenseService` and ship update
 - [ ] Publish privacy policy HTML at the HTTPS URL (content can start from `PRIVACY.md`)
-- [ ] Capture and upload Store screenshots / optional promo art
-- [ ] Fill Store listing (description, keywords, category, age rating questionnaire, support contact)
+- [ ] Upload Store screenshots from `docs/store-listing/screenshots/` (or replace with real WinUI captures) / optional promo art
+- [ ] Fill Store listing from `docs/store-listing/listing-en.md` + `listing-tr.md` (description, keywords, category, age rating questionnaire, support contact) — see `docs/store-listing/README.md`
 - [ ] Run **Create App Packages**, upload `.msixupload`, pass certification, set price / markets / rollout
 - [ ] Respond to certification failures (capability justification, screenshot policy, metadata)
 

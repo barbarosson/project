@@ -20,11 +20,12 @@ Teal pulse-on-navy Pure Performance mark (not a generic purple AI look).
 
 Package/tile PNGs and the unpackaged ICO are present at Store-required sizes (branded teal pulse mark). Replace with final marketing art only if Partner Center / brand review asks for a different look.
 
-## Partner Center screenshots (not in this folder — Barbaros)
+## Partner Center screenshots
 
-Upload desktop screenshots (≥1366×768) that show:
+Listing copy, Store-sized screenshots, and an upload checklist live in:
 
-1. Crash Analyzer with honest Event Log findings  
-2. Startup Manager (or Pro unlock screen — never fake cleanup scores)
+`PurePerformance/docs/store-listing/`
 
-See `docs/STORE-SUBMISSION.md` and `docs/MSIX-PACKAGING.md`.
+(icon copies of these Assets files are under `docs/store-listing/icon/`)
+
+See `docs/store-listing/README.md`, `docs/STORE-SUBMISSION.md`, and `docs/MSIX-PACKAGING.md`.
